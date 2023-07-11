@@ -162,7 +162,7 @@ class PdfGenerator extends Base\Core
         return $pdfContent;
     }
 
-    public function generatePgInvoice($merchantId, $month, $year, $invoiceBreakup): Filestore\Entity
+    public function generatePgInvoice($merchantId, $month, $year, $invoiceBreakup, $platformFeeDetails = null): Filestore\Entity
     {
         $name = $this->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
@@ -170,7 +170,7 @@ class PdfGenerator extends Base\Core
 
         $eInvoiceData = (new EInvoice\PgEInvoice())->getEInvoiceDataForPdf($merchantId, $month, $year, EInvoice\Types::PG);
 
-        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData);
+        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData, $platformFeeDetails);
 
         $pdfContent = $this->getPdfContentForPgInvoice($html);
 
@@ -186,9 +186,9 @@ class PdfGenerator extends Base\Core
             ->getFileInstance();
     }
 
-    protected function getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []) : string
+    protected function getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = [], $platformFeeDetails = null) : string
     {
-        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
+        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData, $platformFeeDetails) ;
 
         if($this->isMerchantPGInvoiceV2($merchant->getId()) === true)
         {

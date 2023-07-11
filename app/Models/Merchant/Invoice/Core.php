@@ -18,7 +18,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
-use RZP\Services\UfhService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\FeeModel;
 use RZP\Models\Pricing\Calculator;
@@ -32,13 +31,13 @@ use RZP\Jobs\AdjustmentInvoiceEntityCreate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\EInvoice\PgEInvoice as PgEInvoiceJob;
+use RZP\Models\Transfer\Service as TransferService;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
-use RZP\Models\Merchant\Preferences as MerchantPreferences;
 use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
 class Core extends Base\Core
@@ -722,7 +721,7 @@ class Core extends Base\Core
         return true;
     }
 
-    public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup) : array
+    public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup, $platformFeeDetails = null) : array
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
@@ -735,7 +734,7 @@ class Core extends Base\Core
             'merchant_id'     => $merchant->getId(),
         ];
 
-        $data = (new InvoiceReport())->getpgInvoiceTemplateDate($input, $merchant, $invoiceBreakup);
+        $data = (new InvoiceReport())->getpgInvoiceTemplateDate($input, $merchant, $invoiceBreakup, $platformFeeDetails);
 
         return [$date, $isGstApplicable, $data];
     }
@@ -751,9 +750,9 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []): array
+    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = [], $platformFeeDetails = null): array
     {
-        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $month, $year, $invoiceBreakup);
+        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $month, $year, $invoiceBreakup, $platformFeeDetails);
 
         $data['merchant'] = $merchant;
 
@@ -824,7 +823,11 @@ class Core extends Base\Core
         return ((strcasecmp($yesIfsc, "YESB") === 0) === true) ;
     }
 
-    public function getSignedUrlForPgInvoice($year, $month, $merchantId)
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
+    public function getSignedUrlForPgInvoice($year, $month, $merchantId): string
     {
         $name = (new PdfGenerator())->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
@@ -839,23 +842,22 @@ class Core extends Base\Core
             $name = (new PdfGenerator())->getNameForMerchantPgRevisedInvoice($year, $month, $merchantId);
         }
 
-        $file = $this->repo
-                     ->file_store
-                     ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+        $file = $this->repo->file_store->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
 
         if (empty($file) === true)
         {
-            if(($shouldGeneratePgEInvoice === true) or ($shouldGenerateRevisedPgInvoice === true))
+            if (($shouldGeneratePgEInvoice === true) or ($shouldGenerateRevisedPgInvoice === true))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Razorpay was unable to generate an invoice either due to incorrect GSTIN and/or Address PIN or due to some technical error. Please try again in some time.');
+                    'Razorpay was unable to generate an invoice either due to incorrect GSTIN and/or Address PIN or due to some technical error. Please try again in some time.'
+                );
             }
 
-            $invoiceBreakup = $this->repo
-                                   ->merchant_invoice
-                                   ->fetchInvoiceReportData($merchantId, $month, $year);
+            $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData($merchantId, $month, $year);
 
-            $file = (new PdfGenerator())->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+            $platformFeeDetails = (new TransferService())->getPlatformFeeDetailsForMerchant($merchantId, $month, $year);
+
+            $file = (new PdfGenerator())->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup, $platformFeeDetails);
         }
 
         return (new FileStore\Accessor())->getSignedUrlOfFile($file);

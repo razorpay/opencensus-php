@@ -86,4 +86,29 @@ class Reversal extends Base
 
         return $reversal;
     }
+
+    public function createTransferReversal(string $transferId, array $attributes = [])
+    {
+        $defaultValues = [
+            'currency' => 'INR',
+        ];
+
+        $attributes = array_merge($attributes, ['entity_id' => $transferId, 'entity_type' => 'transfer']);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $reversal = parent::create($attributes);
+
+        $this->fixtures->create('transaction',
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $reversal['id'],
+                'type'          => 'payment',
+                'amount'        => $reversal['amount'],
+                'created_at'    => $reversal['created_at']
+            ]
+        );
+
+        return $reversal;
+    }
 }

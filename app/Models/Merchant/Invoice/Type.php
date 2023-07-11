@@ -78,6 +78,7 @@ class Type
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
     const REFUND_GT_1K_LTE_10K_DESCRIPTION  = 'Fee on Instant Refund > INR 1,000 & <= INR 10,000';
     const REFUND_GT_10K_DESCRIPTION         = 'Fee on Instant Refund > INR 10,000';
+    const PLATFORM_FEE_DESCRIPTION          = 'Platform Fee';
 
     protected static $typeToDescriptionMap = [
         self::CARD_LTE_2K            => self::CARD_LTE_2K_DESCRIPTION,

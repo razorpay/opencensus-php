@@ -9,8 +9,8 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
-use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
+use RZP\Models\Transaction\Entity as TxnEntity;
 
 class Repository extends Base\Repository
 {
@@ -374,6 +374,40 @@ class Repository extends Base\Repository
         }
 
         $transfer->source()->associate($order);
+    }
+
+    public function fetchPlatformFeeTransferDetailsForMerchant(string $merchantId, array $linkedAccounts, int $month, int $year)
+    {
+        $startOfMonth   = Carbon::create($year, $month);
+        $endOfMonth     = Carbon::create($year, $month, $startOfMonth->daysInMonth, 23, 59, 59);
+
+        $transferIdCol          = $this->dbColumn((Entity::ID));
+        $transferToIdCol        = $this->dbColumn(Entity::TO_ID);
+        $transferToTypeCol      = $this->dbColumn(Entity::TO_TYPE);
+        $transferStatusCol      = $this->dbColumn(Entity::STATUS);
+
+        $trxnEntityIdCol        = $this->repo->transaction->dbColumn(TxnEntity::ENTITY_ID);
+        $trxnAmountCol          = $this->repo->transaction->dbColumn(TxnEntity::AMOUNT);
+        $trxnFeeCol             = $this->repo->transaction->dbColumn(TxnEntity::FEE);
+        $trxnTaxCol             = $this->repo->transaction->dbColumn(TxnEntity::TAX);
+        $trxnCreatedAtCol       = $this->repo->transaction->dbColumn(TxnEntity::CREATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->selectRaw('SUM(' . $trxnAmountCol . ') AS amount, SUM(' . $trxnTaxCol . ') AS tax, SUM(' . $trxnFeeCol . ') AS fee')
+                      ->merchantId($merchantId)
+                      ->join(Table::TRANSACTION, $trxnEntityIdCol, '=', $transferIdCol)
+                      ->where($transferToTypeCol, '=', 'merchant')
+                      ->whereIn($transferStatusCol, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED])
+                      ->whereBetween($trxnCreatedAtCol, [$startOfMonth->timestamp, $endOfMonth->timestamp]);
+
+        // for platform transfers, the transfer recipient should not be a linked account of the merchant
+        // here, the transfer recipient is actually a linked account of partner
+        if (empty($linkedAccounts) === false)
+        {
+            $query->whereNotIn($transferToIdCol, $linkedAccounts);
+        }
+
+        return $query->first();
     }
 
     /**

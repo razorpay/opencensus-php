@@ -105,7 +105,7 @@ class Core extends Base\Core
             ($input[Entity::NAME] === Constants::ROUTE_LA_PENNY_TESTING) and
             ($entityType === Constants::MERCHANT))
         {
-            $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($entityId);
+            $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($entityId, true);
 
             LinkedAccountBankVerificationStatusBackfill::dispatch($this->mode, $linkedAccountIds, $input, $shouldSync);
 

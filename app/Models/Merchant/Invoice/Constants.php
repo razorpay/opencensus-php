@@ -28,4 +28,5 @@ final class Constants
 
     const SHOW_SKIPPED_MIDS_LIST = 'show';
 
+    const FEE = 'fee';
 }

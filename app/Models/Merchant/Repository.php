@@ -1705,14 +1705,18 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
-    public function fetchActivatedLinkedAccountIdsForParentMerchant(string $parentMerchantId)
+    public function fetchLinkedAccountIdsForParentMerchant(string $parentMerchantId, bool $checkForActivated = false)
     {
-        return $this->newQuery()
-                    ->select(Entity::ID)
-                    ->where(Entity::PARENT_ID, $parentMerchantId)
-                    ->where(Entity::ACTIVATED, 1)
-                    ->pluck(Entity::ID)
-                    ->toArray();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select(Entity::ID)
+                      ->where(Entity::PARENT_ID, $parentMerchantId);
+
+        if ($checkForActivated === true)
+        {
+            $query->where(Entity::ACTIVATED, 1);
+        }
+
+        return $query->pluck(Entity::ID)->toArray();
     }
 
     public function fetchLinkedAccountsCount($merchantId)

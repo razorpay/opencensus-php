@@ -155,7 +155,7 @@ class InvoiceReport extends BaseReport
         }
     }
 
-    public function getpgInvoiceTemplateDate($data, $merchant, $invoiceBreakup)
+    public function getpgInvoiceTemplateDate($data, $merchant, $invoiceBreakup, $platformFeeDetails = null)
     {
         $this->month = $data['month'];
 
@@ -165,7 +165,7 @@ class InvoiceReport extends BaseReport
 
         if ($data['gst_applicable'] === true )
         {
-            $this->getInvoiceNew($data, $invoiceBreakup);
+            $this->getInvoiceNew($data, $invoiceBreakup, $platformFeeDetails);
 
             $this->groupData();
 
@@ -175,38 +175,46 @@ class InvoiceReport extends BaseReport
         return $this->getInvoiceV2($data);
     }
 
-    protected function setInvoiceVariables($invoiceBreakup)
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function setInvoiceVariables($invoiceBreakup, $platformFeeDetails = null)
     {
         $invoice = null;
 
         if ($invoiceBreakup->count() === 0)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invoice not generated yet for merchant ' . $this->merchant->getId() .
-                ' for year ' . $this->year . ' and month ' . $this->month);
-        }
-
-        // we don't consider adjustments to construct basic data of invoice.
-        // finOps can create adjustment at any time. If the records comes first
-        // then entire records will be invalid in terms of date and can create confusion
-        foreach ($invoiceBreakup as $invoiceItem)
-        {
-            if ($invoiceItem->getType() !== Invoice\Type::ADJUSTMENT)
+            if (empty($platformFeeDetails) === true or empty($platformFeeDetails[Invoice\Entity::AMOUNT]) === true)
             {
-                $invoice = $invoiceItem;
-
-                break;
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invoice not generated yet for merchant ' . $this->merchant->getId() . ' for year ' . $this->year . ' and month ' . $this->month
+                );
             }
         }
+        else
+        {
+            // we don't consider adjustments to construct basic data of invoice.
+            // finOps can create adjustment at any time. If the records comes first
+            // then entire records will be invalid in terms of date and can create confusion
+            foreach ($invoiceBreakup as $invoiceItem)
+            {
+                if ($invoiceItem->getType() !== Invoice\Type::ADJUSTMENT)
+                {
+                    $invoice = $invoiceItem;
 
-        $this->invoiceNo = $invoice->getInvoiceNumber();
+                    break;
+                }
+            }
+
+            $this->invoiceNo = $invoice->getInvoiceNumber();
+
+            $this->gstin = $invoice->getGstin();
+        }
 
         // to set the date to last day of previous month
         $this->invoiceDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST)
                                     ->endOfMonth()
                                     ->format('d/m/Y');
-
-        $this->gstin = $invoice->getGstin();
 
         $this->taxComponents = $this->getTaxComponents($this->gstin);
 
@@ -223,9 +231,12 @@ class InvoiceReport extends BaseReport
         ];
     }
 
-    protected function getInvoiceNew(array $input, $invoiceBreakup)
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function getInvoiceNew(array $input, $invoiceBreakup, $platformFeeDetails = null)
     {
-        $this->setInvoiceVariables($invoiceBreakup);
+        $this->setInvoiceVariables($invoiceBreakup, $platformFeeDetails);
 
         // Different fee component rows
         foreach ($invoiceBreakup as $index => $entity)
@@ -284,6 +295,45 @@ class InvoiceReport extends BaseReport
                 $this->reportData[] = $row;
             }
         }
+
+        $this->setPlatformFeeDetailsInReport($platformFeeDetails);
+    }
+
+    protected function setPlatformFeeDetailsInReport($platformFeeDetails = null)
+    {
+        if (empty($platformFeeDetails) === true or
+            empty($platformFeeDetails[Invoice\Entity::AMOUNT]) === true or
+            $platformFeeDetails[Invoice\Entity::AMOUNT] <= 0) // TODO: keep this edge case until a solution is finalised on this
+        {
+            return;
+        }
+
+        $row = $this->getNewRow();
+
+        $row[self::GST_SAC_CODE] = Invoice\Type::DEFAULT_GST_SAC_CODE;
+
+        $row[self::DESCRIPTION] = Invoice\Type::PLATFORM_FEE_DESCRIPTION;
+
+        $row[self::AMOUNT] = $platformFeeDetails[Invoice\Entity::AMOUNT];
+
+        $row[self::TAX_TOTAL] = $platformFeeDetails[Invoice\Entity::TAX];
+
+        $row[self::GRAND_TOTAL] = $row[self::AMOUNT] + $row[self::TAX_TOTAL];
+
+        if (count($this->taxComponents) === 1)
+        {
+            $row[self::IGST] = $row[self::TAX_TOTAL];
+        }
+        else
+        {
+            $taxComponentValue = (int) round($row[self::TAX_TOTAL] / 2);
+
+            $row[self::CGST] = $taxComponentValue;
+
+            $row[self::SGST] = $taxComponentValue;
+        }
+
+        $this->reportData[] = $row;
     }
 
     protected function groupDataForSummaryByPageType(

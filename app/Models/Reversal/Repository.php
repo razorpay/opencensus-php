@@ -5,22 +5,18 @@ namespace RZP\Models\Reversal;
 use DB;
 use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transaction\Type;
-use RZP\Exception\LogicException;
-use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\CreditType;
-use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\Transaction\Entity as TxnEntity;
+use RZP\Models\Transfer\Entity as TransferEntity;
 use RZP\Models\FundAccount\Validation\Entity as FavEntity;
 
 class Repository extends Base\Repository
@@ -379,4 +375,30 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function fetchPlatformFeeReversalDetailsForMerchant(string $merchantId, array $linkedAccounts, int $month, int $year)
+    {
+        $startOfMonth   = Carbon::create($year, $month);
+        $endOfMonth     = Carbon::create($year, $month, $startOfMonth->daysInMonth, 23, 59, 59);
+
+        $transferIdCol          = $this->repo->transfer->dbColumn((TransferEntity::ID));
+        $transferToIdCol        = $this->repo->transfer->dbColumn(TransferEntity::TO_ID);
+        $transferToTypeCol      = $this->repo->transfer->dbColumn(TransferEntity::TO_TYPE);
+
+        $trxnEntityIdCol        = $this->repo->transaction->dbColumn(TxnEntity::ENTITY_ID);
+        $trxnAmountCol          = $this->repo->transaction->dbColumn(TxnEntity::AMOUNT);
+        $trxnCreatedAtCol       = $this->repo->transaction->dbColumn(TxnEntity::CREATED_AT);
+
+        $reversalIdCol          = $this->dbColumn(Entity::ID);
+        $reversalEntityIdCol    = $this->dbColumn(Entity::ENTITY_ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->selectRaw('SUM(' . $trxnAmountCol . ') as amount')
+                    ->merchantId($merchantId)
+                    ->join(Table::TRANSACTION, $trxnEntityIdCol, '=', $reversalIdCol)
+                    ->join(Table::TRANSFER, $transferIdCol, '=', $reversalEntityIdCol)
+                    ->where($transferToTypeCol, '=', 'merchant')
+                    ->whereNotIn($transferToIdCol, $linkedAccounts)
+                    ->whereBetween($trxnCreatedAtCol, [$startOfMonth->timestamp, $endOfMonth->timestamp])
+                    ->first();
+    }
 }

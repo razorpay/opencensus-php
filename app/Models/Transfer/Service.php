@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Transfer;
 
+use Throwable;
+use Monolog\Logger;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
@@ -14,7 +18,6 @@ use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Jobs\TransferProcess;
 use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
@@ -26,7 +29,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
-use Throwable;
 
 class Service extends Base\Service
 {
@@ -79,7 +81,7 @@ class Service extends Base\Service
             {
                 if ($transferTypeFilter === Constant::PLATFORM )
                 {
-                    $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+                    $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
 
                     $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
                 }
@@ -89,7 +91,7 @@ class Service extends Base\Service
 
                     if( $result[Constant::FEATURE_ENABLED] === true)
                     {
-                        $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+                        $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
 
                         $input[Constant::INCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
                     }
@@ -1158,7 +1160,7 @@ class Service extends Base\Service
         {
             foreach ($input['merchant_ids'] as $id)
             {
-                $merchantIds = array_merge($merchantIds, $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($id));
+                $merchantIds = array_merge($merchantIds, $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($id, true));
             }
         }
         elseif ($type === 'linked_account_mids')
@@ -1402,7 +1404,7 @@ class Service extends Base\Service
     {
         try
         {
-            $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+            $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
 
             foreach ($transfers as $transfer)
             {
@@ -1450,5 +1452,89 @@ class Service extends Base\Service
         }
 
         return array_unique($merchantIds);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
+    public function getPlatformFeeDetailsForMerchant(string $merchantId, int $month, int $year): ?array
+    {
+        try
+        {
+            $response = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $merchantId);
+
+            if ($response['feature_enabled'] !== true)
+            {
+                return null;
+            }
+
+            $merchantLinkedAccounts = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($merchantId);
+
+            $platformFeeTransferDetails = $this->repo->transfer->fetchPlatformFeeTransferDetailsForMerchant($merchantId, $merchantLinkedAccounts, $month, $year)->getAttributes();
+
+            if (empty($platformFeeTransferDetails) === true or empty($platformFeeTransferDetails['amount']) === true)
+            {
+                $platformFeeTransferDetails['amount'] = 0;
+                $platformFeeTransferDetails['fee'] = 0;
+                $platformFeeTransferDetails['tax'] = 0;
+            }
+
+            if (empty($platformFeeTransferDetails['fee']) === true)
+            {
+                $platformFeeTransferDetails['fee'] = 0;
+            }
+
+            if (empty($platformFeeTransferDetails['tax']) === true)
+            {
+                $platformFeeTransferDetails['tax'] = 0;
+            }
+
+            // fetch transfer reversals for the given month, year and merchant
+            $platformFeeReversalDetails = $this->repo->reversal->fetchPlatformFeeReversalDetailsForMerchant($merchantId, $merchantLinkedAccounts, $month, $year)->getAttributes();
+
+            if (empty($platformFeeReversalDetails) === true or empty($platformFeeReversalDetails['amount']) === true)
+            {
+                $platformFeeReversalDetails['amount'] = 0;
+            }
+
+            // for reversals, we are deducting amount & tax as follows:
+            // amount = -(reversal_amount/1.18)
+            // tax    = -(reversal_amount*0.152)
+            $nettAmount = round((($platformFeeTransferDetails['amount'] - $platformFeeReversalDetails['amount']) * 1.0)/1.18) + $platformFeeTransferDetails['fee'];
+            $nettTax    = round(($platformFeeTransferDetails['amount'] - $platformFeeReversalDetails['amount']) * 0.152) + $platformFeeTransferDetails['tax'];
+
+            $platformFeeDetails = [
+                'amount'    => $nettAmount,
+                'tax'       => $nettTax
+            ];
+
+            $this->trace->info(
+                TraceCode::MERCHANT_MONTHLY_INVOICE_PLATFORM_FEE_FETCH,
+                [
+                    'merchant_id'           => $merchantId,
+                    'month'                 => $month,
+                    'year'                  => $year,
+                    'platform_fee_details'  => $platformFeeDetails,
+                ]
+            );
+
+            return $platformFeeDetails;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::MERCHANT_MONTHLY_INVOICE_PLATFORM_FEE_FETCH_ERROR,
+                [
+                    'merchant_id'   => $merchantId,
+                    'month'         => $month,
+                    'year'          => $year
+                ]
+            );
+        }
+
+        return null;
     }
 }
