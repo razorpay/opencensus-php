@@ -11,6 +11,7 @@ import {
   ReportModal,
   EditIcon,
   Spinner,
+  MinusIcon,
 } from 'merchant_common/views/Reports/components';
 import {
   deleteSchedule,
@@ -184,7 +185,9 @@ const ControlActionsComponent = connect(
           accessibilityLabel="Edit Schedule"
         />
 
-        {isActionsLoading.includes('pause') || isActionsLoading.includes('resume') ? (
+        {status === 'finished' ? (
+          <MinusIcon size="medium" color="action.icon.secondary.disabled" />
+        ) : isActionsLoading.includes('pause') || isActionsLoading.includes('resume') ? (
           <Spinner size="medium" accessibilityLabel="Status Change In Process" />
         ) : status === 'active' ? (
           <IconButton

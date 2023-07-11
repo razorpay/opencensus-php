@@ -6,12 +6,12 @@ import { IndicatorContainer } from './styled';
 const StatusObj = {
   Scheduled: 'positive',
   Success: 'positive',
-  Ongoing: 'notice',
-  Finished: 'information',
+  Ongoing: 'information',
+  Finished: 'neutral',
   Pending: 'information',
   Failed: 'negative',
   Timeout: 'negative',
-  Paused: 'neutral',
+  Paused: 'notice',
 };
 
 const IN_PROCESS_STATES = ['Pending', 'Ongoing'];

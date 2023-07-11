@@ -52,7 +52,6 @@ describe('DownloadsTable', () => {
     });
     render(<App />, { initialState });
     expect(initialLogPollMock).toHaveBeenCalledTimes(1);
-    console.log(initialState.reportsCore[REPORT_TEST_DASHBOARD].downloads);
   });
 
   test('should handle poll failed callback', () => {

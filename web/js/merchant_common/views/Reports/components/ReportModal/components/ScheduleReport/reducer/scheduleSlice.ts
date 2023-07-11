@@ -97,7 +97,9 @@ const scheduleSlice = createSlice({
       if (preExistingScheduleData?.name) state.scheduleName = preExistingScheduleData.name;
 
       // scheduleStartTime & scheduleEndTime
-      if (
+      if (preExistingScheduleData?.status === 'finished') {
+        state.customDataDuration = undefined;
+      } else if (
         preExistingScheduleData?.schedule_start_time &&
         preExistingScheduleData?.schedule_end_time
       ) {

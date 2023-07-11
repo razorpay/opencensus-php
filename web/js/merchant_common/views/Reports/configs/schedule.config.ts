@@ -4,6 +4,8 @@ export const checkScheduleStatus = (status?: string) => {
       return 'Paused';
     case 'active':
       return 'Ongoing';
+    case 'finished':
+      return 'Finished';
     default:
       return '';
   }

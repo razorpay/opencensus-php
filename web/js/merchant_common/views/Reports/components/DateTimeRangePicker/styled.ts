@@ -199,7 +199,7 @@ export const RangeSectionHeader = styled.div`
 
 export const CalendarContent = styled.main`
   ${({ theme }) => `
-    padding-bottom: ${theme.spacing[6]};
+    padding-bottom: ${theme.spacing[2]}px;
 `}
 `;
 

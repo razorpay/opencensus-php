@@ -1,6 +1,7 @@
 export enum ScheduleStatus {
   paused = 'paused',
   active = 'active',
+  finished = 'finished',
 }
 
 export interface BaseScheduleType {

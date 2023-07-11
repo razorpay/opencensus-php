@@ -70,8 +70,8 @@ export const Date = ({
     ? day.isBefore(moment(), 'day')
     : false;
 
-  const isDayAfterMaxDate = Boolean(maxDate) && day.isAfter(maxDate, 'month');
-  const isDayBeforeMinDate = Boolean(minDate) && day.isBefore(minDate, 'month');
+  const isDayAfterMaxDate = Boolean(maxDate) && day.isAfter(maxDate, 'day');
+  const isDayBeforeMinDate = Boolean(minDate) && day.isBefore(minDate, 'day');
 
   const isDisabled = isDisabledFutureOrPast || isDayAfterMaxDate || isDayBeforeMinDate;
   const isBetween = Boolean(startDate && day.isBetween(startDate, endDate, 'day', '()'));

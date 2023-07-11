@@ -38,6 +38,7 @@ export {
   TrashIcon,
   PlayIcon,
   FileTextIcon,
+  MinusIcon,
 } from '@razorpay/blade/components';
 
 // patched blade components

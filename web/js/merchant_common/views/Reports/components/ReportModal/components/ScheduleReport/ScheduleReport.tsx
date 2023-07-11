@@ -38,6 +38,7 @@ import { getWhenScheduleDetails } from './utils';
 import { useScheduleReportReducer } from './hooks/useScheduleReportReducer';
 import { trackCreateEditScheduleModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { ModifierType } from 'merchant_common/views/Reports/components/types';
 
 export const ScheduleReportModal = ({
   allReportConfigs,
@@ -134,7 +135,9 @@ export const ScheduleReportModal = ({
         config_id: actionViaModal === 'Edit' ? undefined : selectedConfig!.id,
         name: scheduleName,
         period: selectedRepetition!.value,
-        schedule_start_time: customDataDuration!.startDate.isBefore(moment(), 'day')
+        schedule_start_time: customDataDuration!.startDate
+          .clone()
+          .isBefore(moment().clone().add(1, 'day'), 'day')
           ? undefined
           : customDataDuration!.startDate.clone().unix(),
         schedule_end_time: customDataDuration!.endDate.clone().unix(),
@@ -254,17 +257,14 @@ export const ScheduleReportModal = ({
     endDate: moment.Moment;
   }) => {
     switch (true) {
-      case startDate.isBefore(moment().add(1, 'day'), 'day'):
-        return {
-          error: `*Schedule can only be created from the next day onwards`,
-        };
-      case startDate.diff(moment(), 'days') >= 30:
+      case startDate.clone().diff(moment().clone(), 'days') >= 30:
         return {
           error: `*Schedule should start within 31 days (max: ${moment()
+            .clone()
             .add(30, 'day')
             .format('DD MMM YYYY')}) from today.`,
         };
-      case endDate.diff(startDate, 'days') >= 185:
+      case endDate.clone().diff(startDate, 'days') >= 185:
         return {
           error: `*You can only schedule report upto ${startDate
             .clone()
@@ -293,6 +293,32 @@ export const ScheduleReportModal = ({
       },
     });
   }, []);
+
+  const dateRangeModifier: ModifierType = {
+    DEFAULT_INFO:
+      actionViaModal === 'Edit' &&
+      params?.scheduleData?.schedule_start_time &&
+      params?.scheduleData?.status != 'finished'
+        ? `*This schedule started on ${moment
+            .unix(params.scheduleData.schedule_start_time)
+            .format(
+              'MMM D, YYYY',
+            )}. If you wish to modify, please note that the updated schedule can only run from ${moment()
+            .clone()
+            .add(1, 'day')
+            .format('MMM D, YYYY')} onwards.`
+        : `*Schedule can only run from ${moment()
+            .clone()
+            .add(1, 'day')
+            .format('MMM D, YYYY')} onwards.`,
+  };
+
+  const dateRangeHelpText =
+    params?.scheduleData?.status === 'finished' && Boolean(params?.scheduleData?.schedule_end_time)
+      ? `This schedule ended on ${moment
+          .unix(params!.scheduleData!.schedule_end_time)
+          .format('MMM D, YYYY')}. Please choose a duration again.`
+      : 'Choose a duration to schedule.';
 
   return (
     <Fragment>
@@ -405,22 +431,18 @@ export const ScheduleReportModal = ({
             <Box position="relative">
               <DateTimeRangePicker
                 label="Choose Schedule Duration"
-                helpText="Choose a duration to schedule."
-                errorText="Mandatory Field: Choose a duration to schedule."
+                helpText={dateRangeHelpText}
+                errorText={`Mandatory Field: ${dateRangeHelpText}`}
                 placeHolder="Select a duration to schedule."
                 onChange={setCustomDurationRange}
                 value={customDataDuration}
                 disableFuture={false}
-                disablePast
+                minDate={moment().clone().add(1, 'day').startOf('day')}
                 disableTimeSelection
                 necessityIndicator="required"
                 validateRange={validateCustomDurationForPicker}
                 validationState={showErrorInSection === 1 ? validateCustomDuration() : true}
-                modifiers={{
-                  INFO_WHEN_PAST_DISABLED: `*Schedule can only run from ${moment()
-                    .add(1, 'day')
-                    .format('MMM D, YYYY')} onwards.`,
-                }}
+                modifiers={dateRangeModifier}
               />
             </Box>
 
@@ -531,7 +553,7 @@ export const ScheduleReportModal = ({
                 helpText="Select the time to include in the schedule."
                 errorText="Mandatory Field: Select the time to include in the schedule."
                 onChange={setWhenTime}
-                defaultValue={whenTime?.date ?? moment()}
+                defaultValue={whenTime?.date ?? moment().clone()}
                 necessityIndicator="required"
                 minutesInterval={15}
                 validate={() => (showErrorInSection === 1 ? moment.isMoment(whenTime?.date) : true)}

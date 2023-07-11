@@ -24,7 +24,7 @@ export const baseSchedulesTableTemplate: TableTemplateType<
     'Email',
     'Status',
     'Repeat On',
-    'Pause/Delete',
+    'Pause / Resume / Delete',
     'View Activity',
   ],
   cells: [
