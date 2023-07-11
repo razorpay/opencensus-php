@@ -1,10 +1,20 @@
-export const LOAD_TYPE = [
-  { label: 'Accounts Load', name: 'accounts' },
+export const CREATE_LOADS_OPTIONS = [
+  { label: 'Accounts Load', name: 'account' },
   { label: 'Container Load', name: 'container' },
 ];
 
-export const WALLET_LOAD_TYPES = {
-  ACCOUNTS: 'accounts',
+export const CREATE_ACCOUNTS_OPTIONS = [
+  { label: 'Create Wallet Accounts', name: 'account' },
+  { label: 'Create User Containers', name: 'user' },
+];
+
+export const ACCOUNT_TYPES = {
+  ACCOUNT: 'account',
+  CONTAINER: 'user',
+};
+
+export const LOAD_TYPES = {
+  ACCOUNT: 'account',
   CONTAINER: 'container',
 };
 
@@ -19,4 +29,5 @@ export const BATCH_TYPES = {
   CREATE_WALLET_CONTAINER_LOADS: 'create_wallet_container_loads',
   CREATE_WALLET_LOADS: 'create_wallet_loads',
   CREATE_WALLET_ACCOUNTS: 'create_wallet_accounts',
+  CREATE_WALLET_USERS_CONTAINERS: 'create_wallet_user_containers',
 };

@@ -1,5 +1,4 @@
-import React, { useCallback } from 'react';
-import { LOAD_TYPE } from 'merchant/views/Wallet/BatchActions/constants';
+import React, { Dispatch, SetStateAction, useCallback } from 'react';
 import {
   ActionList,
   ActionListItem,
@@ -10,10 +9,11 @@ import {
 } from '@razorpay/blade/components';
 
 export interface InputSelectorProps {
-  setInput: (value: 'accounts' | 'container') => void;
+  setInput: Dispatch<SetStateAction<string>>;
+  options: Array<{ label: string; name: string }>;
 }
 
-const InputSelector = ({ setInput }: InputSelectorProps): JSX.Element => {
+const InputSelector = ({ setInput, options }: InputSelectorProps): JSX.Element => {
   const setField = useCallback(
     (e) => {
       setInput(e.values?.[0]);
@@ -37,7 +37,7 @@ const InputSelector = ({ setInput }: InputSelectorProps): JSX.Element => {
         />
         <DropdownOverlay>
           <ActionList surfaceLevel={2}>
-            {LOAD_TYPE?.map((type) => (
+            {options?.map((type) => (
               <ActionListItem key={type.name} title={type.label} value={type.name} />
             ))}
           </ActionList>
