@@ -14,6 +14,7 @@ export const CARD = 'Card';
 export const NETBANKING = 'Netbanking';
 export const EMANDATE = 'Emandate';
 export const UPI_AUTOPAY = 'upi_autopay';
+export const CARD_RECURRING = 'card_recurring';
 
 // Graph axis ids for downtimes and sr
 export const SR_X = 'sr_x';
@@ -54,6 +55,10 @@ export const DEFAULT_METHOD = {
       method: 'upi_autopay',
       optimizerEnabled: false,
     },
+    {
+      method: 'card_recurring',
+      optimizerEnabled: false,
+    },
   ],
   UPI: [
     {
@@ -85,6 +90,12 @@ export const DEFAULT_METHOD = {
       optimizerEnabled: false,
     },
   ],
+  card_recurring: [
+    {
+      method: 'card_recurring',
+      optimizerEnabled: false,
+    },
+  ],
 };
 
 export const DEFAULT_GROUP_BY = {
@@ -94,6 +105,7 @@ export const DEFAULT_GROUP_BY = {
   Netbanking: 'bank',
   Emandate: 'bank',
   upi_autopay: 'amount_split',
+  card_recurring: 'amount_split',
 };
 
 export const TAG_MAP = {
@@ -109,6 +121,7 @@ export const TAG_MAP = {
   others: 'Others',
   MasterCard: 'Mastercard',
   upi_autopay: 'UPI AutoPay',
+  card_recurring: 'Cards Recurring',
 };
 
 export const TAG_OVERALL_MAP = {
@@ -150,6 +163,10 @@ export const tabsOrder = [
     tab: 'upi_autopay',
     optimizerEnabled: false,
   },
+  {
+    tab: 'card_recurring',
+    optimizerEnabled: false,
+  },
 ];
 
 export const tabsTitleMap = {
@@ -159,6 +176,7 @@ export const tabsTitleMap = {
   Netbanking: 'Netbanking',
   Emandate: 'Emandate',
   upi_autopay: 'UPI AutoPay',
+  card_recurring: 'Cards Recurring',
 };
 
 export const METHOD_HELP_TEXT =
@@ -511,6 +529,8 @@ export const METHOD_TYPES_MAP = {
     name: 'Card Types:',
     shouldRender: ({ user }) => !user.isOptimizerEnabled,
     defaultType: 'credit',
+    defaultRecurringType: null,
+    viewType: 'btn-group',
     types: [
       {
         name: 'Credit',
@@ -528,12 +548,18 @@ export const METHOD_TYPES_MAP = {
         shouldRender: () => true,
       },
     ],
+    recurringFilterName: null,
+    recurringTypes: [],
   },
   upi_autopay: {
     name: 'Mandate Type:',
     shouldRender: ({ user }) => !user.isOptimizerEnabled,
-    defaultType: 'auto',
-    types: [
+    defaultType: null,
+    defaultRecurringType: 'auto',
+    viewType: 'btn-group',
+    types: [],
+    recurringFilterName: 'Mandate Type:',
+    recurringTypes: [
       {
         name: 'Debit',
         value: 'auto',
@@ -542,6 +568,43 @@ export const METHOD_TYPES_MAP = {
       {
         name: 'Creation',
         value: 'initial',
+        shouldRender: () => true,
+      },
+    ],
+  },
+  card_recurring: {
+    name: 'Card Types:',
+    shouldRender: ({ user }) => !user.isOptimizerEnabled,
+    defaultType: 'credit',
+    defaultRecurringType: 'auto,initial',
+    viewType: 'drop-down',
+    types: [
+      {
+        name: 'Credit',
+        value: 'credit',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Debit',
+        value: 'debit',
+        shouldRender: () => true,
+      },
+    ],
+    recurringFilterName: 'Mandate type:',
+    recurringTypes: [
+      {
+        name: 'Creation and Auto Debit',
+        value: 'auto,initial',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Creation',
+        value: 'initial',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Auto Debit',
+        value: 'auto',
         shouldRender: () => true,
       },
     ],

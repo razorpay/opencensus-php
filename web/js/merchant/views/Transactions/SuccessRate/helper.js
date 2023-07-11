@@ -32,7 +32,6 @@ import {
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
   DEFAULT_METHOD,
   CUSTOM_ERROR_TYPES,
-  UPI_AUTOPAY,
 } from './constants';
 
 export const getBreakdownInterval = (from, to) => {
@@ -89,6 +88,13 @@ const getSelectedFilters = ({ selectedDropdownFilterOptions, isOptimizerEnabled 
   }, {});
 };
 
+const processRecurringType = (recurringValue) => {
+  if (recurringValue.includes(',')) {
+    return recurringValue.split(',');
+  }
+  return [recurringValue];
+};
+
 /**
  * @param updateDropdownOptions is true, when tab is not equal to 'Overall'
  */
@@ -104,6 +110,7 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
     selectedDropdownFilterOptions = {},
     selectedInterval,
     selectedMethodType,
+    selectedRecurringType,
   } = tabs[activeTab] || {};
 
   let _group_by = [DEFAULT_GROUP_BY[activeTab]];
@@ -126,7 +133,8 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
     }, []);
   }
   const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
-  const typeField = activeTab === UPI_AUTOPAY ? 'recurring_type' : 'type';
+  const recurringType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedRecurringType;
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -141,7 +149,8 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
             isOptimizerEnabled,
           })
         : {}),
-      ...(methodType ? { [typeField]: [methodType] } : {}),
+      ...(methodType ? { type: [methodType] } : {}),
+      ...(recurringType ? { recurring_type: processRecurringType(selectedRecurringType) } : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
     group_by: {
@@ -488,7 +497,8 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
   const { isOptimizerEnabled, isSrAdminEnabled = false } = session?.user;
   const { tabs, activeTab, filters, merchantErrors, searchedMerchantId } = successRate;
-  const { method, selectedDropdownFilterOptions, selectedMethodType } = tabs[activeTab];
+  const { method, selectedDropdownFilterOptions, selectedMethodType, selectedRecurringType } =
+    tabs[activeTab];
   const { startDate, endDate } = filters;
   const errorType = merchantErrors[activeTab].failureReasonType ?? 'default';
 
@@ -504,7 +514,8 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   }
 
   const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
-  const typeField = activeTab === UPI_AUTOPAY ? 'recurring_type' : 'type';
+  const recurringType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedRecurringType;
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -518,7 +529,8 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
             isOptimizerEnabled,
           })
         : {}),
-      ...(methodType ? { [typeField]: [methodType] } : {}),
+      ...(methodType ? { type: [methodType] } : {}),
+      ...(recurringType ? { recurring_type: processRecurringType(recurringType) } : {}),
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.filters : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),

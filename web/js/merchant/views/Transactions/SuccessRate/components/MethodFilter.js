@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
@@ -6,8 +7,12 @@ import {
   fetchMerchantErrors,
   setFailureReasonType,
   setMethodType,
+  setRecurringType,
 } from 'merchant/reducers/successRate';
-import { METHOD_TYPES_MAP } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  METHOD_TYPES_MAP,
+  CARD_RECURRING,
+} from 'merchant/views/Transactions/SuccessRate/constants';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import {
   checkIfFilterValid,
@@ -15,6 +20,7 @@ import {
   getMerchantErrorsPayload,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import MethodType from './MethodType';
+import RecurringType from './RecurringType';
 
 const MethodFilter = (props) => {
   const {
@@ -30,9 +36,10 @@ const MethodFilter = (props) => {
     setFailureReasonType,
     user,
     setMethodType,
+    setRecurringType,
   } = props;
 
-  const { selectedMethodType } = tab;
+  const { selectedMethodType, selectedRecurringType } = tab;
 
   const renderGroupingDropdown = (groupingData = [], index) => {
     const filteredGroupingData = groupingData.filter(({ value }) =>
@@ -53,7 +60,17 @@ const MethodFilter = (props) => {
     return null;
   };
 
-  const handleCardTypeChange = (selectedValue) => {
+  const DropdownWrapper = styled.div`
+    position: relative;
+    margin-right: auto;
+  `;
+
+  const FilterWrapper = styled.div`
+    position: relative;
+    margin-right: auto;
+  `;
+
+  const handleMethodTypeChange = (selectedValue) => {
     if (selectedMethodType === selectedValue) return;
 
     setMethodType(selectedValue);
@@ -66,26 +83,61 @@ const MethodFilter = (props) => {
   };
 
   const currentMethodType = METHOD_TYPES_MAP[activeTab];
-  const renderMethodType = currentMethodType?.shouldRender?.({
+  const isRenderMethodTypes = currentMethodType?.shouldRender?.({
     user,
   });
 
+  const handleRecurringTypeChange = (selectedValue) => {
+    if (selectedRecurringType === selectedValue) return;
+
+    setRecurringType(selectedValue);
+    setFailureReasonType('default');
+    const updateDropdownOptions = activeTab !== 'Overall';
+    const payload = queryFilters(updateDropdownOptions);
+    fetchSuccessRate({ payload, resetSelectedInterval: false });
+    const errorsPaylod = getMerchantErrorsPayload();
+    fetchMerchantErrors(errorsPaylod);
+  };
+
+  const isCardRecurring = activeTab === CARD_RECURRING;
+
   return (
     <div className="sr-filter sr-method-filters flex">
-      {renderMethodType ? (
+      {isRenderMethodTypes && currentMethodType?.types?.length ? (
         <MethodType
           currentMethodType={currentMethodType}
           selectedMethodType={selectedMethodType}
-          handleCardTypeChange={handleCardTypeChange}
+          handleMethodTypeChange={handleMethodTypeChange}
         />
       ) : null}
+      {currentMethodType?.recurringTypes?.length ? (
+        isCardRecurring ? (
+          <DropdownWrapper>
+            <div>
+              <RecurringType
+                currentMethodType={currentMethodType}
+                selectedRecurringType={selectedRecurringType}
+                handleRecurringTypeChange={handleRecurringTypeChange}
+              />
+            </div>
+          </DropdownWrapper>
+        ) : (
+          <div>
+            <RecurringType
+              currentMethodType={currentMethodType}
+              selectedRecurringType={selectedRecurringType}
+              handleRecurringTypeChange={handleRecurringTypeChange}
+            />
+          </div>
+        )
+      ) : null}
       {filtersList.length ? (
-        <div>
+        <FilterWrapper>
           <label>Filter:</label>
           <div data-testid="group-filters-dropdown" className="flex">
             {filtersList?.map(renderGroupingDropdown)}
           </div>
-        </div>
+        </FilterWrapper>
       ) : null}
     </div>
   );
@@ -98,6 +150,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantErrors,
       setFailureReasonType,
       setMethodType,
+      setRecurringType,
     },
     dispatch,
   );

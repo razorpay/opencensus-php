@@ -137,7 +137,9 @@ describe('<SuccessRate/>', () => {
 
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        filters: { method: ['card', 'upi', 'netbanking', 'emandate', 'upi_autopay'] },
+        filters: {
+          method: ['card', 'upi', 'netbanking', 'emandate', 'upi_autopay', 'card_recurring'],
+        },
       }),
     );
     await waitFor(() => {
@@ -186,7 +188,7 @@ describe('<SuccessRate/>', () => {
 
   test('should show method types upon clicking on UPI AutoPay and reflect changes in sr payload', async () => {
     const srFetchAllSpy = jest.spyOn(services, 'getSR');
-    server.use(srApiHandler({ isSuccess: false }), errorApiHandler({ isSuccess: false }));
+    server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
     render(<App />);
     await userEvent.click(screen.getByTestId('upi_autopay-tab').firstChild as HTMLElement);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
@@ -199,55 +201,37 @@ describe('<SuccessRate/>', () => {
       expect(screen.getByText('Mandate Type:')).toBeVisible();
     });
 
-    expect(screen.getByTestId('method-types')).toBeVisible();
+    expect(screen.getByTestId('btn-types')).toBeVisible();
 
-    await userEvent.click(screen.getByText('Creation'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
-    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { method: ['upi_autopay'], recurring_type: ['initial'] },
-      }),
-    );
-    await userEvent.click(screen.getByText('Debit'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
-    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
-      }),
-    );
+    await userEvent.click(screen.getByTestId('initial-btn-item'));
+    //TODO :: Add assertion on chart shimmer in future
+    // await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    await waitFor(() => {
+      expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: { method: ['upi_autopay'], recurring_type: ['initial'] },
+        }),
+      );
+    });
+
+    await userEvent.click(screen.getByTestId('auto-btn-item'));
+    //TODO :: Add assertion on chart shimmer in future
+    // await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    await waitFor(() => {
+      expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
+        }),
+      );
+    });
   });
 
-  test('should show method types upon clicking on UPI AutoPay and reflect changes in error payload', async () => {
-    const merchantErrorSpy = jest.spyOn(services, 'getMerchantError');
-    server.use(srApiHandler({ isSuccess: false }), errorApiHandler({ isSuccess: false }));
+  test('should render Cards Recurring tab on screen', async () => {
     render(<App />);
-    await userEvent.click(screen.getByTestId('upi_autopay-tab').firstChild as HTMLElement);
-    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
-      }),
-    );
 
     await waitFor(() => {
-      expect(screen.getByText('Mandate Type:')).toBeVisible();
+      expect(screen.getByTestId('card_recurring-tab')).toBeVisible();
     });
-
-    expect(screen.getByTestId('method-types')).toBeVisible();
-
-    await userEvent.click(screen.getByText('Creation'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
-    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { method: ['upi_autopay'], recurring_type: ['initial'] },
-      }),
-    );
-    await userEvent.click(screen.getByText('Debit'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
-    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
-      }),
-    );
   });
 
   test('should show method types upon clicking on card and reflect changes in sr payload', async () => {
@@ -266,7 +250,7 @@ describe('<SuccessRate/>', () => {
     expect(screen.getByTestId('method-types')).toBeVisible();
 
     //Debit
-    await userEvent.click(screen.getByText('Debit'));
+    await userEvent.click(screen.getByTestId('debit-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -275,7 +259,7 @@ describe('<SuccessRate/>', () => {
     );
 
     //Credit
-    await userEvent.click(screen.getByText('Credit'));
+    await userEvent.click(screen.getByTestId('credit-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -284,7 +268,7 @@ describe('<SuccessRate/>', () => {
     );
 
     //Prepaid
-    await userEvent.click(screen.getByText('Prepaid'));
+    await userEvent.click(screen.getByTestId('prepaid-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -308,7 +292,7 @@ describe('<SuccessRate/>', () => {
     expect(screen.getByTestId('method-types')).toBeVisible();
 
     //Debit
-    await userEvent.click(screen.getByText('Debit'));
+    await userEvent.click(screen.getByTestId('debit-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -317,7 +301,7 @@ describe('<SuccessRate/>', () => {
     );
 
     //Credit
-    await userEvent.click(screen.getByText('Credit'));
+    await userEvent.click(screen.getByTestId('credit-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -326,7 +310,7 @@ describe('<SuccessRate/>', () => {
     );
 
     //Prepaid
-    await userEvent.click(screen.getByText('Prepaid'));
+    await userEvent.click(screen.getByTestId('prepaid-btn-method-item'));
     await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({

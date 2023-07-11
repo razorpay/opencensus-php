@@ -1,7 +1,7 @@
 import React from 'react';
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
 
-const MethodType = ({ currentMethodType, selectedMethodType, handleCardTypeChange }) => {
+const MethodType = ({ currentMethodType, selectedMethodType, handleMethodTypeChange }) => {
   return (
     <div data-testid="method-types">
       <label>{currentMethodType.name}</label>
@@ -9,11 +9,16 @@ const MethodType = ({ currentMethodType, selectedMethodType, handleCardTypeChang
         <BtnGroup
           className="panel-action-item"
           value={selectedMethodType}
-          onChange={handleCardTypeChange}
+          onChange={handleMethodTypeChange}
         >
           {currentMethodType?.types.map((type) =>
             type.shouldRender() ? (
-              <Btn className="btn-default" value={type.value} key={type.value} data-testid="tab">
+              <Btn
+                className="btn-default"
+                value={type.value}
+                key={type.value}
+                data-testid={`${type.value}-btn-method-item`}
+              >
                 {type.name}
               </Btn>
             ) : null,

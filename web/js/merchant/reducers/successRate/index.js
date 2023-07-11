@@ -49,6 +49,7 @@ const RESET_SR_DASHBOARD = 'RESET_SR_DASHBOARD';
 const SET_FAILURE_REASONS_TYPE = 'SET_FAILURE_REASONS_TYPE';
 const SEARCH_MERCHANT_ID = 'SEARCH_MERCHANT_ID';
 const SET_METHOD_TYPE = 'SET_METHOD_TYPE';
+const SET_RECURRING_TYPE = 'SET_RECURRING_TYPE';
 
 export const fetchSuccessRate =
   ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
@@ -317,6 +318,13 @@ export const setMethodType = (value) => {
   };
 };
 
+export const setRecurringType = (value) => {
+  return {
+    type: SET_RECURRING_TYPE,
+    payload: value,
+  };
+};
+
 const getInitialState = () => {
   const state = {
     searchedMerchantId: '',
@@ -347,6 +355,7 @@ const getInitialState = () => {
       group_by: DEFAULT_GROUP_BY[tabName],
       optimizerEnabled,
       selectedMethodType: METHOD_TYPES_MAP[tabName]?.defaultType,
+      selectedRecurringType: METHOD_TYPES_MAP[tabName]?.defaultRecurringType,
     };
   });
 
@@ -506,6 +515,12 @@ export default (state = getInitialState(), action) => {
     case SET_METHOD_TYPE: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, `tabs.${state.activeTab}.selectedMethodType`, payload);
+      return stateClone;
+    }
+
+    case SET_RECURRING_TYPE: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}.selectedRecurringType`, payload);
       return stateClone;
     }
 
