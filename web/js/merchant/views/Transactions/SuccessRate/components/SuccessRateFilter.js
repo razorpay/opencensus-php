@@ -23,7 +23,6 @@ import {
 import {
   PRESETS,
   DEFAULT_INTERVAL,
-  INITIAL_SELECTED_CARD_TYPE,
   DEFAULT_GROUP_BY,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 import {
@@ -49,7 +48,6 @@ const SuccessRateFilter = (props) => {
     tab,
     setActiveTab,
     setGroupTypeFilter,
-    setCardTypeFilter,
     isSrAdminEnabled,
     setMerchantIDSearch,
     isLoading,
@@ -79,7 +77,6 @@ const SuccessRateFilter = (props) => {
 
     if (activeTab === 'Card') {
       setGroupTypeFilter(DEFAULT_GROUP_BY[activeTab]);
-      setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
     }
 
     if (isOverallTabActive) {
