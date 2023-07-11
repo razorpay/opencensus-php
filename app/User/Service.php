@@ -992,16 +992,16 @@ class Service extends Base\Service
         {
 
             Session::put('current_merchant_id', $merchantId);
-    
+
             // Forgetting is_merchant_login session for current Merchant i.e the merchant who has done switched account.
             // so that switched merchant not go through Chunked Based streaming part in first render.
             $isMerchantLogin = Session::get('is_merchant_login');
-            
+
             if ($isMerchantLogin !== null)
             {
                 Session::forget('is_merchant_login');
             }
-            
+
             $traceData = [
                 'id'          => $user->id,
                 'merchant_id' => $merchantId,
@@ -2001,6 +2001,11 @@ class Service extends Base\Service
             Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
             Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
         ];
+
+        if(empty($input[Constants::REFERRAL_CODE]) === false)
+        {
+            $credentials[Constants::REFERRAL_CODE] = $input[Constants::REFERRAL_CODE];
+        }
 
         list($error, $data, $httpCode) = $request->processInput($credentials)->send($route, $httpVerb);
 

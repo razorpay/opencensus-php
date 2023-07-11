@@ -43,6 +43,8 @@ class Constants
 
     const OAUTH_SOURCE = 'oauth_source';
 
+    const REFERRAL_CODE = 'referral_code';
+
     const RZP_USER_EMAIL = 'rzp_user_email';
 
     const OAUTH_LOGIN = 'oauth_login';
