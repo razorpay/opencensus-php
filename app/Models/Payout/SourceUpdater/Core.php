@@ -10,6 +10,7 @@ use RZP\Models\Payout\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payout\Entity as PayoutEntity;
 
 
@@ -65,7 +66,7 @@ class Core
                 $pushStatusUpdate = true;
             }
             else if ((in_array($expectedCurrentStatus, [Status::PROCESSED, Status::REVERSED]) === true) and
-                     (GenericAccountingUpdater::isGAIExperimentEnabled($payout->getMerchantId()) === true))
+                     ($payout->merchant->isFeatureEnabled(Feature::GAI_PAYOUTS_SYNC) === true))
             {
                 /*
                  * This is the case of Vanilla Payouts
@@ -73,7 +74,7 @@ class Core
                  * if the following are conditions are met,
                  *   1. If there are no SourceDetails
                  *   2. If the status is either Processed OR Reversed
-                 *   3. If the GAI Experiment for this merchant is enabled
+                 *   3. If the GAI feature flag is enabled for this merchant.
                  */
                 $pushStatusUpdate = true;
             }

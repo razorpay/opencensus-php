@@ -163,6 +163,7 @@ class Constants
     const WalletPaytmAutoDebit = 'auto_debit';
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
+    const GaiSyncPayouts = 'sync_payouts';
 
     // settlements service features
     const SettlementsServiceOnboarding = 'settlement_service_onboarded';
@@ -328,6 +329,7 @@ class Constants
         self::SkipKycVerification => 'rzp/pg/org/onboarding/banking_program/Config',
         self::SettlementsServiceOnboarding => 'rzp/pg/merchant/settlements/Onboarding',
         self::SettlementsServiceStopSMS => 'rzp/pg/merchant/settlements/Communication',
+        self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -500,6 +502,7 @@ class Constants
         APIFeaturesConstants::SKIP_KYC_VERIFICATION                         => self::SkipKycVerification,
         APIFeaturesConstants::NEW_SETTLEMENT_SERVICE                        => self::SettlementsServiceOnboarding,
         APIFeaturesConstants::SETTLEMENTS_SMS_STOP                          => self::SettlementsServiceStopSMS,
+        APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
     ];
 
     /**
@@ -532,6 +535,7 @@ class Constants
         self::SilentRefundLateAuthEnabled => 'direct',
         self::OtpAutoReadAndSubmitDisabled => 'direct',
         self::EnableApprovalViaOAuth => 'direct',
+        self::GaiSyncPayouts => 'direct',
     ];
 
     /**

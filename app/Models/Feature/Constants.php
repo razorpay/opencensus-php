@@ -1859,6 +1859,11 @@ class Constants
      */
     const DISABLE_OTP_AUTO_READ_AND_SUBMIT = 'dis_otp_auto_read_submit';
 
+    /**
+     * Feature flag used to enable syncing of payouts to accounting tool.
+     */
+    const GAI_PAYOUTS_SYNC = 'gai_payouts_sync';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2562,6 +2567,7 @@ class Constants
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
         self::ENABLE_APPROVAL_VIA_OAUTH       => true,
         self::SKIP_KYC_VERIFICATION           => true,
+        self::GAI_PAYOUTS_SYNC                => true,
     ];
 
     // Entity type constants
@@ -3586,7 +3592,12 @@ class Constants
             'feature'       => self::ENABLE_APPROVAL_VIA_OAUTH,
             'display_name'  => 'Enable Approval via OAuth',
             'documentation' => 'Feature to control payout approvals via Authorized OAuth Tokens'
-        ]
+        ],
+        self::GAI_PAYOUTS_SYNC => [
+            'feature'       => self::GAI_PAYOUTS_SYNC,
+            'display_name'  => 'Enable Syncing of Payouts to Accounting Tool',
+            'documentation' => 'Feature flag used to enable syncing of payouts to accounting tool.'
+        ],
     ];
 
     /**

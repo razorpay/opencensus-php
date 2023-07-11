@@ -3,29 +3,18 @@
 namespace Functional\GenericAccountingService;
 
 use Mockery;
+use RZP\Models\Payout\Status;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\PayoutSourceUpdaterJob;
+use Illuminate\Support\Facades\Queue;
 use RZP\Services\GenericAccountingIntegration\Service;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
-use RZP\Models\Payout\SourceUpdater\GenericAccountingUpdater;
 
 class GenericAccountingServiceTest extends TestCase
 {
     use MocksSplitz;
 
-
-    public function testExperimentEnabled()
-    {
-        $resp = GenericAccountingUpdater::isGAIExperimentEnabled("test_merchant_id");
-
-        $this->assertFalse($resp);
-
-        $this->app['config']->set('app.generic_ai_enabled_experiment_result_mock', true);
-
-        $resp = GenericAccountingUpdater::isGAIExperimentEnabled("test_merchant_id");
-
-        $this->assertTrue($resp);
-    }
 
     public function testPayoutStatusPushForPayoutLinkAsSource()
     {
@@ -37,7 +26,7 @@ class GenericAccountingServiceTest extends TestCase
 
         $this->app->instance('accounting-integration-service', $gaiMock);
 
-        $this->app['config']->set('app.generic_ai_enabled_experiment_result_mock', true);
+        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
 
         // For processed payout, both PL and GAI should be called
         $payout = $this->fixtures->create('payout', [
@@ -93,8 +82,7 @@ class GenericAccountingServiceTest extends TestCase
 
         SourceUpdater::update($payout3);
 
-        // If experiment is disabled, gai should not be called
-        $this->app['config']->set('app.generic_ai_enabled_experiment_result_mock', false);
+        $this->fixtures->merchant->removeFeatures(['gai_payouts_sync']);
 
         $payout4 = $this->fixtures->create('payout', [
             'status' => 'processed'
@@ -108,6 +96,50 @@ class GenericAccountingServiceTest extends TestCase
         ]);
 
         $plMock->shouldReceive('pushPayoutStatus')->times(1);
+
+        $gaiMock->shouldReceive('pushPayoutStatusUpdate')->times(0);
+
+        SourceUpdater::update($payout4);
+    }
+
+    public function testPayoutStatusPushForVanillaPayouts()
+    {
+        $gaiMock = Mockery::mock('RZP\Services\GenericAccountingIntegration\Service');
+
+        $this->app->instance('accounting-integration-service', $gaiMock);
+
+        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'processed'
+        ]);
+
+        $gaiMock->shouldReceive('pushPayoutStatusUpdate')->times(1);
+
+        SourceUpdater::update($payout);
+
+        $payout2 = $this->fixtures->create('payout', [
+            'status' => 'reversed'
+        ]);
+
+        $gaiMock->shouldReceive('pushPayoutStatusUpdate')->times(1);
+
+        SourceUpdater::update($payout2);
+
+        //For status updates other than processed, reversed GAI should not be called
+        $payout3 = $this->fixtures->create('payout', [
+            'status' => 'processing'
+        ]);
+
+        $gaiMock->shouldReceive('pushPayoutStatusUpdate')->times(0);
+
+        SourceUpdater::update($payout3);
+
+        $this->fixtures->merchant->removeFeatures(['gai_payouts_sync']);
+
+        $payout4 = $this->fixtures->create('payout', [
+            'status' => 'processed'
+        ]);
 
         $gaiMock->shouldReceive('pushPayoutStatusUpdate')->times(0);
 
@@ -166,5 +198,63 @@ class GenericAccountingServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    /**
+     * Test can be uncommented
+     */
+    public function testPayoutSourceUpdaterForVanillaPayout()
+    {
+        $this->markTestSkipped("Test can be run when queue dispatch assertion is fixed");
+
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake([PayoutSourceUpdaterJob::class]);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::INITIATED);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        // moving to processed, push should not happen as experiment is disbaled
+        $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'initiated',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::CREATED);
+
+        // Job is pushed for vanilla payouts in created state
+        Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
+
+        // Enabling experiment
+        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::INITIATED);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        $payout->setStatus(Status::PROCESSED);
+
+        // Job pushed for GenericAccountingIntegration
+        Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
+
+        $payout->setStatus(Status::REVERSED);
+
+        // Job pushed for GenericAccountingIntegration
+        Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
     }
 }

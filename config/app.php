@@ -460,11 +460,6 @@ return array(
 
     'vendor_payment_metro_to_kafka_exp_id' => env('VENDOR_PAYMENT_SPLITZ_EXPERIMENT_METRO_TO_KAFKA'),
 
-
-    'generic_ai_enabled_experiment_id' => env('GENERIC_AI_ENABLED_EXPERIMENT_ID'),
-
-    'generic_ai_enabled_experiment_result_mock' => env('GENERIC_AI_ENABLED_EXPERIMENT_RESULT_MOCK'),
-
     'cmma_metro_migrate_out_experiment_id' => env('CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID'),
 
     'nocode' => [
