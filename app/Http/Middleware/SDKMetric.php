@@ -54,16 +54,22 @@ class SDKMetric
         try
         {
             // user_agent contains the sdk name and version
-            $userAgent = $request->userAgent();
+            $userAgent = 'Razorpay-not-sdk';
             $merchantID = $this->ba->getMerchantId();
 
-            if (Str::startsWith($userAgent, $this->validSdkPrefixes))
+            if (Str::startsWith($request->userAgent(), $this->validSdkPrefixes))
             {
-                // pushing metric for sdk usage
-                $this->trace->count(self::SDK_USAGE, [
-                    self::USER_AGENT => $userAgent
+                $userAgent = $request->userAgent();
+                // added trace log for sdk data
+                $this->trace->info(TraceCode::SDK_USAGE, [
+                    self::USER_AGENT => $request->userAgent(),
+                    self::MERCHANT_ID => $merchantID
                 ]);
             }
+            // pushing metric for sdk usage
+            $this->trace->count(self::SDK_USAGE, [
+                self::USER_AGENT => $userAgent
+            ]);
         }
         catch (\Exception $e)
         {
