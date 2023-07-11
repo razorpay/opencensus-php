@@ -11,7 +11,7 @@ import { getIntervalCycle } from 'common/utils/rzp-utils';
 import { subscriptionId, createdAt, status } from 'common/ui/item/pair';
 import Tooltip from 'common/ui/Tooltip';
 import { trackClickDuplicatePlan } from 'merchant/views/Subscriptions/Plans/ga';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 export default function PlanDetails({ plan, isLoading, statusMsg, subscriptions }) {
   const tableLimit = 5; // Set limit to total rows displayed in table

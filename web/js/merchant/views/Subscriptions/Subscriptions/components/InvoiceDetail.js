@@ -10,6 +10,7 @@ import DataTable from 'common/ui/Table/DataTable';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AsyncButton from 'react-async-button';
+import { shouldEnableAttemptCharge } from 'merchant/views/Subscriptions/utils';
 
 // Note: class is needed for "ref" to work in parent component
 @RTracking(() => window.rzpQ.component('InvoiceDetail'))
@@ -93,6 +94,11 @@ export default class SubscriptionsInvoiceDetail extends Component {
     } = this.props;
 
     let invoiceContent;
+
+    const shouldShowAttemptCharge = shouldEnableAttemptCharge(
+      subscription.payment_method,
+      subscription.card_mandate_id,
+    );
     const showAttemptChargeCTA =
       ['active', 'pending', 'halted', 'completed'].indexOf(subscription.status) > -1 ||
       (subscription.status === 'cancelled' &&
@@ -200,7 +206,7 @@ export default class SubscriptionsInvoiceDetail extends Component {
                           <Time value={nextChargeAt} format="DD MMM YYYY, hh:mm:ss a" />
                         </div>
 
-                        {showAttemptChargeCTA && (
+                        {showAttemptChargeCTA && shouldShowAttemptCharge && (
                           <AsyncButton
                             class="btn btn-default m-t"
                             text=" Attempt Charge"

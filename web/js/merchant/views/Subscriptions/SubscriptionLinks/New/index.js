@@ -342,27 +342,29 @@ export default class NewSubscriptionLink extends React.Component {
     });
   };
 
-  handleSelectAddonItem = (addonIndex) => ({ option }) => {
-    trackAddAddon(option.currency);
+  handleSelectAddonItem =
+    (addonIndex) =>
+    ({ option }) => {
+      trackAddAddon(option.currency);
 
-    this.setState((prevState) => {
-      const fields = { ...prevState.fields };
-      fields.addons[addonIndex] = {
-        item: {
-          name: option.name,
-          description: option.description,
-          amount: option.amount,
-          currency: option.currency,
-          type: 'addon',
-        },
-        item_id: option.id,
-        quantity: 1,
-      };
-      return {
-        fields,
-      };
-    });
-  };
+      this.setState((prevState) => {
+        const fields = { ...prevState.fields };
+        fields.addons[addonIndex] = {
+          item: {
+            name: option.name,
+            description: option.description,
+            amount: option.amount,
+            currency: option.currency,
+            type: 'addon',
+          },
+          item_id: option.id,
+          quantity: 1,
+        };
+        return {
+          fields,
+        };
+      });
+    };
 
   handleDateChange = (fieldName) => (selectedDate) => {
     selectedDate.startOf('day');

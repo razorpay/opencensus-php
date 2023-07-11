@@ -34,6 +34,8 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { isAmountLiesInRange } from 'merchant/views/Subscriptions/utils';
 import {
+  DEBIT_TYPES,
+  FREQUENCY,
   MAX_TOKEN_AMOUNT,
   GATEWAY_MAX_LIMIT,
   CARD_AFA_MAX_AMOUNT,
@@ -133,6 +135,7 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
   },
 ];
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect((state) => ({ user: state.session.user, org: state.session.org }), {
   openModal,
@@ -173,8 +176,11 @@ export default class NewRegistrationLink extends React.Component {
         accountType: '',
         formReference1: '',
         formReference2: '',
-        frequency: 'as_presented',
+        frequency: FREQUENCY.AS_PRESENTED,
         currency: props.user.merchant.currency,
+        recurringType: DEBIT_TYPES.BEFORE,
+        recurringValue: 31,
+        isValidRecurringValue: false,
       },
       validTabs: [false, false, false],
     };
@@ -254,11 +260,39 @@ export default class NewRegistrationLink extends React.Component {
     }));
   };
 
+  handleRecurringValueChange = ({ target }) => {
+    const { frequency } = this.state.formFields;
+    const value = +target.value;
+
+    if (frequency === FREQUENCY.WEEKLY && (value < 1 || value > 7)) {
+      this.setFormFields('isValidRecurringValue', true);
+      this.setFormFields('recurringValue', value);
+    } else if (frequency !== FREQUENCY.WEEKLY && (value < 1 || value > 31)) {
+      this.setFormFields('isValidRecurringValue', true);
+      this.setFormFields('recurringValue', value);
+    } else {
+      this.setFormFields('isValidRecurringValue', false);
+      this.setFormFields('recurringValue', value);
+    }
+  };
+
+  setDefaultDebitPattern = (value) => {
+    if (value === FREQUENCY.WEEKLY) {
+      this.setFormFields('recurringValue', 7);
+    } else {
+      this.setFormFields('recurringValue', 31);
+    }
+    this.setFormFields('isValidRecurringValue', false);
+  };
+
   handleChange = ({ target }) => {
     let value = target.value;
 
     if (target.type === 'checkbox') {
       value = target.checked;
+    }
+    if (target.name === 'frequency') {
+      this.setDefaultDebitPattern(value);
     }
 
     if (target.name === 'mandateMethod' && value === PAYMENT_METHODS.EMANDATE) {
@@ -325,6 +359,7 @@ export default class NewRegistrationLink extends React.Component {
         if (this.state.currentTab == 2) {
           trackClickNext('Payment details');
         }
+        this.setDefaultDebitPattern(this.state.frequency);
       },
     );
   };
@@ -469,13 +504,9 @@ export default class NewRegistrationLink extends React.Component {
     }
 
     if (this.isUPIPayment) {
-      // Frequency now support 'monthly' and 'as_presented'
-      payload.subscription_registration.frequency = data.frequency;
-
       if (data.mandateMaxAmount) {
         maxAmount = rupeesToPaise(data.mandateMaxAmount);
       }
-      payload.subscription_registration.max_amount = maxAmount;
 
       // For UPI TPV param name is different
       if (this.isTPVEnabledMerchant) {
@@ -483,7 +514,17 @@ export default class NewRegistrationLink extends React.Component {
         bankAccountDetails.name = bankAccountDetails.beneficiary_name;
         delete bankAccountDetails.beneficiary_name;
       }
-      payload.subscription_registration.bank_account = bankAccountDetails;
+      /**
+       * Adds subscription registration data
+       */
+      payload.subscription_registration = {
+        ...payload.subscription_registration,
+        recurring_type: data.recurringType,
+        recurring_value: data.recurringValue,
+        frequency: data.frequency,
+        bank_account: bankAccountDetails,
+        max_amount: maxAmount,
+      };
     }
 
     if (this.isCardPayment) {
@@ -608,16 +649,34 @@ export default class NewRegistrationLink extends React.Component {
       case 2: {
         let tokenDetailFields = [];
         const { formFields: fields = {} } = this.state;
-        const maxAmount = +fields.mandateMaxAmount;
+        let maxAmount = +fields.mandateMaxAmount;
         const amount = +fields.amount;
+        const frequency = fields.frequency;
+        const recurringValue = +fields.recurringValue;
         const maxAmountInPaisa = rupeesToPaise(maxAmount);
-
+        const isCardMultipleFrequencyEnabled = this.props.user?.isCardMultipleFrequencyEnabled;
+        const isDebitPatternEnabled = this.props.user?.isDebitPatternEnabled;
         if (this.isUPIPayment) {
+          if (!maxAmount && isDebitPatternEnabled) {
+            return false;
+          }
+          if (!maxAmount) {
+            maxAmount = DEFAULT_UPI_LIMIT;
+          }
           if (maxAmount > GATEWAY_MAX_LIMIT || maxAmount < amount) {
+            return false;
+          }
+          if (frequency === FREQUENCY.WEEKLY && (recurringValue < 1 || recurringValue > 7)) {
+            return false;
+          }
+          if (frequency !== FREQUENCY.WEEKLY && (recurringValue < 1 || recurringValue > 31)) {
             return false;
           }
         }
         if (this.isCardPayment) {
+          if (!maxAmount && isCardMultipleFrequencyEnabled) {
+            return false;
+          }
           if (maxAmount > maxCardAmountAllowed) {
             return false;
           }
@@ -713,6 +772,10 @@ export default class NewRegistrationLink extends React.Component {
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
+            recurringValue={formFields.recurringValue}
+            recurringType={formFields.recurringType}
+            handleRecurringValueChange={this.handleRecurringValueChange}
+            isValidRecurringValue={formFields.isValidRecurringValue}
             defaultMandateMaxAmount={DEFAULT_MAX_AMOUNT}
             defaultFirstChargeAmount={DEFAULT_FIRST_CHARGE}
             firstPaymentAmount={formFields.firstPaymentAmount}

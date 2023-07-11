@@ -538,6 +538,10 @@ export default class User {
     return getSplitzExperimentVariant('recurring_card_multi_frequency')?.variables?.result === 'on';
   }
 
+  get isDebitPatternEnabled() {
+    return getSplitzExperimentVariant('recurring_debit_pattern')?.variables?.result === 'on';
+  }
+
   get isMagicCODEngineEnabled() {
     return getSplitzExperimentVariant('magic_cod_engine')?.variables?.result === 'on';
   }

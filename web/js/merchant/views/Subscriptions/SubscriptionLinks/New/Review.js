@@ -1,9 +1,10 @@
 import Amount from 'common/ui/Amount';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-import UPIBanner from '../components/UPIBanner';
+import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
 
 import { getIntervalCycle } from 'common/utils/rzp-utils';
+import { getProbableEndDate } from 'merchant/views/Subscriptions/utils';
 
 export default function NewSubscriptionLinkReview({ fields, internals, ...props }) {
   const selectedPlan = props.plans.find(({ id }) => id === fields.plan_id);
@@ -32,6 +33,12 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
     showUPIUnAvlBanner = subscriptionAmount > UPI_AVL_LIMIT;
   }
 
+  const subscriptionEndDate = getProbableEndDate(
+    fields.start_at,
+    fields.total_count,
+    selectedPlan.interval,
+    selectedPlan.period,
+  );
   const selectedOffer = props.offers.find(({ id }) => id === fields.offer_id) || {};
 
   return (
@@ -97,6 +104,9 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
             </p>
             <div>
               <EntityDetailRow label="No. of cycles" value={fields.total_count} />
+            </div>
+            <div>
+              <EntityDetailRow label="End Date" value={subscriptionEndDate || 'NA'} />
             </div>
           </div>
         </div>

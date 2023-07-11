@@ -17,9 +17,9 @@ import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';
 import Tooltip from 'common/ui/Tooltip';
-import { trackClickDuplicateSubscription } from '../ga';
+import { trackClickDuplicateSubscription } from 'merchant/views/Subscriptions/Subscriptions/ga';
 import moment from 'moment';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 export default function SubscriptionDetails(props) {
   const {
@@ -291,6 +291,7 @@ export default function SubscriptionDetails(props) {
                 subTitle={subTitle}
                 error={invoices.error}
                 paymentMethod={subscription.payment_method}
+                cardMandateID={subscription.payment_method}
                 items={invoices.items}
                 title="Invoices detail"
                 creditNotes={creditNotes}

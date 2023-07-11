@@ -42,6 +42,7 @@ export default class EntityDetailList extends React.Component {
       mode,
       subscriptionId,
       paymentMethod,
+      cardMandateID,
     } = this.props;
 
     if (loading) {
@@ -113,12 +114,13 @@ export default class EntityDetailList extends React.Component {
       list.push(
         <EntityDetailRow
           mode={mode}
-          paymentMethod={paymentMethod}
           key={index}
           item={item}
           loading={loading}
           goToLink={goToLink}
           isUpfront={isUpfrontInvoice}
+          paymentMethod={paymentMethod}
+          cardMandateID={cardMandateID}
           index={recurringInvoiceIndex}
           subscriptionId={subscriptionId}
           onManualAttempt={onManualAttempt}

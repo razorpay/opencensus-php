@@ -2,6 +2,7 @@ import moment from 'moment';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { getFormattedAmount, rupeesToPaise, currencySymbols } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
+import DocsLink from 'merchant/components/DocsLink';
 
 import { AmountTooltip } from 'common/ui/Amount';
 
@@ -13,6 +14,9 @@ import {
   CARD_AFA_MAX_AMOUNT,
   MAX_TOKEN_AMOUNT_NACH,
   CARD_MAX_AMOUNT_ALLOWED,
+  RECURRING_TYPE,
+  FREQUENCY,
+  getDebitPatternDesc,
 } from 'merchant/views/Subscriptions/constants';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
@@ -63,7 +67,11 @@ export default function TokenDetailsForm({
   handleDateChange,
   mandateMaxAmount,
   firstPaymentAmount,
+  isValidRecurringValue,
+  handleRecurringValueChange,
   mandateExpireAt,
+  recurringValue,
+  recurringType,
   onBlurElement,
   user,
   org,
@@ -73,7 +81,9 @@ export default function TokenDetailsForm({
     description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
   };
   const currency = user.merchant.currency;
-  const isCardMultipleFrequencyEnabled = user.isCardMultipleFrequencyEnabled;
+  const isCardMultipleFrequencyEnabled = user?.isCardMultipleFrequencyEnabled;
+  const isDebitPatternEnabled = user?.isDebitPatternEnabled;
+
   const countryCode = user.merchant.country_code;
   const customCode = org.custom_code;
   const currencySym = currencySymbols[currency];
@@ -82,11 +92,21 @@ export default function TokenDetailsForm({
   const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
   const cardTokenMaxAmount = CARD_MAX_AMOUNT_ALLOWED[countryCode];
 
+  let billingFrequency = BILLING_FREQUENCY;
+  const isCardFrequencyEnabled = isCardPayment && isCardMultipleFrequencyEnabled;
+
   if (isUPIPayment) {
+    if (!isDebitPatternEnabled) {
+      billingFrequency = BILLING_FREQUENCY.filter(({ name }) => {
+        return [FREQUENCY.MONTHLY, FREQUENCY.AS_PRESENTED].includes(name);
+      });
+    }
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
-    maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT);
     maxAmountProps.description =
       'This is the maximum you can charge the customer per billing cycle';
+    if (isDebitPatternEnabled) {
+      maxAmountProps.required = true;
+    }
   }
 
   if (isNACHPayment) {
@@ -96,14 +116,18 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
+    billingFrequency = BILLING_FREQUENCY.filter(({ name }) => name !== FREQUENCY.QUARTERLY);
     maxAmountProps.validator = cardMaxAmountValidator(cardTokenMaxAmount, currencySym);
     let maxAmount = cardAfaMaxLimit;
+    if (isCardMultipleFrequencyEnabled) {
+      maxAmountProps.required = true;
+    }
     if (mandateMaxAmount <= cardAfaMaxLimit) {
       maxAmount = mandateMaxAmount;
     }
 
     if (user.isOrgCurlec) {
-      maxAmountProps.description = () => <></>;
+      maxAmountProps.description = () => '';
     } else {
       maxAmountProps.description = () => (
         <>
@@ -114,11 +138,6 @@ export default function TokenDetailsForm({
       );
     }
   }
-
-  const billingFrequency = isUPIPayment
-    ? BILLING_FREQUENCY.filter(({ name }) => ['as_presented', 'monthly'].includes(name))
-    : BILLING_FREQUENCY;
-  const isCardFrequencyEnabled = isCardPayment && isCardMultipleFrequencyEnabled;
 
   return (
     <>
@@ -171,7 +190,6 @@ export default function TokenDetailsForm({
             onBlur={onBlurElement}
             addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
             size="half_big"
-            validator={checkIfAmount}
             class="Input--Amount"
             value={mandateMaxAmount}
             {...maxAmountProps}
@@ -238,12 +256,44 @@ export default function TokenDetailsForm({
           label={() => cardPaymentLabelText}
           placeholder={`Max ${cardAfaMaxLimit}`}
           onBlur={onBlurElement}
-          required={isUPIPayment}
           value={mandateMaxAmount}
-          validator={checkIfAmount}
           addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
           {...maxAmountProps}
         />
+      )}
+      {isUPIPayment && isDebitPatternEnabled && (
+        <Input.Group class="InputGroup--inline" label="Debit pattern (optional)">
+          <div class="Input-content debit-pattern">
+            <Input.Select
+              class="Input--half_small"
+              name="recurringType"
+              data-name="recurring_type"
+              options={RECURRING_TYPE}
+              defaultValue={recurringType}
+            />
+            <Input
+              class={`Input--half_small ${isValidRecurringValue ? 'is-invalid' : ''}`}
+              name="recurringValue"
+              data-name="recurring_value"
+              type="number"
+              value={recurringValue}
+              onChange={handleRecurringValueChange}
+              onBlur={onBlurElement}
+            />
+            <span
+              className="Input-desc"
+              style={{ color: `${isValidRecurringValue ? '#f05050' : ''}` }}
+            >
+              {getDebitPatternDesc(frequency === 'weekly' ? '1-7' : '1-31')}
+            </span>
+            <br />
+            <DocsLink
+              url="https://razorpay.com/docs/api/payments/recurring-payments/upi/create-authorization-transaction/#121-create-a-registration-link"
+              title="Know more"
+              style={{ padding: '4px 0px' }}
+            />
+          </div>
+        </Input.Group>
       )}
     </>
   );

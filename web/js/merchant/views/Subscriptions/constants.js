@@ -43,16 +43,39 @@ export const CARD_MAX_AMOUNT_ALLOWED = {
   MY: MY_CARD_MAX_AMOUNT,
 };
 
+export const getDebitPatternDesc = (range) =>
+  `Enter a value between ${range} corresponding to days of a week`;
+
+export const FREQUENCY = {
+  AS_PRESENTED: 'as_presented',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  YEARLY: 'yearly',
+};
+export const DEBIT_TYPES = {
+  BEFORE: 'before',
+  AFTER: 'after',
+  ON: 'on',
+};
 export const BILLING_FREQUENCY = [
-  { name: 'as_presented', label: 'As and when presented' },
-  { name: 'weekly', label: 'Weekly' },
-  { name: 'monthly', label: 'Monthly' },
-  { name: 'yearly', label: 'Yearly' },
+  { name: FREQUENCY.AS_PRESENTED, label: 'As and when presented' },
+  { name: FREQUENCY.WEEKLY, label: 'Weekly' },
+  { name: FREQUENCY.MONTHLY, label: 'Monthly' },
+  { name: FREQUENCY.QUARTERLY, label: 'Quarterly' },
+  { name: FREQUENCY.YEARLY, label: 'Yearly' },
 ];
 
 export const FREQUENCY_DESC_MAP = {
   as_presented: 'You can charge the customer anytime',
   weekly: 'You can charge the customer once a week',
   monthly: 'You can charge the customer once a month',
+  quarterly: 'You can charge the customer once a quarter',
   yearly: 'You can charge the customer once a year',
 };
+
+export const RECURRING_TYPE = [
+  { name: DEBIT_TYPES.BEFORE, label: 'Before' },
+  { name: DEBIT_TYPES.AFTER, label: 'After' },
+  { name: DEBIT_TYPES.On, label: 'On' },
+];

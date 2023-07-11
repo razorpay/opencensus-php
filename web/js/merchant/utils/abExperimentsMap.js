@@ -747,4 +747,11 @@ export default {
     //beta
     'MARWDeA9lsGzbl',
   ],
+
+  recurring_debit_pattern: [
+    //prod
+    'MBCrzgvu3t9plQ',
+    //beta
+    'MBCm7pcuzSKwfw',
+  ],
 };
