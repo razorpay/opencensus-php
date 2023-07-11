@@ -146,6 +146,8 @@ trait Reversal
 
         $this->repo->saveOrFail($payment);
 
+        (new Transfer\Core())->createTdsReversal($payment, $amount);
+
         return $refund;
     }
 

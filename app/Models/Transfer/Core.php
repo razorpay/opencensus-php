@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger;
 use Neves\Events\TransactionalClosureEvent;
 
 use RZP\Constants;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -20,6 +21,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\EntityOrigin;
 use RZP\Jobs\TransferProcess;
+use RZP\Models\Adjustment;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Bucket;
 use RZP\Jobs\TransferProcessSlice;
 use RZP\Jobs\TransferProcessBatch;
@@ -30,6 +34,7 @@ use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use Throwable;
 
 class Core extends Base\Core
 {
@@ -934,8 +939,68 @@ class Core extends Base\Core
 
         (new Transfer\Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
 
+        $totalTds = $this->calculateTds($transferPayment, $transfer);
+
+        if($totalTds > 0)
+        {
+            $this->createPaymentTransferTds($transferPayment, $totalTds);
+        }
+
         return $transfer;
     }
+
+    public function calculateTds(Payment\Entity $transferPayment, Entity $transfer, Payment\Entity $payment=null)
+    {
+        try
+        {
+            $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment?->getPublicKey() ?? null, $transfer);
+
+            if (empty($parentMerchant) === true or
+                in_array($parentMerchant->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $parentMerchant) === false)
+            {
+                return 0;
+            }
+
+            return $transferPayment->getAmount() * 0.05;
+        }
+        catch(Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::PAYMENT_TRANSFER_TDS_CALCULATION_FAILED,
+                [
+                    'merchant_id'           => $this->merchant->getId(),
+                    'transfer_id'           => $transfer->getId(),
+                    'transfer_payment_id'    => $transferPayment->getId()
+                ]
+            );
+        }
+        return 0;
+    }
+
+    public function createPaymentTransferTds(Payment\Entity $transferPayment, int $totalTds)
+    {
+        $input = [
+            Adjustment\Entity::TYPE        => Balance\Type::PRIMARY,
+            Adjustment\Entity::AMOUNT      => (-1 * $totalTds), // tds should be debit
+            Adjustment\Entity::CURRENCY    => Currency::INR,
+            Adjustment\Entity::DESCRIPTION => 'Platform transfer TDS',
+        ];
+
+        (new Adjustment\Core)->createAdjustmentForSource($input, $transferPayment);
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+            [
+                'type'          =>  'PlatformTransferTDS',
+                'payment_id'    =>  $transferPayment->getId(),
+                'amount'        =>  $totalTds
+            ]
+        );
+    }
+
 
     /**
      * Used to analyse while dispatching it to settlement service
@@ -1489,6 +1554,51 @@ class Core extends Base\Core
                     Merchant\Constants::PUBLIC_KEY       => $publicKey,
                     Merchant\Constants::PARTNER_ID       => $application->getMerchantId(),
                     Merchant\Constants::APPLICATION_ID   => $application->getId()
+                ]
+            );
+        }
+    }
+
+    public function createTdsReversal(Payment\Entity $transferPayment, int $refundAmount)
+    {
+        $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $transferPayment?->getPublicKey() ?? null);
+
+        if (empty($parentMerchant) === true or
+            in_array($parentMerchant->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+            (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $parentMerchant) === false)
+        {
+            return;
+        }
+
+        $adjustment = $this->repo->adjustment->findAdjustmentByEntityIdAndEntityType($transferPayment->getId(), E::PAYMENT, $transferPayment->merchant->getId());
+
+        if ($adjustment !== null && $adjustment->count() >0)
+        {
+            $adjustment = $adjustment[0];
+            $this->trace->info(
+                TraceCode::ADJUSTMENT_REVERSE_CREATE_SUCCESS,
+                [
+                    'type'   => gettype($adjustment),
+                    'rev'    => $adjustment,
+                    'pay_id' => $transferPayment->getId(),
+                ]);
+
+            $request = [
+                Adjustment\Entity::AMOUNT      => (int) ($refundAmount * 0.05),
+                Adjustment\Entity::CURRENCY    => 'INR',
+                Adjustment\Entity::DESCRIPTION => 'Reverse adjustment for '. $adjustment->getId()
+            ];
+
+            $revAdj = (new Adjustment\Core)->createAdjustment($request, $transferPayment->merchant);
+
+            $this->trace->info(
+                TraceCode::ADJUSTMENT_REVERSE_CREATE_SUCCESS,
+                [
+                    'type'                      => 'PlatformTransferTDS',
+                    'original_payment_id'       => $transferPayment->getId(),
+                    'original_adj_id'           => $adjustment->getId(),
+                    'adj_id'                    => $revAdj->getId(),
+                    'amount'                    => $revAdj->getAmount()
                 ]
             );
         }

@@ -444,7 +444,9 @@ class FeatureAccess
             'payment_fetch_transfers',
             'transfer_create',
             'transfer_fetch',
-            'transfer_fetch_multiple'
+            'transfer_fetch_multiple',
+            'transfer_create_reversal',
+            'transfer_fetch_reversals',
         ];
 
         $partner = $this->ba->getPartnerMerchant();

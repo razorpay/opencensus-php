@@ -6,6 +6,7 @@ use Mail;
 use Mockery;
 
 use RZP\Constants\Mode;
+use RZP\Models\Adjustment\Status;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
@@ -2141,6 +2142,14 @@ class TransferTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
 
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
+
         $this->mockAllSplitzTreatment();
 
         $this->startTest();
@@ -2162,6 +2171,13 @@ class TransferTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
         $this->mockAllSplitzTreatment();
 
         $response = $this->startTest();
@@ -2173,6 +2189,93 @@ class TransferTest extends TestCase
         $merchantApplication = $this->getDbLastEntity('merchant_application');
 
         $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
+    public function testCreateDirectTransferTdsWithOAuthForMarketplace()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['direct_transfer'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest();
+
+        $transfer = $this->getDbEntityById('transfer', $response['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+
+        $adjustment = $this->getLastEntity('adjustment', true, 'test');
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('10000000000001', $adjustment['merchant_id']);
+        $this->assertEquals(-50, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNotNull($adjustment['transaction_id'], 'transaction should not be null');
+        $this->assertEquals($adjustment['entity_type'], 'payment','entity_type should be payment');
+        $this->assertNotNull($adjustment['entity_id'], 'entity_id should not be null');
+
+    }
+
+    public function testCreateDirectTransferReversalWithPartnerAuthForMarketplace()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+        
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData['testCreateDirectTransferWithPartnerAuthForMarketplace']['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->testData['testCreateDirectTransferWithPartnerAuthForMarketplace']['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
+        $this->fixtures->on('test')->create('merchant:schedule_task',
+            [
+                'merchant_id' => $subMerchantId,
+                'schedule'    => [
+                    'interval' => 1,
+                    'delay'    => 2,
+                    'hour'     => 0,
+                ],
+            ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->runRequestResponseFlow($this->testData['testCreateDirectTransferWithPartnerAuthForMarketplace']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transfers/'.$response['id'].'/reversals';
+
+        $this->testData[__FUNCTION__]['response']['content']['transfer_id'] = $response['id'];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
     public function testCreateDirectTransferWithOAuthForMarketplaceWithAppLevelFeature()
@@ -2260,6 +2363,14 @@ class TransferTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
 
         $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
 
         $this->mockAllSplitzTreatment();
 

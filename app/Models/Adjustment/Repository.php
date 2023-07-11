@@ -28,6 +28,21 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param $entityId
+     * @param $entityType
+     * @param $merchantId
+     * @return mixed
+     */
+    public function findAdjustmentByEntityIdAndEntityType($entityId, $entityType, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->where(Entity::ENTITY_TYPE, '=', $entityType)
+            ->merchantId($merchantId)
+            ->get();
+    }
+
+    /**
      * This will fetch all adjustments in created state which are created in the last 24 hours
      * after 05-02-2022 and where transaction_id is null.
      * @param int $days

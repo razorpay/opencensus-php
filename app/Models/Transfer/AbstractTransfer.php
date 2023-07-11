@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\App;
 use RZP\Exception\BadRequestException;
 use RZP\Base\Database\DetectsLostConnections;
 use Razorpay\Spine\Exception\DbQueryException;
-use RZP\Models\Partner\Service as PartnerService;
 
 abstract class AbstractTransfer
 {
@@ -279,7 +278,16 @@ abstract class AbstractTransfer
 
                 $this->repo->saveOrFail($transfer);
 
-                (new Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
+                $core = new Core();
+
+                $core->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
+
+                $totalTds = $core->calculateTds($transferPayment, $transfer, $payment);
+
+                if($totalTds > 0)
+                {
+                    $core->createPaymentTransferTds($transferPayment, $totalTds);
+                }
 
                 return $transfer;
             }, $deadlockRetryAttempts);

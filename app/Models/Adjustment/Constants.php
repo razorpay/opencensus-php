@@ -12,6 +12,7 @@ class Constants
         Entity::DISPUTE  => TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
         Entity::PAYOUT   => TraceCode::PAYOUT_ADJUSTMENT_CREATE_REQUEST,
         Entity::REVERSAL => TraceCode::REVERSAL_ADJUSTMENT_CREATE_REQUEST,
+        Entity::PAYMENT  => TraceCode::ADJUSTMENT_CREATE_REQUEST,
     ];
 
 
