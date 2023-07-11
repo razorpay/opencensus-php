@@ -14,7 +14,7 @@ class Cart extends Base\Core
 
     const CART_CACHE_KEY = 'shopify_1cc_cart';
 
-    const CART_CACHE_KEY_TTL = 1 * 1440; // 1 day
+    const CART_CACHE_KEY_TTL = 86400; // 1 day = 24 * 60 * 60 = 86400
 
     protected $monitoring;
 
