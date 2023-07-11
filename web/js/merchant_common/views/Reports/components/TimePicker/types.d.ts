@@ -3,6 +3,14 @@ import {
   NecessityIndicatorType,
   MinutesInterval,
 } from 'merchant_common/views/Reports/components/types';
+
+enum Meridiem {
+  'AM' = 'AM',
+  'PM' = 'PM',
+}
+
+export type MeridiemType = keyof typeof Meridiem;
+
 export interface TimeInfoPropsType {
   chevUpClick: () => void;
   chevDownClick: () => void;
@@ -16,7 +24,7 @@ export interface TimePickerRes {
   renderInfo: {
     hour: number;
     minutes: number;
-    meridiem: 'AM' | 'PM';
+    meridiem: MeridiemType;
   };
 }
 

@@ -2,9 +2,17 @@ import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
 import { TimePicker } from 'merchant_common/views/Reports/components';
 import moment from 'moment';
+import { getInitialTimeStates } from 'merchant_common/views/Reports/components/TimePicker/utils';
 
 const getInitialStates = (date) => {
-  return date.startOf('hour').format('h:mm A');
+  const formattedState = getInitialTimeStates(date);
+  return date
+    .clone()
+    .set({
+      hour: moment(`${formattedState[0]} ${formattedState[2]}`, 'h A').get('hour'),
+      minute: formattedState[1],
+    })
+    .format('h:mm A');
 };
 
 describe('TimePicker', () => {
@@ -57,9 +65,10 @@ describe('TimePicker', () => {
     expect(screen.getByLabelText(`Hour -> ${moment().format('h')}`)).toHaveTextContent(
       moment().format('h'),
     );
-    expect(
-      screen.getByLabelText(`Minute -> ${moment().startOf('hour').format('mm')}`),
-    ).toHaveTextContent(moment().startOf('hour').format('mm'));
+    expect(screen.getByLabelText(`Minute -> ${moment().format('mm')}`)).toHaveTextContent(
+      moment().format('mm'),
+    );
+
     expect(screen.getByLabelText(`Meridiem -> ${moment().format('A')}`)).toHaveTextContent(
       moment().format('A'),
     );

@@ -66,7 +66,7 @@ export const DateTimeRangeHeader = ({
           </SelectedRangeInfoBadge>
           {shouldIncludeTime && endDate && !disableTimeSelection ? (
             <TimePicker
-              minutesInterval={5}
+              minutesInterval={minutesInterval}
               value={endDate}
               onChange={({ date }) => setEndDate(date)}
             />

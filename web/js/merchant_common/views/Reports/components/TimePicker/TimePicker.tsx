@@ -13,15 +13,11 @@ import {
 import { ClockIcon, Text } from 'merchant_common/views/Reports/components';
 import { ScrollSafeMargin, FlexCentered } from 'merchant_common/views/Reports/components/styled';
 import { TimeInfo } from './Components/TimeInfo';
-import { TimePickerCalPropsType, TimePickerPropsType } from './types';
+import { MeridiemType, TimePickerCalPropsType, TimePickerPropsType } from './types';
 import { useClickOutSide, useTheme } from 'merchant_common/views/Reports/hooks';
 import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
 import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
-import { handleMinutesChange } from './utils';
-
-const getInitialStates = (date) => {
-  return date.startOf('hour').format('h:m:A').split(':');
-};
+import { getInitialTimeStates, handleMinutesChange } from './utils';
 
 export const TimePicker = ({
   value = moment(),
@@ -31,13 +27,15 @@ export const TimePicker = ({
   minutesInterval,
 }: TimePickerCalPropsType): JSX.Element => {
   // in h
-  const [hour, setHour] = useState<number>(+getInitialStates(value)[0]);
+  const [hour, setHour] = useState<number>(getInitialTimeStates(value, minutesInterval)[0]);
 
   // in m
-  const [minutes, setMinutes] = useState<number>(+getInitialStates(value)[1]);
+  const [minutes, setMinutes] = useState<number>(getInitialTimeStates(value, minutesInterval)[1]);
 
   // in A
-  const [meridiem, setMeridiem] = useState<'AM' | 'PM'>(getInitialStates(value)[2]);
+  const [meridiem, setMeridiem] = useState<MeridiemType>(
+    getInitialTimeStates(value, minutesInterval)[2],
+  );
 
   const { theme } = useTheme();
   const timePickerRef = useRef<HTMLDivElement>(null);
@@ -48,10 +46,12 @@ export const TimePicker = ({
   useEffect(() => {
     onChange({
       // since moment object is just mutated, making sure state updates using clone
-      date: moment(value).set({
-        hour: moment(`${hour} ${meridiem}`, 'h A').get('hour'),
-        minute: minutes,
-      }),
+      date: moment(value)
+        .clone()
+        .set({
+          hour: moment(`${hour} ${meridiem}`, 'h A').get('hour'),
+          minute: minutes,
+        }),
       renderInfo: {
         hour,
         minutes,
@@ -147,13 +147,17 @@ export const TimePickerField = ({
 }: TimePickerPropsType): JSX.Element => {
   const isValidated = validate();
   // in h
-  const [hour, setHour] = useState<number>(+getInitialStates(defaultValue)[0]);
+  const [hour, setHour] = useState<number>(getInitialTimeStates(defaultValue, minutesInterval)[0]);
 
   // in m
-  const [minutes, setMinutes] = useState<number>(+getInitialStates(defaultValue)[1]);
+  const [minutes, setMinutes] = useState<number>(
+    getInitialTimeStates(defaultValue, minutesInterval)[1],
+  );
 
   // in A
-  const [meridiem, setMeridiem] = useState<'AM' | 'PM'>(getInitialStates(defaultValue)[2]);
+  const [meridiem, setMeridiem] = useState<MeridiemType>(
+    getInitialTimeStates(defaultValue, minutesInterval)[2],
+  );
 
   const { theme } = useTheme();
   const timePickerRef = useRef<HTMLDivElement>(null);
