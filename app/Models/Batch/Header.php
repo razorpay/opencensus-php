@@ -1577,6 +1577,7 @@ class Header
     const WALLET_CONTAINER_LOAD_REFERENCE_ID = 'Reference ID (Optional)';
     const WALLET_CONTAINER_LOAD_DESCRIPTION = 'Description (Optional)';
     const WALLET_CONTAINER_LOAD_NOTES = 'Notes (Optional)';
+    const WALLET_CONTAINER_LOAD_EXPIRY_DATE = 'Expiry Date (YYYY/MM/DD) (Optional)';
 
 
     // consent collection for creation of local tokens
@@ -5359,7 +5360,8 @@ class Header
                 self::WALLET_CONTAINER_LOAD_AMOUNT,
                 self::WALLET_CONTAINER_LOAD_REFERENCE_ID,
                 self::WALLET_CONTAINER_LOAD_DESCRIPTION,
-                self::WALLET_CONTAINER_LOAD_NOTES
+                self::WALLET_CONTAINER_LOAD_NOTES,
+                self::WALLET_CONTAINER_LOAD_EXPIRY_DATE,
             ],
             self::OUTPUT => []
         ],
