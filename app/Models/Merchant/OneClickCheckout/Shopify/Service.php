@@ -19,12 +19,15 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Constants;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order\OrderMeta;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerAppClient;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantProvider;
 
 class Service extends Base\Service
 {
@@ -585,6 +588,20 @@ class Service extends Base\Service
     public function updateCheckout(array $input): array
     {
         (new Validator())->setStrictFalse()->validateInput(Validator::UPDATE_CHECKOUT, $input);
+        $routeToMagicCheckoutService = false;
+        try
+        {
+            $routeToMagicCheckoutService = $this->abandonedCartRouteToMagicCheckoutService($input, $this->merchant);
+        }
+        catch (\Throwable $e)
+        {
+            $routeToMagicCheckoutService = false;
+        }
+        if ($routeToMagicCheckoutService === true)
+        {
+            $input['merchant_id'] = $this->merchant->getId();
+            return (new MerchantProvider\Service())->createAbandonedCheckout($input);
+        }
         (new Checkout)->updateCheckoutFromAdmin($input);
         // TODO: handle 400, 503 to frontend
         return [];
@@ -997,8 +1014,22 @@ class Service extends Base\Service
     public function updateCheckoutUrl(array $input): array
     {
         (new Checkout)->updateCheckoutUrl($input);
-
         return [];
+    }
+
+    public function abandonedCartRouteToMagicCheckoutService($input, $merchant): bool
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_be_abandoned_cart'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ]
+        );
+        return $expResult['variant'] === 'magic';
     }
 
     /**

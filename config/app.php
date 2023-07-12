@@ -658,4 +658,6 @@ return array(
     'clevertap_migration_splitz_experiment_id' => env('CLEVERTAP_MIGRATION_SPLITZ_EXPERIMENT_ID'),
 
     'lazypay_whitelisted_merchants_experiment_id' => env('LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
+
+    '1cc_be_abandoned_cart' => env('1CC_BE_ABANDONED_CART')
 );
