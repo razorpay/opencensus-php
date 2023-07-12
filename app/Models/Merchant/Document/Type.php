@@ -74,7 +74,6 @@ class Type
 
     const OTHER                  = 'other';
     const WEBSITE_SCREENSHOT     = 'website_screenshot';
-    const GAMING_ADDENDUM        = 'gaming_addendum';
     const LEGAL_OPINION          = 'legal_opinion';
     const BUSINESS_CORRESPONDENT = 'business_correspondent';
 
@@ -119,7 +118,6 @@ class Type
     const FORM_8A                           = 'form_8a';
     const FORM_10AC                         = 'form_10ac';
     const IRCTC_AGENT_AGREEMENT             = 'irctc_agent_agreement';
-    const UNDERTAKING                       = 'undertaking';
     const EPF_SCHEME_CERTIFICATE            = 'epf_scheme_certificate';
     const PROOF_OF_PROFESSION               = 'proof_of_profession';
     const BIS_CERTIFICATE                   = 'bis_certificate';
@@ -147,6 +145,7 @@ class Type
     const MSO_DOCUMENT                      = 'mso_document';
     const GOVT_AUTHORISATION_LETTER         = 'govt_authorisation_letter';
     const CANCELLED_CHEQUE_VIDEO            = 'cancelled_cheque_video';
+    const BAR_COUNCIL_CERTIFICATE           = 'bar_council_certificate';
     const BOARD_RESOLUTION_LETTER           = 'board_resolution_letter';
 
     const NC_ADDITIONAL_DOCUMENTS = [
@@ -181,7 +180,6 @@ class Type
         self::FORM_8A,
         self::FORM_10AC,
         self::IRCTC_AGENT_AGREEMENT,
-        self::UNDERTAKING,
         self::EPF_SCHEME_CERTIFICATE,
         self::PROOF_OF_PROFESSION,
         self::GIA_CERTIFICATE,
@@ -209,6 +207,7 @@ class Type
         self::MSO_DOCUMENT,
         self::GOVT_AUTHORISATION_LETTER,
         self::CPV_REPORT,
+        self::BAR_COUNCIL_CERTIFICATE,
         self::BOARD_RESOLUTION_LETTER
     ];
 
@@ -217,8 +216,8 @@ class Type
         self::AYUSH_CERTIFICATE                 => "Ayush certificate",
         self::SEBI_REGISTRATION_CERTIFICATE     => "SEBI Registration Certificate",
         self::FFMC_LICENSE                      => "FFMC License",
-        self::FORM_12A_URL                      => "Form 12A Allotment Letter",
-        self::FORM_80G_URL                      => "Form 80G Allotment Letter",
+        self::FORM_12A_URL                      => "Form 12A/ Form 10AC/ Tax Exemption letter",
+        self::FORM_80G_URL                      => "Form 80G/ Form 10AC/ Tax Exemption letter",
         self::NBFC_REGISTRATION_CERTIFICATE     => "NBFC Registration Certificatee",
         self::BIS_CERTIFICATE                   => "BIS certificate",
         self::IRDA_CERTIFICATE                  => "IRDA certificate",
@@ -243,7 +242,6 @@ class Type
         self::FORM_8A                           => "Form 8A",
         self::FORM_10AC                         => "Form 10AC",
         self::IRCTC_AGENT_AGREEMENT             => "IRCTC agent agreement",
-        self::UNDERTAKING                       => "Undertaking",
         self::EPF_SCHEME_CERTIFICATE            => "EPF scheme certificate",
         self::PROOF_OF_PROFESSION               => "Proof of profession",
         self::GIA_CERTIFICATE                   => "GIA certificate",
@@ -271,6 +269,7 @@ class Type
         self::MSO_DOCUMENT                      => "MSO/ Local cable opertor",
         self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter",
         self::CPV_REPORT                        => "CPV report",
+        self::BAR_COUNCIL_CERTIFICATE           => "Bar Council Certificate",
         self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter"
     ];
 
@@ -347,7 +346,6 @@ class Type
         self::FIRS_ZIP,
 
         self::WEBSITE_SCREENSHOT,
-        self::GAMING_ADDENDUM,
         self::LEGAL_OPINION,
         self::BUSINESS_CORRESPONDENT,
 
@@ -389,7 +387,6 @@ class Type
         self::FORM_8A,
         self::FORM_10AC,
         self::IRCTC_AGENT_AGREEMENT,
-        self::UNDERTAKING,
         self::EPF_SCHEME_CERTIFICATE,
         self::PROOF_OF_PROFESSION,
         self::GIA_CERTIFICATE,
@@ -415,6 +412,7 @@ class Type
         self::BBPS_DOCUMENT,
         self::MSO_DOCUMENT,
         self::GOVT_AUTHORISATION_LETTER,
+        self::BAR_COUNCIL_CERTIFICATE,
         self::BOARD_RESOLUTION_LETTER,
         self::CPV_REPORT
     ];
@@ -447,7 +445,6 @@ class Type
         self::FORM_8A                           => self::ADDITIONAL_DOCUMENTS,
         self::FORM_10AC                         => self::ADDITIONAL_DOCUMENTS,
         self::IRCTC_AGENT_AGREEMENT             => self::ADDITIONAL_DOCUMENTS,
-        self::UNDERTAKING                       => self::ADDITIONAL_DOCUMENTS,
         self::EPF_SCHEME_CERTIFICATE            => self::ADDITIONAL_DOCUMENTS,
         self::PROOF_OF_PROFESSION               => self::ADDITIONAL_DOCUMENTS,
         self::GIA_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
@@ -529,7 +526,6 @@ class Type
         self::WEBSITE_SCREENSHOT     => self::ADDITIONAL_DOCUMENTS,
         self::BUSINESS_CORRESPONDENT => self::ADDITIONAL_DOCUMENTS,
         self::LEGAL_OPINION          => self::ADDITIONAL_DOCUMENTS,
-        self::GAMING_ADDENDUM        => self::ADDITIONAL_DOCUMENTS,
 
         self::FIRS_ICICI_FILE => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP  => self::ADDITIONAL_DOCUMENTS,
@@ -543,6 +539,7 @@ class Type
         self::EMERCHANTPAY_PAN                => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PASSPORT           => self::ADDITIONAL_DOCUMENTS,
         self::CPV_REPORT                      => self::ADDITIONAL_DOCUMENTS,
+        self::BAR_COUNCIL_CERTIFICATE         => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

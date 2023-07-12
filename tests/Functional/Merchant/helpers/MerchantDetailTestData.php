@@ -1525,8 +1525,8 @@ return [
             "ayush_certificate"                 => "Ayush certificate",
             "sebi_registration_certificate"     => "SEBI Registration Certificate",
             "ffmc_license"                      => "FFMC License",
-            "form_12a_url"                      => "Form 12A Allotment Letter",
-            "form_80g_url"                      => "Form 80G Allotment Letter",
+            "form_12a_url"                      => "Form 12A/ Form 10AC/ Tax Exemption letter",
+            "form_80g_url"                      => "Form 80G/ Form 10AC/ Tax Exemption letter",
             "nbfc_registration_certificate"     => "NBFC Registration Certificatee",
             "bis_certificate"                   => "BIS certificate",
             "irda_certificate"                  => "IRDA certificate",
@@ -1551,7 +1551,6 @@ return [
             "form_8a"                           => "Form 8A",
             "form_10ac"                         => "Form 10AC",
             "irctc_agent_agreement"             => "IRCTC agent agreement",
-            "undertaking"                       => "Undertaking",
             "epf_scheme_certificate"            => "EPF scheme certificate",
             "proof_of_profession"               => "Proof of profession",
             "gia_certificate"                   => "GIA certificate",
@@ -1579,6 +1578,7 @@ return [
             "mso_document"                      => "MSO/ Local cable opertor",
             "govt_authorisation_letter"         => "Govt authorisation Letter",
             "cpv_report"                        => "CPV report",
+            "bar_council_certificate"           => "Bar Council Certificate",
             "board_resolution_letter"           => "Board Resolution Letter"
         ]
     ],
