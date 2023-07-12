@@ -3022,7 +3022,7 @@ class Repository extends Base\Repository
         return $query->count();
     }
 
-    public function getPayoutsSummaryForBatchId(string $batchId)
+    public function getPayoutsSummaryForBatchId(string $batchId, string $mode)
     {
         /*
             SELECT payouts.id, payouts.status, payouts.amount
@@ -3035,7 +3035,7 @@ class Repository extends Base\Repository
         $statusColumn = $this->repo->payout->dbColumn(Entity::STATUS);
         $amountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection($mode))
             ->select($idColumn, $statusColumn, $amountColumn)
             ->where($payoutBatchIdColumn, '=', $batchId)
             ->get();

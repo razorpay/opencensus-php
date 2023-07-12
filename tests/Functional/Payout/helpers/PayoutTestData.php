@@ -22533,7 +22533,7 @@ return [
     'testSendReminderCallbackForBatchPayoutSummaryEmailSuccess' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/10000000000000/summary/email',
+            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/10000000000000/mode/live/summary/email',
         ],
         'response' => [
             'content' => [
@@ -22546,7 +22546,7 @@ return [
     'testSendReminderCallbackForBatchPayoutSummaryEmailFailure' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/100000000000/summary/email',
+            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/100000000000/mode/live/summary/email',
         ],
         'response' => [
             'content' => [

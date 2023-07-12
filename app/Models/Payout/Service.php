@@ -3030,13 +3030,15 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getMerchantId();
 
+        $mode = strtolower($this->mode);
+
         $reminderData = [
             'remind_at' => Carbon::now()->addMinutes(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME)->timestamp, // T+2 hours
         ];
 
         $namespace  = BatchPayoutConstants::PAYOUTS_BATCH_NAMESPACE;
 
-        $callbackUrl = sprintf(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_URL, $batchId, $merchantId);
+        $callbackUrl = sprintf(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_URL, $batchId, $merchantId, $mode);
 
         $request = [
             'namespace'     => $namespace,
@@ -3072,7 +3074,7 @@ class Service extends Base\Service
         }
     }
 
-    public function emailBatchPayoutsSummary(string $batchId, string $merchantId): array
+    public function emailBatchPayoutsSummary(string $batchId, string $merchantId, string $mode): array
     {
         try
         {
@@ -3081,11 +3083,12 @@ class Service extends Base\Service
                 [
                     'reminder_callback_received' => [
                         'batch_id' => $batchId,
-                        'merchant_id' => $merchantId
+                        'merchant_id' => $merchantId,
+                        'mode' => $mode
                     ],
                 ]);
 
-            list($mailData, $user) = $this->getBulkPayoutSummaryMailData($batchId, $merchantId);
+            list($mailData, $user) = $this->getBulkPayoutSummaryMailData($batchId, $merchantId, $mode);
 
             $this->trace->info(
                 TraceCode::BULK_PAYOUT_SUMMARY_EMAIL,
@@ -3116,11 +3119,17 @@ class Service extends Base\Service
         }
     }
 
-    protected function getBulkPayoutSummaryMailData($batchId, $merchantId): array
+    protected function getBulkPayoutSummaryMailData($batchId, $merchantId, $mode): array
     {
         $merchant = $this->repo->merchant->getMerchant($merchantId);
 
         $batchDetails = $this->batch->getBatchById('batch_' . $batchId, $merchant);
+
+        $this->trace->info(
+            TraceCode::BULK_PAYOUT_SUMMARY_EMAIL,
+            [
+                'batch_details' => $batchDetails,
+            ]);
 
         $batchName = $batchDetails[BatchPayoutConstants::NAME];
 
@@ -3136,9 +3145,9 @@ class Service extends Base\Service
 
         $debitAccountName = $this->getAccountName($debitAccountNumber, $merchant);
 
-        $payoutsSummary = $this->repo->payout->getPayoutsSummaryForBatchId($batchId);
+        $payoutsSummary = $this->repo->payout->getPayoutsSummaryForBatchId($batchId, $mode);
 
-        $user = $this->repo->user->getUserFromId($batchCreatorId);
+        $user = $this->repo->user->getUserFromIdUsingMode($batchCreatorId, $mode);
 
         $userName = $user->getName();
 

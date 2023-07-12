@@ -50,7 +50,7 @@ class Constants
 
     const PAYOUTS_BATCH_NAMESPACE                       = 'payouts_batch';
 
-    const PAYOUTS_BATCH_REMINDERS_CALLBACK_URL          = 'payouts/batch/%s/merchant/%s/summary/email';
+    const PAYOUTS_BATCH_REMINDERS_CALLBACK_URL          = 'payouts/batch/%s/merchant/%s/mode/%s/summary/email';
 
     const PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME         = 120; // 2 hours
 

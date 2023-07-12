@@ -1901,7 +1901,7 @@ class Route
         'payouts_bulk_template_file'               => ['post',     'payouts/batch/template',                         'PayoutController@getTemplateFileForBulkPayouts'                      ],
         'payouts_batch_process'                    => ['post',     'payouts/batch/{id}/process',                     'PayoutController@processPayoutsBatch'                             ],
         'payouts_get_batch_rows'                   => ['get',      'payouts/batch/{id}/rows',                        'PayoutController@getBatchRows'                                    ],
-        'payouts_summary_email'                    => ['post',     'payouts/batch/{id}/merchant/{mid}/summary/email','PayoutController@emailBatchPayoutsSummary'                            ],
+        'payouts_summary_email'                    => ['post',     'payouts/batch/{id}/merchant/{mid}/mode/{mode}/summary/email','PayoutController@emailBatchPayoutsSummary'                            ],
 
         // Payout Outbox
         'undo_payout_creation'                      => ['post',     'payouts/{id}/undo',                            'PayoutOutboxController@undoPayout'                                     ],

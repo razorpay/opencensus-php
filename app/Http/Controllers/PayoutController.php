@@ -1084,9 +1084,9 @@ class PayoutController extends Controller
         return ApiResponse::json($response, $statusCode);
     }
 
-    public function emailBatchPayoutsSummary(string $batchId, string $merchantId)
+    public function emailBatchPayoutsSummary(string $batchId, string $merchantId, string $mode)
     {
-        list($response, $statusCode) = $this->service()->emailBatchPayoutsSummary($batchId, $merchantId);
+        list($response, $statusCode) = $this->service()->emailBatchPayoutsSummary($batchId, $merchantId, $mode);
 
         return ApiResponse::json($response, $statusCode);
     }
