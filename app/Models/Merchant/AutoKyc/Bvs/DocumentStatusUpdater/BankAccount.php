@@ -42,6 +42,9 @@ class BankAccount extends DefaultStatusUpdater
         {
             $this->bankAccountValidationForNoDocOnboarding();
         }
+
+        $this->handleArtefactSignatoryValidation();
+
         $this->postUpdateValidationStatus();
     }
 

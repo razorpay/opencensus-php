@@ -372,6 +372,14 @@ class Constant
         BusinessType::HUF                 => [
             Constant::GSTIN . '-' . VerificationConstant::NUMBER,
         ],
+        BusinessType::INDIVIDUAL         => [
+            Constant::BANK_ACCOUNT . '-' . VerificationConstant::DOC,
+            Constant::BANK_ACCOUNT . '-' . VerificationConstant::NUMBER,
+        ],
+        BusinessType::NOT_YET_REGISTERED => [
+            Constant::BANK_ACCOUNT . '-' . VerificationConstant::DOC,
+            Constant::BANK_ACCOUNT . '-' . VerificationConstant::NUMBER,
+        ],
     ];
 
     const EXCLUDED_CONFIGS = [

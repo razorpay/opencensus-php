@@ -3687,6 +3687,54 @@ return [
         ],
     ],
 
+    'testBankAccountSignatoryFailureExperimentLiveAsync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'=>'123456789'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_number'=>'123456789',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankAccountSignatorySuccessExperimentLiveIndividual' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'=>'1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_number'=>'1234567890',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankAccountSignatorySuccessExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'=>'1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_number'=>'1234567890',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCINSignatorySuccessExperimentLiveAsync' => [
         'request'  => [
             'method'  => 'POST',
@@ -3719,6 +3767,22 @@ return [
         ],
     ],
 
+    'testBankAccountSignatorySuccessExperimentNotLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'=>'1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_number'=>'1234567890',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCINSignatoryFailureExperimentLive' => [
         'request'  => [
             'method'  => 'POST',
@@ -3730,6 +3794,22 @@ return [
         'response' => [
             'content' => [
                 'company_cin'=>'U67190TN2014PTC096972',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankAccountSignatoryFailureExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'=>'1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_number'=>'1234567890',
             ],
             'status_code' => 200,
         ],

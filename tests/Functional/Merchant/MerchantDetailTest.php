@@ -5452,6 +5452,261 @@ Team Razorpay', '+911234567890');
 
     }
 
+    // Below test cases are for signatory match for bank account
+
+    public function testBankAccountSignatorySuccessExperimentNotLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id'                      => $merchantId,
+                                                    'business_type'                    => 2,
+                                                    'bank_details_verification_status' => 'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $this->assertNull($merchantVerificationDetail['metadata']);
+
+        $this->assertNull($merchantVerificationDetail['status']);
+
+    }
+
+    public function testBankAccountSignatorySuccessExperimentLiveIndividual()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                      => $merchantId,
+            'business_type'                    => 2,
+            'bank_details_verification_status' => 'pending'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $expectedMetadata = ["signatory_validation_status" => "verified", 'bvs_validation_id' => $bvsValidation['validation_id']];
+
+        $this->assertEquals($expectedMetadata, $merchantVerificationDetail['metadata']);
+
+        $merchantSignatory = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('verified', $merchantSignatory['status']);
+    }
+
+    public function testBankAccountSignatorySuccessExperimentLive()
+    {
+        // this check is for business types other than the individual
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                      => $merchantId,
+            'business_type'                    => 3,
+            'bank_details_verification_status' => 'pending'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $expectedMetadata = ["signatory_validation_status" => "verified", 'bvs_validation_id' => $bvsValidation['validation_id']];
+
+        $merchantSignatory = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('not_initiated', $merchantSignatory['status']);
+
+        $this->assertEquals($expectedMetadata, $merchantVerificationDetail['metadata']);
+
+    }
+
+    public function testBankAccountSignatoryFailureExperimentLiveAsync()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                      => $merchantId,
+            'business_type'                    => 4,
+            'bank_details_verification_status' => 'pending'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $kafkaEventPayload = [
+            'data' => [
+                'validation_id'     => $bvsValidation['validation_id'],
+                'status'            => 'failed',
+                'error_description' => 'bank_account: must be in a valid format.',
+                'error_code'        => 'VALIDATION_ERROR'
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
+
+        $bvsValidation = $this->getDbEntityById('bvs_validation', $bvsValidation['validation_id']);
+
+        $verificationDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl');
+
+        $this->assertEquals('failed', $bvsValidation->getValidationStatus());
+
+        $this->assertEquals('incorrect_details', $verificationDetail->getBankDetailsVerificationStatus());
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals(["signatory_validation_status" => "not_initiated", 'bvs_validation_id' => $bvsValidation['validation_id']], $merchantVerificationDetail['metadata']);
+    }
+
+    public function testBankAccountSignatoryFailureExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'failure');
+
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id'                      => $merchantId,
+                                                    'business_type'                    => 4,
+                                                    'bank_details_verification_status' => 'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status" => "not_initiated", 'bvs_validation_id' => $bvsValidation['validation_id']], $merchantVerificationDetail['metadata']);
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('not_initiated', $merchantVerificationDetail['status']);
+    }
+
     public function testLLPINSignatorySuccessExperimentNotLive()
     {
         $merchantId = '1cXSLlUU8V9sXl';

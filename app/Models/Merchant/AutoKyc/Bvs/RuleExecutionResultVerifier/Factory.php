@@ -44,6 +44,10 @@ class Factory
             case Constant::MSME.ValidationConstants::PROOF:
                 return new MSMERulesResultVerifier($validation);
 
+            case Constant::BANK_ACCOUNT.ValidationConstants::PROOF:
+            case Constant::BANK_ACCOUNT.ValidationConstants::IDENTIFIER:
+                return new BankAccountRuleResultVerifier($validation);
+
             default :
                 return new DefaultRuleResultVerifier($validation);
         }

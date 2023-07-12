@@ -2,15 +2,18 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use Carbon\Carbon;
-use Config;
 use Queue;
+use Config;
+use Mockery;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MerchantFirsDocumentsZip;
 use RZP\Services\UfhService;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -20,6 +23,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 class MerchantDocumentTest Extends TestCase
 {
     use RazorxTrait;
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -433,6 +437,74 @@ class MerchantDocumentTest Extends TestCase
         $this->mockRazorX('testDocumentUpload', 'bvs_cancelled_cheque_ocr', 'on');
 
         $this->uploadDocument('cancelled_cheque', 'bank_details_doc_verification_status');
+    }
+
+    public function testSignatoryChangeForBankAccountDocType()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->mockRazorX('testDocumentUpload', 'bvs_cancelled_cheque_ocr', 'on');
+
+        $this->uploadDocument('cancelled_cheque', 'bank_details_doc_verification_status');
+
+        $bvsValidation = $this->fixtures->create('bvs_validation',
+                                                 [
+                                                     'owner_id'        => $merchantId,
+                                                     'artefact_type'   => 'bank_account',
+                                                     'validation_unit' => 'proof',
+                                                 ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'validation_id'       => $bvsValidation->getValidationId(),
+                'status'              => 'success',
+                'error_description'   => '',
+                'error_code'          => '',
+                'rule_execution_list' => ''
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
+
+        $attribute = ['business_type'                        => 4,
+                      'bank_details_doc_verification_status' => 'pending'];
+
+        $this->fixtures->edit('merchant_detail', $merchantId, $attribute);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'bank_account', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $merchantDetails = $this->getDbLastEntity('merchant_detail')->toArray();
+
+        $expectedMetadata = ["signatory_validation_status" => "verified", 'bvs_validation_id' => $bvsValidation['validation_id']];
+
+        $this->assertEquals($expectedMetadata, $merchantVerificationDetail['metadata']);
+
+        $this->assertEquals('verified', $merchantDetails['bank_details_doc_verification_status']);
     }
 
     public function testProprietorshipBusinessProofDocumentNotUploadedCanSubmitFlagFalse()

@@ -33,12 +33,14 @@ class Constants
     const PREDICTED_MCC             = 'predicted_mcc';
 
     const SIGNATORY_ALLOWED_ARTEFACTS = [
+        Constant::MSME . '-' . ValidationConstants::PROOF,
         Constant::CIN . '-' . ValidationConstants::IDENTIFIER,
         Constant::GSTIN . '-' . ValidationConstants::IDENTIFIER,
+        Constant::BANK_ACCOUNT . '-' . ValidationConstants::PROOF,
         Constant::LLP_DEED . '-' . ValidationConstants::IDENTIFIER,
         Constant::PARTNERSHIP_DEED . '-' . ValidationConstants::PROOF,
-        Constant::SHOP_ESTABLISHMENT . '-' . ValidationConstants::IDENTIFIER,
-        Constant::MSME . '-' . ValidationConstants::PROOF,
+        Constant::BANK_ACCOUNT . '-' . ValidationConstants::IDENTIFIER,
+        Constant::SHOP_ESTABLISHMENT . '-' . ValidationConstants::IDENTIFIER
     ];
 
 }
