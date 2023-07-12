@@ -6,6 +6,12 @@ use Carbon\Carbon;
 use JetBrains\PhpStorm\NoReturn;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Address\AddressConsent1cc\Entity as AddressConsent1ccEntity;
+use RZP\Models\Address\Entity as AddressEntity;
+use RZP\Models\Address\Type;
+use RZP\Models\Customer\CustomerConsent1cc\Entity as CustomerConsent1ccEntity;
+use RZP\Models\Customer\Entity as CustomerEntity;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
 use RZP\Models\Merchant;
@@ -19,7 +25,7 @@ use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use Mockery;
 use RZP\Models\Customer\Account\Constants as AccountConstants;
 
-class customerTest extends TestCase
+class CustomerTest extends TestCase
 {
     use AttemptTrait;
     use DbEntityFetchTrait;
@@ -1435,6 +1441,153 @@ class customerTest extends TestCase
                 'status'          => 'active',
             ]
         );
+
+        $this->startTest();
+    }
+
+    public function testFindOrCreateGlobalCustomerForANewCustomerOnStandardCheckout(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['customer']['id']);
+    }
+
+    public function testFindOrCreateGlobalCustomerForAnExistingCustomerOnStandardCheckout(): void
+    {
+        $customerId = 'zMRVsEqPxuwiGl';
+
+        $timestamp = 1688365852;
+
+        $this->fixtures->create('customer', [
+            'id'          => $customerId,
+            'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+            'contact'     => '+919878543210',
+            'email'       => 'testexistingglobalcustomer@razorpay.com',
+        ]);
+
+        $card = $this->fixtures->create(
+            'card',
+            [
+                'created_at'  => $timestamp,
+                'issuer'      => 'HDFC',
+                'last4'       => '1111',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'network'     => 'Visa',
+                'type'        => 'debit',
+                'vault'       => 'visa',
+                'vault_token' => 'test_token',
+            ],
+        );
+
+        $this->fixtures->create(
+            'token',
+            [
+                'id'              => 'M9EQ5OztDvu5oh',
+                'acknowledged_at' => $timestamp,
+                'card_id'         => $card->getId(),
+                'created_at'      => $timestamp,
+                'customer_id'     => $customerId,
+                'expired_at'      => '1706725799',
+                'merchant_id'     => Merchant\Account::TEST_ACCOUNT,
+                'method'          => 'card',
+                'status'          => 'active',
+                'token'           => '1000lcardtoken',
+                'used_at'         => $timestamp,
+            ],
+        );
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFindOrCreateGlobalCustomerForAnExistingCustomerOnOneClickCheckout(): void
+    {
+        $customerId = 'zMRVsEqPxuwiGl';
+
+        $this->fixtures->merchant->addFeatures(Constants::ONE_CLICK_CHECKOUT);
+
+        $timestamp = 1688365852;
+
+        $this->fixtures->create('customer', [
+            'id'          => $customerId,
+            'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+            'contact'     => '+919878543210',
+            'email'       => 'testexistingglobalcustomer@razorpay.com',
+        ]);
+
+        $this->fixtures->create('address', [
+            AddressEntity::ID => 'M9ICOyJ139iODr',
+            AddressEntity::ENTITY_ID => $customerId,
+            AddressEntity::ENTITY_TYPE => 'customer',
+            AddressEntity::SOURCE_TYPE => 'shopify',
+            AddressEntity::TYPE => Type::BILLING_ADDRESS,
+            AddressEntity::LINE1 => 'billing address line 1',
+            AddressEntity::CITY => 'Bengaluru',
+            AddressEntity::STATE => 'Karnataka',
+            AddressEntity::ZIPCODE => '560030',
+            AddressEntity::CREATED_AT => $timestamp,
+        ]);
+
+        // Third Party Address
+        $this->fixtures->create('address', [
+            AddressEntity::ID => 'M9ICOzBhiakey8',
+            AddressEntity::ENTITY_ID => $customerId,
+            AddressEntity::ENTITY_TYPE => 'customer',
+            AddressEntity::SOURCE_TYPE => 'payment_pages',
+            AddressEntity::TYPE => Type::SHIPPING_ADDRESS,
+            AddressEntity::LINE1 => 'shipping address line 1',
+            AddressEntity::CITY => 'Bengaluru',
+            AddressEntity::STATE => 'Karnataka',
+            AddressEntity::ZIPCODE => '560029',
+            AddressEntity::CREATED_AT => $timestamp,
+        ]);
+
+        $this->fixtures->create('address_consent_1cc', [
+            AddressConsent1ccEntity::CUSTOMER_ID => $customerId,
+            AddressConsent1ccEntity::CREATED_AT => $timestamp,
+        ]);
+
+        $this->fixtures->create('customer_consent_1cc', [
+            CustomerConsent1ccEntity::CONTACT => '+919878543210',
+            CustomerConsent1ccEntity::MERCHANT_ID => Merchant\Account::TEST_ACCOUNT,
+            CustomerConsent1ccEntity::STATUS => true,
+        ]);
+
+        $card = $this->fixtures->create(
+            'card',
+            [
+                'created_at'  => $timestamp,
+                'issuer'      => 'HDFC',
+                'last4'       => '1111',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'network'     => 'Visa',
+                'type'        => 'debit',
+                'vault'       => 'visa',
+                'vault_token' => 'test_token',
+            ],
+        );
+
+        $this->fixtures->create(
+            'token',
+            [
+                'id'              => 'M9EQ5OztDvu5oh',
+                'acknowledged_at' => $timestamp,
+                'card_id'         => $card->getId(),
+                'created_at'      => $timestamp,
+                'customer_id'     => $customerId,
+                'expired_at'      => '1706725799',
+                'merchant_id'     => Merchant\Account::TEST_ACCOUNT,
+                'method'          => 'card',
+                'status'          => 'active',
+                'token'           => '1000lcardtoken',
+                'used_at'         => $timestamp,
+            ],
+        );
+
+        $this->ba->checkoutServiceProxyAuth();
 
         $this->startTest();
     }

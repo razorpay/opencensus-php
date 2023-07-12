@@ -1223,6 +1223,7 @@ class Route
         'customer_fetch_by_id'                     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
         'customer_fetch_by_id_internal'            => ['get',      'customers/{id}/merchant/{merchant_id}',          'CustomerController@getCustomerByCustomerAndMerchantId'             ],
         'customer_fetch_internal_for_checkout'     => ['get',      'internal/customers/checkout',                    'CustomerController@getCustomerDetailsForCheckout'                  ],
+        'global_customer_find_or_create_for_checkout' => ['post',  'checkout/global_customers',                      'CustomerController@findOrCreateGlobalCustomerForCheckout'          ],
         'customer_fetch_multiple'                  => ['get',      'customers',                                      'CustomerController@getCustomers'                                   ],
         'customer_add_bank_account'                => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
         'customer_fetch_bank_account'              => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
@@ -7140,6 +7141,7 @@ class Route
         'customer_truecaller_auth_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
+        'global_customer_find_or_create_for_checkout',
         'fetch_payment_config_checkout_internal',
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
@@ -15906,6 +15908,7 @@ class Route
             'checkout_personalisation_internal',
             'internal_feature_bulk_fetch',
             'customer_fetch_internal_for_checkout',
+            'global_customer_find_or_create_for_checkout',
             'checkout_1cc_configs_get',
         ],
 

@@ -122,6 +122,78 @@ class Service extends Base\Service
     }
 
     /**
+     * Performs the following functions:
+     * 1. Finds existing global customer using input
+     * 2. Creates a global customer if one doesn't exist
+     * 3. Fetches saved instruments (cards + vpa)
+     * 4. Saves address consent for 1cc (1cc/otp/verify)
+     * 5. Fetches saved addresses (RZP + 3'rd party), consent_banner_views,
+     *    customer_consent for 1cc
+     *
+     * This method is used by new otp_verify_v2 route in checkout-service after
+     * a successful otp verification to fetch global customer details (or)
+     * create a global customer if it doesn't exist using contact & email.
+     *
+     * @param array $input
+     *
+     * @return array
+     *
+     * @throws BadRequestException
+     */
+    public function findOrCreateGlobalCustomerForCheckout(array $input): array
+    {
+        (new Validator())->validateInput('global_customer_create', $input);
+
+        // Parse contact
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        // Get global customer from db or create one.
+        $customer = $this->core->getOrCreateGlobalCustomer($input);
+
+        $response = [
+            'customer' => [
+                Entity::ID => $customer->getId(),
+                Entity::EMAIL => $customer->getEmail(),
+                Entity::CONTACT => $customer->getContact(),
+            ],
+        ];
+
+        $tokenCore = (new Token\Core());
+
+        // Fetch existing tokens for global customer
+        $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $this->merchant);
+
+        if ($tokens->isNotEmpty()) {
+            $tokens = $tokenCore->filterTokensForCheckout($tokens);
+
+            $response['tokens'] = $tokens->toArrayPublic();
+        }
+
+        if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
+            if (Arr::has($input, 'address_consent.device_id')) {
+                $addressConsentInput = [
+                    'device_id' => $input['address_consent']['device_id'],
+                ];
+
+                (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
+            }
+
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer);
+            $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
+            $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+            $response['one_cc_addresses'] = $addresses;
+            $response['one_cc_consent_banner_views'] = $this->core->fetchAddressConsentViewsFor1CC($customer);
+            $response['one_cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
+                $customer->getContact(),
+                $this->merchant->getId(),
+            );
+        }
+
+        return $response;
+    }
+
+    /**
      * Fetches the both Global & Local Customer details for Checkout based on
      * app_token in session or customer_id.
      *

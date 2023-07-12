@@ -58,6 +58,13 @@ class Validator extends Base\Validator
         'mode'                  => 'sometimes|in:live,test',
     ];
 
+    protected static array $globalCustomerCreateRules = [
+        Entity::CONTACT             => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Entity::EMAIL               => 'sometimes|email',
+        'address_consent'           => 'sometimes|array',
+        'address_consent.device_id' => 'sometimes|string|max:65',
+    ];
+
     protected static $addressConsentRules = [
         'unique_id'       => 'required|string|max:36'
     ];

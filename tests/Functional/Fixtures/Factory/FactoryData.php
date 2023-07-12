@@ -7,8 +7,10 @@ use Eloquent;
 use Carbon\Carbon;
 
 use RZP\Models;
+use RZP\Models\Address\AddressConsent1cc\Entity as AddressConsent1ccEntity;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
+use RZP\Models\Customer\CustomerConsent1cc\Entity as CustomerConsent1ccEntity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Merchant\MerchantNotificationConfig\Entity as MerchantNotificationConfigEntity;
@@ -539,6 +541,16 @@ final class FactoryData
                                                       'entity_type'   => 'customer',
                                                   ]
         );
+
+        $factory(AddressConsent1ccEntity::class, [
+                AddressConsent1ccEntity::CUSTOMER_ID => '10000gcustomer',
+        ]);
+
+        $factory(CustomerConsent1ccEntity::class, [
+            CustomerConsent1ccEntity::CONTACT => '+918888888888',
+            CustomerConsent1ccEntity::MERCHANT_ID => '10000000000000',
+            CustomerConsent1ccEntity::STATUS => true,
+        ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
                                                   'id'               => '10101010101010',

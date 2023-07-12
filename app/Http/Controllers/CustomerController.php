@@ -7,12 +7,11 @@ use Illuminate\Http\JsonResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BaseException;
-use RZP\Exception\RuntimeException;
-
 
 class CustomerController extends Controller
 {
@@ -561,6 +560,23 @@ class CustomerController extends Controller
     public function createTruecallerAuthRequestInternal()
     {
         $data = (new TruecallerService())->createTruecallerAuthRequestInternal();
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * @return JsonResponse Customer Details With Saved Tokens & Addresses
+     *
+     * @throws BadRequestException
+     */
+    public function findOrCreateGlobalCustomerForCheckout(): JsonResponse
+    {
+        $input = Request::all();
+
+        /** @var Service $service */
+        $service = $this->service();
+
+        $data = $service->findOrCreateGlobalCustomerForCheckout($input);
 
         return ApiResponse::json($data);
     }

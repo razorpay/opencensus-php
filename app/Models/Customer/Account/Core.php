@@ -1038,7 +1038,7 @@ class Core extends Base\Core
      *
      * @return Entity $contact
      */
-    protected function getOrCreateGlobalCustomer($input)
+    public function getOrCreateGlobalCustomer($input)
     {
         $contact = $input[Customer\Entity::CONTACT];
 
