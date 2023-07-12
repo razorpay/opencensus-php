@@ -222,9 +222,9 @@ class FundTransfer extends Base
     {
         $response = $this->createAndSendRequest(parent::FTS_ROUTING_FETCH_MODE, 'POST', $input);
 
-        (new Validator())->validateInput('fetch_mode', $response);
+        (new Validator())->setStrictFalse()->validateInput('fetch_mode', $response['body']);
 
-        return $response;
+        return $response['body'];
     }
 
     /**

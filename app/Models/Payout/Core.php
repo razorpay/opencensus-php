@@ -9436,12 +9436,12 @@ class Core extends Base\Core
             ]);
         }
 
-        $this->validateBankingAccountTpv($basDetails);
+        $this->validateBankingAccountTpv($basDetails, $liteBalanceEntity);
 
         return [$liteBalanceEntity, $fundLoadingBankAccountDetails, $basDetails];
     }
 
-    public function validateBankingAccountTpv($basDetails)
+    public function validateBankingAccountTpv($basDetails, $liteBalanceEntity)
     {
         $disableTpvFeature = $basDetails->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
 
@@ -9449,7 +9449,7 @@ class Core extends Base\Core
         {
             $bankingAccountTpv = $this->repo->banking_account_tpv->getApprovedActiveTpvAccountWithPayerAccountNumber(
                 $basDetails->getMerchantId(),
-                $basDetails->getBalanceId(),
+                $liteBalanceEntity->getId(),
                 $basDetails->getAccountNumber()
             );
 
@@ -9458,13 +9458,13 @@ class Core extends Base\Core
                 $this->trace->error(TraceCode::FUND_MANAGEMENT_PAYOUT_BANKING_ACCOUNT_TPV_FAILURE, [
                     'disable_tpv_feature' => false,
                     'merchant_id'         => $basDetails->getMerchantId(),
-                    'balance_id'          => $basDetails->getBalanceId(),
+                    'balance_id'          => $liteBalanceEntity->getId(),
                 ]);
 
                 throw new BadRequestValidationFailureException('Banking Account TPV not setup for FMP.', null, [
                     'merchant_id' => $basDetails->getMerchantId(),
                     'balance_id'  => $basDetails->getBalanceId(),
-                    'channel'     => $basDetails->getChannel(),
+                    'channel'     => $liteBalanceEntity->getId(),
                 ]);
             }
         }

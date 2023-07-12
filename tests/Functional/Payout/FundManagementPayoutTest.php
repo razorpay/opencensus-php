@@ -109,7 +109,7 @@ class FundManagementPayoutTest extends TestCase
 
         $bankingAccountTpvParams = [
             BankingAccountTpv\Entity::MERCHANT_ID          => $this->basDetails->getMerchantId(),
-            BankingAccountTpv\Entity::BALANCE_ID           => $this->basDetails->getBalanceId(),
+            BankingAccountTpv\Entity::BALANCE_ID           => $this->bankingBalance->getId(),
             BankingAccountTpv\Entity::STATUS               => BankingAccountTpv\Status::APPROVED,
             BankingAccountTpv\Entity::PAYER_NAME           => 'Razorpay',
             BankingAccountTpv\Entity::PAYER_ACCOUNT_NUMBER => $this->basDetails->getAccountNumber(),
@@ -275,7 +275,10 @@ class FundManagementPayoutTest extends TestCase
 
                         $ftsSuccess = true;
 
-                        return $mockedFetchModeResponse;
+                        return [
+                            'body' => $mockedFetchModeResponse,
+                            'code' => 200,
+                        ];
                     })->times($times);
         }
         else
