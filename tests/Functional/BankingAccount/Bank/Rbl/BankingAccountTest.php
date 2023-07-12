@@ -5209,7 +5209,6 @@ class BankingAccountTest extends TestCase
             'request'  => [
                 'url'     => '/banking_accounts/' . $bankingAccount['id'],
                 'method'  => 'GET',
-
             ],
         ];
 
@@ -5363,13 +5362,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        //$bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
-
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts_internal/' . $bankingAccount['id'],
                 'method'  => 'GET',
-
             ],
         ];
 
@@ -5479,7 +5475,6 @@ class BankingAccountTest extends TestCase
             'request'  => [
                 'url'     => '/salesforce/banking_accounts/' . $bankingAccount['id'],
                 'method'  => 'GET',
-
             ],
         ];
 
@@ -7892,16 +7887,16 @@ class BankingAccountTest extends TestCase
         }
 
         $request = [
-        'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details/slot_booking',
-        'method'  => 'POST',
-        'content' => [
-            "admin_email"           => "superadmin@razorpay.com",
-            "booking_date_and_time" => 1639960752,
-            "additional_details"    => [
-                "booking_id" => "SRF2345"
-            ]
-        ],
-    ];
+            'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details/slot_booking',
+            'method'  => 'POST',
+            'content' => [
+                "admin_email"           => "superadmin@razorpay.com",
+                "booking_date_and_time" => 1639960752,
+                "additional_details"    => [
+                    "booking_id" => "SRF2345"
+                ]
+            ],
+        ];
 
         $this->ba->bankingAccountServiceAppAuth();
 
@@ -13392,11 +13387,11 @@ class BankingAccountTest extends TestCase
 
         $request = [
             'request' => [
-                'url' => '/admin/banking_account/' . 'bacc_' . $bankingAccount->getId(),
+                'url' => '/admin/banking_account/' . $bankingAccount->getPublicId(),
             ],
             'response' => [
                 'content' => [
-                    'id' => 'bacc_' . $bankingAccount->getId(),
+                    'id' => $bankingAccount->getPublicId(),
                     'banking_account_activation_details' => [
                         'assignee_team' => BankingAccount\Entity::OPS_MX_POC
                     ]
@@ -13405,6 +13400,41 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($request);
+        
+        // Test with new admin API
+
+        $request = [
+            'url'     => '/admin_lms/banking_accounts/' . $bankingAccount->getId(),
+            'method'  => 'GET',
+            'content'   => [
+                'expand'          => [
+                    'spocs',
+                    'reviewers',
+                    'opsMxPocs',
+                ],
+                'exclude_status'  => [
+                    'terminated'
+                ],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData['testAssignOpsMxPocToBankingAccount']['response']['content'];
+        $expectedResponse['id'] = $bankingAccount->getPublicId();
+        $expectedResponse['spocs'] = [
+            'count' => 1,
+            'items' => [
+                [
+                    'id'        => 'admin_RzrpySprAdmnId',
+                    'org_id'    => 'org_100000razorpay',
+                    'email'     => 'superadmin@razorpay.com',
+                    'name'      => 'test admin',
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
     public function testListBankingAccounts()

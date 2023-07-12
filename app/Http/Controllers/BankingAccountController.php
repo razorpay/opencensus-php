@@ -417,7 +417,8 @@ class BankingAccountController extends Controller
         return $response;
     }
 
-    public function fetchMultipleRblApplicationsFromApiAndBas() {
+    public function fetchMultipleRblApplicationsFromApiAndBas()
+    {
         $input = Request::all();
 
         $response = $this->service()->fetchMultipleRblApplicationsFromApiAndBas($input);
@@ -425,10 +426,11 @@ class BankingAccountController extends Controller
         return $response;
     }
 
-    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId) {
+    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId)
+    {
         $input = Request::all();
 
-        $response = $this->service()->fetchRblApplicationFromApiAndBas($bankingAccountId);
+        $response = $this->service()->fetchRblApplicationFromApiAndBas($bankingAccountId, $input);
 
         return $response;
     }

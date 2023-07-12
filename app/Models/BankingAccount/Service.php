@@ -33,7 +33,7 @@ use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\BankingAccount\BankingAccountRblMisReport;
-use RZP\Mail\BankingAccount\DocketMail\DocketMail;
+use RZP\Constants\Entity as Entities;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -2207,11 +2207,11 @@ class Service extends Base\Service
         return $bankingAccounts;
     }
 
-    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId): array
+    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId, $input): array
     {
         try
         {
-            return (new AdminService())->fetchEntityById('banking_account', $bankingAccountId);
+            return (new AdminService())->fetchEntityById(Entities::BANKING_ACCOUNT, $bankingAccountId, $input);
         }
         catch (\Exception $e)
         {
