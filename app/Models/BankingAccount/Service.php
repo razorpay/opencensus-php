@@ -222,8 +222,12 @@ class Service extends Base\Service
         return array_merge($account->toArrayPublic() , $serviceabilityResponse);
     }
 
-    public function isFosLead(Entity $bankingAccount)
+    public function isFosLead(Entity $bankingAccount, string $city = null)
     {
+        if (empty($city) == false)
+        {
+            return (new Validator())->checkFosLeadCities($city);
+        }
 
         $pinCode = $bankingAccount->getPincode();
 
@@ -1516,7 +1520,7 @@ class Service extends Base\Service
                 'errorMessage'   => null];
     }
 
-    public function CheckServiceableByRBLUsingBAS(string $pincode, bool $includeIcici = false) : array
+    public function checkServiceableByRBLUsingBAS(string $pincode, bool $includeIcici = false) : array
     {
         $basResponse = [];
 
@@ -1643,7 +1647,7 @@ class Service extends Base\Service
         {
             $pincode = $input[Entity::PINCODE];
 
-            $serviceability = $this->CheckServiceableByRBLUsingBAS($pincode);
+            $serviceability = $this->checkServiceableByRBLUsingBAS($pincode);
         }
 
         $businessTypeSupported = true;

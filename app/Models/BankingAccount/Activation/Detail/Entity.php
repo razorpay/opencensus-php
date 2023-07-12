@@ -561,6 +561,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::BUSINESS_CATEGORY);
     }
 
+    public function getMerchantCity()
+    {
+        return $this->getAttributeValue(self::MERCHANT_CITY);
+    }
+
     public function getMerchantPocEmail()
     {
         return $this->getAttributeValue(self::MERCHANT_POC_EMAIL);

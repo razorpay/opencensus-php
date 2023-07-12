@@ -430,70 +430,66 @@ class BankingAccountService
             ];
         }
 
-        else if(str_starts_with($path, 'check_serviceability') and $method === 'GET')
+        return $result;
+    }
+
+    public function checkServiceability(string $pincode)
+    {
+        if ($pincode == '174103')
         {
-            $queryParams = [];
-            $queryString = parse_url($path, PHP_URL_QUERY);
-            parse_str($queryString, $queryParams);
-
-            $pincode = $queryParams['pincode'];
-
-            if ($pincode == '174103')
-            {
-                $result = [
-                    'data' => [
-                        'serviceability' => [
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'RBL',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
+            $result = [
+                'data' => [
+                    'serviceability' => [
+                        [
+                            'is_serviceable'        => false,
+                            'partner_bank'          => 'RBL',
+                            'unserviceable_reasons' => [
+                                "PIN_CODE_UNSERVICEABLE"
                             ],
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'ICICI',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ]
                         ],
-                        'pincode_details' => [
-                            'city'      => '',
-                            'state'     => '',
-                            'region'    => '',
-                            'error'     => 'No Pincode Match Found!'
-                        ]
-                    ]
-                ];
-            }
-            else
-            {
-                $result = [
-                    'data' => [
-                        'serviceability' => [
-                            [
-                                'is_serviceable'        => true,
-                                'partner_bank'          => 'RBL',
-                                'unserviceable_reasons' => null,
+                        [
+                            'is_serviceable'        => false,
+                            'partner_bank'          => 'ICICI',
+                            'unserviceable_reasons' => [
+                                "PIN_CODE_UNSERVICEABLE"
                             ],
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'ICICI',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ]
-                        ],
-                        'pincode_details' => [
-                            'city'      => 'belgaum',
-                            'state'     => 'karnatka',
-                            'region'    => 'south',
-                            'error'     => ''
                         ]
+                    ],
+                    'pincode_details' => [
+                        'city'      => '',
+                        'state'     => '',
+                        'region'    => '',
+                        'error'     => 'No Pincode Match Found!'
                     ]
-                ];
-            }
+                ]
+            ];
+        }
+        else
+        {
+            $result = [
+                'data' => [
+                    'serviceability' => [
+                        [
+                            'is_serviceable'        => true,
+                            'partner_bank'          => 'RBL',
+                            'unserviceable_reasons' => null,
+                        ],
+                        [
+                            'is_serviceable'        => false,
+                            'partner_bank'          => 'ICICI',
+                            'unserviceable_reasons' => [
+                                "PIN_CODE_UNSERVICEABLE"
+                            ],
+                        ]
+                    ],
+                    'pincode_details' => [
+                        'city'      => 'belgaum',
+                        'state'     => 'karnatka',
+                        'region'    => 'south',
+                        'error'     => ''
+                    ]
+                ]
+            ];
         }
 
         return $result;

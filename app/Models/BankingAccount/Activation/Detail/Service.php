@@ -847,7 +847,10 @@ class Service extends Base\Service
     {
         $bankingAccountService = new BankingAccount\Service();
 
-        if($bankingAccountService->isFosLead($bankingAccount) === true)
+        // When the account is getting created, $bankingAccount->bankingAccountActivationDetail is null
+        $city = $activationDetail ? $activationDetail->getMerchantCity() : $input[Entity::MERCHANT_CITY];
+
+        if($bankingAccountService->isFosLead($bankingAccount, $city) === true)
         {
             return true;
         }

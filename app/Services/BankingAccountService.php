@@ -38,6 +38,7 @@ class BankingAccountService
 
     const GET_GENERATED_CREDENTIALS_PATH        = 'internal/rbl/banking_account/%s/credentials';
     const GENERATE_CREDENTIALS_PATH             = 'internal/rbl/credentials';
+    const CHECK_SERVICEABILITY                  = 'check_serviceability';
     const DOWNLOAD_DOCKET_PDF_PATH              = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
     const PARTNER_LMS_RBL_APPLICATIONS          = 'partner_lms/rbl/applications';
     const PARTNER_LMS_RBL_ASSIGN_BANK_POC       = 'partner_lms/rbl/business/%s/application/%s/assign_poc';
@@ -762,11 +763,36 @@ class BankingAccountService
         {
             $this->trace->traceException($e,
                                          Trace::ERROR,
-                                         TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE_ERROR, // TODO
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE_ERROR,
                                          [
                                              'input' => $input
                                          ]);
 
+            throw $e;
+        }
+    }
+
+    /**
+     * Call BAS endpoint for check_serviceability
+     *
+     * @param string $pincode Pincode
+     *
+     * @throws \Throwable
+     */
+    public function checkServiceability(string $pincode): array
+    {
+        $queryParams = [
+            'pincode' => $pincode,
+        ];
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse(self::CHECK_SERVICEABILITY, Request::METHOD_GET, null, [], $queryParams, false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
             throw $e;
         }
     }

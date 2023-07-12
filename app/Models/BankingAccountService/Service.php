@@ -569,7 +569,7 @@ class Service extends Base\Service
 
     public function checkServiceability(string $pincode): array
     {
-        return $this->bankingAccountService->sendRequestAndProcessResponse(Constants::BAS_CHECK_SERVICEABILITY . '?pincode=' . $pincode, 'GET', []);
+        return $this->bankingAccountService->checkServiceability($pincode);
     }
 
     public function checkCommonServiceability($input)

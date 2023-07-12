@@ -522,7 +522,8 @@ class BankingAccountTest extends TestCase
         Mail::assertNotQueued(XProActivation::class);
     }
 
-    public function mockBankingAccountServiceCallsForRblOnBasExperiment(bool $shouldMockBusinessCreation) {
+    public function mockBankingAccountServiceCallsForRblOnBasExperiment(bool $shouldMockBusinessCreation)
+    {
         $basMock = $this->bankingAccountServiceMock;
 
         if ($shouldMockBusinessCreation)
@@ -563,6 +564,43 @@ class BankingAccountTest extends TestCase
                 ],
             ],
         ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    public function mockBankingAccountServiceCallsForCheckServiceability(array $response = null)
+    {
+        $basMock = $this->bankingAccountServiceMock;
+
+        if ($response == null)
+        {
+            $response = [
+                'data' => [
+                    'serviceability' => [
+                        [
+                            'is_serviceable'        => true,
+                            'partner_bank'          => 'RBL',
+                            'unserviceable_reasons' => null,
+                        ],
+                        [
+                            'is_serviceable'        => false,
+                            'partner_bank'          => 'ICICI',
+                            'unserviceable_reasons' => [
+                                "PIN_CODE_UNSERVICEABLE"
+                            ],
+                        ]
+                    ],
+                    'pincode_details' => [
+                        'city'      => 'bengaluru',
+                        'state'     => 'karnatka',
+                        'region'    => 'south',
+                        'error'     => ''
+                    ]
+                ]
+            ];
+        }
+
+        $basMock->shouldReceive('checkServiceability')->andReturn($response);
 
         $this->app->instance('banking_account_service', $basMock);
     }
@@ -658,50 +696,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
 
-        $splitzMockInput = [
-            'id'            => '10000000000000',
-            'experiment_id' => 'L2UsfwrU1dDxE4',
-        ];
-
-        $splitzMockOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'active'
-                ]
-            ]
-        ];
-
-        $basMock = $this->bankingAccountServiceMock;
-
-        $basMock->shouldReceive('sendRequestAndProcessResponse')
-            ->andReturn([
-            'data' => [
-                'serviceability' => [
-                    [
-                        'is_serviceable'        => true,
-                        'partner_bank'          => 'RBL',
-                        'unserviceable_reasons' => null,
-                    ],
-                    [
-                        'is_serviceable'        => false,
-                        'partner_bank'          => 'ICICI',
-                        'unserviceable_reasons' => [
-                            "PIN_CODE_UNSERVICEABLE"
-                        ],
-                    ]
-                ],
-                'pincode_details' => [
-                    'city'      => 'belgaum',
-                    'state'     => 'karnatka',
-                    'region'    => 'south',
-                    'error'     => ''
-                ]
-            ]
-        ]);
-
-        $this->app->instance('banking_account_service', $basMock);
+        $this->mockBankingAccountServiceCallsForCheckServiceability();
 
         $this->createBankingAccountFromDashboard();
 
@@ -5635,62 +5632,6 @@ class BankingAccountTest extends TestCase
         return $response;
     }
 
-    public function testSkipMidOfficeCall()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $this->addFasterDocCollectionAttribute();
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $data = [
-            Entity::PINCODE => '560030', // Pincode Search Mock will be used
-            Entity::CHANNEL => 'rbl',
-            'activation_detail' => [
-                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
-                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
-                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
-                        'status' => 'verified',
-                        'source' => 'gstin'
-                    ],
-                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
-                        'status' => 'verified',
-                        'source' => 'llpin'
-                    ],
-                    ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
-                        ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
-                        ActivationDetail\Entity::SEAL_AVAILABLE => 0,
-                        ActivationDetail\Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
-                        ActivationDetail\Entity::SIGNBOARD_AVAILABLE => 0,
-                    ],
-                ],
-            ]
-        ];
-
-        $this->createBankingAccountFromDashboard($data);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
-
-        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
-            'banking_account_id' => $bankingAccount->getId()
-        ]);
-
-        $this->assertNotNull($activationDetailEntity);
-
-        $additionalDetails = json_decode($activationDetailEntity[ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
-
-        $this->assertEquals(ActivationDetail\Entity::SALES, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(1, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
-    }
-
     public function mockPincodeSearchForCity($city, $state)
     {
         $pincodeSearchMock = Mockery::mock(PincodeSearch::class, [$this->app])->makePartial();
@@ -5705,64 +5646,12 @@ class BankingAccountTest extends TestCase
         $this->app->instance('pincodesearch', $pincodeSearchMock);
     }
 
-    public function testSkipMidOfficeCallNegativeCase()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $this->addFasterDocCollectionAttribute();
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
-
-        $data = [
-            Entity::PINCODE => '202122', // Pincode Search Mock will be used
-            Entity::CHANNEL => 'rbl',
-            'activation_detail' => [
-                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
-                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
-                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
-                        'status' => 'verified',
-                        'source' => 'gstin'
-                    ],
-                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
-                        'status' => 'verified',
-                        'source' => 'llpin'
-                    ],
-                ],
-            ]
-        ];
-
-        $this->createBankingAccountFromDashboard($data);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
-
-        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
-            'banking_account_id' => $bankingAccount->getId()
-        ]);
-
-        $this->assertNotNull($activationDetailEntity);
-
-        $additionalDetails = json_decode($activationDetailEntity[ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
-
-        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
-    }
-
     protected function createBankingAccountFromDashboard(array $attributes = [], bool $assertNotifyMob = true, bool $expectHubSpotMock = true)
     {
         Queue::fake();
 
         $data = [
-            Entity::PINCODE => '560030', // Pincode Search Mock will be used
+            Entity::PINCODE => '560030',
             Entity::CHANNEL => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
@@ -12252,6 +12141,79 @@ class BankingAccountTest extends TestCase
         return $this->createMerchantAttribute($merchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_faster_doc_collection', $value);
     }
 
+    private function assertSkipMidOfficeCall(string $appointmentSource, BankingAccount\Entity $bankingAccount = null)
+    {
+        if ($bankingAccount == null)
+        {
+            $bankingAccount = $this->getDbLastEntity('banking_account');
+        }
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        $additionalDetails = json_decode($activationDetailEntity[ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
+
+        $this->assertEquals($appointmentSource, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
+
+        $skipMidOfficeCall = 0;
+
+        if ($appointmentSource == ActivationDetail\Entity::SALES)
+        {
+            $skipMidOfficeCall = 1;
+        }
+
+        $this->assertEquals($skipMidOfficeCall, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+    }
+
+    public function testSkipMidOfficeCall()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->addFasterDocCollectionAttribute();
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $this->mockBankingAccountServiceCallsForCheckServiceability();
+
+        $data = [
+            Entity::PINCODE => '560030',
+            Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
+                    ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
+                        ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
+                        ActivationDetail\Entity::SEAL_AVAILABLE => 0,
+                        ActivationDetail\Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
+                        ActivationDetail\Entity::SIGNBOARD_AVAILABLE => 0,
+                    ],
+                ],
+            ]
+        ];
+
+        $this->createBankingAccountFromDashboard($data);
+
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::SALES);
+    }
+
     public function testSkipMidOfficeCallFromLMS()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
@@ -12265,8 +12227,12 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $pincode = '560030';
+
+        $this->mockBankingAccountServiceCallsForCheckServiceability();
+
         $data = [
-            Entity::PINCODE     => '560030',
+            Entity::PINCODE => $pincode,
             Entity::CHANNEL     => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
@@ -12316,18 +12282,57 @@ class BankingAccountTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::SALES);
+    }
+
+    public function testSkipMidOfficeCallNegativeCase()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->addFasterDocCollectionAttribute();
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            Entity::PINCODE => '202122', // City would be populated from BAS Serviceability Check
+            Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
+                ],
+            ]
+        ];
+
+        $this->createBankingAccountFromDashboard($data);
+
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->assertNotEmpty($bankingAccount['id']);
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
 
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
 
-        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
+        $this->assertNotNull($activationDetailEntity);
 
-        $this->assertEquals(ActivationDetail\Entity::SALES, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
+        $additionalDetails = json_decode($activationDetailEntity[ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
 
-        $this->assertEquals(1, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
 
+        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
     }
 
     public function testSkipMidOfficeCallFromLMSSalesPitchCompleted()
@@ -12342,8 +12347,6 @@ class BankingAccountTest extends TestCase
         Mail::fake();
 
         $this->ba->adminAuth();
-
-        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
 
         $data = [
             Entity::PINCODE     => '202122',
@@ -12361,7 +12364,7 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'x, y, z',
                 ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => 100,
                 ActivationDetail\Entity::ACCOUNT_TYPE => 'insignia',
-                ActivationDetail\Entity::MERCHANT_CITY => 'Bangalore',
+                ActivationDetail\Entity::MERCHANT_CITY => 'Aligarh',
                 ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
                 ActivationDetail\Entity::MERCHANT_REGION => 'South',
                 ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
@@ -12390,17 +12393,9 @@ class BankingAccountTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::MID_OFFICE);
+
         $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEmpty($bankingAccount['id']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
-
-        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
 
         $request  = [
             'method'  => 'PATCH',
@@ -12431,17 +12426,7 @@ class BankingAccountTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEmpty($bankingAccount['id']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
-
-        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::MID_OFFICE);
     }
 
     public function testSkipMidOfficeCallDashboardDecisionChange()
@@ -12456,8 +12441,6 @@ class BankingAccountTest extends TestCase
         Mail::fake();
 
         $this->ba->adminAuth();
-
-        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
 
         $data = [
             Entity::PINCODE     => '202122',
@@ -12475,7 +12458,7 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'x, y, z',
                 ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => 100,
                 ActivationDetail\Entity::ACCOUNT_TYPE => 'insignia',
-                ActivationDetail\Entity::MERCHANT_CITY => 'Bangalore',
+                ActivationDetail\Entity::MERCHANT_CITY => 'Aligarh',
                 ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
                 ActivationDetail\Entity::MERCHANT_REGION => 'South',
                 ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
@@ -12504,17 +12487,9 @@ class BankingAccountTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::MID_OFFICE);
+
         $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEmpty($bankingAccount['id']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
-
-        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
 
         $request  = [
             'method'  => 'PATCH',
@@ -12533,17 +12508,7 @@ class BankingAccountTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEmpty($bankingAccount['id']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
-
-        $this->assertEquals(ActivationDetail\Entity::SALES, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
-
-        $this->assertEquals(1, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+        $this->assertSkipMidOfficeCall(ActivationDetail\Entity::SALES);
     }
 
     /**

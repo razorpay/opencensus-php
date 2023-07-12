@@ -63,8 +63,6 @@ class Constants
 
     const BAS_SERVICEABILITY_BULK   = 'is_serviceable_bulk';
 
-    const BAS_CHECK_SERVICEABILITY  = 'check_serviceability';
-
     const ALLOCATE_LEAD                 = "allocate_lead";
 
     const SIGNATORY_PATH                = 'signatory';
