@@ -891,13 +891,14 @@ class ApiRequestAny
         $domain = \Request::server('SERVER_NAME');
 
         return [
+            Constants::LABEL_HTTP_REQUESTS_ORIGIN                           => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
             Constants::LABEL_HTTP_REQUESTS_DOMAIN                           => $domain ?? 'unknown_domain',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_ROUTE   => $currentRouteName ?? 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_METHOD  => $method,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    => $apiPathName,
-            Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken,
+//            Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken,
         ];
     }
 

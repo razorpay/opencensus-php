@@ -60,6 +60,7 @@ class Metrics
         $apolloClientName = $request->header('apollographql-client-name');
 
         return [
+            Constants::LABEL_HTTP_REQUESTS_ORIGIN         => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
             Constants::LABEL_HTTP_REQUESTS_DOMAIN         => $request->server->get('SERVER_NAME') ?? 'unknown_domain',
             Constants::LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT => $apolloClientName ?? 'unknown_graphql_client',
             Constants::LABEL_HTTP_REQUESTS_PRODUCT        => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,

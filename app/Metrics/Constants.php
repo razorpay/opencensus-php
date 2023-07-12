@@ -102,7 +102,7 @@ class Constants
   const LABEL_HTTP_REQUESTS_STATUS                  = 'status';
   const LABEL_HTTP_REQUESTS_CONTROLLER              = 'controller';
   const LABEL_HTTP_REQUESTS_PRODUCT                 = 'product';
-  const LABEL_HTTP_REQUESTS_ROLE                    = 'role';
+  const LABEL_HTTP_REQUESTS_ORIGIN                  = 'origin';
   const LABEL_HTTP_REQUESTS_DOMAIN                  = 'domain';
   const LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT          = 'graphql_client';
 

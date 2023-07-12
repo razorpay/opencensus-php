@@ -9,6 +9,7 @@ use App\Metrics\Constants;
 use League\Csv\Writer;
 use SplTempFileObject;
 use App\Trace\TraceCode;
+use App\Http\ApiUrl;
 
 class AppResponse
 {
@@ -92,6 +93,7 @@ class AppResponse
         $request = app('request');
 
         return [
+            Constants::LABEL_HTTP_REQUESTS_ORIGIN                 => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
             Constants::LABEL_HTTP_REQUESTS_DOMAIN                 => $request->server->get('SERVER_NAME') ?? 'unknown_domain',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_STATUS      => $response['status_code']  ?? $response['http_status_code']  ?? 'unknown_status',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS  => $response['success']                                     ?? 'unknown_success',
