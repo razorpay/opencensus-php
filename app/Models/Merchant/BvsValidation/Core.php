@@ -613,6 +613,11 @@ class Core extends Base\Core
 
             $merchantConsentDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $documentDetail['type']);
 
+            $this->trace->info(TraceCode::PROCESS_MERCHANT_CONSENTS, [
+                'request_id'        => $id,
+                'consent_details'   => $merchantConsentDetail
+            ]);
+
             if (empty($merchantConsentDetail) === true)
             {
                 // Safety check: If merchant details are still null, return at this point

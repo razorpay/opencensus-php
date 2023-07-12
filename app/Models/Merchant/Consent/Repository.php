@@ -84,7 +84,7 @@ class Repository extends Base\Repository
 
     public function getConsentDetailsForRequestId($requestId, $consentFor)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+        return $this->newQuery()
                     ->where(Entity::REQUEST_ID, '=', $requestId)
                     ->where(Entity::CONSENT_FOR, '=', $consentFor)
                     ->first();
