@@ -17,8 +17,7 @@ class CreateConsentDocuments
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Í
-
+è
 Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.proto&platform.bvs.consentdocumentmanager.v2"!
 ClientDetails
 platform (	"¥
@@ -53,14 +52,28 @@ owner_type (	
 subject (	"&
 Email
 name (	
-address (	"ý
+address (	"½
+
+SmsDetails
+service (	
+owner_id (	
+
+owner_type (	
+org_id (	
+sender (	
+destination (	
+template_name (	
+template_namespace (	
+language	 (	"Ø
 CreateConsentDocumentsRequestK
 owner_details (24.platform.bvs.consentdocumentmanager.v2.OwnerDetailsM
 client_details (25.platform.bvs.consentdocumentmanager.v2.ClientDetails_
 documents_detail (2E.platform.bvs.consentdocumentmanager.v2.ConsentDocumentRequestDetails
 
 send_email (K
-email_details (24.platform.bvs.consentdocumentmanager.v2.EmailDetailsB(Z&platform/bvs/consentdocumentmanager/v2bproto3'
+email_details (24.platform.bvs.consentdocumentmanager.v2.EmailDetails
+send_sms (G
+sms_details (22.platform.bvs.consentdocumentmanager.v2.SmsDetailsB(Z&platform/bvs/consentdocumentmanager/v2bproto3'
         , true);
 
         static::$is_initialized = true;

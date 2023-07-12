@@ -33,6 +33,14 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.platform.bvs.consentdocumentmanager.v2.EmailDetails email_details = 5;</code>
      */
     protected $email_details = null;
+    /**
+     * Generated from protobuf field <code>bool send_sms = 6;</code>
+     */
+    protected $send_sms = false;
+    /**
+     * Generated from protobuf field <code>.platform.bvs.consentdocumentmanager.v2.SmsDetails sms_details = 7;</code>
+     */
+    protected $sms_details = null;
 
     /**
      * Constructor.
@@ -42,9 +50,11 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\OwnerDetails $owner_details
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\ClientDetails $client_details
-     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails>|\Google\Protobuf\Internal\RepeatedField $documents_detail
+     *     @type \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails[]|\Google\Protobuf\Internal\RepeatedField $documents_detail
      *     @type bool $send_email
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\EmailDetails $email_details
+     *     @type bool $send_sms
+     *     @type \Platform\Bvs\Consentdocumentmanager\V2\SmsDetails $sms_details
      * }
      */
     public function __construct($data = NULL) {
@@ -127,7 +137,7 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.ConsentDocumentRequestDetails documents_detail = 3;</code>
-     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setDocumentsDetail($var)
@@ -188,6 +198,60 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Platform\Bvs\Consentdocumentmanager\V2\EmailDetails::class);
         $this->email_details = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool send_sms = 6;</code>
+     * @return bool
+     */
+    public function getSendSms()
+    {
+        return $this->send_sms;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool send_sms = 6;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setSendSms($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->send_sms = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.platform.bvs.consentdocumentmanager.v2.SmsDetails sms_details = 7;</code>
+     * @return \Platform\Bvs\Consentdocumentmanager\V2\SmsDetails|null
+     */
+    public function getSmsDetails()
+    {
+        return $this->sms_details;
+    }
+
+    public function hasSmsDetails()
+    {
+        return isset($this->sms_details);
+    }
+
+    public function clearSmsDetails()
+    {
+        unset($this->sms_details);
+    }
+
+    /**
+     * Generated from protobuf field <code>.platform.bvs.consentdocumentmanager.v2.SmsDetails sms_details = 7;</code>
+     * @param \Platform\Bvs\Consentdocumentmanager\V2\SmsDetails $var
+     * @return $this
+     */
+    public function setSmsDetails($var)
+    {
+        GPBUtil::checkMessage($var, \Platform\Bvs\Consentdocumentmanager\V2\SmsDetails::class);
+        $this->sms_details = $var;
 
         return $this;
     }

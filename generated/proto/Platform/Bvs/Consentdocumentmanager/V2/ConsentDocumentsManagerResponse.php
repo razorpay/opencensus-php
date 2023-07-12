@@ -39,7 +39,7 @@ class ConsentDocumentsManagerResponse extends \Google\Protobuf\Internal\Message
      *     @type string $id
      *     @type string $status
      *     @type \Google\Protobuf\UInt32Value $count
-     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails>|\Google\Protobuf\Internal\RepeatedField $documents_detail
+     *     @type \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails[]|\Google\Protobuf\Internal\RepeatedField $documents_detail
      * }
      */
     public function __construct($data = NULL) {
@@ -157,7 +157,7 @@ class ConsentDocumentsManagerResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.ConsentDocumentDetails documents_detail = 4;</code>
-     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setDocumentsDetail($var)
