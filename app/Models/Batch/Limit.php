@@ -96,7 +96,8 @@ class Limit
         Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST => 1000000,
         Type::VAULT_MIGRATE_TOKEN_NS                     => 1000000,
         Type::TOKEN_HQ_CHARGE                            => 1000000,
-        Type::PAYMENT_PAGE                          => 10000
+        Type::PAYMENT_PAGE                          => 10000,
+        Type::CREATE_WALLET_USER_CONTAINERS         => 1000000,
     ];
 
     /**
