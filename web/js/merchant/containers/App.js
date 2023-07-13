@@ -70,10 +70,17 @@ import currencies from '../constants/currency';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
+import lazy from 'merchant/routes/LazyLoader';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
 // );
+
+const IdleTimer = lazy(() =>
+  import(/* webpackChunkName: "IdleTimer" */ 'merchant/containers/Home/IdleTimer'),
+);
 
 initSentry('Merchant');
 
@@ -120,6 +127,28 @@ class App extends Component {
     this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
+  onIdle = () => {
+    const { logout, showNotification } = this.props;
+    try {
+      document.body.dispatchEvent(new CustomEvent('NOT_AUTHENTICATED', { bubbles: true }));
+      // Show session timeout popup for 1.5 seconds & then hit logout API
+      setTimeout(async () => {
+        const resp = await logout();
+        const { success } = resp;
+        !success &&
+          showNotification({
+            type: 'error',
+            message: LOGOUT_ERROR,
+          });
+      }, 1500);
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        message: error ? error : LOGOUT_ERROR,
+      });
+    }
+  };
+
   resumePendingRequests = () => {
     for (let i = 0; i < this.pendingRequests.length; i++) {
       this.pendingRequests[i]();
@@ -159,7 +188,7 @@ class App extends Component {
     initLumberjack();
 
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', function (e) {
+    window.addEventListener('NOT_AUTHENTICATED', function () {
       if (this.logoutPopupShown) {
         return;
       }
@@ -539,7 +568,7 @@ class App extends Component {
       }
     }
   }
-  UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
+  UNSAFE_componentWillReceiveProps({ user, location, baseLocation, org }) {
     const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
       this.state;
     if (user.isAuthenticated) {
@@ -755,7 +784,7 @@ class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => {});
+          .catch(() => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
@@ -1084,16 +1113,8 @@ class App extends Component {
   };
 
   render() {
-    const {
-      user,
-      config,
-      org,
-      mode,
-      modeFormatted,
-      partnerModeFormatted,
-      merchant_gst,
-      partnerMode,
-    } = this.props;
+    const { user, config, org, mode, modeFormatted, partnerModeFormatted, partnerMode } =
+      this.props;
 
     const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
     const isPartnerModeEnabled = this.state.isPartnerModeEnabled;
@@ -1101,7 +1122,9 @@ class App extends Component {
     const currentModeFormatted = isPartnerModeEnabled ? partnerModeFormatted : modeFormatted;
     const submerchantId = this.getSubMerchantId();
     const mobileWidth = user.isUniversalSearchEnabled ? 1280 : 950;
-
+    const isTimeoutEnabled = org?.features?.indexOf('logout_admin_inactivity') > -1;
+    const timeoutInMilliseconds =
+      (org?.merchant_session_timeout_in_seconds ?? DEFAULT_TIMEOUT_IN_SECONDS) * 1000;
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
@@ -1122,6 +1145,11 @@ class App extends Component {
           submerchantId,
         }}
       >
+        {isTimeoutEnabled && (
+          <SuspenseWithLoader>
+            <IdleTimer timeoutInMillisecond={timeoutInMilliseconds} onIdle={this.onIdle} />
+          </SuspenseWithLoader>
+        )}
         {this.props?.user?.isOrgCurlec && (
           <HelmetProvider>
             <Helmet>
