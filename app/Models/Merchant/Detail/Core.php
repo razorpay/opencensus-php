@@ -174,6 +174,8 @@ class Core extends Base\Core
 
     protected $dedupeCore;
 
+    protected $pgosProxyController;
+
     public function __construct()
     {
         parent::__construct();
@@ -187,6 +189,8 @@ class Core extends Base\Core
         $this->mcore = new Merchant\Core();
 
         $this->dedupeCore = new DeDupe\Core();
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
     }
 
     public function setDedupeCore($dedupeCore)
@@ -469,10 +473,45 @@ class Core extends Base\Core
         return $mutexTransactionData;
     }
 
+    public function submitMerchantInternal($input, Entity $merchantDetails)
+    {
+        $submit = $input[Entity::SUBMIT] ?? false;
+
+        $merchant = $merchantDetails->merchant;
+
+        $originProduct = Product::PRIMARY;
+
+        $oldActivationStatus = $merchantDetails->getActivationStatus();
+
+        $response = null;
+
+        if ($submit == 1)
+        {
+            $this->validateEmailVerificationIfApplicable($merchant);
+
+            // blacklisted merchant should not be allowed to submit l2 form
+            $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
+            $response = Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM],
+                function() use ($merchant, $input, $originProduct)
+                {
+                    return $this->submitActivationForm($merchant, $input, $originProduct);
+                });
+
+            // If activation status changes to under_review and previous activation status is
+            // Needs Clarification, then it means merchant has responded to Needs Clarification.
+            // If merchant is NC responded then we want to trigger activation workflow
+            if ($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()) === true)
+            {
+                $this->triggerNeedsClarificationRespondedWorkflow($merchant, $merchantDetails);
+            }
+        }
+
+        return $response;
+    }
 
     private function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant)
     {
-
         $merchantId = $merchant->getId();
 
         $newMerchantDetail = $this->repo->merchant_detail->findOrFailPublic($merchantId);
@@ -9626,10 +9665,7 @@ class Core extends Base\Core
 
         $payload['domain'] = $website;
 
-        $pgosProxyController = new MerchantOnboardingProxyController();
-
-        $clearbitResponse = $pgosProxyController->handlePGOSProxyRequests
-                            ('get_clearbit_domain_info', $payload, $merchant);
+        $clearbitResponse = $this->pgosProxyController->handlePGOSProxyRequests('get_clearbit_domain_info', $payload, $merchant);
 
         /*
          * Sample Response from PGOS Clearbit API

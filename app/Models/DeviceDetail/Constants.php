@@ -4,17 +4,18 @@ namespace RZP\Models\DeviceDetail;
 
 class Constants
 {
-    const EASY_ONBOARDING = 'easy_onboarding';
-    const UNBOUNCE = 'unbounce';
-    const CLIENT_IP = 'ip';
-    const G_CLICK_ID = 'gclid';
-    const G_CLIENT_ID = '_ga';
+    const CLIENT_IP                 = 'ip';
+    const G_CLIENT_ID               = '_ga';
+    const G_CLICK_ID                = 'gclid';
+    const UNBOUNCE                  = 'unbounce';
+    const EASY_ONBOARDING           = 'easy_onboarding';
+    const PGOS_ONBOARDED_MERCHANT   = 'pgos_onboarded_merchant';
 
-    const DEVICE = 'device';
-    const TYPE = 'type';
+    const DEVICE                    = 'device';
+    const TYPE                      = 'type';
 
-    const ANDROID   = 'android';
-    const IOS       = 'ios';
+    const ANDROID                   = 'android';
+    const IOS                       = 'ios';
 
     const MOBILE_APP_SOURCES = [
         self::ANDROID,

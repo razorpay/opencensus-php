@@ -798,6 +798,7 @@ class Route
         'merchant_supported_plugins'               => ['get',      'onboarding/merchant/supported_plugins',          'MerchantController@getMerchantSupportedPlugins'                    ],
         'merchant_info'                            => ['get',      'merchant/{id}/info',                             'MerchantController@getMerchantInfo'                                ],
         'merchant_entities_info'                   => ['get',      'merchant_entities_info',                         'MerchantController@fetchAllMerchantEntitiesRelatedInfo'            ],
+        'merchant_submit_internal'                 => ['post',     'internal/pgos_submit/{mid}',                     'MerchantController@submitMerchantInternal'                         ],
         'merchant_plugin_fetch'                    => ['get',      'onboarding/merchants/{id}/plugin',               'MerchantController@getMerchantPlugin'                              ],
         'merchant_logs_search'                     => ['post',     'merchant/logs',                                  'MerchantController@createLogSearch'                                ],
         'merchant_logs_fetch'                      => ['get',      'merchant/logs',                                  'MerchantController@getMerchantLogs'                                ],
@@ -5073,6 +5074,7 @@ class Route
         'refunds_reversal_create',
         'adj_transaction_create',
         'merchant_entities_info',
+        'merchant_submit_internal',
         'merchant_document_upload_internal',
         'merchant_activation_clarifications_save_internal',
         'merchant_activation_clarifications_fetch_internal',
@@ -15772,7 +15774,8 @@ class Route
         ],
 
         'pgos' => [
-            'merchant_entities_info'
+            'merchant_entities_info',
+            'merchant_submit_internal'
         ],
 
         'disputes' => [

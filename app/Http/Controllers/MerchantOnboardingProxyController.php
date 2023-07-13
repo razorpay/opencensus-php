@@ -5,11 +5,12 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
-use RZP\Trace\TraceCode;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 
@@ -129,6 +130,23 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return $this->sendRequestAndParseResponse($route, 'POST', $twirpPath, $payload, $headers);
         }
 
+    }
+
+    public function shouldMerchantOnboardViaPGOS(string $merchantId): bool
+    {
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+        if (empty($userDeviceDetail) === false)
+        {
+            $pgosOnboardedMerchant = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::PGOS_ONBOARDED_MERCHANT);
+
+            if (empty($pgosOnboardedMerchant) === false)
+            {
+                return $pgosOnboardedMerchant;
+            }
+        }
+
+        return false;
     }
 
     //We are not passing $path here as done in BaseProxyController since we are getting path from request itself.

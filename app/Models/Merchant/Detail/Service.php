@@ -4311,4 +4311,11 @@ class Service extends Base\Service
             $this->trace->traceException($e, Trace::ERROR, TraceCode::STORE_TERMINAL_BANNER_STATUS_FAILURE);
         }
     }
+
+    public function submitMerchantInternal($merchantId, $input)
+    {
+        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+
+        return $this->core->submitMerchantInternal($input, $merchantDetails);
+    }
 }

@@ -4064,6 +4064,16 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function submitMerchantInternal($mid)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->submitMerchantInternal($mid, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function get1ccAddressIngestionConfig()
     {
         $input = Request::all();
