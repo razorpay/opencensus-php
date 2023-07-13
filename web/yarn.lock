@@ -3969,10 +3969,10 @@
     lodash "4.17.15"
     redaxios "0.3.0"
 
-"@razorpay/frontend-care@0.5.86":
-  version "0.5.86"
-  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.5.86/41f36da4f63d876c03145ee737f8d463284bcfa7#41f36da4f63d876c03145ee737f8d463284bcfa7"
-  integrity sha512-hiXIDn5Tc0vm1WCgP2aRBMSLu5XrGk+jG17hETOzcVMAdq0nzsblp+mLNhhICV4y1bnyCWbr5XrUZfi2dMgUaQ==
+"@razorpay/frontend-care@0.5.87":
+  version "0.5.87"
+  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.5.87/f8fb5a1bc4212ee52e059faf3841bf553f31b4c2#f8fb5a1bc4212ee52e059faf3841bf553f31b4c2"
+  integrity sha512-BNCx61MQMnIgWM3/cgVRnAsvcpFtF2UpKj7FxWIfG1tiiUN9ouq/MaxG2VGug3lRxhBVgLA2y6tqMM7BS45X1g==
 
 "@razorpay/universe-cli@15.3.0":
   version "15.3.0"
