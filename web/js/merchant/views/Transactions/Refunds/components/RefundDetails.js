@@ -62,6 +62,7 @@ class PaymentDetailsContainer extends Component {
     const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders, location } =
       this.props;
     const navigationState = location?.state;
+    const { arn, rrn, utr } = refund.acquirer_data ?? {};
     return (
       <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -141,10 +142,7 @@ class PaymentDetailsContainer extends Component {
                     </EntityDetailRow>
                   )}
 
-                  <EntityDetailRow
-                    label="RRN/ARN"
-                    value={refund.acquirer_data?.arn || refund.acquirer_data?.rrn}
-                  />
+                  <EntityDetailRow label="RRN/ARN" value={arn || rrn || utr} />
 
                   <EntityDetailRow
                     label="Refund Speed"

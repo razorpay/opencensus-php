@@ -309,7 +309,7 @@ export const paymentReceiverType = {
 export const arn = {
   title: 'RRN/ARN',
   value: (item) => {
-    const { arn, rrn } = item?.acquirer_data ?? {};
-    return arn || rrn || '-';
+    const { arn, rrn, utr } = item?.acquirer_data ?? {};
+    return arn || rrn || utr || '-';
   },
 };

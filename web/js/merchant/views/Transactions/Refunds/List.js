@@ -3,7 +3,7 @@ import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
-import { refundId, paymentId, amount, createdAt, status, arn } from 'common/ui/item/pair';
+import { refundId, paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -75,7 +75,7 @@ class RefundsListContainer extends ListContainer {
   }
 
   render() {
-    const columns = [this._refundId, this._paymentId, arn, amount, createdAt];
+    const columns = [this._refundId, this._paymentId, amount, createdAt];
     columns.push(status);
 
     const { user, terminalProviders } = this.props;
