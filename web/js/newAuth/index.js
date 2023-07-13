@@ -1,16 +1,15 @@
-import 'regenerator-runtime/runtime.js'; // eslint-disable-line
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import 'core-js/es/map';
 import 'core-js/es/set';
 import React, { Suspense, useEffect } from 'react';
 import { render } from 'react-dom';
-import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import Size from '@razorpay/blade-old/src/atoms/Size';
+import 'regenerator-runtime/runtime.js'; // eslint-disable-line
+import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { FullPageLoader } from '../common/components/Loader'; // eslint-disable-line
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import { ROUTES } from './utils';
+import './public-paths';
 import splitz from './splitz';
-
-__webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`; // eslint-disable-line
+import { ROUTES } from './utils';
 
 const SignIn = React.lazy(() => import('./signin'));
 const SignUp = React.lazy(() => import('./signup'));
@@ -76,5 +75,9 @@ const App = () => {
     <div />
   );
 };
+
+if (module.hot) {
+  module.hot.accept();
+}
 
 render(<App />, document.getElementById('react-root'));
