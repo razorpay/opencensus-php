@@ -1,6 +1,6 @@
+import { uniq as uniqViaLodash } from 'lodash';
 import { User } from 'common/typings';
-import { uniqueArray, randomInt } from 'common/utils/rzp-utils';
-
+import { randomInt } from 'common/utils/rzp-utils';
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import { AccountStateType } from 'merchant_common/views/Reports/types/account';
 import { Format, QueryStringParams } from 'merchant_common/views/Reports/types';
@@ -46,16 +46,17 @@ export const sortCardsByReportType = (configs): Array<[string, BaseConfigType[]]
 };
 
 // for emails selection dropdown
-export const getAvailableEmails = (user: User): string[] => {
+export const getAvailableEmails = (user: User, additional?: string[]): string[] => {
   if (!user) return [];
 
   const { email, contact_email, transaction_report_email } = user;
 
-  const availableEmails = uniqueArray([
+  const availableEmails = uniqViaLodash([
     email,
     contact_email,
     ...(transaction_report_email ? transaction_report_email.split(',') : []),
-  ]);
+    ...(additional ? additional : []),
+  ]) as string[];
 
   return availableEmails;
 };
@@ -102,6 +103,7 @@ export const parseReqDataFromConfigs = (configs): BaseConfigType[] => {
         referred_accounts: template?.referred_accounts,
       },
       type_title: otherProps?.type_title,
+      emails: otherProps?.emails ?? [],
     };
 
     if (name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT || name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT) {

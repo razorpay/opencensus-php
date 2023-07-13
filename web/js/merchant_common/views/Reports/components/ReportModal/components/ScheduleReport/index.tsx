@@ -14,7 +14,7 @@ const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) 
     },
   } = reportsCore[dashboardType];
 
-  const availableEmails = getAvailableEmails(user);
+  const availableEmails = getAvailableEmails(user, allConfigs.data.map((e) => e.emails).flat());
   const { availableAccounts, headers, parseSchedulePayloadBeforeSubmit } =
     getReportsDashboardConfig(dashboardType, session, accounts, mode);
 
