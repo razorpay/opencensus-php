@@ -1021,6 +1021,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_TOKENS_UPI_VPA_BULK                          = 'CUSTOMER_TOKENS_UPI_VPA_BULK';
     const CUSTOMER_VPA_TOKEN_CREATE_FAILED                      = 'CUSTOMER_VPA_TOKEN_CREATE_FAILED';
     const CUSTOMER_CARD_FETCH_FAILED                            = 'CUSTOMER_CARD_FETCH_FAILED';
+    const TOKEN_REQUESTOR_ID_FETCH_FAILED                       = 'TOKEN_REQUESTOR_ID_FETCH_FAILED';
     const TOKEN_CREATE                                          = 'TOKEN_CREATE';
     const CANCEL_INVOICE                                        = 'CANCEL_INVOICE';
     const INVOICES_EXPIRE_CRON_SUMMARY                          = 'INVOICES_EXPIRE_CRON_SUMMARY';

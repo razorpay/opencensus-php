@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
+use RZP\Models\Card\NetworkName;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
     const CARD_MANDATE_ID           = 'card_mandate_id';
     const VPA_ID                    = 'vpa_id';
     const CARD                      = 'card';
+    const NETWORK                   = 'network';
     const VPA                       = 'vpa';
     const BANK                      = 'bank';
     const BANK_DETAILS              = 'bank_details';
@@ -189,6 +191,9 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const ENTITY        = 'entity';
     const PROVIDER_DATA = 'provider_data';
+    const PROVIDER_NAME = 'provider_name';
+    const PROVIDER_TYPE = 'provider_type';
+    const TOKENISED_TERMINAL_ID = 'tokenised_terminal_id';
     const INTEROPERABLE = 'interoperable';
     const STATUS_REASON = 'status_reason';
 
@@ -202,6 +207,7 @@ class Entity extends Base\PublicEntity
     const TOKEN_IIN              = 'token_iin';
     const TOKEN_EXPIRY_MONTH     = 'token_expiry_month';
     const TOKEN_EXPIRY_YEAR      = 'token_expiry_year';
+    const TOKEN_REQUESTOR_ID     = 'token_requestor_id';
 
     /*
     * status field values
@@ -428,6 +434,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_IIN,
         self::TOKEN_EXPIRY_MONTH,
         self::TOKEN_EXPIRY_YEAR,
+        self::TOKEN_REQUESTOR_ID,
     ];
 
     public function customer()
@@ -1333,6 +1340,13 @@ class Entity extends Base\PublicEntity
                     $provider[self::STATUS_REASON] = self::DEACTIVATED_BY_BANK;
                 }
 
+                if(isset($publicArray[self::CARD][self::NETWORK]) && $publicArray[self::CARD][self::NETWORK] === NetworkName::DICL
+                    && isset($provider[self::PROVIDER_TYPE]) && $provider[self::PROVIDER_TYPE] === self::ISSUER
+                    && isset($provider[self::PROVIDER_NAME]) && $provider[self::PROVIDER_NAME] === 'hdfc'
+                    && isset($provider[self::TOKENISED_TERMINAL_ID])) {
+                    $provider[self::PROVIDER_DATA][self::TOKEN_REQUESTOR_ID] = $this->getTokenRequestorIdByTokenisedTerminalId($provider[self::TOKENISED_TERMINAL_ID]);
+                }
+
                 foreach (self::$providerDataUnsetAttributes as $attribute)
                 {
                     unset($provider[self::PROVIDER_DATA][$attribute]);
@@ -1426,5 +1440,26 @@ class Entity extends Base\PublicEntity
 
              $publicArray[self::BILLING_ADDRESS] = $billingAddress!==null?$billingAddress->getBillingAddress():null;
          }
+    }
+
+    private function getTokenRequestorIdByTokenisedTerminalId($tokenisedTerminalId)
+    {
+        $app = App::getFacadeRoot();
+        $trid = null;
+        try {
+            $tokenisedTerminal = $app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+            if (empty($tokenisedTerminal) === false)
+                $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
+        } catch (\Throwable $e)
+            {
+                $app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_REQUESTOR_ID_FETCH_FAILED,
+                    [
+                        'tokenisedTerminalId'   => $tokenisedTerminalId,
+                    ]);
+            }
+        return $trid;
     }
 }
