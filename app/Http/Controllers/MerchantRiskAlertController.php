@@ -80,9 +80,7 @@ class MerchantRiskAlertController extends Controller
 
     public function postTriggerNeedsClarification(string $workflowActionId)
     {
-        $input = Request::all();
-
-        $response = $this->service()->triggerNeedsClarification($workflowActionId, $input);
+        $response = $this->service()->triggerNeedsClarification($workflowActionId);
 
         return ApiResponse::json($response);
     }
@@ -90,13 +88,6 @@ class MerchantRiskAlertController extends Controller
     public function setMerchantDedupeKey(string $mid)
     {
         $response = $this->service()->setMerchantDedupeKey($mid);
-
-        return ApiResponse::json($response);
-    }
-
-    public function fetchMappings()
-    {
-        $response = $this->service()->fetchMappings();
 
         return ApiResponse::json($response);
     }
