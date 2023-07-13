@@ -18,6 +18,11 @@ use Trace;
 
 class MerchantDetail extends Entity
 {
+    static function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+
     public function fetchDetails()
     {
         $error = null;
@@ -28,7 +33,7 @@ class MerchantDetail extends Entity
         $method = \Request::method();
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
         $apiPathName = 'merchant_activation_details';
-        $startTime = microtime(true);
+        $startTime = self::millitime();
 
         try
         {
@@ -42,7 +47,7 @@ class MerchantDetail extends Entity
             $error = [ $e->getMessage() ];
         }
 
-        $endTime = microtime(true);
+        $endTime = self::millitime();
 
         $timeTaken = $endTime - $startTime;
 

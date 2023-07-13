@@ -532,6 +532,11 @@ class ApiRequestAny
         return $this;
     }
 
+    static function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+
     /**
      * Fires the request to the API
      * @return array standard response
@@ -561,10 +566,10 @@ class ApiRequestAny
         // if it contains `://`
         $path = str_replace('://', '', $path);
 
+        $start_time = self::millitime();
+
         try
         {
-            $start_time = microtime(true);
-
             $client = (new ApiRequestSpan($this->client))->wrapRequestInSpan(
                 $method,
                 $path,
@@ -575,7 +580,7 @@ class ApiRequestAny
                 $spanOptions
             );
 
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -600,25 +605,6 @@ class ApiRequestAny
 
             try
             {
-                $httpCode = $client->getStatusCode() ?? 'unknown_status';
-
-                $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
-
-                $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
-
-                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
-            }
-            catch (\Throwable $t)
-            {
-                $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
-                    'message' => $t->getMessage() ?? 'unknown_message',
-                ]);
-            }
-
-            $response = json_decode($client->getBody(), true);
-
-            try
-            {
                 $apiRouteName     = $client->getHeader(self::API_ROUTE_NAME_HEADER);
 
                 $apiPathPattern   = $client->getHeader(self::API_ROUTE_PATH_PATTERN_HEADER);
@@ -637,11 +623,30 @@ class ApiRequestAny
 
             $httpCode = $client->getStatusCode();
 
+            try
+            {
+                $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
+
+                $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
+
+                $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
+            }
+            catch (\Throwable $t)
+            {
+                $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
+                    'message' => $t->getMessage() ?? 'unknown_message',
+                ]);
+            }
+
+            $response = json_decode($client->getBody(), true);
+
             return [null, $response, $httpCode];
         }
         catch(\GuzzleHttp\Exception\ClientException $e)
         {
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -691,7 +696,7 @@ class ApiRequestAny
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
         {
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -727,7 +732,7 @@ class ApiRequestAny
         // This captures all the errors that might happen for now
         catch(ConnectException $e)
         {
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -761,7 +766,7 @@ class ApiRequestAny
         }
         catch(GuzzleException $e)
         {
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -796,7 +801,7 @@ class ApiRequestAny
         }
         catch(RZPErrors\Error $e)
         {
-            $end_time = microtime(true);
+            $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
 
@@ -890,16 +895,22 @@ class ApiRequestAny
     {
         $domain = \Request::server('SERVER_NAME');
 
-        return [
-            Constants::LABEL_HTTP_REQUESTS_ORIGIN                           => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
+        $dimensions = [
+            Constants::LABEL_HTTP_REQUESTS_ORIGIN                           => ApiUrl::getRequestOrigin(),
             Constants::LABEL_HTTP_REQUESTS_DOMAIN                           => $domain ?? 'unknown_domain',
-            Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode,
+            Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode ?? 'unknown_status',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_ROUTE   => $currentRouteName ?? 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_METHOD  => $method,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    => $apiPathName,
-//            Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken,
+            //Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken,
         ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::API_RESPONSE_METRIC, $dimensions + [Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken]);
+
+        return $dimensions;
     }
 
     public function forwardCookies()

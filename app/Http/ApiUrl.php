@@ -79,6 +79,13 @@ class ApiUrl
             (in_array($cookie, $allowedHosts, true) === true));
     }
 
+    public static function getRequestOrigin()
+    {
+        $source = self::getRequestOriginUrl();
+
+        return parse_url($source, PHP_URL_HOST) ?? 'unknown_origin';
+    }
+
     public static function getRequestOriginUrl()
     {
         // Since client is loading the app in iframe we will not get the request with correct product so client is
