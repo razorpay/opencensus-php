@@ -1691,7 +1691,7 @@ return [
                 ],
                 'apps'                          => [
                     'websites' => [
-                        'https://www.google.com/'
+                        'https://www.example.com/'
                     ],
                     'android'  => [
                         [
@@ -1769,7 +1769,7 @@ return [
                 ],
                 'apps'                          => [
                     'websites' => [
-                        'https://www.google.com/'
+                        'https://www.example.com/'
                     ],
                     'android'  => [
                         [

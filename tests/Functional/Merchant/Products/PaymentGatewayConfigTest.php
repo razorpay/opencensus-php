@@ -514,6 +514,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
+
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
         $accountResponse = $this->runRequestResponseFlow($testData);
@@ -644,6 +646,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
+
         $this->testData['createRegisteredBusinessTypeAccount']['request']['content']['legal_info'] =  [
             'pan'   =>  'AAACL1234C',
             'cin'   =>  'U65999KA2018PTC114468'
@@ -735,6 +739,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         (new Core())->create($featureParams, true);
 
         $this->mockTerminalServiceResponse();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
 
         $this->testData['createRegisteredBusinessTypeAccount']['request']['content']['legal_info'] =  [
             'pan'   =>  'AAACL1234C',
@@ -830,6 +836,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         (new Core())->create($featureParams, true);
 
         $this->mockTerminalServiceResponse();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -938,6 +946,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->setupPrivateAuthForPartner();
 
         $this->mockTerminalServiceResponse();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
 
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];
 
@@ -1055,6 +1065,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $key = $this->setupPrivateAuthForPartner();
 
         $this->mockTerminalServiceResponse();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -1883,21 +1895,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
             "response" => [
                 "variant" => [
                     "name" => "enabled"
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
-            "experiment_id" => "KIYvRvxbpMy7r1",
-            "id" => '10000000000000',
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable'
                 ]
             ]
         ];

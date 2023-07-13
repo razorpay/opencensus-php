@@ -1443,33 +1443,4 @@ class PartnerConfigTest extends OAuthTestCase
 
         $this->startTest($testData);
     }
-
-    public function testUpdateAllowedConfigWithApplicationIdByPartner()
-    {
-        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
-
-        $partnerConfig = $this->createConfigForPartnerApp($app->getId());
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
-
-        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/partner_config/'. $partnerConfig->id;
-
-        $splitzOutput = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzOutput);
-
-        $response = $this->startTest($testData);
-
-        $this->checkResponseFieldsForProxyOrInternalAuth($response);
-    }
 }
