@@ -2413,6 +2413,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchSubmsBasedOnProductUsageStatus()
     {
+        $this->markTestSkipped("is_used filter is deprecated");
+
         $partnerAppId = $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
@@ -2435,6 +2437,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchSubmsBasedOnProductNotUsed()
     {
+        $this->markTestSkipped("is_used filter is deprecated");
+
         $partnerAppId = $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
