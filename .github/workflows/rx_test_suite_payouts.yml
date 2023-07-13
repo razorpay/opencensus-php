@@ -19,7 +19,7 @@ jobs:
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
-  rx_test_suite-1_payouts:
+  UT_rx_test_suite-1_payouts:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -29,7 +29,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: Rx Test Suite-1 Payouts
+    name: UT_Rx_Test_Suite-1_Payouts
     steps:
       - name: checkout
         id: checkout
@@ -43,7 +43,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: rx_test_suite-1_payouts
+      - name: UT_rx_test_suite-1_payouts
         run: ci-assets/rx_test_suite-1_payouts.sh
         env:
           DB_LIVE_HOST: mysql
@@ -146,7 +146,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  rx_test_suite-2_payouts:
+  UT_rx_test_suite-2_payouts:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -156,7 +156,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: Rx Test Suite-2 Payouts
+    name: UT_Rx_Test_Suite-2_Payouts
     steps:
       - name: checkout
         id: checkout
@@ -170,7 +170,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: rx_test_suite-2_payouts
+      - name: UT_rx_test_suite-2_payouts
         run: ci-assets/rx_test_suite-2_payouts.sh
         env:
           DB_LIVE_HOST: mysql
@@ -273,7 +273,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  rx_test_suite-3_payouts:
+  UT_rx_test_suite-3_payouts:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -283,7 +283,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: Rx Test Suite-3 Payouts
+    name: UT_Rx_Test_Suite-3_Payouts
     steps:
       - name: checkout
         id: checkout
@@ -297,7 +297,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: rx_test_suite-3_payouts
+      - name: UT_rx_test_suite-3_payouts
         run: ci-assets/rx_test_suite-3_payouts.sh
         env:
           DB_LIVE_HOST: mysql
@@ -400,7 +400,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  rx_test_suite-4_payouts:
+  UT_rx_test_suite-4_payouts:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -410,7 +410,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: Rx Test Suite-4 Payouts
+    name: UT_Rx_Test_Suite-4_Payouts
     steps:
       - name: checkout
         id: checkout
@@ -424,7 +424,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: rx_test_suite-4_payouts
+      - name: UT_rx_test_suite-4_payouts
         run: ci-assets/rx_test_suite-4_payouts.sh
         env:
           DB_LIVE_HOST: mysql

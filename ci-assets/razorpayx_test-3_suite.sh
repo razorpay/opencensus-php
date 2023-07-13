@@ -3,7 +3,7 @@ TEST_SUITE_STATUS=0
 log_file_name="test-output.log"
 export START_TIME=$(date +%s)
 echo "start-time: ${START_TIME}"
-SUITE_NAME="RazorpayX Test-3 Suite" php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M --testsuite "RazorpayX Test-3 Suite" >> $log_file_name
+SUITE_NAME="UT_RazorpayX_Test-3_Suite" php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M --testsuite "UT_RazorpayX_Test-3_Suite" >> $log_file_name
 export TEST_SUITE_STATUS=$((TEST_SUITE_STATUS + $?))
 export END_TIME=$(date +%s)
 echo "end-time: ${END_TIME}"

@@ -451,11 +451,11 @@
             <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
 
         </testsuite>
-        <testsuite name="UPI Suite Test Suite">
+        <testsuite name="UT_UPI_Suite_Test_Suite">
             <directory>./tests/Functional/PaymentsUpi</directory>
             <directory>./tests/Unit/PaymentsUpi</directory>
         </testsuite>
-        <testsuite name="Cross Border Test Suite">
+        <testsuite name="UT_Cross_Border_Test_Suite">
             <directory>./tests/Functional/Currency/</directory>
             <directory>./tests/Functional/InternationalBankTransfer/</directory>
             <directory>./tests/Functional/International</directory>
@@ -472,37 +472,37 @@
             <file>./tests/Functional/Merchant/CheckoutInternationalPreferencesTest.php</file>
             <file>./tests/Functional/Payment/NbPlusService/NbplusPaymentServiceAppsTest.php</file>
         </testsuite>
-        <testsuite name="Affordibility Test Suite">
+        <testsuite name="UT_Affordibility_Test_Suite">
             <directory>./tests/Functional/Offer/</directory>
         </testsuite>
-        <testsuite name="Rx Test Suite-1 Payouts">
+        <testsuite name="UT_Rx_Test_Suite-1_Payouts">
             <directory>./tests/Functional/PayoutSource/</directory>
             <directory>./tests/Functional/PayoutDowntime/</directory>
         </testsuite>
-        <testsuite name="Rx Test Suite-2 Payouts">
+        <testsuite name="UT_Rx_Test_Suite-2_Payouts">
             <directory>./tests/Functional/Counter/</directory>
             <directory>./tests/Functional/FundLoadingDowntime/</directory>
         </testsuite>
-        <testsuite name="Rx Test Suite-3 Payouts">
+        <testsuite name="UT_Rx_Test_Suite-3_Payouts">
             <directory>./tests/Functional/FeeRecovery/</directory>
         </testsuite>
-        <testsuite name="Rx Test Suite-4 Payouts">
+        <testsuite name="UT_Rx_Test_Suite-4_Payouts">
             <file>./tests/Functional/Merchant/BalanceTest.php</file>
             <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
         </testsuite>
-        <testsuite name="RazorpayX Test-1 Suite">
+        <testsuite name="UT_RazorpayX_Test-1_Suite">
             <directory>./tests/Functional/BankingAccountService/</directory>
             <directory>./tests/Functional/BankingAccount/</directory>
         </testsuite>
-        <testsuite name="RazorpayX Test-2 Suite">
+        <testsuite name="UT_RazorpayX_Test-2_Suite">
             <directory>./tests/Unit/Models/Contact</directory>
             <directory>./tests/Functional/AccountingPayouts/</directory>
         </testsuite>
-        <testsuite name="RazorpayX Test-3 Suite">
+        <testsuite name="UT_RazorpayX_Test-3_Suite">
             <directory>./tests/Functional/PayoutLink/</directory>
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
         </testsuite>
-        <testsuite name="NoCode Test Suite">
+        <testsuite name="UT_NoCode_Test_Suite">
             <directory>./tests/Functional/Invoice/</directory>
             <directory>./tests/Functional/Item/</directory>
             <directory>./tests/Functional/PaymentLink/</directory>

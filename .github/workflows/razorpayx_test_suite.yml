@@ -19,7 +19,7 @@ jobs:
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
-  razorpayx_test-1_suite:
+  UT_razorpayx_test-1_suite:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -29,7 +29,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: RazorpayX Test-1 Suite
+    name: UT_RazorpayX_Test-1_Suite
     steps:
       - name: checkout
         id: checkout
@@ -43,7 +43,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: razorpayx_test-1_suite
+      - name: UT_razorpayx_test-1_suite
         run: ci-assets/razorpayx_test-1_suite.sh
         env:
           DB_LIVE_HOST: mysql
@@ -146,7 +146,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  razorpayx_test-2_suite:
+  UT_razorpayx_test-2_suite:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -156,7 +156,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: RazorpayX Test-2 Suite
+    name: UT_RazorpayX_Test-2_Suite
     steps:
       - name: checkout
         id: checkout
@@ -170,7 +170,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: razorpayx_test-2_suite
+      - name: UT_razorpayx_test-2_suite
         run: ci-assets/razorpayx_test-2_suite.sh
         env:
           DB_LIVE_HOST: mysql
@@ -273,7 +273,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  razorpayx_test-3_suite:
+  UT_razorpayx_test-3_suite:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -283,7 +283,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: RazorpayX Test-3 Suite
+    name: UT_RazorpayX_Test-3_Suite
     steps:
       - name: checkout
         id: checkout
@@ -297,7 +297,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: razorpayx_test-3_suite
+      - name: UT_razorpayx_test-3_suite
         run: ci-assets/razorpayx_test-3_suite.sh
         env:
           DB_LIVE_HOST: mysql

@@ -19,7 +19,7 @@ jobs:
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
-  upi_suite_test_suite:
+  UT_upi_suite_test_suite:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -29,7 +29,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: UPI Suite Test Suite
+    name: UT_UPI_Suite_Test_Suite
     steps:
       - name: checkout
         id: checkout
@@ -43,7 +43,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: upi_suite_test_suite
+      - name: UT_upi_suite_test_suite
         run: ci-assets/upi_suite_test_suite.sh
         env:
           DB_LIVE_HOST: mysql
