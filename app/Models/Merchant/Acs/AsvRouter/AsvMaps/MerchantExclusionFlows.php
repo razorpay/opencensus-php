@@ -227,6 +227,7 @@ final class MerchantExclusionFlows
         'update_fts_fund_transfer' => true,
         'payment_validate_vpa' => true,
         'customer_fetch_tokens_internal' => true,
+        'payment_create_jsonp' => true,
     );
 
     public static function isExclusionFLow(string $flow): bool
