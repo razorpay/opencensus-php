@@ -341,5 +341,7 @@ return [
         
         'RECURRING_DEBIT_PATTERN' => env('RECURRING_DEBIT_PATTERN', ''),
 
+        'CHECKOUT_ANALYTICS' => env('CHECKOUT_ANALYTICS',''),
+
     ]
 ];

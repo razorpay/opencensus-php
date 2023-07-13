@@ -2100,6 +2100,10 @@ export default class User {
     return getSplitzExperimentVariant('capital_isplusplus_splitz')?.variables?.result === 'on';
   }
 
+  get isCheckoutAnalyticsEnabled() {
+    return getSplitzExperimentVariant('checkout_analytics')?.variables?.result === 'on';
+  }
+
   get isSrAdminEnabled() {
     return getSplitzExperimentVariant('success_rate_admin')?.variables?.result === 'on';
   }

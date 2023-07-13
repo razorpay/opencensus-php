@@ -152,6 +152,7 @@ export const RoutesConfig = {
   '/payroll': Teams.XPAYROLL,
   '/plans': Teams.APPS,
   '/plans/new': Teams.APPS,
+  '/payment-metrics': Teams.CHECKOUT,
 
   '/profile': Teams.PG_DASHBOARD,
 

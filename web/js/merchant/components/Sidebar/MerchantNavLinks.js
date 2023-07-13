@@ -9,6 +9,7 @@ import {
   getIsBankingEnabled,
   getIsPayrollWidgetEnabled,
   getIsShowAffordabilityWidget,
+  getIsCheckoutPaymentMetricsEnabled,
 } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
@@ -362,6 +363,15 @@ function MerchantNavLinks(props) {
           currentUser.isIssuingBulkUploadEnabled ||
           user.isIssuingFundsTabEnabled
         }
+      />
+
+      <MainNavLink
+        label="Payment Metrics"
+        type="product"
+        icon="i i-chart text-info"
+        additionalCondition={getIsCheckoutPaymentMetricsEnabled}
+        to={routes.paymentMetrics}
+        isNew
       />
 
       <div class="divider" />

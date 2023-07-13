@@ -34,6 +34,7 @@ const ROUTE_REG = {
   developers: /^\/developers(\/(api|webhooks))?/,
   wallet: /^\/(wallet)/,
   internationalPaymentsBtn: /^\/(international)/,
+  payment_metrics: /^\/(payment-metrics)/,
 };
 
 export const BASE_ROUTES = {
@@ -76,6 +77,7 @@ export const BASE_ROUTES = {
   payment_handle: '/payment-handle',
   wallet: '/wallet',
   internationalPaymentsBtn: '/payment-methods/international-payments',
+  payment_metrics: '/payment-metrics',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -98,6 +100,8 @@ export const initializeRoutes = (location, user) => {
     routes.settings = pathname.match(ROUTE_REG.settings)[0];
   } else if (ROUTE_REG.invoices.test(pathname)) {
     routes.invoices = pathname.match(ROUTE_REG.invoices)[0];
+  } else if (ROUTE_REG.payment_metrics.test(pathname)) {
+    routes.payment_metrics = pathname.match(ROUTE_REG.payment_metrics)[0];
   } else if (ROUTE_REG.affordability.test(pathname)) {
     routes.affordability = pathname.match(ROUTE_REG.affordability)[0];
   } else if (ROUTE_REG.route.test(pathname)) {

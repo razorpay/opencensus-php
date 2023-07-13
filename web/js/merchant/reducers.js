@@ -150,6 +150,7 @@ import pluginReducer from 'merchant/reducers/plugins';
 import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
 import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Reports/redux/reducer';
 import { magicCODSettingsReducer } from 'merchant/reducers/magicCheckout/codEngine/reducer';
+import paymentMetricsReducer from 'merchant/reducers/paymentMetrics';
 
 export default combineReducers({
   modal: modalReducer,
@@ -295,4 +296,5 @@ export default combineReducers({
   paymentHandle: paymentHandleReducer,
   newAuth: newAuthReducer,
   partnerDashboard: partnerReducer,
+  paymentMetrics: paymentMetricsReducer,
 });

@@ -61,4 +61,5 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   api_keys: 'API Keys and Plugins',
   developers: 'Developers',
   app_store: 'App Store',
+  payment_metrics: 'Payment Metrics',
 };

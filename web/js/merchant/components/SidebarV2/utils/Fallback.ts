@@ -95,6 +95,12 @@ export const FALLBACK_PRODUCTS = [
         category: '',
         tags: [],
       },
+      {
+        title: SIDEEBAR_PRODUCTS_TITLES.payment_metrics,
+        product_id: 'payment_metrics',
+        category: '',
+        tags: [],
+      },
     ],
     max_default_options: 3,
   },

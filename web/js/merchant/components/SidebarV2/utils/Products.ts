@@ -89,6 +89,11 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any): boolean =>
       user.isAllowedView('virtual_accounts') && !user.findTag('i18_hide_virtual_accounts'),
   },
+  payment_metrics: {
+    icon: 'i-chart',
+    additionalCondition: (user: { isCheckoutAnalyticsEnabled: boolean; isOrgRZP: boolean }) =>
+      user.isCheckoutAnalyticsEnabled && user.isOrgRZP,
+  },
   qr_codes: {
     icon: 'i-qr-code',
     additionalCondition: (user: any): boolean =>

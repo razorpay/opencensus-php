@@ -57,6 +57,7 @@ const BASE_ROUTES = {
   stores: '/stores/products',
   developersApis: '/developers/apis',
   developersWebhooks: '/developers/webhooks',
+  paymentMetrics: '/payment-metrics',
 };
 
 @withRouter

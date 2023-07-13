@@ -729,6 +729,12 @@ export default {
     // prod experiment ids
     'Lrb3FnfRl2FVmQ',
   ],
+  checkout_analytics: [
+    // beta experiment ids
+    'M0Z76ari6rZz6Z',
+    // prod experiment ids
+    'M0ZCjxNJMZqa98',
+  ],
   search_v2_phase_1: [
     // stage env id
     'M2B7MsOjDv2RCd',

@@ -74,7 +74,8 @@
     "js/merchant/components/Activation",
     "js/merchant/components/styled",
     "js/merchant/components/Announcements/TerminalStatus",
-    "js/merchant/views/RazorpayXWidget"
+    "js/merchant/views/RazorpayXWidget",
+    "js/merchant/views/PaymentMetrics"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

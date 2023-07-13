@@ -91,6 +91,10 @@ const Affordability = lazy(() =>
   import(/* webpackChunkName: "Affordability" */ 'merchant/views/Affordability'),
 );
 
+const PaymentMetrics = lazy(() =>
+  import(/* webpackChunkName: "PaymentMetrics" */ 'merchant/views/PaymentMetrics'),
+);
+
 const QRCodes = lazy(() => import(/* webpackChunkName: "QRCodes" */ 'merchant/views/QRCodes'));
 
 const Stores = lazy(() => import(/* webpackChunkName: "Stores" */ 'merchant/views/Stores'));
@@ -634,7 +638,11 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute path="/affordability" component={Affordability} />
-
+          <ShowWhenRoute
+            path="/payment-metrics"
+            component={PaymentMetrics}
+            additionalCondition={(user) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP}
+          />
           <ShowWhenRoute
             path="/affordability"
             component={Affordability}

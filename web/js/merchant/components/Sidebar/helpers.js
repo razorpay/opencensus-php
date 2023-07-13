@@ -9,3 +9,6 @@ export const getIsPayrollWidgetEnabled = (currentUser = {}) => {
 export const getIsShowAffordabilityWidget = (currentUser = {}) => {
   return currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP;
 };
+
+export const getIsCheckoutPaymentMetricsEnabled = (currentUser = {}) =>
+  currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP;
