@@ -1189,6 +1189,11 @@ class Service extends Base\Service
 
             $dataToUpdate['gateway_reference_id1']  =  null;
 
+             if (empty($input['card']['gateway_reference_id2']) === false)
+             {
+                $dataToUpdate['gateway_reference_id2'] = trim($input['card']['gateway_reference_id2']);
+             }
+
 
              $data = [
                 'payment_id' => $payment->getId(),
@@ -1253,7 +1258,7 @@ class Service extends Base\Service
 
         }
 
-        if ($payment->getMethod() !== Payment\Method::UPI && $payment->getMethod() !== Payment\Method::CARD)
+        if ($payment->getMethod() !== Payment\Method::UPI && $payment->isMethodCardOrEmi() === false)
         {
             $transaction->setGatewayAmount($input['amount']);
         }
@@ -1300,7 +1305,7 @@ class Service extends Base\Service
         if (($payment->isExternal() === true) and
             (($payment->isUpi() === true and
             $payment->isRoutedThroughPaymentsUpiPaymentService() === true) or
-            ($payment->isCard() === true)))
+            ($payment->isMethodCardOrEmi() === true)))
         {
             (new Transaction\Core)->dispatchUpdatedTransactionToCPS($transaction, $payment);
         }

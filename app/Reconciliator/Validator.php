@@ -279,6 +279,7 @@ class Validator extends Base\Core
         'card.arn'                                         => 'required|string',
         'card.gateway_fee'                                 => 'required|string',
         'card.gateway_service_tax'                         => 'required|string',
+        'card.gateway_reference_id2'                       => 'sometimes|string',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'card.gateway_fee'                                 => 'required',
