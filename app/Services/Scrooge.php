@@ -49,6 +49,8 @@ class Scrooge
     const PaymentsBaseURL = 'payments';
     const ListBaseURL = 'list';
     const MerchantsBaseURL = 'merchants';
+    const RefundsBaseInternalURL = 'internal/refunds';
+    const PaymentsBaseInternalURL = 'internal/payments';
 
     const RESPONSE_SUCCESS_CODES = [200];
 
@@ -712,7 +714,7 @@ class Scrooge
         $this->enablePassport();
 
         $scroogeResponse = $this->sendRequest(
-            self::RefundsBaseURL . '/' . $id,
+            self::RefundsBaseInternalURL . '/' . $id,
             Requests::GET,
             $input);
 
@@ -737,7 +739,7 @@ class Scrooge
         $this->enablePassport();
 
         $scroogeResponse = $this->sendRequest(
-            self::RefundsBaseURL,
+            self::RefundsBaseInternalURL,
             Requests::GET,
             $input);
 
@@ -763,7 +765,7 @@ class Scrooge
         $this->enablePassport();
 
         $scroogeResponse = $this->sendRequest(
-            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
+            self::PaymentsBaseInternalURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
             Requests::GET,
             $input);
 
@@ -789,7 +791,7 @@ class Scrooge
         $this->enablePassport();
 
         $scroogeResponse = $this->sendRequest(
-            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
+            self::PaymentsBaseInternalURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
             Requests::GET,
             []);
 
