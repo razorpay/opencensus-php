@@ -483,6 +483,11 @@ class PGRouter
 
     public function fetchPayment(string $id, string $merchantId, array $input)
     {
+        if ((app()->isEnvironmentProduction() === true) and
+            ($this->mode === Mode::TEST))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
         $endpoint = 'v1/payments/' . $id;
 
         if (empty($merchantId) === false)
