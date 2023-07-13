@@ -46,6 +46,7 @@ class SequenceNumber
         Frequency::HALF_YEARLY => 2,
         Frequency::QUARTERLY   => 4,
         Frequency::BIMONTHLY   => 6,
+        Frequency::FORTNIGHTLY => 2,
     ];
 
     /**
@@ -73,6 +74,18 @@ class SequenceNumber
                 $currentDay = 7;
             }
             $endOfCycle = 7;
+        }
+
+        if($frequency === Frequency::FORTNIGHTLY)
+        {
+            if($currentDay > 15)
+            {
+                $currentDay = $currentDay - 15;
+            }
+            else
+            {
+                $endOfCycle = 15;
+            }
         }
 
         $currentTime = Carbon::now()->getTimestamp();
@@ -119,15 +132,17 @@ class SequenceNumber
             return false;
         }
 
+        $startDay = $this->fromDate->day;
+        $currentDay = Carbon::now(Timezone::IST)->day;
+
         $diff = $this->monthly();
-        if($frequency === Frequency::WEEKLY)
-        {
-            $diff = $this->weekly();
-        }
+
         switch ($frequency)
         {
-
             case Frequency::WEEKLY:
+                $diff = $this->weekly();
+                return ($diff >=1);
+
             case Frequency::MONTHLY:
                 return ($diff >=1);
 
@@ -139,6 +154,19 @@ class SequenceNumber
 
             case Frequency::YEARLY:
                 return (($diff%12)==0);
+
+            case Frequency::BIMONTHLY:
+                return (($diff%2)==0);
+
+            case Frequency::FORTNIGHTLY:
+                if ($diff >=1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return  ($startDay <= 15 and $currentDay > 15);
+                }
 
             //For all other freq : Return diff as a false as we are not supporting other frequencies
             default:
@@ -209,6 +237,9 @@ class SequenceNumber
             case Frequency::YEARLY:
                 return $this->yearly();
 
+            case Frequency::FORTNIGHTLY:
+                return $this->fortnightly();
+
              //For all other freq : Return diff as 0 and sequence number as 1
             default:
                 return 0;
@@ -230,6 +261,52 @@ class SequenceNumber
     protected function weekly(): int
     {
         return ($this->toDate->endOfWeek())->diffInWeeks($this->fromDate->startOfWeek());
+    }
+
+    /**
+     * Function to calculate sequence no. for fortnightly frequency
+     * There are 2 cycles in a month :
+     * Cycle 1 : Jan 1 - Jan 15
+     * Cycle 2 : Jan 16 - Jan 31
+     * @return int
+     */
+    protected function fortnightly(): int
+    {
+        $seqNumber = 0;
+
+        if ($this->fromDate->day > 15)
+        {
+            $seqNumber -= 1;
+        }
+
+        $startDate = $this->fromDate->startOfMonth()->day;
+        $endDate = $this->toDate->endOfMonth()->day;
+
+        $cycleCount = $this->getFrequencyToCycleCount();
+
+        $currentDay = Carbon::now(Timezone::IST)->day;
+
+        if ($currentDay <= 15)
+        {
+            $endDate = 15;
+        }
+        else
+        {
+            $startDate = 16;
+        }
+
+        $seqNumber += ($cycleCount - (int) ceil($startDate/16));
+        $seqNumber += (int) ceil($endDate/16);
+
+        /* sequence number calculation for months in between the start and end dates.
+        There are 2 cycles in fortnightly-calculated month. Since 2 cycles implies 2 sequence numbers per month,
+        we multiply the month diff by 2.
+        */
+        $seqDiffInMonths = $this->getSeqNumberForMonthDifference($cycleCount);
+
+        $seqNumber += $seqDiffInMonths;
+
+        return $seqNumber;
     }
 
     /**
@@ -366,6 +443,26 @@ class SequenceNumber
         $diffInYears    = $endYear - $startYear - 1;
 
         return $diffInYears * $numberOfCycles;
+    }
+
+    private function getSeqNumberForMonthDifference(int $numberOfCycles)
+    {
+        $endMonth   = $this->toDate->endOfMonth()->month;
+        $startMonth = $this->fromDate->startOfMonth()->month;
+
+        $endYear   = $this->toDate->endOfYear()->year;
+        $startYear = $this->fromDate->startOfYear()->year;
+
+        $diffInYears = $endYear - $startYear;
+
+        if ($diffInYears > 0)
+        {
+            $endMonth = $endMonth + ($diffInYears * 12);
+        }
+
+        $diffInMonths = $endMonth - $startMonth - 1;
+
+        return $diffInMonths * $numberOfCycles;
     }
 
     /**

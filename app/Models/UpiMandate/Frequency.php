@@ -7,6 +7,7 @@ class Frequency
     const DAILY        = 'daily';
     const AS_PRESENTED = 'as_presented';
     const WEEKLY       = 'weekly';
+    const FORTNIGHTLY  = 'fortnightly';
     const BIMONTHLY    = 'bimonthly';
     const MONTHLY      = 'monthly';
     const QUARTERLY    = 'quarterly';
@@ -23,17 +24,21 @@ class Frequency
          self::WEEKLY,
          self::QUARTERLY,
          self::YEARLY,
+         self::FORTNIGHTLY,
+         self::BIMONTHLY,
+         self::HALF_YEARLY
     ];
 
     public static $frequencyToRecurringValueMap = [
         self::WEEKLY       => 7,
-        self::BIMONTHLY    => 15,
+        self::FORTNIGHTLY  => 15,
         self::MONTHLY      => 31,
         // For these frequencies, we have been given the following recur values. There is still some confusion around
         // these. Will change once more clarity is there.
         self::QUARTERLY    => 31,
         self::HALF_YEARLY  => 31,
         self::YEARLY       => 31,
+        self::BIMONTHLY    => 31,
     ];
 
 

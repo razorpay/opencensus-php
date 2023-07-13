@@ -501,7 +501,8 @@ trait UpiRecurring
         // validation for fixed frequencies
         if(($upiMandate['frequency'] !== UpiMandate\Frequency::AS_PRESENTED) and
             ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
-            ($lastSuccessDebitTimeStamp !== null))
+            ($lastSuccessDebitTimeStamp !== null) and
+            (in_array($this->app['env'],['automation','bvt']) === false))
         {
             $sequenceNumber = new UpiMandate\SequenceNumber($lastSuccessDebitTimeStamp, Carbon::now()->getTimestamp());
             $recurType = $upiMandate['recurring_type'];

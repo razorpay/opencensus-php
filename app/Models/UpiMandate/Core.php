@@ -102,7 +102,7 @@ class Core extends Base\Core
                         Entity::RECURRING_VALUE
                     );
                 }
-            case Frequency:: BIMONTHLY:
+            case Frequency:: FORTNIGHTLY:
                 if (($recurringValue < 1) or ($recurringValue > 15))
                 {
                     throw new Exception\BadRequestValidationFailureException(
