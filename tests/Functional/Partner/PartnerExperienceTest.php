@@ -831,9 +831,239 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => 'activated']);
 
-        $this->fixtures->on(Mode::TEST)->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
 
-        $this->fixtures->user->createUserForMerchant($submerchantId);
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFilterByActivationStatusAllActivated()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'activated']);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => null]);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFilterByActivationStatusForAllActivatedEmpty()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => 'kyc_qualified_unactivated']);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFilterByActivationStatusAllUnderReview()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'kyc_qualified_unactivated']);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => 'under_review']);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $submerchantId = '10000000000012';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_3',
+            'email' => 'subm3@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => null]);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm3@xyz.com']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFilterByActivationStatusForAllUnderReviewEmpty()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'activated']);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => 'needs_clarification']);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFilterByActivationStatusRejected()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'rejected']);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+
+        $this->fixtures->merchant_detail->edit($submerchantId, ['activation_status' => null]);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
 

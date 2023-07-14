@@ -470,7 +470,7 @@ class Validator extends Base\Validator
         Detail\Entity::CONTACT_MOBILE     => 'sometimes|max:15|contact_syntax',
         Constants::CONTACT_INFO           => 'sometimes|string',
         Constants::APPLICATION_ID         => 'sometimes|string|size:14',
-        Detail\Entity::ACTIVATION_STATUS  => 'sometimes|string|in:instantly_activated,activated,under_review,needs_clarification,activated_mcc_pending,kyc_qualified_unactivated,activated_kyc_pending,not_submitted',
+        Detail\Entity::ACTIVATION_STATUS  => 'sometimes|string|in:instantly_activated,activated,under_review,needs_clarification,activated_mcc_pending,kyc_qualified_unactivated,activated_kyc_pending,not_submitted,rejected,all_activated,all_under_review',
         Constants::FROM                   => 'integer',
         Constants::TO                     => 'integer',
         Constants::COUNT                  => 'integer|min:1|max:50',

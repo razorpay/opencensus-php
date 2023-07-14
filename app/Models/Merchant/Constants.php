@@ -1925,4 +1925,19 @@ final class Constants
     const PGOS  = 'pgos';
     const API   = 'api';
     const ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION = 'account_suspended_due_to_parent_merchant_suspension';
+
+    const ALL_UNDER_REVIEW = [
+        Detail\Status::UNDER_REVIEW,
+        Detail\Status::KYC_QUALIFIED_UNACTIVATED
+    ];
+
+    const ACTIVATION_STATUS_FILTERS = [
+        'all_under_review',
+        'all_activated'
+    ];
+
+    const ACTIVATION_STATUS_FILTER_MAPPING = [
+        'all_under_review'  => self::ALL_UNDER_REVIEW,
+        'all_activated'     => Detail\Status::PAYMENTS_ENABLED_STATUSES
+    ];
 }

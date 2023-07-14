@@ -1194,7 +1194,14 @@ class Repository extends Base\Repository
      */
     protected function addQueryParamActivationStatus($query, $params)
     {
-        $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
+        if( in_array($params[Detail\Entity::ACTIVATION_STATUS], Constants::ACTIVATION_STATUS_FILTERS) )
+        {
+            $query->whereIn(Detail\Entity::ACTIVATION_STATUS, Constants::ACTIVATION_STATUS_FILTER_MAPPING[$params[Detail\Entity::ACTIVATION_STATUS]]);
+        }
+        else
+        {
+            $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
+        }
 
         return $query;
     }
