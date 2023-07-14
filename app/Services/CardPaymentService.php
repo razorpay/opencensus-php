@@ -393,6 +393,15 @@ class CardPaymentService
 
             try
             {
+                $input = $this->getAdditionalNetworkTokenDetailsForDinersTokenisedPayments($input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(TraceCode::DINERS_GATEWAY_NON_REARCH_ERROR, [$e->getTrace()]);
+            }
+
+            try
+            {
                 $input = $this->getAdditionalNetworkTokenDetailsForOptimizer($gateway, $input);
             }
             catch (\Throwable $e)
@@ -1643,6 +1652,51 @@ class CardPaymentService
         $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
         $input[Entity::CARD][Entity::TOKEN_REFERENCE_ID] = $trid;
         $input[Entity::CARD][Entity::NETWORK_REFERENCE_ID] = $nri;
+
+        return $input;
+    }
+    /**
+     * Diners tokenised payments require additional network token details, like TRN and TRID
+     *
+     * @param array $input
+     * @return array
+     */
+    public function getAdditionalNetworkTokenDetailsForDinersTokenisedPayments(array $input): array
+    {
+        if( ((isset($input[Entity::CARD][Entity::TOKENISED]) === false) or ($input[Entity::CARD][Entity::TOKENISED] === false)) or
+            ((isset($input[Entity::TOKEN]) === false) or (isset($input[Entity::TOKEN]['id']) === false)) or
+            ($input[Entity::CARD][Entity::NETWORK_CODE] != Card\Network::DICL)) {
+            return $input;
+        }
+
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
+
+        $cardInput = $input[Entity::CARD];
+
+        // fetch network token associated with payment
+        $token = (new Repository())->find($input[Entity::TOKEN]['id']);
+        $networkToken = (new Core())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][Entity::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+        $trid = '';
+
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        if (empty($tokenisedTerminal) === false)
+        {
+            $trid = $tokenisedTerminal[Entity::GATEWAY_MERCHANT_ID];
+        }
+        $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
+
+        $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
+        $input[Entity::CARD][Entity::TOKEN_REFERENCE_ID] = $trid;
 
         return $input;
     }

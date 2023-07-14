@@ -25,6 +25,8 @@ class Validator extends Base\Validator
         Entity::TOKEN_EXPIRY_YEAR  => 'sometimes|integer|digits:4|non_past_year|nullable',
         Entity::LAST4              => 'sometimes|numeric|digits:4',
         Entity::TOKEN              => 'sometimes|string',
+        Entity::PROVIDER_TYPE      => 'sometimes|string|nullable',
+        Entity::SERVICE_PROVIDER_TOKEN_DATA => 'sometimes|array'
     ];
 
     protected static $createCpsRequestRules = [

@@ -102,9 +102,15 @@ class Entity extends Base\PublicEntity
     const NETWORK_CODE = 'network_code';
 
     const TOKEN                  = 'token';
+    const SERVICE_PROVIDER_TOKEN_DATA = 'service_provider_token_data';
+    const REQUESTOR_ID = 'requestor_id';
+    const REFERENCE_NUMBER = 'reference_number';
+    const PROVIDER_TYPE = 'provider_type';
     const TOKEN_ID               = 'token_id';
     const INPUT_TYPE             = 'input_type';
     const TOKEN_NUMBER           = 'token_number';
+    const TOKEN_REFERENCE_NUMBER           = 'token_reference_number';
+    const TOKEN_REFERENCE_ID           = 'token_reference_id';
 
     const RELATION_GLOBAL_CARD = 'globalCard';
 
@@ -1593,7 +1599,10 @@ class Entity extends Base\PublicEntity
             $data['token_iin']    = empty($data['token_iin']) ? $data['iin'] : substr($data['token_iin'],0,9);
             $data['expiry_month'] = empty($data['token_expiry_month']) ? $data['expiry_month'] : intval($data['token_expiry_month']);
             $data['expiry_year']  = empty($data['token_expiry_year']) ? $data['expiry_year'] : intval($data ['token_expiry_year']);
-            $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
+            if($this->getNetwork() != Card\Network::getFullName(Network::DICL)) {
+                $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
+            }
+
         }
 
         // Changes to send the card's last4 instead of tokenlast4 for optimizer

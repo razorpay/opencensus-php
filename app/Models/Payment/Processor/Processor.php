@@ -709,9 +709,14 @@ class Processor
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
-//                ($merchant->isRazorpayOrgId() === false) or
-                ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
-                    empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true) or
+                //($merchant->isRazorpayOrgId() === false) or
+                ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true and (
+                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA]) === true or
+                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER]) === true or
+                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID]) === true
+                        ))
+                    //and empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true
+                ) or
                 (empty($input['application']) === false && $input['application'] === 'visasafeclick') or
                 ((isset($input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
                     ($merchant->isFeatureEnabled('vsc_authorization') === true)))
@@ -1052,6 +1057,10 @@ class Processor
                 return ($result === 'on');
             }
 
+            if ($iin->getNetworkCode() === Card\Network::DICL && $this->isPaymentViaTokenisedCard($input)) {
+                $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
+                $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
+            }
             if ($this->isPaymentViaTokenisedCard($input))
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -1145,8 +1154,7 @@ class Processor
 
         if ( $card->getVault() === Card\Vault::HDFC)
         {
-            $input[Card\Entity::EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
-            $input[Card\Entity::EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
+            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
         }
 
         if ($card->getVault() === Card\Vault::AXIS) {
@@ -1162,6 +1170,44 @@ class Processor
         {
             $input = $this->getAdditionalOptimizerCardInputForRearch($token,$input);
         }
+
+        return $input;
+    }
+
+    protected function getAdditionalDinersCardInputForRearch($token,$input)
+    {
+        if ($input[E::TOKENISED] === false)
+        {
+            return $input;
+        }
+
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
+
+        $cardInput = $input[E::CARD];
+
+        // fetch network token associated with payment
+        $networkToken = (new TokenCore())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][E::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+        $trid = '';
+
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        if (empty($tokenisedTerminal) === false)
+        {
+            $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
+        }
+        $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+        $input[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+        $input[E::TOKEN_REFERENCE_ID ]= $trid; //incorrect key nomenclature, TOKEN_REQUESTOR_ID is correct.
 
         return $input;
     }

@@ -22,8 +22,10 @@ use RZP\Models\Customer\Token;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundAccount;
 use RZP\Constants\HyperTrace;
+use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
+use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Models\FundAccount\Type as FundAccountType;
 
 class Core extends Base\Core
@@ -635,7 +637,9 @@ class Core extends Base\Core
                 'cvv'                           => $input['cvv'],
                 Card\Entity::CRYPTOGRAM_VALUE   => $input[Card\Entity::CRYPTOGRAM_VALUE] ?? null,
                 Card\Entity::TOKENISED          => (empty($input[Card\Entity::TOKENISED]) === false) ? boolval($input[Card\Entity::TOKENISED]) : false,
-                CARD\Entity::TOKEN_PROVIDER     => $input[CARD\Entity::TOKEN_PROVIDER] ?? null
+                Card\Entity::TOKEN_PROVIDER     => $input[Card\Entity::TOKEN_PROVIDER] ?? null,
+                Card\Entity::TOKEN_REFERENCE_ID     => $input[Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null,
+                Card\Entity::TOKEN_REFERENCE_NUMBER     => $input[Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null
             ]);
     }
 
@@ -733,6 +737,7 @@ class Core extends Base\Core
             Entity::EXPIRY_YEAR        => $input[Entity::EXPIRY_YEAR],
             Entity::CVV                => $input[Entity::CVV],
             Entity::NAME               => $input[Entity::NAME],
+            Entity::LAST4               => $input[Entity::LAST4]
         ];
 
         $card = $this->create($createInput, $merchant);
@@ -1068,13 +1073,6 @@ class Core extends Base\Core
                     'message'       => 'Setting cvv to dummy value',
                 ]
             );
-        }
-
-
-        if ( $card->getVault() === Card\Vault::HDFC)
-        {
-            $input[Card\Entity::TOKEN_EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
-            $input[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
         }
 
         if ($card->getVault() === Card\Vault::AXIS || ($card->getVault() === Card\Vault::PROVIDERS && $cryptogram === null && $card->getIssuer() === Card\Issuer::UTIB)) {
