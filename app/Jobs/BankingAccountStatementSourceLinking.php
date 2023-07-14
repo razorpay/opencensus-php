@@ -37,6 +37,8 @@ class BankingAccountStatementSourceLinking extends Job
 
     public function handle()
     {
+        parent::handle();
+
         $this->trace->info(
             TraceCode::BAS_SOURCE_LINKING_RETRY_INITIATE,
             [
