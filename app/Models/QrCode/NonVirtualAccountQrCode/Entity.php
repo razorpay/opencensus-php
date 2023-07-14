@@ -9,6 +9,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Constants\Entity as ConstantsEntity;
 
@@ -387,5 +388,87 @@ class Entity extends QrCode\Entity
     public function getClosedAt()
     {
         return $this->getAttribute(self::CLOSED_AT);
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isIciciQr()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+
+        if (str_contains($qrMetaData['pa'], 'icici') === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTrForQR()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+        if (isset($qrMetaData['tr']) === false)
+        {
+            return null;
+        }
+
+        return $qrMetaData['tr'];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQrVpa()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+        if (isset($qrMetaData['pa']) === false)
+        {
+            return null;
+        }
+
+        return $qrMetaData['pa'];
+    }
+
+    /**
+     * @return array|null
+     */
+    public function fetchQrStringMetaData()
+    {
+        $qrString = $this->getAttribute(self::QR_STRING);
+
+        if (isset($qrString) === false)
+        {
+            return null;
+        }
+        $parts = parse_url($qrString);
+        $query = [];
+        parse_str($parts['query'], $query);
+
+        return $query;
+    }
+
+    /**
+     * Refid is generated from gateway in case of Single-use QR with fixed amount. In other cases its generated with
+     * TR_PREFIX and QR_CODE_V2_TR_SUFFIX in the QR Code ID.
+     * @return bool
+     */
+    public function isGatewayGeneratedRefid()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+
+        if (($qrMetaData !== null) and (isset($qrMetaData['tr']) === true))
+        {
+            if (str_contains($qrMetaData['tr'], $this->getAttribute(self::ID)) === false)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

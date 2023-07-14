@@ -268,6 +268,8 @@ final class RazorxTreatment
 
     const QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR = 'qr_payment_auto_capture_for_closed_qr';
 
+    const CLOSE_QR_ON_GATEWAY = 'close_qr_on_gateway';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 
