@@ -18,7 +18,8 @@ const SELECTORS = {
 };
 
 test.setTimeout(2 * 60 * 1000);
-test.describe.parallel('Test UPI Payment Links @flow=payment-links-upi', () => {
+test.describe
+  .parallel('Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   });

@@ -24,8 +24,8 @@ import { COMMON_SELECTORS } from '../../utils/selectors';
     isTestMode: true,
   },
 ].forEach((context) => {
-  test.setTimeout(1 * 60 * 1000);
-  test.describe.parallel(context.testDescription, () => {
+  test.describe
+    .parallel(`${context.testDescription} @project=no-code @project=no-code-roast`, () => {
     test.use({
       storageState: context.loginState,
     });

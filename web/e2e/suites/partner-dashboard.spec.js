@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath } = require('../utils/constants');
 
-test.describe.parallel('Test partner dashboard landing page @flow=home', () => {
+test.describe.parallel('Test partner dashboard landing page @flow=home @project=partner', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

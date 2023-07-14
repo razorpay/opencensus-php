@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import { generateRandomEmail, generateRandomWebsiteUrl } from '../../utils';
 import { routes, StorageStatePath } from '../../utils/constants';
 
-test.describe.parallel('Test customer support details @flow=customer-support', () => {
+test.describe
+  .parallel('Test customer support details @flow=customer-support @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   });

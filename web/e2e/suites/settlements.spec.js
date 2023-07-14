@@ -20,9 +20,8 @@ async function waitAndClickViewSettlements({ page }) {
   }
 }
 
-test.setTimeout(1 * 60 * 1000);
 // roast test settlemetsTest
-test.describe('Test Settlements view when no settlments are present @suite=payments-automation @suite=payments-canary', () => {
+test.describe('Test Settlements view when no settlments are present @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
@@ -33,7 +32,7 @@ test.describe('Test Settlements view when no settlments are present @suite=payme
   });
 });
 
-test.describe('Test Settlements view when settlements are present @suite=payments-automation @suite=payments-canary', () => {
+test.describe('Test Settlements view when settlements are present @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });

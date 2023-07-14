@@ -18,7 +18,8 @@ import { switchToTestMode } from '../../utils';
 import { COMMON_SELECTORS } from '../../utils/selectors';
 
 test.setTimeout(2 * 60 * 1000);
-test.describe.parallel('Test Payments Links V2 @flow=payment-links-v2', () => {
+test.describe
+  .parallel('Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

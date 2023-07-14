@@ -11,7 +11,7 @@ const CONSTANTS = {
   NEXT_CTA: '.Button--primary',
 };
 
-test.describe.parallel('Test International enablement @flow=ie', () => {
+test.describe.parallel('Test International enablement @flow=ie @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

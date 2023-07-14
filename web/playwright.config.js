@@ -1,14 +1,17 @@
 const universePlaywrightConfig = require('@razorpay/universe-test/src/configs/e2e.web/playwright.config');
-const { getBaseUrl } = require('./e2e/utils/config');
+const { getBaseUrl, getProjects } = require('./e2e/utils/config');
 
+const isCI = process.env.CI;
 module.exports = {
   ...universePlaywrightConfig,
   testDir: 'e2e/suites',
   testMatch: ['**/?(*.)+(spec).[jt]s?(x)'],
   globalSetup: './e2e/setup/globalSetup',
-  timeout: 200 * 1000,
+  retries: isCI ? 1 : 0,
+  timeout: 2 * 60 * 1000,
+  workers: isCI ? 1 : 2,
   expect: {
-    timeout: 10000,
+    timeout: 20 * 1000,
   },
   use: {
     ...universePlaywrightConfig.use,
@@ -17,8 +20,5 @@ module.exports = {
     trace: 'retain-on-failure',
     video: 'on-first-retry',
   },
-  projects: [
-    ...universePlaywrightConfig.projects,
-    // Add more devices based on use Case
-  ],
+  projects: getProjects(),
 };

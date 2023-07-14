@@ -1,38 +1,38 @@
-import moment from 'moment';
+const moment = require('moment');
 const { expect } = require('@playwright/test');
 const { COMMON_SELECTORS } = require('./selectors');
 const { routes } = require('./constants');
 
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 
-export function generateRandomText(length) {
+const generateRandomText = (length) => {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
-}
+};
 
-function generateRandomPhoneNumber() {
+const generateRandomPhoneNumber = () => {
   return Math.floor(Math.random() * 9000000000) + 1000000000;
-}
+};
 
-function generateRandomName() {
+const generateRandomName = () => {
   return Math.random().toString(36).slice(2, 15);
-}
+};
 
-function generateRandomEmail() {
+const generateRandomEmail = () => {
   const phone = generateRandomPhoneNumber();
   const name = generateRandomName();
   return `${name}.${phone}@razorpay.com`;
-}
+};
 
-function getDemoGSTIN() {
+const getDemoGSTIN = () => {
   // TODO: expand this list later on
   const DEMO_GSTINS = ['22AAAAA0000A1Z5'];
   return DEMO_GSTINS[Math.floor(Math.random() * DEMO_GSTINS.length)];
-}
+};
 
 const getRandomCustomerData = () => {
   const phone = generateRandomPhoneNumber();
@@ -54,12 +54,12 @@ const expectSuccessNotification = async ({ page, notificationText }) => {
   ).toBeVisible();
 };
 
-function generateRandomWebsiteUrl() {
+const generateRandomWebsiteUrl = () => {
   const keyword = Math.random().toString(36).substring(2, 9);
   return `https://www.youtube.com/${keyword}`;
-}
+};
 
-export const getDefaultDateRangeForPayments = () => {
+const getDefaultDateRangeForPayments = () => {
   const now = moment();
   const to = now.startOf('D').unix(); // to
   const from = now.startOf('D').subtract(DEFAULT_DATE_RANGE_IN_DAYS, 'days').endOf('D').unix(); // from

@@ -1,8 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath, routes } = require('../utils/constants');
 
-test.setTimeout(1 * 60 * 1000);
-test.describe('Account & settings > Profile Test @flow=account-settings', () => {
+test.describe('Account & settings > Profile Test @flow=account-settings @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   });

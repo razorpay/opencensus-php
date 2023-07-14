@@ -11,8 +11,7 @@ const CONSTANTS = {
   UPDATE_ALERT: 'Reminders are updated successfully',
 };
 
-test.setTimeout(1 * 60 * 1000);
-test.describe('My account and settings @flow=account-settings', () => {
+test.describe('My account and settings @flow=account-settings @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   });

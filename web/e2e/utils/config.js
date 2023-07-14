@@ -1,3 +1,4 @@
+const { devices } = require('@playwright/test');
 const { EmailCredentials, MobileCredentials, ActivatedNotIECredentials } = require('./constants');
 
 function getBaseUrl() {
@@ -19,7 +20,44 @@ function getCredentials() {
   };
 }
 
+export function getProjects() {
+  const grep = process.env.INCLUDE_GROUPS;
+  let grepInvert = process.env.EXCLUDE_GROUPS;
+
+  // when both values are empty, run non-auth flows (usually happens when run locally)
+  if (!grep && !grepInvert) {
+    grepInvert = /@flow=auth/;
+  }
+
+  const browsers = [devices['Desktop Chrome']];
+  const projects = [];
+
+  if (process.env.GIT_BRANCH === 'master') {
+    browsers.push(devices['Desktop Firefox'], devices['Desktop Safari']);
+  }
+
+  browsers.forEach((browser) => {
+    projects.push(
+      {
+        name: `Login:${browser.defaultBrowserType}`,
+        grep: /@flow=auth/,
+        use: browser,
+      },
+      {
+        name: 'Custom flow',
+        use: browser,
+        dependencies: [`Login:${browser.defaultBrowserType}`],
+        grep: new RegExp(grep),
+        grepInvert: new RegExp(grepInvert),
+      },
+    );
+  });
+
+  return projects;
+}
+
 module.exports = {
   getBaseUrl,
   getCredentials,
+  getProjects,
 };

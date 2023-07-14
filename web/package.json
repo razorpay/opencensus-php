@@ -114,11 +114,10 @@
     "tsc": "tsc",
     "chromatic": "chromatic --project-token $CHROMATIC_TOKEN --auto-accept-changes --exit-once-uploaded",
     "test:build:merchant": "NODE_OPTIONS=--max-old-space-size=8192 DANGER_ENV=true STAGE=production PROJECT=merchant universe build --disable-image-optimization --disable-differential-builds",
-    "test:e2e": "universe-test web-e2e test",
     "test:setup": "universe-test web-e2e install",
-    "test:e2e:auth": "yarn test:e2e --grep '@flow=auth' --project 'chromium'",
-    "test:e2e:payments-automation": "yarn test:e2e --grep '@suite=payments-automation' --project 'chromium'",
-    "test:e2e:payments-canary": "yarn test:e2e --grep '@suite=payments-canary' --project 'chromium'",
+    "test:e2e": "universe-test web-e2e test",
+    "test:e2e:payments-automation": "INCLUDE_GROUPS=@suite=payments-automation yarn test:e2e",
+    "test:e2e:payments-canary": "INCLUDE_GROUPS=@suite=payments-canary yarn test:e2e",
     "devstack-deploy": "universe-test infra-e2e devstack-deploy",
     "devstack-revert": "universe-test infra-e2e devstack-revert",
     "test:e2e-infra": "universe-test infra-e2e e2e-run",
@@ -212,6 +211,7 @@
     "@types/react": "17.0.2",
     "@types/react-dom": "17.0.2",
     "webpack-dev-server": "4.9.3",
-    "@playwright/test": "1.31.1"
+    "@playwright/test": "1.31.1",
+    "@reportportal/agent-js-playwright": "5.0.11"
   }
 }

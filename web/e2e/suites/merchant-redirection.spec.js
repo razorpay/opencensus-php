@@ -1,29 +1,30 @@
 import { test, expect } from '@playwright/test';
 import { loginByEmail } from '../utils/common';
 import { routes } from '../utils/constants';
+import ENV from '../utils/env';
 
-const EASY_ONBOARDING_WEBSITE = 'https://sme.np.razorpay.in/';
+const EASY_ONBOARDING_WEBSITE = 'https://sme-dashboard.dev.razorpay.in/';
 const constants = {
   EASY_ONBOARDING: {
-    username: process.env.EASY_ONBOARDING_USERNAME,
-    password: process.env.EASY_ONBOARDING_PASSWORD,
-    merchantId: process.env.EASY_ONBOARDING_MERCHANT_ID,
-    rzpUserId: process.env.EASY_ONBOARDING_RZP_USER_ID,
+    username: ENV.EASY_ONBOARDING_USERNAME,
+    password: ENV.EASY_ONBOARDING_PASSWORD,
+    merchantId: ENV.EASY_ONBOARDING_MERCHANT_ID,
+    rzpUserId: ENV.EASY_ONBOARDING_RZP_USER_ID,
   },
   EASY_ONBOARDING_FTUX: {
-    username: process.env.EASY_ONBOARDING_FTUX_USERNAME,
-    password: process.env.EASY_ONBOARDING_FTUX_PASSWORD,
+    username: ENV.EASY_ONBOARDING_FTUX_USERNAME,
+    password: ENV.EASY_ONBOARDING_FTUX_PASSWORD,
   },
   EASY_ONBOARDING_P2PM: {
-    username: process.env.EASY_ONBOARDING_P2PM_USERNAME,
-    password: process.env.EASY_ONBOARDING_P2PM_PASSWORD,
+    username: ENV.EASY_ONBOARDING_P2PM_USERNAME,
+    password: ENV.EASY_ONBOARDING_P2PM_PASSWORD,
   },
   SIGNUP_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding?source=website`,
   FTUX_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding/overview`,
   P2PM_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding/p2pm`,
 };
 
-test.describe.parallel('Dashboard Redirection flow @flow=critical', () => {
+test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payments', () => {
   test('should redirect the user to easy dashboard on clicking signup', async ({ page }) => {
     await page.goto(routes.SIGN_IN_PATH);
     const signUpButton = page.getByRole('button', { name: 'Sign Up' });

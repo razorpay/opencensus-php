@@ -5,8 +5,8 @@ const { routes } = require('../utils/constants');
 const { StorageStatePath } = require('../utils/constants');
 const { COMMON_SELECTORS } = require('../utils/selectors');
 
-test.setTimeout(1 * 60 * 1000);
-test.describe.parallel('My account and settings @flow=account-settings', () => {
+test.describe
+  .parallel('My account and settings @flow=account-settings @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

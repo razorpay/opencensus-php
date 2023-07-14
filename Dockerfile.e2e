@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.31.0-focal
+FROM mcr.microsoft.com/playwright:v1.31.1-focal
 
 WORKDIR /app
 
@@ -11,22 +11,25 @@ COPY --chown=node:node .npmrc package.json yarn.lock ./
 COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/yarn.lock ./web
 
 RUN --mount=type=secret,id=github_access_token set -eux && \
-    echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
+  echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
 
 RUN --mount=type=secret,id=npm_razorpay_token set -eux && \
-    echo "$(cat /run/secrets/npm_razorpay_token)">> ~/.NPM_RAZORPAY_TOKEN
+  echo "$(cat /run/secrets/npm_razorpay_token)">> ~/.NPM_RAZORPAY_TOKEN
 
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
-    export NPM_RAZORPAY_TOKEN="$(cat ~/.NPM_RAZORPAY_TOKEN)" && \
-    yarn config set unsafe-perm true && \
-    HUSKY=0 yarn --frozen-lockfile
+  export NPM_RAZORPAY_TOKEN="$(cat ~/.NPM_RAZORPAY_TOKEN)" && \
+  yarn config set unsafe-perm true && \
+  HUSKY=0 yarn --frozen-lockfile
 
 RUN rm -f ~/.GITHUB_ACCESS_TOKEN && \
-    rm -f ~/.NPM_RAZORPAY_TOKEN
+  rm -f ~/.NPM_RAZORPAY_TOKEN
 
 RUN cd web && npx playwright install --with-deps
 
 COPY . .
+
+RUN rm -f .npmrc && \
+  rm -f ./web/.npmrc
 
 RUN chmod +x /app/run-e2e.sh
 

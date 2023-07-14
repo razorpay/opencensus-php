@@ -1,4 +1,5 @@
 const BASE_PATH = './e2e/storageState';
+const { default: ENV } = require('./env');
 
 const StorageStatePath = {
   EMAIL_TEST_LOGIN_STATE: `${BASE_PATH}/desktop-test-mode-login.json`,
@@ -27,25 +28,26 @@ const routes = {
   CUSTOMERS: '/app/customers',
   CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
   BUSINESS_DETAILS: '/app/business-settings/business',
+  PAYMENT_LINKS: '/app/paymentlinks',
 };
 
 const EmailCredentials = [
   {
     type: 'desktop-test-mode-login.json',
-    username: process.env.EMAIL_TEST_MODE_USERNAME,
-    password: process.env.EMAIL_TEST_MODE_PASSWORD,
+    username: ENV.EMAIL_TEST_MODE_USERNAME,
+    password: ENV.EMAIL_TEST_MODE_PASSWORD,
     storagePath: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   },
   {
     type: 'desktop-live-mode-login.json',
-    username: process.env.EMAIL_LIVE_MODE_USERNAME,
-    password: process.env.EMAIL_LIVE_MODE_PASSWORD,
+    username: ENV.EMAIL_LIVE_MODE_USERNAME,
+    password: ENV.EMAIL_LIVE_MODE_PASSWORD,
     storagePath: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   },
   {
     type: 'desktop-transactions-login.json',
-    username: process.env.EMAIL_TRANSACTIONS_USERNAME,
-    password: process.env.EMAIL_TRANSACTIONS_PASSWORD,
+    username: ENV.EMAIL_TRANSACTIONS_USERNAME,
+    password: ENV.EMAIL_TRANSACTIONS_PASSWORD,
     storagePath: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   },
 ];
@@ -53,16 +55,16 @@ const EmailCredentials = [
 const MobileCredentials = [
   {
     type: 'mobile-test-mode-login.json',
-    username: process.env.MOBILE_TEST_MODE_USERNAME,
-    password: process.env.MOBILE_TEST_MODE_PASSWORD,
-    mobile: process.env.MOBILE_TEST_MODE_MOBILE,
+    username: ENV.MOBILE_TEST_MODE_USERNAME,
+    password: ENV.MOBILE_TEST_MODE_PASSWORD,
+    mobile: ENV.MOBILE_TEST_MODE_MOBILE,
     storagePath: StorageStatePath.MOBILE_TEST_LOGIN_STATE,
   },
   {
     type: 'mobile-live-mode-login.json',
-    username: process.env.MOBILE_LIVE_MODE_USERNAME,
-    password: process.env.MOBILE_LIVE_MODE_PASSWORD,
-    mobile: process.env.MOBILE_LIVE_MODE_MOBILE,
+    username: ENV.MOBILE_LIVE_MODE_USERNAME,
+    password: ENV.MOBILE_LIVE_MODE_PASSWORD,
+    mobile: ENV.MOBILE_LIVE_MODE_MOBILE,
     storagePath: StorageStatePath.MOBILE_LIVE_LOGIN_STATE,
   },
 ];
@@ -70,8 +72,8 @@ const MobileCredentials = [
 const ActivatedNotIECredentials = [
   {
     type: 'activated-not-ie-login.json',
-    username: process.env.ACTIVATED_NOT_IE_USERNAME,
-    password: process.env.ACTIVATED_NOT_IE_PASSWORD,
+    username: ENV.ACTIVATED_NOT_IE_USERNAME,
+    password: ENV.ACTIVATED_NOT_IE_PASSWORD,
     storagePath: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   },
 ];

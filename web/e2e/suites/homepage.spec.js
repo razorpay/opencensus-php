@@ -14,8 +14,8 @@ const HOMEPAGE_SELECTORS = {
   },
 };
 
-test.setTimeout(1 * 60 * 1000);
-test.describe.parallel('Test dashboard landing page @flow=home', () => {
+test.describe
+  .parallel('Test dashboard landing page @flow=home @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

@@ -3,8 +3,8 @@ import { routes, StorageStatePath } from '../utils/constants';
 
 const { test, expect } = require('@playwright/test');
 
-test.setTimeout(1 * 60 * 1000);
-test.describe.serial('Test Create and Edit Customer @flow=customer', () => {
+test.describe
+  .serial('Test Create and Edit Customer @flow=customer @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

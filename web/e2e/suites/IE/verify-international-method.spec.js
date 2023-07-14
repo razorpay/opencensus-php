@@ -1,8 +1,8 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath, routes } = require('../../utils/constants');
 
-test.setTimeout(1 * 60 * 1000);
-test.describe.parallel('Test International Method banner on homepage @flow=ie', () => {
+test.describe
+  .parallel('Test International Method banner on homepage @flow=ie @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   });
@@ -11,6 +11,9 @@ test.describe.parallel('Test International Method banner on homepage @flow=ie', 
     page,
   }) => {
     await page.goto(routes.DASHBOARD);
+
+    await page.waitForTimeout(5000);
+
     const ieCTA = await page.getByRole('link', { name: 'View International Methods' });
     await expect(ieCTA).toBeVisible();
     await ieCTA.click();

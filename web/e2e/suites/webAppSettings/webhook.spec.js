@@ -8,7 +8,7 @@ const ELEMENT_CONSTANTS = {
   PROMPT_COMFIRM_CTA: "xpath=//button[@class='btn btn-xs btn-primary']//span",
 };
 
-test.describe('Test webhook creation @flow=settings', () => {
+test.describe('Test webhook creation @flow=settings @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

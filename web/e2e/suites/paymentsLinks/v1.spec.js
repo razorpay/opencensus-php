@@ -24,7 +24,8 @@ const SELECTORS = {
 };
 
 test.setTimeout(2 * 60 * 1000);
-test.describe.parallel('Test Payments Links V2 @flow=payment-links-v1', () => {
+test.describe
+  .parallel('Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-roast', () => {
   test.use({
     storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   });

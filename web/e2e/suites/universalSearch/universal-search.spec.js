@@ -10,7 +10,7 @@ import {
 } from './constants';
 import { assertSearchResults, getSearchResultsEl } from './utils';
 
-test.describe.parallel('Test universal search @flow=universal-search', () => {
+test.describe.parallel('Test universal search @flow=universal-search @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
