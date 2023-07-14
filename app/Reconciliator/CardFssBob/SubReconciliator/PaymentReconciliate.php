@@ -10,7 +10,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Card\Fss\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
-use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -45,12 +45,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'info_code'  => InfoCode::MIS_FILE_PAYMENT_FAILED ,
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
 
-            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_PAYMENT_FAILED);
+            $this->setRowReconStatusAndError(InfoCode::RECON_FAILED, InfoCode::MIS_FILE_PAYMENT_FAILED);
 
             return null;
         }
