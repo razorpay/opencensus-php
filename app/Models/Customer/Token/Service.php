@@ -18,6 +18,7 @@ use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
+use RZP\Models\Card\Network;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\Merchant;
@@ -1121,6 +1122,8 @@ class Service extends Base\Service
 
                 $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken, false);
 
+                $this->validateifDinersToken($token, $isSptToken);
+
                 (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_REQUEST_RECEIVED");
 
                 $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant, $token);
@@ -1856,6 +1859,51 @@ class Service extends Base\Service
             ];
 
             $input['iin'] = $iinInfo;
+        }
+    }
+
+    protected function validateIfDinersToken($token, $isSptToken)
+    {
+        try {
+            if (isset($token)) {
+                if ($isSptToken) {
+
+                    $cards = $this->repo->card->fetchCardsWithVaultToken(substr($token, strlen('spt' . '_')), $this->merchant->getMerchantId());
+                    $iin = null;
+                    if($cards != null && $cards[0] != null)
+                    {
+                        $iin = $this->repo->card->retrieveIinDetails($cards[0]->getIin());
+                    }
+                } else {
+                    $iin = $this->repo->card->retrieveIinDetails($token->card->getIin());
+                }
+
+                if (isset($iin)) {
+                    //Deprecates /tokens/service_provider_tokens/token_transactional_data for requests with token_id for Diners
+                    if ($iin->getIssuer() == 'HDFC' && $iin->getNetwork() === Network::getFullName(Network::DICL)) {
+                        throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_CRYPTOGRAM_NO_LONGER_SUPPORTED,
+                            'BAD_REQUEST_ERROR',
+                            'This API call is no longer supported for Diners tokens'
+                        );
+                    }
+                } else {
+                    //IIN data is not available for the associated token.
+                    $this->trace->info(TraceCode::TRACE_TOKEN_CRYPTOGRAM_IIN_NOT_SET_ERROR_LOG, [
+                        '$iin' => $iin
+                    ]);
+                }
+            }
+
+        } catch(Exception\BaseException $e) {
+            $error = $e->getError();
+
+            $internalErrorCode = $error->getInternalErrorCode();
+
+            $error->setDetailedError($internalErrorCode, Payment\Method::CARD);
+
+            $error->setPaymentMethod(Payment\Method::CARD);
+
+            throw $e;
         }
     }
 

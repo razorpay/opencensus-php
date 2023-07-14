@@ -1708,7 +1708,7 @@ class TokenTest extends TestCase
 
         $fetchPayload = $this->testData['testFetchCryptogramLive'];
 
-        $fetchPayload['request']['content'] = ['id' => $response['id']];
+        $fetchPayload['request']['content'] = ['token_id' => $response['id']];
 
         try
         {
@@ -1819,7 +1819,7 @@ class TokenTest extends TestCase
 
         $fetchPayload = $this->testData['testFetchCryptogramLive'];
 
-        $fetchPayload['request']['content'] = ['id' => $response['id']];
+        $fetchPayload['request']['content'] = ['token_id' => $response['id']];
         try {
             $this->startTest($fetchPayload);
         }
