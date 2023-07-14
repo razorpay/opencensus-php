@@ -1553,4 +1553,34 @@ return [
             ],
         ],
     ],
+
+    'testInternalAuthWithPassport' => [
+        'request'  => [
+            'content' => [
+            ],
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInternalAuthWithoutPassport' => [
+        'request'  => [
+            'content' => [
+            ],
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ],
+                'http_status_code' => 401,
+            ],
+        ],
+    ],
 ];

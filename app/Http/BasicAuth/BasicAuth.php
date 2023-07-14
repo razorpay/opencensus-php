@@ -1477,6 +1477,17 @@ class BasicAuth
         {
             $merchant = $this->repo->merchant->find($merchantId);
         }
+        else if ((empty($this->reqCtx->passport) === false) and
+            (empty($this->reqCtx->passport->impersonation) === false) and
+            (empty($this->reqCtx->passport->impersonation->consumer) === false) and
+            (empty($this->reqCtx->passport->impersonation->consumer->id) === false) and
+            ($this->reqCtx->passport->impersonation->consumer->type === \RZP\Constants\Entity::MERCHANT))
+        {
+            $this->trace->info(TraceCode::MERCHANT_FETCHED_FROM_PASSPORT, [
+                "merchant_id" => $this->reqCtx->passport->impersonation->consumer->id
+            ]);
+            $merchant = $this->repo->merchant->find($this->reqCtx->passport->impersonation->consumer->id);
+        }
         else
         {
             $merchant = null;
@@ -3066,7 +3077,7 @@ class BasicAuth
             }
             else if($this->isEzetapApiApp() === true)
             {
-                $mid = $this->authCreds->getKey();
+                $mid = $this->authCreds->getMerchant()->getId();
 
                 $userId = $this->getUserIdForRouteFromMerchantUsers($mid);
             }
@@ -3118,6 +3129,11 @@ class BasicAuth
         if ($this->isProxyAuth() === true)
         {
             $merchantId = $this->authCreds->creds[self::KEY_ID];
+
+            if (empty($merchantId) === true)
+            {
+                $merchantId = $this->authCreds->getMerchant()->getId();
+            }
         }
 
         if (empty($merchantId) === false)

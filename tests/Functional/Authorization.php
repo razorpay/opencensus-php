@@ -1196,4 +1196,21 @@ class Authorization
 
         $this->proxy = true;
     }
+
+    public function ezetapInternalAuth(string $mode = Mode::TEST, $merchantId = null): void
+    {
+        $this->proxyHeaders = [];
+
+        $pwd = app('config')->get('applications.ezetap-api')['secret'];
+
+        $key = 'rzp_' . $mode;
+
+        if (empty($merchantId) == false)
+        {
+            $key = $key . '_' . $merchantId;
+            $this->proxy = true;
+        }
+
+        $this->basicAuth($key , $pwd);
+    }
 }

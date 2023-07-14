@@ -980,6 +980,32 @@ class BasicAuthTest extends TestCase
             ->withClaim('authenticated', $authenticated)
             ->withClaim('mode', $mode)
             ->withClaim('consumer', ['id' => $consumer_id, 'type' => $consumer_type]);
+
+        return $this->samplePassportJwt($builder);
+    }
+
+    private function sampleImpersonationPassportJwtBuilder(string $consumer_id = '', string $consumer_type = 'merchant',
+                                                      string $mode = 'live', bool $identified = true,
+                                                      bool $authenticated = true): string
+    {
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $builder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
+        $builder=  $builder
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P15M')))
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', $identified)
+            ->withClaim('authenticated', $authenticated)
+            ->withClaim('mode', $mode)
+            ->withClaim('consumer', ['id' => '123451234', 'type' => 'user'])
+            ->withClaim('impersonation', ['type' => 'merchant', 'consumer'=> ['id' => $consumer_id,
+                'type' => $consumer_type]]);
+
         return $this->samplePassportJwt($builder);
     }
 
@@ -1223,5 +1249,48 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($this->testData['testPaymentFetchWithAccId']);
+    }
+
+    public function testInternalAuthWithPassport()
+    {
+        $payment = $this->fixtures->on('live')->create('payment', ['merchant_id' => '10000000000000']);
+
+        $this->testData['testInternalAuthWithPassport']['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->ezetapInternalAuth('live');
+
+        $this->testData['testInternalAuthWithPassport']['request']['server'] = [
+            'HTTP_X-Passport-JWT-V1' => $this->sampleImpersonationPassportJwtBuilder("10000000000000")
+        ];
+
+        $this->startTest();
+    }
+
+    public function testEzetapProxyAuth()
+    {
+        $payment = $this->fixtures->on('live')->create('payment', ['merchant_id' => '10000000000000']);
+
+        $this->testData['testInternalAuthWithPassport']['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->ezetapInternalAuth('live', '10000000000000');
+
+        $this->runRequestResponseFlow($this->testData['testInternalAuthWithPassport']);
+    }
+
+    public function testInternalAuthWithoutPassport()
+    {
+        $payment = $this->fixtures->on('live')->create('payment', ['merchant_id' => '10000000000000']);
+
+        $this->testData['testInternalAuthWithoutPassport']['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->ezetapInternalAuth('live');
+
+        $testData = $this->testData['testInternalAuthWithoutPassport'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            });
     }
 }

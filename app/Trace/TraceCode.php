@@ -2665,6 +2665,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const AUTH_TYPE_USED                                        = 'AUTH_TYPE_USED';
 
+    const MERCHANT_FETCHED_FROM_PASSPORT                        = "MERCHANT_FETCHED_FROM_PASSPORT";
+
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';
     const REPORTING_SERVICE_API_REQUEST                         = 'REPORTING_SERVICE_API_REQUEST';
     const REPORTING_SERVICE_API_RESPONSE                        = 'REPORTING_SERVICE_API_RESPONSE';
