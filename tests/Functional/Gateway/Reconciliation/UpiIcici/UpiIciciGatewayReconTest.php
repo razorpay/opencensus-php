@@ -448,6 +448,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
 
@@ -498,6 +506,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
 
@@ -547,6 +563,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
@@ -599,6 +623,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
 
@@ -648,6 +680,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
 
@@ -688,6 +728,14 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(['type' => 'upi_qr']);
         $qrCode = $this->getDbLastEntity('qr_code');
