@@ -4,6 +4,7 @@ namespace RZP\Listeners;
 
 use App;
 
+use RZP\Base\ConnectionType;
 use RZP\Trace\TraceCode;
 use Illuminate\Database\Events\QueryExecuted;
 
@@ -43,12 +44,14 @@ class DatabaseEventListener
     {
         $rand = rand(1,100000);
 
-        if ($rand > $this->sampleRate)
+        if (($rand > $this->sampleRate) and
+            ($event->connectionName !== ConnectionType::PAYMENT_FETCH_REPLICA))
         {
             return;
         }
 
-        try {
+        try
+        {
             $this->trace->info(
                 TraceCode::DB_QUERY_EXECUTION_LOG,
                 [
