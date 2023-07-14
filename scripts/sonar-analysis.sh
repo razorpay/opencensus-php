@@ -25,14 +25,14 @@ code_duplication_dev_lines=$(jq -r '.baseComponent.measures[] | select(.metric =
 code_duplication_prod_lines=$(jq -r '.baseComponent.measures[] | select(.metric == "duplicated_lines").value' sonar_prod.json)
 
 
-echo "#### Sonar Analysis Report" >> comment.txt
-echo " " >> comment.txt
-echo "| Metric | Master | Current Branch |" >> comment.txt
-echo "| --- | ----------- | ------------------- | " >> comment.txt
-echo "| Code Coverage | ${code_coverage_exact_prod} | ${code_coverage_exact_dev} |" >> comment.txt
-echo "| Code Smell | ${code_smell_prod} | ${code_smell_dev} |" >> comment.txt
-echo "| Code Duplication Lines | ${code_duplication_prod_lines} | ${code_duplication_dev_lines} |" >> comment.txt
-echo "| Code Duplication | ${code_duplication_prod_percentage}% | ${code_duplication_dev_percentage}% |" >> comment.txt
+echo "#### $FILE_HEADING" >> $FILE_NAME
+echo " " >> $FILE_NAME
+echo "| Metric | Master | Current Branch |" >> $FILE_NAME
+echo "| --- | ----------- | ------------------- | " >> $FILE_NAME
+echo "| Code Coverage | ${code_coverage_exact_prod} | ${code_coverage_exact_dev} |" >> $FILE_NAME
+echo "| Code Smell | ${code_smell_prod} | ${code_smell_dev} |" >> $FILE_NAME
+echo "| Code Duplication Lines | ${code_duplication_prod_lines} | ${code_duplication_dev_lines} |" >> $FILE_NAME
+echo "| Code Duplication | ${code_duplication_prod_percentage}% | ${code_duplication_dev_percentage}% |" >> $FILE_NAME
 
 
 echo Code coverage dev exact: $code_coverage_exact_dev
@@ -46,14 +46,14 @@ echo code_duplication_dev_lines: $code_duplication_dev_lines
 echo code_duplication_prod_lines: $code_duplication_prod_lines
 
 if [ -z "$code_coverage_dev" ] || [ $code_coverage_dev = null ]; then
-    echo "**Status**: 🚫 Sonar Checks Failed, code coverage for this PR is not found"  >> comment.txt
+    echo "**Status**: 🚫 Sonar Checks Failed, code coverage for this PR is not found"  >> $FILE_NAME
     exit 1
 fi
 
 if [ $code_coverage_exact_dev -lt $code_coverage_exact_prod ]; then
-    echo "**Status**: 🚫 Sonar Checks Failed, current code coverage of production ($code_coverage_exact_prod) is getting reduced. Try pulling the latest master in your branch or try covering the new code in your test cases." >> comment.txt
+    echo "**Status**: 🚫 Sonar Checks Failed, current code coverage of production ($code_coverage_exact_prod) is getting reduced. Try pulling the latest master in your branch or try covering the new code in your test cases." >> $FILE_NAME
     exit 1
 else
-    echo "**Status**: ✅ Sonar Checks Passed, code coverage threshold met" >> comment.txt
+    echo "**Status**: ✅ Sonar Checks Passed, code coverage threshold met" >> $FILE_NAME
     exit 0
 fi

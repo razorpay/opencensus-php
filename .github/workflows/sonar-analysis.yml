@@ -74,9 +74,35 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           PROJECT_KEY_DEV: DashboardDev
           PROJECT_KEY_PROD: dashboard
+          FILE_NAME: comment-dashboard.txt
+          FILE_HEADING: 'Sonar Analysis Report'
+
+      # Perform code coverage check for partner dashboard on PR changes vs master
+      - name: PR code coverage check for partner dashboard
+        id: pr-code-coverage-check-partner-dashboard
+        if: ${{ github.ref != 'refs/heads/master' && contains( github.event.pull_request.labels.*.name, 'partnership') }}
+        run: ./scripts/sonar-analysis.sh
+        continue-on-error: true
+        env:
+          SONAR_HOST: ${{ secrets.SONARQUBE_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          PROJECT_KEY_DEV: DashboardDev:web/js/merchant/views/PartnerDashboard
+          PROJECT_KEY_PROD: dashboard:web/js/merchant/views/PartnerDashboard
+          FILE_NAME: comment-partner-dashboard.txt
+          FILE_HEADING: Sonar Analysis Report for Partner Dashboard
 
       - name: Update Sonar Analysis Comment
         if: ${{ github.ref != 'refs/heads/master' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: comment.txt
+          recreate: true
+          header: dashboard_analysis
+          path: comment-dashboard.txt
+          
+      - name: Update Sonar Analysis Comment for Partner Dashboard
+        if: ${{ github.ref != 'refs/heads/master' && contains( github.event.pull_request.labels.*.name, 'partnership') }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          header: partner_dashboard_analysis
+          path: comment-partner-dashboard.txt

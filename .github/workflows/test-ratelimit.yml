@@ -1,6 +1,6 @@
 name: Report Rate Limit
 on: push
-  
+
 # Get rate limit for CI_BOT_TOKEN
 
 jobs:
