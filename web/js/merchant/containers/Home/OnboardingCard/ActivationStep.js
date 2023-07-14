@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-
+import { compose } from 'redux';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ActivationProgressBar from 'common/ui/ProgressBar';
-
+import { connect } from 'react-redux';
 import { ACTIVATION_URL, CLARIFICATION_THROUGH_EMAIL, TEST_MODE, PERSONALISE_URL } from './data';
 import { trackGoToActivation, trackGoToPersonalise, trackSwitchToLive } from './ga';
 import SwitchToMode from './SwitchToMode';
+import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
@@ -48,6 +50,9 @@ const WrapperElement = ({
   hasPersonalised,
   stepNum,
   isActivationFormFullView,
+  openModal,
+  closeModal,
+  user,
   ...otherProps
 }) => {
   /*
@@ -87,6 +92,28 @@ const WrapperElement = ({
   } else if (!hasPersonalised) {
     linkTo = PERSONALISE_URL;
     trackFunction = trackGoToPersonalise;
+  }
+
+  if (user.isOrgCurlec && !isActivated) {
+    return (
+      <div
+        {...otherProps}
+        className={`${otherProps.className} cursor-pointer`}
+        onClick={() => {
+          openModal({
+            size: 'small',
+            component: <ActivationRequiredModal user={user} onCloseClick={closeModal} />,
+          });
+        }}
+      >
+        <div className="media">
+          {children}
+          <div className="media-arrow">
+            <i className="i i-chevron-right" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -196,6 +223,7 @@ const Text = ({
   clarificationMode,
   activationProgress,
   stepNum,
+  isOrgCurlec,
 }) => {
   if (isRejected) {
     return <span>Please check your email for details.</span>;
@@ -218,6 +246,8 @@ const Text = ({
 
         activationProgress == '100' ? (
           'Submit Activation form to accept payments.'
+        ) : isOrgCurlec ? (
+          'Activate your account to accept payments'
         ) : (
           'Fill Activation form to accept payments.'
         )
@@ -276,7 +306,7 @@ const Progress = ({ progress }) => {
   );
 };
 
-export default class ActivationStep extends Component {
+class ActivationStep extends Component {
   getStep() {
     const { isActivated, isSubmitted } = this.props.user;
 
@@ -292,7 +322,7 @@ export default class ActivationStep extends Component {
   }
 
   render() {
-    const { mode, user, config } = this.props;
+    const { mode, user, config, openModal, closeModal } = this.props;
 
     const {
       activation_progress: progress,
@@ -304,6 +334,7 @@ export default class ActivationStep extends Component {
       has_key_access: hasKeyAccess,
       clarification_mode: clarificationMode,
       isActivationFormFullView,
+      isOrgCurlec,
     } = user;
 
     const { hasPersonalised } = config;
@@ -321,6 +352,9 @@ export default class ActivationStep extends Component {
         hasPersonalised={hasPersonalised}
         stepNum={stepNum}
         isActivationFormFullView={isActivationFormFullView}
+        user={user}
+        openModal={openModal}
+        closeModal={closeModal}
       >
         <div className="media-icon">
           <Icon
@@ -346,11 +380,11 @@ export default class ActivationStep extends Component {
                   hasKeyAccess={hasKeyAccess}
                 />
               </b>
-              {!isActivated && !isSubmitted && (
+              {!isActivated && !isSubmitted && !isOrgCurlec && (
                 <span className="activation-progress-num">{progress}%</span>
               )}
             </div>
-            {!isActivated && !isSubmitted && (
+            {!isActivated && !isSubmitted && !isOrgCurlec && (
               <div>
                 <Progress progress={progress} />
               </div>
@@ -368,6 +402,7 @@ export default class ActivationStep extends Component {
               clarificationMode={clarificationMode}
               activationProgress={user.activation_progress}
               stepNum={stepNum}
+              isOrgCurlec={isOrgCurlec}
             />
           </div>
         </div>
@@ -375,3 +410,4 @@ export default class ActivationStep extends Component {
     );
   }
 }
+export default compose(connect(null, { openModal, closeModal }))(ActivationStep);

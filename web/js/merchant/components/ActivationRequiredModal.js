@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default ({ onCloseClick, user }) => {
   const activationName =
@@ -31,6 +33,24 @@ export default ({ onCloseClick, user }) => {
       </ShowWhen>
     </div>
   );
+  if (user.isOrgCurlec) {
+    analyticsTrack({
+      objectName: 'Easy Onboading',
+      actionName: 'Curlec',
+      screen: 'home page',
+      properties: {
+        new: 'test',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
+    modalBody = (
+      <div>
+        Thank you for expressing your interest. We will reach out to you within 24 hours to activate
+        your account.
+      </div>
+    );
+  }
 
   if (user.isSubmitted || user.isRejected || user.needsClarification) {
     const modalAction = (
