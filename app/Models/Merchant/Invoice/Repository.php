@@ -57,6 +57,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchBankingInvoiceReportDataByInvoiceNumber(string $merchantId, int $month, int $year, string $invoiceNumber)
+    {
+        $typeColumn = $this->repo->merchant_invoice->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::INVOICE_NUMBER, '=', $invoiceNumber)
+            ->get();
+    }
+
     /**
      * Gets entities to be displayed on Tax Invoice page
      *

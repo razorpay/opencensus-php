@@ -24,6 +24,7 @@ use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
 use RZP\Jobs\EInvoice\XEInvoice;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\InvoiceReport;
 use RZP\Models\BankingAccount\AccountType;
@@ -67,7 +68,9 @@ class Core extends Base\Core
 
         $balanceType = $balance->getType();
 
-        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year'], $balanceType);
+        $balanceOwnedByRzpx = $this->isBalanceOwnedByRzpx($balance);
+
+        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year'], $balanceType,$balanceOwnedByRzpx);
 
         $this->repo->saveOrFail($invoiceEntity);
 
@@ -506,7 +509,7 @@ class Core extends Base\Core
 
         $skip = 0;
 
-        $i = 0;
+        $allEligibleMerchantIds = [];
 
         do
         {
@@ -519,20 +522,12 @@ class Core extends Base\Core
                                              $merchantIds,
                                              $merchantIdsExcluded);
 
+            $allEligibleMerchantIds = array_merge($allEligibleMerchantIds,$merchantIdsToEnqueue);
+
             $count = count($merchantIdsToEnqueue);
 
             $skip += $count;
 
-            foreach ($merchantIdsToEnqueue as $merchantId)
-            {
-                MerchantInvoiceJob::dispatch(
-                    $merchantId,
-                    $month,
-                    $year,
-                    $mode)
-                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                    ->delay($i++ % 901);
-            }
         } while($batch === $count);
 
         $this->trace->info(
@@ -543,7 +538,6 @@ class Core extends Base\Core
 
 
         $skip = 0;
-        $i = 0;
 
         do{
             $merchantIdsWithCaRblActivated = $this->repo
@@ -556,19 +550,11 @@ class Core extends Base\Core
                     $merchantIds,
                     $merchantIdsExcluded);
 
+            $allEligibleMerchantIds = array_merge($allEligibleMerchantIds,$merchantIdsWithCaRblActivated);
+
             $count = count($merchantIdsWithCaRblActivated);
 
             $skip += $count;
-
-            foreach($merchantIdsWithCaRblActivated as $merchantId){
-                MerchantInvoiceJob::dispatch(
-                    $merchantId,
-                    $month,
-                    $year,
-                    $mode)
-                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                    ->delay($i++ % 901);
-            }
 
         }while($batch === $count);
 
@@ -577,6 +563,94 @@ class Core extends Base\Core
             [
                 'count' => $skip,
             ]);
+
+
+        // Since this module is shared by PG and X, adding a try-catch to reduce impact
+        try {
+            $merchantIdsFetchedViaNewQuery = [];
+            // To optimize query, we are fetching data month by month
+            // 1672511400 is the timestamp since when the new Activation flag was introduced
+            // 2592000 is 30 days in secs
+            // DBA thread: https://razorpay.slack.com/archives/C3BPZHG8P/p1686285370722479
+            for ($fromTimestamp = 1672511400; $fromTimestamp <= $endTimestamp; $fromTimestamp += 2592001) {
+                $skip = 0;
+
+                // This is to ensure that in the last iteration we don't go above $endTimestamp
+                $toTimestamp = min($fromTimestamp + 2592000, $endTimestamp);
+
+                do {
+                    $merchantIdsWithNewActivationFlag = $this->repo
+                        ->merchant
+                        ->fetchMerchantsActivatedViaNewBankingActivationFlagBetweenTimestamps(
+                            $batch,
+                            $skip,
+                            $fromTimestamp,
+                            $toTimestamp,
+                            $merchantIds,
+                            $merchantIdsExcluded);
+
+                    $merchantIdsFetchedViaNewQuery = array_merge($merchantIdsFetchedViaNewQuery, $merchantIdsWithNewActivationFlag);
+
+                    $count = count($merchantIdsWithNewActivationFlag);
+
+                    $skip += $count;
+
+                } while ($batch === $count);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_NEW_X_ACTIVATION_FLAG_DISPATCH_COUNT,
+                    [
+                        'count' => $skip,
+                    ]);
+            }
+
+            $skip = 0;
+
+            do {
+                $merchantIdsWithIciciCaAccounts = $this->repo
+                    ->banking_account_statement_details
+                    ->getMerchantsByChannelAndAccountType(
+                        $batch,
+                        $skip,
+                        \RZP\Models\BankingAccount\Channel::ICICI,
+                        AccountType::DIRECT,
+                        $merchantIds,
+                        $merchantIdsExcluded);
+
+                $merchantIdsFetchedViaNewQuery = array_merge($merchantIdsFetchedViaNewQuery, $merchantIdsWithIciciCaAccounts);
+
+                $count = count($merchantIdsWithIciciCaAccounts);
+
+                $skip += $count;
+
+            } while ($batch === $count);
+
+            $allEligibleMerchantIds = array_merge($allEligibleMerchantIds,$merchantIdsFetchedViaNewQuery);
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MERCHANT_INVOICE_NEW_ELIGIBLE_MERCHANTS_FETCH_FAILED);
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ICICI_CA_DISPATCH_COUNT,
+            [
+                'count' => $skip,
+            ]);
+
+        $allEligibleUniqueMerchantIds = array_unique($allEligibleMerchantIds);
+
+        foreach($allEligibleUniqueMerchantIds as $index => $merchantId){
+            MerchantInvoiceJob::dispatch(
+                $merchantId,
+                $month,
+                $year,
+                $mode)
+                // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                ->delay($index % 901);
+        }
     }
 
     /**
@@ -804,11 +878,23 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function getXEInvoiceData($month, $year, $merchant)
+    public function getXEInvoiceData($month, $year, $merchant, ?Balance\Entity $balance)
+    {
+        $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
+
+        $balanceOwnedByRzpx = $this->isBalanceOwnedByRzpx($balance);
+
+        $invoiceNumber = Entity::generateInvoiceNumberForX($merchant->getId(),$dateString,$balanceOwnedByRzpx);
+
+        return $this->getXEInvoiceDataViaInvoiceNumber($month,$year,$invoiceNumber,$merchant);
+    }
+
+    public function getXEInvoiceDataViaInvoiceNumber($month, $year, $invoiceNumber, $merchant)
     {
         $input = [
             'month'           => $month,
             'year'            => $year,
+            'invoice_number'  => $invoiceNumber,
         ];
 
         return (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $merchant);
@@ -944,5 +1030,28 @@ class Core extends Base\Core
         }
 
         return $result;
+    }
+
+    // This is used to split invoice number based on seller entity.
+    // On X, RBL CA is owned by RSPL, we will be generating a different invoice with RSPL seller entity
+    private function isBalanceOwnedByRzpx(?Balance\Entity $balance): bool
+    {
+        if (is_null($balance))
+        {
+            return false;
+        }
+
+        if($balance->getType() !== Balance\Type::BANKING)
+        {
+            return false;
+        }
+
+        if ($balance->getAccountType() === AccountType::DIRECT &&
+            $balance->getChannel() === Channel::RBL)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

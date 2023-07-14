@@ -193,10 +193,7 @@ class Core extends Base\Core
 
         if($eInvoiceEntity->getType() === Types::BANKING && $eInvoiceEntity->getDocumentType() === DocumentTypes::CRN)
         {
-            $data[Constants::DOCUMENT_DETAILS][Constants::DOCUMENT_NUMBER] =
-                $this->repo->merchant_invoice->getInvoiceNumber($eInvoiceEntity->getMerchantId(),
-                    $eInvoiceEntity->getMonth(), $eInvoiceEntity->getYear(),
-                    Merchant\Invoice\Type::RX_TRANSACTIONS)->getInvoiceNumber();
+            $data[Constants::DOCUMENT_DETAILS][Constants::DOCUMENT_NUMBER] = $eInvoiceEntity->getInvoiceNumber();
 
             $data[Constants::REFERENCE_DETAILS] = $this->getReferenceDetails($eInvoiceEntity);
         }
@@ -412,6 +409,21 @@ class Core extends Base\Core
     {
         $entities = $this->repo->merchant_e_invoice->fetchEInvoicesFromMonthAndType($merchantId, $month, $year,
             $type, $documentType);
+
+        $count = $entities->count();
+        $entityMap = [];
+
+        foreach ($entities as $entity)
+        {
+            $entityMap[$entity->getDocumentType()] = $entity;
+        }
+
+        return [$count, $entityMap];
+    }
+
+    public function getEInvoiceDataWithInvoiceNumber(string $merchantId, string $invoiceNumber)
+    {
+        $entities = $this->repo->merchant_e_invoice->fetchByInvoiceNumber($merchantId, $invoiceNumber);
 
         $count = $entities->count();
         $entityMap = [];

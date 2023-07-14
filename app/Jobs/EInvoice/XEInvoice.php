@@ -74,8 +74,8 @@ class XEInvoice extends Job
 
             $this->XEInvoiceCore = (new EInvoice\XEInvoice());
 
-            [$count, $entityMap] = $this->XEInvoiceCore->getEInvoiceData($this->merchantId,
-                $input[EInvoice\Entity::MONTH], $input[EInvoice\Entity::YEAR], $this->type);
+            [$count, $entityMap] = $this->XEInvoiceCore->getEInvoiceDataWithInvoiceNumber($this->merchantId,
+                $input[EInvoice\Entity::INVOICE_NUMBER]);
 
             foreach($this->documentTypeData as $documentType => $data)
             {

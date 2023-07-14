@@ -54,6 +54,7 @@ class BankingInvoiceReport extends BaseReport
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
         'month'          => 'required|digits_between:1,2',
+        'invoice_number' => 'sometimes'
     ];
 
     public $documentTypeMap         = [
@@ -81,9 +82,11 @@ class BankingInvoiceReport extends BaseReport
 
         $this->year = $input['year'];
 
-        $invoices = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchant->getId(),
+        $invoices = $this->repo->merchant_invoice->fetchBankingInvoiceReportDataByInvoiceNumber($this->merchant->getId(),
             $this->month,
-            $this->year);
+            $this->year,
+            $input['invoice_number']
+        );
 
         if (count($invoices) === 0)
         {

@@ -148,6 +148,7 @@ class Processor extends Base\Core
              }
         }
 
+        $allInvoicesEligibleForEInvoice = [];
         foreach ($this->invoiceBreakup as $balanceId => & $details)
         {
             $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
@@ -227,19 +228,22 @@ class Processor extends Base\Core
 
                         $shouldGenerateEInvoice = $xEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp());
 
+                        $invoiceCore = new Core;
+
+                        $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant, $balance);
+
                         if (($shouldGenerateEInvoice === true))
                         {
-                            $invoiceCore = new Core;
-
-                            $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
-
                             $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
 
                             if($mismatchingSellerEntity === false)
                             {
                                 $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
 
-                                $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                                if(!empty($data[Entity::INVOICE_NUMBER]))
+                                {
+                                    array_push($allInvoicesEligibleForEInvoice,$data[Entity::INVOICE_NUMBER]);
+                                }
                             }
                             else {
                                 $this->trace->info(TraceCode::EINVOICE_MISMATCHING_SELLER_FOR_X,
@@ -253,8 +257,6 @@ class Processor extends Base\Core
                         }
                         else
                         {
-                            $invoiceCore = new Core;
-                            $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
                             $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
                         }
                     }
@@ -272,8 +274,38 @@ class Processor extends Base\Core
 
                         $this->trace->count(Metric::EINVOICE_CREATION_FAILED_FOR_X);
                     }
-                    break;
                 }
+            }
+        }
+
+        /*
+         * Merchant Invoice is created at balance level, however Merchant E-Invoice is created at invoice number i.e it
+         * contains aggregation of balances, I'm trying to fix the abstraction w/o making too many code changes
+         */
+        $allInvoicesEligibleForEInvoice = array_unique($allInvoicesEligibleForEInvoice);
+        foreach ($allInvoicesEligibleForEInvoice as $invoiceNumber)
+        {
+            try
+            {
+                $invoiceCore = new Core;
+
+                $data = $invoiceCore->getXEInvoiceDataViaInvoiceNumber($this->month, $this->year, $invoiceNumber, $merchant);
+
+                $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'year'        => $this->year,
+                        'month'       => $this->month,
+                    ]);
+
+                $this->trace->count(Metric::EINVOICE_CREATION_FAILED_FOR_X);
             }
         }
     }

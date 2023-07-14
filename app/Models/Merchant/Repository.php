@@ -255,6 +255,65 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
+    /*
+     * Since PG onboarding has been blocked, X has been using a new flag to mark merchants as activated on X
+     * Read https://docs.google.com/document/d/1iVUFQu2ZoBBD5CNZoIwX6syw_armtk5TQRQgu9-1D_c/edit
+     *
+     * select `merchants`.`id` from `merchants` inner join `merchant_attributes` on `merchants`.`id` = `merchant_attributes`.`merchant_id`
+     * where `activated` = ? and `merchant_attributes`.`product` = ? and `merchant_attributes`.`group` = ? and `merchant_attributes`.`type` = ?
+     * and `merchant_attributes`.`value` = ? and `merchant_attributes`.`created_at` between ? and ? and (`parent_id` not in (?) or `parent_id` is null)
+     * limit 10000 offset 0
+     * DBA thread - https://razorpay.slack.com/archives/C3BPZHG8P/p1686285370722479
+     */
+    public function fetchMerchantsActivatedViaNewBankingActivationFlagBetweenTimestamps(
+        int $limit,
+        int $skip,
+        int $fromTimestamp,
+        int $toTimestamp,
+        array $merchantIds = [],
+        array $merchantIdsExcluded = []): array
+    {
+        $merchantIdCol = $this->dbColumn(Entity::ID);
+
+        $merchantAttributeMerchantId = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::MERCHANT_ID);
+        $merchantAttributeProduct = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+        $merchantAttributeGroup = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::GROUP);
+        $merchantAttributeType = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::TYPE);
+        $merchantAttributeValue = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::VALUE);
+        $merchantAttributeCreatedAt = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::CREATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->join(Table::MERCHANT_ATTRIBUTE, $merchantIdCol, '=', $merchantAttributeMerchantId)
+            ->select($merchantIdCol)
+            ->where(Entity::ACTIVATED, '=', 0)
+            ->where($merchantAttributeProduct, '=', Product::BANKING)
+            ->where($merchantAttributeGroup, '=', Attribute\Group::PRODUCTS_ENABLED)
+            ->where($merchantAttributeType, '=', Attribute\Type::X)
+            ->where($merchantAttributeValue, '=', 'true')
+            ->whereBetween($merchantAttributeCreatedAt, [$fromTimestamp, $toTimestamp])
+            ->where(function ($query)
+            {
+                $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                    ->orWhereNull(Entity::PARENT_ID);
+            })
+            ->take($limit)
+            ->skip($skip);
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
+        }
+
+        return $query->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function getSharedAccount(): Entity
     {
         if ($this->sharedMerchant === null)

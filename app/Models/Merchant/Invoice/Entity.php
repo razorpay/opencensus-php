@@ -172,8 +172,10 @@ class Entity extends Base\PublicEntity
      * Where Invoice code = < first 8 chars of MID> + <last 4 chars of MID>
      *
      * Format for Invoice Number on X
-     * <11 chars of MID> + `-` + <mmyy>
-     *
+     *  If balance owned by RSPL
+     *      <11 chars of MID> + `R` + <mmyy>
+     *  If balance owned by RZPX
+     *      <11 chars of MID> + `X` + <mmyy>
      * Relevant Slack threads for information :
      * https://razorpay.slack.com/archives/CE4DMABE3/p1573094789005300
      * https://razorpay.slack.com/archives/CE4DMABE3/p1573012152427700
@@ -181,25 +183,35 @@ class Entity extends Base\PublicEntity
      * @param int    $month
      * @param int    $year
      * @param string $balanceType
+     * @param bool   $balanceOwnedByRzpx
      */
-    public function generateInvoiceNumber(int $month, int $year, string $balanceType = BalanceType::PRIMARY)
+    public function generateInvoiceNumber(int $month, int $year, string $balanceType = BalanceType::PRIMARY, bool $balanceOwnedByRzpx = false)
     {
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
 
         $invoiceNumber = $this->merchant->getInvoiceCode();
 
-        if ($balanceType === BalanceType::BANKING)
-        {
-            $invoiceNumber = substr($this->merchant->getId(), 0, Constants::INVOICE_CODE_LENGTH_FOR_X);
-
-            $invoiceNumber = strtoupper($invoiceNumber);
-
-            $invoiceNumber = $invoiceNumber . Constants::X_INVOICE_SEPARATOR;
-        }
-
         $invoiceNumber = $invoiceNumber . $dateString;
 
+        if ($balanceType === BalanceType::BANKING)
+        {
+            $invoiceNumber = $this->generateInvoiceNumberForX($this->merchant->getId(),$dateString,$balanceOwnedByRzpx);
+        }
+
         $this->setAttribute(self::INVOICE_NUMBER, $invoiceNumber);
+    }
+
+    public static function generateInvoiceNumberForX(string $merchantId,string $dateString,bool $balanceOwnedByRzpx): string
+    {
+        $invoiceNumber = substr($merchantId, 0, Constants::INVOICE_CODE_LENGTH_FOR_X);
+
+        $invoiceNumber = strtoupper($invoiceNumber);
+
+        $invoiceSeparator = $balanceOwnedByRzpx ? Constants::X_INVOICE_SEPARATOR_FOR_RZPX : Constants::X_INVOICE_SEPARATOR_FOR_RSPL;
+
+        $invoiceNumber = $invoiceNumber . $invoiceSeparator;
+
+        return $invoiceNumber . $dateString;
     }
 
     public function setPublicAccountNumberAttribute(array & $attributes)

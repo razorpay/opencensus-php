@@ -17,6 +17,68 @@ return [
             'tax'    => 90,
         ],
     ],
+    'testBankingInvoiceEntityCreateWithEInvoiceWithNewXActivationFlag' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+        'expectedContent' => [
+            'access_token' => '67118f6bfaa1efedba09c90f9b2bc578e70f8468',
+            'user_gstin' => '29AAKCR4702K1Z1',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000-0721',
+                'document_date' => '31/01/2023',
+            ],
+            'seller_details' => [
+                'gstin' => '29AAKCR4702K1Z1',
+                'legal_name' => 'RZPX PRIVATE LIMITED',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+            ],
+            'buyer_details' => [
+                'gstin' => '29BBYPA2999E1Z0',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 560030,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street',
+            ],
+            'value_details' => [
+                'total_assessable_value' => '5.00',
+                'total_invoice_value' => '5.90',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.45',
+                'total_cgst_value' => '0.45',
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type'  => 'shared',
+                    'channel' => null,
+                    'product_description' => 'RazorpayX Virtual Account Transactions'
+                ],
+            ],
+        ]
+    ],
     'testBankingInvoiceEntityCreateWithEInvoiceForRblCa' => [
         'rx_transactions' => [
             'amount' => 500,
@@ -141,11 +203,113 @@ return [
             ],
         ]
     ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForVaAndRblCa' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+        'expectedContent' => [
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_date' => '30/04/2022',
+            ],
+            'seller_details' => [
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street',
+            ],
+            'value_details' => [
+                'total_assessable_value' => '5.00',
+                'total_invoice_value' => '5.90',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.45',
+                'total_cgst_value' => '0.45',
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                ],
+            ],
+        ]
+    ],
     'testBankingInvoiceEntityCreateWithEInvoiceForFebruaryMonth' => [
         'rx_transactions' => [
             'amount' => 500,
             'tax'    => 90,
         ],
+        'expectedContent' => [
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_date' => '30/04/2022',
+            ],
+            'seller_details' => [
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street',
+            ],
+            'value_details' => [
+                'total_assessable_value' => '5.00',
+                'total_invoice_value' => '5.90',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.45',
+                'total_cgst_value' => '0.45',
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                ],
+            ],
+        ]
     ],
     'testBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItem' => [
         'rx_transactions' => [

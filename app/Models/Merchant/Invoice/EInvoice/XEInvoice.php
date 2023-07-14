@@ -23,8 +23,12 @@ class XEInvoice extends Core
 
     public function getItemList(Entity $eInvoiceEntity)
     {
-
-        $invoiceData = (new Invoice\Core())->getXEInvoiceData($eInvoiceEntity->getMonth(), $eInvoiceEntity->getYear(), $eInvoiceEntity->merchant);
+        $input = [
+            Entity::MONTH                   => $eInvoiceEntity->getMonth(),
+            Entity::YEAR                    => $eInvoiceEntity->getYear(),
+            Entity::INVOICE_NUMBER          => $eInvoiceEntity->getInvoiceNumber(),
+        ];
+        $invoiceData = (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $eInvoiceEntity->merchant);
 
         $totalIgstValue = 0;
         $totalSgstValue = 0;
@@ -178,8 +182,9 @@ class XEInvoice extends Core
     public function correctInvoiceNumberForCreditNote(Entity $eInvoiceEntity, $sellerEntity)
     {
         $input = [
-            Entity::MONTH          => $eInvoiceEntity->getMonth(),
-            Entity::YEAR           => $eInvoiceEntity->getYear(),
+            Entity::MONTH                   => $eInvoiceEntity->getMonth(),
+            Entity::YEAR                    => $eInvoiceEntity->getYear(),
+            Entity::INVOICE_NUMBER          => $eInvoiceEntity->getInvoiceNumber(),
         ];
 
         $data = (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $eInvoiceEntity->merchant);
@@ -224,6 +229,7 @@ class XEInvoice extends Core
             $input = [
                 Entity::MONTH          => $invoiceTime->month,
                 Entity::YEAR           => $invoiceTime->year,
+                Entity::INVOICE_NUMBER => $eInvoiceEntity->getInvoiceNumber(),
             ];
 
             $data = (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $eInvoiceEntity->merchant);

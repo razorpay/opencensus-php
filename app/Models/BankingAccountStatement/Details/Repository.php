@@ -6,6 +6,7 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankingAccountStatement\Constants as BASConstant;
 
 class Repository extends Base\Repository
@@ -255,5 +256,57 @@ class Repository extends Base\Repository
         return $query->get()
                      ->pluck(Entity::ACCOUNT_NUMBER)
                      ->toArray();
+    }
+
+    /*
+     * select `merchants`.`id` from `banking_account_statement_details` inner join `merchants` on
+     * `banking_account_statement_details`.`merchant_id` = `merchants`.`id` where `banking_account_statement_details`.`channel` = ? and
+     * `banking_account_statement_details`.`account_type` = ? and `banking_account_statement_details`.`status` in (?, ?) and `merchants`.`activated` = ?
+     * and (`parent_id` not in (?) or `parent_id` is null) limit 10000 offset 0
+     * DBA thread - https://razorpay.slack.com/archives/C3BPZHG8P/p1686285370722479
+     */
+    public function getMerchantsByChannelAndAccountType(int    $limit,
+                                                        int    $skip,
+                                                        string $channel,
+                                                        string $accountType,
+                                                        array  $merchantIds = [],
+                                                        array  $merchantIdsExcluded = []): array
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $merchantActivatedColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ACTIVATED);
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account_statement_details->dbColumn(Entity::MERCHANT_ID);
+
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+            ->join(Constants\Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
+            ->select($merchantIdColumn)
+            ->where($channelColumn, '=', $channel)
+            ->where($accountTypeColumn, '=', $accountType)
+            ->whereIn($statusColumn, [Status::ACTIVE,Status::UNDER_MAINTENANCE])
+            ->where($merchantActivatedColumn, '=', 0)
+            ->where(function ($query)
+            {
+                $query->whereNotIn(Merchant\Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                    ->orWhereNull(Merchant\Entity::PARENT_ID);
+            })
+            ->take($limit)
+            ->skip($skip);
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($merchantIdColumn, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn($merchantIdColumn, $merchantIdsExcluded);
+        }
+
+        return $query->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 }
