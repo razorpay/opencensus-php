@@ -276,5 +276,14 @@ class Entity extends BankingAccountStatement\Entity
                 External\Entity::AMOUNT,
                 External\Entity::UTR,
             ]);
+
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            if (isset($array[BankingAccountStatement\Entity::DESCRIPTION]) === true)
+            {
+                $array[self::SOURCE][BankingAccountStatement\Entity::DESCRIPTION] =
+                    $array[BankingAccountStatement\Entity::DESCRIPTION];
+            }
+        }
     }
 }

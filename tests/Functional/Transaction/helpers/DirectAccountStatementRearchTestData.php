@@ -35,6 +35,7 @@ return [
                             'utr' => '211708954836',
                             'amount' => 1000,
                             'entity' => 'external',
+                            'description' => '211708954836-LOAN492836',
                         ],
                     ],
                     [
@@ -401,6 +402,7 @@ return [
                             'utr'    => '211708954836',
                             'amount' => 1000,
                             'entity' => 'external',
+                            'description' => '211708954836-LOAN492836',
                         ],
                     ],
                     [

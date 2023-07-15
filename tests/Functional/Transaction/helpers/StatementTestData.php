@@ -855,6 +855,53 @@ return [
         ],
     ],
 
+    'testExternalFetchStatementForProxyAuth' => [
+        'request'  => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 1000,
+                'debit'          => 0,
+                'balance'        => 1000,
+                'source'         => [
+                    'entity'      => 'external',
+                    'utr'         => '211708954836',
+                    'amount'      => 1000,
+                    'description' => '211708954836-LOAN492836',
+                ],
+            ],
+        ],
+    ],
+
+    'testExternalFetchStatementForPrivateAuth' => [
+        'request'  => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 1000,
+                'debit'          => 0,
+                'balance'        => 1000,
+                'source'         => [
+                    'entity'      => 'external',
+                    'utr'         => '211708954836',
+                    'amount'      => 1000,
+                ],
+            ],
+        ],
+    ],
+
     'testActionFilter' => [
         'request' => [
             'method'  => 'GET',

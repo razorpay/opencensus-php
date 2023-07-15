@@ -816,6 +816,118 @@ class StatementTest extends TestCase
         $this->assertEquals("111000111", $response['source']['fund_account']['bank_account']['account_number']);
     }
 
+    public function testExternalFetchStatementForProxyAuth()
+    {
+        $transaction = $this->fixtures->create('transaction', [
+            'id'          => 'JOPkusQyH3wn3u',
+            'merchant_id' => '10000000000000',
+            'entity_id'   => 'testExternal00',
+            'type'        => 'external',
+            'balance_id'  => $this->bankingBalance->getId(),
+            'amount'      => 1000,
+            'currency'    => 'INR',
+            'credit'      => 1000,
+            'debit'       => 0,
+            'balance'     => 1000,
+        ]);
+
+        $bas = $this->fixtures->create('banking_account_statement', [
+            'entity_id'           => 'testExternal00',
+            'entity_type'         => 'external',
+            'utr'                 => '211708954836',
+            'amount'              => 1000,
+            'balance'             => 1000,
+            'channel'             => 'rbl',
+            'account_number'      => $this->bankingBalance->getAccountNumber(),
+            'bank_transaction_id' => 'M2134215',
+            'type'                => 'credit',
+            'posted_date'         => 1650628967,
+            'description'         => '211708954836-LOAN492836',
+            'category'            => 'customer_initiated',
+            'bank_serial_number'  => 7,
+            'bank_instrument_id'  => "",
+            'transaction_date'    => 1650565810,
+            'transaction_id'      => $transaction->getId(),
+        ]);
+
+        $this->fixtures->create('external', [
+            'id'                           => 'testExternal00',
+            'merchant_id'                  => '10000000000000',
+            'transaction_id'               => 'JOPkusQyH3wn3u',
+            'banking_account_statement_id' => $bas->getId(),
+            'channel'                      => 'rbl',
+            'bank_reference_number'        => $bas->getBankTransactionId(),
+            'utr'                          => '211708954836',
+            'type'                         => $bas->getType(),
+            'amount'                       => $bas->getAmount(),
+            'currency'                     => 'INR',
+            'balance_id'                   => $this->bankingBalance->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('description', $response['source']);
+    }
+
+    public function testExternalFetchStatementForPrivateAuth()
+    {
+        $transaction = $this->fixtures->create('transaction', [
+            'id'          => 'JOPkusQyH3wn3u',
+            'merchant_id' => '10000000000000',
+            'entity_id'   => 'testExternal00',
+            'type'        => 'external',
+            'balance_id'  => $this->bankingBalance->getId(),
+            'amount'      => 1000,
+            'currency'    => 'INR',
+            'credit'      => 1000,
+            'debit'       => 0,
+            'balance'     => 1000,
+        ]);
+
+        $bas = $this->fixtures->create('banking_account_statement', [
+            'entity_id'           => 'testExternal00',
+            'entity_type'         => 'external',
+            'utr'                 => '211708954836',
+            'amount'              => 1000,
+            'balance'             => 1000,
+            'channel'             => 'rbl',
+            'account_number'      => $this->bankingBalance->getAccountNumber(),
+            'bank_transaction_id' => 'M2134215',
+            'type'                => 'credit',
+            'posted_date'         => 1650628967,
+            'description'         => '211708954836-LOAN492836',
+            'category'            => 'customer_initiated',
+            'bank_serial_number'  => 7,
+            'bank_instrument_id'  => "",
+            'transaction_date'    => 1650565810,
+            'transaction_id'      => $transaction->getId(),
+        ]);
+
+        $this->fixtures->create('external', [
+            'id'                           => 'testExternal00',
+            'merchant_id'                  => '10000000000000',
+            'transaction_id'               => 'JOPkusQyH3wn3u',
+            'banking_account_statement_id' => $bas->getId(),
+            'channel'                      => 'rbl',
+            'bank_reference_number'        => $bas->getBankTransactionId(),
+            'utr'                          => '211708954836',
+            'type'                         => $bas->getType(),
+            'amount'                       => $bas->getAmount(),
+            'currency'                     => 'INR',
+            'balance_id'                   => $this->bankingBalance->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('description', $response['source']);
+    }
+
     protected function createBankTransferTransaction()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');

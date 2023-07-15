@@ -208,6 +208,12 @@ class Entity extends Transaction\Entity
                 External\Entity::AMOUNT,
                 External\Entity::UTR,
             ]);
+
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            $array[self::SOURCE][BankingAccountStatement\Entity::DESCRIPTION] =
+                $this->bankingAccountStatement->getDescription();
+        }
     }
 
     public function setPublicSourceAttributeForBankTransfer(array & $array)
