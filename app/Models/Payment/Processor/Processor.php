@@ -716,10 +716,7 @@ class Processor
                             empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID]) === true
                         ))
                     //and empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true
-                ) or
-                (empty($input['application']) === false && $input['application'] === 'visasafeclick') or
-                ((isset($input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
-                    ($merchant->isFeatureEnabled('vsc_authorization') === true)))
+                ))
             {
                 if (($this->route->isRearchRoute($currentRouteName) === true) and
                     (empty($input[Payment\Entity::METHOD]) === false and
@@ -729,6 +726,38 @@ class Processor
                         'reason' => "input",
                         'merchant_id' => $merchant->getId(),
                     ]);
+
+                    $inputFields = [];
+                    if ((empty($input[Payment\Entity::RECURRING]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::RECURRING;
+                    }
+                    if ((empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::SUBSCRIPTION_ID;
+                    }
+                    if ((empty($input[Payment\Entity::INVOICE_ID]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::INVOICE_ID;
+                    }
+                    if ((empty($input[Payment\Entity::TOKEN_ID]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::TOKEN_ID;
+                    }
+                    if ((empty($input[Payment\Entity::OFFER_ID]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::OFFER_ID;
+                    }
+                    if ((empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false))
+                    {
+                        $inputFields[] = Payment\Entity::CHARGE_ACCOUNT;
+                    }
+
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON, [
+                        'inputFields' => $inputFields,
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
                 }
                 return false;
             }
