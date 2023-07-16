@@ -1,0 +1,151 @@
+export const RESPONSE_WITH_FULLFILLED_ORDER = {
+  success: true,
+  status_code: 200,
+  data: {
+    orders: [
+      {
+        id: 'order_MCnpyKC1BO0bzf',
+        display_name: '#6740',
+        fulfillment_status: 'FULFILLED',
+        platform_order_id: 'gid://shopify/Order/5075741868199',
+        currency: 'INR',
+        created_at: '2023-07-12T07:12:29Z',
+        payment_status: 'PAID',
+        price: 7500,
+        customer: 'John',
+      },
+    ],
+  },
+};
+
+export const RESPONSE_WITH_NO_ORDER = {
+  success: true,
+  status_code: 200,
+  data: {
+    orders: [],
+  },
+};
+
+export const TEST_PAYLOAD = {
+  success: true,
+  status_code: 200,
+  data: {
+    orders: [
+      {
+        id: 'order_MCnpyKC1BO0bzf',
+        display_name: '#6740',
+        fulfillment_status: 'UNFULFILLED',
+        platform_order_id: 'gid://shopify/Order/5075741868199',
+        currency: 'INR',
+        created_at: '2023-07-12T07:12:29Z',
+        payment_status: 'PAID',
+        price: 7500,
+        customer: 'Akash .',
+      },
+    ],
+  },
+};
+
+export const GET_EDITING_RESPONSE = {
+  order: {
+    edit_id: 'gid://shopify/CalculatedOrder/64976486567',
+    order_id: 'gid://shopify/Order/5075977240743',
+    name: '#6797',
+    currency_code: 'INR',
+    is_order_edited: false,
+    item_price_includes_taxes: false,
+    fulfillment_status: '',
+    payment_status: '',
+    original_cart_level_discount: 500,
+    original_sub_total_price: 4500,
+    original_shipping_charge: 3000,
+    original_refunded_shipping_charge: 0,
+    original_taxes_applied: 0,
+    original_duties_applied: 0,
+    original_total_price: 7500,
+    original_customer_paid_amount: 7500,
+    original_customer_refunded_amount: 0,
+    original_net_customer_paid_amount: 7500,
+    original_total_outstanding: 0,
+    new_cart_level_discount: 500,
+    new_sub_total_price: 4500,
+    new_total_price: 7500,
+    new_total_outstanding: 0,
+    new_taxes_applied: [],
+    created_at: '',
+    line_items: [
+      {
+        edit_id: 'gid://shopify/CalculatedLineItem/12189479239847',
+        line_item_id: '',
+        name: 'analytics test product 2',
+        sku: '123 - A',
+        item_quantity: 1,
+        edited_item_quantity: 1,
+        inventory_quantity: 199,
+        original_price: 5000,
+        discounted_price: 5000,
+        image_url: '',
+        discount_applied: 'gid://shopify/CalculatedDiscountCodeApplication/2371775692967',
+        variant: {
+          id: 'gid://shopify/ProductVariant/43306810998951',
+          name: 'analytics test product 2 - Default Title',
+          image_url: '',
+          price: 5000,
+          sku: '123 - A',
+        },
+      },
+    ],
+  },
+};
+
+export const START_EDITING_RESPONSE = {
+  edited_order: {
+    edit_id: 'gid://shopify/CalculatedOrder/64976486567',
+    order_id: 'gid://shopify/Order/5075977240743',
+    name: '#6797',
+    currency_code: 'INR',
+    is_order_edited: false,
+    item_price_includes_taxes: false,
+    fulfillment_status: '',
+    payment_status: '',
+    original_cart_level_discount: 500,
+    original_sub_total_price: 4500,
+    original_shipping_charge: 3000,
+    original_refunded_shipping_charge: 0,
+    original_taxes_applied: 0,
+    original_duties_applied: 0,
+    original_total_price: 7500,
+    original_customer_paid_amount: 7500,
+    original_customer_refunded_amount: 0,
+    original_net_customer_paid_amount: 7500,
+    original_total_outstanding: 0,
+    new_cart_level_discount: 500,
+    new_sub_total_price: 4500,
+    new_total_price: 7500,
+    new_total_outstanding: 0,
+    new_taxes_applied: [],
+    created_at: '',
+    line_items: [
+      {
+        edit_id: 'gid://shopify/CalculatedLineItem/12189479239847',
+        line_item_id: '',
+        name: 'analytics test product 2',
+        sku: '123 - A',
+        item_quantity: 1,
+        edited_item_quantity: 1,
+        inventory_quantity: 199,
+        original_price: 5000,
+        discounted_price: 5000,
+        image_url: '',
+        discount_applied: 'gid://shopify/CalculatedDiscountCodeApplication/2371775692967',
+        variant: {
+          id: 'gid://shopify/ProductVariant/43306810998951',
+          name: 'analytics test product 2 - Default Title',
+          image_url: '',
+          price: 5000,
+          sku: '123 - A',
+        },
+      },
+    ],
+  },
+};

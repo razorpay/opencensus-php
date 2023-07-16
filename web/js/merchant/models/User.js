@@ -520,6 +520,10 @@ export default class User {
     return getSplitzExperimentVariant('magic_order_analytics_cr')?.variables?.result === 'on';
   }
 
+  get isMagicShopifyOrderEditEnabled() {
+    return getSplitzExperimentVariant('magic_shopify_order_edit')?.variables?.result === 'on';
+  }
+
   get isMagicCODOrderAutomationEnabled() {
     const accessRoles = [
       rolesList.OWNER,

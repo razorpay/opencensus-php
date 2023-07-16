@@ -74,6 +74,7 @@
     "js/merchant/components/Activation",
     "js/merchant/components/styled",
     "js/merchant/components/Announcements/TerminalStatus",
+    "js/merchant/views/MagicCheckout/**/*",
     "js/merchant/views/RazorpayXWidget",
     "js/merchant/views/PaymentMetrics"
   ],

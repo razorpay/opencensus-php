@@ -4,6 +4,7 @@ import Spinner from 'common/ui/Spinner';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 let redirectPath;
 const RouteContainer = ({
@@ -25,6 +26,7 @@ const RouteContainer = ({
       if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
         return null;
       if (item.condition && !item.condition(user)) return null;
+      if (item.tabName === 'Edit Orders' && platform !== PLATFORMS.VALUES.SHOPIFY) return null;
       if (
         item.tabName === 'Settings' &&
         !ACCESS_ROLES.includes(user.role) &&

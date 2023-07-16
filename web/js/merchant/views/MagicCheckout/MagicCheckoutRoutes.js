@@ -3,6 +3,7 @@ import MagicSettings from 'merchant/views/MagicCheckout/Settings';
 import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
 import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
 import CODOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab';
+import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
 import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
 import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
 
@@ -12,6 +13,8 @@ import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
  * 2. Shipping Services
  * 3. Address Upload
  * 4. Delivery Status upload
+ * 5. Cod Orders
+ * 6. Editing Orders
  *
  * Note: when adding a new tab, confirm the ordering with product first.
  */
@@ -55,6 +58,12 @@ const routes = [
     path: '/magic/order-conversion',
     Component: CODToPrepaidLinks,
     condition: (_user) => _user.isMagicPrepayCODEnabled,
+  },
+  {
+    tabName: 'Edit Orders',
+    path: '/magic/order-editing',
+    Component: ShopifyOrderEditing,
+    condition: (_user) => _user.isMagicShopifyOrderEditEnabled,
   },
 ];
 

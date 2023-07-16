@@ -313,6 +313,7 @@ return [
         'MAGIC_COD_ENGINE' => env('MAGIC_COD_ENGINE'),
         'MAGIC_ORDER_ANALYTICS'  => env('MAGIC_ORDER_ANALYTICS', ''),
         'MAGIC_ORDER_ANALYTICS_CR'  => env('MAGIC_ORDER_ANALYTICS_CR', ''),
+        'MAGIC_SHOPIFY_ORDER_EDIT' => env('MAGIC_SHOPIFY_ORDER_EDIT', ''),
 
         // Affordability Onboarding for SBI CC EMi and credit card segeration
         'SHOW_SEGREGATED_CREDIT_EMI_METHODS' => env('SHOW_SEGREGATED_CREDIT_EMI_METHODS', ''),

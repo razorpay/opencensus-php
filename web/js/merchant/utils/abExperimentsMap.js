@@ -99,6 +99,15 @@ export default {
     //prod experiment id
     'LyzIbqJ3ETSBN9',
   ],
+
+  magic_shopify_order_edit: [
+    //beta experiment id
+    'M9ivxmSdhzmmn2',
+
+    //prod experiment id
+    'M9iRe04lj27sdU',
+  ],
+
   magic_rto_analytics_v3: [
     //beta experiment id
     'M3ltpBNar0aDxZ',
@@ -106,6 +115,7 @@ export default {
     //prod experiment id
     'M4Bi4l52fMeIrE',
   ],
+
   ultra_p2_cash_advance_banner_experiment: [
     // beta experiment ids
     'HzfUh5Z1nw1toU',
