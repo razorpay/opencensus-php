@@ -682,6 +682,90 @@ return [
     'testTransactionsBulkUpdateBalanceIdLimitTest' => [
     ],
 
+    'testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal' => [
+        'request' => [
+            'content' => [
+                'payment' => [
+                    'id' =>  "GiahjFtNg85OjA",
+                    'amount' =>  50000,
+                    'base_amount' => 50000,
+                    'currency' => "INR",
+                    'status' => "captured",
+                    'international' => FALSE,
+                    'method' => "upi",
+                    'amount_refunded' =>  0,
+                    'captured' => TRUE,
+                    'description' =>  "random description",
+                    'bank' => NULL,
+                    'vpa' => NULL,
+                    'email' => "a@b.com",
+                    'contact' =>  "+919918899029",
+                    'notes' =>  [
+                        'merchant_order_id' =>  "random order id",
+                    ],
+                    'fee' =>  0,
+                    'tax' =>  0,
+                    'created_at' =>  1614864014,
+                    'captured_at' =>  1614874014,
+                    'merchant_id' => "10000000000000"
+                ]
+            ],
+            'url'    => '/internal/transactions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => 'pay_GiahjFtNg85OjA',
+                'type' => 'payment',
+                'debit' =>  0,
+                'credit' =>  48524,
+                'amount' =>  50000,
+                'currency' => "INR",
+                'fee' =>  1476,
+                'tax' =>  226,
+                'settled' =>  FALSE,
+                'credit_type' => "default",
+                'description' =>  "random description",
+                'payment_id' => NULL,
+                'settlement_utr' => NULL,
+                'order_id' => NULL,
+                'order_receipt' => NULL,
+                'method' => "upi",
+                'dispute_id' => NULL,
+            ],
+        ],
+        'request2' => [
+            'content' => [
+                'payment' => [
+                    'id' =>  "GiahjFtNg85OjA",
+                    'amount' =>  50000,
+                    'base_amount' => 50000,
+                    'currency' => "INR",
+                    'status' => "authorized",
+                    'international' => FALSE,
+                    'method' => "upi",
+                    'amount_refunded' =>  0,
+                    'captured' => TRUE,
+                    'description' =>  "random description",
+                    'bank' => NULL,
+                    'vpa' => NULL,
+                    'email' => "a@b.com",
+                    'contact' =>  "+919918899029",
+                    'notes' =>  [
+                        'merchant_order_id' =>  "random order id",
+                    ],
+                    'fee' =>  0,
+                    'tax' =>  0,
+                    'created_at' =>  1614864014,
+                    'authorized_at' =>  1614874000,
+                    'merchant_id' => "10000000000000"
+                ]
+            ],
+            'url'    => '/internal/transactions',
+            'method' => 'POST'
+        ],
+    ],
+
     'testPaymentCaptureTransactionsCreateInternal' => [
         'request' => [
             'content' => [

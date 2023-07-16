@@ -1481,6 +1481,33 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal()
+    {
+        $this->ba->appAuth();
+
+        $terminal = $this->fixtures->create('terminal:upi_icici_dedicated_terminal');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        $attr = $testData['request']['content']['payment'];
+
+        unset($attr['captured']);
+
+        $this->fixtures->payment->create($attr);
+
+        // create transaction with captured payment payload
+        $this->startTest();
+
+        // update request to have authorized payment payload but do not modify expected response
+        $testData['request'] = $testData['request2'];
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        // create transaction with authorized payment payload and response should be same as for captured payment
+        $this->startTest();
+    }
+
     protected function setAdminPermission($permissionName)
     {
         $admin = $this->ba->getAdmin();

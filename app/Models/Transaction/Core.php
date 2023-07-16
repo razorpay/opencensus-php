@@ -338,6 +338,15 @@ class Core extends Base\Core
 
     private function createTransactionForAuthorizedPayment(Payment\Entity $payment)
     {
+        // avoid processing the request for a payment with status as authorized
+        // in the payload but the transaction already being created earlier with the capture payload
+        $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $payment->merchant);
+
+        if (isset($transaction) === true)
+        {
+            return $transaction;
+        }
+
         list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
         $this->repo->saveOrFail($txn);
