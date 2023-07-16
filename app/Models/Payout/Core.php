@@ -9667,9 +9667,11 @@ class Core extends Base\Core
                 return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, $neftThreshold);
 
             case Mode::IMPS:
-                $countOfFmps = (int) floor($offsetAmount / (NodalAccount::MAX_IMPS_AMOUNT * 100));
+                $impsThreshold = NodalAccount::MAX_IMPS_AMOUNT * 100;
 
-                return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, NodalAccount::MAX_IMPS_AMOUNT);
+                $countOfFmps = (int) floor($offsetAmount / $impsThreshold);
+
+                return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, $impsThreshold);
 
             default:
                 $countOfFmps = (int) floor($offsetAmount / self::DEFAULT_FMP_THRESHOLD);
