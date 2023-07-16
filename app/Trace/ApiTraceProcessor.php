@@ -102,6 +102,30 @@ class ApiTraceProcessor
         'contact.partial_search',
     ];
 
+    const highTierLogRoutes = [
+        'gateway_payment_callback_post',
+        'payment_create_ajax',
+        'payment_create_checkout',
+        'payment_create_upi',
+        'payout_create',
+        'update_fts_fund_transfer',
+        'order_create',
+        'payment_create_private_json',
+        'gateway_payment_callback_bharatqr',
+        'qr_code_create',
+        'payment_refund_authorized',
+        'payment_create_private_old',
+        'virtual_account_create',
+        'gateway_payment_callback_recurring',
+        'payment_calculate_fees',
+        'reconciliate_via_batch_service',
+        'payment_create_recurring',
+        'fund_account_create',
+        'invoice_create',
+        'upi_transfer_process',
+        'emandate_batch_process',
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -143,9 +167,21 @@ class ApiTraceProcessor
 
         $this->keysBasedScrubbingForBankingRoutes($record);
 
+        $this->addHighTierLogEntry($record);
+
         $this->addTraceAttributesForWorkers($record);
 
         return $record;
+    }
+
+    protected function addHighTierLogEntry(& $record): void
+    {
+        $route = optional($this->app['router'])->currentRouteName();
+
+        if (in_array($route, self::highTierLogRoutes, true))
+        {
+            $record['tier'] = 'high';
+        }
     }
 
     protected function addMode(& $record)

@@ -42,7 +42,7 @@ class DatabaseEventListener
      */
     public function handle(QueryExecuted $event)
     {
-        $rand = rand(1,100000);
+        $rand = rand(1,10000);
 
         if (($rand > $this->sampleRate) and
             ($event->connectionName !== ConnectionType::PAYMENT_FETCH_REPLICA))
