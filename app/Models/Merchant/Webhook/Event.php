@@ -171,6 +171,15 @@ class Event
     const ISSUING_BENEFICIARY_MANUAL_REVIEW             = 'beneficiary.manual_review';
     const ISSUING_BENEFICIARY_FAILED                    = 'beneficiary.failed';
     const ISSUING_TRANSACTION_CREATED                   = 'issuing.transaction.created';
+    const ISSUING_MANDATE_CREATED                       = 'issuing.mandate.created';
+    const ISSUING_MANDATE_APPROVED                      = 'issuing.mandate.approved';
+    const ISSUING_MANDATE_CANCELLED                     = 'issuing.mandate.cancelled';
+    const ISSUING_MANDATE_EXPIRED                       = 'issuing.mandate.expired';
+    const ISSUING_MANDATE_COMPLETED                     = 'issuing.mandate.completed';
+    const ISSUING_TRANSFER_CREATED                      = 'issuing.transfer.created';
+    const ISSUING_TRANSFER_AUTHORIZED                   = 'issuing.transfer.authorized';
+    const ISSUING_TRANSFER_SUCCESS                      = 'issuing.transfer.success';
+    const ISSUING_TRANSFER_FAILED                       = 'issuing.transfer.failed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -320,6 +329,15 @@ class Event
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
         self::ISSUING_BENEFICIARY_FAILED,
         self::ISSUING_TRANSACTION_CREATED,
+        self::ISSUING_MANDATE_CREATED,
+        self::ISSUING_MANDATE_APPROVED,
+        self::ISSUING_MANDATE_CANCELLED,
+        self::ISSUING_MANDATE_COMPLETED,
+        self::ISSUING_MANDATE_EXPIRED,
+        self::ISSUING_TRANSFER_CREATED,
+        self::ISSUING_TRANSFER_AUTHORIZED,
+        self::ISSUING_TRANSFER_SUCCESS,
+        self::ISSUING_TRANSFER_FAILED
     ];
 
     /**
@@ -476,6 +494,15 @@ class Event
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
         self::ISSUING_BENEFICIARY_FAILED,
         self::ISSUING_TRANSACTION_CREATED,
+        self::ISSUING_MANDATE_CREATED,
+        self::ISSUING_MANDATE_APPROVED,
+        self::ISSUING_MANDATE_CANCELLED,
+        self::ISSUING_MANDATE_COMPLETED,
+        self::ISSUING_MANDATE_EXPIRED,
+        self::ISSUING_TRANSFER_CREATED,
+        self::ISSUING_TRANSFER_AUTHORIZED,
+        self::ISSUING_TRANSFER_SUCCESS,
+        self::ISSUING_TRANSFER_FAILED
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -767,6 +794,16 @@ class Event
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW           => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_BENEFICIARY_FAILED                  => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_TRANSACTION_CREATED                 => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_MANDATE_CREATED                     => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_MANDATE_APPROVED                    => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_MANDATE_CANCELLED                   => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_MANDATE_COMPLETED                   => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_MANDATE_EXPIRED                     => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_TRANSFER_CREATED                    => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_TRANSFER_AUTHORIZED                 => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_TRANSFER_SUCCESS                    => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_TRANSFER_FAILED                     => [Product::PRIMARY, Product::ISSUING],
+
     ];
 
     /**
@@ -1009,6 +1046,15 @@ class Event
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW           => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_BENEFICIARY_FAILED                  => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_TRANSACTION_CREATED                 => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_MANDATE_CREATED                     => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_MANDATE_APPROVED                    => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_MANDATE_CANCELLED                   => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_MANDATE_COMPLETED                   => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_MANDATE_EXPIRED                     => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_TRANSFER_CREATED                    => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_TRANSFER_AUTHORIZED                 => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_TRANSFER_SUCCESS                    => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_TRANSFER_FAILED                     => Feature\Constants::RAZORPAY_WALLET
     ];
 
     public static $eventsToPartnerTypeMap = [
