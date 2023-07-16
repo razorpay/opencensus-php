@@ -320,17 +320,33 @@ class RefundTest extends TestCase
                 ]
         ]);
 
-
         $this->gateway = 'eghl';
 
         $this->mockCardVault();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->merchant->addFeatures('void_refunds');
 
         $this->fixtures->merchant->edit('10000000000000',[
             'country_code' => 'MY'
         ]);
-        $payment = $this->defaultAuthPaymentForMY([
+        $this->fixtures->iin->create([
+            'iin'       => '556763',
+            'country'   => 'MY',
+            'type'      => 'credit',
+            'recurring' => 0,
+        ]);
+
+        $payment    = $this->defaultAuthPaymentForMY([
             'card' => [
                 'number'       => CardNumber::VALID_ENROLL_NUMBER,
                 'expiry_month' => '02',
@@ -343,6 +359,17 @@ class RefundTest extends TestCase
         $payment = $this->getLastEntity('payment');
 
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testFailVoidPartialRefund()
