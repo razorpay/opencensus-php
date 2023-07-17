@@ -292,14 +292,40 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    public function isPartnerTypeSwitchExpEnabled(string $merchantId): bool
+    public function isPartnerTypeSwitchExpEnabled(string $merchantId, bool $toConsiderPartnerOnboardingTs = false): bool
     {
+        $partnerOnboardingTs = null;
+        if ($toConsiderPartnerOnboardingTs)
+        {
+            $docType = Constants::PARTNERSHIP . '_' . Constants::TERMS;
+            $partnerConsent = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType(
+                $merchantId, [ $docType ]
+            )->first();
+
+            if (empty($partnerConsent))
+            {
+//              Partner consent will be absent for Partners that were onboarded before Jan 2023
+                return false;
+            }
+
+            $partnerOnboardingTs = $partnerConsent->getCreatedAt();
+        }
+
+        $requestData = [ 'mid' => $merchantId ];
+
+        if ($partnerOnboardingTs !== null)
+        {
+            $requestData = array_merge($requestData, ['partner_onboarding_ts' => $partnerOnboardingTs]);
+        }
+        else
+        {
+            $requestData = array_merge($requestData, ['flow' => 'admin']);
+        }
+
         $properties = [
             'id'            => $merchantId,
             'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
-            'request_data'  => json_encode([
-                'mid' => $merchantId,
-            ]),
+            'request_data'  => json_encode($requestData),
         ];
 
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
@@ -383,7 +409,7 @@ class Service extends Base\Service
         (new Validator())->validateInput('raisePartnerMigrationRequest', $input);
 
         $partner = $this->merchant;
-        if ($this->isPartnerTypeSwitchExpEnabled($partner->getId()) === false)
+        if ($this->isPartnerTypeSwitchExpEnabled($partner->getId(), true) === false)
         {
             return ['success' => false, 'errorMessage' => "Partner is not allowed for partner type switch"];
         }

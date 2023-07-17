@@ -11116,7 +11116,10 @@ class Service extends Base\Service
         $response['first_submerchant_accept_payments'] = $this->repo->merchant_access_map
             ->isLiveSubmerchantPresentForPartner($partnerId);
 
-        if ($this->partnerService->isPartnerTypeSwitchExpEnabled($partnerId) === true)
+        if (
+            $this->merchant->isResellerPartner() &&
+            $this->partnerService->isPartnerTypeSwitchExpEnabled($partnerId, true)
+        )
         {
             try
             {

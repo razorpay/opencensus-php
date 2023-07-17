@@ -2640,19 +2640,11 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testRequestPartnerMigration() : void
     {
-        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
-
-        $this->fixtures->create('merchant_detail:sane',
-            [
-                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
-            ]);
+        $merchant = $this->setupResellerForPartnerRequestMigration();
 
         $expectedResponse = ['status_code'=> 200, 'response'=> []];
-
         $requestInput = $this->testData[__FUNCTION__]['request']['content'];
-
         $input = $this->createPartnerMigrationAuditInput($merchant, $requestInput);
-
         $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'createPartnerMigrationAudit');
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
@@ -2678,7 +2670,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testRequestPartnerMigrationError() : void
     {
-        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $merchant = $this->setupResellerForPartnerRequestMigration();
 
         $expectedResponse = ['status_code'=> 401, 'response'=> []];
 
@@ -2691,6 +2683,41 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
 
         $this->startTest();
+    }
+
+    private function setupResellerForPartnerRequestMigration()
+    {
+        $this->fixtures->edit('merchant', self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller',]);
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'consent_for' => 'Partnership_Terms & Conditions',
+                'status'      => 'initiated',
+                'created_at'  => Carbon::now()->getTimestamp()
+            ]);
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id'       => self::DEFAULT_MERCHANT_ID]);
+
+        $partnerOnboardingTs = Carbon::now()->getTimestamp();
+        $expRequestData = [
+            'mid'                   => self::DEFAULT_MERCHANT_ID ,
+            'partner_onboarding_ts' => $partnerOnboardingTs
+        ];
+        $expInput = [
+            'id'            => self::DEFAULT_MERCHANT_ID,
+            'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
+            'request_data'  => json_encode($expRequestData),
+        ];
+        $expOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($expInput, $expOutput);
+
+        return $merchant;
     }
 
     public function testRequestPartnerMigrationInputValidation() : void

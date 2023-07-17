@@ -43,7 +43,50 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->mockAllSplitzTreatment();
 
-        $this->createResellerPartner();
+        $this->createResellerPartner(true);
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPartnerFUXDetailsWhenNoPartnerConsentPresent()
+    {
+        $this->mockAllSplitzTreatment();
+
+        $this->createResellerPartner(false);
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPartnerFUXDetailsWhenPartnerConsentIsPresentAndExpIsTrue()
+    {
+        $partnerOnboardingTs = Carbon::now()->getTimestamp();
+        $expRequestData = [
+            'mid'                   => self::DEFAULT_MERCHANT_ID ,
+            'partner_onboarding_ts' => $partnerOnboardingTs
+        ];
+        $expInput = [
+            'id'            => self::DEFAULT_MERCHANT_ID,
+            'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
+            'request_data'  => json_encode($expRequestData),
+        ];
+        $expOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($expInput, $expOutput);
+
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+        $input = ['partner_id'=>'10000000000000'];
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->createResellerPartner(true, $partnerOnboardingTs);
 
         $this->ba->proxyAuth();
 
@@ -60,7 +103,7 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->mockAllSplitzTreatment();
 
-        $this->createResellerPartner();
+        $this->createResellerPartner(true);
 
         $this->ba->proxyAuth();
 
@@ -77,7 +120,7 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->mockAllSplitzTreatment();
 
-        $this->createResellerPartner();
+        $this->createResellerPartner(true);
 
         $this->ba->proxyAuth();
 
@@ -125,14 +168,6 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testAggregatorPartnerFUXDetailsWhenIntegratedWithApi()
     {
-        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
-
-        $input = ['partner_id'=>'10000000000000'];
-
-        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
-
-        $this->mockAllSplitzTreatment();
-
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000', 'aggregator');
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -154,14 +189,6 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testFullyManagedPartnerFUXDetailsWhenIntegratedWithApi()
     {
-        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
-
-        $input = ['partner_id'=>'10000000000000'];
-
-        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
-
-        $this->mockAllSplitzTreatment();
-
         $client = $this->setUpPartnerMerchantAppAndGetClient();
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -183,14 +210,6 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testPurePlatformPartnerFUXDetailsWhenIntegratedWithApi()
     {
-        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
-
-        $input = ['partner_id'=>'10000000000000'];
-
-        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
-
-        $this->mockAllSplitzTreatment();
-
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000', 'pure_platform');
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -222,14 +241,6 @@ class PartnerFUXTest extends OAuthTestCase
             'partner_config_id' => $config->getId()
         ];
 
-        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
-
-        $input = ['partner_id' => $partner->getId()];
-
-        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
-
-        $this->mockAllSplitzTreatment();
-
         $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
         $this->ba->proxyAuth('rzp_test_' . $partner->getId());
@@ -247,14 +258,6 @@ class PartnerFUXTest extends OAuthTestCase
             'partner_config_id' => $config->getId()
         ];
 
-        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
-
-        $input = ['partner_id' => $partner->getId()];
-
-        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
-
-        $this->mockAllSplitzTreatment();
-        
         $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
         $this->ba->proxyAuth('rzp_test_' . $partner->getId());
@@ -274,6 +277,13 @@ class PartnerFUXTest extends OAuthTestCase
             'partner_type' => 'reseller',
             'email'        => 'test@example.com',
         ]);
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => $merchantId,
+                'consent_for' => 'Partnership_Terms & Conditions',
+                'status'      => 'initiated',
+                'created_at' => Carbon::now()->getTimestamp()
+            ]);
 
         $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, $subMerchantAttributes);
 
@@ -310,7 +320,7 @@ class PartnerFUXTest extends OAuthTestCase
         );
     }
 
-    public function createResellerPartner()
+    public function createResellerPartner(bool $isConsentCreated = false, int $partnerOnboardingTs = null)
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -329,11 +339,24 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->createMerchantApplication($app->merchant_id, 'reseller', $app->getId());
 
-        $this->fixtures->create('merchant_detail:sane',[
+        $this->fixtures->create('merchant_detail:sane',
+            [
             'merchant_id' => $app->merchant_id,
             'contact_name'=> 'randomName',
             'business_type' => 2
-        ]);
+            ]);
+
+        if ($isConsentCreated)
+        {
+            $partnerOnboardingTs = $partnerOnboardingTs ?? Carbon::now()->getTimestamp();;
+            $this->fixtures->create('merchant_consents',
+                [
+                    'merchant_id' => $app->merchant_id,
+                    'consent_for' => 'Partnership_Terms & Conditions',
+                    'status'      => 'initiated',
+                    'created_at' => $partnerOnboardingTs
+                ]);
+        }
     }
 
     public function createPartnerWithPaymentBySubmerchant($partnerAttributes = [], $subMerchantAttributes = [])

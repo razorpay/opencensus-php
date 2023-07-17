@@ -16,15 +16,17 @@ trait MocksPartnershipsService
     {
         if ($this->partnershipsServiceMock === null)
         {
-            $this->partnershipsServiceMock = Mockery::mock('RZP\Services\Partnerships\PartnershipsService', $this->app)->makePartial();
+            $this->partnershipsServiceMock = Mockery::mock(
+                'RZP\Services\Partnerships\PartnershipsService', $this->app
+            )->makePartial();
 
             $this->app['partnerships'] = $this->partnershipsServiceMock;
         }
 
         $mock = $this->partnershipsServiceMock
-            ->shouldReceive($methodName)
-            ->atLeast()
-            ->once();
+                    ->shouldReceive($methodName)
+                    ->atLeast()
+                    ->once();
         if(!empty($input))
         {
             $mock->with($input);
