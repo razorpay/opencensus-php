@@ -7879,12 +7879,10 @@ Team Razorpay',
         $expectedStorkParametersForTemplate = [
             'gstin'                       => '18AABCU9603R1ZM',
             'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
-            'business_registered_pin'     => '400018',
-            'business_registered_city'    => 'Mumbai City',
-            'business_registered_state'   => 'MH'
+            'business_registered_pin'     => '400018'
         ];
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_auto_update_V1', '1234567890', $expectedStorkParametersForTemplate);
+        $this->expectStorkSendSmsRequest($storkMock,'Gst.success.vx', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi,
@@ -8084,12 +8082,10 @@ Team Razorpay',
         $expectedStorkParametersForTemplate = [
             'gstin'                       => '18AABCU9603R1ZM',
             'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
-            'business_registered_pin'     => '400018',
-            'business_registered_city'    => 'Mumbai City',
-            'business_registered_state'   => 'MH'
+            'business_registered_pin'     => '400018'
         ];
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_gstin_auto_updated', '1234567890', $expectedStorkParametersForTemplate);
+        $this->expectStorkSendSmsRequest($storkMock,'Gst.success.vx', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hey,
@@ -9180,11 +9176,10 @@ Team Razorpay',
         $this->app->instance('stork_service', $storkMock);
 
         $expectedStorkParametersForTemplate = [
-            'updated_business_website'  => 'https://www.example.com',
-            'previous_business_website' => 'https://www.sample.com'
+            'updated_business_website'  => 'https://www.example.com'
         ];
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_business_website_update', '1234567890', $expectedStorkParametersForTemplate);
+        $this->expectStorkSendSmsRequest($storkMock,'website.update.success.vx', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'As per your request, we have changed your website from https://www.sample.com to https://www.example.com

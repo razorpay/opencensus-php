@@ -70,6 +70,8 @@ class Constants
 
     const IFSC_CODE                                = 'ifsc_code';
 
+    const CURRENCY_SYMBOL                          = 'currency_symbol';
+
     const UPDATED_TRANSACTION_LIMIT                = 'updated_transaction_limit';
 
     const GSTIN                                    = 'gstin';

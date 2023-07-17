@@ -10569,6 +10569,7 @@ class Service extends Base\Service
             Constants::MERCHANT         => $merchant,
             DashboardEvents::EVENT      => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
             Constants::PARAMS           => [
+                Constants::CURRENCY_SYMBOL            => "₹",
                 Constants::UPDATED_TRANSACTION_LIMIT  => $newTransactionLimit/100,
                 'merchant_name'                       => $merchant[Entity::NAME],
             ]

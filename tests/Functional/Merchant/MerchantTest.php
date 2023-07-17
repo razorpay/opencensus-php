@@ -16758,10 +16758,11 @@ Team Razorpay',
         $this->app->instance('stork_service', $storkMock);
 
         $expectedStorkParametersForTemplate = [
+            'currency_symbol'           => "₹",
             'updated_transaction_limit' => 8000
         ];
 
-        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.increase_transaction_limit_request_approve', '1234567890', $expectedStorkParametersForTemplate);
+        $this->expectStorkSmsRequest($storkMock,'Increase.transaction.limit.vx', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'With regards to the request we received an update from the partner banks to increase the transaction limit to ₹8000
