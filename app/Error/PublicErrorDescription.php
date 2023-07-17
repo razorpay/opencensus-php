@@ -759,6 +759,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
+    const BAD_REQUEST_PAYMENT_PRICING_ISSUE                                     = 'Your payment has failed due to a configuration issue. To pay successfully try using another method.';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE              = 'The fees calculated for fund account validation is greater than available fee credits or balance.';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE             = 'Penny Testing is not supported for the given account number.';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_BANK_NOT_ALLOWED                  = 'Sorry we do not support this bank right now for fund account validation.';
