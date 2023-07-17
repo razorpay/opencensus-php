@@ -786,13 +786,21 @@ class Processor
                 // offers are not supported in initial ramp
                 if ((empty($order) === false) and
                     (($order->hasOffers() === true) or
-                        ($order->isDiscountApplicable() === true) or
-                        ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
-//                        ($order->getFeeConfigId() !== null) or
-                        ($order->invoice !== null)))
+                        ($order->isDiscountApplicable() === true)))
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "offers",
+                        'reason' => "offers_and_discounts",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    return false;
+                }
+
+                if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
+                    ($order->invoice !== null))
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "no_code_apps",
                         'merchant_id' => $merchant->getId(),
                     ]);
 
