@@ -131,20 +131,27 @@ function FeeBearerSelfserve(props) {
   const isQREnabled = currentUser.isQRCodeProductEnabled;
   const isSCEnabled = currentUser.isVirtualAccountsEnabled;
   const isRoutesEnabled = currentUser.isMarketplaceEnabled;
+  const isMagicCheckoutEnabled = currentUser.isMagicCheckoutLive;
   const productBeingUsed = useMemo(() => {
     // no case where none is enabled
     // in case only one is enabled
     // QR enabled
-    if (isQREnabled && !isSCEnabled && !isRoutesEnabled) return 'QR code';
+    if (isQREnabled && !isSCEnabled && !isRoutesEnabled && !isMagicCheckoutEnabled)
+      return 'QR code';
     // SC enabled
-    if (!isQREnabled && isSCEnabled && !isRoutesEnabled) return 'Smart Collect';
+    if (!isQREnabled && isSCEnabled && !isRoutesEnabled && !isMagicCheckoutEnabled)
+      return 'Smart Collect';
     // Route enabled
-    if (!isQREnabled && !isSCEnabled && isRoutesEnabled) return 'Route';
+    if (!isQREnabled && !isSCEnabled && isRoutesEnabled && !isMagicCheckoutEnabled) return 'Route';
+    //Magic checkout enabled
+    if (!isQREnabled && !isSCEnabled && !isRoutesEnabled && isMagicCheckoutEnabled)
+      return 'Magic Checkout';
 
     // in case more than one is enabled
-    return 'QR, Smart Collect and Route';
-  }, [isQREnabled, isSCEnabled, isRoutesEnabled]);
-  const isCustomerFeeNotSupported = isQREnabled || isSCEnabled || isRoutesEnabled;
+    return 'QR, Smart Collect, Route and Magic Checkout';
+  }, [isQREnabled, isSCEnabled, isRoutesEnabled, isMagicCheckoutEnabled]);
+  const isCustomerFeeNotSupported =
+    isQREnabled || isSCEnabled || isRoutesEnabled || isMagicCheckoutEnabled;
 
   const renderCustomerFeeAction = () => {
     if (showLoader && isPlatformFeeBearer) {

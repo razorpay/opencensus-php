@@ -8,6 +8,7 @@ const defaultInitialReduxState = getInitialReduxState({
   isQRCodeProductEnabled: true,
   isVirtualAccountsEnabled: true,
   isMarketplaceEnabled: true,
+  isMagicCheckoutLive: true,
 });
 
 describe('Fee bearer', () => {
@@ -23,7 +24,7 @@ describe('Fee bearer', () => {
     await waitFor(() => expect(openModalSpy).toHaveBeenCalled());
   });
 
-  it('should render proper not supported case for customer fee bearer with QR, SC & Route enabled', () => {
+  it('should render proper not supported case for customer fee bearer with QR, SC, Route and Magic checkout enabled', () => {
     render(<FeeBearerSelfserve />, {
       initialState: defaultInitialReduxState,
     });
@@ -31,7 +32,7 @@ describe('Fee bearer', () => {
     expect(screen.getByText('NOT SUPPORTED')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'This feature is not supported for merchants using QR, Smart Collect and Route',
+        'This feature is not supported for merchants using QR, Smart Collect, Route and Magic Checkout',
         { exact: false }, //substring match
       ),
     ).toBeInTheDocument();
@@ -89,6 +90,26 @@ describe('Fee bearer', () => {
     expect(
       screen.getByText(
         'This feature is not supported for merchants using QR code',
+        { exact: false }, //substring match
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('should render proper not supported case for customer fee bearer with QR, SC, Route disabled & Magic checkout enabled', () => {
+    const initialReduxState = getInitialReduxState({
+      isQRCodeProductEnabled: false,
+      isVirtualAccountsEnabled: false,
+      isMarketplaceEnabled: false,
+      isMagicCheckoutLive: true,
+    });
+    render(<FeeBearerSelfserve />, {
+      initialState: initialReduxState,
+    });
+    expect(screen.getByText('Customer pays the fee')).toBeInTheDocument();
+    expect(screen.getByText('NOT SUPPORTED')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'This feature is not supported for merchants using Magic Checkout',
         { exact: false }, //substring match
       ),
     ).toBeInTheDocument();
