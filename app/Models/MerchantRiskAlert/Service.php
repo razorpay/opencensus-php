@@ -738,6 +738,7 @@ class Service extends Base\Service
             $data = [
                 'merchantId'   => $merchant->getId(),
                 'merchantName' => $merchant->getName(),
+                'risk_action'  => 'Risk Clarification',
             ];
         }
         else
@@ -751,6 +752,7 @@ class Service extends Base\Service
                 $data = [
                     'merchantId'   => $merchant->getId(),
                     'merchantName' => $merchant->getName(),
+                    'risk_action' =>  'Funds under Review',
                 ];
             }
             else
