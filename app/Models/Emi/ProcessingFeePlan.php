@@ -80,6 +80,14 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::AMEX => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 19900
+                ]
+            ]
+        ],
         CreditEmiProvider::SBIN => [
             Type::CREDIT => [
                 '6' => [
