@@ -4,7 +4,7 @@ import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import DocsLink from 'merchant/components/DocsLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import { shouldEnableAttemptCharge } from 'merchant/views/Subscriptions/utils';
+import { isDomesticCardOrIsUPI } from 'merchant/views/Subscriptions/utils';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 export default function EntityDetailRow(props) {
@@ -95,7 +95,7 @@ export default function EntityDetailRow(props) {
   }
 
   const isChargedInvoice = item.notes && item.notes.type && item.notes.type == 'upgrade';
-  const shouldShowAttemptCharge = shouldEnableAttemptCharge(paymentMethod, cardMandateID);
+  const shouldShowAttemptCharge = isDomesticCardOrIsUPI(paymentMethod, cardMandateID);
   const showAttemptChargeCTA =
     item.status === 'issued' &&
     (['active', 'pending', 'halted', 'completed'].indexOf(subscriptionStatus) > -1 ||
@@ -171,7 +171,7 @@ export default function EntityDetailRow(props) {
               </span>,
               <span key="retrying-info"> {retryingInfo}</span>,
             ]}
-          {showAttemptChargeCTA && shouldShowAttemptCharge && (
+          {showAttemptChargeCTA && !shouldShowAttemptCharge && (
             <AsyncButton
               class="btn-link no-padding"
               text=" Attempt Charge"

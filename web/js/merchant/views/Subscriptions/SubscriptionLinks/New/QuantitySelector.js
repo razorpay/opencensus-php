@@ -22,6 +22,7 @@ export default function QuantitySelector(props) {
         value={props.quantity}
         min={1}
         onBlur={props.onBlur}
+        disabled={props.disabled}
         autoRender
       />
       <span>(Quantity)</span>

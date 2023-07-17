@@ -1,7 +1,7 @@
 import React from 'react';
-import PlanDetails from '../components/PlanDetails';
+import PlanDetails from 'merchant/views/Subscriptions/SubscriptionLinks/components/PlanDetails';
 import Input from 'common/new-ui/Input';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 const CHANGES_OPTIONS = [
   { label: 'Immediately', value: 'now', eventLabel: 'immediate' },
@@ -28,6 +28,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           showOffers={props.showOffers}
           onChangeInOffer={props.onChangeInOffer}
           cloneOptions={props.cloneOptions}
+          disableEdit={props.disableEdit}
         />
 
         <Input.Check
@@ -35,6 +36,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           label="Notify Customer"
           name="customer_notify"
           checked={props.fields.customer_notify}
+          disabled={props.disableEdit}
           fieldLabel="Notify customer for this update and future charges."
           onBlur={() => {
             analytics.track('subscription.update.notify', props.cloneOptions);
@@ -46,6 +48,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
             label="Apply Changes"
             class="Input--vTop"
             options={CHANGES_OPTIONS}
+            disabled={props.disableEdit}
             name="schedule_change_at"
             onChange={(e) => {
               const selectedOption = CHANGES_OPTIONS.find((opt) => opt.value === e.target.value);

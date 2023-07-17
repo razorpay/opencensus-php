@@ -33,14 +33,14 @@ export function getRecurringChargeAPILabel() {
 }
 
 // For UPI and Card hides attempt charge
-export function shouldEnableAttemptCharge(method, isDomesticMandate = false) {
+export function isDomesticCardOrIsUPI(method, isDomesticMandate = false) {
   if (method === 'upi') {
-    return false;
+    return true;
   }
-  if (method === 'card') {
-    return isDomesticMandate;
+  if (method === 'card' && isDomesticMandate) {
+    return true;
   }
-  return true;
+  return false;
 }
 
 /**

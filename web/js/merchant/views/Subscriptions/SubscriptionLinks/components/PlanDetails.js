@@ -1,11 +1,14 @@
 import React from 'react';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
-import QuantitySelector from '../New/QuantitySelector';
 import Amount from 'common/ui/Amount';
+import Alert from 'common/ui/Forms/Alert';
+import { DocLink } from 'merchant/components/DocsLink';
 import Input, { Label, Description } from 'common/new-ui/Input';
 import { getIntervalCycle, classList } from 'common/utils/rzp-utils';
-import analytics from '../../analytics';
+
+import QuantitySelector from 'merchant/views/Subscriptions/SubscriptionLinks/New/QuantitySelector';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 const planPeriodToMaxCycleMap = {
   daily: 36500,
@@ -14,6 +17,7 @@ const planPeriodToMaxCycleMap = {
   yearly: 100,
 };
 
+// eslint-disable-next-line react/no-unsafe
 export default class NewSubscriptionLinkPlanDetails extends React.Component {
   static defaultProps = {
     isEdit: false,
@@ -88,6 +92,24 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     }
     return (
       <>
+        {/* Adding alert & disabling fields for edit subscription page if subs is with domestic card or upi */}
+        {props.disableEdit && props.isEdit && (
+          <div>
+            <Alert
+              class="alert-sm"
+              type="warning"
+              message={
+                <>
+                  For this subscription, only the offer can be updated.{' '}
+                  <DocLink class="btn-link" href="https://razorpay.com/docs" target="_blank">
+                    Know more.
+                  </DocLink>
+                </>
+              }
+              showDismiss={false}
+            />
+          </div>
+        )}
         <div class={classList('Input', !props.isEdit && 'Input--required')}>
           <Label text="Select Plan" />
           <div class="Input-content">
@@ -100,7 +122,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                 selected={selectedPlan}
                 optionComponent={PlanOption}
                 placeholder={planPlaceholder}
-                disabled={props.plans.loading}
+                disabled={props.plans.loading || props.disableEdit}
                 onChange={(...args) => {
                   props.onChangeInPlan(...args);
                   analytics.track(eventLabel.selectedPlan, this.props.cloneOptions);
@@ -113,6 +135,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               <QuantitySelector
                 rate={selectedPlan.amount}
                 quantity={fields.quantity}
+                disabled={props.disableEdit}
                 currency={selectedPlan.currency}
                 informativeMessage={getInformativeMessage(selectedPlan)}
                 onBlur={() => {
@@ -192,7 +215,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           min={1}
           size="half"
           type="number"
-          disabled={!selectedPlan}
+          disabled={!selectedPlan || props.disableEdit}
           validator={this.validateTotalCount}
           description="No. of billing cycles to be charged"
           max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}

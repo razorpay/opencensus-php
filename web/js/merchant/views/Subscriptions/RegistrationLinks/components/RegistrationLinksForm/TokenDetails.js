@@ -17,6 +17,7 @@ import {
   RECURRING_TYPE,
   FREQUENCY,
   getDebitPatternDesc,
+  CARD_TOKEN_MAX_AMOUNT,
 } from 'merchant/views/Subscriptions/constants';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
@@ -129,6 +130,7 @@ export default function TokenDetailsForm({
     if (user.isOrgCurlec) {
       maxAmountProps.description = () => '';
     } else {
+      maxAmountProps.placeholder = `Max ${CARD_TOKEN_MAX_AMOUNT}`;
       maxAmountProps.description = () => (
         <>
           You can <strong>automatically</strong> charge the customer upto {currencySym}

@@ -31,7 +31,7 @@ describe('RL - Token Details Form', () => {
       expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
 
-    ['max 15000'].forEach((fieldLabel) => {
+    ['max 1000000'].forEach((fieldLabel) => {
       expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
   });

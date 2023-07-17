@@ -23,14 +23,15 @@ import {
 } from 'merchant/reducers/subscriptions';
 
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-import UPIBanner from '../components/UPIBanner';
+import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';
 import moment from 'moment';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { isDomesticCardOrIsUPI } from 'merchant/views/Subscriptions/utils';
 
 const tabsMeta = {
   'Subscription Details': {
@@ -44,6 +45,7 @@ const tabsMeta = {
 
 const tabs = Object.keys(tabsMeta);
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => ({
@@ -402,7 +404,10 @@ export default class UpdateSubscriptionLink extends React.Component {
 
   renderForm = () => {
     const { fields, currency, internals, isLoading, currentTab, prevSubscription } = this.state;
-
+    const disableEdit = isDomesticCardOrIsUPI(
+      prevSubscription.payment_method,
+      prevSubscription.card_mandate_id,
+    );
     if (isLoading) {
       return (
         <div class="page-spinner-container">
@@ -419,6 +424,7 @@ export default class UpdateSubscriptionLink extends React.Component {
 
         return (
           <PlanDetails
+            disableEdit={disableEdit}
             fields={fields}
             plans={filteredPlans}
             internals={internals}
