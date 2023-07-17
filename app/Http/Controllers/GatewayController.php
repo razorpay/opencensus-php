@@ -134,8 +134,24 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
+            $payment = $this->fetchExternalUpiPayment($paymentRepo, $paymentId);
+
+            if ($payment !== null)
             {
+                if ($this->shouldSkipUpiICICICallback($payment, Mode::LIVE, $input) === true)
+                {
+
+                    $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'merchant_id' => $payment->getMerchantId(),
+                        ]);
+
+                    return [
+                        'success' => true,
+                    ];
+                }
+
                 $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
 
                 $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
@@ -362,8 +378,31 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
+                $payment = $this->fetchExternalUpiPayment($paymentRepo, $paymentId);
+
+                if ($payment !== null)
                 {
+                    if ($this->shouldSkipUpiICICICallback($payment, Mode::LIVE, $input) === true)
+                    {
+
+                        $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                            [
+                                'payment_id' => $payment->getId(),
+                                'merchant_id' => $payment->getMerchantId(),
+                            ]);
+
+                        return [
+                            'success' => true,
+                        ];
+                    }
+
+                    $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_CALLBACK_DATA, [
+                        'payment_id'    => $payment->getId(),
+                        'merchant_id'   => $payment->getMerchantId(),
+                        'terminal_id'   => $payment->getTerminalId(),
+                        'callback_data' => $input,
+                    ]);
+
                     $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
 
                     $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
@@ -421,49 +460,6 @@ class GatewayController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * checks if pre processed callback can be processed through Re-Arch flow
-     *
-     * @param mixed $paymentRepo
-     * @param mixed $paymentId
-     * @return boolean
-     */
-    protected function shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input)
-    {
-        try
-        {
-            $payment = $paymentRepo->findOrFail($paymentId);
-        }
-        catch (\Throwable $th)
-        {
-            $this->trace->info(TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
-            [
-                "message" => $th->getMessage(),
-            ]);
-
-            return false;
-        }
-
-        if (empty($payment) === true)
-        {
-            return false;
-        }
-
-        if ($payment->isExternal() === false)
-        {
-            return false;
-        }
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_CALLBACK_DATA, [
-            'payment_id'    => $payment->getId(),
-            'merchant_id'   => $payment->getMerchantId(),
-            'terminal_id'   => $payment->getTerminalId(),
-            'callback_data' => $input,
-        ]);
-
-        return true;
     }
 
     /**
@@ -2053,5 +2049,45 @@ class GatewayController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the payment is ExternalUPI Payment or not. returns Payment if External (ReArch)
+     * @param $paymentRepo
+     * @param $paymentId
+     * @return Payment\Entity
+     */
+    protected function fetchExternalUpiPayment($paymentRepo, $paymentId)
+    {
+        try
+        {
+            $payment = $paymentRepo->findOrFail($paymentId);
+        }
+        catch (\Throwable $th)
+        {
+            $this->trace->info(TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    "message" => $th->getMessage(),
+                ]);
+
+            return null;
+        }
+
+        if (empty($payment) === true)
+        {
+            return null;
+        }
+
+        if ($payment->isExternal() === false)
+        {
+            return null;
+        }
+
+        if ($payment->isUpi() === false)
+        {
+            return null;
+        }
+
+        return $payment;
     }
 }
