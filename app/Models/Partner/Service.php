@@ -25,7 +25,6 @@ use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Service extends Base\Service
@@ -241,6 +240,18 @@ class Service extends Base\Service
         }
 
         return $this->core()->migrateResellerToPurePlatformPartner($input) ;
+    }
+
+    public function migratePurePlatformToResellerPartner(array $input)
+    {
+        (new Validator())->validateInput('purePlatformToResellerMigration', $input);
+
+        if ($this->isPartnerTypeSwitchExpEnabled($input['merchant_id']) === false)
+        {
+            return ['success' => true, 'errorMessage' => "Partner is not allowed for partner type switch"];
+        }
+
+        return $this->core()->migratePurePlatformToResellerPartner($input) ;
     }
 
     /**

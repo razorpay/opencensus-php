@@ -11,23 +11,20 @@ use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Merchant\VerificationDetail as MVD;
-use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
-use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
-use RZP\Models\Partner\Activation\Core as PartnerActivationCore;
+use RZP\Models\Partner\UpdatePartnerActivationContext;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 
 class UpdateMerchantContext extends Job
@@ -355,97 +352,10 @@ class UpdateMerchantContext extends Job
 
         if($merchant->isResellerPartner())
         {
-            $this->updatePartnerContext($merchant);
+            (new UpdatePartnerActivationContext($merchant))->update($this->validationId);
         }
 
         $this->pushJobProcessingTimeMetrics($merchant, $startTime);
-    }
-
-
-    /**
-     * Update partner context (activation_status) if possible based on the verification
-     * status of fields such as Bank details, PAN or GSTIN
-     *
-     * @param Merchant\Entity $merchant
-     *
-     * @return void
-     * @throws \RZP\Exception\LogicException
-     * @throws \Throwable
-     */
-    protected function updatePartnerContext(Merchant\Entity $merchant): void
-    {
-        $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
-
-        $canUpdatePartnerContext = !($partnerActivation === null) &&
-                                    $this->updateContextRequirements->canUpdatePartnerContext($partnerActivation);
-
-        if ($canUpdatePartnerContext === true)
-        {
-            $clarificationCore = new Core();
-
-            $newActivationStatus = (new PartnerCore())->getApplicablePartnerActivationStatus($merchant->merchantDetail, $partnerActivation);
-
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
-            ];
-
-            $isSystemBasedNeedsClarificationEnabledForPartner = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER_ERROR);
-
-            if (($clarificationCore->shouldTriggerNeedsClarification($partnerActivation) === true) and
-                ($isSystemBasedNeedsClarificationEnabledForPartner === true))
-            {
-                $kycClarificationReasons = (new Core())->composeNeedsClarificationReason($partnerActivation);
-
-                if (empty($kycClarificationReasons) === false)
-                {
-                    $input[Entity::KYC_CLARIFICATION_REASONS] = $kycClarificationReasons;
-
-                    $kycClarificationReasons = (new PartnerCore())->
-                    getUpdatedPartnerKycClarificationReasons($input, $partnerActivation->getMerchantId(), DetailConstant::SYSTEM);
-
-                    $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
-
-                    $newActivationStatus = Status::NEEDS_CLARIFICATION;
-
-                    $this->trace->count(Metrics::PARTNER_NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
-                }
-            }
-
-            $activationStatus = $partnerActivation->getActivationStatus();
-            $dimension = array("activation_status" => $activationStatus);
-            $this->trace->count(PartnerMetrics::PARTNERS_KYC_ACTIVATION_STATUS_TOTAL, $dimension);
-
-            $this->trace->info(TraceCode::UPDATE_PARTNER_CONTEXT,[
-                'partner_id'            => $merchant->getId(),
-                'new_activation_status' => $newActivationStatus,
-                'old_activation_status' => $activationStatus
-            ]);
-
-            if (($activationStatus !== $newActivationStatus) and
-                ($activationStatus === Status::UNDER_REVIEW))
-            {
-                $activationStatusData = [
-                    Entity::ACTIVATION_STATUS => $newActivationStatus
-                ];
-
-                (new PartnerActivationCore)->updatePartnerActivationStatus($merchant, $partnerActivation, $merchant, $activationStatusData);
-
-                if($newActivationStatus === Status::NEEDS_CLARIFICATION)
-                {
-                    (new Merchant\Core)->appendTag($merchant, "Partner Auto NC");
-
-                    $this->sendAutoNeedsClarificationEvent($merchant, E::PARTNER_ACTIVATION);
-
-                    $this->trace->debug(TraceCode::PARTNER_AUTO_NC_TAG_ADDED, [
-                        'partner_id' => $merchant->getId(),
-                        'tags'       => $merchant->tagNames()
-                    ]);
-                }
-            }
-
-            $this->sendSegmentEvents();
-        }
     }
 
     protected function sendSegmentEvents()

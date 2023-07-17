@@ -25,6 +25,10 @@ class Validator extends Base\Validator
         'merchant_id'     => 'required|alpha_num|size:14',
     ];
 
+    protected static $purePlatformToResellerMigrationRules = [
+        'merchant_id'     => 'required|alpha_num|size:14',
+    ];
+
     protected static $regenerateReferralLinkRules = [
         'partner_ids' => 'required|array'
     ];

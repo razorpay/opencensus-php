@@ -11,7 +11,11 @@ use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Trace\Tracer;
 use Illuminate\Support\Str;
+use RZP\Constants\Environment;
+use RZP\Models\Pricing\DefaultPlan;
 use RZP\Jobs\PartnerMigrationAuditJob;
+use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
@@ -1089,7 +1093,7 @@ class Core extends Detail\Core
         if ($merchant === null || $merchant->isResellerPartner() === false)
         {
             $this->trace->info($traceCode, ['merchant_id' => $merchantId]);
-            $this->trace->count($metricCode, [ 'code' => $traceCode ]);
+            $this->trace->count($metricCode, [ 'success' => false, 'code' => $traceCode ]);
 
             return null;
         }
@@ -1233,7 +1237,7 @@ class Core extends Detail\Core
         $configs = $this->repo->partner_config->fetchAllConfigsInSyncOrFail([$existingAppId]);
         $defaultConfig = $this->filterDefaultConfig($configs);
         $accessMaps = $this->repo->merchant_access_map->fetchAccessMapsInSyncOrFail(
-            $existingAppId, $merchant->getId()
+            [$existingAppId], $merchant->getId()
         );
         $subMs = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail($existingAppId, $merchant->getId());
         $subMUsers = $this->repo->merchant_user->fetchMerchantUsersByMerchantIdsInSyncOrFail(
@@ -1519,6 +1523,30 @@ class Core extends Detail\Core
         $this->merchantCore->createPartnerConfig($application, $merchant, $config);
     }
 
+    public function getPartnerDefaultConfig(Merchant\Entity $partner): array
+    {
+        $env = ($this->app->isProduction()) ? Environment::PRODUCTION : Environment::DEV;
+        $defaultPlanId = DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
+            $partner->getCountry()
+        ][ $env ][ DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY ];
+        $implicitPlanId  = DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
+            $partner->getCountry()
+        ][ $env ][ DefaultPlan::PARTNER_COMMISSION_PLAN_ID_KEY ];
+        return [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID       => $defaultPlanId,
+            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => $implicitPlanId,
+            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+            PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+        ];
+    }
+
+    public function deleteWebhooksForApplication(string $ownerId)
+    {
+        (new Stork('live'))->deleteWebhooksByOwnerId($ownerId);
+
+        (new Stork('test'))->deleteWebhooksByOwnerId($ownerId);
+    }
+
     /**
      * The function will return true when a reseller partner fills merchant KYC form.
      *
@@ -1548,7 +1576,21 @@ class Core extends Detail\Core
     {
         $actorDetails = $this->getActorDetails();
 
-        MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id'],$actorDetails);
+        MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id'], $actorDetails);
+
+        return ['triggered' => 'true', 'input' => $input];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function migratePurePlatformToResellerPartner(array $input): array
+    {
+        $actorDetails = $this->getActorDetails();
+
+        MigratePurePlatformToResellerPartnerJob::dispatch($input['merchant_id'], $actorDetails);
 
         return ['triggered' => 'true', 'input' => $input];
     }

@@ -4127,7 +4127,7 @@ class Core extends Base\Core
 
     public function createPartnerConfig(OAuthApp\Entity $application, Entity $partner, array $config = [])
     {
-        $defaultConfig = $this->getPartnerDefaultConfig($partner);
+        $defaultConfig = (new Partner\Core())->getPartnerDefaultConfig($partner);
         //If partner type is fully managed then commissions are disabled.
         if($partner->getPartnerType() === Constants::FULLY_MANAGED)
         {
@@ -4207,21 +4207,6 @@ class Core extends Base\Core
     protected function sendPartnerInfoToSalesForce(Entity $partner)
     {
         $this->app->salesforce->sendPartnerInfo($partner);
-    }
-
-    protected function getPartnerDefaultConfig(Entity $partner): array
-    {
-        $env = ($this->app->isProduction()) ? Environment::PRODUCTION : Environment::DEV;
-        $defaultPlanId = Pricing\DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
-            $partner->getCountry()][$env][Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY];
-        $implicitPlanId  = Pricing\DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
-            $partner->getCountry()][$env][Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID_KEY];
-        return [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID       => $defaultPlanId,
-            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => $implicitPlanId,
-            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
-            PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
-        ];
     }
 
     /**
@@ -8876,16 +8861,8 @@ class Core extends Base\Core
 
         (new AccessMap\Core())->updateApplications($accessMaps, $updatedAppId, MerchantApplicationsEntity::REFERRED);
 
-        $this->deleteWebhooksForApplication($existingAppId);
+        (new Partner\Core())->deleteWebhooksForApplication($existingAppId);
     }
-
-    private function deleteWebhooksForApplication(string $ownerId)
-    {
-        (new Stork('live'))->deleteWebhooksByOwnerId($ownerId);
-
-        (new Stork('test'))->deleteWebhooksByOwnerId($ownerId);
-    }
-
 
     /**
      * Validates existing entities on live and test DB and creates supporting entities to migrate aggregator to reseller
@@ -8917,7 +8894,7 @@ class Core extends Base\Core
             {
                 $configs = $this->repo->partner_config->fetchAllConfigsInSyncOrFail([$existingAppId]);
                 $accessMaps[$existingAppId] = $this->repo->merchant_access_map->fetchAccessMapsInSyncOrFail(
-                    $existingAppId, $partner->getId()
+                    [$existingAppId], $partner->getId()
                 );
                 $subMerchants[$existingAppId] = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail(
                     $existingAppId, $partner->getId()

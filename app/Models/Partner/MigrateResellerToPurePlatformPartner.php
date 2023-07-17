@@ -22,7 +22,7 @@ class MigrateResellerToPurePlatformPartner extends Core
 
     public function migrate(string $merchantId, array $actorDetails) : bool
     {
-        $mutexKey = MerchantConstants::RESELLER_TO_PURE_PLATFORM_MIGRATE.$merchantId;
+        $mutexKey = Constants::RESELLER_TO_PURE_PLATFORM_MIGRATE.$merchantId;
 
         return $this->mutex->acquireAndRelease(
             $mutexKey,
@@ -30,7 +30,7 @@ class MigrateResellerToPurePlatformPartner extends Core
             {
                 return $this->updateResellerToPurePlatform($merchantId, $actorDetails);
             },
-            MerchantConstants::RESELLER_TO_PURE_PLATFORM_MIGRATE_LOCK_TIME_OUT,
+            Constants::RESELLER_TO_PURE_PLATFORM_MIGRATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_RESELLER_TO_PURE_PLATFORM_MIGRATION_IN_PROGRESS
         );
     }
@@ -40,7 +40,7 @@ class MigrateResellerToPurePlatformPartner extends Core
         $partner = $this->fetchResellerPartner(
             $merchantId,
             TraceCode::RESELLER_TO_PURE_PLATFORM_UPDATE_INVALID_PARTNER,
-            Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION_FAILURE
+            Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION
         );
         if ($partner === null) return false;
         $oldPartnerType = $partner->getPartnerType();
@@ -50,7 +50,7 @@ class MigrateResellerToPurePlatformPartner extends Core
         if ($result === true)
         {
             $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_PURE_PLATFORM_SUCCESS, ['merchant_id' => $partner->getId()]);
-            $this->trace->count(Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION_SUCCESS);
+            $this->trace->count(Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION, ['success' => true]);
 
             PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
         }
@@ -94,8 +94,8 @@ class MigrateResellerToPurePlatformPartner extends Core
         {
             $this->trace->error(TraceCode::RESELLER_TO_PURE_PLATFORM_MIGRATE_ERROR);
             $this->trace->count(
-                Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION_FAILURE,
-                ['code' => TraceCode::RESELLER_TO_PURE_PLATFORM_MIGRATE_ERROR]
+                Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION,
+                ['success' => false, 'code' => TraceCode::RESELLER_TO_PURE_PLATFORM_MIGRATE_ERROR]
             );
             throw $e;
         }
@@ -118,10 +118,14 @@ class MigrateResellerToPurePlatformPartner extends Core
         return null;
     }
 
-    private function notifyPartnerAboutSwitch(Entity $partner)
+    private function notifyPartnerAboutSwitch(Entity $partner): void
     {
         \Event::dispatch(new TransactionalClosureEvent(function() use ($partner) {
-            (new NotifyPartnerAboutPartnerTypeSwitch($partner))->notify();
+            (new NotifyPartnerAboutPartnerTypeSwitch(
+                $partner,
+                MerchantConstants::RESELLER,
+                MerchantConstants::PURE_PLATFORM)
+            )->notify();
         }));
     }
 
@@ -178,8 +182,8 @@ class MigrateResellerToPurePlatformPartner extends Core
     private function fetchResellerPartnerEntities(string $existingAppId, Entity $merchant) : array
     {
         $configs = $this->repo->partner_config->fetchAllConfigForApps([$existingAppId]);
-        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId(
-            $existingAppId, $merchant->getId()
+        $accessMaps = $this->repo->merchant_access_map->fetchAllMappingsByEntityIdAndEntityOwnerId(
+            [$existingAppId], $merchant->getId()
         );
         $subMs = $this->repo->merchant->getSubMerchantsForPartnerAndApplication($existingAppId, $merchant->getId());
         $kycStates = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIds($merchant->getId(), $subMs->getIds());

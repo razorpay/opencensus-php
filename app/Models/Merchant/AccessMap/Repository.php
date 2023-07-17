@@ -252,7 +252,7 @@ class Repository extends Base\Repository
             ->get();
     }
 
-public function getAllMappingsByApplicationTypeWithTrashed(string $appType, string $afterId, int $chunk)
+    public function getAllMappingsByApplicationTypeWithTrashed(string $appType, string $afterId, int $chunk)
     {
         $accessMapEntityId = $this->repo->merchant_access_map->dbColumn("entity_id");
         $accessMapId = $this->repo->merchant_access_map->dbColumn(Entity::ID);
@@ -316,10 +316,10 @@ public function getAllMappingsByApplicationTypeWithTrashed(string $appType, stri
                     ->exists();
     }
 
-    public function getAllMappingsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId, string $mode = null)
+    public function fetchAllMappingsByEntityIdAndEntityOwnerId(array $entityIds, string $entityOwnerId, string $mode = null)
     {
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
-        return $query->where(Entity::ENTITY_ID, $entityId)
+        return $query->whereIn(Entity::ENTITY_ID, $entityIds)
                      ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
                      ->orderBy(Entity::ID)
                      ->get();
@@ -329,15 +329,15 @@ public function getAllMappingsByApplicationTypeWithTrashed(string $appType, stri
      * Fetch merchant access maps in sync for given entityId and entityOwnerId.
      * It fails if data is not in sync in test and live DB.
      *
-     * @param   string  $entityId       the entity or application ID
+     * @param   array  $entityIds       the entity or application IDs
      * @param   string  $entityOwnerId  the partner's merchant ID
      * @return  Base\PublicCollection
      * @throws  LogicException
      */
-    public function fetchAccessMapsInSyncOrFail(string $entityId, string $entityOwnerId) : Base\PublicCollection
+    public function fetchAccessMapsInSyncOrFail(array $entityIds, string $entityOwnerId) : Base\PublicCollection
     {
-        $liveEntities = $this->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId, 'live');
-        $testEntities = $this->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId, 'test');
+        $liveEntities = $this->fetchAllMappingsByEntityIdAndEntityOwnerId($entityIds, $entityOwnerId, 'live');
+        $testEntities = $this->fetchAllMappingsByEntityIdAndEntityOwnerId($entityIds, $entityOwnerId, 'test');
 
         $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
         if ($isSynced === true)

@@ -1794,19 +1794,6 @@ return [
         ]
     ],
 
-    'testMigrateResellerToPurePlatform' => [
-        'request' => [
-            'content' => [
-                'merchant_id'   => 'DefaultPartner',
-            ],
-            'url'     => '/partner/migrate_reseller_to_pure_platform',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => 'DefaultPartner' ] ]
-        ]
-    ],
-
     'testFetchEntitiesForPartnershipService' => [
         'request'  => [
             'method'  => 'GET',
@@ -1872,5 +1859,47 @@ return [
             ],
             'status_code' => 200,
         ],
+    ],
+
+    'testAggregatorToResellerBulkUpdate' => [
+        'request' => [
+            'content' => [
+                'merchant_ids'   => [
+                    '10000000000000'
+                ],
+                'batch_size' => 1
+            ],
+            'url'     => '/partner/migrate_aggregator_to_reseller/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testMigrateResellerToPurePlatform' => [
+        'request' => [
+            'content' => [
+                'merchant_id'   => 'DefaultPartner',
+            ],
+            'url'     => '/partner/migrate_reseller_to_pure_platform',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => 'DefaultPartner' ] ]
+        ]
+    ],
+
+    'testMigratePurePlatformToReseller' => [
+        'request' => [
+            'content' => [
+                'merchant_id'   => '1000000000plat',
+            ],
+            'url'     => '/partner/migrate_pure_platform_to_reseller',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => '1000000000plat' ] ]
+        ]
     ],
 ];

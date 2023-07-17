@@ -7,7 +7,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use Symfony\Component\Mime\Email;
 
-class ResellerToPurePlatformPartnerSwitchEmail extends Mailable
+class PartnerTypeSwitchEmail extends Mailable
 {
     protected $data;
     protected $countryCode;
@@ -51,9 +51,7 @@ class ResellerToPurePlatformPartnerSwitchEmail extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Partner account type updated to Platform Partner type';
-
-        $this->subject($subject);
+        $this->subject($this->data['subject']);
 
         return $this;
     }

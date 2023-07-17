@@ -118,9 +118,10 @@ class PartnerController extends Controller
     public function migratePurePlatformToResellerPartner()
     {
         $input = Request::all();
-        // TODO: Service implementation is to be taken up in different PR
 
-        return ApiResponse::json([]);
+        $response = $this->service()->migratePurePlatformToResellerPartner($input);
+
+        return ApiResponse::json($response);
     }
 
     public function getPartnerSalesPOC()

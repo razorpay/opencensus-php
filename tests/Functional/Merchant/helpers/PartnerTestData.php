@@ -2720,35 +2720,6 @@ return [
         ]
     ],
 
-    'testAggregatorToResellerBulkUpdate' => [
-        'request' => [
-            'content' => [
-                'merchant_ids'   => [
-                    '10000000000000'
-                ],
-                'batch_size' => 1
-            ],
-            'url'     => '/partner/migrate_aggregator_to_reseller/bulk',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'testMigrateResellerToPurePlatform' => [
-        'request' => [
-            'content' => [
-                'merchant_id'   => 'DefaultPartner',
-            ],
-            'url'     => '/partner/migrate_reseller_to_pure_platform',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => 'DefaultPartner' ] ]
-        ]
-    ],
-
     'testFetchPartnerSubmerchantsWithInvalidProduct' => [
         'request'   => [
             'url'     => '/submerchants',

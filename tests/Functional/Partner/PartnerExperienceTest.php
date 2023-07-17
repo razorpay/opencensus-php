@@ -10,50 +10,40 @@ use Queue;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use App\User\Constants;
-use RZP\Services\Elfin\Impl\Gimli;
-use RZP\Exception\BadRequestException;
-use RZP\Tests\Traits\MocksPartnershipsService;
-use Neves\Events\TransactionalClosureEvent;
-use RZP\Services\Elfin\Service as ElfinService;
-use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Batch;
+use ReflectionFunction;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Error\PublicErrorCode;
-use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
-use RZP\Mail\Merchant\ResellerToPurePlatformPartnerSwitchEmail;
-use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
-use RZP\Models\Pricing\DefaultPlan;
-use RZP\Models\User\BankingRole;
-use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Models\Merchant\Constants as MerchantConstants;
-use RZP\Models\Merchant\Metric as MerchantMetric;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\User\Role;
+use WpOrg\Requests\Response;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
+use RZP\Tests\Functional\Partner;
 use RZP\Models\Settings\Accessor;
-use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
-use RZP\Models\Merchant\AccessMap;
-use RZP\Services\Mock\Settlements\Api;
 use RZP\Services\SalesForceClient;
-use RZP\Models\BankingAccount\Channel;
+use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Mail\Merchant\PartnerOnBoarded;
-use RZP\Models\Merchant\MerchantApplications;
-use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\Merchant\MerchantTest;
-use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Mail\Merchant\PartnerTypeSwitchEmail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Models\Merchant\MerchantApplications;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
-use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
+use RZP\Services\Elfin\Service as ElfinService;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
+use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
-use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
+use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 
 class PartnerExperienceTest extends OAuthTestCase
 {
@@ -2763,7 +2753,7 @@ class PartnerExperienceTest extends OAuthTestCase
         );
     }
 
-    public function testNotifyPartnerAboutPartnerTypeSwitch()
+    public function testNotifyPartnerAboutResellerToPPPartnerTypeSwitch()
     {
         Mail::fake();
         $this->mockAllSplitzTreatment();
@@ -2773,7 +2763,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->testMigrateResellerToPurePlatform();
 
         $partner = $this->getDbEntity('merchant', ['id' => $defaultPartnerId]);
-        $notifyUsecase = new NotifyPartnerAboutPartnerTypeSwitch($partner);
+        $notifyUsecase = new NotifyPartnerAboutPartnerTypeSwitch($partner, 'reseller', 'pure_platform');
 
         $this->merchantTestUtil->expectStorkSmsRequest(
             $this->storkMock,
@@ -2788,7 +2778,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $notifyUsecase->notify();
 
-        Mail::assertSent(ResellerToPurePlatformPartnerSwitchEmail::class, function ($mail) use($partner) {
+        Mail::assertSent(PartnerTypeSwitchEmail::class, function ($mail) use($partner) {
             $subject = 'Partner account type updated to Platform Partner type';
             $from = [
                 0 => [
@@ -2812,6 +2802,429 @@ class PartnerExperienceTest extends OAuthTestCase
             return true;
 
         });
+    }
+
+    public function testMigratePurePlatformToReseller(): void
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($oauthApp, $accessMap, $partner, $newReferredAppId) = $this->setUpPurePlatformPartnerForSuccesfulPartnerTypeSwitch();
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
+
+        $this->startTest();
+
+        $this->assertSuccessfulPPToResellerPartnerTypeSwitch(
+            $partner, $accessMap, $oauthApp, $newReferredAppId
+        );
+    }
+
+    public function testMigratePPToResellerWhenActiveTokenIsExpiredAndRevoked()
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($oauthApp, $accessMap, $partner, $newReferredAppId) = $this->setUpPurePlatformPartnerForSuccesfulPartnerTypeSwitch(
+            [
+                [ 'expires_at' => strtotime('-2 weeks'), 'revoked' => true ],
+            ]
+        );
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
+
+        $testData = $this->testData['testMigratePurePlatformToReseller'];
+        $this->startTest($testData);
+
+        $this->assertSuccessfulPPToResellerPartnerTypeSwitch(
+            $partner, $accessMap, $oauthApp, $newReferredAppId
+        );
+    }
+
+    public function testMigratePPToResellerWhenActiveTokenIsNotExpiredAndRevoked()
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($oauthApp, $accessMap, $partner, $newReferredAppId) = $this->setUpPurePlatformPartnerForSuccesfulPartnerTypeSwitch(
+            [
+                [ 'expires_at' => strtotime('+2 weeks'), 'revoked' => true ],
+            ]
+        );
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
+
+        $testData = $this->testData['testMigratePurePlatformToReseller'];
+        $this->startTest($testData);
+
+        $this->assertSuccessfulPPToResellerPartnerTypeSwitch(
+            $partner, $accessMap, $oauthApp, $newReferredAppId
+        );
+    }
+
+    public function testMigratePPToResellerWhenActiveTokenIsNotExpiredAndNotRevoked()
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($oauthApp, $accessMap, $partner) = $this->setUpPurePlatformPartnerForFailedPartnerTypeSwitch(
+            [
+                [ 'expires_at' => strtotime('+2 weeks'), 'revoked' => null ],
+            ]
+        );
+
+        $testData = $this->testData['testMigratePurePlatformToReseller'];
+        $this->startTest($testData);
+
+        $this->assertFailedPPToResellerPartnerTypeSwitch(
+            $partner, $accessMap, $oauthApp
+        );
+    }
+
+    public function testMigratePPToResellerWhenOneSubMIsFirstLinkedToOverriddenConfig()
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($oauthApp1, $oauthApp2, $subMIds, $partner, $newReferredAppId) =
+            $this->setUpPurePlatformPartnerWhenOneSubMIsFirstLinkedToOverriddenConfig();
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
+
+        $testData = $this->testData['testMigratePurePlatformToReseller'];
+        $this->startTest($testData);
+
+        Event::assertDispatched(TransactionalClosureEvent::class);
+
+        $partner = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
+        $subMerchants = $this->getDbEntities('merchant', ['id' => $subMIds]);
+        $accessMaps = $this->getDbEntities('merchant_access_map', ['entity_owner_id' => $partner->getId()])->toArray();
+        $referrals = $this->getDbEntities('referrals', ['merchant_id' => $partner->getId()]);
+
+        $this->assertEquals('reseller', $partner->getPartnerType());
+
+        $this->assertEquals([], $this->getDbEntities(
+            'merchant_application', ['application_id' => [$oauthApp1->getId(), $oauthApp2->getId()]]
+        )->toArray());
+        $this->assertEquals([], $this->getDbEntities(
+            'partner_config', ['entity_id' => [$oauthApp1->getId(), $oauthApp2->getId()]]
+        )->toArray());
+        $this->assertEquals([], $this->getDbEntities(
+            'partner_config', ['origin_id' => [$oauthApp1->getId(), $oauthApp2->getId()]]
+        )->toArray());
+        $this->assertEquals([], $this->getDbEntities(
+            'merchant_access_map', ['entity_id' => [$oauthApp1->getId(), $oauthApp2->getId()]]
+        )->toArray());
+
+        $this->assertCount(1, $this->getDbEntities(
+            'merchant_application', ['application_id' => $newReferredAppId]
+        )->toArray());
+        $this->assertCount(1, $this->getDbEntities('partner_config', ['entity_id' => $newReferredAppId])->toArray());
+        $this->assertCount(1, $this->getDbEntities(
+            'partner_config', ['origin_id' => $newReferredAppId, 'entity_id' => $subMIds[0]]
+        )->toArray());
+
+        $this->assertCount(2, $accessMaps);
+        $this->assertEquals($newReferredAppId, $accessMaps[0]['entity_id']);
+        $this->assertEquals($newReferredAppId, $accessMaps[1]['entity_id']);
+        $this->assertEquals(['Ref-' . $partner->getId()], $subMerchants->first()->tagNames());
+        $this->assertEquals(['Ref-' . $partner->getId()], $subMerchants->last()->tagNames());
+
+        $this->assertCount(3, $referrals);
+    }
+
+    public function testNotifyPartnerAboutPPToResellerPartnerTypeSwitch()
+    {
+        Mail::fake();
+        $this->mockAllSplitzTreatment();
+        $defaultPartnerId = '1000000000plat';
+
+        $this->testMigratePurePlatformToReseller();
+
+        $partner = $this->getDbEntity('merchant', ['id' => $defaultPartnerId]);
+        $notifyUsecase = new NotifyPartnerAboutPartnerTypeSwitch($partner, 'pure_platform', 'reseller');
+
+        $this->mockStorkSmsCall($partner);
+
+        $notifyUsecase->notify();
+
+        $this->assertMailSentForPPToReseller($partner);
+    }
+
+    private function setUpPurePlatformPartnerWhenOneSubMIsFirstLinkedToOverriddenConfig()
+    {
+        $subM1ID = Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $subM2ID = '101submerchant';
+        $oauthApp2ID = '1000001platApp';
+        list($oauthApp1, $oauthApp2, $accessMaps, $partner) = $this->createPPPartnerWith2AppsAnd2SubMerchants($subM2ID, $oauthApp2ID);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => $partner->getId()]);
+        // App 1 - SubM1 has overridden config
+        $this->createConfigForPartnerApp($oauthApp1->getId());
+        $this->createConfigForPartnerApp(
+            $oauthApp1->getId(),
+            $subM1ID
+        );
+
+        // App 2 - SubM2 has overridden config
+        $this->createConfigForPartnerApp($oauthApp2->getId());
+        $this->createConfigForPartnerApp(
+            $oauthApp2->getId(),
+            $subM2ID
+        );
+
+        $this->ba->adminAuth();
+        $partnerId = $partner->getId();
+
+        $newReferredAppId = '8ckeirnw84ifke';
+        $this->authServiceMock
+            ->expects($this->exactly(2))
+            ->method('sendRequest')
+            ->withConsecutive(
+                [ 'tokens', 'GET', ['merchant_id' => $partnerId] ],
+                [
+                    'applications', 'POST',
+                    [
+                        'name' => 'Referred application',
+                        'website' => $partner->getWebsite(),
+                        'merchant_id' => $partnerId,
+                        'type' => 'partner'
+                    ]
+                ]
+            )
+            ->willReturnOnConsecutiveCalls(['items' => []], $app = ['id'=> $newReferredAppId]);
+
+        $referredAppAttributes = [
+            'merchant_id' => $partnerId,
+            'partner_type'=> 'referred',
+            'id' => $newReferredAppId,
+            'name' => 'referred'
+        ];
+        $this->fixtures->merchant->createDummyPartnerApp($referredAppAttributes, false);
+
+        return [$oauthApp1, $oauthApp2, [$subM1ID, $subM2ID], $partner, $newReferredAppId];
+    }
+
+    private function assertFailedPPToResellerPartnerTypeSwitch(
+        $partner, $accessMap, $oauthApp
+    )
+    {
+        Event::assertNotDispatched(TransactionalClosureEvent::class);
+
+        $partner = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
+        $subMerchant = $this->getDbEntity('merchant', ['id' => $accessMap->getMerchantId()]);
+        $accessMaps = $this->getDbEntities('merchant_access_map', ['entity_owner_id' => $partner->getId()])->toArray();
+        $referrals = $this->getDbEntities('referrals', ['merchant_id' => $partner->getId()]);
+
+        $this->assertEquals('pure_platform', $partner->getPartnerType());
+
+        $this->assertCount(1, $this->getDbEntities(
+            'merchant_application', ['application_id' => $oauthApp->getId()]
+        )->toArray());
+        $this->assertCount(1, $this->getDbEntities('partner_config', ['entity_id' => $oauthApp->getId()])->toArray());
+        $this->assertCount(1, $this->getDbEntities('partner_config', ['origin_id' => $oauthApp->getId()])->toArray());
+
+        $this->assertCount(1, $accessMaps);
+        $this->assertEquals($oauthApp->getId(), $accessMaps[0]['entity_id']);
+        $this->assertEmpty($subMerchant->tagNames());
+
+        $this->assertCount(0, $referrals);
+    }
+
+    private function assertSuccessfulPPToResellerPartnerTypeSwitch(
+        $partner, $accessMap, $oauthApp, $newReferredAppId
+    )
+    {
+        Event::assertDispatchedTimes(TransactionalClosureEvent::class, 3);
+
+        Event::assertDispatched(TransactionalClosureEvent::class, function ($listener) use($partner) {
+            $reflection = new ReflectionFunction($listener->getClosure());
+            $reflection->invoke();
+            return true;
+        });
+
+        $this->assertMailSentForPPToReseller($partner);
+
+        $partner = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
+        $subMerchant = $this->getDbEntity('merchant', ['id' => $accessMap->getMerchantId()]);
+        $accessMaps = $this->getDbEntities('merchant_access_map', ['entity_owner_id' => $partner->getId()])->toArray();
+        $referrals = $this->getDbEntities('referrals', ['merchant_id' => $partner->getId()]);
+
+        $this->assertEquals('reseller', $partner->getPartnerType());
+
+        $this->assertEquals([], $this->getDbEntities(
+            'merchant_application', ['application_id' => $oauthApp->getId()]
+        )->toArray());
+        $this->assertEquals([], $this->getDbEntities('partner_config', ['entity_id' => $oauthApp->getId()])->toArray());
+        $this->assertEquals([], $this->getDbEntities('partner_config', ['origin_id' => $oauthApp->getId()])->toArray());
+
+        $this->assertCount(1, $this->getDbEntities(
+            'merchant_application', ['application_id' => $newReferredAppId]
+        )->toArray());
+        $this->assertCount(1, $this->getDbEntities('partner_config', ['entity_id' => $newReferredAppId])->toArray());
+        $this->assertCount(1, $this->getDbEntities('partner_config', ['origin_id' => $newReferredAppId])->toArray());
+
+        $this->assertCount(1, $accessMaps);
+        $this->assertEquals($newReferredAppId, $accessMaps[0]['entity_id']);
+        $this->assertEquals(['Ref-' . $partner->getId()], $subMerchant->tagNames());
+
+        $this->assertCount(3, $referrals);
+    }
+
+    private function assertMailSentForPPToReseller($partner)
+    {
+        Mail::assertSent(PartnerTypeSwitchEmail::class, function ($mail) use($partner) {
+            $subject = 'Partner account type updated to Reseller Partner type';
+            $from = [
+                0 => [
+                    'name'    => 'Razorpay Partner Program',
+                    'address' => 'partnercommunication@razorpay.com',
+                ]
+            ];
+            $to = [
+                0 => [
+                    'address' => $partner->getEmail(),
+                    'name'    => $partner->getName(),
+                ]
+            ];
+
+            $this->assertSame($subject, $mail->subject);
+            $this->assertArraySelectiveEquals($from, $mail->from);
+            $this->assertArraySelectiveEquals($to, $mail->to);
+            $this->assertSame('emails.mjml.merchant.partner.notify.pure_platform_to_reseller_switch', $mail->view);
+            $this->assertEquals('IN', $mail->viewData['country_code']);
+
+            return true;
+
+        });
+    }
+
+    public function testMigratePurePlatformToResellerJobSent(): void
+    {
+        Queue::fake();
+        $this->mockAllSplitzTreatment();
+
+        $defaultPartnerId = '1000000000plat';
+
+        $this->createPurePlatFormMerchantAndSubMerchant();
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testMigratePurePlatformToReseller'];
+        $this->startTest($testData);
+
+        Queue::assertPushed(
+            MigratePurePlatformToResellerPartnerJob::class,
+            function ($job) use($defaultPartnerId) {
+                $this->assertEquals($defaultPartnerId, $job->getMerchantId());
+
+                return true;
+            }
+        );
+    }
+
+    private function setUpPurePlatformPartnerForSuccesfulPartnerTypeSwitch(array $activeTokens = []): array
+    {
+        list($oauthApp, $accessMap, $partner) = $this->createPurePlatFormMerchantAndSubMerchant(['id' => 'J00dqRlTeStNzb']);
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => $partner->getId()]);
+        $this->createConfigForPartnerApp(Partner\Constants::DEFAULT_PLATFORM_APP_ID);
+        $this->createConfigForPartnerApp(
+            Partner\Constants::DEFAULT_PLATFORM_APP_ID,
+            Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+        );
+
+        $this->ba->adminAuth();
+        $partnerId = $partner->getId();
+
+        $newReferredAppId = '8ckeirnw84ifke';
+        $this->authServiceMock
+            ->expects($this->exactly(3))
+            ->method('sendRequest')
+            ->withConsecutive(
+                [ 'tokens', 'GET', ['merchant_id' => $partnerId] ],
+                [
+                    'applications', 'POST',
+                    [
+                        'name' => 'Referred application',
+                        'website' => $partner->getWebsite(),
+                        'merchant_id' => $partnerId,
+                        'type' => 'partner'
+                    ]
+                ],
+                ['applications/'.$oauthApp->getId(), 'PUT', ['merchant_id' => $partnerId]]
+            )
+            ->willReturnOnConsecutiveCalls(['items' => $activeTokens], $app = ['id'=> $newReferredAppId], []);
+
+        $this->mockStorkSmsCall($partner);
+        $this->mockStorkWebhooksCall();
+
+        $referredAppAttributes = [
+            'merchant_id' => $partnerId,
+            'partner_type'=> 'referred',
+            'id' => $newReferredAppId,
+            'name' => 'referred'
+        ];
+        $this->fixtures->merchant->createDummyPartnerApp($referredAppAttributes, false);
+
+        return [$oauthApp, $accessMap, $partner, $newReferredAppId];
+    }
+
+    private function mockStorkSmsCall($partner)
+    {
+        $this->mockGimliURLShortener();
+        $this->merchantTestUtil->expectStorkSmsRequest(
+            $this->storkMock,
+            'Sms.Partnerships.Partner_type_pure_platform_to_reseller_v3',
+            $partner->merchantDetail->getContactMobile(),
+            [
+                'partnerName'         => $partner->getName() ,
+                'platformDocsLink'    => "https://rzp.io/i/partner",
+                'partnerSupportEmail' => 'partners@razorpay.com'
+            ]
+        );
+    }
+
+    private function mockStorkWebhooksCall()
+    {
+        $this->storkMock
+            ->shouldReceive('request')
+            ->times(2)
+            ->andReturnUsing(
+                function() {
+                    $resp              = new Response();
+                    $resp->success     = true;
+                    $resp->status_code = 200;
+                    $resp->body        = json_encode(
+                        []
+                    );
+
+                    return $resp;
+                }
+            );
+    }
+
+    private function setUpPurePlatformPartnerForFailedPartnerTypeSwitch(array $activeTokens = []): array
+    {
+        list($oauthApp, $accessMap, $partner) = $this->createPurePlatFormMerchantAndSubMerchant(['id' => 'J00dqRlTeStNzb']);
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => $partner->getId()]);
+        $this->createConfigForPartnerApp(Partner\Constants::DEFAULT_PLATFORM_APP_ID);
+        $this->createConfigForPartnerApp(
+            Partner\Constants::DEFAULT_PLATFORM_APP_ID,
+            Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+        );
+
+        $this->ba->adminAuth();
+        $partnerId = $partner->getId();
+
+        $this->authServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->withConsecutive(
+                [ 'tokens', 'GET', ['merchant_id' => $partnerId] ]
+            )
+            ->willReturnOnConsecutiveCalls(['items' => $activeTokens]);
+
+        return [$oauthApp, $accessMap, $partner];
     }
 
     protected function mockGimliURLShortener()
@@ -2873,6 +3286,21 @@ class PartnerExperienceTest extends OAuthTestCase
         $testData['request']['url'] = '/internal/partnerships/merchant?ids='.$partnerId.',partnerMerchId'.'&expand=merchant,tax_components';
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testAggregatorToResellerBulkUpdate()
+    {
+        $merchantId = '10000000000000';
+
+        $this->setUpNonPurePlatformPartner();
+
+        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        $this->ba->privateAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
     private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')

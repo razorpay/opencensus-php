@@ -7425,12 +7425,16 @@ class Service extends Base\Service
         $input['skip'] = $input['skip'] ?? 0;
         $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
-        if (empty($input[Detail\Entity::ACTIVATION_STATUS]) === false and $input[Detail\Entity::ACTIVATION_STATUS] === 'not_submitted')
+        if (
+            empty($input[Detail\Entity::ACTIVATION_STATUS]) === false and
+            $input[Detail\Entity::ACTIVATION_STATUS] === 'not_submitted'
+        )
         {
             $input[Detail\Entity::ACTIVATION_STATUS] = null;
         }
         // if contact info is present check if it is email or contact no
-        if (empty($input[Constants::CONTACT_INFO]) === false ) {
+        if (empty($input[Constants::CONTACT_INFO]) === false )
+        {
             if((new EmailValidator)->isEmail($input[Constants::CONTACT_INFO]))
             {
                 $input[Entity::EMAIL] = $input[Constants::CONTACT_INFO] ;
@@ -7446,6 +7450,7 @@ class Service extends Base\Service
         {
             $input[Detail\Entity::CONTACT_MOBILE] = $this->normalizeContactNo($input[Detail\Entity::CONTACT_MOBILE], $partner);
         }
+
         $startTime = millitime();
         $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 

@@ -50,7 +50,13 @@ class Validator extends Base\Validator
 
     public function validateMerchantToAllowChangeAction(string $status)
     {
-        return key_exists($status, Status::ALLOWED_STATUSES_FOR_MERCHANT);
+        if (in_array($status, Status::ALLOWED_STATUSES_FOR_MERCHANT) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Merchant not allowed to change status: ' . $status);
+        }
+
+        return true;
     }
 
     /**

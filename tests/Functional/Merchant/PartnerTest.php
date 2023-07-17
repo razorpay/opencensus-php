@@ -8,31 +8,18 @@ use Mail;
 use Event;
 use Queue;
 use Carbon\Carbon;
-use RZP\Constants\Country;
 use RZP\Constants\Mode;
 use App\User\Constants;
-use RZP\Constants\Timezone;
 use RZP\Services\Elfin\Impl\Gimli;
-use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\MocksPartnershipsService;
-use Neves\Events\TransactionalClosureEvent;
 use RZP\Services\Elfin\Service as ElfinService;
-use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Error\PublicErrorCode;
-use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
-use RZP\Mail\Merchant\ResellerToPurePlatformPartnerSwitchEmail;
-use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\User\BankingRole;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Metric as MerchantMetric;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
@@ -43,7 +30,6 @@ use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Services\Mock\Settlements\Api;
-use RZP\Services\SalesForceClient;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Merchant\MerchantApplications;
@@ -2676,86 +2662,6 @@ class PartnerTest extends OAuthTestCase
         $baActivationDetail = $this->fixtures->on($mode)->create('banking_account_activation_detail', $params);
 
         return $baActivationDetail;
-    }
-
-    public function testAggregatorToResellerBulkUpdate()
-    {
-        $merchantId = '10000000000000';
-
-        $this->setUpNonPurePlatformPartner();
-
-        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
-
-        $this->ba->privateAuth();
-
-        $this->mockAllSplitzTreatment();
-
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
-    }
-
-    private function validatePartnerActivation($partnerActivationEntities, $activationStatus)
-    {
-        $this->assertEquals(10, count($partnerActivationEntities));
-
-        for ($index = 0; $index < 10; $index++)
-        {
-            $partnerActivation = $partnerActivationEntities->get($index);
-
-            $this->assertEquals($activationStatus, $partnerActivation->getActivationStatus());
-
-            if (empty($activationStatus) === true)
-            {
-                $this->assertNull($partnerActivation->getActivatedAt());
-            }
-            else
-            {
-                $this->assertNotNull($partnerActivation->getActivatedAt());
-            }
-        }
-    }
-
-    private function createMerchants($activationStatus)
-    {
-        $id_prefix = '1cXSLlUU8V9s';
-
-        for ($index = 10; $index < 20; $index++)
-        {
-            $suffix1 = stringify($index);
-            $suffix2 = stringify(10 + $index);
-
-            $merchantId1 = $id_prefix . $suffix1;
-            $merchantId2 = $id_prefix . $suffix2;
-
-            $this->createMerchant($merchantId1, $suffix1, true, $activationStatus);
-            $this->createMerchant($merchantId2, $suffix2, false, $activationStatus);
-        }
-    }
-
-    private function createMerchant(string $merchantId, string $suffix, bool $isPartner, $activationStatus = null)
-    {
-        if ($isPartner === true)
-        {
-            $this->fixtures->create('merchant', ['id' => $merchantId, 'partner_type' => 'reseller']);
-        }
-        else
-        {
-            $this->fixtures->create('merchant', ['id' => $merchantId]);
-        }
-
-        $this->fixtures->create('merchant_detail:sane', [
-            'merchant_id'       => $merchantId,
-            'business_type'     => 1,
-            'contact_name'      => 'contact name' . $suffix,
-            'contact_mobile'    => '8888888888',
-            'activation_status' => $activationStatus
-        ]);
-
-        $this->fixtures->create('stakeholder',
-                                [
-                                    'merchant_id' => $merchantId,
-                                    'name'        => 'stakeholder' . $suffix,
-                                ]);
-
     }
 
     protected function createResellerApp()

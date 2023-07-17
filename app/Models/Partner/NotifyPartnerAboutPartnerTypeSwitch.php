@@ -7,15 +7,24 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Partner\Constants as Constants;
-use RZP\Mail\Merchant\ResellerToPurePlatformPartnerSwitchEmail;
+use RZP\Mail\Merchant\PartnerTypeSwitchEmail;
 
 class NotifyPartnerAboutPartnerTypeSwitch extends Core
 {
-    public function __construct(Entity $partner)
+    private Entity $partner;
+    private string $oldType;
+    private string $newType;
+    private string $switchType;
+
+    public function __construct(Entity $partner, string $oldType, string $newType)
     {
         parent::__construct();
 
         $this->partner = $partner;
+        $this->oldType = $oldType;
+        $this->newType = $newType;
+
+        $this->switchType = $oldType . '_to_' . $newType;
     }
 
     public function notify()
@@ -24,32 +33,37 @@ class NotifyPartnerAboutPartnerTypeSwitch extends Core
         $this->sendSMSToPartnerAboutSwitch();
     }
 
-    private function sendEmailToPartnerAboutSwitch()
+    private function sendEmailToPartnerAboutSwitch(): void
     {
         $data = [
             'merchant'      => $this->partner->toArray(),
-            'view'          => Constants::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE,
-            'country_code'  => $this->partner->getCountry()
+            'view'          => Constants::PARTNER_TYPE_SWITCH_TEMPLATES[$this->switchType]['email'],
+            'country_code'  => $this->partner->getCountry(),
+            'subject'       => Constants::PARTNER_TYPE_SWITCH_TEMPLATES[$this->switchType]['subject']
         ];
 
         $this->trace->info(
-            TraceCode::SEND_RESELLER_TO_PURE_PLATFORM_EMAIL,
+            TraceCode::SEND_PARTNER_TYPE_SWITCH_EMAIL,
             [
                 'merchant_id'   => $data['merchant']['id'],
-                'merchant_name' => $data['merchant']['name']
+                'merchant_name' => $data['merchant']['name'],
+                'old_type'      => $this->oldType,
+                'new_type'      => $this->newType
             ]
         );
 
-        $resellerToPurePlatformPartnerSwitchEmail = new ResellerToPurePlatformPartnerSwitchEmail($data);
+        $partnerTypeSwitchEmail = new PartnerTypeSwitchEmail($data);
 
-        Mail::send($resellerToPurePlatformPartnerSwitchEmail);
+        Mail::send($partnerTypeSwitchEmail);
     }
 
-    private function sendSMSToPartnerAboutSwitch()
+    private function sendSMSToPartnerAboutSwitch(): void
     {
         $contentParams = [
             'partnerName'           => $this->partner->getName(),
-            'platformDocsLink'      => $this->elfin->shorten(Constants::PURE_PLATFORM_DOCS_LINK),
+            'platformDocsLink'      => $this->elfin->shorten(
+                Constants::PARTNER_TYPE_SWITCH_TEMPLATES[$this->switchType]['docs_link']
+            ),
             'partnerSupportEmail'   => Constants::PARTNER_SUPPORT_EMAIL
         ];
 
@@ -62,15 +76,15 @@ class NotifyPartnerAboutPartnerTypeSwitch extends Core
             'ownerId'           => $this->partner->getId(),
             'contentParams'     => $contentParams,
             'sender'            => 'RZRPAY',
-            'templateName'      => Constants::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE
+            'templateName'      => Constants::PARTNER_TYPE_SWITCH_TEMPLATES[$this->switchType]['sms']
         ];
 
         $tracePayload = [
             'partner_id'          => $this->partner->getId(),
-            'templateName'        => Constants::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE
+            'templateName'        => Constants::PARTNER_TYPE_SWITCH_TEMPLATES[$this->switchType]['sms']
         ];
-        $traceCode      = TraceCode::SEND_RESELLER_TO_PURE_PLATFORM_SMS;
-        $errorTraceCode = TraceCode::RESELLER_TO_PURE_PLATFORM_SMS_FAILED;
+        $traceCode      = TraceCode::SEND_PARTNER_TYPE_SWITCH_SMS;
+        $errorTraceCode = TraceCode::PARTNER_TYPE_SWITCH_SMS_FAILED;
 
         try
         {

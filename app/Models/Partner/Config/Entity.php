@@ -253,6 +253,11 @@ class Entity extends PublicEntity
         $this->setAttribute(self::ORIGIN_ID, $originId);
     }
 
+    public function setCommissionsEnabled(bool $commissionsEnabled)
+    {
+        $this->setAttribute(self::COMMISSIONS_ENABLED, $commissionsEnabled);
+    }
+
     public function setEntityId($entityId)
     {
         $this->setAttribute(self::ENTITY_ID, $entityId);

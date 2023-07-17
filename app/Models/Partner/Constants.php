@@ -40,10 +40,34 @@ class Constants
     const ADD_MULTIPLE_ACCOUNT          = 'add_multiple_accounts';
     const PHANTOM                       = 'phantom';
 
-    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE = 'emails.mjml.merchant.partner.notify.reseller_to_pure_platform_switch';
-    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE = 'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v3';
-    const PURE_PLATFORM_DOCS_LINK = 'https://razorpay.com/docs/partners/platform/';
-    const PARTNER_SUPPORT_EMAIL   = 'partners@razorpay.com';
+    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE   = 'emails.mjml.merchant.partner.notify.reseller_to_pure_platform_switch';
+    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_SUBJECT    = 'Partner account type updated to Platform Partner type';
+    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE     = 'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v3';
+    const PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_EMAIL_TEMPLATE   = 'emails.mjml.merchant.partner.notify.pure_platform_to_reseller_switch';
+    const PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_EMAIL_SUBJECT    = 'Partner account type updated to Reseller Partner type';
+    const PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_SMS_TEMPLATE     = 'Sms.Partnerships.Partner_type_pure_platform_to_reseller_v3';
+    const PURE_PLATFORM_DOCS_LINK                                   = 'https://razorpay.com/docs/partners/platform/';
+    const RESELLER_DOCS_LINK                                        = 'https://razorpay.com/docs/partners/resellers/';
+    const PARTNER_SUPPORT_EMAIL                                     = 'partners@razorpay.com';
+    const PARTNER_TYPE_SWITCH_TEMPLATES                             = [
+        'reseller_to_pure_platform' => [
+            'sms'       => self::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE,
+            'email'     => self::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE,
+            'subject'   => self::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_SUBJECT,
+            'docs_link' => self::PURE_PLATFORM_DOCS_LINK
+        ],
+        'pure_platform_to_reseller' => [
+            'sms'       => self::PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_SMS_TEMPLATE,
+            'email'     => self::PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_EMAIL_TEMPLATE,
+            'subject'   => self::PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_EMAIL_SUBJECT,
+            'docs_link' => self::RESELLER_DOCS_LINK
+        ]
+    ];
+
+    const RESELLER_TO_PURE_PLATFORM_MIGRATE               = "reseller_to_pure_platform_migrate";
+    const RESELLER_TO_PURE_PLATFORM_MIGRATE_LOCK_TIME_OUT = 30; //seconds
+    const PURE_PLATFORM_TO_RESELLER_MIGRATE               = "pure_platform_to_reseller_migrate";
+    const PURE_PLATFORM_TO_RESELLER_MIGRATE_LOCK_TIME_OUT = 30; //seconds
 
     /**
      * List of partner types that can get a settlement on behalf of a submerchant

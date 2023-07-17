@@ -123,9 +123,6 @@ final class Constants
     const RESELLER_TO_AGGREGATOR_UPDATE               = "reseller_to_aggregator_update";
     const RESELLER_TO_AGGREGATOR_UPDATE_LOCK_TIME_OUT = 30; //seconds
 
-    const RESELLER_TO_PURE_PLATFORM_MIGRATE               = "reseller_to_pure_platform_migrate";
-    const RESELLER_TO_PURE_PLATFORM_MIGRATE_LOCK_TIME_OUT = 30; //seconds
-
     //Time stamp is of Tuesday, 18 October 2022 00:00:01
     const QR_RECEIVER_CREATATION_STOP_TIME_STAMP = 1666051201;
     // Used in partners flows

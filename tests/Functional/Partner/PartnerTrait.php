@@ -326,7 +326,7 @@ trait PartnerTrait
         return $token->toString();
     }
 
-    public function createPurePlatFormMerchantAndSubMerchant()
+    public function createPurePlatFormMerchantAndSubMerchant($accessMapAttributes = [])
     {
         $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
@@ -365,17 +365,110 @@ trait PartnerTrait
             ]
         );
 
-        $accessMap = $this->fixtures->create(
-            'merchant_access_map',
+        $accessMapData = [
+            'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+            'entity_type'     => 'application',
+            'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+        $accessMapData = array_merge($accessMapAttributes, $accessMapData);
+        $accessMap = $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return [$application, $accessMap, $partner];
+    }
+
+    public function createPPPartnerWith2AppsAnd2SubMerchants($subM2ID, $oauthApp2ID)
+    {
+        $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->merchant->createAccount($subM2ID);
+
+        $this->fixtures->user->createUserMerchantMapping(
             [
-                'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-                'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
-                'entity_type'     => 'application',
-                'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'user_id'     => User::MERCHANT_USER_ID,
+                'role'        => 'owner',
+            ]);
+
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->merchant->activate($subM2ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
             ]
         );
 
-        return [$application, $accessMap, $partner];
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [ 'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN ]
+        );
+        $this->fixtures->merchant->edit(
+            $subM2ID,
+            [ 'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN ]
+        );
+
+        $application1 = $this->createOAuthApplication(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
+            ]
+        );
+        $application2 = $this->createOAuthApplication(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => $oauthApp2ID,
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
+            ]
+        );
+
+        $accessMaps = [];
+
+        //        Sub-merchant 1
+        $accessMapData = [
+            'id'              => 'accessMap00001',
+            'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+            'entity_type'     => 'application',
+            'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+        $accessMaps[] = $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $accessMapData = [
+            'id'              => 'accessMap00002',
+            'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'entity_id'       => $oauthApp2ID,
+            'entity_type'     => 'application',
+            'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+        $accessMaps[] = $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        //        Sub-merchant 2
+        $accessMapData = [
+            'id'              => 'accessMap00003',
+            'merchant_id'     => $subM2ID,
+            'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+            'entity_type'     => 'application',
+            'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+        $accessMaps[] = $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $accessMapData = [
+            'id'              => 'accessMap00004',
+            'merchant_id'     => $subM2ID,
+            'entity_id'       => $oauthApp2ID,
+            'entity_type'     => 'application',
+            'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+        $accessMaps[] = $this->fixtures->create('merchant_access_map', $accessMapData);
+
+
+        return [$application1, $application2, $accessMaps, $partner];
     }
 
     public function createAggregatorMalaysianMerchantAndSubMerchant()
