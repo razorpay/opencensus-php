@@ -557,22 +557,22 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    153 => array (
+                    154 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    154 => array (
+                    155 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    155 => array (
+                    156 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
                     ),
-                    192 => [
+                    193 => [
                         'feature'      => 'payout_service_enabled',
                         'value'        => false,
                         'display_name' => 'Payouts Service',
@@ -2724,7 +2724,7 @@ return [
         ],
         'response' => [
             'content' => [
-   
+
             ],
             'status_code' => 200,
         ],

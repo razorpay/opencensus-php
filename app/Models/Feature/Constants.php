@@ -1588,6 +1588,8 @@ class Constants
 
     const ENABLE_CUSTOMER_AMOUNT = 'enable_customer_amount';
 
+    const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
+
     // form builder
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
@@ -2430,6 +2432,7 @@ class Constants
         self::SHOW_PNAME_IN_CHECKOUT_PL       => true,
         self::ENABLE_MERCHANT_EXPIRY_PL       => true,
         self::ENABLE_MERCHANT_EXPIRY_PP       => true,
+        self::DYNAMIC_PL_OFFSET               => true,
         self::ENABLE_CREATE_OWN_TEMPLATE      => true,
         self::ENABLE_CUSTOMER_AMOUNT          => true,
         self::FILE_UPLOAD_PP                  => true,
@@ -3014,6 +3017,11 @@ class Constants
             'feature'       => self::OPTIMIZER_RAZORPAY_VAS,
             'display_name'  => 'Razorpay Gateway for optimiser',
             'documentation' => '',
+        ],
+        self::DYNAMIC_PL_OFFSET => [
+            'feature'       => self::DYNAMIC_PL_OFFSET,
+            'display_name'  => 'Dynamic PL Offset',
+            'documentation' => 'Feature allows the merchant to have a extra field in payment links'
         ],
         self::RX_SHOW_PAYOUT_SOURCE => [
             'feature'       => self::RX_SHOW_PAYOUT_SOURCE,
