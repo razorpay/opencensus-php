@@ -3917,6 +3917,8 @@ trait PaymentTrait
             "niyoicici",
             "naviaxis",
             "shriramhdfcbank",
+            "fincarebank",
+
         ];
 
         return $vpaHandles;

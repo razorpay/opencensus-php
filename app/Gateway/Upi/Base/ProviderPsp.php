@@ -38,6 +38,11 @@ class ProviderPsp
     const EQUITAS_SMALL_FINANCE_BANK_LTD  = 'equitas_small_finance_bank_ltd';
     const NAVI              = 'navi';
     const SHRIRAMONE        = 'shriramone';
+    const GOKIWI            = 'gokiwi';
+    const MAHAMOBILE_PLUS   = 'mahamobile_plus';
+    const INDIAN_OVERSEAS_BANK   = 'indian_overseas_bank';
+    const BHIM_CENT_UPI_APP = 'bhim_cent_upi_app';
+    const FINCARE_BANK      = 'fincare_bank';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

@@ -190,6 +190,7 @@ class ProviderCode
     const NIYOICICI          = 'niyoicici';
     const NAVIAXIS           = 'naviaxis';
     const SHRIRAMHDFCBANK    = 'shriramhdfcbank';
+    const FINCAREBANK        = 'fincarebank';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -371,6 +372,7 @@ class ProviderCode
         self::NIYOICICI          => IFSC::ICIC,
         self::NAVIAXIS           => IFSC::UTIB,
         self::SHRIRAMHDFCBANK    => IFSC::HDFC,
+        self::FINCAREBANK        => IFSC::FINF,
     ];
 
     /**
@@ -472,6 +474,12 @@ class ProviderCode
         ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
         ProviderPsp::NAVI,
         ProviderPsp::SHRIRAMONE,
+        ProviderPsp::GOKIWI,
+        ProviderPsp::MAHAMOBILE_PLUS,
+        ProviderPsp::WHATSAPP,
+        ProviderPsp::INDIAN_OVERSEAS_BANK,
+        ProviderPsp::BHIM_CENT_UPI_APP,
+        ProviderPsp::FINCARE_BANK,
     ];
 
     /**
@@ -520,8 +528,13 @@ class ProviderCode
         self::NIYOICICI     => ProviderPsp::GO_NIYO,
         self::EQUITAS       => ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
         self::NAVIAXIS      => ProviderPsp::NAVI,
-
+        self::GOAXB         => ProviderPsp::GOKIWI,
         self::SHRIRAMHDFCBANK      => ProviderPsp::SHRIRAMONE,
+        self::MAHB          => ProviderPsp::MAHAMOBILE_PLUS,
+        self::WAICICI       => ProviderPsp::WHATSAPP,
+        self::IOB           => ProviderPsp::INDIAN_OVERSEAS_BANK,
+        self::CENTRALBANK   => ProviderPsp::BHIM_CENT_UPI_APP,
+        self::FINCAREBANK   => ProviderPsp::FINCARE_BANK,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
