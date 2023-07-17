@@ -157,4 +157,28 @@ class Service extends Base\Service
 
         return $merchant;
     }
+
+    /**
+     * Retrieve the merchant details using the provided token.
+     *
+     * @param $token
+     */
+    public function retrieveMerchantByToken($token)
+    {
+        try
+        {
+            $value = $this->cache->get($token);
+
+            if(empty($value) === true)
+            {
+                return null;
+            }
+
+            return $this->repo->merchant->find($value['merchantId']);
+        }
+        catch (\Exception $exception)
+        {
+            return null;
+        }
+    }
 }

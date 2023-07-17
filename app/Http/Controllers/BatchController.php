@@ -2,11 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use View;
 use ApiResponse;
 use Request as Req;
 use RZP\Trace\TraceCode;
 use Illuminate\Http\Request;
+use RZP\Constants\Entity as E;
 
 use RZP\Exception\BadRequestException;
 
@@ -123,7 +125,9 @@ class BatchController extends Controller
 
     public function renderBatchUploadForm(Request $request)
     {
-        $isValid = $this->service()->validateToken($request->all());
+        $input = $request->all();
+
+        $isValid = $this->service()->validateToken($input);
 
         if ($isValid === false)
         {
@@ -132,7 +136,7 @@ class BatchController extends Controller
         else
         {
             $view = View::make('public.direct_debit_form', [
-                'dashboardHost' =>  config("applications.dashboard.url"),
+                'dashboardHost' =>   $this->getDashboardHost($input),
             ]);
         }
 
@@ -202,5 +206,43 @@ class BatchController extends Controller
         $response = $this->app->batchService->getResponseFromBatchService($path, $method, $options, $input);
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     * @return string
+     */
+    public function getDashboardHost(array $input): string
+    {
+        $defaultDashboardURL =  config("applications.dashboard.url");
+
+        try
+        {
+            $merchant = $this->service(E::MERCHANT_REQUEST)->retrieveMerchantByToken($input['token']);
+
+            if(empty($merchant) === true || $merchant->isRazorpayOrgId() === true)
+            {
+                return $defaultDashboardURL;
+            }
+
+            $orgHost = $merchant->org->getPrimaryHostName();
+
+            return $this->addHttps($orgHost);
+        }
+        catch (\Exception $exception)
+        {
+            return $defaultDashboardURL;
+        }
+    }
+
+    /**
+     * Prepend https to the provided host.
+     *
+     * @param string $host
+     * @return string
+     */
+    public function addHttps(string $host): string
+    {
+        return "https://" . $host;
     }
 }
