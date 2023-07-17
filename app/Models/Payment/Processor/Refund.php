@@ -15,6 +15,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -299,6 +300,13 @@ trait Refund
                     'payment_id' => $payment->getId(),
                     'input'      => $input,
                 ]);
+
+            // this v2 refund request has payment with transfers, which would need reversals
+            // this is required till experiment is ramped up fully
+            if ($payment->isTransferred() === true)
+            {
+                $input['refund_with_transfer_reversals'] = true;
+            }
 
             // Route refund creation to scrooge
             return $this->newRefundV2Flow($payment, $input);
@@ -891,7 +899,7 @@ trait Refund
         return $this->refund($payment, $input);
     }
 
-    private function newRefundV2Flow(Payment\Entity $payment, array $input = [])
+    public function newRefundV2Flow(Payment\Entity $payment, array $input = [])
     {
         // Special case - payment pages calls refund via public auth. In Scrooge, passport will have authenticated=false.
         // Short term workaround to allow payment pages business flow. Long term, service mesh would help Scrooge identify and authenticate internal services with respective permissions.
@@ -935,6 +943,13 @@ trait Refund
             // by default refund amount will be full payment amount.
             // No need to override refund amount here.
 
+            // this v2 refund request has payment with transfers, which would need reversals
+            // this is required till experiment is ramped up fully
+            if ($payment->isTransferred() === true)
+            {
+                $input['refund_with_transfer_reversals'] = true;
+            }
+
             // Route refund creation to scrooge
             return $this->newRefundV2Flow($payment, $input);
         }
@@ -960,12 +975,12 @@ trait Refund
 
     /**
      * Process refund on a payment that has Marketplace transfers
-     *
      * @param array $input
+     * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
      *
      * @throws \Exception
      */
-    public function processRefundWithTransfers(array $input)
+    public function processRefundWithTransfers(array $input, bool $rearchRefund = false)
     {
         if (isset($input['reversals']) === false)
         {
@@ -973,18 +988,38 @@ trait Refund
 
             // throw new Exception\BadRequestValidationFailureException(
             //         'The reversals parameter is required for this refund request');
+
         }
 
         try
         {
-            $refunds = $this->repo->transaction(function() use ($input)
+            $results = $this->repo->transaction(function() use ($input, $rearchRefund)
             {
-                $refunds = $this->processReversals($input['reversals']);
+                $results = $this->processReversals($input['reversals'], $rearchRefund);
 
                 unset($input['reversals']);
 
-                return $refunds;
+                return $results;
             });
+
+            foreach ($results as $result)
+            {
+                $reversal = $result[0] ?? null;
+                $refund = $result[1] ?? null;
+
+                if (($rearchRefund === true) and (empty($refund) === false))
+                {
+                    // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+                    if (isset($txn) === true)
+                    {
+                        $refund->transaction()->associate($txn);
+                    }
+                }
+
+                (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+
+            }
 
             (new TransferMetric)->pushReversalSuccessMetrics();
         }
@@ -995,11 +1030,20 @@ trait Refund
             throw $e;
         }
 
+        // In case of refunds rearch flow, these refunds would have been created in Scrooge already
+        // So skipping the Scrooge dispatch
+        if ($rearchRefund === true)
+        {
+            return;
+        }
+
         try
         {
             // Dispatch refunds to scrooge
-            foreach ($refunds as $refund)
+            foreach ($results as $result)
             {
+                $refund = $result[1] ?? null;
+
                 $this->callRefundFunctionOnScrooge($refund);
             }
         }
@@ -1034,6 +1078,13 @@ trait Refund
                         'payment_id' => $payment->getId(),
                         'input'      => $input,
                     ]);
+
+                // this v2 refund request has payment with transfers, which would need reversals
+                // this is required till experiment is ramped up fully
+                if ($payment->isTransferred() === true)
+                {
+                    $input['refund_with_transfer_reversals'] = true;
+                }
 
                 // Route refund creation to scrooge
                 return $this->newRefundV2Flow($payment, $input);
@@ -1095,7 +1146,10 @@ trait Refund
         // feature is enabled ---> flow is v1 ---> journal is created ---> transaction created (with journal id)
         // feature is enabled ---> flow is v2 ---> journal id is sent ---> transaction created (with journal id)
         // feature is enabled ---> flow is v2 ---> journal id is not sent ---> transaction created (without journal id) (send journal id as empty string)
-        if ($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true and $txnId === null)
+        if (($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+            and ($txnId === null)
+            and ($refund->getGateway() !== RefundConstants::GATEWAY_RZP_INTERNAL)) // gateway == rzp_internal means Scrooge created transfer refund, for which reverse shadow isn't live yet
+            // this is just a double check
         {
             $journalResponse = (new ReverseShadowRefundsCore())->createLedgerEntriesForRefundReverseShadow($refund);
             if (isset($journalResponse['id']) === true)
@@ -1155,7 +1209,9 @@ trait Refund
                 'transaction_id'    => $txn->getId(),
             ]);
 
-        if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_JOURNAL_WRITES) === true)
+        // gateway == rzp_internal means Scrooge created transfer refund, for which we're already pushing refund to ledger in transfer reversal flow along with the reversal
+        if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_JOURNAL_WRITES) === true
+            and ($refund->getGateway() !== RefundConstants::GATEWAY_RZP_INTERNAL))
         {
             \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
             {
@@ -1172,8 +1228,7 @@ trait Refund
             TraceCode::REFUND_REVERSAL_INITIATED,
             [
                 'refund_id'  => $refund->getId(),
-                'payment_id' => $refund->getPaymentId(),
-                'gateway'    => $refund->getGateway()
+                'payment_id' => $refund->getPaymentId()
             ]);
 
         if (($refund->payment->hasBeenCaptured() === false) or (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
@@ -1202,8 +1257,6 @@ trait Refund
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),
                     'payment_id' => $refund->getPaymentId(),
-                    'gateway'    => $refund->getGateway(),
-                    'fee'        => $refund->getFee(),
                 ],
             'Attempted to reverse an already reversed refund amount/fee');
         }
@@ -1260,7 +1313,6 @@ trait Refund
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),
                     'payment_id' => $refund->getPaymentId(),
-                    'gateway'    => $refund->getGateway()
                 ]);
 
             throw $ex;
@@ -1800,7 +1852,11 @@ trait Refund
     {
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
-        if ($refund->payment->hasBeenCaptured() === true)
+        if ($refund->getGateway() === RefundConstants::GATEWAY_RZP_INTERNAL)
+        {
+            $this->validateMerchantBalance($refund, 'reversal');
+        }
+        else if ($refund->payment->hasBeenCaptured() === true)
         {
             //
             // Merchant balance / refund credits checks are not applicable in case of a normal refund on a
@@ -2984,6 +3040,14 @@ trait Refund
             // by default refund amount will be full payment amount.
             // No need to override refund amount here.
             // Route refund creation to scrooge
+
+            // this v2 refund request has payment with transfers, which would need reversals
+            // this is required till experiment is ramped up fully
+            if ($payment->isTransferred() === true)
+            {
+                $input['refund_with_transfer_reversals'] = true;
+            }
+
             return $this->newRefundV2Flow($payment, $input);
         }
 
@@ -2997,7 +3061,6 @@ trait Refund
         {
             $this->checkForDuplicateReceipt($payment, $input);
         }
-
 
         $this->validatePaymentForRefund($payment, $input);
 
@@ -4315,18 +4378,27 @@ trait Refund
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
 
-        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
             'variant'   => $v2Variant,
             'paymentId' => $payment->getId(),
             'merchantId'=> $merchantId,
         ]);
 
-        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
 
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+            $this->mode);
+
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
+            'variant'   => $transferVariant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
         {
             return false;
         }
@@ -4346,7 +4418,7 @@ trait Refund
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
 
-        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
             'variant'   => $v2Variant,
             'paymentId' => $payment->getId(),
         ]);
@@ -4356,7 +4428,16 @@ trait Refund
             return false;
         }
 
-        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
+        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+            $this->mode);
+
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
+            'variant'   => $transferVariant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
         {
             return false;
         }
@@ -4376,7 +4457,7 @@ trait Refund
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
 
-        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
             'variant'   => $v2Variant,
             'paymentId' => $payment->getId(),
         ]);
@@ -4386,7 +4467,16 @@ trait Refund
             return false;
         }
 
-        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
+        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+            $this->mode);
+
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
+            'variant'   => $transferVariant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
         {
             return false;
         }
@@ -4396,6 +4486,36 @@ trait Refund
             Merchant\RazorxTreatment::NON_MERCHANT_REFUND_CREATE_V_1_1,
             $this->mode
         );
+
+        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
+
+    public function isTransferCustomerRefundRequestV1_1(Payment\Entity $payment): bool
+    {
+        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
+            $this->mode);
+
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
+            'variant'   => $v2Variant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_LA_TRANSFER_REVERSALS,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_LA_TRANSFER_REVERSALS, [
+            'variant'   => $variant,
+            'paymentId' => $payment->getId(),
+        ]);
 
         return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
     }
@@ -4422,5 +4542,54 @@ trait Refund
                 );
             }
         }
+    }
+
+    public function reverseTransfersAndRefundPayments($payment, array & $input, array & $response)
+    {
+        $this->mutex->acquireAndRelease($payment->getId(), function() use (&$input, $payment, &$response)
+        {
+            // Determine if transfer reversals should be processed along with the refund
+            $processReversals = $this->shouldProcessReversals($payment, $input, true);
+
+            foreach ($input['reversals'] as $reversalEntry)
+            {
+                try
+                {
+                    $transferPayment = $this->repo
+                        ->payment
+                        ->findByTransferIdAndMerchant($reversalEntry['transfer']['id'], $reversalEntry['transfer']['to_id']);
+
+                    array_push($response['transfer_payments'], $transferPayment->getId());
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_NOT_FOUND_FOR_TRANSFER,
+                        [
+                            'transfer' => $reversalEntry['transfer']
+                        ]);
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::TRANSFERS_TO_REVERSE_SCROOGE,
+                [
+                    Payment\Refund\Entity::PAYMENT_ID                     => $payment->getId(),
+                    RefundConstants::INPUT                                => $input,
+                    'process_reversals'                                   => $processReversals,
+                ]);
+
+            if ($processReversals === true)
+            {
+                try {
+                    $this->processRefundWithTransfers($input, true);
+                } catch (\Throwable $e) {
+                    $response['success'] = false;
+
+                    $response['error']['code']=$e->getCode();
+                    $response['error']['message']=$e->getMessage();
+                }
+            }
+        });
     }
 }

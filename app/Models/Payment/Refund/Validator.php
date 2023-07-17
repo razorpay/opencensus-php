@@ -233,6 +233,11 @@ class Validator extends Base\Validator
         'custom_public_entities.*.entity_type' => 'required|string',
     ];
 
+    protected static $scroogeRefundsReverseTransfersRules = [
+        'payment_id'    => 'required|unsigned_id|size:14',
+        'refund_type'   => 'required|string',
+    ];
+
     protected $payment;
 
     public function setPayment($payment)

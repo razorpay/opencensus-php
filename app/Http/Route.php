@@ -302,6 +302,7 @@ class Route
         'refund_scrooge_payment_update'            => ['post',     'refunds/payment_update',                         'RefundController@scroogeRefundsPaymentUpdate'                      ],
         'refund_scrooge_transaction_create'        => ['post',     'refunds/transaction_create',                     'RefundController@scroogeRefundsTransactionCreate'                  ],
         'refund_fetch_creation_data'               => ['get',      'refunds/fetch_creation_data',                    'RefundController@fetchRefundCreationData'                          ],
+        'refund_scrooge_reverse_transfers'         => ['post',     'refunds/reverse_transfers',                      'RefundController@scroogeRefundsReverseTransfers'                   ],
         'refund_generate_excel'                    => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify_multiple'                   => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerifyMultiple'                         ],
         'refund_verify_failed'                     => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
@@ -5502,6 +5503,7 @@ class Route
         'refund_scrooge_fetch_fee',
         'refund_scrooge_payment_update',
         'refund_scrooge_transaction_create',
+        'refund_scrooge_reverse_transfers',
         'refund_edit_internal',
         'gateway_file_bank_refunds_upload',
 
@@ -15317,6 +15319,7 @@ class Route
             'refund_scrooge_fetch_fee',
             'refund_scrooge_payment_update',
             'refund_scrooge_transaction_create',
+            'refund_scrooge_reverse_transfers',
             'payout_create_internal',
             'payout_create_2FA_internal',
             'refund_edit_internal',

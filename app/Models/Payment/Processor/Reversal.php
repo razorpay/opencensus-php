@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Trace\TraceCode;
 
 trait Reversal
 {
@@ -24,6 +25,7 @@ trait Reversal
      * @param Transfer\Entity $transfer
      * @param array $input
      * @param Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
+     * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
      *
      * @return array Containing reversal and refund entity in indexes 0 and 1 respectively
      * @throws Exception\BadRequestException
@@ -32,7 +34,8 @@ trait Reversal
     public function refundPaymentAndReverseTransfer(
         Transfer\Entity $transfer,
         array $input,
-        Merchant\Entity $initiator = null)
+        Merchant\Entity $initiator = null,
+        bool $rearchRefund = false)
     {
         $transferPayment = $this->repo
                                 ->payment
@@ -82,20 +85,30 @@ trait Reversal
         }
 
         // Refund the transfer payment - this debits the account balance
-        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment, $refundNotes)
-        {
+        // Avoiding taking a lock on payment ID if it's a rearch refund request, as the same is present on Scrooge
+        if ($rearchRefund === true) {
             $refundInput = [
                 Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
                 Refund\Entity::NOTES  => $refundNotes,
             ];
 
-            return (new Processor($transferPayment->merchant))
-                ->refundTransferPayment($transferPayment, $refundInput);
-        });
+            $refund = (new Processor($transferPayment->merchant))
+                ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+        } else {
+            $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundNotes, $rearchRefund) {
+                $refundInput = [
+                    Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
+                    Refund\Entity::NOTES => $refundNotes,
+                ];
+
+                return (new Processor($transferPayment->merchant))
+                    ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+            });
+        }
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input, $initiator);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input, $initiator, $rearchRefund);
     }
 
     /**
@@ -107,8 +120,25 @@ trait Reversal
      * @throws Exception\BadRequestException
      * @return Refund\Entity
      */
-    protected function refundTransferPayment(Payment\Entity $payment, array $input): Refund\Entity
+    protected function refundTransferPayment(Payment\Entity $payment, array $input, bool $rearchRefund = false): Refund\Entity
     {
+        if ($rearchRefund === true)
+        {
+            $input['transfer_refund'] = true;
+
+            $this->trace->info(
+                TraceCode::REFUND_TRANSFER_PAYMENT_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input' => $input,
+                ]);
+            // For captured payments, refund amount either needs to be defined in $input params, or
+            // by default refund amount will be full payment amount.
+            // No need to override refund amount here.
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
+
         if ($payment->isTransfer() === false)
         {
             throw new Exception\BadRequestException(
@@ -155,12 +185,12 @@ trait Reversal
      * Process reversal of transfers send in the `reversals` attribute
      *
      * @param array $reversals
-     *
-     * @return array of refunds created of corresponding reversals
+     * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
+     * @return array of arrays which contain reversal and refund entity in indexes 0 and 1 respectively
      */
-    protected function processReversals(array $reversals)
+    protected function processReversals(array $reversals, bool $rearchRefund = false)
     {
-        $refunds = [];
+        $results = [];
 
         foreach ($reversals as $reversal)
         {
@@ -182,9 +212,9 @@ trait Reversal
 
             unset($reversal['transfer']);
 
-            $refund = $this->mutex->acquireAndRelease(
+            $result = $this->mutex->acquireAndRelease(
                 $transfer->getId(),
-                function() use ($transfer, $reversal)
+                function() use ($transfer, $reversal, $rearchRefund)
                 {
                     $amountUnreversed = $transfer->getAmountUnreversed();
 
@@ -201,22 +231,16 @@ trait Reversal
                         );
                     }
 
-                    $result = $this->refundPaymentAndReverseTransfer($transfer, $reversal);
+                    $result = $this->refundPaymentAndReverseTransfer($transfer, $reversal, null, $rearchRefund);
 
-                    // result has reversal and refund entity in indexes 0 and 1 respectively
-                    // returning refund entity
-                    $reversal = $result[0] ?? null;
-                    $refund = $result[1] ?? null;
-
-                    (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
-
-                    return $refund;
+                    return $result;
                 });
 
-            array_push($refunds , $refund);
+            array_push($results, $result);
+
         }
 
-        return $refunds;
+        return $results;
     }
 
     /**
@@ -233,7 +257,7 @@ trait Reversal
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function shouldProcessReversals(Payment\Entity $payment, array & $input) : bool
+    protected function shouldProcessReversals(Payment\Entity $payment, array & $input, bool $rearchRefund = false) : bool
     {
         //
         // Don't process if either:
@@ -252,8 +276,11 @@ trait Reversal
 
         $validator->setPayment($payment);
 
-        // Validating here to verify reversal attributes in the refund request
-        $validator->validateInput('create', $input);
+        if ($rearchRefund === false)
+        {
+            // Validating here to verify reversal attributes in the refund request
+            $validator->validateInput('create', $input);
+        }
 
         //
         // @todo: Commenting this block of code for now, in favor of the reverse_all
@@ -271,7 +298,6 @@ trait Reversal
 
         if ($reverseAll === true)
         {
-
             $transfers = new Base\PublicCollection();
 
             $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
@@ -305,7 +331,14 @@ trait Reversal
                     }
                 }
 
-            $refundType = $this->getPaymentRefundType($input, $payment);
+            if (isset($input['refund_type']) === true)
+            {
+                $refundType = $input['refund_type'];
+            }
+            else
+            {
+                $refundType = $this->getPaymentRefundType($input, $payment);
+            }
 
             $validator->validateReverseAll($refundType, $transfers);
 

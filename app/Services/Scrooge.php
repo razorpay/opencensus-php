@@ -118,6 +118,9 @@ class Scrooge
     const PASSPORT_AUD = 'scrooge';
     const PAYMENT_PAGE = 'Payment-Page';
     const REFUND_ONLY_UNCAPTURED = 'refund-only-uncaptured';
+    const IS_TRANSFER_REFUND = 'is-transfer-refund';
+    const REFUND_WITH_TRANSFER_REVERSALS = 'refund-with-transfer-reversals';
+    const TRANSFER_CUSTOMER_REFUND = 'transfer-customer-refund';
 
     const TERMINAL_ID = 'terminal_id';
 
@@ -614,6 +617,24 @@ class Scrooge
             unset($input['payment_page']);
         }
 
+        if (isset($input['transfer_refund']) === true)
+        {
+            $customheader[self::IS_TRANSFER_REFUND] = ($input['transfer_refund'] === true);
+            unset($input['transfer_refund']);
+        }
+
+        if (isset($input['refund_with_transfer_reversals']) === true)
+        {
+            $customheader[self::REFUND_WITH_TRANSFER_REVERSALS] = ($input['refund_with_transfer_reversals'] === true);
+            unset($input['refund_with_transfer_reversals']);
+        }
+
+        if (isset($input['transfer_customer_refund']) === true)
+        {
+            $customheader[self::TRANSFER_CUSTOMER_REFUND] = ($input['transfer_customer_refund'] === true);
+            unset($input['transfer_customer_refund']);
+        }
+
         if (isset($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT]) === true)
         {
             $customheader[self::REFUND_ONLY_UNCAPTURED] = ($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT] === true);
@@ -1010,6 +1031,17 @@ class Scrooge
         $publicErrorMessage = $response['body']['public_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
 
         $internalErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
+
+        $internalErrorMessage = $response['body']['internal_error']['message'] ?? ErrorCode::SERVER_ERROR;
+
+        // this is a special case where validation failure is propagated from API to Scrooge and returned
+        // other cases of internal validation failures might become server errors
+        if ($internalErrorCode == ErrorCode::BAD_REQUEST_VALIDATION_FAILURE and $internalErrorMessage == "The reverse_all parameter is not supported for this refund")
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $internalErrorMessage,
+                'reverse_all',[]);
+        }
 
         // If errorcode is undefined, will fallback to server_error
         if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)

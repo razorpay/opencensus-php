@@ -233,6 +233,7 @@ class Constants
     const CURRENCY_CONVERSION_RATE = 'currency_conversion_rate';
     const PAYMENT_RAW_AMOUNT       = 'payment_raw_amount';
     const PAYMENT_RAW_CURRENCY     = 'payment_raw_currency';
+    const GATEWAY_RZP_INTERNAL     = 'rzp_internal';
 
 
     // to revert payment attributes on transaction create failure

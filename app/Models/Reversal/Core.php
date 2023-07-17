@@ -70,6 +70,7 @@ class Core extends Base\Core
      * @param Refund\Entity $refund
      * @param array $input
      * @param Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
+     * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
      *
      * @return array
      * @throws Exception\LogicException
@@ -79,7 +80,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Refund\Entity $refund,
         array $input,
-        Merchant\Entity $initiator = null)
+        Merchant\Entity $initiator = null,
+        bool $rearchRefund=false)
     {
         $this->trace->info(
             TraceCode::TRANSFER_REVERSAL_REQUEST,
@@ -114,7 +116,10 @@ class Core extends Base\Core
 
         $refund->reversal()->associate($reversal);
 
-        $this->repo->saveOrFail($refund);
+        if ($rearchRefund !== true)
+        {
+            $this->repo->saveOrFail($refund);
+        }
 
         $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
 
@@ -143,8 +148,7 @@ class Core extends Base\Core
     {
         // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
-        if ($transfer->getToType() !== E::MERCHANT)
-        {
+        if ($transfer->getToType() !== E::MERCHANT) {
             throw new Exception\LogicException(
                 'Reversal attempted on invalid transfer to_type - ' . $transfer->getToType()
             );
@@ -154,6 +158,41 @@ class Core extends Base\Core
 
         (new Validator)->validateInitiatorForReversal($transfer, $initiator);
 
+        $transferPayment = $this->repo
+            ->payment
+            ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+
+        $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+        // evaluate whether request should go into refunds old v1 flow or rearch flow
+        if ($paymentProcessor->isTransferCustomerRefundRequestV1_1($transferPayment) === true)
+        {
+            return $this->handleTransferReversalAndRearchRefunds($transfer, $input, $merchant, $initiator);
+        }
+        else
+        {
+            return $this->handleTransferReversalAndRefunds($transfer, $input, $merchant, $initiator);
+        }
+    }
+
+    /**
+     * Create and process a reversal on a transfer for non-rearch refund flows
+     * Also process refund to the customer if customer_refund flag is present in input
+     *
+     * @param Transfer\Entity $transfer
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity|null $initiator Route Merchant / Linked Account initiating the reversal
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    protected function handleTransferReversalAndRefunds($transfer, $input, $merchant, $initiator)
+    {
         return $this->mutex->acquireAndRelease(
             $transfer->getId(),
             function() use ($transfer, $input, $merchant, $initiator)
@@ -162,18 +201,19 @@ class Core extends Base\Core
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                $paymentProcessor = (new Payment\Processor\Processor($merchant));
+                $paymentProcessor = new Payment\Processor\Processor($merchant);
 
                 $result = $this->repo->transaction(function () use ($paymentProcessor, $transfer, $input, $merchant, $initiator)
                 {
-                    $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
+                    // in existing non-rearch flow, keeping order of refunds as before
+                    $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator, false);
 
                     // result has reversal and refund entity in indexes 0 and 1 respectively
                     $reversal = $result[0] ?? null;
 
                     $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
-                    $this->customerRefundIfApplicable($transfer, $input, $reversal);
+                    $customerRefund  = $this->customerRefundIfApplicable($transfer, $input, false);
 
                     $sourcePayment = null;
 
@@ -199,14 +239,23 @@ class Core extends Base\Core
 
                     (new Transfer\Metric)->pushReversalSuccessMetrics();
 
+                    // save the customer_refund_id in reversal if customer refund exists
+                    if (empty($customerRefund->getId()) === false)
+                    {
+                        $reversal->setCustomerRefundId($customerRefund->getId());
+
+                        $this->repo->saveOrFail($reversal);
+                    }
+
                     return $result;
                 });
+
+                $reversal = $result[0] ?? null;
+                $refund = $result[1] ?? null;
 
                 // Dispatch refunds to scrooge
                 try
                 {
-                    $refund = $result[1] ?? null;
-
                     $paymentProcessor->callRefundFunctionOnScrooge($refund);
                 }
                 catch (\Throwable $e)
@@ -220,7 +269,147 @@ class Core extends Base\Core
                     );
                 }
 
+                (new Reversal\Core())->createLedgerEntriesForRouteReversal($merchant, $reversal, $refund);
+
+                // Return reversal entity
+                return $reversal;
+            });
+    }
+
+    /**
+     * Create and process a reversal on a transfer for rearch refund flows
+     * Also process refund to the customer if customer_refund flag is present in input
+     *
+     * @param Transfer\Entity $transfer
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity|null $initiator Route Merchant / Linked Account initiating the reversal
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    protected function handleTransferReversalAndRearchRefunds($transfer, $input, $merchant, $initiator)
+    {
+        return $this->mutex->acquireAndRelease(
+            $transfer->getId(),
+            function() use ($transfer, $input, $merchant, $initiator)
+            {
+                $this->repo->reload($transfer);
+
+                (new Validator)->validateReversalAmount($transfer, $input);
+
+                $result = $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
+                {
+                    $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+                    // in rearch flow, customer refund would be created first, and later rolled back/reversed on Scrooge if needed
+                    // this is done because presently there is no way to roll back transfer reversals
+                    $customerRefund  = $this->customerRefundIfApplicable($transfer, $input, true);
+
+                    try
+                    {
+                        $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator, true);
+
+                        // result has reversal and refund entity in indexes 0 and 1 respectively
+                        $reversal = $result[0] ?? null;
+
+                        $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        try
+                        {
+                            // compensatory action in case of failure
+                            if (empty($customerRefund->getId()) === false)
+                            {
+                                $refundStatusUpdateInput = ['refunds'=>[['refund_id'=>$customerRefund->getId(), 'event'=>'failed_event']]];
+
+                                $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
+                            }
+                        }
+                        catch (\Throwable $ex)
+                        {
+                            // logging and throwing original exception later
+                            $this->trace->traceException(
+                                $ex,
+                                Trace::ERROR,
+                                TraceCode::REFUND_SCROOGE_STATUS_UPDATE_FAILED,
+                                ['request_body' => $refundStatusUpdateInput]
+                            );
+                        }
+
+                        throw $e;
+                    }
+
+                    $sourcePayment = null;
+
+                    if ($transfer->getSourceType() === E::PAYMENT)
+                    {
+                        $sourcePayment = $transfer->source;
+                    }
+                    else if ($transfer->getSourceType() === E::ORDER)
+                    {
+                        $sourceOrderId = $transfer->getSourceId();
+
+                        $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+
+                        // Doing findOrFail explicitly to identify archived payment case and handle save accordingly
+                        // Else save would not happen if entity is fetched from TiDB
+                        $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+                    }
+
+                    if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
+                    {
+                        $this->repo->saveOrFail($sourcePayment);
+                    }
+
+                    (new Transfer\Metric)->pushReversalSuccessMetrics();
+
+                    // initiate refund processing now that transfer reversal and refund are successful
+                    if (empty($customerRefund->getId()) === false)
+                    {
+                        $reversal->setCustomerRefundId($customerRefund->getId());
+
+                        $this->repo->saveOrFail($reversal);
+
+                        try
+                        {
+                            $refundStatusUpdateInput = ['refunds'=>[['refund_id'=>$customerRefund->getId(), 'event'=>'init_event']]];
+
+                            $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
+                        }
+                        catch (\Throwable $ex)
+                        {
+                            // Logging exception silently to prevent flow breakage.
+                            $this->trace->traceException(
+                                $ex,
+                                Trace::ERROR,
+                                TraceCode::REFUND_SCROOGE_STATUS_UPDATE_FAILED,
+                                ['request_body' => $refundStatusUpdateInput]
+                            );
+                        }
+                    }
+
+                    return $result;
+                });
+
                 $reversal = $result[0] ?? null;
+                $refund = $result[1] ?? null;
+
+                if ((empty($refund) === false) and (empty($refund->getTransactionId()) === true))
+                {
+                    // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+
+                    if (isset($txn) === true)
+                    {
+                        $refund->transaction()->associate($txn);
+                    }
+                }
+
+                // skipping ledger entries for transfer refund flow in scrooge, and keeping it here
                 (new Reversal\Core())->createLedgerEntriesForRouteReversal($merchant, $reversal, $refund);
 
                 // Return reversal entity
@@ -968,15 +1157,17 @@ class Core extends Base\Core
      * @param Transfer\Entity $transfer
      * @param array $input
      * @param Entity $reversal
+     * @param bool $rearchRefund tells whether to route the refund creation to re-arch flow
      * @throws Exception\BadRequestException
+     * @return Refund\Entity
      */
-    protected function customerRefundIfApplicable(Transfer\Entity $transfer, array $input, Reversal\Entity $reversal)
+    protected function customerRefundIfApplicable(Transfer\Entity $transfer, array $input, bool $rearchRefund = false) : Refund\Entity
     {
         $customerRefund = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
 
         if ($customerRefund === false)
         {
-            return;
+            return new Payment\Refund\Entity();
         }
 
         unset($input[Entity::REFUND_TO_CUSTOMER]);
@@ -1000,22 +1191,39 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::DISABLE_REFUNDS) === true)
+        $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+        if ($rearchRefund === true)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
+            $input['transfer_customer_refund'] = true;
+
+            $this->trace->info(
+                TraceCode::CUSTOMER_REFUND_WITH_TRANSFERS_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input'      => $input,
+                ]);
+
+            // Route refund creation to scrooge
+            $refund = $paymentProcessor->newRefundV2Flow($payment, $input);
+        }
+        else
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::DISABLE_REFUNDS) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
+            }
+
+            if (($merchant->isFeatureEnabled(Feature\Constants::DISABLE_CARD_REFUNDS) === true) and
+                ($payment->getMethod() === Payment\Method::CARD))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
+            }
+
+            $refund = $paymentProcessor->refundCapturedPayment($payment, $input, null, null, 'off');
         }
 
-        if (($merchant->isFeatureEnabled(Feature\Constants::DISABLE_CARD_REFUNDS) === true) and
-            ($payment->getMethod() === Payment\Method::CARD))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
-        }
-
-        $refund = (new Payment\Processor\Processor($merchant))->refundCapturedPayment($payment, $input, null, null, 'off');
-
-        $reversal->customerRefund()->associate($refund);
-
-        $this->repo->saveOrFail($reversal);
+        return $refund;
     }
 
     protected function create(array $input) : Entity

@@ -333,6 +333,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENTITY_ID, $entityId);
     }
 
+    public function setCustomerRefundId($customerRefundId)
+    {
+        $this->setAttribute(self::CUSTOMER_REFUND_ID, $customerRefundId);
+    }
+
     // -------------------- End Setters --------------------------
 
     // -------------------- Public Setters ------------------------------

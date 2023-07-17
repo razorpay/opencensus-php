@@ -1107,35 +1107,17 @@ class TransferTest extends TestCase
 
         $marketplaceOldBalance = $this->getBalance('10000000000000');
 
-        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
-
-        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
-
         $this->setAuthForLinkedAccount();
 
         $this->startTest($data);
 
-        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
-
-        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
-
         $reversal = $this->getLastEntity('reversal', true);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
 
         $this->assertEquals($reversal['merchant_id'], '10000000000000');
 
-        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
-
         $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
 
-        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
-
         $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
-
-        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
     }
 
     public function testLinkedAccountReversalAndCustomerRefundWithScroogeRazorxExpsDisabled()
@@ -2243,7 +2225,7 @@ class TransferTest extends TestCase
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
-        
+
         $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
 
         $this->testData['testCreateDirectTransferWithPartnerAuthForMarketplace']['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;

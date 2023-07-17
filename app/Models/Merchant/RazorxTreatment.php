@@ -759,6 +759,12 @@ final class RazorxTreatment
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 
+    // Experiment to ramp up transfer refunds
+    const SCROOGE_REFUND_WITH_TRANSFERS = 'scrooge_refund_with_transfers';
+
+    // Experiment to ramp up customer refunds for transfer reversals initiated by LA merchants
+    const SCROOGE_REFUND_LA_TRANSFER_REVERSALS = 'scrooge_refund_la_transfer_reversals';
+
     // Experiment to push payout attachment email job to SQS instead of metro
     const PAYOUT_ATTACHMENT_EMAIL_VIA_SQS = 'payout_attachment_email_via_sqs';
 

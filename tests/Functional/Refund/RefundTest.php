@@ -19,6 +19,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Repository;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
@@ -8184,4 +8185,71 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $refund['gateway_refunded']);
     }
 
+    public function testScroogeReverseTransfers()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['amount' => 500, 'amount_transferred'=>200]);
+        $this->fixtures->create('transfer:toAccount', ['source_id' => $payment->getId(), 'source_type'=>'payment', 'amount'=>100]);
+
+        $toMerchant = $this->getLastEntity('merchant', true);
+
+        $toMerchantEntity = (new MerchantEntity())->forceFill(['id'=>$toMerchant['id']]);
+        $this->fixtures->create('transfer:toAccount', ['source_id' => $payment->getId(), 'source_type'=>'payment', 'amount'=>100, 'account'=>$toMerchantEntity]);
+
+        $this->ba->scroogeAuth();
+        $this->app['rzp.mode'] = 'test';
+
+        // validation failure because of partial refund amount
+        $request = [
+            'url' => '/refunds/reverse_transfers',
+            'method' => 'POST',
+            'content' => ['payment_id' => $payment->getId(), 'amount' => 200],
+            'headers' => [
+                'X-Razorpay-Account' => $payment->getMerchantId(),
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(false, $response['success']);
+        $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE', $response['error']);
+
+        // success scenario
+        $request = [
+            'url' => '/refunds/reverse_transfers',
+            'method' => 'POST',
+            'content' => ['payment_id' => $payment->getId(), 'amount' => 500],
+            'headers' => [
+                'X-Razorpay-Account' => $payment->getMerchantId(),
+            ]
+        ];
+
+        $scroogeResponse = [
+            "acquirer_data"   => [],
+            "amount"          => 100,
+            "batch_id"        => "",
+            "created_at"      => 1626357774,
+            "currency"        => "INR",
+            "entity"          => "refund",
+            "id"              => "rfnd_HZETs6HPiyDr8n",
+            "payment_id"      => $payment->getId(),
+            "status"          => "processed"
+        ];
+
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+
+        $scroogeMock->shouldReceive('createNewRefundV2')->withAnyArgs()->andReturn([
+            'body' => $scroogeResponse,
+            'code' => 200
+        ]);
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+        $transfer = $this->getLastEntity('transfer', true);
+        $this->assertNotNull($response['transfer_payments']);
+        $this->assertEquals('reversed', $transfer['status']);
+        $this->assertEquals(100, $transfer['amount_reversed']);
+    }
 }

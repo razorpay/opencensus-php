@@ -128,6 +128,22 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    /**
+     * Does transfers check, validations, and triggers reversals on transfers,
+     * as well as triggers refunds on transfer payments
+     *
+     * @return mixed
+     */
+    public function scroogeRefundsReverseTransfers()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->scroogeRefundsReverseTransfers($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Fetch refund creation data for display logic on FE apps
      *

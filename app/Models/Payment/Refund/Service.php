@@ -1423,6 +1423,55 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function scroogeRefundsReverseTransfers(array $input)
+    {
+        (new Validator)->validateInput('scroogeRefundsReverseTransfers', $input);
+
+        $this->trace->info(TraceCode::SCROOGE_REFUND_REVERSE_TRANSFERS_INIT, $input);
+
+        $response = [
+            'success' => true,
+            'error'   => NULL,
+            'transfer_payments' => [],
+        ];
+
+        try
+        {
+            $paymentId = $input[Entity::PAYMENT_ID];
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $this->merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+            unset($input[Entity::PAYMENT_ID]);
+
+            $input[RefundConstants::REVERSE_ALL] = true;
+
+            $this->getNewProcessor($this->merchant)->reverseTransfersAndRefundPayments($payment, $input, $response);
+        }
+        catch (\Throwable $ex)
+        {
+            $response['success'] = false;
+            $response['error']['code'] = $ex->getCode();
+            $response['error']['message'] = $ex->getMessage();
+
+            $this->trace->info(TraceCode::SCROOGE_REFUND_REVERSE_TRANSFERS_FAILED,
+                [
+                    'reversals'      => $input["reversals"],
+                    'error_code'     => $ex->getCode(),
+                    'error_message'  => $ex->getMessage()
+                ]);
+        }
+
+        $this->trace->info(TraceCode::SCROOGE_REVERSE_TRANSFERS_COMPLETE,
+            [
+                'reversals' => $input["reversals"],
+                'response'  => $response
+            ]);
+
+        return $response;
+    }
+
     public function fetchRefundCreationData(array $input)
     {
         (new Validator)->validateInput('fetch_refund_creation_data', $input);
