@@ -10493,7 +10493,7 @@ trait Authorize
             $type = $card->getType();
 
             if (($issuer === Card\Issuer::ICIC) and
-                ($type === Card\Type::DEBIT))
+                (($type === Card\Type::DEBIT) or ($type === Card\Type::PREPAID)))
             {
                 return false;
             }
