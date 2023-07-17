@@ -774,6 +774,9 @@ final class RazorxTreatment
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT = 'partner_bank_on_hold_payout';
 
+    // Partner bank hold payouts experiment
+    const PARTNER_BANK_ON_HOLD_PAYOUT_ICICI = 'partner_bank_on_hold_payout_icici';
+
     const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
 
     // Experiment to enable mandate non-revokable

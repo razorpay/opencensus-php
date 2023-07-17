@@ -27,6 +27,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Payout\AutoRejectedPayout;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Mock\BankingAccountService;
@@ -53,6 +54,7 @@ class IciciCaPayoutTest extends TestCase
     use AttemptTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
 
     private $ownerRoleUser;
@@ -3457,6 +3459,39 @@ class IciciCaPayoutTest extends TestCase
                                         ]);
 
         $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testPartnerBankOnHoldPayoutForDirectAccountICICI()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT_ICICI   => 'on',
+            RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "ICICI",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $this->startTest();
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout['queued_reason']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
     }
 
 }

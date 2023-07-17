@@ -1502,4 +1502,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
+
+    'testPartnerBankOnHoldPayoutForDirectAccountICICI' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 1000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'IMPS'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'notes'           => [],
+            ],
+        ],
+    ],
 ];
