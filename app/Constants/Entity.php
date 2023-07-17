@@ -313,6 +313,7 @@ class Entity
     const PINELABS               = 'pinelabs';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
+    const CHECKOUT_DOT_COM_OPTIMIZER  = 'checkout_dot_com_optimizer';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
     const PAYTM                  = 'paytm';
@@ -1320,6 +1321,7 @@ class Entity
         self::RUPAY_SIHUB            => \RZP\Gateway\Mozart::class,
         self::BILLDESK_SIHUB         => \RZP\Gateway\Mozart::class,
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
+        self::CHECKOUT_DOT_COM_OPTIMIZER => \RZP\Gateway\Mozart::class,
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
         self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,
         self::BT_RBL                 => \RZP\Gateway\Mozart::class,

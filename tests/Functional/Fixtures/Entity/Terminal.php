@@ -2598,7 +2598,7 @@ class Terminal extends Base
             'gateway_terminal_id'        => 'abcde',
             'gateway_terminal_password'  => 'abcdef',
             'gateway_terminal_password2' => 'abcdef',
-            'gateway_secure_secret2'     => 'abcdef',
+            'gateway_access_code'        => 'abcdef',
             'card'                       => 1,
             'emi'                        => 0,
             'mc_mpan'                    => base64_encode('1234560000000000'),
@@ -5272,6 +5272,32 @@ class Terminal extends Base
             'card'                      => 1,
             'gateway_merchant_id'       => 'abcd',
             'gateway_secure_secret2'    => 'secret',
+            'mode'                      => 2,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::OPTIMIZER => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCheckoutDotComOptimiserTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                        => '100CKOOptiTrmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'checkout_dot_com_optimizer',
+            'card'                      => 1,
+            'gateway_secure_secret2'    => 'secret',
+            'gateway_merchant_id'       => '323395bf6400747e2f43bbd9a93323',
+            'gateway_merchant_id2'      => 'abc12',
+            'gateway_terminal_id'       => 'terminal_id',
+            'gateway_secure_secret'     => 'test_secret',
             'mode'                      => 2,
             'type'                      => [
                 Type::NON_RECURRING => '1',

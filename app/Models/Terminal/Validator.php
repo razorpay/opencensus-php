@@ -180,6 +180,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_DBS,
         Payment\Gateway::INGENICO,
         Payment\Gateway::BILLDESK_OPTIMIZER,
+        Payment\Gateway::CHECKOUT_DOT_COM_OPTIMIZER,
         Payment\Gateway::KOTAK_DEBIT_EMI,
         Payment\Gateway::INDUSIND_DEBIT_EMI,
         Payment\Gateway::HDFC_EZETAP,
@@ -457,6 +458,27 @@ class Validator extends Base\Validator
         Entity::NOTES                                   => 'sometimes|string',
         Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
         Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+    ];
+
+    protected static $checkoutDotComOptimizerTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:checkout_dot_com_optimizer',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE                     => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID                     => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::TYPE . '.optimizer'                     => 'required|in:1',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::PROCURER                                => 'required|string|in:merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::NOTES                                   => 'sometimes|string',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::INTERNATIONAL                           => 'required|boolean|in:1',
+        Entity::CURRENCY                                => 'sometimes|array',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
@@ -985,6 +1007,25 @@ class Validator extends Base\Validator
         Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+    ];
+
+    protected static $checkoutDotComOptimizerEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::GATEWAY                    => 'sometimes|in:checkout_dot_com',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $mandateHqEditTerminalRules = [
@@ -3201,7 +3242,8 @@ class Validator extends Base\Validator
             Gateway::INGENICO,
             Gateway::BILLDESK_OPTIMIZER,
             Gateway::AXIS_TOKENHQ,
-            Gateway::OPTIMIZER_RAZORPAY
+            Gateway::OPTIMIZER_RAZORPAY,
+            Gateway::CHECKOUT_DOT_COM_OPTIMIZER
         ];
 
         //Migs now supports purchase mode as well

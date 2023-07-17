@@ -36,6 +36,7 @@ class Gateway
     const PINELABS               = 'pinelabs';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
+    const CHECKOUT_DOT_COM_OPTIMIZER = 'checkout_dot_com_optimizer';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -420,6 +421,7 @@ class Gateway
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
         self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
+        self::CHECKOUT_DOT_COM_OPTIMIZER => self::CHECKOUT_DOT_COM_OPTIMIZER,
         self::NETBANKING_IDFC       => self::IDFC,
         self::PAYSECURE             => self::ACQUIRER_AXIS,
         self::NETBANKING_SBI        => self::SBIN,
@@ -458,6 +460,7 @@ class Gateway
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
         self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
+        self::CHECKOUT_DOT_COM_OPTIMIZER => self::CHECKOUT_DOT_COM_OPTIMIZER,
         self::OFFLINE_HDFC          => self::HDFC,
         self::HDFC_EZETAP           =>self::HDFC,
         self::PAYSECURE             => self::AXIS,
@@ -583,6 +586,7 @@ class Gateway
         self::PINELABS,
         self::INGENICO,
         self::BILLDESK_OPTIMIZER,
+        self::CHECKOUT_DOT_COM_OPTIMIZER,
         self::OPTIMIZER_RAZORPAY,
     ];
 
@@ -1607,6 +1611,7 @@ class Gateway
             self::FULCRUM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::CHECKOUT_DOT_COM_OPTIMIZER,
             self::HDFC_EZETAP,
             self::OPTIMIZER_RAZORPAY,
         ],
@@ -1813,6 +1818,7 @@ class Gateway
         self::MPGS                  => [],
         self::ISG                   => [],
         self::CHECKOUT_DOT_COM      => [],
+        self::CHECKOUT_DOT_COM_OPTIMIZER => [],
     ];
 
     /**
@@ -2179,6 +2185,14 @@ class Gateway
             Network::RUPAY,
             Network::DICL,
             Network::MAES,
+        ],
+        self:: CHECKOUT_DOT_COM_OPTIMIZER =>[
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::DISC,
+            Network::DICL,
+            Network::JCB,
         ],
     ];
 
@@ -3119,6 +3133,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::HITACHI,
         Gateway::CHECKOUT_DOT_COM,
+        Gateway::CHECKOUT_DOT_COM_OPTIMIZER,
     ];
 
     /**
@@ -3544,6 +3559,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM,
         Gateway::INGENICO         => Gateway::INGENICO,
         Gateway::BILLDESK_OPTIMIZER => Gateway::BILLDESK_OPTIMIZER,
+        Gateway::CHECKOUT_DOT_COM_OPTIMIZER => Gateway::CHECKOUT_DOT_COM_OPTIMIZER,
         Gateway::ICICI            => Gateway::ICICI,
         Gateway::OPTIMIZER_RAZORPAY => Gateway::OPTIMIZER_RAZORPAY,
     ];
@@ -4537,6 +4553,7 @@ class Gateway
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::CHECKOUT_DOT_COM_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
@@ -4582,6 +4599,7 @@ class Gateway
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::CHECKOUT_DOT_COM_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
@@ -4601,6 +4619,7 @@ class Gateway
     {
         $gateways = [
             self::CHECKOUT_DOT_COM,
+            self::CHECKOUT_DOT_COM_OPTIMIZER,
         ];
 
         return (in_array($gateway, $gateways, true));

@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Gateway::CHECKOUT_DOT_COM => 'sometimes|numeric|min:0|max:100',
         Gateway::INGENICO         => 'sometimes|numeric|min:0|max:100',
         Gateway::BILLDESK_OPTIMIZER => 'sometimes|numeric|min:0|max:100',
+        Gateway::CHECKOUT_DOT_COM_OPTIMIZER => 'sometimes|numeric|min:0|max:100',
     ];
 
     public function validateMethod(string $method)

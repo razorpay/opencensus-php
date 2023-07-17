@@ -4565,6 +4565,48 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCheckoutDotComOptimizerTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditCheckoutDotComOptimizerTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'checkout_dot_com_optimizer',
+                'gateway_merchant_id' => '250000003',
+                'gateway_merchant_id2' => '250000004',
+                'gateway_secure_secret' => "1231424",
+                'gateway_secure_secret2' => "1231425",
+                'gateway_terminal_id' => "1233",
+                'mode' => 3,
+                'card'                  => 1,
+                'procurer'              => 'merchant',
+                'international'         => 1,
+                'type'                  => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                    'optimizer' => '1',
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'mode' => "2",
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "2", $content['mode']);
+    }
     public function testEditToCheckoutDotComRecurringTerminal()
     {
         $originalTerminal = $this->fixtures->create("terminal:checkout_dot_com_non_recurring_terminal");
