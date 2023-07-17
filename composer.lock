@@ -3497,12 +3497,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "fb7566caccf22d74d1ab270de3551f72a58399f5"
+                "reference": "cd634c213de11e0f229651173428f5c27d398628"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/fb7566caccf22d74d1ab270de3551f72a58399f5",
-                "reference": "fb7566caccf22d74d1ab270de3551f72a58399f5",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/cd634c213de11e0f229651173428f5c27d398628",
+                "reference": "cd634c213de11e0f229651173428f5c27d398628",
                 "shasum": ""
             },
             "require": {
@@ -3600,7 +3600,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.7.0"
+                "source": "https://github.com/guzzle/guzzle/tree/7.7"
             },
             "funding": [
                 {
@@ -3616,7 +3616,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-21T14:04:53+00:00"
+            "time": "2023-06-30T12:06:03+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -10858,12 +10858,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "7e29558e767a1ebb06d45b8af0dd72ca844edb02"
+                "reference": "c31779c5cbdbf388d187f0481e0b93ede8e868e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/7e29558e767a1ebb06d45b8af0dd72ca844edb02",
-                "reference": "7e29558e767a1ebb06d45b8af0dd72ca844edb02",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/c31779c5cbdbf388d187f0481e0b93ede8e868e2",
+                "reference": "c31779c5cbdbf388d187f0481e0b93ede8e868e2",
                 "shasum": ""
             },
             "require": {
@@ -10889,7 +10889,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-06-30T06:58:28+00:00"
+            "time": "2023-07-14T05:31:25+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -10897,12 +10897,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "9d0d8c5482bca491db422e08e0be5af122394812"
+                "reference": "c0cff339104700d28adec4d212e60867097d34d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/9d0d8c5482bca491db422e08e0be5af122394812",
-                "reference": "9d0d8c5482bca491db422e08e0be5af122394812",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/c0cff339104700d28adec4d212e60867097d34d9",
+                "reference": "c0cff339104700d28adec4d212e60867097d34d9",
                 "shasum": ""
             },
             "require": {
@@ -10949,7 +10949,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-06-27T10:04:04+00:00"
+            "time": "2023-07-14T05:36:57+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",

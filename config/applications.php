@@ -1219,6 +1219,18 @@ return [
                 'password' => env('SCROOGE_SECRET'),
             ],
         ],
+        'reporting' => [
+            'live'=>[
+                'url'    => env('REPORTING_BASE_URL'),
+                'username' => 'api',
+                'secret' => env('REPORTING_PASSWORD'),
+            ],
+            'test'=>[
+                'url'    => env('REPORTING_BASE_URL'),
+                'username' => 'api',
+                'secret' => env('REPORTING_PASSWORD'),
+            ],
+        ],
     ],
 
     'automation' => [

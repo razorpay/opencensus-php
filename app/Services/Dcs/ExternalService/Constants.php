@@ -28,5 +28,7 @@ class Constants
         "rzp/pg/merchant/refunds/Display" => "scrooge",
         "rzp/pg/merchant/refunds/Webhook" => "scrooge",
         "rzp/pg/org/refunds/Display" => "scrooge",
+        "rzp/platform/merchant/reporting/CustomReports" => "reporting",
+        "rzp/platform/org/reporting/CustomReports" => "reporting",
     ];
 }

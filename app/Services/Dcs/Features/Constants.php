@@ -165,6 +165,10 @@ class Constants
     const SkipKycVerification = 'skip_kyc_verification';
     const GaiSyncPayouts = 'sync_payouts';
 
+    //reporting service features
+    const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
+    const ConsolidatedTxnReportOfAllSubmerchants = 'consolidated_txn_report_of_all_submerchants';
+
     // settlements service features
     const SettlementsServiceOnboarding = 'settlement_service_onboarded';
     const SettlementsServiceStopSMS = 'stop_settlement_sms';
@@ -329,6 +333,8 @@ class Constants
         self::SkipKycVerification => 'rzp/pg/org/onboarding/banking_program/Config',
         self::SettlementsServiceOnboarding => 'rzp/pg/merchant/settlements/Onboarding',
         self::SettlementsServiceStopSMS => 'rzp/pg/merchant/settlements/Communication',
+        self::SettlementReconReportWithNotes => 'rzp/platform/merchant/reporting/CustomReports',
+        self::ConsolidatedTxnReportOfAllSubmerchants => 'rzp/platform/org/reporting/CustomReports',
         self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
     ];
 
@@ -502,6 +508,8 @@ class Constants
         APIFeaturesConstants::SKIP_KYC_VERIFICATION                         => self::SkipKycVerification,
         APIFeaturesConstants::NEW_SETTLEMENT_SERVICE                        => self::SettlementsServiceOnboarding,
         APIFeaturesConstants::SETTLEMENTS_SMS_STOP                          => self::SettlementsServiceStopSMS,
+        APIFeaturesConstants::REPORTING_GENRERIC_NOTES                      => self::SettlementReconReportWithNotes,
+        APIFeaturesConstants::CONSOLIDATED_ORG_REPORTS                      => self::ConsolidatedTxnReportOfAllSubmerchants,
         APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
     ];
 
