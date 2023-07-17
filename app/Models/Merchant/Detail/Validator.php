@@ -540,6 +540,11 @@ class Validator extends Base\Validator
         'gstin_self_serve_not_in_progress',
     ];
 
+    protected static $rmDetailsUpsert = [
+        'name'   => 'filled|string',
+        'emails' => 'filled|array'
+    ];
+
     protected static $businessWebsitesCheckRules = [
         DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE          => 'required|max:255|custom:active_url',
         DetailConstants::BUSINESS_WEBSITE_ABOUT_US           => 'required|max:255|custom:active_url',

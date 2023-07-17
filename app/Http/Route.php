@@ -458,6 +458,9 @@ class Route
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
         'merchant_fetch_internal_users'            => ['get',      'merchants/{id}/internal-users',                  'MerchantController@getInternalUsers',                              ],
+        'merchant_fetch_rm_details'                => ['get',      'merchants/{mid}/rm_details',                     'MerchantController@getMerchantRMDetails'],
+        'merchant_put_rm_details'                  => ['put',      'merchants/{mid}/rm_details',                     'MerchantController@putMerchantRMDetails'],
+        'merchant_patch_rm_details'                => ['patch',    'merchants/{mid}/rm_details',                     'MerchantController@patchMerchantRMDetails'],
         'merchant_fetch_schedule_tasks'            => ['get',      'schedule_tasks/{type}',                          'ScheduleController@getScheduleTasks',                              ],
         'merchant_user_reset_password'             => ['put',      'users/{id}/password',                            'UserController@resetUserPassword',                                 ],
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -1681,6 +1684,7 @@ class Route
         // Routes for the admin roles project
         'org_create'                               => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
         'org_get'                                  => ['get',      'orgs/{orgId}',                                   'OrganizationController@getOrganization'                            ],
+        'internal_org_get'                         => ['get',      'internal/orgs/{orgId}',                          'OrganizationController@getOrganization'                            ],
         'org_get_self'                             => ['get',      'orgs/{id}/self',                                 'OrganizationController@getOrganization'                            ],
         'org_get_by_hostname'                      => ['get',      'orgs/hostname/{hostname}',                       'OrganizationController@getOrganizationByHostname'                  ],
         'org_get_multiple'                         => ['get',      'orgs',                                           'OrganizationController@getOrganizations'                           ],
@@ -5061,6 +5065,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_org_get',
         'banking_org_merchant_onboarding_escalations',
         'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
@@ -7153,6 +7158,9 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_fetch_rm_details',
+        'merchant_put_rm_details',
+        'merchant_patch_rm_details',
         'merchant_bmc_response_fetch_admin',
         'dispute_ingestion',
         'dispute_dcs_config_add',
@@ -8649,6 +8657,9 @@ class Route
         'schedule_assign'                          => Permission::SCHEDULE_ASSIGN,
         'admin_fetch_merchant_ids_new'             => Permission::ADMIN_FETCH_MERCHANTS,
         'admin_fetch_merchants_new'                => Permission::ADMIN_FETCH_MERCHANTS,
+        'merchant_fetch_rm_details'                => Permission::ADMIN_FETCH_MERCHANTS,
+        'merchant_put_rm_details'                  => Permission::ADMIN_FETCH_MERCHANTS,
+        'merchant_patch_rm_details'                => Permission::ADMIN_FETCH_MERCHANTS,
         'admin_fetch_unified_dashboard_merchants'  => Permission::ONBOARDING_AND_ACTIVATIONS_VIEW,
         '1cc_rto_mlmodel_configs_create_admin'     => Permission::MAGIC_RTO_CONFIGS_EDIT,
         '1cc_rto_mlmodel_configs_get_admin'        => Permission::MAGIC_RTO_CONFIGS_VIEW,
@@ -12277,6 +12288,9 @@ class Route
             'dispute_dcs_config_add',
             'dispute_dcs_config_update',
             'dispute_dcs_config_get',
+            'merchant_fetch_rm_details',
+            'merchant_put_rm_details',
+            'merchant_patch_rm_details',
             'merchant_bmc_response_fetch_admin',
             'media_service_upload_file',
             'media_service_get_bucket',
@@ -15574,6 +15588,7 @@ class Route
 
         'terminals_service' => [
             'feature_get_multiple_internal',
+            'internal_org_get',
             'internal_merchant_fetch',
             'internal_payment_instruments_fetch',
             'internal_merchant_workflow_details_fetch',

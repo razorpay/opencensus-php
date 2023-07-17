@@ -25,6 +25,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_MERCHANT_BMC_RESPONSE      = 'get_merchant_bmc_response';
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
+    const MERCHANT_RM_FETCH = 'merchant_rm_details_fetch';
+    const MERCHANT_RM_CREATE = 'merchant_rm_details_create';
+    const MERCHANT_RM_UPDATE = 'merchant_rm_details_update';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const ENABLE                         = 'enable';
@@ -52,7 +55,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_DELETE         => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDelete',
         self::GET_MERCHANT_BMC_RESPONSE        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantBMCResponse',
         self::SAVE_MERCHANT_BMC_RESPONSE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantBMCResponse',
-        self::GET_CLEARBIT_DOMAIN_INFO         => 'twirp/rzp.pg_onboarding.leads.v1.LeadsService/GetClearbitDomainInfo'
+        self::GET_CLEARBIT_DOMAIN_INFO         => 'twirp/rzp.pg_onboarding.leads.v1.LeadsService/GetClearbitDomainInfo',
+        self::MERCHANT_RM_CREATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/CreateRMDetails',
+        self::MERCHANT_RM_FETCH                => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/GetRMDetails',
+        self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
     ];
 
     // timeout in seconds

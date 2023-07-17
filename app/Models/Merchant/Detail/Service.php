@@ -136,6 +136,8 @@ class Service extends Base\Service
 
     protected $config;
 
+    protected $pgosProxyController;
+
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
@@ -147,6 +149,8 @@ class Service extends Base\Service
         $this->accountCore = $accountCore ?? new Account\Core();
 
         $this->ba=$this->app['basicauth'];
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
 
     }
 
@@ -2762,6 +2766,74 @@ class Service extends Base\Service
         }
 
         $this->trace->info(TraceCode::MERCHANT_DETAIL_FRAUD_TYPE_UPDATED, $response);
+
+        return $response;
+    }
+
+    public function getMerchantRMDetails($mid)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $merchantId = $merchant->getId();
+
+        $body = [
+            'merchant_id' => $merchantId,
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_rm_details_fetch', $body, $merchant);
+
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'merchant_id' => $merchantId,
+            'response' => $response,
+        ]);
+
+        return $response;
+    }
+
+    public function putMerchantRMDetails($mid,$input)
+    {
+        $this->validator->validateInput('rm_details_upsert', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $merchantId = $merchant->getId();
+
+        $body = [
+            'merchant_id' => $merchantId,
+            'name' => $input['name'],
+            'emails' => $input['emails']
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_rm_details_create', $body, $merchant);
+
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'merchant_id' => $merchantId,
+            'response' => $response,
+        ]);
+
+        return $response;
+    }
+
+    public function patchMerchantRMDetails($mid,$input)
+    {
+        $this->validator->validateInput('rm_details_upsert', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $merchantId = $merchant->getId();
+
+        $body = [
+            'merchant_id' => $merchantId,
+            'name' => $input['name'],
+            'emails' => $input['emails']
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_rm_details_update', $body, $merchant);
+
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'merchant_id' => $merchantId,
+            'response' => $response,
+        ]);
 
         return $response;
     }

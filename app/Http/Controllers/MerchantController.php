@@ -1122,6 +1122,31 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantRMDetails($mid)
+    {
+        $data =  $this->service(E::MERCHANT_DETAIL)->getMerchantRMDetails($mid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putMerchantRMDetails($mid)
+    {
+        $input = Request::all();
+
+        $data =  $this->service(E::MERCHANT_DETAIL)->putMerchantRMDetails($mid,$input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function patchMerchantRMDetails($mid)
+    {
+        $input = Request::all();
+
+        $data =  $this->service(E::MERCHANT_DETAIL)->patchMerchantRMDetails($mid,$input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getOffers(string $mid)
     {
         $data = $this->service()->getOffers($mid);
