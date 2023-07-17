@@ -53,11 +53,10 @@ class SplitzHelper
         try {
             $request = ['id' => $id, 'experiment_id' => $experimentId];
 
-            $this->trace->info(TraceCode::ASV_SPLITZ_REQUEST, ['request' => $request, 'metadata' => $metadata]);
             $response = $this->splitzService->evaluateRequest($request);
-            $this->trace->info(TraceCode::ASV_SPLITZ_RESPONSE, $response);
 
             if ($response['status_code'] !== 200) {
+                $this->trace->info(TraceCode::ASV_SPLITZ_RESPONSE_ERROR, ['metadata'=> $metadata, 'response' => $response]);
                 return false;
             }
 

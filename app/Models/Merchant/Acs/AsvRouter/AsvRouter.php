@@ -60,8 +60,7 @@ class AsvRouter
             $isExclusionFlow = MerchantExclusionFlows::isExclusionFLow($routeOrWorkerName);
 
             // temporarily added this log if the check is working correctly.
-            // we need to remove this log before we ramp up for high RPS entites.
-            $this->trace->info(TraceCode::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
+            $this->trace->count(Metric::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
                 'routeOrWorkerName' => $routeOrWorkerName,
                 'isExclusionFlow' => $isExclusionFlow
             ]);

@@ -42,6 +42,8 @@ class Metric
     const ASV_REQUEST_NOT_ROUTED_TO_ASV         = 'asv_request_not_routed_to_asv';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
+
+    const ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT = 'account_service_check_exclusion_flow_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
     const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
