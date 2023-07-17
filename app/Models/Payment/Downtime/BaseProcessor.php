@@ -35,8 +35,9 @@ class BaseProcessor extends Base\Core
     {
         $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethodAndMerchant($this->method, $mid);
 
-        $ongoingDowntimes = $ongoingDowntimes->where(Entity::PSP, '!=', ProviderPsp::GOOGLE_PAY);
-
+        // We will resolve turbo downtimes separately just like we do it for Google Pay downtimes
+        $ongoingDowntimes = $ongoingDowntimes->where(Entity::PSP, '!=', ProviderPsp::GOOGLE_PAY)
+                                             ->where(Entity::TYPE, '!=', \RZP\Models\Merchant\Methods\Entity::IN_APP);
         /**
          * Filter out all the downtimes which should be resolved by checking the unavailable list
          * `issuer` in case of nebanking, fpx and wallet
@@ -84,7 +85,11 @@ class BaseProcessor extends Base\Core
             (new Core)->refreshHistoricalDowntimeCache(3);
 
             if(($downtime->getMethod() !== Method::EMANDATE)){
-                (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
+                // Turbo downtime emails will be sent by downtime_manager, hence we skip sending emails via api
+                if ($downtime->getType() !== \RZP\Models\Merchant\Methods\Entity::IN_APP)
+                {
+                    (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
+                }
 
                 PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
 

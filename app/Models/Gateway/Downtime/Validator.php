@@ -10,6 +10,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
+use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;

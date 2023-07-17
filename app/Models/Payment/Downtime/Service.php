@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 use Redis;
 use RZP\Exception;
+use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Base;
 use RZP\Mail\Downtime;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
@@ -579,7 +580,12 @@ class Service extends Base\Service
     {
         unset($downtimeArrayPublic[Entity::INSTRUMENT_SCHEMA]);
         unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::TYPE]);
-        unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]);
+
+        if ((isset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]) === true) and
+            ($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW] !== Merchant\Methods\Entity::IN_APP))
+        {
+            unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]);
+        }
 
         if (($downtimeArrayPublic[Entity::STATUS] === Status::UPDATED))
         {

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Downtime;
 
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Constants
 {
@@ -46,9 +47,13 @@ class Constants
     const DOWNTIMES_EMAIL_CC = 'DOWNTIMES_EMAIL_CC_';
 
     // Send Merchant Downtimes Razorx
-    const WEBHOOKS = 'WEBHOOKS';
+    const WEBHOOKS  = 'WEBHOOKS';
     const FETCH_API = 'FETCH_API';
-    const EMAILS = 'EMAILS';
+    const EMAILS    = 'EMAILS';
+
+    const TURBO_VPA_HANDLES = [
+        ProviderCode::AXIS,
+    ];
 
     public static function getMethodQueryInstrument($method)
     {
@@ -67,5 +72,10 @@ class Constants
                 return [Entity::VPA_HANDLE, Entity::ISSUER, Entity::PSP];
                 break;
         }
+    }
+
+    public static function getTurboQueryInstrument()
+    {
+        return [Entity::TYPE];
     }
 }

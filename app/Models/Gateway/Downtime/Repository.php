@@ -6,11 +6,12 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 
 class Repository extends Base\Repository
 {
@@ -153,7 +154,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($input), $params, $query);
 
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
@@ -217,7 +218,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($input), $params, $query);
 
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
@@ -422,7 +423,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($params),  $params, $query);
 
         return $query->whereNull(Entity::END)
             ->get();
@@ -432,7 +433,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($params),  $params, $query);
 
         return $query->whereNotNull(Entity::END)
             ->where(Entity::BEGIN, '>=', $params[Entity::BEGIN])
@@ -465,6 +466,18 @@ class Repository extends Base\Repository
         }
 
         return false;
+    }
+
+    private static function getKeyOperatorMap(array $input)
+    {
+        $keyOperatorMap = self::KEY_OPERATOR_MAP;
+
+        if (isset($input[Entity::CARD_TYPE]) and $input[Entity::CARD_TYPE] === MethodsEntity::IN_APP)
+        {
+            $keyOperatorMap[Entity::CARD_TYPE] = '=';
+        }
+
+        return $keyOperatorMap;
     }
 
 }
