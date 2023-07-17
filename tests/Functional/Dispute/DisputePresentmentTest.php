@@ -683,10 +683,6 @@ class DisputePresentmentTest extends TestCase
                 'expected_recovery_method' => 'adjustment',
             ],
             [
-                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_yesbank'],
-                'expected_recovery_method' => 'risk_ops_review',
-            ],
-            [
                 'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_mindgate'],
                 'expected_recovery_method' => 'adjustment',
             ],
@@ -725,6 +721,30 @@ class DisputePresentmentTest extends TestCase
             [
                 'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_mpesa'],
                 'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_airtel'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_citi'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_kotak'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_yesbank'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_rbl'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_juspay'],
+                'expected_recovery_method' => 'adjustment',
             ],
         ];
 

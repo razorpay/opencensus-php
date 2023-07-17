@@ -27,6 +27,12 @@ class RecoveryMethod
         Gateway::UPI_ICICI,
         Gateway::UPI_SBI,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_AIRTEL,
+        Gateway::UPI_CITI,
+        Gateway::UPI_KOTAK,
+        Gateway::UPI_YESBANK,
+        Gateway::UPI_RBL,
+        Gateway::UPI_JUSPAY,
     ];
 
     const WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [
