@@ -2415,6 +2415,17 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideIciciPayment($gatewayPayment)
+    {
+        $facade = $this->testData['facades']['icici_payment'];
+
+        $facade['Transaction Amount']                     = intval($payment['amount'] / 100);
+        $facade['Merchant Track ID']                      = $payment['payment_id'];
+        $facade['Transaction Date']                       = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');;
+
+        return $facade;
+    }
+
     private function overrideCardFssRefund($gatewayRefund, $gatewayPayment)
     {
         $facade = $this->testData['facades']['card_fss_refund'];

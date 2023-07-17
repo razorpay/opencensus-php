@@ -188,6 +188,7 @@ class Constants
             self::HDFC_CORP,
             self::UJVN,
             self::INDUS_IND_DEBIT,
+            self::ICICI,
         ],
         Type::CARDSETTLEMENT => [
             self::AXIS
@@ -326,6 +327,7 @@ class Constants
             self::HDFC_CORP   => [],
             self::UJVN        => [],
             self::RBL_CORP    => [],
+            self::ICICI        => [],
         ],
 
         Type::EMANDATE_REGISTER => [

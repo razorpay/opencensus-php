@@ -121,6 +121,7 @@ class Reconciliate extends Base\Core
 
     const CREDIT        = 'credit';
     const DEBIT         = 'debit';
+    const DEBIT_TYPE     = 'd';
     const DOMESTIC      = 'domestic';
     const INTERNATIONAL = 'international';
 

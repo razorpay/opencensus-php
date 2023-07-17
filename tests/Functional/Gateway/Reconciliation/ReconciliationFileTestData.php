@@ -143,6 +143,21 @@ return [
             'transaction category'                   => 'NORMAL',
             'MSF %'                                  => '0',
         ],
+        'icici_payment' => [
+            'Transaction ID'                         => '1234567812345678',
+            'Merchant ID'                            => '10000013',
+            'Terminal ID'                             => '10000013',
+            'Merchant Track ID'                      => '12345678912345',
+            'Transaction Date'                       => 'Tue Jun 06 16:40:43 IST 2023',
+            'Transaction Action'                     => 'Sale',
+            'Transaction Amount'                     => '0.00',
+            'Instrument Type'                        => 'D',
+            'Acquirer ID'                            => 'Debit With Pin',
+            'Transaction Status'                     => 'Successful',
+            'Currency Code'                          => 'INR',
+            'PAYMENT ID'                             => '1234567812345678',
+            'PG Track ID'                            => '-',
+        ],
 
         'first_data' => [
             'super_mid'            => '78541547',

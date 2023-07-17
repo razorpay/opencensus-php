@@ -118,6 +118,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_SARASWAT,
         RequestProcessor\Base::EMERCHANTPAY,
         RequestProcessor\Base::NETBANKING_DBS,
+        RequestProcessor\Base::ICICI
+
     ];
 
     /**
