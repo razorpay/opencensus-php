@@ -3,7 +3,6 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
-use Request;
 use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
@@ -29,8 +28,6 @@ class Core extends QrCode\Core
 
         $this->generator = new Generator;
     }
-
-    const QR_CODE_CLOSE = 'qr_code_close';
 
 
     /**
@@ -139,11 +136,6 @@ class Core extends QrCode\Core
 
     public function close($qrCode, $closeReason)
     {
-        if ($qrCode->isClosed() === true)
-        {
-            return $qrCode;
-        }
-
         if (($this->generator->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true) and
             ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
         {
@@ -157,32 +149,6 @@ class Core extends QrCode\Core
         $qrCode->setClosedAt($currentTime);
 
         $qrCode->setCloseReason($closeReason);
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::CLOSE_QR_ON_GATEWAY, $this->mode);
-
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            try
-            {
-                $routeName           = $this->app['api.route']->getCurrentRouteName();
-                $uri                 = Request::getUri();
-                $reminderCallbackUrl = (new Service())->getCallbackUrlForReminder($qrCode);
-
-                if (($routeName === self::QR_CODE_CLOSE) or
-                    str_contains($uri, $reminderCallbackUrl))
-                {
-                    $this->generator->closeQrCodeOnGateway($qrCode);
-                }
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::FAILED_TO_CLOSE_QR_ON_GATEWAY,
-                                             [
-                                                 'qrcode' => $qrCode->getId()
-                                             ]);
-                throw $e;
-            }
-        }
 
         $vpaId = $this->repo->vpa->findVpaByEntityIdAndEntityType($qrCode->getId(), $qrCode->getEntityName());
 

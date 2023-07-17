@@ -226,12 +226,12 @@ class Generator extends QrCode\Generator
                     $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 }
             }
-            catch (\Throwable $ex)
+            catch (\Exception $ex)
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
+                throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
+                                              ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
                                               null,
-                                              null,
-                                              'QrCode creation failed due to error at bank or wallet gateway');
+                                              null);
             }
         }
 
@@ -685,46 +685,5 @@ class Generator extends QrCode\Generator
         }
 
         return $dedicatedTerminals;
-    }
-
-    public function closeQrCodeOnGateway($qrCode)
-    {
-        if ($qrCode->isIciciQr() === false)
-        {
-            return;
-        }
-
-        if ($qrCode->isGatewayGeneratedRefid() === false)
-        {
-            return;
-        }
-
-        $qrVpa = $qrCode->getQrVpa();
-        if ($qrVpa === null)
-        {
-            throw new InvalidArgumentException('VPA cannot be null');
-        }
-
-        $gateway = GATEWAY::UPI_ICICI;
-        $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $qrVpa);
-        $this->trace->info(TraceCode::QR_CODE_CLOSE_ON_GATEWAY, [
-            'gateway' => $gateway,
-            '$params' => $params,
-            'id'      => $qrCode->getId()
-        ]);
-
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
-
-        if (($terminal instanceof Terminal\Entity) === false)
-        {
-            throw new BadRequestException(Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
-                                          [
-                                              'gateway' => $gateway,
-                                              '$params' => $params,
-                                              'id'      => $qrCode->getId()
-                                          ]);
-        }
-
-        $this->generateRefId($qrCode, $terminal);
     }
 }

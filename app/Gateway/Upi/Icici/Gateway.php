@@ -48,7 +48,6 @@ class Gateway extends Base\Gateway
     const VPA_LENGTH                    = 20;
     const QR_CODE_TIME_FORMAT           = 'd/m/Y H:i:s';
     const QR_NOT_UPDATE                 = 'N';
-    const QR_UPDATE                     = 'Y';
 
     use AuthorizeFailed;
     use Base\RecurringTrait;
@@ -765,15 +764,6 @@ class Gateway extends Base\Gateway
         {
             $input[Fields::VALIDITY_END_DATE_TIME] = Carbon::createFromTimestamp($qrCode[QrEntity::CLOSE_BY], Timezone::IST)->format
             (self::QR_CODE_TIME_FORMAT);
-        }
-
-        //Adding 60 sec delay for gateway close time considering latency in call to gateway for close qr.
-        if ($qrCode[QrCode\Entity::STATUS] === QrCode\NonVirtualAccountQrCode\Status::CLOSED)
-        {
-            $input[Fields::MERCHANT_TRAN_ID]         = $qrCode[QrEntity::ID];
-            $input[Fields::VALIDITY_END_DATE_TIME]   = Carbon::createFromTimestamp($qrCode[QrEntity::CLOSED_AT] + 60, Timezone::IST)->format(self::QR_CODE_TIME_FORMAT);
-            $input[Fields::UPDATE]                   = self::QR_UPDATE;
-            $input[Fields::REF_ID] = (new QrCode\NonVirtualAccountQrCode\Entity($qrCode))->getTrForQR();
         }
 
         $path = 'pay_v3';

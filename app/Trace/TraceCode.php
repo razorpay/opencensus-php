@@ -4110,7 +4110,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GENERATE_BHARAT_QR_CODE                               = 'GENERATE_BHARAT_QR_CODE';
     const GENERATE_UPI_QR_CODE                                  = 'GENERATE_UPI_QR_CODE';
     const QR_CODE_CREATE_TERMINAL                               = 'QR_CODE_CREATE_TERMINAL';
-    const QR_CODE_CLOSE_ON_GATEWAY                              = 'QR_CODE_CLOSE_ON_GATEWAY';
     const BHARAT_QR_CARD_IDENTIFIERS                            = 'BHARAT_QR_CARD_IDENTIFIERS';
     const BHARAT_QR_UPI_IDENTIFIERS                             = 'BHARAT_QR_UPI_IDENTIFIERS';
     const QR_CODE_URL                                           = 'QR_CODE_URL';
@@ -9855,7 +9854,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_QR_MOZART_REQUEST       = 'CREATE_QR_MOZART_REQUEST';
     const CREATE_QR_MOZART_RESPONSE      = 'CREATE_QR_MOZART_RESPONSE';
     const DEDICATED_TERMINAL_QR_CODE_SPLITZ_ERROR  = 'DEDICATED_TERMINAL_QR_CODE_SPLITZ_ERROR';
-    const FAILED_TO_CLOSE_QR_ON_GATEWAY  = 'FAILED_TO_CLOSE_QR_ON_GATEWAY';
 
     const DEBUG_CHECKOUT_PAYLOAD_DETAILS                = 'DEBUG_CHECKOUT_PAYLOAD_DETAILS';
     const DEBUG_PURCHASE_PAYLOAD_DETAILS                = 'DEBUG_PURCHASE_PAYLOAD_DETAILS';
