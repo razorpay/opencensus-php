@@ -45,10 +45,10 @@ trait UpiTrait
         return false;
     }
 
-    public function isInApp($input): bool
+    public function isFlowInApp($input): bool
     {
-        if ((isset($input['upi']['mode']) === true) and
-            ($input['upi']['mode'] === Payment\UpiMetadata\Mode::IN_APP))
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === Payment\UpiMetadata\Flow::IN_APP))
         {
             return true;
         }
@@ -202,9 +202,9 @@ trait UpiTrait
             {
                 $input['_']['upiqr'] = true;
             }
-            else if($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::IN_APP)
+            else if($input[Payment\Method::UPI][Entity::FLOW] === Payment\UpiMetadata\Flow::IN_APP)
             {
-                $input['_'][Payment\UpiMetadata\Mode::IN_APP] = true;
+                $input['_'][Payment\UpiMetadata\Flow::IN_APP] = true;
             }
         }
         else if ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr']))

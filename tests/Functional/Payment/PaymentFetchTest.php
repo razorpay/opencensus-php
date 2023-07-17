@@ -2211,7 +2211,7 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->edit('methods', '10000000000000', $methods);
 
         $payment = $this->getDefaultUpiBlockIntentPaymentArray();
-        $payment['upi']['mode'] = 'in_app';
+        $payment['upi']['flow'] = 'in_app';
 
         //Now we create a turbo payment
         $paymentCreateResponse = $this->doAuthPaymentViaAjaxRoute($payment);
@@ -2297,8 +2297,7 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->create('upi_metadata', [
             'payment_id' => 'GfnBMH2PXyCDVE',
-            'mode' => 'in_app',
-            'flow' => 'intent',
+            'flow' => 'in_app',
         ]);
 
         $paymentFetchResponse = $this->fetchPayment('pay_GfnBMH2PXyCDVE');

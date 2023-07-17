@@ -10,6 +10,8 @@ class Flow
 
     const OMNICHANNEL = 'omnichannel';
 
+    const IN_APP       = 'in_app';
+
     public static function isCollect(string $flow)
     {
         return ($flow === self::COLLECT);

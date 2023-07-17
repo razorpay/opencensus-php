@@ -4803,7 +4803,7 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->edit('methods', '10000000000000', $methods);
 
         $payment = $this->getDefaultUpiBlockIntentPaymentArray();
-        $payment['upi']['mode'] = 'in_app';
+        $payment['upi']['flow'] = 'in_app';
 
         $this->doAuthPaymentViaAjaxRoute($payment);
 

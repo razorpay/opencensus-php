@@ -2796,8 +2796,7 @@ class TerminalSelectionTest extends TestCase
         $this->app['env']      = Environment::PRODUCTION;
 
         $upiMetadata = [
-            'flow'        => 'intent',
-            'mode'        => 'in_app',
+            'flow'        => 'in_app',
         ];
 
         $upi = (new Payment\UpiMetadata\Entity)->fill($upiMetadata);
@@ -2841,8 +2840,7 @@ class TerminalSelectionTest extends TestCase
         //$this->fixtures->merchant->setCategory('1240');
 
         $upiMetadata = [
-            'flow'        => 'intent',
-            'mode'        => 'in_app',
+            'flow'        => 'in_app',
         ];
 
         $upi = (new Payment\UpiMetadata\Entity)->fill($upiMetadata);

@@ -340,6 +340,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FLOW) === Flow::INTENT);
     }
 
+    public function isFlowInApp()
+    {
+        return ($this->getAttribute(self::FLOW) === Flow::IN_APP);
+    }
+
     public function isOtmCollect()
     {
         return (($this->isTypeOtm() === true) and ($this->isFlowCollect() === true));
@@ -358,10 +363,5 @@ class Entity extends Base\PublicEntity
     public function canBeAuthorized(): bool
     {
         return $this->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
-    }
-
-    public function isInAppMode(): bool
-    {
-        return ($this->getAttribute(self::MODE) === Mode::IN_APP);
     }
 }

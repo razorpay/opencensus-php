@@ -5137,7 +5137,7 @@ trait Authorize
                 $input[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME] = $gatewayInput[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME];
             }
 
-            if ($this->isFlowIntent($gatewayInput) === false)
+            if ($this->isFlowIntent($gatewayInput) === false and $this->isFlowInApp($gatewayInput) === false)
             {
                 if (empty($payment->getVpa()) === true)
                 {
@@ -5147,7 +5147,7 @@ trait Authorize
 
                 $this->validateUpiPspIsAllowed($payment);
             }
-            else if ($this->isInApp($input) === true and $merchant->getMethods()->isInAppEnabled() !== true)
+            else if ($this->isFlowInApp($input) === true and $merchant->getMethods()->isInAppEnabled() !== true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Merchant is not authorized to UPI InApp payments');

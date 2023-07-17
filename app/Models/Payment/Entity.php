@@ -2682,8 +2682,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $upiMetadata = $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
 
         // return true in case of in app mode present
-        return ((isset($upiMetadata[UpiMetadata\Entity::MODE]) === true) and
-                ($upiMetadata[UpiMetadata\Entity::MODE] === UpiMetadata\Mode::IN_APP));
+        return ((isset($upiMetadata[UpiMetadata\Entity::FLOW]) === true) and
+                ($upiMetadata[UpiMetadata\Entity::FLOW] === UpiMetadata\Flow::IN_APP));
     }
 
     public function fetchUpiMetadataAttributeForValidation()
@@ -4590,7 +4590,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         // Otherwise, we populate the upi_metadata object inside the payment object as follows
-        $data[self::UPI_METADATA][UpiMetadata\Entity::FLOW] = UpiMetadata\Mode::IN_APP;
+        $data[self::UPI_METADATA][UpiMetadata\Entity::FLOW] = UpiMetadata\Flow::IN_APP;
     }
 
     public function associateTerminal($terminal)

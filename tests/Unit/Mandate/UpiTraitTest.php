@@ -341,8 +341,7 @@ class UpiTraitTest extends TestCase
                     'method' => 'upi',
                     'upi' => [
                         'vpa'   => 'abc@xyz',
-                        'flow'  => 'intent',
-                        'mode'  => 'in_app',
+                        'flow'  => 'in_app',
                         'app'   => 'some.app.com',
                     ],
                 ],
@@ -351,15 +350,13 @@ class UpiTraitTest extends TestCase
                 'method' => 'upi',
                 'upi' => [
                     'vpa'       => 'abc@xyz',
-                    'flow'      => 'intent',
-                    'mode'      => 'in_app',
+                    'flow'      => 'in_app',
                     'app'       => 'some.app.com',
                     'type'      => 'default',
                 ],
                 'vpa' => "abc@xyz",
                 '_' => [
-                    'flow' => 'intent',
-                    'in_app' => true,
+                    'flow' => 'in_app',
                 ],
             ],
         ];

@@ -315,7 +315,7 @@ trait PaymentCreationTrait
                         }
                     }
                     else if(isset($request['content']) && isset($request['content']['upi'])
-                        && $request['content']['upi']['mode'] == 'in_app') {
+                        && $request['content']['upi']['flow'] == 'in_app') {
                         return $response;
                     }
                 }
