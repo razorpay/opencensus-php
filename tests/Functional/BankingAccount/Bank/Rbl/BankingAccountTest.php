@@ -575,27 +575,25 @@ class BankingAccountTest extends TestCase
         if ($response == null)
         {
             $response = [
-                'data' => [
-                    'serviceability' => [
-                        [
-                            'is_serviceable'        => true,
-                            'partner_bank'          => 'RBL',
-                            'unserviceable_reasons' => null,
-                        ],
-                        [
-                            'is_serviceable'        => false,
-                            'partner_bank'          => 'ICICI',
-                            'unserviceable_reasons' => [
-                                "PIN_CODE_UNSERVICEABLE"
-                            ],
-                        ]
+                'serviceability' => [
+                    [
+                        'is_serviceable'        => true,
+                        'partner_bank'          => 'RBL',
+                        'unserviceable_reasons' => null,
                     ],
-                    'pincode_details' => [
-                        'city'      => 'bengaluru',
-                        'state'     => 'karnatka',
-                        'region'    => 'south',
-                        'error'     => ''
+                    [
+                        'is_serviceable'        => false,
+                        'partner_bank'          => 'ICICI',
+                        'unserviceable_reasons' => [
+                            "PIN_CODE_UNSERVICEABLE"
+                        ],
                     ]
+                ],
+                'pincode_details' => [
+                    'city'      => 'bengaluru',
+                    'state'     => 'karnatka',
+                    'region'    => 'south',
+                    'error'     => ''
                 ]
             ];
         }

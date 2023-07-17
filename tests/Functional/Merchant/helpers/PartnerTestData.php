@@ -1584,7 +1584,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [
 
                 ],
@@ -1604,7 +1604,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 10,
                 'items'  => [
 
                 ],

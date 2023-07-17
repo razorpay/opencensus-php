@@ -1534,7 +1534,8 @@ class Service extends Base\Service
         try
         {
             // 1. make BAS call
-            $basResponse = $this->bankingAccountService->checkServiceability($pincode)['data'] ?? [];
+            $serviceabilityResponse = $this->bankingAccountService->checkServiceability($pincode) ?? [];
+            $basResponse = $serviceabilityResponse['data'] ?? $serviceabilityResponse ?? [];
 
             // 2. validate response
             (new Validator())->validateInput('basServiceabilityResponse', $basResponse[Constants::PINCODE_DETAILS]);
