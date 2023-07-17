@@ -36,6 +36,8 @@ class EdgeProxyController extends Controller
     const METRIC_REQUEST_LATENCY_MS  = 'edge_proxy_request_latency_ms.histogram';
     const CONTENT_TYPE_JSON          = 'application/json';
 
+    const TIMEOUT = 'timeout';
+
     /**
      * @var \Psr\Http\Client\ClientInterface
      */
@@ -82,6 +84,8 @@ class EdgeProxyController extends Controller
             throw new IntegrationException(null, ErrorCode::SERVER_ERROR_EDGE_PROXY_NO_CONFIG);
         }
 
+        $options = empty($routeCfg[self::TIMEOUT]) ? [] : [self::TIMEOUT => $routeCfg[self::TIMEOUT]];
+
         $prefixTrim = $hostCfg['path_prefix_to_skip'] ?? "";
         $prefixAdd = $hostCfg['path_prefix_to_add'] ?? "";
 
@@ -119,7 +123,7 @@ class EdgeProxyController extends Controller
         }
 
         // 3. Makes request and returns response.
-        $response = $this->request($host, $method, $path, $query, $body, $contentType, $auth, $headers);
+        $response = $this->request($host, $method, $path, $query, $body, $contentType, $auth, $headers, $options);
 
         $response = Response::make((string) $response->getBody(), $response->getStatusCode());
 
@@ -148,7 +152,8 @@ class EdgeProxyController extends Controller
         string $body,
         string $contentType = null,
         array $auth,
-        array $headers): ResponseInterface
+        array $headers,
+        array $options = []): ResponseInterface
     {
         $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
         $bodyStream = $streamFactory->createStream($body);
@@ -169,7 +174,9 @@ class EdgeProxyController extends Controller
         try
         {
             $requeststartAt = millitime();
-            $proxyResponse = $this->httpClient->sendRequest($request);
+
+            // mock http client does not expect options array
+            $proxyResponse = empty($options) ? $this->httpClient->sendRequest($request) : $this->httpClient->sendRequest($request, $options);
         }
         catch (Throwable $e)
         {

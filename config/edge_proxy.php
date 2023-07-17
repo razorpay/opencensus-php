@@ -17,7 +17,7 @@ return [
         'partnerships_service_proxy'           => ['host_id' => 'partnerships'],
 
         // disputes service proxy routes
-        'dispute_ingestion'                => ['host_id' => 'disputes'],
+        'dispute_ingestion'                => ['host_id' => 'disputes', 'timeout' => 600], // 10 minutes timeout
         'dispute_dcs_config_add'           => ['host_id' => 'disputes'],
         'dispute_dcs_config_get'           => ['host_id' => 'disputes'],
         'dispute_dcs_config_update'        => ['host_id' => 'disputes'],
