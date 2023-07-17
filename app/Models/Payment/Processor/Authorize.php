@@ -12,6 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
 
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
@@ -10243,6 +10244,9 @@ trait Authorize
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
 
+            // Appending gateway payment in notes field for payu (nb and upi)
+            $this->appendOptimizerPaymentDetailsToNotes($payment, $data);
+
             $this->repo->saveOrFail($payment);
 
             $this->updateAssociatedPaymentEntities($payment, $data);
@@ -12993,6 +12997,94 @@ trait Authorize
                 ]);
             $this->trace->traceException($e);
             throw new Exception\ServerErrorException(Error\PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
+    }
+
+
+    /**
+     * @param $payment
+     * @param $data
+     * @return void
+     *
+     * This method is responsible for appending the notes to payment entity for payu gateway. Supported method are
+     * Netbanking: gateway_reference_number
+     * Cards: handling in cps service (gateway_reference_id1)
+     * Upi: gateway_payment_id
+     */
+    protected function appendOptimizerPaymentDetailsToNotes($payment, $data)
+    {
+        try {
+            if ((empty($payment->merchant) === false) and $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS))
+            {
+                if ((empty($payment) === false) and (empty($data) === false) and ($payment->getGateway() === Payment\Gateway::PAYU))
+                {
+                    $merchantID = $payment->merchant->getId();
+                    $mode = $this->mode;
+                    $variant = $this->app['razorx']->getTreatment($merchantID,
+                        RazorxTreatment::APPEND_GATEWAY_PAYMENT_ID_PAYU,
+                        $mode);
+
+                    $this->trace->info(
+                        TraceCode::RAZORX_PAYMENT_NOTES_APPEND,
+                        [
+                            'variant' => $variant,
+                            'mode' => $mode,
+                            'merchant_id' => $merchantID,
+                            'payment' => $payment->getId()
+                        ]);
+
+                    if (strtolower($variant) !== 'on')
+                    {
+                        return;
+                    }
+
+                    $gatewayPaymentId = "";
+
+                    switch ($payment->getMethod())
+                    {
+                        case Method::UPI:
+                            if ((empty($data['upi']) === false) and (empty($data['upi']['gateway_payment_id']) === false))
+                            {
+                                $gatewayPaymentId = $data['upi']['gateway_payment_id'];
+                            }
+                            break;
+                        case Method::NETBANKING:
+                            if ((empty($data['acquirer']) === false) and (empty($data['acquirer'][Payment\Entity::REFERENCE1]) === false))
+                            {
+                                $gatewayPaymentId = $data['acquirer'][Payment\Entity::REFERENCE1];
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    if (empty($gatewayPaymentId) === false)
+                    {
+                        $notes = $payment->getNotes()->toArray();
+                        $notes['gateway_payment_id'] = $gatewayPaymentId;
+                        $payment->appendNotes($notes);
+                        $this->trace->info(
+                            TraceCode::PAYMENT_NOTES_APPEND,
+                            [
+                                'payment' => $payment->getId(),
+                            ]);
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::PAYMENT_NOTES_SKIPPED,
+                            [
+                                'payment' => $payment->getId(),
+                                'callback' => $data,
+                            ]);
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
         }
     }
 }

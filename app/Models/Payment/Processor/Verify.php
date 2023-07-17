@@ -8,6 +8,7 @@ use Config;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Diag\EventCode;
+use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -595,6 +596,9 @@ trait Verify
         // only if payment is in failed state.
         $payment->reload();
 
+        // Appending gateway payment in notes field for payu (nb and upi)
+        $this->appendOptimizerPaymentDetailsToNotesForVerify($payment, $gatewayData);
+
         $payment->setVerified($verifyStatus);
 
         if(($payment->merchant->isFeatureEnabled(Feature\Constants::SILENT_REFUND_LATE_AUTH) === true)
@@ -651,4 +655,80 @@ trait Verify
 
         return $properties;
     }
+
+    /**
+     * @param $payment
+     * @param $data
+     * @return void
+     *
+     * This method is responsible for appending the notes to payment entity for payu gateway. Supported method are
+     * Netbanking: gateway_reference_number
+     * Cards: handling in cps service (gateway_reference_id1)
+     * Upi: gateway_payment_id
+     */
+    protected function appendOptimizerPaymentDetailsToNotesForVerify($payment, $data)
+    {
+        try {
+            if ((empty($payment->merchant) === false) and $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS))
+            {
+                if ((empty($payment) === false) and (empty($data) === false) and ($payment->getGateway() === Payment\Gateway::PAYU))
+                {
+                    $notes = $payment->getNotes()->toArray();
+
+                    if (!empty($notes['gateway_payment_id']))
+                    {
+                        return;
+                    }
+
+                    $gatewayPaymentId = "";
+
+                    switch ($payment->getMethod())
+                    {
+                        case Method::UPI:
+                            if ((empty($data['verifyResponseContent']) === false) and (empty($data['verifyResponseContent']['gateway_payment_id']) === false))
+                            {
+                                $gatewayPaymentId = $data['verifyResponseContent']['gateway_payment_id'];
+                            }
+                            break;
+                        case Method::NETBANKING:
+                            if ((empty($data['verifyResponseContent']) === false) and (empty($data['verifyResponseContent']['gateway_reference_number']) === false))
+                            {
+                                $gatewayPaymentId = $data['verifyResponseContent']['gateway_reference_number'];
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (!empty($gatewayPaymentId))
+                    {
+
+                        $notes['gateway_payment_id'] = $gatewayPaymentId;
+                        $payment->appendNotes($notes);
+
+                        $this->trace->info(
+                            TraceCode::PAYMENT_NOTES_APPEND,
+                            [
+                                'payment' => $payment->getId(),
+                            ]);
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::PAYMENT_NOTES_SKIPPED,
+                            [
+                                'payment' => $payment->getId(),
+                                'callback' => $data,
+                            ]);
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
+
+    }
+
 }

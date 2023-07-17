@@ -832,6 +832,8 @@ final class RazorxTreatment
     // Experiment to pass mandate date creation in icici paper nach registration files
     const ICICI_PNACH_MANDATE_CREATION_DATE_RAZORX = 'icici_pnach_mandate_creation_date_razorx';
 
+    const APPEND_GATEWAY_PAYMENT_ID_PAYU = 'append_gateway_payment_id_payu';
+
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
 
