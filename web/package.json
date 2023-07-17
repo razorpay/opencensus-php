@@ -118,6 +118,7 @@
     "test:e2e": "universe-test web-e2e test",
     "test:e2e:payments-automation": "INCLUDE_GROUPS=@suite=payments-automation yarn test:e2e",
     "test:e2e:payments-canary": "INCLUDE_GROUPS=@suite=payments-canary yarn test:e2e",
+    "test:e2e:show-report": "universe-test web-e2e show-report",
     "devstack-deploy": "universe-test infra-e2e devstack-deploy",
     "devstack-revert": "universe-test infra-e2e devstack-revert",
     "test:e2e-infra": "universe-test infra-e2e e2e-run",

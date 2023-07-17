@@ -40,6 +40,7 @@ tmp/
 
 # E2E
 /web/screenshots
+/web/playwright-report
 
 # typescript dist
 /web/dist

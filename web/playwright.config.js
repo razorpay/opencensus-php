@@ -1,5 +1,5 @@
 const universePlaywrightConfig = require('@razorpay/universe-test/src/configs/e2e.web/playwright.config');
-const { getBaseUrl, getProjects } = require('./e2e/utils/config');
+const { getBaseUrl, getProjects, getReporter } = require('./e2e/utils/config');
 
 const isCI = process.env.CI;
 module.exports = {
@@ -9,7 +9,8 @@ module.exports = {
   globalSetup: './e2e/setup/globalSetup',
   retries: isCI ? 1 : 0,
   timeout: 2 * 60 * 1000,
-  workers: isCI ? 1 : 2,
+  workers: isCI ? 1 : 4,
+  reporter: getReporter(),
   expect: {
     timeout: 20 * 1000,
   },

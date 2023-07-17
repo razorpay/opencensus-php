@@ -1,6 +1,38 @@
 const { devices } = require('@playwright/test');
 const { EmailCredentials, MobileCredentials, ActivatedNotIECredentials } = require('./constants');
 
+// use report portal for CI, and html for development
+function getReporter() {
+  const isCi = process.env.CI === 'true';
+
+  const reportPortalConfig = {
+    token: process.env.REPORT_PORTAL_TOKEN,
+    endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
+    project: process.env.REPORT_PORTAL_PROJECT,
+    launch: `${process.env.REPO_NAME} E2E test`,
+    attributes: [
+      {
+        key: 'build',
+        value: process.env.COMMIT_ID,
+      },
+    ],
+  };
+  if (isCi) {
+    return [['@reportportal/agent-js-playwright', reportPortalConfig]];
+  }
+
+  // If we use dotenv, the ENV is not updated when we import the baseConfig from universe, so we're doing this again (for E2E_REPORTERS)
+  return [
+    [
+      'html',
+      // Remove to disable auto-open on failure.
+      // {
+      //   open: 'never',
+      // },
+    ],
+  ];
+}
+
 function getBaseUrl() {
   const baseUrl = process.env.E2E_BASE_URL || 'https://dashboard.dev.razorpay.in';
   const label = process.env.DEVSTACK_LABEL;
@@ -57,6 +89,7 @@ export function getProjects() {
 }
 
 module.exports = {
+  getReporter,
   getBaseUrl,
   getCredentials,
   getProjects,
