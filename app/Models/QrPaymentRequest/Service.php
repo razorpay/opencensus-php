@@ -2,11 +2,19 @@
 
 namespace RZP\Models\QrPaymentRequest;
 
+use Carbon\Carbon;
+
+use Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Upi\Yesbank\Fields;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Constants\Entity as BaseConstants;
+use RZP\Gateway\Upi\icici\Fields as ICICIFields;
 
 class Service extends Base\Service
 {
@@ -47,6 +55,45 @@ class Service extends Base\Service
                 [
                     Entity::QR_CODE_ID            => $input[Entity::QR_CODE_ID],
                     Entity::TRANSACTION_REFERENCE => $input[Entity::TRANSACTION_REFERENCE]
+                ]
+            );
+        }
+
+        return null;
+    }
+
+    public function createFailedQRPaymentRequest($input, $type, $gateway = null)
+    {
+        try
+        {
+            switch ($gateway)
+            {
+                case BaseConstants::UPI_YESBANK:
+                    $request[Entity::QR_CODE_ID]            = substr($input['data']['upi'][Fields::MERCHANT_REFERENCE], 0, UniqueIdEntity::ID_LENGTH);
+                    $request[Entity::TRANSACTION_REFERENCE] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID];
+                    break;
+
+                case BaseConstants::UPI_ICICI:
+                    $data                                   = json_decode($input, true);
+                    $request[Entity::QR_CODE_ID]            = substr($data[ICICIFields::MERCHANT_TRAN_ID], 0, UniqueIdEntity::ID_LENGTH);
+                    $request[Entity::TRANSACTION_REFERENCE] = (string) $data[ICICIFields::BANK_RRN];
+                    break;
+
+                default:
+                    return null;
+            }
+
+            return $this->core->create($request, $input, true);
+        }
+        catch (Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FAILED_QR_PAYMENT_SAVE_REQUEST_FAILED,
+                [
+                    Entity::QR_CODE_ID            => $request[Entity::QR_CODE_ID],
+                    Entity::TRANSACTION_REFERENCE => $request[Entity::TRANSACTION_REFERENCE]
                 ]
             );
         }

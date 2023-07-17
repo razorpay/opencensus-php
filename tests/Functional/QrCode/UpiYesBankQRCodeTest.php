@@ -3,14 +3,14 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
-use RZP\Models\Pricing\Fee;
-use RZP\Models\QrCode\Type;
-use RZP\Models\Payment\Gateway;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Pricing\Fee;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -54,14 +54,15 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal');
 
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
     }
 
 
-    public function testCreateStaticQrWithoutTerminal() :void
+    public function testCreateStaticQRWithoutAnyTerminal() :void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage('No Terminal applicable.');
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 
         $this->createQrCode(
             [
@@ -74,22 +75,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithTerminal() :void
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
-        $response = $this->createQrCode(
+        $this->createQrCode(
             [
                 'usage' => 'multiple_use',
                 'type'  => 'upi_qr',
@@ -99,24 +85,8 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runEntityAssertions();
     }
 
-
     public function testCreateStaticQrWithAmount() :void
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $response = $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -133,21 +103,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForStaticQrCode()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -172,21 +127,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentOnDynamicQrCode() :void
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -215,21 +155,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForClosedQrCode()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -267,20 +192,6 @@ class UpiYesBankQRCodeTest extends TestCase
     {
         self::markTestSkipped();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -307,21 +218,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -332,21 +228,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForUnsuccessfulStatusCallback()
     {
-        //Note: Callbacks with failed status are not processed and not stored in DB
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
+        //Note: Callbacks with failed status are not processed but qr_payment_request entity is saved in DB
 
         $this->createQrCode(
             [
@@ -367,28 +249,15 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $payment = $this->getLastEntity('payment', true);
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
 
+        $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
         $this->assertEquals(null, $qrPayment);
         $this->assertEquals(null, $payment);
     }
 
     public function testMultiplePaymentsForStaticQR()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -414,22 +283,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCode() :void
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
-        $response = $this->createQrCode(
+        $this->createQrCode(
             [
                 'usage' => 'single_use',
                 'type'  => 'upi_qr',
@@ -443,9 +297,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrWithoutTerminal() :void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage('No Terminal applicable.');
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 
         $this->createQrCode(
             [
@@ -466,21 +320,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->expectExceptionMessage('QR expiry time cannot be more than 64800 minutes from the current time');
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $days = 46;
 
         $this->createQrCode(
@@ -498,21 +337,6 @@ class UpiYesBankQRCodeTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
 
         $this->createQrCode(
@@ -529,21 +353,6 @@ class UpiYesBankQRCodeTest extends TestCase
     //It tests Qr payment fetch flow done via internal flow for Yes bank qr codes whose payment is not received by razorpay
     public function testProcessYesBankQrReconInternalWithoutPayment()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -574,21 +383,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesBankQrReconInternal()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -647,25 +441,17 @@ class UpiYesBankQRCodeTest extends TestCase
         }
     }
 
-    protected function enableRazorXTreatmentForQrDedicatedTerminal() :void
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
-    }
-
     public function testCreateQrWithCloseOnDemandEnabled()
     {
-        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
-
-        $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON
             ]);
 
-        $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
-
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage("Your current configuration does not support QR creation. Contact support for further assistance");
+
+        $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
@@ -675,35 +461,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithDedicatedTerminal()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $response = $this->createQrCode();
 
         $expectedResponse = $this->testData['testCreateBharatQrCode'];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $this->runEntityAssertions($response);
+        $this->runEntityAssertions();
     }
 
     public function testCreateBharatQrCodeWithNoDedicatedTerminal()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage('No Terminal applicable.');
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 
         $this->createQrCode(
             [

@@ -315,4 +315,21 @@ trait NonVirtualAccountQrCodeTrait
         ];
         return $output;
     }
+
+    protected function getDedicatedTerminalSplitzResponseForVariantON()
+    {
+        $this->mockSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+    }
+
 }

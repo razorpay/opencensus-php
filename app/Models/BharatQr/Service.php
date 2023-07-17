@@ -19,6 +19,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Gateway\Hitachi\ResponseFields;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Terminal\Entity as TerminalEntity;
@@ -107,6 +108,14 @@ class Service extends Base\Service
             {
                 $gatewayClass->verifyBharatQrNotification($gatewayResponse);
             }
+        }
+        catch (GatewayErrorException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            (new QrPaymentRequest\Service())->createFailedQRPaymentRequest($input, QrPaymentRequest\Type::BHARAT_QR, $gateway);
+
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
         catch (\Exception $ex)
         {
@@ -250,7 +259,6 @@ class Service extends Base\Service
             {
                 (new QrPaymentRequest\Service())->update($qrPaymentRequest, null, null,
                                                          $ex->getMessage(), QrPaymentRequest\Type::BHARAT_QR);
-
             }
 
             return $this->getQrPaymentResponseInternal(null, $ex->getMessage());

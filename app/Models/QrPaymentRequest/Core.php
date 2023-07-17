@@ -10,6 +10,8 @@ class Core extends Base\Core
 {
     protected $repo;
 
+    const FAILED_CALLBACK = 'failed callback';
+
     public function __construct()
     {
         parent::__construct();
@@ -17,7 +19,7 @@ class Core extends Base\Core
         $this->repo = new Repository();
     }
 
-    public function create(array $input, $requestPayload)
+    public function create(array $input, $requestPayload, $isFailed = false)
     {
         $this->trace->info(
             TraceCode::QR_PAYMENT_SAVE_REQUEST,
@@ -28,6 +30,11 @@ class Core extends Base\Core
         );
 
         $qrPaymentRequest = new Entity();
+
+        if ($isFailed === true)
+        {
+            $qrPaymentRequest->setFailureReasonIfNotSet(self::FAILED_CALLBACK);
+        }
 
         $qrPaymentRequest->setRequestPayload($requestPayload);
 
@@ -110,4 +117,5 @@ class Core extends Base\Core
             return null;
         }
     }
+
 }

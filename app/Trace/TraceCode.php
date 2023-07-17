@@ -2137,6 +2137,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNTRACKED_ENDPOINT_QR_CODE_PAYMENT                    = 'UNTRACKED_ENDPOINT_QR_CODE_PAYMENT';
     const QR_PAYMENT_SAVE_REQUEST_FAILED                        = 'QR_PAYMENT_SAVE_REQUEST_FAILED';
+    const FAILED_QR_PAYMENT_SAVE_REQUEST_FAILED                 = 'FAILED_QR_PAYMENT_SAVE_REQUEST_FAILED';
     const QR_PAYMENT_SAVE_REQUEST                               = 'QR_PAYMENT_SAVE_REQUEST';
     const QR_PAYMENT_UPDATE_REQUEST                             = 'QR_PAYMENT_UPDATE_REQUEST';
     const QR_PAYMENT_UPDATE_REQUEST_FAILED                      = 'QR_PAYMENT_UPDATE_REQUEST_FAILED';
