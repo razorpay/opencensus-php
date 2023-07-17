@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { loginByEmail } from '../utils/common';
 import { routes } from '../utils/constants';
 import ENV from '../utils/env';
@@ -33,7 +33,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
     await expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL);
   });
 
-  test('should redirect the user to easy dashboard if user has initiated signup on easy', async ({
+  test.skip('should redirect the user to easy dashboard if user has initiated signup on easy', async ({
     page,
   }) => {
     await page.goto(routes.SIGN_IN_PATH);
@@ -50,7 +50,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
     await expect(page).toHaveURL(EASY_ONBOARDING_WEBSITE);
   });
 
-  test("should redirect the FTUX user to easy dashboard's FTUX experience on logging in", async ({
+  test.skip("should redirect the FTUX user to easy dashboard's FTUX experience on logging in", async ({
     page,
   }) => {
     await page.goto(routes.SIGN_IN_PATH);

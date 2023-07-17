@@ -29,3 +29,12 @@ export const mouseClickToggleSwitch = async ({ page, container = page }) => {
   const { x, y } = await button.boundingBox();
   await page.mouse.click(x + 10, y + 10, { button: 'left', clickCount: 1 });
 };
+
+export const hideCustomBannersFromState = async ({ page }) => {
+  await page.evaluate(() => {
+    const merchantId = window?.rzp_user?.current;
+    if (merchantId) {
+      window.localStorage.setItem(`NOT_INTERESTED-${merchantId}`, '1');
+    }
+  });
+};

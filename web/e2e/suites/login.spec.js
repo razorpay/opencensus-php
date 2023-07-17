@@ -1,11 +1,11 @@
 import { hideSearchFTUXBannerByLocalStorage } from '../utils';
-import { loginByMobile, loginByEmail } from '../utils/common';
+import { hideCustomBannersFromState, loginByEmail, loginByMobile } from '../utils/common';
 import { routes } from '../utils/constants';
 const { test, expect } = require('@playwright/test');
 const { getCredentials } = require('../utils/config');
 
 test.describe.parallel('Dashboard login flow @flow=auth', () => {
-  const { emailCred, mobileCred, activatedNotIe } = getCredentials();
+  const { emailCred, activatedNotIe, mobileCred } = getCredentials();
 
   // testing for multiple credentials using email login
   for (const cred of emailCred) {
@@ -21,6 +21,10 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
+
+      // hiding custom banner popups by udating local storage
+      await hideCustomBannersFromState({ page });
+
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -28,7 +32,7 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
     });
   }
 
-  // testing for multiple credentials using mobile login
+  //testing for multiple credentials using mobile login
   for (const cred of mobileCred) {
     // TODO: Tests need to be updated
     test.skip(`should login with mobile in ${cred.type} mode: @priority=critical @duration=long`, async ({
@@ -63,6 +67,10 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
+
+      // hiding custom banner popups by udating local storage
+      await hideCustomBannersFromState({ page });
+
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,

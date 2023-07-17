@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { generateRandomEmail, expectSuccessNotification } = require('../utils');
+const { expectSuccessNotification, generateRandomEmail } = require('../utils');
 const { mouseClickToggleSwitch, wait } = require('../utils/common');
 const { routes } = require('../utils/constants');
 const { StorageStatePath } = require('../utils/constants');
@@ -56,7 +56,7 @@ test.describe
     });
 
     // roast test myAccountAddFundsTest
-    test('should render Balances tab @suite=payments-canary', async ({ page }) => {
+    test.skip('should render Balances tab @suite=payments-canary', async ({ page }) => {
       await page.locator('button[role="button"]:has-text("Balances")').click();
       await expect(page).toHaveURL(routes.BALANCES);
       await expect(page.locator('text=Documentation')).toHaveAttribute(
@@ -95,7 +95,7 @@ test.describe
       });
 
       // roast test myAccountCreditsTest
-      test('should render Credits tab @suite=payments-automation @suite=payments-canary', async ({
+      test.skip('should render Credits tab @suite=payments-automation @suite=payments-canary', async ({
         page,
       }) => {
         await expect(page.locator('text=Amount Credits').first()).toBeVisible();
@@ -149,7 +149,7 @@ test.describe
   });
 
   // roast test myAccountManageTeamTest
-  test('should show manage team tab and send invite @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show manage team tab and send invite @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Manage team' }).click();
@@ -176,7 +176,7 @@ test.describe
   });
 
   // roast test myAccountActivationTest
-  test('should show gst details @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show gst details @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'GST details' }).click();

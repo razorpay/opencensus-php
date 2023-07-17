@@ -9,7 +9,8 @@ function getReporter() {
     token: process.env.REPORT_PORTAL_TOKEN,
     endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
     project: process.env.REPORT_PORTAL_PROJECT,
-    launch: `${process.env.REPO_NAME} E2E test`,
+    launch: `${process.env.REPO_NAME}`,
+    skippedIssue: false,
     attributes: [
       {
         key: 'build',

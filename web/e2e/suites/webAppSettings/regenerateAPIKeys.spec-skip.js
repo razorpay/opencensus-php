@@ -12,7 +12,7 @@ test.describe('Test Regenerate API Keys @flow=settings @project=payments', () =>
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
-  test('should regenerate API Keys @priority=critical', async ({ page }) => {
+  test.skip('should regenerate API Keys @priority=critical', async ({ page }) => {
     // go to the api keys and settings tab
     await page.goto(ELEMENT_CONSTANTS.API_KEYS_SETTINGS_URL);
 

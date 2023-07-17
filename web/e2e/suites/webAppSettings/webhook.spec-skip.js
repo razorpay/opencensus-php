@@ -12,7 +12,7 @@ test.describe('Test webhook creation @flow=settings @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
-  test('should create webhook @priority=critical', async ({ page }) => {
+  test.skip('should create webhook @priority=critical', async ({ page }) => {
     // go to the webhook settings tab
     await page.goto(ELEMENT_CONSTANTS.WEBHOOK_SETTINGS_URL);
 

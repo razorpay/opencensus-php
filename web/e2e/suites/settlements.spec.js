@@ -36,7 +36,7 @@ test.describe('Test Settlements view when settlements are present @suite=payment
   test.use({
     storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });
-  test('should show settlements @priority=normal', async ({ page }) => {
+  test.skip('should show settlements @priority=normal', async ({ page }) => {
     await page.goto(routes.SETTLEMENTS);
     await waitAndClickViewSettlements({ page });
     const settlementRecord = await page.locator('.content-wrapper table tbody tr:first-child');

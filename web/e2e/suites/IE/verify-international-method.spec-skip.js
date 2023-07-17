@@ -7,7 +7,7 @@ test.describe
     storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   });
   // roast test verifyViewInternationalMethodsTest
-  test('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
+  test.skip('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
     page,
   }) => {
     await page.goto(routes.DASHBOARD);

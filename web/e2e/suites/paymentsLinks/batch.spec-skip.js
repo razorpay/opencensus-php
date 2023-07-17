@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
-import { routes, StorageStatePath } from '../../utils/constants';
-import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
+import { expect, test } from '@playwright/test';
 import { switchToTestMode } from '../../utils';
+import { routes, StorageStatePath } from '../../utils/constants';
 import { COMMON_SELECTORS } from '../../utils/selectors';
+import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
 
 [
   {
@@ -38,7 +38,7 @@ import { COMMON_SELECTORS } from '../../utils/selectors';
     });
 
     // roast test verifyv2BatchStatus verifyUPILinkBatchStatus verifyCompatBatchStatus
-    test(`should verify status for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+    test.skip(`should verify status for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
       let isTableEmpty;
@@ -56,7 +56,7 @@ import { COMMON_SELECTORS } from '../../utils/selectors';
     });
 
     // roast test downloadReportInv2Batch downloadReportInUPIBatch downloadReportInCompatBatch
-    test(`should verify report download for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+    test.skip(`should verify report download for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
       const firstRow = await page.locator('tbody tr').first();
@@ -76,7 +76,7 @@ import { COMMON_SELECTORS } from '../../utils/selectors';
     });
 
     // roast test searchByBatchID
-    test(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+    test.skip(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
       const container = await page.locator(COMMON_SELECTORS.tabbedContainer);

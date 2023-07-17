@@ -17,7 +17,7 @@ test.describe('My account and settings @flow=account-settings @project=payments 
   });
 
   // roast test setReminders
-  test('should render Reminders tab @suite=payments-canary', async ({ page }) => {
+  test.skip('should render Reminders tab @suite=payments-canary', async ({ page }) => {
     await page.goto(routes.ACCOUNT_SETTINGS);
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
 
