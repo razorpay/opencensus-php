@@ -173,6 +173,8 @@ class Constants
     const SettlementsServiceOnboarding = 'settlement_service_onboarded';
     const SettlementsServiceStopSMS = 'stop_settlement_sms';
 
+    const CorporateBankingEnabled = 'corporate_banking_enabled';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -336,6 +338,7 @@ class Constants
         self::SettlementReconReportWithNotes => 'rzp/platform/merchant/reporting/CustomReports',
         self::ConsolidatedTxnReportOfAllSubmerchants => 'rzp/platform/org/reporting/CustomReports',
         self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
+        self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -511,6 +514,7 @@ class Constants
         APIFeaturesConstants::REPORTING_GENRERIC_NOTES                      => self::SettlementReconReportWithNotes,
         APIFeaturesConstants::CONSOLIDATED_ORG_REPORTS                      => self::ConsolidatedTxnReportOfAllSubmerchants,
         APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
+        APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
     ];
 
     /**
