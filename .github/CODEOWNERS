@@ -212,3 +212,11 @@ resources/views/payment_link/partials                           @razorpay/nocode
 app/Models/QrCode                                   @razorpay/qr-code-devs
 app/Models/QrPayment                                @razorpay/qr-code-devs
 app/Models/QrPaymentRequest                         @razorpay/qr-code-devs
+
+#
+# User Entity
+#
+# Blocking PR merge on user entity as they are owned by platform identity team.
+# Any update on these files, will require explicit approval from platform identity team.
+app/Models/User/                                    @razorpay/identity-core
+app/Http/Controllers/UserController.php             @razorpay/identity-core
