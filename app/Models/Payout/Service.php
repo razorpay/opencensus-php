@@ -3143,7 +3143,7 @@ class Service extends Base\Service
 
         $debitAccountNumber = $batchDetails[BatchPayoutConstants::CONFIG][BatchPayoutConstants::ACCOUNT_NUMBER];
 
-        $debitAccountName = $this->getAccountName($debitAccountNumber, $merchant);
+        $debitAccountName = $this->getAccountName($debitAccountNumber, $merchant, $mode);
 
         $payoutsSummary = $this->repo->payout->getPayoutsSummaryForBatchId($batchId, $mode);
 
@@ -3206,7 +3206,7 @@ class Service extends Base\Service
         return [$mailData, $user];
     }
 
-    protected function getAccountName($accountNumber, $merchant): string
+    protected function getAccountName($accountNumber, $merchant, $mode): string
     {
         // If merchant is enabled on Account Sub-account feature, do not show the account number
         if ($merchant->isFeatureEnabled(Features::ASSUME_MASTER_ACCOUNT) === true ||
@@ -3215,7 +3215,7 @@ class Service extends Base\Service
             return '';
         }
 
-        $balance = $this->repo->balance->getBalanceByAccountNumber($accountNumber);
+        $balance = $this->repo->balance->getBalanceByAccountNumber($accountNumber, $mode);
 
         $channel = $balance->getChannel();
 

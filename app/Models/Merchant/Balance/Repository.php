@@ -644,7 +644,7 @@ class Repository extends Base\Repository
         $query->where($accountNumber, 'like', '%' . $accountNumberSuffix);
     }
 
-    public function getBalanceByAccountNumber(string $accountNumber)
+    public function getBalanceByAccountNumber(string $accountNumber, string $mode)
     {
         /*
          SELECT balance.channel, balance.account_type
@@ -656,7 +656,7 @@ class Repository extends Base\Repository
         $accountTypeColumn = $this->repo->balance->dbColumn(Entity::ACCOUNT_TYPE);
 
         // Index exists on the account_number column
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getSlaveConnection($mode))
             ->select($channelColumn, $accountTypeColumn)
             ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
             ->where(Entity::TYPE, Type::BANKING)
