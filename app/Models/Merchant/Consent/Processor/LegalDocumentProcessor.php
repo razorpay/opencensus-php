@@ -111,8 +111,8 @@ class LegalDocumentProcessor implements Processor
                                             "ownerName" => $ownerName,
                                         ],
             "to"                    =>  [
-                                            "address" => $this->merchant->getEmail(),
-                                            "name" => $ownerName
+                                            "address"   => $this->merchant->getEmail(),
+                                            "name"      => $ownerName
                                         ],
             "cc"                    => [],
             "bcc"                   => [],

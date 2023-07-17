@@ -157,7 +157,7 @@ class Core extends Base\Core
 
                     $consentDetails[DEConstants::DOCUMENTS_DETAIL] = [$consents];
 
-                    $isExpEnabled = (new DetailService())->isMerchantConsentExperimentEnabled($merchantId);
+                    $isExpEnabled = (new DetailService())->isMerchantConsentV2ExperimentEnabled($merchantId);
 
                     $documents_detail = (new DetailService())->getDocumentsDetails(
                                                                     $consentDetails,
@@ -324,13 +324,15 @@ class Core extends Base\Core
 
         $documentsDetail = $this->createAggregatedDocumentDetails($input['consents']);
 
+        $isExpEnabled = (new DetailService())->isMerchantConsentV2ExperimentEnabled($merchant->getId());
+
         $legalDocumentsInput = [
-            DEConstants::DOCUMENTS_DETAIL  => (new DetailService())->getDocumentsDetails($documentsDetail),
+            DEConstants::DOCUMENTS_DETAIL  => (new DetailService())->getDocumentsDetails($documentsDetail, $isExpEnabled),
         ];
 
         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-        $response = $processor->processLegalDocuments($legalDocumentsInput);
+        $response = $processor->processLegalDocuments($legalDocumentsInput, 'pg', $isExpEnabled);
 
         $responseData = $response->getResponseData();
 
@@ -404,7 +406,7 @@ class Core extends Base\Core
         ];
 
         // if experiment is enabled consent documents are fetched in V2 flow to display on admin dashboard
-        $isExpEnabled = (new DetailService())->isMerchantConsentExperimentEnabled($consent['merchant_id']);
+        $isExpEnabled = (new DetailService())->isMerchantConsentV2ExperimentEnabled($consent['merchant_id']);
 
         if ($isExpEnabled === false)
         {

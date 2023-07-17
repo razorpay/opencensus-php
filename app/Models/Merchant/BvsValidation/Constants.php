@@ -45,7 +45,7 @@ class Constants
     const CLIENT_ID             = 'client_id';
     const PLATFORM              = 'platform';
 
-    const API_RETRY_JOB_FAILURE = 'api_retry_job_failure';
+    const CONSENT_RETRY_JOB_FAILURE = 'consent_retry_job_failure';
 
     const PLATFORMS = [
         self::RX,

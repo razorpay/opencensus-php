@@ -156,6 +156,8 @@ class BvsLegalDocumentManagerClient extends BaseClient
     /**
      * @param array $document
      *
+     * @param null  $merchant
+     *
      * @return consentDocumentManagerV2\ConsentDocumentsManagerResponse
      * @throws IntegrationException|TwirpException
      */

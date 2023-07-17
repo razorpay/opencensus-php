@@ -433,7 +433,7 @@ class Service extends Base\Service
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input, $inputData);
     }
 
-    public function isMerchantConsentExperimentEnabled($merchantId): bool
+    public function isMerchantConsentV2ExperimentEnabled($merchantId): bool
     {
         $properties = [
             'id'            => $merchantId,
@@ -497,12 +497,12 @@ class Service extends Base\Service
 
                         $this->storeConsents($merchantId, $input);
 
-                        $isExpEnabled = $this->isMerchantConsentExperimentEnabled($merchantId);
+                        $isExpEnabled = $this->isMerchantConsentV2ExperimentEnabled($merchantId);
 
-                        $documents_detail = $this->getDocumentsDetails($input, $isExpEnabled);
+                        $documentDetail = $this->getDocumentsDetails($input, $isExpEnabled);
 
                         $legalDocumentsInput = [
-                            DEConstants::DOCUMENTS_DETAIL => $documents_detail
+                            DEConstants::DOCUMENTS_DETAIL => $documentDetail
                         ];
 
                         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
@@ -538,7 +538,7 @@ class Service extends Base\Service
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                             'merchant_id' => $merchantId,
-                            'message' => 'Consents are already present'
+                            'message'     => 'Consents are already present'
                         ]);
                     }
                 }
@@ -3879,6 +3879,16 @@ class Service extends Base\Service
         return true;
     }
 
+    /**
+     * @param string      $merchantId
+     * @param array       $input
+     * @param string|null $userId
+     * @param string      $status
+     * @param string|null $requestId
+     *
+     * @throws BadRequestException
+     * @throws LogicException
+     */
     public function storeConsents(string $merchantId, array $input, string $userId = null, string $status = ConsentConstant::PENDING, string $requestId = null)
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL] ?? null;
@@ -3907,13 +3917,13 @@ class Service extends Base\Service
             $merchantConsent = new MerchantConsent();
 
             //This to know the milestone at which consents are stored and this value
-            // should be unique for each merchant to avoid duplicate submission of same legal document.
+            //should be unique for each merchant to avoid duplicate submission of same legal document.
             $consentType = $input[Entity::ACTIVATION_FORM_MILESTONE] ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]) : $documentDetailInput[DEConstants::TYPE];
 
             $metadata = [
-                ConsentConstant::IP_ADDRESS => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
-                ConsentConstant::USER_AGENT => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
-                ConsentConstant::TEMPLATE_ID => $this->app['config']->get('app'. '.' .ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]])
+                ConsentConstant::IP_ADDRESS     => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+                ConsentConstant::USER_AGENT     => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
+                ConsentConstant::TEMPLATE_ID    => $this->app['config']->get('app'. '.' .ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]])
             ];
 
             $merchantConsentInput = [
@@ -3944,7 +3954,7 @@ class Service extends Base\Service
 
                 });
             }
-            catch (LogicException $e)
+            catch (\Exception $e)
             {
                 throw new LogicException($e->getMessage(), $e->getCode());
             }
@@ -3952,7 +3962,8 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $documentDetailInput
+     * @param       $url
+     * @param array $mapConsentUrlToFileContent
      * @return string|string[]|null
      */
     public function getFileContentInHtml($url, array &$mapConsentUrlToFileContent = [])

@@ -152,16 +152,10 @@ class Constants
         ],
     ];
 
-    const HTTP_CONSENT_PRIVACY  = 'https://razorpay.com/privacy/';
-
-    const HTTP_CONSENT_TERMS    = 'https://razorpay.com/terms/';
-
-    const HTTP_CONSENT_SERVICE  = 'https://razorpay.com/agreement/';
-
     const TEMPLATE_ID_MAPPING   =  [
-        self::HTTP_CONSENT_PRIVACY => 'merchant_consent_privacy_template_id',
-        self::HTTP_CONSENT_TERMS   => 'merchant_consent_terms_template_id',
-        self::HTTP_CONSENT_SERVICE => 'merchant_consent_service_template_id'
+        'https://razorpay.com/privacy/'     => 'merchant_consent_privacy_template_id',
+        'https://razorpay.com/terms/'       => 'merchant_consent_terms_template_id',
+        'https://razorpay.com/agreement/'   => 'merchant_consent_service_template_id',
     ];
 
     const TEMPLATE_ID          = 'template_id';

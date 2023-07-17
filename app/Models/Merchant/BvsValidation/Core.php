@@ -598,6 +598,12 @@ class Core extends Base\Core
         return sprintf(self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY, $validation->getValidationId());
     }
 
+    /**
+     * @param       $id
+     * @param array $payload
+     *
+     * @throws LogicException
+     */
     private function processDocuments($id, array $payload)
     {
         $this->trace->info(TraceCode::PROCESS_MERCHANT_CONSENTS, [
@@ -614,14 +620,13 @@ class Core extends Base\Core
             $merchantConsentDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $documentDetail['type']);
 
             $this->trace->info(TraceCode::PROCESS_MERCHANT_CONSENTS, [
-                'request_id'        => $id,
-                'consent_details'   => $merchantConsentDetail
+                'request_id'      => $id,
+                'consent_details' => $merchantConsentDetail
             ]);
 
             if (empty($merchantConsentDetail) === true)
             {
-                // Safety check: If merchant details are still null, return at this point
-                return;
+                continue;
             }
 
             $input = [
@@ -640,20 +645,21 @@ class Core extends Base\Core
             {
                 throw new LogicException($e->getMessage(), $e->getCode());
             }
-
-            $retryCount = $merchantConsentDetail->retry_count;
-
-            $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
-                'merchant_id' => $merchantConsentDetail->merchant_id,
-                'count'       => $retryCount
-            ]);
-
-            if ($retryCount == self::MAX_RETRY_COUNT)
+            finally
             {
-                $this->trace->count(Constants::API_RETRY_JOB_FAILURE);
+                $retryCount = $merchantConsentDetail->retry_count;
+
+                $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
+                    'merchant_id' => $merchantConsentDetail->merchant_id,
+                    'count'       => $retryCount
+                ]);
+
+                if ($retryCount === self::MAX_RETRY_COUNT)
+                {
+                    $this->trace->count(Constants::CONSENT_RETRY_JOB_FAILURE);
+                }
             }
         }
-
     }
 
     public function savePGOSDataToAPI(array $data)
