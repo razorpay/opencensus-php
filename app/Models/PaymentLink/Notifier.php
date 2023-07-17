@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Mail\PaymentLink\PaymentRequest;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
 class Notifier extends Base\Core
 {
@@ -126,9 +127,18 @@ class Notifier extends Base\Core
     {
         $merchant = $paymentLink->merchant;
 
+        $org = $merchant->org;
+
         $amount = $paymentLink->getAmountToSendSmsOrEmail();
 
         $template = $this->getTemplateForSMS($amount);
+
+        $display_name = 'Razorpay';
+
+        if(ORG_ENTITY::isOrgCurlec($org->getId()) === true)
+        {
+            $display_name = 'Curlec by Razorpay';
+        }
 
         $payload = [
             'receiver' => $contact,
@@ -140,6 +150,7 @@ class Notifier extends Base\Core
                 'amount'        => amount_format_IN($amount),
                 'invoice_link'  => $paymentLink->getShortUrl(),
                 'currency'      => $paymentLink->getCurrency(),
+                'display_name'  => $display_name,
             ],
         ];
 
