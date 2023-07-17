@@ -68,6 +68,13 @@ class CapitalLenderController extends Controller
             'X-Auth-Type'   => 'admin'
         ];
 
+        if ($request->getQueryString() !== null) {
+            $url .= '?' . $request->getQueryString();
+        } else if (($request->method() === 'GET') and
+            (empty($body) === false)) {
+            $url .= '?' . http_build_query($body);
+        }
+
         return $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
     }
 
