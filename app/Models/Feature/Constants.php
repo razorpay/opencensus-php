@@ -225,6 +225,11 @@ class Constants
     const SKIP_KYC_VERIFICATION = "skip_kyc_verification";
 
     /**
+     * The feature flag is used to enable MOTO payments via token in the batch upload flow.
+     */
+    const DIRECT_DEBIT_VIA_TOKEN_BATCH = "direct_debit_token_batch";
+
+    /**
      * Feature flag to allow customer fee bearer model on international payments
      * Affects DCC and MCC flows
      */
@@ -2579,6 +2584,7 @@ class Constants
         self::GAI_PAYOUTS_SYNC                => true,
         self::ORG_AUTOMATE_IIR                => true,
         self::DISABLE_AUTOMATE_IIR            => true,
+        self::DIRECT_DEBIT_VIA_TOKEN_BATCH    => true,
     ];
 
     // Entity type constants

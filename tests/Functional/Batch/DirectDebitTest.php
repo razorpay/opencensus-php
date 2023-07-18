@@ -84,6 +84,114 @@ class DirectDebitTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testCreateDirectDebitBatchWithTokenSuccess()
+    {
+        $this->fixtures->merchant->addFeatures(['direct_debit_token_batch']);
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '9876543210',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '10000000000000',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'credit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   =>  '1000ggcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '10000000000000',
+            ]
+        );
+
+        $entries = $this->getDefaultFileEntriesForTokenPayment();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->mockCardVaultWithCryptogram(null, true);
+
+        $response = $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $batch = $this->getLastEntity('batch', true);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(10000, $batch['processed_amount']);
+
+        // Processing should have happened immediately in tests as
+        // queue are sync basically.
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        // Input file is to be deleted
+        $inputFile = $this->getFileForBatchOfType($response[Batch\Entity::ID], FileStore\Type::BATCH_INPUT);
+        $this->assertNotNull($inputFile['deleted_at']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('random receipt', $order['receipt']);
+        $this->assertEquals('INR', $order['currency']);
+        $this->assertEquals($order['notes']['notes_1'], null);
+        $this->assertEquals($order['notes']['notes_2'], null);
+        $this->assertEquals($order['notes']['notes_3'], null);
+        $this->assertEquals($order['notes']['notes_4'], null);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('INR', $payment['currency']);
+        $this->assertEquals(9900, $payment['amount']);
+        $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testCreateDirectDebitBatchWithTokenFailed()
+    {
+        // Trying to create tokenized moto payment without merchant feature flag.
+        $entries = $this->getDefaultFileEntriesForTokenPayment();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $batch = $this->getLastEntity('batch', true);
+
+        // Processed since non-tokenized payment.
+        $this->assertEquals(1, $batch['success_count']);
+        // One entry has failed,since feature flag not enabled on merchant.
+        $this->assertEquals(1, $batch['failure_count']);
+
+        // Processing should have happened immediately in tests as
+        // queue are sync basically.
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        // Input file is to be deleted
+        $inputFile = $this->getFileForBatchOfType($response[Batch\Entity::ID], FileStore\Type::BATCH_INPUT);
+        $this->assertNotNull($inputFile['deleted_at']);
+    }
+
     public function testCreateDirectDebitBatchValidateFile()
     {
         $this->setUpConsumeTokenCacheMock();
@@ -158,6 +266,44 @@ class DirectDebitTest extends TestCase
                 'notes[notes_2]'                     => 123,
                 'notes[notes_3]'                     => true,
                 'notes[notes_4]'                     => null,
+            ],
+        ];
+    }
+
+    public function getDefaultFileEntriesForTokenPayment(): array
+    {
+        return [
+            [
+                Header::DIRECT_DEBIT_EMAIL                    => 'test@razorpay.com',
+                Header::DIRECT_DEBIT_CONTACT                  => 9876543210,
+                Header::DIRECT_DEBIT_CARD_NUMBER              => '4111111111111111',
+                Header::DIRECT_DEBIT_EXPIRY_MONTH             => '12',
+                Header::DIRECT_DEBIT_EXPIRY_YEAR              => '25',
+                Header::DIRECT_DEBIT_CARDHOLDER_NAME          => 'John Doe 2',
+                Header::DIRECT_DEBIT_AMOUNT                   => 100,
+                Header::DIRECT_DEBIT_CURRENCY                 => 'INR',
+                Header::DIRECT_DEBIT_RECEIPT                  => 'random receipt',
+                Header::DIRECT_DEBIT_DESCRIPTION              => 'random description',
+                'notes[notes_1]'                              => null,
+                'notes[notes_2]'                              => null,
+                'notes[notes_3]'                              => null,
+                'notes[notes_4]'                              => null,
+            ],
+            [
+                Header::DIRECT_DEBIT_EMAIL                    => 'test@razorpay.com',
+                Header::DIRECT_DEBIT_CONTACT                  => 9876543210,
+                Header::DIRECT_DEBIT_CARD_NUMBER              => 'token_100022custcard',
+                Header::DIRECT_DEBIT_EXPIRY_MONTH             => '',
+                Header::DIRECT_DEBIT_EXPIRY_YEAR              => '',
+                Header::DIRECT_DEBIT_CARDHOLDER_NAME          => '',
+                Header::DIRECT_DEBIT_AMOUNT                   => 9900,
+                Header::DIRECT_DEBIT_CURRENCY                 => 'INR',
+                Header::DIRECT_DEBIT_RECEIPT                  => 'random receipt',
+                Header::DIRECT_DEBIT_DESCRIPTION              => 'random description',
+                'notes[notes_1]'                              => null,
+                'notes[notes_2]'                              => null,
+                'notes[notes_3]'                              => null,
+                'notes[notes_4]'                              => null,
             ],
         ];
     }

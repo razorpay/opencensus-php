@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch;
+use RZP\Error\ErrorCode;
 use RZP\Models\Batch\Header;
 use RZP\Models\Card\Entity as Card;
 use RZP\Models\Customer;
@@ -11,6 +12,8 @@ use RZP\Models\Order;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as FConstant;
 use RZP\Models\Batch\Helpers\DirectDebit as Helper;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -44,6 +47,13 @@ class DirectDebit extends Base
     {
         try
         {
+            if($this->hasCardToken($entry) === true &&
+                $this->merchant->isFeatureEnabled(FConstant::DIRECT_DEBIT_VIA_TOKEN_BATCH) === false)
+            {
+                throw new BadRequestException( ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    "The MOTO payment using token is not enabled");
+            }
+
             $order = $this->createOrder($entry);
 
             $customer = $this->createCustomer($entry);
@@ -55,7 +65,11 @@ class DirectDebit extends Base
         // and flush processor object for the next row.
         finally
         {
-            $entry[Header::DIRECT_DEBIT_CARD_NUMBER] = $this->mask($entry[Header::DIRECT_DEBIT_CARD_NUMBER]);
+            // As per the product requirement, the field should not be masked if it is a token
+            if($this->hasCardToken($entry) === false)
+            {
+                $entry[Header::DIRECT_DEBIT_CARD_NUMBER] = $this->mask($entry[Header::DIRECT_DEBIT_CARD_NUMBER]);
+            }
 
             $this->processor->flushPaymentObjects();
         }
@@ -70,6 +84,11 @@ class DirectDebit extends Base
     protected function processPayment(array & $row, Order\Entity $order, Customer\Entity $customer)
     {
         $request = Helper::getPaymentInput($row, $order, $customer);
+
+        if($this->hasCardToken($row) === true)
+        {
+            $request = Helper::getPaymentInputForToken($row, $order, $customer);
+        }
 
         $result = $this->processor->process($request);
 
@@ -189,5 +208,15 @@ class DirectDebit extends Base
         unset($payloadEntry[Header::DIRECT_DEBIT_CARD_NUMBER]);
         unset($payloadEntry[Header::DIRECT_DEBIT_EXPIRY_MONTH]);
         unset($payloadEntry[Header::DIRECT_DEBIT_EXPIRY_YEAR]);
+    }
+
+    protected function hasCardToken(array & $entry):bool
+    {
+        if(str_starts_with($entry[Header::DIRECT_DEBIT_CARD_NUMBER],'token_') === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

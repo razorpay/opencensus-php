@@ -176,6 +176,8 @@ class Constants
     const SettlementsServiceOnboarding = 'settlement_service_onboarded';
     const SettlementsServiceStopSMS = 'stop_settlement_sms';
 
+    const DirectDebitViaTokenBatch = 'direct_debit_via_token_batch';
+
     const CorporateBankingEnabled = 'corporate_banking_enabled';
 
     public static $validDcsKeys = [];
@@ -344,7 +346,8 @@ class Constants
         self::SettlementReconReportWithNotes => 'rzp/platform/merchant/reporting/CustomReports',
         self::ConsolidatedTxnReportOfAllSubmerchants => 'rzp/platform/org/reporting/CustomReports',
         self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
-        self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features'
+        self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features',
+        self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -524,6 +527,7 @@ class Constants
         APIFeaturesConstants::CONSOLIDATED_ORG_REPORTS                      => self::ConsolidatedTxnReportOfAllSubmerchants,
         APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
         APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
+        APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
     ];
 
     /**
@@ -557,6 +561,7 @@ class Constants
         self::OtpAutoReadAndSubmitDisabled => 'direct',
         self::EnableApprovalViaOAuth => 'direct',
         self::GaiSyncPayouts => 'direct',
+        self::DirectDebitViaTokenBatch => 'direct',
     ];
 
     /**

@@ -36,6 +36,20 @@ class DirectDebit
         return $request;
     }
 
+    public static function getPaymentInputForToken(array $row, Order\Entity $order, Customer\Entity $customer): array
+    {
+        return [
+            Payment\Entity::AMOUNT         => $row[Header::DIRECT_DEBIT_AMOUNT],
+            Payment\Entity::CURRENCY       => $row[Header::DIRECT_DEBIT_CURRENCY],
+            Payment\Entity::CONTACT        => $row[Header::DIRECT_DEBIT_CONTACT],
+            Payment\Entity::EMAIL          => $row[Header::DIRECT_DEBIT_EMAIL],
+            Payment\Entity::ORDER_ID       => $order->getPublicId(),
+            Payment\Entity::TOKEN          => $row[Header::DIRECT_DEBIT_CARD_NUMBER],
+            Payment\Entity::CUSTOMER_ID    => $customer->getPublicId(),
+            Payment\Entity::AUTH_TYPE      => Payment\AuthType::SKIP,
+        ];
+    }
+
     public static function getOrderInput(array $row): array
     {
         $request = [
