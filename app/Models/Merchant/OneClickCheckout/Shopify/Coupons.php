@@ -204,7 +204,7 @@ class Coupons extends Base\Core
                     }
                     else
                     {
-                        $tagArray = explode('magic_floor_',$tag);
+                        $tagArray = explode('standard_min_price_',$tag);
                         if(count($tagArray) > 1){
                             $currentFloorValue = (int)$tagArray[1];
                             if($currentFloorValue > $lineItemFloorValue)
