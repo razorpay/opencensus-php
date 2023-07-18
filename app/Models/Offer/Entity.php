@@ -70,6 +70,7 @@ class Entity extends Base\PublicEntity
     const DISPLAY_TEXT        = 'display_text';
     const ERROR_MESSAGE       = 'error_message';
     const TERMS               = 'terms';
+    const CASHBACK_AMOUNT     = 'cashback_amount';
 
     // Offer types
     const INSTANT  = 'instant';
@@ -676,23 +677,18 @@ class Entity extends Base\PublicEntity
     public function toArrayCheckout(int $amount = null)
     {
         $data = [
-            self::ID                  => $this->getPublicId(),
-            self::NAME                => $this->getAttribute(self::NAME),
-            self::PAYMENT_METHOD      => $this->getAttribute(self::PAYMENT_METHOD),
+            self::ID              => $this->getPublicId(),
+            self::NAME            => $this->getAttribute(self::NAME),
+            self::PAYMENT_METHOD  => $this->getAttribute(self::PAYMENT_METHOD),
             self::PAYMENT_METHOD_TYPE => $this->getAttribute(self::PAYMENT_METHOD_TYPE),
-            self::PAYMENT_NETWORK     => $this->getAttribute(self::PAYMENT_NETWORK),
-            self::ISSUER              => $this->getAttribute(self::ISSUER),
-            self::DISPLAY_TEXT        => $this->getAttribute(self::DISPLAY_TEXT),
-            self::EMI_SUBVENTION      => $this->getAttribute(self::EMI_SUBVENTION),
-            self::TYPE                => $this->getAttribute(self::TYPE),
+            self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),
+            self::ISSUER          => $this->getAttribute(self::ISSUER),
+            self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
+            self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
+            self::TYPE            => $this->getAttribute(self::TYPE),
+            self::TERMS           => $this->getTerms(),
         ];
 
-        if ($this->getProductType() === 'subscription')
-        {
-            $data[self::TERMS] = $this->getTerms();
-        }
-
-        //
         // If this flag is set then amount is to be discounted by us
         // We don't calculate the discount for emi subvented offers
         // because one offer of emi subvention can corresponds to multiple
@@ -704,6 +700,12 @@ class Entity extends Base\PublicEntity
             $data['original_amount'] = $amount;
 
             $data['amount'] = $this->getDiscountedAmount($amount);
+        }
+
+        // New Offers UX Checkout requires cashback amount in API response in case of flat cashback.
+        if ($this->getAttribute(self::TYPE) === Constants::CASHBACK_OFFER)
+        {
+                $data[self::CASHBACK_AMOUNT] = $this->getDiscount($amount);
         }
 
         return array_filter($data);

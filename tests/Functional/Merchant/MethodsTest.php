@@ -1645,10 +1645,12 @@ class MethodsTest extends TestCase
 
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
         $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer3 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'], 'type' => 'deferred']);
 
         $order = $this->fixtures->order->createWithOffers([
                                                               $offer1,
                                                               $offer2,
+                                                              $offer3,
                                                           ]);
 
         $testData = $this->testData[__FUNCTION__];
@@ -1659,6 +1661,7 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+        $this->assertEquals($offer3->getPublicId(), $response['offers'][2]['id']);
     }
 
     public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportForPaymentLinkWithOrder(): void

@@ -1055,6 +1055,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1065,7 +1066,20 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                    ]
+                        'terms' => "test terms and conditions",
+                    ],
+                    [
+                    'name' => "Test Offer",
+                    'payment_method' => "card",
+                    'payment_method_type' => "credit",
+                    'payment_network' => "VISA",
+                    'issuer' => "HDFC",
+                    'type' => "deferred",
+                    'original_amount' => 100000,
+                    'amount' => 100000,
+                    'terms' => "test terms and conditions",
+                    'cashback_amount' => 10000,
+                ]
                 ]
             ],
         ],
@@ -1094,6 +1108,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1103,6 +1118,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ]
                 ]
             ],
@@ -1129,6 +1145,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1138,6 +1155,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ]
                 ]
             ],
@@ -1219,6 +1237,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1229,6 +1248,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ]
                 ]
             ],
@@ -1314,6 +1334,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1324,6 +1345,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
+                        'terms' => "test terms and conditions",
                     ]
                 ]
             ],
