@@ -10,6 +10,8 @@ use Request;
 use App;
 use RZP\Http\CheckoutView;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\CardMandate\MandateHubs\BillDeskSIHub\Constants;
+use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -979,7 +981,8 @@ class PaymentCreateController extends Controller
 
         $inputData = array(
             "payload" => $input,
-            "payment" => array("method"=>""),
+            "payment" => array("method" => ""),
+            Constants::GATEWAY => MandateHubs::BILLDESK_SIHUB,
         );
 
         $data = $this->service(E::PAYMENT)->handleSihubWebhook($inputData);

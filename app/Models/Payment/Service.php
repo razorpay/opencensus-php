@@ -568,6 +568,11 @@ class Service extends Base\Service
 
     public function handleSihubWebhook($input)
     {
+        $isProduction = ($this->app->environment('production') === true);
+        // set mode for unexpected payments
+        $mode = $isProduction ? Mode::LIVE : Mode::TEST;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
         return (new CardMandate\Core)->processSihubWebhook($input);
     }
 

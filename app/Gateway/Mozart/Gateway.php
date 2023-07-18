@@ -3187,6 +3187,22 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getMozartRequestArray($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_GET_TRACE_CONTENT_ERROR,
+            [
+                'mozartPayloadBeforeUnset' => $input,
+            ]);
+
+        if (($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB) && $this->getAction() === 'auth_verify') {
+            unset($input['gateway']);
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_GET_TRACE_CONTENT_ERROR,
+            [
+                'mozartPayloadAfterUnset' => $input,
+            ]);
+
         $traceReq = [
             'method' => $request['method'],
             'url'    => $request['url'],
