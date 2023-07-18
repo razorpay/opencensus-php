@@ -845,10 +845,11 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesForPaylaterProviders()
     {
-
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
 
@@ -937,6 +938,8 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
 
+        $this->mockPaylaterSplitzExperiment();
+
         $this->fixtures->create('terminal:paylater_icici_terminal');
 
         $response = $this->getPreferences();
@@ -951,6 +954,8 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , "hdfc" => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
@@ -1058,6 +1063,8 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
@@ -1207,6 +1214,8 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
@@ -3766,6 +3775,30 @@ class CheckoutPreferencesTest extends TestCase
         $this->mockSplitzTreatmentBulkRequest($output);
     }
 
+    protected function mockBulkExperiment($experimentIdsWithExpectedResult)
+    {
+        $output = [];
+
+        foreach ($experimentIdsWithExpectedResult as $experimentDetails)
+        {
+            $output[] = [
+                "experiment" => [
+                    "id" => $this->app['config']->get($experimentDetails['experiment_id']),
+                ],
+                "variant"    => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ],
+            ];
+        }
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -3775,6 +3808,51 @@ class CheckoutPreferencesTest extends TestCase
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+    }
+
+    protected function mockPaylaterSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturnUsing(function (array $input) use ($output)
+            {
+                $paylaterWhitelistExperiments = [
+                    $this->app['config']->get('app.lazypay_whitelisted_merchants_experiment_id'),
+                    $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id'),
+                ];
+
+                foreach ($input as $experimentData)
+                {
+                    if(in_array($experimentData['experiment_id'], $paylaterWhitelistExperiments))
+                    {
+                        return $output;
+                    }
+                }
+                return [];
+            });
+    }
+
+    protected function mockPaylaterSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockPaylaterSplitzTreatmentBulkRequest($output);
     }
 
     protected function mockCheckoutService($output)

@@ -1271,6 +1271,8 @@ class Core extends Base\Core
 
             $paylaterProviders = $methods->getEnabledPaylaterProviders();
 
+            $whitelistedInstruments = (new MerchantCore())->getWhitelistedPaylaterInstruments($merchant);
+
             foreach ($providers as $index => $instrument) {
 
                 if (isset($paylaterProviders[$instrument]) == false or  $paylaterProviders[$instrument] == 0) {
@@ -1279,9 +1281,8 @@ class Core extends Base\Core
 
                 }
 
-                $merchantWhitelistedForLazypay = (new MerchantCore())->isMerchantWhitelistedForLazypay($merchant);
-
-                if($instrument === Payment\Gateway::LAZYPAY and !$merchantWhitelistedForLazypay)
+                if(($instrument === EMI\PaylaterProvider::LAZYPAY or $instrument === EMI\PaylaterProvider::ICIC) and
+                    !in_array($instrument, $whitelistedInstruments))
                 {
                     unset($providers[$index]);
                 }

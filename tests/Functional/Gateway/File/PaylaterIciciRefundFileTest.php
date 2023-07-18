@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Excel;
+use Mockery;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
@@ -32,6 +33,10 @@ class PaylaterIciciRefundFileTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:paylater_icici_terminal');
 
         $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
     }
 
@@ -102,5 +107,35 @@ class PaylaterIciciRefundFileTest extends TestCase
             return ($mail->hasFrom('refunds@razorpay.com') and
                 ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::PAYLATER_ICICI])));
         });
+    }
+
+    protected function mockPaylaterSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }

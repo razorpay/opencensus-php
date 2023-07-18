@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Sharp;
 
 use Cache;
+use Mockery;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -73,6 +74,10 @@ class SharpGatewayTest extends TestCase
     public function testPaylaterPayment()
     {
         $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $payment = $this->getDefaultPayLaterPaymentArray('icic');
 
@@ -1168,5 +1173,35 @@ class SharpGatewayTest extends TestCase
         $this->assertEquals($payment['authentication_gateway'], 'visasafeclick');
         $this->assertEquals($payment['status'], 'authorized');
         $this->assertNotNull($payment['acquirer_data']['product_enrollment_id']);
+    }
+
+    protected function mockPaylaterSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }

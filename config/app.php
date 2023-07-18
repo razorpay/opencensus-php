@@ -662,5 +662,7 @@ return array(
 
     'lazypay_whitelisted_merchants_experiment_id' => env('LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
-    '1cc_be_abandoned_cart' => env('1CC_BE_ABANDONED_CART')
+    '1cc_be_abandoned_cart' => env('1CC_BE_ABANDONED_CART'),
+
+    'icic_whitelisted_merchants_experiment_id' => env('ICIC_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 );

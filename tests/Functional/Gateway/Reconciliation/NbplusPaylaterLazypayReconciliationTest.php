@@ -31,20 +31,7 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
 
         $this->provider = 'lazypay';
 
-        $splitzMockResponse = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockResponse);
+        $this->mockLazypaySplitzExperiment();
 
         $this->payment = $this->getDefaultPayLaterPaymentArray($this->provider);
     }

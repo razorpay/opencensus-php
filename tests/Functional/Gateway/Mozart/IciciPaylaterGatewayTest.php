@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use Mockery;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
@@ -30,6 +31,10 @@ class IciciPaylaterGatewayTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:paylater_icici_terminal');
 
         $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->mockPaylaterSplitzExperiment();
 
         $this->payment = $this->getDefaultPayLaterPaymentArray($this->provider);
     }
@@ -135,4 +140,33 @@ class IciciPaylaterGatewayTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
+    protected function mockPaylaterSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
+    }
 }

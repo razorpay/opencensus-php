@@ -90,20 +90,7 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     {
         $this->provider = 'lazypay';
 
-        $splitzMockResponse = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockResponse);
+        $this->mockLazypaySplitzExperiment();
 
         $paymentArray = $this->getDefaultPayLaterPaymentArray($this->provider);
 
@@ -143,20 +130,7 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     {
         $this->provider = 'lazypay';
 
-        $splitzMockResponse = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockResponse);
+        $this->mockLazypaySplitzExperiment();
 
         $paymentArray = $this->getDefaultPayLaterPaymentArray($this->provider);
 
@@ -178,20 +152,7 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     {
         $this->provider = 'lazypay';
 
-        $splitzMockResponse = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockResponse);
+        $this->mockLazypaySplitzExperiment();
 
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -300,6 +261,36 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
 
             return $resp;
         }
+    }
+
+    protected function mockLazypaySplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.lazypay_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 
     protected function mockSplitzTreatment($output)

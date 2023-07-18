@@ -9702,23 +9702,26 @@ trait Authorize
             ($merchantMethods->isPayLaterEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYLATER_NOT_ENABLED_FOR_MERCHANT);
         }
 
         $paylaterProviders = $merchantMethods->getEnabledPaylaterProviders();
 
         $wallet = $payment[Payment\Entity::WALLET];
 
-        if(isset($wallet) === true and $wallet === Payment\Gateway::LAZYPAY and (isset($paylaterProviders[$wallet]) === false or
-                $paylaterProviders[$wallet] == 0))
+        if(isset($wallet) === true and
+            ($wallet === EMI\PaylaterProvider::LAZYPAY or $wallet === EMI\PaylaterProvider::ICIC) and
+            (isset($paylaterProviders[$wallet]) === false or $paylaterProviders[$wallet] == 0))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);
         }
 
-        $merchantWhitelistedForLazypay = (new MerchantCore())->isMerchantWhitelistedForLazypay($payment->merchant);
+        $whitelistedInstruments = (new MerchantCore())->getWhitelistedPaylaterInstruments($payment->merchant);
 
-        if(isset($wallet) === true and $wallet === Payment\Gateway::LAZYPAY and !$merchantWhitelistedForLazypay)
+        if(isset($wallet) === true and
+            ($wallet === EMI\PaylaterProvider::LAZYPAY or $wallet === EMI\PaylaterProvider::ICIC) and
+            !in_array($wallet, $whitelistedInstruments))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);

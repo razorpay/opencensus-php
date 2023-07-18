@@ -9126,24 +9126,46 @@ class Core extends Base\Core
         }
     }
 
-    public function isMerchantWhitelistedForLazypay(Merchant\Entity $merchant) :bool {
+    public function getWhitelistedPaylaterInstruments(Merchant\Entity $merchant): array {
+
+        $whitelistedInstruments = [];
+
         try {
-            $properties = [
-                "id" => $merchant->getId(),
-                "experiment_id" => $this->app['config']->get('app.lazypay_whitelisted_merchants_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
+
+            $whitelistExperiments = [
+                $this->app['config']->get('app.lazypay_whitelisted_merchants_experiment_id') => Emi\PaylaterProvider::LAZYPAY,
+                $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id') => Emi\PaylaterProvider::ICIC,
             ];
 
-            $response = $this->app['splitzService']->evaluateRequest($properties);
+            foreach ($whitelistExperiments as $experimentId => $instrument)
+            {
+                $experimentsData[] = [
+                    "id" => $merchant->getId(),
+                    "experiment_id" => $experimentId,
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]),
+                ];
+            }
 
-            $variables = $response['response']['variant']['variables'];
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
 
-            foreach ($variables as $variable) {
-                if ($variable['key'] == "result" && $variable['value'] == "on") {
-                    return true;
+            foreach ($experimentResponses as $response)
+            {
+                $variables = $response['variant']['variables'];
+
+                foreach ($variables as $variable)
+                {
+                    if ($variable['key'] == "result" && $variable['value'] == "on") {
+
+                        $experimentId = $response['experiment']['id'];
+
+                        if(array_key_exists($experimentId, $whitelistExperiments))
+                        {
+                            $whitelistedInstruments[] = $whitelistExperiments[$experimentId];
+                        }
+                    }
                 }
             }
 
@@ -9154,7 +9176,8 @@ class Core extends Base\Core
                 TraceCode::LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_ERROR
             );
         }
-        return false;
+
+        return $whitelistedInstruments;
     }
 
     public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool

@@ -762,6 +762,21 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaymentWithDisabledInstrumentICIC()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'paylater';
+        $payment['provider'] = 'icic';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
     public function testCreatePaytmTestPaymentWithDisabledMethod()
     {
         $attributes = array(

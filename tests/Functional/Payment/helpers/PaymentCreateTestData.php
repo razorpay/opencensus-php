@@ -149,6 +149,22 @@ return [
         ],
     ],
 
+    'testCreatePaymentWithDisabledInstrumentICIC' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Your payment could not be completed due to a temporary technical issue. To complete the payment, use another payment instrument.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED
+        ],
+    ],
+
     'testCreatePaytmTestPaymentWithDisabledMethodWithDisabledTerminal' => [
         'response' => [
             'content' => [
