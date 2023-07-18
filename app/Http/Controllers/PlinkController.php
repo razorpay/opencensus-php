@@ -294,11 +294,17 @@ class PlinkController extends Controller
         return $headers;
     }
 
-    public function plDemoCors()
+    public function plDemoCors(Request $request)
     {
         $response = ApiResponse::json([]);
 
-        $response->headers->set('Access-Control-Allow-Origin', $this->app['config']->get('app.razorpay_website_url'));
+        $curlecWebsite = $this->app['config']->get('app.curlec_website_url');
+
+        $razorpayWebsite = $this->app['config']->get('app.razorpay_website_url');
+
+        $allowedOrigin = $request->headers->get('origin') === $curlecWebsite ? $curlecWebsite : $razorpayWebsite;
+
+        $response->headers->set('Access-Control-Allow-Origin', $allowedOrigin );
 
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
