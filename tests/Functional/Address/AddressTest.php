@@ -20,6 +20,42 @@ class AddressTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function testAddressNotSyncingForNonStakeholderEntities()
+    {
+        // Create an address for a customer entity
+        // By default the test key is used
+        $testData = $this->testData['testCreateShippingAddress'];
+        $this->startTest($testData);
+
+        // Assert that the address is empty when fetched using a live key
+        // since the address is not supposed to be synced for customer entity
+        $this->fixtures->on('live')->merchant->activate();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        $testData = $this->testData['testGetCustomerAddresses'];
+        $testData['response']['content'] = [
+            'entity' => 'collection',
+            'count' => 0,
+            'items' => [],
+        ];
+        $this->startTest($testData);
+    }
+
+    public function testAddressSyncingForStakeholderEntity()
+    {
+        $testData = $this->testData['testCreateShippingAddress'];
+        $this->startTest($testData);
+
+        $this->fixtures->on('live')->merchant->activate();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        $testData = $this->testData['testGetCustomerAddresses'];
+        $testData['response']['content'] = [
+            'entity' => 'collection',
+            'count' => 0,
+            'items' => [],
+        ];
+        $this->startTest($testData);
+    }
+
     public function testCreateShippingAddress()
     {
         $this->startTest();

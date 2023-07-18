@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Address;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Address\Entity as AddressEntity;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\traits\AsvFetch;
@@ -19,6 +21,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant
 class Repository extends Base\Repository
 {
 
+    use RepositoryUpdateTestAndLive;
     use AsvFetchCommon;
     protected $entity = 'address';
 
@@ -40,6 +43,15 @@ class Repository extends Base\Repository
         Entity::STATE       => 'sometimes|string|max:64',
         Entity::COUNTRY     => 'sometimes|string|max:64',
     ];
+
+    public static function shouldSync(Entity $entity): bool
+    {
+        if ($entity->getEntityType() === Constants\Entity::STAKEHOLDER)
+        {
+            return true;
+        }
+        return false;
+    }
 
     public function fetchCurrentPrimaryAddressOfEntity(Base\Entity $entity, Entity $address)
     {

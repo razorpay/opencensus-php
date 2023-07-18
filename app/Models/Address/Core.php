@@ -63,6 +63,7 @@ class Core extends Base\Core
         }
 
         $address = (new Entity)->build($input);
+        $address->generateAndSetUniqueId();
 
         return $this->repo->transaction(function() use ($address, $entity)
         {
@@ -240,7 +241,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transaction(function () use ($currentPrimaryAddress, $address, $entity)
+        $this->repo->transactionOnLiveAndTest(function () use ($currentPrimaryAddress, $address, $entity)
         {
             // If there is no current primary address, there's no need to do anything
 

@@ -32,10 +32,13 @@ class StakeholderTest extends OAuthTestCase
         $this->createConfigForPartnerApp($app->getId());
         list($subMerchant) = $this->createSubMerchant($partner, $app);
 
-        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
-        $key = 'rzp_live_' . $key->getKey();
+        $liveKey = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $liveKey = 'rzp_live_' . $liveKey->getKey();
 
-        $this->ba->privateAuth($key);
+        $testKey = $this->fixtures->on(Mode::TEST)->create('key', ['merchant_id' => $partner->getId()]);
+        $testKey = 'rzp_live_' . $testKey->getKey();
+
+        $this->ba->privateAuth($liveKey);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -56,6 +59,13 @@ class StakeholderTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
         $this->assertTrue($metricCaptured);
 
+        // check that the address has synced to test mode as well
+        $this->ba->privateAuth($testKey);
+        $testData = $this->testData['testFetchStakeholder'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->privateAuth($liveKey);
         $metricCaptured = false;
         $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
         $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
@@ -66,6 +76,46 @@ class StakeholderTest extends OAuthTestCase
         $testData = $this->testData['testFetchAllAccountStakeholders'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
         $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * Tests that the stakeholder's address, when created using test key,
+     * syncs to live and test DB
+     *
+     * @return void
+     */
+    public function testStakeholderAddressSyncingToLiveAndTest()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $liveKey = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $liveKey = 'rzp_live_' . $liveKey->getKey();
+
+        $testKey = $this->fixtures->on(Mode::TEST)->create('key', ['merchant_id' => $partner->getId()]);
+        $testKey = 'rzp_live_' . $testKey->getKey();
+
+        $this->ba->privateAuth($testKey);
+
+        // create stakeholder with test key
+        $testData = $this->testData['testCreateStakeholderForCompletelyFilledRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+        $response = $this->runRequestResponseFlow($testData);
+
+        // fetch with test key
+        $testData = $this->testData['testFetchStakeholder'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+
+        // fetch with live key
+        $this->ba->privateAuth($liveKey);
+        $testData = $this->testData['testFetchStakeholder'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+
     }
 
     public function testProvideStakeholderOptionalFieldsForNoDocMerchantInNCState()

@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Address;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
-use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
@@ -35,6 +34,8 @@ class Entity extends Base\PublicEntity
     protected $entity           = 'address';
 
     protected $generateIdOnCreate = true;
+
+    const ID_LENGTH = 14;
 
     protected $fillable = [
         self::TYPE,
