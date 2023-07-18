@@ -1192,6 +1192,14 @@ class Processor
         if ( $card->getVault() === Card\Vault::HDFC)
         {
             $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+             $this->trace->info(
+                    TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                    [
+                        'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                        'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                    ]);
+
         }
 
         if ($card->getVault() === Card\Vault::AXIS) {
@@ -1203,7 +1211,7 @@ class Processor
             $input["cvv"] = $cryptogram["cvv"];
         }
 
-        if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true)
+        if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true )
         {
             $input = $this->getAdditionalOptimizerCardInputForRearch($token,$input);
         }
@@ -1254,7 +1262,7 @@ class Processor
      */
     protected function getAdditionalOptimizerCardInputForRearch($token,$input)
     {
-        if ($input[E::TOKENISED] === false)
+        if ($input[E::TOKENISED] === false or $token->card->getVault() === Card\Vault::HDFC  )
         {
             return $input;
         }

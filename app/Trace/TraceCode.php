@@ -9777,6 +9777,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MERCHANT_WITH_TOKEN_LIST =                              'FETCH_MERCHANT_WITH_TOKEN_LIST';
     const FETCH_MERCHANTS_WITH_TOKEN_EXEPTION =                         'FETCH_MERCHANTS_WITH_TOKEN_EXEPTION';
 
+    // diners
+    const DINERS_TOKENISED_PAYMENT_TRACE                 = 'DINERS_TOKENISED_PAYMENT_TRACE';
+
     //WDA errors
     const WDA_SERVICE_REQUEST                            = 'WDA_SERVICE_REQUEST';
     const WDA_SERVICE_RESPONSE                           = 'WDA_SERVICE_RESPONSE';
