@@ -487,6 +487,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',
         Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|max:15',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:15',
         Entity::EMI                        => 'sometimes|boolean',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
@@ -836,6 +837,7 @@ class Validator extends Base\Validator
 
     protected static $hdfcEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:15',
         Entity::GATEWAY                    => 'sometimes|in:hdfc',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',

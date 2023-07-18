@@ -3831,6 +3831,50 @@ return [
         ]
     ],
 
+    'testCreateHdfcTerminalWithGatewayMerchantID2'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_merchant_id'       => '12345567',
+                'gateway_terminal_id'       => '12345567',
+                'gateway_terminal_password' => '12345567',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id2'      => '12345567'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testCreateHdfcTerminalWithGatewayMerchantID2ValidationFailure'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_merchant_id'       => '12345567',
+                'gateway_terminal_id'       => '12345567',
+                'gateway_terminal_password' => '12345567',
+                'gateway_acquirer'           => 'hdfc',
+                'gateway_merchant_id2'      => '1234556789143432512124'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "The gateway merchant id2 may not be greater than 15 characters.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ]
+    ],
+
     'testCreateWalletPhonepeSwitchTerminal'  => [
         'request' => [
             'content' => [

@@ -3518,6 +3518,24 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateHdfcTerminalWithGatewayMerchantID2()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateHdfcTerminalWithGatewayMerchantID2ValidationFailure()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateWalletPhonepeSwitchTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
