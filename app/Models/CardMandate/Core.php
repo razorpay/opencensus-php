@@ -13,13 +13,17 @@ use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Reminders;
+use RZP\Constants\Entity as E;
 use RZP\Models\Card\CardVault;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Card\IIN\MandateHub;
 use RZP\Exception\BadRequestException;
 use RZP\Models\CardMandate\MandateHubs;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\MandateHQ;
+use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\CardMandate\MandateHubs\BillDeskSIHub;
 use RZP\Models\CardMandate\MandateHubs\MandateStatus;
 
@@ -134,6 +138,47 @@ class Core extends Base\Core
      */
     public function createPreDebitNotification(Payment\Entity $payment): CardMandateNotification\Entity
     {
+        if ($payment->getSubscriptionId() !== null)
+        {
+            $cardMandateHub = $payment->token->cardMandate->getMandateHub();
+            if ((($cardMandateHub === MandateHub::MANDATE_HQ) or
+                 ($cardMandateHub === MandateHub::BILLDESK_SIHUB)) and
+                ($payment->getInvoiceId() !== null))
+            {
+                $paymentFetchInput = [
+                    "invoice_id" => "inv_" . $payment->getInvoiceId(),
+                    "status"     => Payment\Status::FAILED
+                ];
+
+                $fetchedPayments = (new Payment\Service())->fetchMultiple($paymentFetchInput);
+
+                $PDNPayment = null;
+
+                foreach ($fetchedPayments["items"] as $pay)
+                {
+                    $oldPayment = (new Payment\Core)->retrievePaymentById(substr($pay['id'], 4));
+
+                    if (($oldPayment->cardMandateNotification !== null) and
+                        ($oldPayment->cardMandateNotification->getStatus() === CardMandateNotification\Status::NOTIFIED))
+                    {
+                        $PDNPayment = $oldPayment;
+                        break;
+                    }
+                }
+
+                if ($PDNPayment !== null)
+                {
+                    $cardMandateNotification = $PDNPayment->cardMandateNotification;
+                    $cardMandateNotification->payment()->associate($payment);
+                    $cardMandateNotification->saveOrFail();
+
+                    $namespace = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
+                    (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $payment->getId(), []);
+                    return $cardMandateNotification;
+                }
+            }
+        }
+
         $ex = null;
 
         $cardMandateNotification = null;
