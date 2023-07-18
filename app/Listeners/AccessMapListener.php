@@ -6,8 +6,11 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\AccessMap;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PartnerConfigAuditLogger;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 /**
  * AccessMapListener listens to AccessMap\Entity's events.
@@ -22,16 +25,36 @@ class AccessMapListener extends BaseListener
     {
         $entity = $event->entity;
 
+        $appId = $entity[AccessMap\Entity::ENTITY_ID];
+
         $this->trace->info(TraceCode::ACCESS_MAP_EVENT_SAVED, $this->getTraceInfo($entity));
 
         (new Stork($entity->getConnectionName()))->invalidateAffectedOwnersCache($entity->getMerchantId());
-
-        if(
-            $entity->getConnectionName() === Mode::LIVE
-            && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false
-        )
+        try
         {
-            PartnerConfigAuditLogger::dispatch($this->getAuditLogParams($entity), Mode::LIVE);
+            if(
+                $entity->getConnectionName() === Mode::LIVE
+                && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false
+            )
+            {
+                PartnerConfigAuditLogger::dispatch($this->getAuditLogParams($entity), Mode::LIVE);
+                if((new PartnerCore())->isPartnerEntitySyncExpEnabled($appId))
+                {
+                    // call partnership service to sync entity
+                    app('partnerships')->upsertMerchantAccessMap(['merchant_access_map' => $entity->toArray()]);
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ACCESS_MAP_SYNC_ERROR,
+                [ 'message' => $e->getMessage(), 'entity'=> $entity->toArray() ]
+            );
+            $this->trace->count(PartnerMetric::MERCHANT_ACCESS_MAP_SYNC_FAILED);
         }
     }
 
@@ -39,16 +62,36 @@ class AccessMapListener extends BaseListener
     {
         $entity = $event->entity;
 
+        $appId = $entity[AccessMap\Entity::ENTITY_ID];
+
         $this->trace->info(TraceCode::ACCESS_MAP_EVENT_DELETED, $this->getTraceInfo($entity));
 
         (new Stork($entity->getConnectionName()))->invalidateAffectedOwnersCache($entity->getMerchantId());
 
-        if(
+        try
+        {
+            if(
             $entity->getConnectionName() === Mode::LIVE
             && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false
-        )
+            )
+            {
+                PartnerConfigAuditLogger::dispatch($this->getAuditLogParams($entity), Mode::LIVE);
+                if((new PartnerCore())->isPartnerEntitySyncExpEnabled($appId))
+                {
+                    // call partnership service to sync entity
+                    app('partnerships')->deleteMerchantAccessMap(['id' => $entity->getId() ]);
+                }
+            }
+        }
+        catch(\Throwable $e)
         {
-            PartnerConfigAuditLogger::dispatch($this->getAuditLogParams($entity), Mode::LIVE);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ACCESS_MAP_SYNC_ERROR,
+                [ 'message' => $e->getMessage(), 'entity'=> $entity->toArray() ]
+            );
+            $this->trace->count(PartnerMetric::MERCHANT_ACCESS_MAP_SYNC_FAILED);
         }
     }
 

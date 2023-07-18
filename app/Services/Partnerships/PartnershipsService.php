@@ -51,6 +51,20 @@ class PartnershipsService extends Base\Service
 
     const CREATE_PARNTER_MIGRATION_AUDIT = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
 
+    const UPDATE_INVOICE_STATUS          = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/UpdateInvoiceStatus';
+
+    const UPDATE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Update';
+
+    const DELETE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Delete';
+
+    CONST UPDATE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Update';
+
+    CONST DELETE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Delete';
+
+    CONST UPDATE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI//Update';
+
+    CONST DELETE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
+
     const ACTIVATED = 'ACTIVATED';
 
     // Tells the client what the content type of the returned content actually is
@@ -208,6 +222,36 @@ class PartnershipsService extends Base\Service
     public function getLastPartnerMigration($parameters)
     {
         return $this->sendRequest($parameters, self::GET_LAST_PARTNER_MIGRATION, Requests::POST);
+    }
+
+    public function upsertPartnerConfig($parameters)
+    {
+        return $this->sendRequest($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST);
+    }
+
+    public function deletePartnerConfig($parameters)
+    {
+        return $this->sendRequest($parameters, self::DELETE_PARTNER_CONFIG, Requests::POST);
+    }
+
+    public function upsertMerchantApplication($parameters)
+    {
+        return $this->sendRequest($parameters, self::UPDATE_MERCHANT_APPLICATION, Requests::POST);
+    }
+
+    public function deleteMerchantApplication($parameters)
+    {
+        return $this->sendRequest($parameters, self::DELETE_MERCHANT_APPLICATION, Requests::POST);
+    }
+
+    public function upsertMerchantAccessMap($parameters)
+    {
+        return $this->sendRequest($parameters, self::UPDATE_MERCHANT_ACCESS_MAP, Requests::POST);
+    }
+
+    public function deleteMerchantAccessMap($parameters)
+    {
+        return $this->sendRequest($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST);
     }
 
     /**

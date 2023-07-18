@@ -62,6 +62,10 @@ final class Metric
     const PARTNER_CONFIG_AUDIT_LATENCY_IN_MS              = 'partner_config_audit_latency_in_ms';
     const PARTNER_CONFIG_AUDIT_SUCCESS                    = 'partner_config_audit_success';
     const PARTNER_CONFIG_AUDIT_FAIL                       = 'partner_config_audit_fail';
+    const PARTNER_CONFIG_ENTITY_SYNC_FAILED               = 'partner_config_entity_sync_failed';
+    const MERCHANT_APPLICATION_SYNC_FAILED                = 'merchant_application_sync_failed';
+    const MERCHANT_ACCESS_MAP_SYNC_FAILED                 = 'merchant_access_map_sync_failed';
+
 
     const PARTNER_MIGRATION_AUDIT_JOB_FAILURE_TOTAL   = 'partner_migration_audit_job_failure_total';
 

@@ -3694,6 +3694,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCESS_MAP_UPDATE_ERROR                               = 'ACCESS_MAP_UPDATE_ERROR';
     const ACCESS_MAP_EVENT_SAVED                                = 'ACCESS_MAP_EVENT_SAVED';
     const ACCESS_MAP_EVENT_DELETED                              = 'ACCESS_MAP_EVENT_DELETED';
+    const ACCESS_MAP_SYNC_ERROR                                 = 'ACCESS_MAP_SYNC_ERROR';
+
+    const MERCHANT_APPLICATION_EVENT_SAVED                      = 'MERCHANT_APPLICATION_EVENT_SAVED';
+    const MERCHANT_APPLICATION_EVENT_DELETED                    = 'MERCHANT_APPLICATION_EVENT_DELETED';
+    const MERCHANT_APPLICATION_SYNC_ERROR                       = 'MERCHANT_APPLICATION_SYNC_ERROR';
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST                   = 'BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST';
     const IMPERSONATION_MIGRATE_REQUEST                         = 'IMPERSONATION_MIGRATE_REQUEST';
 
@@ -4271,6 +4276,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
     const PARTNER_CONFIG_EVENT_SAVED                            = "PARTNER_CONFIG_EVENT_SAVED";
+    const PARTNER_CONFIG_EVENT_DELETED                          = "PARTNER_CONFIG_EVENT_DELETED";
+    const PARTNER_CONFIG_ENTITY_SYNC_ERROR                      = "PARTNER_CONFIG_ENTITY_SYNC_ERROR";
     const PARTNER_CONFIG_AUDIT_JOB_REQUEST                      = "PARTNER_CONFIG_AUDIT_JOB_REQUEST";
     const PARTNER_CONFIG_AUDIT_JOB_ERROR                        = "PARTNER_CONFIG_AUDIT_JOB_ERROR";
     const PARTNER_CONFIG_AUDIT_QUEUE_DELETE                     = "PARTNER_CONFIG_AUDIT_QUEUE_DELETE";

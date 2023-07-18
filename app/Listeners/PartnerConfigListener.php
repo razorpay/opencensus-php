@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Models\Partner\Config;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PartnerConfigAuditLogger;
@@ -27,7 +28,9 @@ class PartnerConfigListener
 
         try
         {
-            $isExpEnabled = $this->isAuditingExpEnabled($entity);
+            $appID= $entity[PartnerConfigEntity::ENTITY_TYPE] === Constants::APPLICATION ?
+                $entity[PartnerConfigEntity::ENTITY_ID] : $entity[PartnerConfigEntity::ORIGIN_ID];
+            $isExpEnabled = $this->isAuditingExpEnabled($appID);
 
             if($isExpEnabled === false or $entity->getConnectionName() !== Mode::LIVE or
                 in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === true)
@@ -48,6 +51,13 @@ class PartnerConfigListener
             $actor = $this->getActorDetails($basicAuth);
 
             PartnerConfigAuditLogger::dispatch($this->toParams($entity, $actor), $basicAuth->getMode());
+
+            //sync to partnership service
+            if ((new PartnerCore())->isPartnerEntitySyncExpEnabled($appID))
+            {
+                app('partnerships')->upsertPartnerConfig(['partner_config' => $entity->toArray()]);
+            }
+
         }
         catch(\Throwable $e)
         {
@@ -55,9 +65,43 @@ class PartnerConfigListener
                 $e,
                 Trace::ERROR,
                 TraceCode::PARTNER_CONFIG_AUDIT_JOB_ERROR,
-                [ 'message' => $e->getMessage() ]
+                [ 'message' => $e->getMessage(), 'entity'=> $entity->toArray()]
             );
             app('trace')->count(PartnerMetric::PARTNER_CONFIG_AUDIT_FAIL);
+        }
+    }
+
+    public function onDeleted(Config\EventDeleted $event)
+    {
+        $entity = $event->entity;
+        try
+        {
+            app('trace')->info(TraceCode::PARTNER_CONFIG_EVENT_DELETED, [
+                'entity' => $entity->toArrayAudit(),
+            ]);
+
+            $appID = $entity[PartnerConfigEntity::ENTITY_TYPE] === Constants::APPLICATION ?
+                $entity[PartnerConfigEntity::ENTITY_ID] : $entity[PartnerConfigEntity::ORIGIN_ID];
+
+            if (
+                $entity->getConnectionName() === Mode::LIVE
+                && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false
+                && (new PartnerCore())->isPartnerEntitySyncExpEnabled($appID)
+            )
+            {
+                // call partnership service to sync entity
+                app('partnerships')->deletePartnerConfig(['id' => $entity->getId()]);
+            }
+        }
+        catch(\Throwable $e)
+        {
+            app('trace')->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PARTNER_CONFIG_ENTITY_SYNC_ERROR,
+                [ 'message' => $e->getMessage(), 'entity'=> $entity->toArray() ]
+            );
+            app('trace')->count(PartnerMetric::PARTNER_CONFIG_ENTITY_SYNC_FAILED);
         }
     }
 
@@ -73,11 +117,10 @@ class PartnerConfigListener
         ];
     }
 
-    private function isAuditingExpEnabled($entity)
+    private function isAuditingExpEnabled($appID)
     {
         $properties = [
-            'id'            => $entity[PartnerConfigEntity::ENTITY_TYPE] === Constants::APPLICATION ?
-                $entity[PartnerConfigEntity::ENTITY_ID] : $entity[PartnerConfigEntity::ORIGIN_ID],
+            'id'            => $appID,
             'experiment_id' => app('config')->get('app.partner_config_auditing_experiment_id'),
         ];
 
@@ -99,4 +142,5 @@ class PartnerConfigListener
 
         return null;
     }
+
 }

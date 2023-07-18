@@ -1596,6 +1596,23 @@ class Core extends Detail\Core
     }
 
     /**
+     * checks if the exp to sync partner entities to prts is enabled
+     * @param string $appId
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function isPartnerEntitySyncExpEnabled(string $appId) : bool
+    {
+        $properties = [
+            'id'            => $appId,
+            'experiment_id' => app('config')->get('app.partner_entities_partnership_service_sync'),
+        ];
+
+        return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
      * @param array $merchantIds
      * @param array $requiredEntities [merchant,merchant_details,tax_components,partner_activation,commission_balance]
      *

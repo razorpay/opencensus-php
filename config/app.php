@@ -405,6 +405,8 @@ return array(
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
+    'partner_entities_partnership_service_sync' => env('PARTNER_ENTITIES_PARTNERSHIP_SERVICE_SYNC'),
+
     'enable_merchant_dashboard_timeout_experiment_id' => env('ENABLE_MERCHANT_DASHBOARD_TIMEOUT_EXPERIMENT_ID'),
 
     'submerchant_ownership_transfer_experiment_id' => env('SUBMERCHANT_OWNERSHIP_TRANSFER_EXPERIMENT_ID'),

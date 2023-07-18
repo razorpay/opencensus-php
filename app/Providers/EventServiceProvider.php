@@ -16,6 +16,7 @@ use RZP\Jobs\Job;
 use RZP\Listeners;
 use RZP\Events\P2p;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant;
 use RZP\Models\Partner;
 use RZP\Models\Terminal;
@@ -118,8 +119,17 @@ class EventServiceProvider extends ServiceProvider
         AccessMap\EventDeleted::class => [
             Listeners\AccessMapListener::class . '@onDeleted',
         ],
+        MerchantApplications\EventSaved::class => [
+            Listeners\AccessMapListener::class . '@onSaved',
+        ],
+        MerchantApplications\EventDeleted::class => [
+            Listeners\AccessMapListener::class . '@onDeleted',
+        ],
         Partner\Config\EventSaved::class => [
             Listeners\PartnerConfigListener::class . '@onSaved',
+        ],
+        Partner\Config\EventDeleted::class => [
+            Listeners\PartnerConfigListener::class . '@onDeleted',
         ],
         DatabaseEvents\QueryExecuted::class => [
             Listeners\DatabaseEventListener::class,
