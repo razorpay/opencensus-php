@@ -162,7 +162,7 @@ const SettlementScheduleV2 = (props) => {
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SettlementGuide)
             }
           >
             <div className="button-wrapper ml-8">

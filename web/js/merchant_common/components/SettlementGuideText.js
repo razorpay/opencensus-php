@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 const SettlementGuideText = ({ user }) => {
   const showRzpBranding =
     user?.isOrgAllowedFunctionality?.('external_links') &&
     !isOrgFeatureExist('hide_razorpay_text_link');
+  const docHref = useMemo(() => getCustomURL('http://razorpay.com/settlement'), []);
+
   return (
     <div className="settlement-row">
       <div className="col-md-6 col-md-offset-3 col-sm-12 text-center">
@@ -20,12 +23,7 @@ const SettlementGuideText = ({ user }) => {
         >
           <div>
             <ShowWhen additionalCondition={() => showRzpBranding}>
-              <a
-                className="btn-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                href="http://razorpay.com/settlement"
-              >
+              <a className="btn-link" target="_blank" rel="noopener noreferrer" href={docHref}>
                 See our Settlements Guide
               </a>
             </ShowWhen>

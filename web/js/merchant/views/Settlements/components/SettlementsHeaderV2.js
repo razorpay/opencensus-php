@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -45,6 +45,7 @@ import {
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 const SettlementsHeaderV2 = ({
   user,
@@ -80,6 +81,7 @@ const SettlementsHeaderV2 = ({
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
   const currency = user.merchant.currency;
+  const docHref = useMemo(() => getCustomURL('http://razorpay.com/settlement'), []);
 
   const viewSettlementCycle = () => {
     openModal({
@@ -219,7 +221,7 @@ const SettlementsHeaderV2 = ({
                   size="medium"
                   icon={ExternalLinkIcon}
                   iconPosition="right"
-                  href="http://razorpay.com/settlement"
+                  href={docHref}
                   target="_blank"
                   rel="noreferrer noopener"
                   onClick={instrumentDocumentationLinkClick}

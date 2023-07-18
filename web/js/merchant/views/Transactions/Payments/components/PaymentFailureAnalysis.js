@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import GistInfoCard from 'common/ui/GistInfoCard';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 const getDisplayText = (type) => {
   return {
@@ -48,6 +49,10 @@ export default ({ data, user }) => {
   }, [data, user]);
 
   const DISPLAY_TEXT = getDisplayText(user.faTextVariant);
+  const docHref = useMemo(
+    () => getCustomURL('https://razorpay.com/docs/payments/payments/failure-analysis/'),
+    [],
+  );
   return data && isValidShow ? (
     <>
       <div className={`failure-analysis-container${!mismatchCount ? ' add-gap' : ''}`}>
@@ -84,7 +89,7 @@ export default ({ data, user }) => {
         )}
         <span>
           Need more help?{' '}
-          <a href="https://razorpay.com/docs/payments/payments/failure-analysis/">
+          <a href={docHref} target="_blank" rel="noreferrer noopener">
             <b>View Documentation</b>
           </a>
         </span>

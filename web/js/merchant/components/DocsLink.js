@@ -31,6 +31,11 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
   );
 }
 
+const ORG_TO_URL_MAPPING = {
+  curlec: 'curlec.com',
+  rzp: 'razorpay.com',
+};
+
 /** Docs URL:
  * https://razorpay.com/docs/invoices/
  * https://axisbank-docs.razorpay.com/invoices/
@@ -39,14 +44,17 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
 
 export function getCustomURL(url) {
   const user = getUser();
-  if (user.isOrgRZP || user.isOrgCurlec) return url;
+  const orgCustomCode = user.orgCustomCode;
+
+  if (user.isOrgRZP) return url;
+  if (user.isOrgCurlec) {
+    return url.replace(ORG_TO_URL_MAPPING.rzp, ORG_TO_URL_MAPPING[orgCustomCode]);
+  }
 
   const urlSplits = url?.split('://');
-  const org = user.orgCustomCode === 'axis' ? 'axisbank' : user.orgCustomCode;
+  const org = orgCustomCode === 'axis' ? 'axisbank' : orgCustomCode;
   const link =
-    user.orgCustomCode !== 'axis'
-      ? url
-      : `https://${org}-docs.${urlSplits[1]}`.replace('/docs', '');
+    orgCustomCode !== 'axis' ? url : `https://${org}-docs.${urlSplits[1]}`.replace('/docs', '');
 
   return link;
 }
