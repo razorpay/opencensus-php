@@ -354,6 +354,16 @@ class FeaturesTest extends OAuthTestCase
                     'short_key' => "custom_hard_limit_configurations",
                     'description' => "This limit is the total amount for which its merchant can do collections and gets settled for"
                 ]
+            ],
+            "rzp/pg/org/admindashboard/banking_program/InstrumentRequest" => [
+                "default_iir_config" => [
+                    "type" => "string",
+                    "short_key" => "default_iir_config",
+                    "description" => "Each org will be having some default instrument requests set which would be triggered
+                post a merchant gets activated for that org. These requests will be triggered only when the
+                `default_instruments_enablement` flag is enabled on the org and merchant level flag for disabling the
+                same is disabled"
+                ],
             ]
         ];
 

@@ -19,6 +19,8 @@ class Constants
 
     const DirectAccountsPayoutModeConfig = 'direct_accounts_payout_mode_config';
 
+    const OrgDefaultIIR = 'default_iir_config';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -27,6 +29,7 @@ class Constants
         self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",
         self::CustomHardLimitConfigurations  => "rzp/pg/org/onboarding/banking_program/Config",
         self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
+        self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest"
     ];
 
 }

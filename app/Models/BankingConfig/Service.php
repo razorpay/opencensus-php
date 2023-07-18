@@ -60,7 +60,6 @@ class Service extends Base\Service
 
         $fields = $input[Constants::FIELDS];
 
-        return $dcsConfigService->fetchConfiguration($key, $entityId, $fields, $this->mode);    }
-
-
+        return $dcsConfigService->fetchConfiguration($key, $entityId, $fields, $this->mode);
+    }
 }

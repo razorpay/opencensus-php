@@ -1143,8 +1143,11 @@ class Route
 
         // Routes for DCS banking configs
         'fetch_all_banking_configs'                => ['get',        'all_banking_configs',                          'BankingConfigController@fetchAllBankingConfigs'                    ],
+        'internal_get_banking_config'              => ['get',        'internal/banking_configs',                     'BankingConfigController@getBankingConfig'                          ],
         'get_banking_config'                       => ['get',        'banking_configs',                              'BankingConfigController@getBankingConfig'                          ],
         'edit_banking_configs'                     => ['post',       'banking_configs_upsert',                       'BankingConfigController@upsertBankingConfigs'                      ],
+
+        'bulk_auto_create_iir'                     => ['post',       'admin/auto_create_iir_bulk',                   'TerminalController@bulkAutoCreateIIR'                              ],
 
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
@@ -5070,6 +5073,7 @@ class Route
     public static $internal = [
         'internal_org_get',
         'banking_org_merchant_onboarding_escalations',
+        'internal_get_banking_config',
         'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
         'payments_api_backfill',
@@ -7168,6 +7172,7 @@ class Route
         'merchant_put_rm_details',
         'merchant_patch_rm_details',
         'merchant_bmc_response_fetch_admin',
+        'bulk_auto_create_iir',
         'dispute_ingestion',
         'dispute_dcs_config_add',
         'dispute_dcs_config_update',
@@ -8709,6 +8714,7 @@ class Route
         'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
+        'bulk_auto_create_iir'                     => Permission::INTERNAL_INSTRUMENT_CREATE_BULK,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => Permission::EDIT_ACTION,
@@ -12292,6 +12298,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'bulk_auto_create_iir',
             'dispute_ingestion',
             'dispute_dcs_config_add',
             'dispute_dcs_config_update',
@@ -15596,6 +15603,7 @@ class Route
         ],
 
         'terminals_service' => [
+            'internal_get_banking_config',
             'feature_get_multiple_internal',
             'internal_org_get',
             'internal_merchant_fetch',

@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Exception\MethodInstrumentsTerminalsSyncException;
 use RZP\Http\Controllers\InstrumentRequestController;
@@ -386,6 +387,43 @@ class TerminalsService
         $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function automaticIIROnboarding($merchant): void
+    {
+        if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_AUTOMATE_IIR) === true and
+            $merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTOMATE_IIR) === false)
+        {
+            $path = "v2/auto_create_iir";
+            $content = [
+                Terminal\Entity::ORG_ID => $merchant->org->getId(),
+                Terminal\Entity::MERCHANT_ID => $merchant->getId(),
+            ];
+
+            $headers = $this->getMerchantHeadersForInstrumentRequest($merchant->getId());;
+
+            //Call terminals service
+            try {
+                $response = $this->proxyTerminalService($content,Requests::POST,$path,[],$headers);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->count(Merchant\Metric::MERCHANTS_AUTOMATIC_IIR_CREATION,
+                    array_merge($content,["success"=>false]));
+
+                $this->app['trace']->traceException($exception, Trace::ERROR, TraceCode::TERMINALS_AUTOMATE_IIR_ONBORDING, [
+                    'merchantId' => $merchant->getId(),
+                    'message' => $exception->getMessage(),
+                ]);
+
+                return;
+            }
+
+            $this->trace->count(Merchant\Metric::MERCHANTS_AUTOMATIC_IIR_CREATION,
+                array_merge($content,["success"=>true]));
+
+        }
+
     }
 
     public function fetchMerchantTerminalById(string $terminalId, string $merchantId)

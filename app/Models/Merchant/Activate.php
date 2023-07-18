@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Services\TerminalsService;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -139,6 +140,10 @@ class Activate extends Base\Core
         if($isNoDocOnboardedMerchant === false)
         {
             $merchant->activate();
+
+            //Automatic Terminal Onboarding
+            $this->app['terminals_service']->automaticIIROnboarding($merchant);
+
             //Will be added back when we test e2e flow for onboarding all the merchants
             //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
@@ -156,6 +161,11 @@ class Activate extends Base\Core
             if($isEnablePaymentsForNoDocMerchants === true)
             {
                 $merchant->activate();
+
+                //Automatic Terminal Onboarding
+                $this->app['terminals_service']->automaticIIROnboarding($merchant);
+
+
                 //Will be added back when we test e2e flow for onboarding all the merchants
                 //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
@@ -257,6 +267,10 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+
+        //Automatic Terminal Onboarding
+        $this->app['terminals_service']->automaticIIROnboarding($merchant);
+
         //Will be added back when we test e2e flow for onboarding all the merchants
         //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
@@ -561,6 +575,9 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+
+        //Automatic Terminal Onboarding
+        $this->app['terminals_service']->automaticIIROnboarding($merchant);
 
         // - merchant funds will be set on hold when the linked account details are updated after activation.
         // - the $merchant->deactivate() method will be called upon receiving a update request which will deactivates account, disables live mode and

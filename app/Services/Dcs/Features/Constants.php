@@ -82,6 +82,8 @@ class Constants
     const HideInstrumentRequest = 'hide_instrument_request';
     const CustomReportExtensions = 'custom_report_extensions';
     const QualityCheckIntimationEmail = 'quality_check_intimation_email';
+    const EnableAutomateIIR = 'default_instruments_enablement';
+    const DisableAutomateIIR = 'automated_iir_request';
     const PgLedgerReverseShadowEnabled = 'pg_ledger_reverse_shadow_enabled';
     const ShopifyPaymentsReport = 'shopify_payments_report';
     const NoDocOnboardingEnabled = 'no_doc_onboarding_enabled';
@@ -250,6 +252,8 @@ class Constants
         self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
         self::CustomReportExtensions => "rzp/pg/org/dashboard/banking_program/Reporting",
         self::QualityCheckIntimationEmail => "rzp/pg/org/communication/banking_program/MerchantCommunication",
+        self::EnableAutomateIIR => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
+        self::DisableAutomateIIR => "rzp/pg/merchant/admindashboard/banking_program/InstrumentRequest",
         self::ShopifyPaymentsReport => "rzp/pg/merchant/report/Features",
         self::NoDocOnboardingEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
         self::OnboardedViaV2ApiEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
@@ -440,6 +444,8 @@ class Constants
         APIFeaturesConstants::HIDE_INSTRUMENT_REQUEST                       => self::HideInstrumentRequest,
         APIFeaturesConstants::CUSTOM_REPORT_EXTENSIONS                      => self::CustomReportExtensions,
         APIFeaturesConstants::QC_INTIMATION_EMAIL                           => self::QualityCheckIntimationEmail,
+        APIFeaturesConstants::DISABLE_AUTOMATE_IIR                          => self::DisableAutomateIIR,
+        APIFeaturesConstants::ORG_AUTOMATE_IIR                              => self::EnableAutomateIIR,
         APIFeaturesConstants::ENABLE_VPA_VALIDATE                           => self::ValidateVpa,
         APIFeaturesConstants::SAVE_VPA                                      => self::UseSavedVpa,
         APIFeaturesConstants::GOOGLE_PAY_OMNICHANNEL                        => self::GooglePayOmnichannel,
@@ -563,6 +569,7 @@ class Constants
         self::ShowCustomDccDisclosures       => 'direct',
         self::AdminPasswordResetEnabled => 'direct',
         self::SkipKycVerification => 'direct',
+        self::EnableAutomateIIR     => 'direct'
     ];
 
     public static array $loadedReadEnabledFeatures = [];

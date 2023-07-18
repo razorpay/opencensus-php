@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use Route;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Exception\BadRequestException;
@@ -479,6 +480,24 @@ class TerminalController extends Controller
             $input,
             \Requests::POST,
             'v1/merchants/terminals'
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkAutoCreateIIR()
+    {
+        $input = Request::all();
+
+        if(isset($input["merchant_ids"]) === false)
+        {
+            throw new BadRequestValidationFailureException("merchant id's not present");
+        }
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            'v2/auto_create_iir_bulk'
         );
 
         return ApiResponse::json($response);

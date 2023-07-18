@@ -1588,6 +1588,12 @@ class Constants
 
     const ENABLE_CUSTOMER_AMOUNT = 'enable_customer_amount';
 
+    //Automate IIR
+
+    const ORG_AUTOMATE_IIR = 'org_automate_iir';
+
+    const DISABLE_AUTOMATE_IIR = 'automated_iir_request';
+
     const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
 
     // form builder
@@ -2571,6 +2577,8 @@ class Constants
         self::ENABLE_APPROVAL_VIA_OAUTH       => true,
         self::SKIP_KYC_VERIFICATION           => true,
         self::GAI_PAYOUTS_SYNC                => true,
+        self::ORG_AUTOMATE_IIR                => true,
+        self::DISABLE_AUTOMATE_IIR            => true,
     ];
 
     // Entity type constants
