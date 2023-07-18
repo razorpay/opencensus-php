@@ -6,10 +6,10 @@ interface ActivationStatusFilterProps {
 
 export const activationStatusMenu = [
   { label: 'Select Option', name: '' },
-  { label: 'Activated', name: 'activated' },
+  { label: 'Activated', name: 'all_activated' },
+  { label: 'Under Review', name: 'all_under_review' },
   { label: 'Rejected', name: 'rejected' },
   { label: 'Needs Clarification', name: 'needs_clarification' },
-  { label: 'Under Review', name: 'under_review' },
   { label: 'Not Submitted', name: 'not_submitted' },
 ];
 

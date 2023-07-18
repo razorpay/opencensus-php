@@ -28,17 +28,15 @@ const RzpSuccessContainer = ({
         </div>
         <div className="text-container" data-testid="success-text">
           <span className="success-text">
-            Razorpay account access link will be sent to your affiliate's email at&nbsp;
-          </span>
-          <div className="merchant-email-wrapper">
-            <span className="merchant-email">{merchantEmail}</span>
+            Razorpay account access link will be sent to your affiliate's email at{' '}
+            <span className="merchant-contact">{merchantEmail}</span>
             {merchantContact ? (
               <>
                 &nbsp; and via SMS on &nbsp;
-                <span className="merchant-email">+91-{merchantContact}</span>
+                <span className="merchant-contact">+91-{merchantContact}</span>
               </>
             ) : null}
-          </div>
+          </span>
         </div>
       </div>
       <div className="social-share-container">

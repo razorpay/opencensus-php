@@ -709,7 +709,7 @@ class ProductSubMerchantsList extends ListContainer {
 
   render() {
     // prettier-ignore
-    const { user, product, referralData, location, isSubMerchantKycResellerEnabled, org } = this.props;
+    const { user, product, referralData, location, org } = this.props;
     const { capitalLoading, capitalItems, isPGInvitesEmpty, isPGInvitesEmptyCheckLoading } =
       this.state;
     let appIdColumn = [];
@@ -811,12 +811,6 @@ class ProductSubMerchantsList extends ListContainer {
       return columns;
     };
 
-    // using this style to left align table content when reseller kyc experiment disabled
-    // as with experiment enabled we center align them
-    const disabledResellerKYCStyle = !isSubMerchantKycResellerEnabled
-      ? 'reseller-kyc-experiment-disabled'
-      : '';
-
     const currentProduct = product === PRODUCT_TYPE.PG ? 'page-pg' : 'page-x';
 
     return (
@@ -825,11 +819,7 @@ class ProductSubMerchantsList extends ListContainer {
           {!shouldShowWelcomeScreen && isPGProductWithInviteFlow ? (
             <PGInvitesNavLinks prefix="/partners/submerchants" />
           ) : null}
-          <div
-            className={`content-wrapper ${disabledResellerKYCStyle} ${
-              shouldShowWelcomeScreen ? 'partner-welcome' : ''
-            }`}
-          >
+          <div className={`content-wrapper ${shouldShowWelcomeScreen ? 'partner-welcome' : ''}`}>
             {!shouldShowWelcomeScreen ? (
               <div
                 className={`submerchant-filter-wrapper ${
@@ -845,7 +835,9 @@ class ProductSubMerchantsList extends ListContainer {
                   showActivationStatusFilter={isCombinedContactFilterEnabled}
                   showContactFilter={isCombinedContactFilterEnabled}
                   showEmailIdFilter={!isCombinedContactFilterEnabled}
-                  showPhoneNumberFilter={!isCombinedContactFilterEnabled}
+                  showPhoneNumberFilter={
+                    product === PRODUCT_TYPE.PG && !isCombinedContactFilterEnabled
+                  }
                 />
                 <button
                   class="btn btn-default export-all-btn"
