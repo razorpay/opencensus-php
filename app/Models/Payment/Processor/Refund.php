@@ -1887,20 +1887,26 @@ trait Refund
 
         $baseAmount = intval($refundInput[RefundEntity::BASE_AMOUNT]);
 
+        $isRefundForAuthorizedPayment= boolval($refundInput[RefundConstants::REFUND_AUTHORIZED_PAYMENT] ?? '0');
+
         // Updates payment attributes. Throws exception on failure
-        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount, $isRefundForAuthorizedPayment);
     }
 
-    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount)
+    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount, $isRefundForAuthorizedPayment = false)
     {
         // setting strict attribute to true on mutex acquire so that updates dont happen on redis exceptions
         $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $refundId, $refundAmount, $refundBaseAmount)
+            function() use ($payment, $refundId, $refundAmount, $refundBaseAmount, $isRefundForAuthorizedPayment)
             {
                 if ($payment->isExternal() == false)
                 {
                     $payment->reload();
+                }
+                else
+                {
+                    $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
                 }
 
                 $this->trace->info(
@@ -2001,8 +2007,11 @@ trait Refund
         // for few cases where we do not update payment but just send a kafka message to create transaction, we need to ensure payment update
         // successfully happens. If journalId is present in the request but is an empty string then payment update did not happen on scrooge
         if($isPGLedgerEnabled === false or $journalId === "") {
+            // Figure out if this is an authorized only refund
+            $isRefundForAuthorizedPayment= boolval($refundInput[RefundConstants::REFUND_AUTHORIZED_PAYMENT] ?? '0');
+
             // Updates payment attributes. Throws exception on failure
-            $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+            $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount, $isRefundForAuthorizedPayment);
         }
 
         try

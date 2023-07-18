@@ -172,6 +172,7 @@ class Validator extends Base\Validator
         'refunds.*.payment_id'  => 'required|unsigned_id',
         'refunds.*.amount'      => 'required|integer',
         'refunds.*.base_amount' => 'required|integer',
+        'refunds.*.refund_authorized_payment' => 'sometimes|bool',
     ];
 
     protected static $refundsTransactionCreateRules = [
@@ -185,6 +186,7 @@ class Validator extends Base\Validator
         'fee'              => 'sometimes|integer',
         'tax'              => 'sometimes|integer',
         'journal_id'       => 'sometimes|unsigned_id',
+        'refund_authorized_payment' => 'sometimes|bool',
     ];
 
     protected static $createReversalRules = [
