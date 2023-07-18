@@ -1002,11 +1002,6 @@ class Core extends Base\Core
                     'error' => $e->getMessage()
                 ]);
 
-            $this->trace->count(Metric::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT,
-                                [
-                                    'error' => $e->getMessage()
-                                ]);
-
             throw $e;
         }
     }
@@ -1059,11 +1054,6 @@ class Core extends Base\Core
                 [
                     'error' => $e->getMessage()
                 ]);
-
-            $this->trace->count(Metric::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT,
-                                [
-                                    'error' => $e->getMessage()
-                                ]);
 
             throw $e;
         }

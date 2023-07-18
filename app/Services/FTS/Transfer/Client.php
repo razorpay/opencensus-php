@@ -64,11 +64,6 @@ class Client extends BaseHandler
               [
                 'error' => $e->getMessage()
               ]);
-
-            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
-                                [
-                                    'error' => $e->getMessage()
-                                ]);
         }
 
         return $response;

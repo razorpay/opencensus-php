@@ -459,11 +459,6 @@ abstract class NodalAccount extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $data
             );
-
-            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
-                                [
-                                    'error' => $e->getMessage()
-                                ]);
         }
     }
 
