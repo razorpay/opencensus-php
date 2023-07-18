@@ -157,8 +157,7 @@ abstract class BaseProxyController extends Controller
 
         foreach ($routes as $route)
         {
-            //This delimiter escapes any special characters in the $route variable before constructing the regular expression pattern
-            if (preg_match('~' . preg_quote($this->routesMap[$route], '~') . '~', $path, $matches) === 1)
+            if (preg_match($this->routesMap[$route], $path, $matches) === 1)
             {
                 return $route;
             }

@@ -133,7 +133,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 'twirpPath' => $twirpPath,
             ]);
 
-            return $this->sendRequestAndParseResponse($route, 'POST', $twirpPath, $payload, $headers);
+            return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $payload, $headers);
         }
 
     }
@@ -188,7 +188,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         try
         {
-            $response = $this->sendRequestAndParseResponse($route, 'POST', $twirpPath, $body, $headers);
+            $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
 
             $this->routeSpecificPostProcessor($routeKey, $body);
 
