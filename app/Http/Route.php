@@ -4417,7 +4417,17 @@ class Route
         '1cc_methods_offers_preflight'    => ['options',    '1cc/merchant/methods_offers',                          'OneClickCheckoutController@allowCors'],
 
         'admin_1cc_whitelist_coupons'           => ['post', '1cc/admin/merchants/{id}/coupons/whitelist', 'OneClickCheckoutController@adminWhitelistCoupons'],
-        'wallet_dashboard_proxy'                => ['any',  'wallet/proxy/{path?}',                  'WalletProxyController@proxy']
+        'wallet_dashboard_proxy'                => ['any',  'wallet/proxy/{path?}',                  'WalletProxyController@proxy'],
+        '1cc_order_edit_search_products'         => ['get', '1cc/magic/platform/products/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_get_orders'              => ['get', '1cc/magic/platform/orders/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_get_order'               => ['get', '1cc/magic/platform/order', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_begin_order_edit'        => ['post', '1cc/magic/platform/order/edit/start', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_commit_order_edit'       => ['post', '1cc/magic/platform/order/edit/commit', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_add_item_discount'       => ['post', '1cc/magic/platform/order/edit/discount/add', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_remove_item_discount'    => ['post', '1cc/magic/platform/order/edit/discount/remove', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_add_item_variant'        => ['post', '1cc/magic/platform/order/edit/lineitem/add', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_edit_line_item_quantity'  => ['post', '1cc/magic/platform/order/edit/lineitem/quantity', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_order_edit_add_custom_item'          => ['post', '1cc/magic/platform/order/edit/lineitem/custom', 'OneClickCheckoutController@handleMerchantDashboardReq'],
     ];
 
     public static $public = [
@@ -7100,6 +7110,17 @@ class Route
         '1cc_item_category_search_product',
         '1cc_fee_rule_associations',
          '1cc_clear_fee_rule',
+
+        '1cc_order_edit_search_products',
+        '1cc_order_edit_get_orders',
+        '1cc_order_edit_get_order',
+        '1cc_order_edit_begin_order_edit',
+        '1cc_order_edit_commit_order_edit',
+        '1cc_order_edit_add_item_discount',
+        '1cc_order_edit_remove_item_discount',
+        '1cc_order_edit_add_item_variant',
+        '1cc_order_edit_edit_line_item_quantity',
+        '1cc_order_edit_add_custom_item',
 
         // splitz
         'splitz_evaluate_bulk_proxy',

@@ -1266,6 +1266,18 @@ class UserRolesScope
             '1cc_cod_eligibility_attribute_upsert_bulk'           => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete'                => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete_by_attribute'   => [Role::OWNER, Role::ADMIN],
+
+            '1cc_order_edit_search_products'                      => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_get_orders'                           => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_get_order'                            => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_begin_order_edit'                     => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_commit_order_edit'                    => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_add_item_discount'                    => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_remove_item_discount'                 => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_add_item_variant'                     => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_edit_line_item_quantity'              => [Role::OWNER, Role::ADMIN],
+            '1cc_order_edit_add_custom_item'                      => [Role::OWNER, Role::ADMIN],
+
             'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN],
             'shipping_provider_post'                              => [Role::OWNER, Role::ADMIN],
