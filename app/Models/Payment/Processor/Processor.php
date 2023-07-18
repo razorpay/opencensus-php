@@ -727,34 +727,39 @@ class Processor
                         'merchant_id' => $merchant->getId(),
                     ]);
 
-                    $inputFields = [];
+                    $inputField = '';
                     if ((empty($input[Payment\Entity::RECURRING]) === false))
                     {
-                        $inputFields[] = Payment\Entity::RECURRING;
+                        $inputField = Payment\Entity::RECURRING;
                     }
                     if ((empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false))
                     {
-                        $inputFields[] = Payment\Entity::SUBSCRIPTION_ID;
+                        $inputField = Payment\Entity::SUBSCRIPTION_ID;
                     }
                     if ((empty($input[Payment\Entity::INVOICE_ID]) === false))
                     {
-                        $inputFields[] = Payment\Entity::INVOICE_ID;
+                        $inputField = Payment\Entity::INVOICE_ID;
                     }
                     if ((empty($input[Payment\Entity::TOKEN_ID]) === false))
                     {
-                        $inputFields[] = Payment\Entity::TOKEN_ID;
+                        $inputField = Payment\Entity::TOKEN_ID;
                     }
                     if ((empty($input[Payment\Entity::OFFER_ID]) === false))
                     {
-                        $inputFields[] = Payment\Entity::OFFER_ID;
+                        $inputField = Payment\Entity::OFFER_ID;
                     }
                     if ((empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false))
                     {
-                        $inputFields[] = Payment\Entity::CHARGE_ACCOUNT;
+                        $inputField = Payment\Entity::CHARGE_ACCOUNT;
+                    }
+
+                    if ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true))
+                    {
+                        $inputField = 'tokenised_card_without_cryptogram';
                     }
 
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON, [
-                        'inputFields' => $inputFields,
+                        'inputField' => $inputField,
                         'merchant_id' => $merchant->getId(),
                     ]);
 
