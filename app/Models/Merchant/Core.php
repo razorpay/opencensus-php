@@ -440,20 +440,21 @@ class Core extends Base\Core
      *
      * @param array  $input
      * @param Entity $aggregatorMerchant
+     * @param bool   $optimise     // this flag specifies to optimise the subM creation
      * @param bool   $linkedAccount
      * @param bool   $accountEntity
-     * @param bool   $optimizeCreationFlow
+     * @param bool   $v2CreateFlow // This flag specifies that the subM creation via V2 onboarding APIs
      *
      * @return Account\Entity|Entity
      * @throws BadRequestException
-     * @throws Exception\LogicException
      */
     public function createSubMerchant(
         array $input,
         Entity $aggregatorMerchant,
         bool $linkedAccount = true,
         bool $accountEntity = false,
-        bool $optimizeCreationFlow = false)
+        bool $v2CreateFlow = false,
+        bool $optimise = false)
     {
         $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
 
@@ -475,6 +476,8 @@ class Core extends Base\Core
 
         $input['email'] = empty($input['email']) ? $aggregatorMerchant->getEmail() : $input['email'];
 
+        $jobInput = $this->getInputDataForSubMSupportEntities($input);
+
         if ($accountEntity === true)
         {
             $entity = new Account\Entity;
@@ -482,22 +485,7 @@ class Core extends Base\Core
         else
         {
             $entity = new Entity;
-
-            if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
-            {
-                $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Entity::LEGAL_ENTITY_ID]);
-
-                unset($input[Entity::LEGAL_ENTITY_ID]);
-            }
-            else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
-            {
-                $externalLegalEntityId = $input[Entity::LEGAL_EXTERNAL_ID];
-
-                unset($input[Entity::LEGAL_EXTERNAL_ID]);
-            }
         }
-
-        $jobInput = $this->getInputDataForSubMSupportEntities($input);
 
         $contactMobile = $input[Detail\Entity::CONTACT_MOBILE] ?? null;
         unset($input[Detail\Entity::CONTACT_MOBILE]);
@@ -582,22 +570,16 @@ class Core extends Base\Core
             ]
         );
 
-        $properties = [
-            'id'            => $aggregatorMerchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.optimise_submerchant_create_exp_id'),
-            'request_data'  => json_encode(
-                [
-                    'partner_id' => $aggregatorMerchant->getId(),
-                ]),
-        ];
-
-        $experimentEnable = $this->isSplitzExperimentEnable($properties, 'enable');
-
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
 
-        if($experimentEnable == true)
+        Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
+
+            $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
+        });
+
+        if($optimise == true)
         {
             $this->repo->saveOrFail($subMerchant);
 
@@ -618,18 +600,13 @@ class Core extends Base\Core
         {
             $this->associateLegalEntityToSubmerchant($subMerchant, $jobInput);
 
-            Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
-
-                $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
-            });
-
             $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant, $jobInput[Detail\Entity::BUSINESS_TYPE]);
 
             $this->repo->saveOrFail($subMerchant);
 
-            Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $optimizeCreationFlow) {
+            Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $v2CreateFlow) {
 
-                $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
+                $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $v2CreateFlow, $subMerchantDetailInput);
 
             });
 
@@ -2040,14 +2017,14 @@ class Core extends Base\Core
     }
 
     public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null,
-                                                  bool $optimizeCreationFlow = false, array $input = [])
+                                                  bool $v2CreateFlow = false, array $input = [])
     {
         Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
 
             (new Detail\Core)->createMerchantDetails($merchant, $input);
         });
 
-        if ($optimizeCreationFlow === true)
+        if ($v2CreateFlow === true)
         {
             MerchantSupportingEntitiesCreateJob::dispatch($this->mode, $merchant->getId(), $aggregatorMerchant->getId());
         }
@@ -4751,7 +4728,7 @@ class Core extends Base\Core
             'product'     => $product,
         ];
 
-        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+        return (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
     /**
@@ -5047,6 +5024,102 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+
+    /**
+     * This function would provide the details needed for partner dashboard without querying relevant entities after subM creation
+     * @param Entity      $partner
+     * @param Entity      $subMerchant
+     * @param array       $input
+     * @param User\Entity $subMUser
+     *
+     * @return array
+     */
+    public function getSubmerchantV2(Entity $partner, Entity $subMerchant, array $input, User\Entity $subMUser): array
+    {
+        // The appId is considered for the current created subM
+        $appId = $input['merchant_access_map']['entity_id'];
+
+        $partnerUser = $input['partner_user_mapping'];
+
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+        $actualProduct = $product;
+
+        $params = array();
+
+        $subMerchantData = $subMerchant->attributesToArray();
+
+        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
+        {
+            if ($product === Product::CAPITAL)
+            {
+                $product                 = Product::BANKING;
+                $params[ENTITY::PRODUCT] = Product::BANKING;
+                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+            else
+            {
+                $params[ENTITY::PRODUCT] = $product;
+                $params[Constants::WITHOUT_TAGS] = [
+                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                ];
+            }
+            // optimisation for capital subM is not picked for optimisation as of now. They have query filters related to tags and product
+            $subMerchantData = $this->repo->merchant->findSubmerchantByIdAndConnectedAppId($subMerchant->getId(), $appId, $params)->toArrayPublic();
+        }
+
+        //kyc access will always be null when the subM is created as the request for it will be created in async by subM.
+        $subMerchantData['kyc_access'] = null;
+
+        // This refers to the application to which the current created subM is mapped to.
+        $subMerchantData[Entity::APPLICATION] = [OAuthApp\Entity::ID => $appId];
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANT_BY_ID_REQUEST,
+            [
+                "input"            => $input,
+                "product"          => $product,
+                "actual_product"   => $actualProduct,
+                "submerchant_id"   => $subMerchant->getId()
+            ],
+        );
+
+
+        // There will be only one product associated with subM when it has been created. i.e. only one merchant_users entry.
+        // Hence hard coding the response.
+        $subMerchantData[Entity::PRODUCT] = [$subMerchant->getId() => [$product]];
+
+        // When a subMerchant is created via cta/ bulk upload from partner dashbaord, the activation status of it will be null.
+        // When a subMerchant is created via admin bulk upload, this function's return type is not consumed in preparing the output csv file.
+        $subMerchantData[Entity::DETAILS] = [
+            Detail\Entity::ACTIVATION_STATUS => null,
+        ];
+
+        $subMerchantData[Entity::USER] = [
+            User\Entity::EMAIL          => $subMUser->email,
+            User\Entity::CONTACT_MOBILE => $subMUser->contact_mobile,
+            User\Entity::NAME           => $subMUser->name,
+        ];
+
+
+        if ($product === Product::BANKING)
+        {
+            $caStatus = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function () use ($subMerchant) {
+
+                return $this->getBankingAccountStatus($subMerchant);
+            });
+
+            $subMerchantData[Entity::BANKING_ACCOUNT] = [ENTITY::CA_STATUS => $caStatus];
+        }
+
+        // the current dashboard access just checks whether the loggedIn user is part of merchant_users of the subM
+        // So that would mean if a partner user mapping is created then dashboard access will be true, if not false.
+        $subMerchantData[Entity::DASHBOARD_ACCESS] = (empty($partnerUser) === false);
+
+        return $subMerchantData;
     }
 
     /**

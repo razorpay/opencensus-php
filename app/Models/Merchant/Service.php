@@ -888,8 +888,8 @@ class Service extends Base\Service
                 'product'     => $product,
             ]);
 
-            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER], function () use ($ownerId, $subMerchant, $product, $role) {
-                $this->core()->attachSubMerchantUser($ownerId, $subMerchant, $product, $role);
+            return Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER], function () use ($ownerId, $subMerchant, $product, $role) {
+                return $this->core()->attachSubMerchantUser($ownerId, $subMerchant, $product, $role);
             });
         }
     }
@@ -1197,9 +1197,9 @@ class Service extends Base\Service
     {
         $isPartnerFlow = $aggregator->isPartner();
 
-        $subMerchant = $subMerchant->toArray();
+        $subMerchant = $subMerchant->toSelectAttributes(Constants::SUBMERCHANT_MAIL_ATTRIBUTES);
 
-        $aggregator = $aggregator->toArray();
+        $aggregator = $aggregator->toSelectAttributes(Constants::SUBMERCHANT_MAIL_ATTRIBUTES);
 
         if ($isPartnerFlow === true)
         {
@@ -6857,11 +6857,14 @@ class Service extends Base\Service
 
     protected function createSubMerchantAndSetRelationsInternal($input,
                                                                 $merchant,
-                                                                $isLinkedAccount,
                                                                 $ownerId,
                                                                 $product,
-                                                                $optimizeCreationFlow = false)
+                                                                array $createFlags)
     {
+        $v2CreateFlow    = $createFlags['v2CreateFlow'];
+        $optimise        = $createFlags['optimise'];
+        $isLinkedAccount = $createFlags['linkedAccount'];
+
         $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
 
         $allowReversals = (bool) ($input['allow_reversals'] ?? false);
@@ -6872,32 +6875,34 @@ class Service extends Base\Service
 
         unset($input['allow_reversals']);
 
-        $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_CORE], function () use ($input, $merchant, $isLinkedAccount, $optimizeCreationFlow) {
+        $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_CORE], function () use ($input, $merchant, $isLinkedAccount, $v2CreateFlow, $optimise) {
 
             /** @var  Core */
             $merchantCore = $this->core();
 
             /** @var Entity */
-            return $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $optimizeCreationFlow);
+            return $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $v2CreateFlow, $optimise);
         });
 
         $newUser = null;
 
         $createdNewUser = false;
 
+        $response = [];
+
         if ($isLinkedAccount === false)
         {
             SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId(), Constants::PARTNER_REFERRAL_TAG_PREFIX);
 
-            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product) {
+            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product, & $response) {
 
-                $this->attachSubMerchantUserIfApplicable($ownerId, $subMerchant, $merchant, $product);
+                $response['partner_user_mapping'] = $this->attachSubMerchantUserIfApplicable($ownerId, $subMerchant, $merchant, $product);
             });
 
-            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant) {
+            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant, & $response) {
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
-                $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+                $response['merchant_access_map'] = $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
             });
         }
 
@@ -6955,10 +6960,10 @@ class Service extends Base\Service
 
         $this->trace->count(PartnerMetric::SUBMERCHANT_USER_CREATE_TOTAL, ['submerchant_user_created' => $createdNewUser]);
 
-        return [$subMerchant, $newUser, $createdNewUser];
+        return [$subMerchant, $newUser, $createdNewUser, $response];
     }
 
-    protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input, bool $optimizeCreationFlow = false)
+    protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input, bool $v2CreateFlow = false)
     {
         $ownerId = $merchant->primaryOwner()->getId();
 
@@ -6983,21 +6988,37 @@ class Service extends Base\Service
         unset($input['account']);
         unset($input[Entity::PRODUCT]);
 
-        list($subMerchant, $newUser, $createdNew) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($optimizeCreationFlow, $input, $merchant, $isLinkedAccount, $ownerId, $product) {
-            if ($optimizeCreationFlow === false) {
-                [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function () use (
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.optimise_submerchant_create_exp_id'),
+            'request_data'  => json_encode(
+                [
+                    'partner_id' => $merchant->getId(),
+                ]),
+        ];
+
+        $optimise = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+
+        $createFlags['v2CreateFlow']  = $v2CreateFlow;
+        $createFlags['optimise']      = $optimise;
+        $createFlags['linkedAccount'] = $isLinkedAccount;
+
+
+        list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $createFlags) {
+            if ($createFlags['v2CreateFlow'] === false) {
+                [$subMerchant, $newUser, $createdNew, $response] = $this->repo->transactionOnLiveAndTest(function () use (
                     $input,
                     $merchant,
-                    $isLinkedAccount,
                     $ownerId,
+                    $createFlags,
                     $product
                 ) {
-                    return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, false);
+                    return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $createFlags);
                 });
             } else {
-                [$subMerchant, $newUser, $createdNew] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
+                [$subMerchant, $newUser, $createdNew, $response] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $createFlags);
             }
-            return [$subMerchant, $newUser, $createdNew];
+            return [$subMerchant, $newUser, $createdNew, $response];
         });
 
         if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
@@ -7035,7 +7056,18 @@ class Service extends Base\Service
             }));
         }
 
-        return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
+        $response['product'] = $product;
+
+        if($optimise == true)
+        {
+            $subMCreateResponse = $this->getSubMerchantResponseV2($merchant, $subMerchant, $response, $newUser);
+        }
+        else
+        {
+            $subMCreateResponse = $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
+        }
+
+        return $subMCreateResponse;
     }
 
     /**
@@ -7060,6 +7092,35 @@ class Service extends Base\Service
             $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId(), [Entity::PRODUCT => $product]);
 
             $subMerchant = $subMerchant->toArrayPartner();
+        }
+        else
+        {
+            $subMerchant = $subMerchant->toArrayPublic();
+        }
+
+        return $subMerchant;
+    }
+
+
+    /**
+     *
+     * @param Entity           $merchant
+     * @param Entity           $subMerchant
+     * @param array            $data // contains relevant partner <> subM entity data that are created
+     * @param User\Entity|null $subMUser //this param will be null incase of subMUser is not created (route dashboard_access=false)
+     *
+     * @return array
+     */
+    protected function getSubMerchantResponseV2(Entity $merchant, Entity $subMerchant, array $data, ?User\Entity $subMUser): array
+    {
+        if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
+        {
+            //
+            // This gets submerchant for a partner, with extra details required by partner dashboard.
+            // This does not get called for pure platform partners.
+            //
+            $subMerchant = $this->core()->getSubmerchantV2($merchant, $subMerchant, $data, $subMUser);
+
         }
         else
         {
@@ -7097,7 +7158,7 @@ class Service extends Base\Service
 
         $appId = $app->getId();
 
-        (new AccessMap\Service)->mapOAuthApplication(
+        return (new AccessMap\Service)->mapOAuthApplication(
                                                 $subMerchant->getId(),
                                                 ['application_id' => $appId, 'partner_id' => $merchant->getId()]);
     }

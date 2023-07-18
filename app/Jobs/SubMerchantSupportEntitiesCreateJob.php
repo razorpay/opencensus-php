@@ -95,7 +95,6 @@ class SubMerchantSupportEntitiesCreateJob extends Job
                                 $merchantCore->addToDefaultUnClaimedGroup($merchant);
                                 $merchantCore->syncHeimdallRelatedEntities($merchant, $this->input);
                                 $merchantCore->setSubMerchantMaxPaymentAmount($partner, $merchant, $this->input[Detail\Entity::BUSINESS_TYPE]);
-                                $merchantCore->assignSubMerchantPricingPlan($partner, $merchant, $this->input['linked_account']);
                                 $this->repoManager->saveOrFail($merchant);
                             }
                         );

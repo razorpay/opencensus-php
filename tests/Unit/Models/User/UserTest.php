@@ -338,7 +338,7 @@ class UserTest extends TestCase
 
         $response = $this->userService->updateUserMerchantMapping('100002Razorpay', $content['merchantData']);
 
-        $this->assertEquals($expected, $response);
+        $this->assertEquals($expected, $response->toArrayPublic());
     }
 
     public function testBulkUpdateUserMapping()

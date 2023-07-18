@@ -180,6 +180,22 @@ class PublicEntity extends UniqueIdEntity
         return $this->arrangePublicAttributes($array);
     }
 
+    //This function can be used to select the required attributes from the entity and wouldn't load relations for the entity
+    public function toSelectAttributes(array $attributes): array
+    {
+        $response = [];
+
+        foreach($attributes as $attribute)
+        {
+            if(array_key_exists($attribute, $this->attributes))
+            {
+                $response[$attribute] = $this->attributes[$attribute];
+            }
+        }
+
+        return $response;
+    }
+
     public function toArrayInternal()
     {
         $attributes = $this->attributesToArray();

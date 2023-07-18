@@ -1088,7 +1088,7 @@ class Service extends Base\Service
         return $this->core->setUserPassword($user, $input);
     }
 
-    public function updateUserMerchantMapping(string $id, array $input): array
+    public function updateUserMerchantMapping(string $id, array $input): Entity
     {
         $input[Merchant\Entity::PRODUCT] = $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct();
 
@@ -1100,7 +1100,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::UPDATE_USER_MERCHANT_MAPPING_SUCCESS);
 
-        return $user->toArrayPublic();
+        return $user;
     }
 
     /**
@@ -1591,7 +1591,9 @@ class Service extends Base\Service
 
         $this->validator->validateInput('teamManagement', $teamData);
 
-        $response = $this->updateUserMerchantMapping($userId, $input);
+        $user = $this->updateUserMerchantMapping($userId, $input);
+
+        $response = $user->toArrayPublic();
 
         if ($this->auth->getRequestOriginProduct() === Product::BANKING &&
             isset($input['action']) === true &&

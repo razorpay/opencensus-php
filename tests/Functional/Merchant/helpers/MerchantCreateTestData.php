@@ -207,11 +207,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'              => 'NewSubmerchant',
-                'name'            => 'Submerchant',
+                'id'                   => 'NewSubmerchant',
+                'name'                 => 'Submerchant',
                 // Email is same as the test merchant
-                'email'           => 'test@razorpay.com',
-                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+                'email'                => 'test@razorpay.com',
+                'pricing_plan_id'      => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+                'kyc_access'           => null,
+                'has_dashboard_access' => true,
+                'products'             => ['NewSubmerchant' => ['primary']],
+                'user'                 => ['email' => 'test@razorpay.com'],
+                'details'              => ['activation_status' => null]
             ],
         ],
     ],
