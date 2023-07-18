@@ -34,6 +34,8 @@ class Constants
     const MANDATORY = 'mandatory';
     const PLATFORM  = 'platform';
 
+    const SCOPE_POLICIES = 'scope_policies';
+
     const STORE_CONSENTS_RETRY_PERIOD_IN_SEC            = 86400;
     const STORE_CONSENTS_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'store_consents_attempt_count';
     const STORE_CONSENTS_MAX_ATTEMPT                    = 3;
@@ -55,6 +57,12 @@ class Constants
         'L2_Terms and Conditions',
         'L2_Privacy Policy',
         'L2_Service Agreement',
+    ];
+
+    const VALID_LEGAL_DOC_OAUTH = [
+        'Oauth_App Policies_Terms & Conditions',
+        'Oauth_RazorpayX Policies_Terms & Conditions',
+        'Oauth_Terms & Conditions',
     ];
 
     //TODO:: Change it back to 30 after data fix
@@ -83,6 +91,8 @@ class Constants
                                  'Oauth' . '_' . MeConstants::TERMS . ',' .
                                  'X_Privacy Policy' . ',' .
                                  'X_Terms of Use' . ',' .
+                                 'Oauth_App Policies' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS . ',' .
                                  self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
@@ -135,6 +145,14 @@ class Constants
             self::PLATFORM  => self::PG
         ],
         'Oauth' . '_' . MeConstants::TERMS             => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_App Policies' . '_' . MeConstants::TERMS             => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS             => [
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],

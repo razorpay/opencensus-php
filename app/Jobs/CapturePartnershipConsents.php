@@ -14,6 +14,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 
 class CapturePartnershipConsents extends Job
@@ -182,6 +183,8 @@ class CapturePartnershipConsents extends Job
 
         if ($milestone === Constants::OAUTH)
         {
+            $validDocTypes = ConsentConstant::VALID_LEGAL_DOC_OAUTH;
+
             $consentDetails = $this->repoManager->merchant_consents->getConsentDetailsForMerchantIdAndEntityId($merchantId, $validDocTypes, $input[Consent\Entity::ENTITY_ID], $input[Consent\Entity::ENTITY_TYPE]);
 
             if ($consentDetails === null)

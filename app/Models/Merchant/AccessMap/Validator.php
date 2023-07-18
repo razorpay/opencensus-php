@@ -16,7 +16,8 @@ class Validator extends Base\Validator
         'application_id' => 'required|alpha_num|size:14',
         'partner_id'     => 'required|alpha_num|size:14',
         'env'            => 'sometimes|string',
-        'ip'             => 'sometimes|string'
+        'ip'             => 'sometimes|string',
+        'scope_policies' => 'sometimes|array'
     ];
 
     protected static $connectedApplicationsRules = [

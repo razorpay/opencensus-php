@@ -113,6 +113,7 @@ use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
@@ -9811,14 +9812,28 @@ class Core extends Base\Core
             DEConstants::CONSENT            => true,
             DEConstants::IP_ADDRESS         => $data['ip'],
             DEConstants::ENTITY_ID          => $data[Entity::APPLICATION_ID],
-            Consent\Entity::ENTITY_TYPE     => Entity::APPLICATION,
-            DEConstants::DOCUMENTS_DETAIL   => [
-                [
-                    DEConstants::TYPE => Constants::TERMS,
-                    DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
-                ]
-            ]
+            Consent\Entity::ENTITY_TYPE     => Entity::APPLICATION
         ];
+
+        if(empty($data[ConsentConstant::SCOPE_POLICIES]) === false)
+        {
+            foreach ($data[ConsentConstant::SCOPE_POLICIES] as $policy => $policyUrl)
+            {
+                $documentDetail = [
+                    DEConstants::TYPE => $policy . '_' . Constants::TERMS,
+                    DEConstants::URL  => $policyUrl,
+                ];
+
+                $input[DEConstants::DOCUMENTS_DETAIL][] = $documentDetail;
+            }
+        }
+        else
+        {
+            $input[DEConstants::DOCUMENTS_DETAIL][] = [
+                DEConstants::TYPE => Constants::TERMS,
+                DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
+            ];
+        }
 
         CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, Constants::OAUTH);
     }
