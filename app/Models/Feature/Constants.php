@@ -3614,6 +3614,11 @@ class Constants
             'display_name'  => 'Enable Syncing of Payouts to Accounting Tool',
             'documentation' => 'Feature flag used to enable syncing of payouts to accounting tool.'
         ],
+        self::RAZORPAY_WALLET => [
+            'feature'       => self::RAZORPAY_WALLET,
+            'display_name'  => 'Enable White-labelled wallet feature',
+            'documentation' => 'Single source of truth for wallet feature enablement status for a merchant.'
+        ],
     ];
 
     /**
