@@ -147,6 +147,16 @@ class PaymentEvent extends Event
                 'vpa'       => $payment->getVpa(),
                 'upi_type'  => $upiType ?? null
             ];
+            // for in app payment add reference 2 parameter
+            if($payment->isInAppUPI() === true)
+            {
+                if(isset($properties['payment']['reference2']) === false)
+                {
+                    $properties['payment'] += [
+                        'reference2' => $payment->getReference2(),
+                    ];
+                }
+            }
         }
 
 

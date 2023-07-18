@@ -10385,6 +10385,12 @@ trait Authorize
             {
                 $payment->setReference2(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]));
             }
+
+            // for in app payment , bank account will be set temproarily
+            if ($payment->isInAppUPI() === true)
+            {
+                $payment->setReference2(Payment\Entity::BANK_ACCOUNT);
+            }
         }
         catch (\Throwable $e)
         {
