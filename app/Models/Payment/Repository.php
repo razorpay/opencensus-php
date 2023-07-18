@@ -715,7 +715,7 @@ EOT;
 
         try
         {
-            if($this->checkWdaRouteForFetchPayment($expands, $this->getWdaConnectionType($connection)) === true)
+            if($this->checkWdaRouteForFetchPayment($this->getWdaConnectionType($connection)) === true)
             {
                 $wdaQueryBuilder = $this->buildWdaQuery($query, $connection, $merchantId, $mysqlParams);
 
@@ -749,9 +749,9 @@ EOT;
                 {
                     $wdaStartTimeMs = round(microtime(true) * 1000);
 
-                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params);
+                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params, $expands);
 
-                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $result, $wdaStartTimeMs);
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $result, $wdaStartTimeMs, $expands);
 
                     if ($difference === false)
                     {
@@ -789,9 +789,9 @@ EOT;
                 {
                     $wdaStartTimeMs = round(microtime(true) * 1000);
 
-                    $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+                    $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query, $expands);
 
-                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs, $expands);
 
                     if ($difference === false)
                     {

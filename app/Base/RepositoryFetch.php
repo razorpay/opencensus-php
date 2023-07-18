@@ -267,7 +267,7 @@ trait RepositoryFetch
 
         try
         {
-            if($this->checkWdaRoute($expands, $baseQueryPresent, $connectionType) === true)
+            if($this->checkWdaRoute($baseQueryPresent, $connectionType) === true)
             {
                 $wdaQueryBuilder = $this->buildWdaQueryBuilder($query, $mysqlParams, $merchantId, $connectionType);
 
@@ -309,9 +309,9 @@ trait RepositoryFetch
                 {
                     $wdaStartTimeMs = round(microtime(true) * 1000);
 
-                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params);
+                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params, $expands);
 
-                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $paginatedResult, $wdaStartTimeMs);
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $paginatedResult, $wdaStartTimeMs, $expands);
 
                     if($difference === false)
                     {
@@ -352,9 +352,9 @@ trait RepositoryFetch
             {
                 $wdaStartTimeMs = round(microtime(true) * 1000);
 
-                $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+                $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query, $expands);
 
-                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs, $expands);
 
                 if ($difference === false) {
                     return $wdaEntities;
@@ -388,11 +388,11 @@ trait RepositoryFetch
         return $entities;
     }
 
-    public function checkWdaRoute($expands, $baseQueryPresent, $connectionType)
+    public function checkWdaRoute($baseQueryPresent, $connectionType)
     {
         try
         {
-            return ((sizeof($expands) === 0) and ($baseQueryPresent === false)
+            return (($baseQueryPresent === false)
                    and ($this->checkIfWDARoute($connectionType) === true));
         }
         catch(\Throwable $ex)
@@ -440,44 +440,6 @@ trait RepositoryFetch
         $this->buildWDAFetchQuery($wdaQueryBuilder, $mysqlParams);
 
         return $wdaQueryBuilder;
-    }
-
-    public function wdaFetch($query, $mysqlParams, $connectionType)
-    {
-        $wdaQueryBuilder = new WDAQueryBuilder();
-
-        $wdaQueryBuilder->addQuery($this->getTableName(), '*')
-            ->resources($this->getTableName());
-
-        $wdaQueryBuilder->namespace($query->getConnection()->getDatabaseName());
-
-        if($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT)
-        {
-            $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
-        }
-        else
-        {
-            $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
-        }
-
-        $this->buildWDAFetchQuery($wdaQueryBuilder, $mysqlParams);
-
-        $wdaClient = $this->app['wda-client']->wdaClient;
-
-        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
-            "wda_query_builder" => $wdaQueryBuilder->build()->serializeToJsonString(),
-        ]);
-
-        $wdaResponse = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(),$query->getModel(),[]);
-
-        $collection = new PublicCollection();
-
-        foreach ($wdaResponse as $arr)
-        {
-            $collection->push($entity);
-        }
-
-        return $collection;
     }
 
     public function compareEntities($warmStorageDbResponse, $wdaResponseArray) : array
@@ -623,11 +585,11 @@ trait RepositoryFetch
         return $resultCollection;
     }
 
-    protected function getPaginatedFromWDA(WDAQueryBuilder $wdaQueryBuilder, BuilderEx $query, array $params = [])
+    protected function getPaginatedFromWDA(WDAQueryBuilder $wdaQueryBuilder, BuilderEx $query, array $params = [], array $expands = [])
     {
         $this->resolvePageForPagination($query, $params);
 
-        $paginatedResult = $this->simpleWdaPaginate($wdaQueryBuilder, $query);
+        $paginatedResult = $this->simpleWdaPaginate($wdaQueryBuilder, $query, $expands);
 
         $hasMorePages = $paginatedResult->hasMorePages();
 
@@ -637,7 +599,7 @@ trait RepositoryFetch
         return $resultCollection;
     }
 
-    protected function simpleWdaPaginate(WDAQueryBuilder $wdaQueryBuilder, BuilderEx $query, $perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    protected function simpleWdaPaginate(WDAQueryBuilder $wdaQueryBuilder, BuilderEx $query, $expands, $perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
@@ -649,7 +611,7 @@ trait RepositoryFetch
         $wdaQueryBuilder->skip(($page - 1) * $perPage);
         $wdaQueryBuilder->size($perPage + 1);
 
-        $items = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+        $items = $this->getEntitiesFromWda($wdaQueryBuilder, $query, $expands);
 
         $currentPage = $page;
 
@@ -663,7 +625,7 @@ trait RepositoryFetch
         ));
     }
 
-    public function getEntitiesFromWda(WDAQueryBuilder $wdaQueryBuilder, $query)
+    public function getEntitiesFromWda(WDAQueryBuilder $wdaQueryBuilder, $query, array $expands = [])
     {
         $wdaClient = $this->app['wda-client']->wdaClient;
 
@@ -672,7 +634,7 @@ trait RepositoryFetch
             'route_name'    => $this->app['api.route']->getCurrentRouteName(),
         ]);
 
-        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(),[]);
+        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(), $expands);
 
         $collection = new PublicCollection();
 
@@ -863,14 +825,13 @@ trait RepositoryFetch
 
         try
         {
-            if(sizeof($expands) === 0 and ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
-            $this->checkWdaRouteForFetchPayment($expands, $connectionType) === true)
+            if($this->checkWdaRouteForFetchPayment($connectionType) === true)
             {
                 $wdaStartTimeMs = round(microtime(true) * 1000);
 
-                $wdaEntities =  $this->fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId);
+                $wdaEntities =  $this->fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId, $expands);
 
-                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs, $expands);
 
                 if($difference === false)
                 {
@@ -889,7 +850,7 @@ trait RepositoryFetch
         return $entities;
     }
 
-    protected function compareAndLogEntitiesInShadowMode($wdaEntities, $warmDbEntities, $startTimeMs)
+    protected function compareAndLogEntitiesInShadowMode($wdaEntities, $warmDbEntities, $startTimeMs, array $expands = [])
     {
         $endTimeMs = round(microtime(true) * 1000);
 
@@ -897,7 +858,7 @@ trait RepositoryFetch
 
         $wdaComparisonStartTimeMs = round(microtime(true) * 1000);
 
-        $difference = $this->compareWDAEntitiesAndLogDifference($wdaEntities, $warmDbEntities, ['method_name' => __FUNCTION__]);
+        $difference = $this->compareWDAEntitiesAndLogDifference($wdaEntities, $warmDbEntities, ['method_name' => __FUNCTION__], $expands);
 
         $wdaComparisonEndTimeMs = round(microtime(true) * 1000);
 
@@ -919,7 +880,7 @@ trait RepositoryFetch
         return true;
     }
 
-    protected function fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId)
+    protected function fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId, array $expands = [])
     {
         $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
             'method_name'   => __FUNCTION__,
@@ -958,7 +919,7 @@ trait RepositoryFetch
 
         $wdaClient = $this->app['wda-client']->wdaClient;
 
-        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(),[]);
+        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(), $expands);
 
         if (count($ids) !== count($responseArray))
         {
@@ -982,9 +943,9 @@ trait RepositoryFetch
         return $collection;
     }
 
-    protected function checkWdaRouteForFetchPayment(array $expands, string $connectionType) : bool
+    protected function checkWdaRouteForFetchPayment(string $connectionType) : bool
     {
-        return (sizeof($expands) === 0 and $this->checkIfWDARoute($connectionType) === true);
+        return $this->checkIfWDARoute($connectionType) === true;
 
     }
 
@@ -1556,7 +1517,7 @@ trait RepositoryFetch
         return $ordered + $array;
     }
 
-    public function compareWDAEntitiesAndLogDifference($wdaResponseCollection, $warmStorageDbCollection, array $extraTrace = [])
+    public function compareWDAEntitiesAndLogDifference($wdaResponseCollection, $warmStorageDbCollection, array $extraTrace = [], array $expands = [])
     {
         if($wdaResponseCollection->count() !== $warmStorageDbCollection->count())
         {
@@ -1589,6 +1550,12 @@ trait RepositoryFetch
             if(array_key_exists($wdaResponse[$primaryKeyName], $warmDbMap) === true)
             {
                 $diffStatus = $this->compareWDAEntityAndLogDifference($wdaResponse[$primaryKeyName], $wdaResponse->toArray(), $warmDbMap[$wdaResponse[$primaryKeyName]]->toArray(), $extraTrace);
+
+                if(sizeof($expands) > 0 and $diffStatus === false)
+                {
+                    $diffStatus = $this->compareWDAEntityAndLogDifferenceWithExpands($wdaResponse[$primaryKeyName], $wdaResponse, $warmDbMap[$wdaResponse[$primaryKeyName]], $expands);
+                }
+
                 if($diffStatus)
                 {
                     return true;
@@ -1608,6 +1575,122 @@ trait RepositoryFetch
                 'wda_different_ids' => $wdaDifferentIds,
                 'warm_db_different_ids' => array_keys($warmDbMap),
             ]);
+        }
+
+        return false;
+    }
+
+    public function compareWDAEntityAndLogDifferenceWithExpands(string $id, $wdaResponseArray, $warmStorageDbResponse, array $expands = [])
+    {
+        try
+        {
+            foreach($expands as $expand)
+            {
+                if(str_contains($expand,'.') === false)
+                {
+                    if(!is_null($wdaResponseArray[$expand]))
+                    {
+                        if(get_class($wdaResponseArray[$expand]) === 'Illuminate\\Support\\Collection')
+                        {
+                            for($i=0; $i<sizeof($warmStorageDbResponse[$expand]); $i++)
+                            {
+                                if($this->shadowModeEntityComparison($warmStorageDbResponse[$expand][$i]->toArray(), $wdaResponseArray[$expand][$i]->toArray(), $id, $expand))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return $this->shadowModeEntityComparison($warmStorageDbResponse[$expand]->toArray(), $wdaResponseArray[$expand]->toArray(), $id, $expand);
+                        }
+                    }
+                }
+                else
+                {
+                    $wdaArray = $wdaResponseArray;
+                    $tidbArray = $warmStorageDbResponse;
+                    $relations = explode(".",$expand);
+                    foreach($relations as $relation)
+                    {
+                        if(! is_null($wdaArray[$relation]))
+                        {
+                            if(get_class($wdaArray[$relation]) === 'Illuminate\\Support\\Collection')
+                            {
+                                for($i=0; $i<sizeof($wdaArray[$relation]); $i++)
+                                {
+                                    if($this->shadowModeEntityComparison($tidbArray[$relation][$i]->toArray(), $wdaArray[$relation][$i]->toArray(), $id, $expand))
+                                    {
+                                        return true;
+                                    }
+                                    $wdaArray[$i] = $wdaArray[$i][$relation];
+                                    $tidbArray[$i] = $tidbArray[$i][$relation];
+                                }
+                            }
+                            else
+                            {
+                                $status =  $this->shadowModeEntityComparison($tidbArray[$relation]->toArray(), $wdaArray[$relation]->toArray(), $id, $expand);
+
+                                if($status)
+                                {
+                                    return true;
+                                }
+                            }
+                            $wdaArray = $wdaArray[$relation];
+                            $tidbArray = $tidbArray[$relation];
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::COMPARE_WDA_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                    'api' => $warmStorageDbResponse,
+                    'wda' => $wdaResponseArray,
+                ]);
+
+            return true;
+        }
+
+    }
+
+    public function shadowModeEntityComparison($warmStorageDbResponse, $wdaResponseArray, $id, $expand)
+    {
+        $inconsistentParams = [];
+
+        $responseDiff = $this->compareEntities($warmStorageDbResponse, $wdaResponseArray);
+
+        if (empty($responseDiff) === false)
+        {
+            $inconsistentParams["different_keys"] = (!is_null($responseDiff['api'])) ? array_keys($responseDiff['api']) : array_keys($responseDiff);
+
+            if((isset($responseDiff['wda']['updated_at']) === true) and (isset($responseDiff['api']['updated_at']) === true))
+            {
+                $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
+                    'id'          => $id,
+                    'diff'        => $inconsistentParams,
+                    'expand'      => $expand,
+                    'updated_at_difference' => abs($responseDiff['wda']['updated_at'] - $responseDiff['api']['updated_at']),
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
+                    'id'          => $id,
+                    'diff'        => $inconsistentParams,
+                    'expand'      => $expand,
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+
+            return true;
         }
 
         return false;
@@ -1653,9 +1736,10 @@ trait RepositoryFetch
         }
         catch(\Throwable $e)
         {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::COMPARE_WDA_ERROR,
                 [
+                    'error' => $e->getMessage(),
                     'api' => $warmStorageDbResponse,
                     'wda' => $wdaResponseArray,
                 ]);
