@@ -828,6 +828,11 @@ class ViewDataSerializerHosted extends Base\Core
                 }
             }
 
+            if ($externalEntity->getMethod() === SubscriptionRegistration\Method::CARD){
+
+                $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $externalEntity->getFrequency() ?? null;
+            }
+
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $externalEntity->entity;
