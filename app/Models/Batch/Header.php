@@ -1200,6 +1200,8 @@ class Header
     // PL Service
     const PL_V2_REFERENCE_ID        = 'Reference Id';
     const PL_V2_UPI_LINK            = 'Upi Link';
+    //this will store all the header names of format custom_field[key]
+    public static array $plV2CustomFields = [];
 
     //Merchant activation Header
     const BUSINESS_TYPE            = Detail\Entity::BUSINESS_TYPE;
@@ -5483,6 +5485,20 @@ class Header
             $expectedHeaders[] = self::PL_V2_UPI_LINK;
         }
 
+        /**
+         * Checks for the custom field headers of format custom_field[key]
+         * If they are present and correct then it will add it to expected headers array
+         * */
+        if (($type === Type::PAYMENT_LINK_V2))
+        {
+            $isCustomFieldsPresent = self::getAndvalidateCustomFieldHeaders($actualHeaders);
+            if($isCustomFieldsPresent === true) {
+                   foreach (self::$plV2CustomFields as $customField){
+                        $expectedHeaders[] = $customField;
+                   }
+               }
+        }
+
         //
         // For Pricing Rule batch, we want to optionally accept the PRICING_RULE_UPDATE
         // headers.
@@ -6157,5 +6173,41 @@ class Header
             $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
         }
 
+    }
+
+    /**
+     *checks if the custom_field headers is present and extract the value of key from custom_field[key] into customFieldHeaders array.
+     * send customFieldHeaders to validateCustomFields Function for validation of this key.
+     * If the keys are validate. we will add the headers(custom_field[key]) to plV2DynamicField array.
+     */
+    public static function getAndvalidateCustomFieldHeaders($actualHeaders) : bool
+    {
+        $customFieldHeaders = [];
+
+        $searchPrefix = "custom_field[";
+        $searchSuffix = "]";
+
+        foreach ($actualHeaders as $key) {
+            if ((str_starts_with($key, $searchPrefix)) and
+                str_ends_with($key, $searchSuffix))
+            {
+                $filteredKey = substr($key, strlen($searchPrefix), -strlen($searchSuffix));
+                $customFieldHeaders[] = $filteredKey;
+            }
+        }
+
+        if ($customFieldHeaders === []) {
+            return false;
+        }
+
+        $areValidCustomField = (new Validator())->validateCustomFields($customFieldHeaders);
+
+        if($areValidCustomField === true){
+            foreach ($customFieldHeaders as $customField) {
+                self::$plV2CustomFields[] = "custom_field[". $customField . "]";
+            }
+        }
+
+        return $areValidCustomField;
     }
 }

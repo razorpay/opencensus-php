@@ -10,6 +10,8 @@ use Lib\Gstin;
 
 use RZP\Base;
 use RZP\Exception;
+use Illuminate\Http\Request;
+use RZP\Http\Controllers\PlinkController;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -2879,6 +2881,67 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED
             );
         }
+    }
+
+    /**
+     * we will iterate over each value of customFields array and check the value with the label of the custom field
+     * if all the values of customFields are present in the configuration then it will return true otherwise false.
+     */
+    public function validateActualAndExpectedCustomFields($configs, $customFields) :bool {
+        foreach ($customFields as $field) {
+            $isFieldPresent = false;
+
+            foreach($configs as $config) {
+                if($config->configuration !== null and
+                $config->configuration->label === $field){
+                    $isFieldPresent = true;
+                    break;
+                }
+            }
+
+            if ($isFieldPresent === false)
+            {
+                return $isFieldPresent;
+            }
+        }
+        return true;
+    }
+
+    protected function parseResponseForCustomFields($response, $customFields) : bool{
+        $data = $response->getData();
+
+        if ($data != null and
+            isset($data->configurations)){
+            $configs = $data->configurations;
+
+           return $this->validateActualAndExpectedCustomFields($configs, $customFields);
+        }
+        return false;
+    }
+
+    /**
+     * sends a request to payment link service to fetch all the configuration that merchant is using currently related to custom field
+     * parseResponseForCustomFields extract the label name from the configuration and validates it with values in customFields array
+     */
+    public function validateCustomFields($customFields) : bool{
+        try {
+            $app = App::getFacadeRoot();
+            $originalRequest = $app['request'];
+
+            $newPath = 'v1/payment_links/configuration/custom_fields';
+            $newRequest = Request::create($newPath, "GET", $originalRequest->all(), [], []);
+            $newRequest->server->set('QUERY_STRING', '');
+
+            $response = (new PlinkController())->sendRequest($newRequest);
+            return self::parseResponseForCustomFields($response,$customFields);
+        }
+        catch(\Throwable $e)
+        {
+            $this->getTrace()->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST_FAILURE,[
+                'message' => $e->getMessage()
+            ]);
+        }
+        return false;
     }
 
     protected function validateContactGstin($attribute, $value)

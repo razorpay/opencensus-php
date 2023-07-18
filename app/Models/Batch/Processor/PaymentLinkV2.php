@@ -34,5 +34,14 @@ class PaymentLinkV2 extends Base
             // Inserting just before amount in paise thingy
             array_splice($headers, 4, 0, Batch\Header::PL_V2_UPI_LINK);
         }
+
+        if ((empty($entry) === false) and Batch\Header::$plV2CustomFields != [])
+        {
+            foreach (Batch\Header::$plV2CustomFields as $customField)
+            {
+                $headers[] = $customField;
+            }
+
+        }
     }
 }
