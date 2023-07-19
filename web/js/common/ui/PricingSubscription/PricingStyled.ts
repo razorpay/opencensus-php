@@ -320,24 +320,42 @@ const StyleToastLink = styled.div`
   }
 `;
 const StyleInfo = styled.div(
-  ({ theme }: { theme: Theme }) => `
+  ({ theme, isMobile }: { theme: Theme; isMobile: boolean }) => `
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: ${isMobile ? 'column' : 'row'}; 
+  justify-content: ${isMobile ? 'flex-start' : 'center'}; 
+  align-items: ${isMobile ? 'flex-start' : 'center'};
   margin-bottom: ${theme.spacing[6]}px;
   > p {
     display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     color: ${theme.colors.surface.text.muted.lowContrast};
-    > div {
+    margin-bottom : ${isMobile ? theme.spacing[3] : theme.spacing[0]}px;
+
+    ${isMobile ? '&::before' : '&:not(:first-of-type)::before'} {
+      display: inline-block;
+      content: "";
       width: 8px;
       height: 8px;
       border-radius: ${theme.border.radius.round};
-      background: ${theme.colors.surface.action.icon.default.highContrast};
-      margin: 0 ${theme.spacing[4]}px;
+      background: ${theme.colors.surface.action.icon.default.lowContrast};
+      margin-right:${theme.spacing[4]}px;
+      margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
     }
   } 
+  > div:before {
+    display: inline-block;
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: ${theme.border.radius.round};
+    background: ${theme.colors.surface.action.icon.default.lowContrast};
+    margin-right:${theme.spacing[4]}px;
+    margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
+  }
+  
 
 `,
 );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import {
   StyledTr,
   StyledTd,
@@ -49,6 +49,12 @@ import {
 import rzpLogo from 'assets/rzp_logo.jpg';
 import { loadCheckoutScript } from 'merchant/views/Capital/utils';
 import { merchantFetch } from 'merchant/utils/ajax';
+import TncMobile from './PricingTnCMobile';
+import lazy from 'merchant/routes/LazyLoader';
+
+const TncDesktop = lazy(
+  () => import(/* webpackChunkName: 'PricingTncModalDesktopComponent' */ './PricingTnC'),
+);
 
 const TogglePlanValue = {
   monthly: 'monthly',
@@ -249,16 +255,27 @@ const ModalLoader = ({ closeModal }: { closeModal: () => void }): JSX.Element =>
   );
 };
 
-const PricingTncInfo = (): JSX.Element => {
+const PricingTncInfo = ({ isMobile }: { isMobile: boolean }): JSX.Element => {
+  const [isOpenTncModal, setOpenTnCModal] = useState(false);
+  const toggleTncModal = useCallback(
+    (): void => setOpenTnCModal((prevState) => !prevState),
+    [isOpenTncModal],
+  );
   return (
-    <StyleInfo>
-      <Text>
-        Auto Renewal Plans. No Refunds <Box /> *Prices mentioned are exclusive of GST
-      </Text>
-      {/* Full{' '}
-      <Link onClick={function noRefCheck() {}} variant="button">
-        Terms & Conditions
-      </Link> */}
+    <StyleInfo isMobile={isMobile}>
+      <Text>Auto Renewal Plans. No Refunds</Text>
+      <Text>*Prices mentioned are exclusive of GST </Text>
+      <Box width="fit-content" height="fit-content">
+        Full{'  '}
+        <Link onClick={toggleTncModal} variant="button">
+          Terms & Conditions
+        </Link>
+      </Box>
+      {isMobile ? (
+        <TncMobile isOpenTncModal={isOpenTncModal} toggleTncModal={toggleTncModal} />
+      ) : (
+        <TncDesktop isOpenTncModal={isOpenTncModal} toggleTncModal={toggleTncModal} />
+      )}
     </StyleInfo>
   );
 };
@@ -328,7 +345,7 @@ const handleCheckoutPayment =
       props.setLoading(false);
     }
   };
-
+const PricingTncInfoMemo = memo(PricingTncInfo);
 export {
   FooterButton,
   plansDetailsForViewMore,
@@ -337,7 +354,7 @@ export {
   TogglePlanValue,
   getPlanPrice,
   ModalLoader,
-  PricingTncInfo,
+  PricingTncInfoMemo,
   handleCheckoutPayment,
   getMonthlyDiscount,
 };

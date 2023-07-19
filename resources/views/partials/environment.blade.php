@@ -18,6 +18,7 @@
     window.BANK_DETAILS_URL = "{{ env('BANK_DETAILS_URL') }}";
     window.APP_NAME = "{{ env('APP_NAME') }}";
     window.LUMBERJACK_METRICS_API_URL = "{{ env('LUMBERJACK_METRICS_API_URL') }}";
+    window.RAZORPAY_WEBSITE = "{{ config('app.rzp_website_url') }}";
     
     // Sentry related configs
     window.APP_ENV = "{!! env('APP_ENV') !!}";

@@ -36,7 +36,7 @@ import {
   getPlanPrice,
   TogglePlanValue,
   ModalLoader,
-  PricingTncInfo,
+  PricingTncInfoMemo,
   handleCheckoutPayment,
 } from './PricingBundleCommon';
 
@@ -52,6 +52,7 @@ const PricingSubscriptionComponent = ({
   fetchGSModal,
   loading,
   gs_modals = {},
+  isMobile,
 }: PricingSubscriptionProps): React.ReactElement | null => {
   const isReadOnly = variant === PRICING_BUNDLE_VARIANT.READ_ONLY;
   const [isFullView, setFullView] = useState(false);
@@ -436,7 +437,7 @@ const PricingSubscriptionComponent = ({
             })}
         </StyledTr>
       </StyledTable>
-      {isFullView && <PricingTncInfo />}
+      {isFullView ? <PricingTncInfoMemo isMobile={isMobile} /> : null}
       <FooterButton handleToggle={handleToggle} isFullView={isFullView} handleClose={handleClose} />
     </StyledDiv>
   );
@@ -450,6 +451,7 @@ export default compose<any>(
   connect(
     (state) => ({
       user: state.session.user,
+      isMobile: state.app.isMobileResolution,
       ...state?.growthService?.gs_modals,
     }),
     (dispatch) => {

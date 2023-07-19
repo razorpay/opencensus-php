@@ -16,6 +16,7 @@ import { setCookie } from 'common/utils/cookies';
 import {
   TogglePlanValue,
   handleCheckoutPayment,
+  PricingTncInfoMemo,
 } from 'common/ui/PricingSubscription/PricingBundleCommon';
 import type {
   TrackingObjectType,
@@ -37,6 +38,7 @@ const BottomSheetPricingContainer = ({
   gs_modals,
   user,
   fetchGSModal,
+  isMobile,
 }: {
   pricingSubscription: pricingBundleAsset;
   templateId: string;
@@ -47,6 +49,7 @@ const BottomSheetPricingContainer = ({
     isAccountAndSettingsRevampEnabled: boolean;
   };
   fetchGSModal: ({ template_id }: { template_id: string }) => void;
+  isMobile: boolean;
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [isViewMore, setViewMore] = useState<boolean>(false);
@@ -227,9 +230,18 @@ const BottomSheetPricingContainer = ({
           </Carousel>
         ) : null}
         {isViewMore ? (
-          <Button isFullWidth onClick={handleClose()} size="small" type="button" variant="tertiary">
-            Not Interested
-          </Button>
+          <>
+            <PricingTncInfoMemo isMobile={isMobile} />
+            <Button
+              isFullWidth
+              onClick={handleClose()}
+              size="small"
+              type="button"
+              variant="tertiary"
+            >
+              Not Interested
+            </Button>
+          </>
         ) : null}
       </BottomSheetBody>
     </BottomSheet>
@@ -243,6 +255,7 @@ export default compose<any>(
   connect(
     (state) => ({
       user: state.session.user,
+      isMobile: state.app.isMobileResolution,
       ...state?.growthService?.gs_modals,
     }),
     (dispatch) => {

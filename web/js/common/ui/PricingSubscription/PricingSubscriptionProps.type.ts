@@ -52,6 +52,7 @@ interface PricingSubscriptionProps {
   fetchGSModal: ({ template_id }: { template_id: string }) => void;
   loading: boolean;
   gs_modals: pricingBundleAsset;
+  isMobile: boolean;
 }
 interface FooterButtonType {
   isFullView: boolean;
@@ -91,6 +92,12 @@ interface GetPlanPriceType {
   checkoutPayment: PaymentCheckoutFlowType;
 }
 
+interface TncModalText {
+  toggleTncModal: () => void;
+}
+interface TncModal extends TncModalText {
+  isOpenTncModal: boolean;
+}
 interface TrackingObjectType {
   toggle_switch?: string;
   cta_value?: string;
@@ -139,6 +146,8 @@ export type {
   PlansType,
   ViewMoreParams,
   TogglePlan,
+  TncModal,
+  TncModalText,
   TrackingObjectType,
   PaymentCheckoutFlowType,
   pricingBundleAsset,
