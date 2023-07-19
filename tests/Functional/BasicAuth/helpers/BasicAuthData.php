@@ -493,6 +493,16 @@ return [
         ],
     ],
 
+    'testAppAuthNewFlowWithPassportForCronWithAccountID' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testAppAuthNewFlowWithWrongPassportForCron' => [
         'request' => [
             'method' => 'POST',
@@ -1581,6 +1591,44 @@ return [
                 ],
                 'http_status_code' => 401,
             ],
+        ],
+    ],
+
+    'testMerchantAuthWithImpersonationCannotSkipWorkflow' => [
+        'request'   => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testMerchantAuthWithImpersonationCanSkipWorkflow' => [
+        'request'   => [
+            'url'     => '/merchants/onboarding/escalations',
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'limit' => [
+                    'settlement' => 1500000,
+                    'payment' => 1000000000,
+                ]
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

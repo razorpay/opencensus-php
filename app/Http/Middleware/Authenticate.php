@@ -16,22 +16,17 @@ use RZP\Http\OAuth;
 use RZP\Http\Route;
 use RZP\Trace\Tracer;
 use RZP\Http\P2pRoute;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Http\FeatureAccess;
 use RZP\Http\Response\Header;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Edge\PreAuthenticate;
 use RZP\Http\Edge\PostAuthenticate;
-use RZP\Exception\BadRequestException;
 
 
 class Authenticate
 {
     // Lists of metrics
     const METRIC_AUTH_HANDLE_MILLISECONDS = 'authenticate_handle_milliseconds.histogram';
-
-    const SSL_CERT_HEADER = 'X-Forwarded-Tls-Client-Cert';
 
     /**
      * Application instance
@@ -83,6 +78,7 @@ class Authenticate
     public function handle($request, Closure $next)
     {
         $startAt = millitime();
+        $endAt   = null;
 
         $span = Tracer::startSpan(['name' => self::METRIC_AUTH_HANDLE_MILLISECONDS]);
         $scope = Tracer::withSpan($span);
@@ -94,8 +90,6 @@ class Authenticate
         $route = $this->router->currentRouteName();
 
         $this->ba->init();
-
-        $bearerToken = null;
 
         [$successfulExecution, $error] = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT], function () {
             return $this->authenticateUsingPassport();
@@ -125,39 +119,24 @@ class Authenticate
                         return $this->authenticateBasicAuth($route);
                     });
             }
+
+            // end middleware latency histogram
+            $endAt = millitime();
+
+            // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
+            // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
+            $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false) and ($this->ba->isPublicAuth() === false));
+
+            (new PostAuthenticate)->handle($authenticated, $request);
         }
 
         $scope->close();
+
+        $endAt = empty($endAt) ? millitime() : $endAt;
         app()->trace->histogram(
             self::METRIC_AUTH_HANDLE_MILLISECONDS,
-            millitime() - $startAt,
+            $endAt - $startAt,
             $this->ba->getRequestMetricDimensions());
-
-        // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
-        // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
-        $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false) and ($this->ba->isPublicAuth() === false));
-
-        (new PostAuthenticate)->handle($authenticated, $request);
-
-        // Post process after authentication completes
-        $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
-
-        // white listing org and merchants based on features
-        if ($ret === null)
-        {
-            $ret = (new FeatureAccess)->verifyOrgAndMerchantFeatureAccess();
-        }
-
-        // null value indicates failure flow : do not validate further if previous validation failed
-        if ($ret === null)
-        {
-            $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
-        }
-
-        if ($ret === null)
-        {
-            $ret = $this->verifyTlsCertWhitelisted($request, $route);
-        }
 
         $passport = $this->requestContext->passport;
 
@@ -427,69 +406,6 @@ class Authenticate
         $this->app['trace']->info(TraceCode::RESOLVE_OAUTH_LOCALLY_RAZORX_VARIANT, $log);
 
         return (strtolower($variant) === 'on');
-    }
-
-    private function verifyTlsCertWhitelisted($request, $route)
-    {
-        if (in_array($route, Route::$tlsRoutes) === false)
-        {
-            return null;
-        }
-
-        $tlsRouteConfig = $this->app['api.route']->getTLSConfig();
-
-        $whiteListedDomainsString = $tlsRouteConfig[$route];
-
-        $whiteListedDomains = explode (",", $whiteListedDomainsString);
-
-        if (in_array('*', $whiteListedDomains) === true)
-        {
-            return null;
-        }
-
-        if ($request->hasHeader(self::SSL_CERT_HEADER) === false)
-        {
-            app()->trace->info(
-                TraceCode::SSL_HEADER_MISSING,
-                []
-            );
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
-        }
-
-        $certsString = $request->header(self::SSL_CERT_HEADER);
-
-        $certsArray = explode(',', $certsString);
-
-        foreach($certsArray as $cert)
-        {
-            $cert = urldecode($cert);
-
-            $start = "-----BEGIN CERTIFICATE-----\n";
-
-            $end = "\n-----END CERTIFICATE-----";
-
-            $cert = $start . $cert . $end;
-
-            $certDetails = openssl_x509_parse($cert);
-
-            if ($certDetails !== false)
-            {
-                $certCN = $certDetails["subject"]["CN"];
-
-                if (in_array($certCN, $whiteListedDomains) === true)
-                {
-                    return null;
-                }
-            }
-        }
-
-        app()->trace->info(
-            TraceCode::SSL_CERT_VALIDATION_FAILED,
-            []
-        );
-
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
     }
 
     /**

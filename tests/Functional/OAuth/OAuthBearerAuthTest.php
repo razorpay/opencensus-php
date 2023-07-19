@@ -3,12 +3,10 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use Event;
-use Mockery;
 use Carbon\Carbon;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
 use Razorpay\Edge\Passport\Passport;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Cache\Events\CacheHit;
 use Razorpay\Edge\Passport\OAuthClaims;
 use Illuminate\Cache\Events\CacheMissed;
@@ -20,9 +18,7 @@ use Razorpay\Edge\Passport\ConsumerClaims;
 use Razorpay\Edge\Passport\CredentialClaims;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
-use Razorpay\Edge\Passport\ImpersonationClaims;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Http\OAuthCache;
 use Illuminate\Cache\Events\KeyWritten;
 
@@ -897,6 +893,41 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->assertPassport();
         $this->assertPassportKeyExists('oauth.client_id');
         $this->assertPassportKeyExists('oauth.app_id');
+    }
+
+    public function testOauthwithImpersontaionWithoutAggregatorClient()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay',
+                'entity_type' => 'application'
+            ]
+        );
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'client_id' => $client->getId()], 'dev');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $this->fixtures->create('user', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->startTest();
+    }
+
+    public function testSendOtpWithBearerAuthWithoutRazorpayXFeatureEnabled()
+    {
+        $client = Client\Entity::factory()->create(['environment' => 'dev']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'client_id' => $client->getId()], 'dev');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $this->fixtures->create('user', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->startTest();
     }
 
     public function testBearerAuthWithPassport()

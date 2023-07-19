@@ -45,6 +45,7 @@ use RZP\Models\Merchant\Account\Entity as Account;
 
 use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Trace\Tracer;
+use RZP\Models\Merchant\RazorxTreatment;
 
 /**
  * Class BasicAuth
@@ -439,28 +440,6 @@ class BasicAuth
     protected $idempotencyKeyId = null;
 
     /**
-     *  Routes which are allowed to pass X-Razorpay-Account
-     * @var array
-     */
-    protected $whitelistRoutesForReferrerPartnerAccess = [
-        'merchant_activation_save',
-        'merchant_activation_details',
-        'merchant_document_upload',
-        'merchant_document_delete',
-        'merchant_store_add',
-        'merchant_store_fetch',
-        'merchant_activation_clarifications_save',
-        'merchant_activation_clarifications_fetch',
-        'merchant_save_business_website',
-        'merchant_website_section_action',
-        'fetch_merchant_escalation',
-        'merchant_fetch_config',
-        'merchant_activation_gst_details',
-        'merchant_document_url_fetch',
-        'merchant_nc_revamp_eligibility',
-    ];
-
-    /**
      * Holds passport jwt payload that gets built in api.
      * Ref https://write.razorpay.com/doc/about-edge-passport-mCa579K52t.
      * @var array
@@ -492,6 +471,33 @@ class BasicAuth
      * @var string
      */
     protected $accountIdFromBody = null;
+
+    // TODO: remove this variable once the Experiment is complete
+    // this variable is used by BusinessAuth Middleware to run additional checks
+    public bool $isEdgeMiddlewareExperimentEnabled = false;
+
+    /**
+     *  Routes which are allowed to pass X-Razorpay-Account on proxy auth
+     *  TODO: move this to BusinessAuth Middleware once experiment is completed
+     * @var array
+     */
+    public array $whitelistRoutesForReferrerPartnerAccess = [
+        'merchant_activation_save',
+        'merchant_activation_details',
+        'merchant_document_upload',
+        'merchant_document_delete',
+        'merchant_store_add',
+        'merchant_store_fetch',
+        'merchant_activation_clarifications_save',
+        'merchant_activation_clarifications_fetch',
+        'merchant_save_business_website',
+        'merchant_website_section_action',
+        'fetch_merchant_escalation',
+        'merchant_fetch_config',
+        'merchant_activation_gst_details',
+        'merchant_document_url_fetch',
+        'merchant_nc_revamp_eligibility',
+    ];
 
     public function __construct($app)
     {
@@ -1186,6 +1192,17 @@ class BasicAuth
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * The return true if current request is App auth and authenticated using Edge passport
+     *
+     * @return boolean
+     */
+    public function isAppAuthAuthenticatedWithPassport(): bool
+    {
+        return ($this->getAuthType() === Type::PRIVILEGE_AUTH && $this->isValidPassportForAppAuth()
+            && (! $this->isKeyBlank()) && (! $this->isProxyAuth()));
     }
 
     protected function setKeylessPublicAuthAttributes(string $entityId)
@@ -2390,22 +2407,24 @@ class BasicAuth
         }
 
         $account = $this->repo->merchant->find($this->getAccountId());
-
-        $validateAccountForCurrentAuthType = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE], function () use ($account){
-                return ($account === null) or ($this->validateAccountForCurrentAuthType($account) === false);
-            });
-        if ($validateAccountForCurrentAuthType)
+        if ($account === null)
         {
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->authCreds->setMerchant($account);
+        $validateAccountForCurrentAuthType = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE], function () use ($account){
+                return $this->validateAccountForCurrentAuthType($account);
+            });
+        if ($validateAccountForCurrentAuthType)
+        {
+            $this->authCreds->setMerchant($account);
 
-        // This flow is used in at least 1) Route product, 2) Admin auth flow.
-        $this->setPassportImpersonationClaims(
-            $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_PARTNER,
-            $account->getId()
-        );
+            // This flow is used in at least 1) Route product, 2) Admin auth flow.
+            $this->setPassportImpersonationClaims(
+                $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_PARTNER,
+                $account->getId()
+            );
+        }
     }
 
     /**
@@ -2444,6 +2463,7 @@ class BasicAuth
         {
             if (in_array($route, Route::$partnerCredentialsWithoutSubmerchantIdWhitelist, true) === true)
             {
+                // unset partner related attributes
                 $this->isPartnerAuth = false;
 
                 $this->authCreds->unsetPartnerClient();
@@ -2472,10 +2492,7 @@ class BasicAuth
             }
         }
 
-        $account = $this->repo
-                        ->merchant
-                        ->find($accountId);
-
+        $account = $this->repo->merchant->find($accountId);
         if (empty($account) === true)
         {
             return $this->invalidAccountId($accountId);
@@ -2570,7 +2587,7 @@ class BasicAuth
         return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
-    protected function invalidAccountId(string $accountId)
+    public function invalidAccountId(string $accountId)
     {
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
@@ -2704,7 +2721,7 @@ class BasicAuth
      *
      * @return bool
      */
-    protected function isAccountAuthAllowed() : bool
+    public function isAccountAuthAllowed() : bool
     {
         $authType = $this->getAuthType();
 
@@ -2804,17 +2821,43 @@ class BasicAuth
             return true;
         }
 
+        // TODO: Need to remove this experiment once all traffic is authenticated by BusinessAuth middleware flow
+        // This experiment is added by Edge team to migrate service checks to BusinessAuth middleware flow specifically for app auth with impersonation cases
+        $this->razorx = $this->app->razorx;
+        $variant =  $this->razorx->getTreatment($this->app['request']->getId(),
+                RazorxTreatment::EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT,
+                $this->getMode());
+
+        $log = [
+            'merchant_id'  => $this->authCreds->getMerchant()->getId(),
+            'experiment'   => $variant,
+            'mode'         => $this->getMode(),
+            'route_name'   => $route_name
+        ];
+
+        $this->trace->info(
+            TraceCode::EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT, $log);
+
+        // dont perform the check here if variant is on
+        // will be done in BusinessAuth Middleware
+        if (strtolower($variant) === 'on')
+        {
+            $this->isEdgeMiddlewareExperimentEnabled = true;
+            return false;
+        }
+
         $merchantCore = new Merchant\Core;
         if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
             ($merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant(), $account) === true))
         {
-            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT,
-                               ['route_name'     => $route_name,
-                                'submerchant_id' => $account->getId(),
-                                'partner_id'     => $this->authCreds->getMerchant()->getId()
-                               ]);
+            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT, [
+                    'route_name'     => $route_name,
+                    'submerchant_id' => $account->getId(),
+                    'partner_id'     => $this->authCreds->getMerchant()->getId()
+                ]);
             return true;
         }
+        // end of experiment
 
         return false;
     }

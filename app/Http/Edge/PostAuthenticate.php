@@ -3,6 +3,7 @@
 namespace RZP\Http\Edge;
 
 use Illuminate\Http\Request;
+use RZP\Http\BasicAuth\Type;
 use RZP\Http\Route;
 use Throwable;
 use Razorpay\Trace\Logger;
@@ -64,7 +65,7 @@ final class PostAuthenticate
     /**
      * Responsibilities of this method are described in-line implementation below.
      *
-     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param bool $authenticated whether Middleware\Authenticate found request to be authenticated.
      * @param Request  $request Current request object
      *
      * @return void
@@ -158,6 +159,11 @@ final class PostAuthenticate
      */
     private function ensureRequestContextPassport(bool $authenticated)
     {
+        // we use Edge passport already for App auth so no need to check for mismatches
+        if ($this->ba->getAuthType() === Type::PRIVILEGE_AUTH) {
+            return;
+        }
+
         $passport = & $this->reqCtx->passport;
         $fromEdge = ($passport !== null);
 
@@ -433,7 +439,7 @@ final class PostAuthenticate
 
     /**
      * Reports any mismatches in authentication between edge and API
-     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param bool $authenticated whether Middleware\Authenticate found request to be authenticated.
      * @param Request $request Current request object
      */
     private function reportAuthenticationMismatches(bool $authenticated, Request $request)
@@ -480,7 +486,7 @@ final class PostAuthenticate
     /**
      * Reports any mismatches in impersonation between edge and API
      *
-     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param bool $authenticated whether Middleware\Authenticate found request to be authenticated.
      * @param Request $request Current request object
      */
     private function reportImpersonationMismatches(bool $authenticated, Request $request)

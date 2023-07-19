@@ -13,14 +13,10 @@ use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Http\Route;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
-use Razorpay\OAuth\Client;
-use RZP\Models\Pricing\Fee;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
@@ -28,7 +24,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\BankingAccountStatement\Details;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
@@ -47,6 +42,8 @@ class BasicAuthTest extends TestCase
      */
     protected $jwksHost;
 
+    protected $razorxValue = '';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BasicAuthData.php';
@@ -55,6 +52,19 @@ class BasicAuthTest extends TestCase
 
         parent::setUp();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    return ($this->razorxValue === 'on') ? 'on' : 'control';
+                }) );
 
 
         $this->ba->privateAuth();
@@ -406,6 +416,28 @@ class BasicAuthTest extends TestCase
             'request' => [
                 'server' => [
                     'HTTP_X-Passport-JWT-V1' => $this->sampleConsumerPassportJwtBuilder(env('APP_V2_ID_CRON'), 'application')
+                ]
+            ]
+        ]);
+
+        // resetting old key back
+        app('config')->get('passport')['public_key'] = $oldKey;
+    }
+
+    public function testAppAuthNewFlowWithPassportForCronWithAccountID()
+    {
+        // should ignore passed account id and authentication should not fail
+        $this->ba->appBasicAuth(env('APP_V2_CREDENTIAL_USERNAME_LIVE_CRON'), env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CRON'));
+
+        // overriding public key for test case
+        $oldKey = app('config')->get('passport')['public_key'];
+        app('config')->get('passport')['public_key'] = $this->publicKey;
+
+        $this->startTest([
+            'request' => [
+                'server' => [
+                    'HTTP_X-Passport-JWT-V1' => $this->sampleConsumerPassportJwtBuilder(env('APP_V2_ID_CRON'), 'application'),
+                    'HTTP_X-Razorpay-Account' => 'acc_accidtoignore1'
                 ]
             ]
         ]);
@@ -1292,5 +1324,91 @@ class BasicAuthTest extends TestCase
             {
                 $this->runRequestResponseFlow($testData);
             });
+    }
+
+    public function testMerchantAuthWithImpersonationCannotSkipWorkflow()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCannotSkipWorkflow']);
+    }
+
+    public function testMerchantAuthWithImpersonationCannotSkipWorkflowExperimentEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->razorxValue = 'on';
+
+        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCannotSkipWorkflow']);
+
+        $this->razorxValue = '';
+    }
+
+    public function testMerchantAuthWithImpersonationCanSkipWorkflow()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'partner_sub_kyc_access']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => '10000000000000',
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_application',
+            [
+                'merchant_id' => '100000Razorpay',
+                'application_id' => '10000000000000',
+                'type'   => 'referred'
+            ]
+        );
+
+        $this->fixtures->create('merchant_detail',
+            ['merchant_id'        => '100000Razorpay',
+                'activation_form_milestone'=>'L2']);
+
+        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
+    }
+
+    public function testMerchantAuthWithImpersonationCanSkipWorkflowExperimentEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'partner_sub_kyc_access']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => '10000000000000',
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_application',
+            [
+                'merchant_id' => '100000Razorpay',
+                'application_id' => '10000000000000',
+                'type'   => 'referred'
+            ]
+        );
+
+        $this->fixtures->create('merchant_detail',
+            ['merchant_id'        => '100000Razorpay',
+                'activation_form_milestone'=>'L2']);
+
+        $this->razorxValue = 'on';
+
+        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
+
+        $this->razorxValue = '';
     }
 }
