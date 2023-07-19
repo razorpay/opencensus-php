@@ -246,7 +246,7 @@ describe('KeysAndPlugins', () => {
     },
   );
 
-  test.skip('should show None of the above plugin if merchant selected plugin is empty string', async () => {
+  test('should show None of the above plugin if merchant selected plugin is empty string', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,
@@ -271,7 +271,7 @@ describe('KeysAndPlugins', () => {
     });
   });
 
-  test.skip('should send empty string plugin if None of the above plugin selected', async () => {
+  test('should send empty string plugin if None of the above plugin selected', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,

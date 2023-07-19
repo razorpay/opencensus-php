@@ -22,11 +22,13 @@ import {
 } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
 import { MerchantProduct, Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import { fetchMerchantPlugin } from 'merchant/reducers/plugins';
+import WebsiteSucessModal from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/components/WebsiteSucessModal';
 
 interface AddLinkModalProps {
   platform: Platform;
   product: MerchantProduct;
   user: any;
+  openModal: any;
   closeModal: any;
   handleSubmit: any;
   updateSession: any;
@@ -41,6 +43,7 @@ const AddLinkModal = ({
   user,
   // actions from redux
   handleSubmit,
+  openModal,
   closeModal,
   showNotification,
   updateSession,
@@ -49,6 +52,12 @@ const AddLinkModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const trackProps = { paymentChannel: INTEGRATION_TITLE[platform], product };
+
+  const showWebsiteSuccessModal = () => {
+    if (!user.has_key_access && !user.isAccepted) {
+      openModal({ size: 'medium', component: <WebsiteSucessModal closeModal={closeModal} /> });
+    }
+  };
 
   const onSubmit = (data) => {
     trackCTAClick('Save Link', { paymentChannel: INTEGRATION_TITLE[platform], product });
@@ -70,6 +79,7 @@ const AddLinkModal = ({
         const updatedUser = new User({ ...user, business_website, appstore_url, playstore_url });
         updateSession({ user: updatedUser });
         closeModal();
+        showWebsiteSuccessModal();
         showNotification({
           type: 'success',
           message: 'Link added successfully',

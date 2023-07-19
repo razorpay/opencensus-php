@@ -94,6 +94,22 @@ function InitiateWebsiteChange(props) {
       ? 'Update Website/App'
       : 'Add new Website/App';
 
+  // user should have key access, user should not fully activated and user has payment enabled
+  if (props.user.has_key_access && !props.user.isAccepted && props.user.isActivated) {
+    return (
+      <div class="website-self-serve-initiate-modal">
+        <ModalHeader
+          title="You can add a new website/app URL later"
+          onCloseClick={props.closeModal}
+        />
+        <p class="amp-content">
+          We're currently reviewing the website/app you've already shared. Once the review is
+          complete, you'll be able to add a new website/app without any hassle.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div class="website-self-serve-initiate-modal">
       <ModalHeader title={title} onCloseClick={props.closeModal} />

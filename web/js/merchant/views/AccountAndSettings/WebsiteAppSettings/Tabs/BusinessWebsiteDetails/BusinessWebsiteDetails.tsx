@@ -239,7 +239,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
               reviewStatus={
                 user.has_key_access === true
                   ? 'Your request to update the website is under review.'
-                  : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'
+                  : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information."
               }
               onReplyClick={() =>
                 openNeedsClarificationModal({
@@ -276,7 +276,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
             <WorkflowStatus
               roles={[rolesList.OWNER, rolesList.ADMIN]}
               workflowType={WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE}
-              reviewStatus="Your request to add the website is under review."
+              reviewStatus="Your request to add the website is under review. We'll contact you via email if we need further information."
               onReplyClick={() =>
                 openNeedsClarificationModal({
                   workflowType: WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE,

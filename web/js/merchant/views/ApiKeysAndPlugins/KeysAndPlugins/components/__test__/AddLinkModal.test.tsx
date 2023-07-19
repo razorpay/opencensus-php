@@ -16,7 +16,7 @@ import { PLATFORM_LINKS } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/
 import * as analytics from 'common/utils/analytics';
 
 const storeData = store.getState();
-let showNotificationSpy, closeModalSpy, analyticsSpy;
+let showNotificationSpy, closeModalSpy, analyticsSpy, openModalSpy;
 
 const getUpdatedUser = (user) => {
   const clonedStore = cloneDeep(storeData);
@@ -30,6 +30,7 @@ describe('API Keys & Plugins - Add Link Modal', () => {
   beforeAll(() => {
     showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
     closeModalSpy = jest.spyOn(ModalActions, 'closeModal');
+    openModalSpy = jest.spyOn(ModalActions, 'openModal');
     analyticsSpy = jest.spyOn(analytics, 'analyticsTrack');
   });
 
@@ -131,6 +132,11 @@ describe('API Keys & Plugins - Add Link Modal', () => {
       expect(saveButton).toBeDisabled();
       // expect(saveButton).toBeEnabled();
     });
+
+    await waitFor(() => {
+      expect(openModalSpy).toHaveBeenCalledTimes(1);
+    });
+
     await waitFor(() => {
       // one for click and one for api result
       expect(analyticsSpy).toHaveBeenCalledTimes(2);

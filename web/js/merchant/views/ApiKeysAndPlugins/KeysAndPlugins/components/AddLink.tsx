@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import AddLinkModal from './AddLinkModal';
+import RestrictWebsiteModal from './RestrictWebsiteModal';
 import { MerchantProduct, Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import { trackCTAClick } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/events';
 import {
@@ -15,6 +16,8 @@ type AddLinkProps = {
   product: MerchantProduct;
   platform: Platform;
   openModal: any;
+  closeModal: any;
+  userHasKeyAccess: boolean;
 };
 
 const AddLink = ({
@@ -22,12 +25,18 @@ const AddLink = ({
   platform,
   // actions from redux
   openModal,
+  closeModal,
+  userHasKeyAccess,
 }: AddLinkProps): JSX.Element => {
   const openAddLinkModal = (): void => {
     trackCTAClick('Add Link', { paymentChannel: INTEGRATION_TITLE[platform], product });
     openModal({
       size: 'medium',
-      component: <AddLinkModal product={product} platform={platform} />,
+      component: userHasKeyAccess ? (
+        <RestrictWebsiteModal closeModal={closeModal} />
+      ) : (
+        <AddLinkModal product={product} platform={platform} />
+      ),
     });
   };
   return (

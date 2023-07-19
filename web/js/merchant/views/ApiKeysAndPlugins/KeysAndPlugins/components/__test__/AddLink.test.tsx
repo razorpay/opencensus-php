@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, userEvent, waitFor } from 'test-utils';
+import { render, userEvent, waitFor, screen } from 'test-utils';
 import { AddLink } from '..';
 import { Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import { PLATFORM_TITLE } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
@@ -30,6 +30,15 @@ describe('API Keys & Plugins - AddLink', () => {
     const { getByRole } = render(<AddLink platform={Platform.IOS} />);
     const addButton = getByRole('button', { name: /add link/i });
     expect(addButton).toBeInTheDocument();
+    await userEvent.click(addButton);
+    await waitFor(() => {
+      expect(openModalSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  test('should render restrict website content', async () => {
+    render(<AddLink platform={Platform.IOS} userHasKeyAccess={true} />);
+    const addButton = screen.getByRole('button', { name: /add link/i });
     await userEvent.click(addButton);
     await waitFor(() => {
       expect(openModalSpy).toHaveBeenCalledTimes(1);

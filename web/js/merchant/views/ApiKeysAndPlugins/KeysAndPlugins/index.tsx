@@ -44,6 +44,9 @@ const KeysAndPluginsSection = ({
   const tabs = showProvidedChannels ? providedChannels : Object.values(Platform);
   const product = isPgMerchant(user) ? 'PG' : 'PH';
 
+  // user should have key access, user should not fully activated and user has payment enabled
+  const userHasKeyAccess = user.has_key_access && !user.isAccepted && user.isActivated;
+
   //* Priority for showing default plugin - Merchant Selected Plugin > WhatCMS Suggested Plugin > Empty Select box
 
   const availablePlugin = getAvailablePlugin({
@@ -181,7 +184,11 @@ const KeysAndPluginsSection = ({
             </Step>
           ))
         ) : (
-          <AddLink platform={selectedPlatform} product={product} />
+          <AddLink
+            platform={selectedPlatform}
+            product={product}
+            userHasKeyAccess={userHasKeyAccess}
+          />
         )}
       </div>
     </div>
