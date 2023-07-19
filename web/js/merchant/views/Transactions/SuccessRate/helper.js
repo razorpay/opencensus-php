@@ -756,7 +756,8 @@ export const getNoDataSubTitle = (tab) => {
 };
 
 export const reportSR = (datasets = []) => {
-  if (Boolean(!datasets.length)) return datasets;
+  /** arrayObjToCsv expects [{}] which will download a empty csv file. */
+  if (Boolean(!datasets.length)) return [{}];
 
   const hashMap = {};
 

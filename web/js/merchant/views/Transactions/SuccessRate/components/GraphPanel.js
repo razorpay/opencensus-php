@@ -141,11 +141,13 @@ const GraphPanel = (props) => {
   };
 
   const handleDownload = useCallback(() => {
-    const res = reportSR(tab?.histogram?.datasets);
-    const csvData = arrayObjToCsv(res);
-    fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
-    trackSuccessRateEvents(downloadSRGraphReport({ fileName: `SR_${tab?.name}_Report.csv` }));
-  }, [tab.histogram.datasets, tab.name]);
+    if (!hasNoData) {
+      const res = reportSR(tab?.histogram?.datasets);
+      const csvData = arrayObjToCsv(res);
+      fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
+      trackSuccessRateEvents(downloadSRGraphReport({ fileName: `SR_${tab?.name}_Report.csv` }));
+    }
+  }, [hasNoData, tab?.name, tab?.histogram?.datasets]);
 
   return (
     <GenericPanel
@@ -174,7 +176,7 @@ const GraphPanel = (props) => {
           <button
             className="btn btn-default download-btn"
             onClick={handleDownload}
-            disabled={isLoading}
+            disabled={isLoading || hasNoData}
             type="button"
           >
             <i className="i i-download" />
