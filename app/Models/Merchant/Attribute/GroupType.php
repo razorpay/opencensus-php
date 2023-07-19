@@ -35,7 +35,8 @@ class GroupType
             Type::VA_KYC_STARTED,
             Type::VA_KYC_POST_ACTIVATION_COMPLETED,
             Type::UNDO_PAYOUTS,
-            Type::X_SIGNUP_PLATFORM
+            Type::X_SIGNUP_PLATFORM,
+            Type::X_TNC_ACCEPTED
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [

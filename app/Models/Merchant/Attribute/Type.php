@@ -29,6 +29,7 @@ class Type
     const VA_KYC_POST_ACTIVATION_COMPLETED                 = 'va_kyc_post_activation_completed';
     const UNDO_PAYOUTS                                     = 'undo_payouts';
     const X_SIGNUP_PLATFORM                                = 'x_signup_platform';
+    const X_TNC_ACCEPTED                                   = 'x_tnc_accepted';
 
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';
