@@ -46,6 +46,6 @@ class RouteLatencyGroup
         'pricing_get_merchant_plans'         => self::LATENCY_GROUP_HIGH,
         'bvs_service_dashboard'              => self::LATENCY_GROUP_HIGH,
         'admin_fetch_entity_multiple'        => self::LATENCY_GROUP_HIGH,
-
+        'merchant_audit_info'                => self::LATENCY_GROUP_HIGH,
     ];
 }
