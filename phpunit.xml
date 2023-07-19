@@ -109,10 +109,10 @@
             <directory>./tests/Functional/Splitz/</directory>
         </testsuite>
         <testsuite name="Features-1 Test Suite">
+            <directory>./tests/Functional/FileStore/</directory>
             <directory>./tests/Functional/Customer/</directory>
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
-            <directory>./tests/Functional/FileStore/</directory>
             <directory>./tests/Functional/Invoice/</directory>
             <exclude>/tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
             <directory>./tests/Functional/FundTransfer/</directory>
@@ -192,7 +192,6 @@
         <testsuite name="Features-3 Test Suite">
             <directory>./tests/Functional/BankingAccountStatement/</directory>
             <directory>./tests/Functional/Setting/</directory>
-            <directory>./tests/Functional/Settlement/</directory>
             <directory>./tests/Functional/OAuth/</directory>
             <directory>./tests/Functional/AppFramework/</directory>
             <directory>./tests/Functional/Pricing/</directory>
@@ -225,12 +224,11 @@
             <directory>./tests/Functional/UserRole/</directory>
         </testsuite>
         <testsuite name="Features-4-1 Test Suite">
+            <directory>./tests/Functional/Dispute/</directory>
             <directory>./tests/Functional/VirtualAccount/</directory>
             <directory>./tests/Functional/QrCode/</directory>
             <directory>./tests/Functional/Workflow/</directory>
             <directory>./tests/Functional/Reminders/</directory>
-            <directory>./tests/Functional/Dispute/</directory>
-            <directory>./tests/Functional/Refund/</directory>
         </testsuite>
         <testsuite name="Features-4-2 Test Suite">
             <directory>./tests/Unit/</directory>
@@ -437,6 +435,10 @@
             <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
 
+        </testsuite>
+        <testsuite name="Post Payment Test Suite">
+<!--            <directory>./tests/Functional/Refund/</directory>-->
+            <directory>./tests/Functional/Settlement/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-1_Test_Suite">
             <directory>./tests/Functional/Gateway/AxisMigs/</directory>
