@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
@@ -591,6 +592,12 @@ class ShieldClient implements ExternalService
     }
 
     //this function is exact copy of sendRequestV2 but it throws error if shield response status-code is not 200
+
+    /**
+     * @throws IntegrationException
+     * @throws BadRequestException
+     * @throws \WpOrg\Requests\Exception
+     */
     public function sendRequestV2ForWorkflow(string $path, string $method, array $data = []): array
     {
         $url = $this->getBaseUrl($data, $path) . $path;
@@ -625,14 +632,22 @@ class ShieldClient implements ExternalService
 
             $formattedResponse = $this->formatResponse($response);
 
-            if ($response->status_code !== 200)
+            $statusCode = $response->status_code;
+
+            if ($statusCode !== 200)
             {
                 $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR,
-                    [
-                        'response' => $formattedResponse,
-                        'request'  => $data,
-                        'status'   => $response->status_code,
-                    ]);
+                                    [
+                                        'response' => $formattedResponse,
+                                        'request'  => $data,
+                                        'status'   => $response->status_code,
+                                        'url'      => $url,
+                                    ]);
+
+                if ($statusCode === 400)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, $formattedResponse["error"]);
+                }
 
                 throw new IntegrationException(self::SERVER_ERROR_SHIELD_REQUEST_FAILED);
             }

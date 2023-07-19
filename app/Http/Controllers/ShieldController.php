@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
+use RZP\Models\Comment;
 
 class ShieldController extends Controller
 {
@@ -27,6 +28,8 @@ class ShieldController extends Controller
     const MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE      = 'shield_merchant_risk_threshold_update';
     const MERCHANT_RISK_THRESHOLD_DELETE_ROUTE      = 'shield_merchant_risk_threshold_delete';
     const MERCHANT_RISK_THRESHOLD_BULK_UPDATE_ROUTE = 'shield_merchant_risk_threshold_bulk_update';
+
+    const VALIDATE_RULE_EXPRESSION_URI      = '/rules/validate_expression';
 
     const EXTERNAL_SHIELD_ENTITY = 'external_shield_entity';
 
@@ -87,6 +90,8 @@ class ShieldController extends Controller
                 'shield_response' => $response,
             ]);
 
+            $this->addResponseInWorkflowComment($response);
+
             return ApiResponse::json($response);
         }
 
@@ -114,6 +119,35 @@ class ShieldController extends Controller
         return ApiResponse::json($response);
     }
 
+    protected function addResponseInWorkflowComment($response)
+    {
+        try
+       {
+           $publicWorkflowActionId = Request::route("id");
+
+           $actionId = substr($publicWorkflowActionId, -14);
+
+           $workflowAction = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+           $commentEntity = (new Comment\Core())->create([
+                                                             Comment\Entity::COMMENT => json_encode(["SHIELD_RESPONSE" => $response]),
+                                                         ]);
+
+
+           $commentEntity->entity()->associate($workflowAction);
+
+           $this->repo->saveOrFail($commentEntity);
+
+
+       }
+       catch (\Throwable $e)
+       {
+           $this->trace->error(TraceCode::SHIELD_WORKFLOW_COMMENT_FAILED, [
+               "id" => $publicWorkflowActionId,
+               "error" => $e->getMessage()]);
+       }
+    }
+
     protected function createWorkflowRequestIfApplicable($requestUri, $method, $payload)
     {
         $existingPayload = [];
@@ -123,6 +157,16 @@ class ShieldController extends Controller
         if (in_array($routeName, self::EXISTING_ENTITY_RETRIEVAL_ROUTES) === true)
         {
             $existingPayload = $this->app['shield']->sendRequestV2ForWorkflow($requestUri, 'GET', []);
+        }
+
+        if($routeName === self::RULES_CREATE_ROUTE)
+        {
+             $this->app['shield']->sendRequestV2ForWorkflow(self::VALIDATE_RULE_EXPRESSION_URI, 'POST', $payload);
+        }
+
+        if($routeName === self::RULES_UPDATE_ROUTE && isset($payload['expression']) === true)
+        {
+            $this->app['shield']->sendRequestV2ForWorkflow(self::VALIDATE_RULE_EXPRESSION_URI, 'POST', $payload);
         }
 
         if (empty($payload) === true)

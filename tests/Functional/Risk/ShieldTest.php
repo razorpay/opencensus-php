@@ -50,6 +50,8 @@ class ShieldTest extends TestCase
              'method'  => 'post',
         ];
 
+        $this->mockShieldRequest();
+
         $response = $this->makeRequestAndGetContent($request);
 
         $workflowActionId = $response['id'];
