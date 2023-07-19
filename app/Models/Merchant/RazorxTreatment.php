@@ -819,6 +819,11 @@ final class RazorxTreatment
      */
     const ENABLE_TRANSFER_SYNC_PROCESSING_VIA_CRON = 'enable_transfer_sync_processing_via_cron';
 
+    /**
+     * Razorx flag to enable sync processing for Route transfers via cron
+     */
+    const REFUND_AFTER_TRANSFER_REVERSAL = 'refund_after_transfer_reversal';
+
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
 

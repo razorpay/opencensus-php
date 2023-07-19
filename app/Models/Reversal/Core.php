@@ -67,18 +67,15 @@ class Core extends Base\Core
      *
      * @param Transfer\Entity $transfer
      * @param Merchant\Entity $merchant
-     * @param Refund\Entity $refund
      * @param array $input
      * @param Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
      * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
      *
-     * @return array
      * @throws Exception\LogicException
      */
     public function createForMarketplaceRefund(
         Transfer\Entity $transfer,
         Merchant\Entity $merchant,
-        Refund\Entity $refund,
         array $input,
         Merchant\Entity $initiator = null,
         bool $rearchRefund=false)
@@ -114,16 +111,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
-        $refund->reversal()->associate($reversal);
-
-        if ($rearchRefund !== true)
-        {
-            $this->repo->saveOrFail($refund);
-        }
-
         $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
 
-        return array($reversal, $refund);
+        return $reversal;
     }
 
     /**

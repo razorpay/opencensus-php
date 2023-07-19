@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -84,31 +85,62 @@ trait Reversal
             $refundNotes = $input[ReversalEntity::NOTES] ?? [];
         }
 
-        // Refund the transfer payment - this debits the account balance
-        // Avoiding taking a lock on payment ID if it's a rearch refund request, as the same is present on Scrooge
-        if ($rearchRefund === true) {
-            $refundInput = [
-                Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
-                Refund\Entity::NOTES  => $refundNotes,
-            ];
+        $refundInput = [
+            Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
+            Refund\Entity::NOTES  => $refundNotes,
+        ];
 
-            $refund = (new Processor($transferPayment->merchant))
-                ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
-        } else {
-            $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundNotes, $rearchRefund) {
-                $refundInput = [
-                    Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
-                    Refund\Entity::NOTES => $refundNotes,
-                ];
+        if ($this->checkIfRefundAfterReversalExperimentIsEnabled() === true)
+        {
+            // Reverse the associated transfer - this credits the marketplace balance
+            $reversal = (new ReversalCore)
+                ->createForMarketplaceRefund($transfer, $this->merchant, $input, $initiator);
 
-                return (new Processor($transferPayment->merchant))
+            // Refund the transfer payment - this debits the account balance
+            // Avoiding taking a lock on payment ID if it's a rearch refund request, as the same is present on Scrooge
+            if ($rearchRefund === true)
+            {
+                $refund = (new Processor($transferPayment->merchant))
                     ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
-            });
+            }
+            else
+            {
+                $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundInput, $rearchRefund) {
+                    return (new Processor($transferPayment->merchant))
+                        ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+                });
+            }
+        }
+        else
+        {
+            // Refund the transfer payment - this debits the account balance
+            // Avoiding taking a lock on payment ID if it's a rearch refund request, as the same is present on Scrooge
+            if ($rearchRefund === true)
+            {
+                $refund = (new Processor($transferPayment->merchant))
+                    ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+            }
+            else
+            {
+                $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundInput, $rearchRefund) {
+                    return (new Processor($transferPayment->merchant))
+                        ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+                });
+            }
+
+            // Reverse the associated transfer - this credits the marketplace balance
+            $reversal = (new ReversalCore)
+                ->createForMarketplaceRefund($transfer, $this->merchant, $input, $initiator);
         }
 
-        // Reverse the associated transfer - this credits the marketplace balance
-        return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input, $initiator, $rearchRefund);
+        if ($rearchRefund === false)
+        {
+            $refund->reversal()->associate($reversal);
+
+            $this->repo->saveOrFail($refund);
+        }
+
+        return array($reversal, $refund);
     }
 
     /**
@@ -480,5 +512,25 @@ trait Reversal
         }
 
         $input['reversals'] = $reversals;
+    }
+
+    protected function checkIfRefundAfterReversalExperimentIsEnabled()
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::REFUND_AFTER_TRANSFER_REVERSAL,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(
+            TraceCode::REFUND_AFTER_REVERSAL_EXPERIMENT_CHECK,
+            [
+                'merchant_id'    => $this->merchant->getId(),
+                'is_exp_enabled' => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
     }
 }
