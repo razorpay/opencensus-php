@@ -17390,6 +17390,7 @@ class Route
         'create_local_tokens_from_consents_bulk'            => HeartbeatLagChecker::SLAVE,
         'ledger_outbox_retry'                               => HeartBeatLagChecker::MASTER,
         'order_outbox_retry'                                => HeartBeatLagChecker::MASTER,
+        'qr_code_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [
