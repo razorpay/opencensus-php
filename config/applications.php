@@ -1219,6 +1219,18 @@ return [
                 'password' => env('SCROOGE_SECRET'),
             ],
         ],
+        'payment-links' => [
+            'live'=>[
+                'url'      => env('APP_PAYMENT_LINKS_DCS_URL'),
+                'username' => 'api',
+                'password' => env('APP_PAYMENT_LINKS_SECRET'),
+            ],
+            'test'=>[
+                'url'      => env('APP_PAYMENT_LINKS_DCS_URL'),
+                'username' => 'api',
+                'password' => env('APP_PAYMENT_LINKS_SECRET'),
+            ],
+        ],
         'reporting' => [
             'live'=>[
                 'url'    => env('REPORTING_BASE_URL'),
