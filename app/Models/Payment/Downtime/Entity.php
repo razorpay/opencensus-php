@@ -5,10 +5,9 @@ namespace RZP\Models\Payment\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as EntityConstants;
-use RZP\Models\Merchant\Methods as MerchantMethods;
 
 class Entity extends Base\PublicEntity
 {
@@ -46,8 +45,6 @@ class Entity extends Base\PublicEntity
     const FLOW       = 'flow';
 
     const INSTRUMENT_SCHEMA = 'instrument_schema';
-    const PAYMENTS_DOWNTIME = 'payments_downtime';
-    const PAYMENTS_DOWNTIME_BY_ID = 'payments_downtime_by_id';
 
     protected $fillable = [
         self::BEGIN,
@@ -166,8 +163,24 @@ class Entity extends Base\PublicEntity
                 break;
 
             case Method::UPI:
-                $instrument = $this->setInstrumentAttributeForUpi($array);
+                $vpaHandle = $this->getVpaHandle();
+                $psp = $this->getPSP();
+                $issuer = $this->getIssuer();
+                if( empty($psp) === false)
+                {
+                    $instrument[self::PSP] = $psp;
+
+                }
+                else if( empty($vpaHandle) === false)
+                {
+                    $instrument[self::VPA_HANDLE] = $vpaHandle;
+                }
+                else if( empty($issuer) === false)
+                {
+                    $instrument[self::ISSUER] = $issuer;
+                }
                 break;
+
 
             default:
                 break;
@@ -304,58 +317,5 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
-    }
-
-    private function setInstrumentAttributeForUpi($array): array
-    {
-        $instrument = [];
-
-        $psp       = $this->getPSP();
-        $issuer    = $this->getIssuer();
-        $vpaHandle = $this->getVpaHandle();
-
-        if ($array[Entity::TYPE] === MerchantMethods\Entity::IN_APP)
-        {
-            $instrument = $this->setInstrumentAttributeForTurbo($array, $issuer, $vpaHandle);
-        }
-        else if (empty($psp) === false)
-        {
-            $instrument[self::PSP] = $psp;
-        }
-        else if (empty($vpaHandle) === false)
-        {
-            $instrument[self::VPA_HANDLE] = $vpaHandle;
-        }
-        else if (empty($issuer) === false)
-        {
-            $instrument[self::ISSUER] = $issuer;
-        }
-
-        return $instrument;
-    }
-
-    /*
-     * Even though turbo downtime is essentially a upi downtime, we need separate handling for the
-     * 'instrument' object. All turbo related instrument changes will be executed inside this method
-     */
-    public function setInstrumentAttributeForTurbo($array, $issuer, $vpaHandle): array
-    {
-       /*
-        * Note:
-        *  1. 'flow' will inside the method setInstrumentSchemaAndGranularFields(), so not setting the same here.
-        *  2. 'vpa_handle', 'issuer' and 'payer_bank_account' details will be populated in near future while developing
-        *      handling of remitter bank downtimes on upi turbo
-        */
-        $instrument = [];
-
-        if ((empty($vpaHandle) === false) and
-            (in_array($vpaHandle, Constants::TURBO_VPA_HANDLES) === true))
-        {
-            $instrument[self::VPA_HANDLE] = $vpaHandle;
-        }
-
-        //Payer account type and issuer fields to be populated here
-
-        return $instrument;
     }
 }

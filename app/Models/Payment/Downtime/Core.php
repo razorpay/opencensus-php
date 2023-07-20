@@ -3,19 +3,18 @@
 namespace RZP\Models\Payment\Downtime;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redis;
-
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntimeEvent;
-use RZP\Gateway\Upi\Base\ProviderPsp;
-use RZP\Models\Gateway\Downtime\Source;
+use Illuminate\Support\Facades\Redis;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
+use RZP\Models\Gateway\Downtime\Source;
+use RZP\Models\Payment\Downtime\Repository;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class Core extends Base\Core
@@ -45,11 +44,7 @@ class Core extends Base\Core
 
         if($downtime->isScheduled() === false && $downtime->getMethod() !== Method::EMANDATE)
         {
-            // Turbo downtime emails will be sent by downtime_manager, hence we skip sending emails via api
-            if ($downtime->getType() !== \RZP\Models\Merchant\Methods\Entity::IN_APP)
-            {
-                (new Service())->emailDowntime(Constants::CREATED, $downtime);
-            }
+            (new Service())->emailDowntime(Constants::CREATED, $downtime);
 
             $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
 
@@ -78,11 +73,7 @@ class Core extends Base\Core
 
         if($downtime->isScheduled() === false && $downtime->getMethod() !== Method::EMANDATE)
         {
-            // Turbo downtime emails will be sent by downtime_manager, hence we skip sending emails via api
-            if ($downtime->getType() !== \RZP\Models\Merchant\Methods\Entity::IN_APP)
-            {
-                (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
-            }
+            (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
 
             $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> $downtime::STATUS, "downtime" => $downtime]);
 
@@ -512,4 +503,5 @@ class Core extends Base\Core
 
         return $downtimes;
     }
+
 }

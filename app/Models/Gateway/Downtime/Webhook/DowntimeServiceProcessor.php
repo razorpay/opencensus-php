@@ -207,8 +207,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
             $this->checkOngoingPlatformDowntime($data);
         }
 
-        // For turbo downtimes, card_type HAS to be a part of uniqueKeys
-        $downtime = $this->core->fetchMostRecentActive($data, $this->getUniqueKeys($data));
+        $downtime = $this->core->fetchMostRecentActive($data, DowntimeService::UNIQUE_KEYS);
 
         if (is_null($downtime) === false)
         {
@@ -259,8 +258,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     protected function resolveDowntime(array $data)
     {
-        // For turbo downtimes, card_type HAS to be a part of uniqueKeys
-        $downtime = $this->core->fetchMostRecentActive($data, $this->getUniqueKeys($data));
+        $downtime = $this->core->fetchMostRecentActive($data, DowntimeService::getUniqueKeys());
 
         if(is_null($downtime) === true)
         {
@@ -306,7 +304,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
             Entity::CARD_TYPE       => null,
             Entity::NETWORK         => isset($input[Entity::NETWORK]) ? Card\NetworkName::$codes[$input[Entity::NETWORK]] : null,
             Entity::PSP             => $input[Entity::PSP] ?? null,
-            Entity::VPA_HANDLE      => $input[Entity::METHOD] === Method::UPI ? $input[Entity::ISSUER] ?? null : null,
+            Entity::VPA_HANDLE      => $input[Entity::METHOD] === Method::UPI ? $input[Entity::ISSUER] : null,
             Entity::MERCHANT_ID     => $input[DowntimeService::TYPE] === DowntimeService::MERCHANT ? $input[DowntimeService::MERCHANT_ID] : null,
         ];
         // if its merchant level downtime check if mid is not null
@@ -319,7 +317,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
             }
         }else{                                    // For Payment Downtimes
             if($input[Entity::METHOD] === Method::UPI){
-                $buildInput[Entity::VPA_HANDLE] = $input[Entity::ISSUER] ?? null;
+                $buildInput[Entity::VPA_HANDLE] = $input[Entity::ISSUER];
             }
         }
 
@@ -431,11 +429,8 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     private function checkOngoingPlatformDowntime(array $data)
     {
-        $uniqueKeysForPlatformDowntime = $this->getUniqueKeysForPlatformDowntime($data);
-
-        $platformDowntime = $this->core->fetchMostRecentActive($data, $uniqueKeysForPlatformDowntime);
-
-        if (is_null($platformDowntime) === false)
+        $platformDowntime = $this->core->fetchMostRecentActive($data, DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS);
+        if(is_null($platformDowntime)===false)
         {
             throw new Exception\LogicException(
                 'Creating merchant downtime during ongoing Platform downtime',
@@ -445,27 +440,5 @@ class DowntimeServiceProcessor implements ProcessorInterface
                 ]
             );
         }
-    }
-
-    public function getUniqueKeys($data)
-    {
-        if ($data[Entity::CARD_TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
-        {
-            return DowntimeService::getUniqueKeysWithCardType();
-        }
-
-        return DowntimeService::getUniqueKeys();
-    }
-
-    public function getUniqueKeysForPlatformDowntime($data)
-    {
-        $uniqueKeys = DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS;
-
-        if ($data[Entity::CARD_TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
-        {
-            $uniqueKeys[] = Entity::CARD_TYPE;
-        }
-
-        return $uniqueKeys;
     }
 }

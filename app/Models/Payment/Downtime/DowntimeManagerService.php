@@ -5,7 +5,6 @@ namespace RZP\Models\Payment\Downtime;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Models\Payment\Downtime\Entity as DowntimeEntity;
 
 class DowntimeManagerService
@@ -194,32 +193,24 @@ class DowntimeManagerService
 
     private function getDowntimePayload(DowntimeEntity $downtime, String $status)
     {
-        $payload = [
-            'id'         => $downtime->getId(),
-            'type'       => "PLATFORM",
-            'method'     => $downtime->getMethod(),
-            'severity'   => $downtime->getSeverity(),
-            'status'     => $status,
-            'scheduled'  => $downtime->isScheduled(),
+        return json_encode([
+            'id'  => $downtime->getId(),
+            'type'  => "PLATFORM",
+            'method' => $downtime->getMethod(),
+            'severity' => $downtime->getSeverity(),
+            'status' => $status,
+            'scheduled' => $downtime->isScheduled(),
             'event_time' => $downtime->getUpdatedAt(),
-            'begin'      => $downtime->getBegin(),
-            'end'        => $downtime->getEnd(),
+            'begin' => $downtime->getBegin(),
+            'end' => $downtime->getEnd(),
             'created_at' => $downtime->getCreatedAt(),
             'updated_at' => $downtime->getUpdatedAt(),
             'instrument' => [
-                'issuer'     => $downtime->getIssuer(),
-                'network'    => $downtime->getNetwork(),
-                'vpa_handle' => $downtime->getVpaHandle(),
-                'psp'        => $downtime->getPSP()
-            ]
-        ];
-
-        if ($downtime->getType() === MethodsEntity::IN_APP)
-        {
-            $payload['instrument']['flow'] = MethodsEntity::IN_APP;
-        }
-
-        return json_encode($payload);
+                'issuer' => $downtime->getIssuer(),
+                'network' => $downtime->getNetwork(),
+                'vpa_handle'  => $downtime->getVpaHandle(),
+                'psp' => $downtime->getPSP()
+            ]]);
     }
 
     private function getBaseUrl($service = null)
