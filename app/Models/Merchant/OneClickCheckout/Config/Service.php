@@ -1295,8 +1295,7 @@ class Service extends Base\Service
     {
         (new Validator())->setStrictFalse()->validateInput('gettingWoocommerceConfig', $input);
 
-        $mode = $this->getModeForConfigs($input);
-        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
+        $this->getModeAndSetDBConnectionForConfigs($input);
 
         $merchantId = $input[Constants::MERCHANT_ID];
         $this->merchant = $this->repo->merchant->findOrFail($merchantId);
