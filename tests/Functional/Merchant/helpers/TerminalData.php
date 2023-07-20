@@ -821,7 +821,7 @@ return [
     'testCreateUPIInAppTerminal' => [
         'request'  => [
             'content' => [
-                'gateway'              => 'upi_axis',
+                'gateway'              => 'upi_axisolive',
                 'gateway_merchant_id'  => '12345',
                 'gateway_merchant_id2' => 'rzpbqr@icici',
                 'upi'                  => true,
@@ -830,6 +830,10 @@ return [
                     'non_recurring' => '1',
                     'in_app'         => '1',
                 ],
+                'notes' =>[
+                    'optimizer_description' =>'Enabling',
+                ],
+                'merchant_mobile_contact' => '9686580148'
             ],
             'method'  => 'POST',
             'url'     => '/merchants/10000000000000/terminals',

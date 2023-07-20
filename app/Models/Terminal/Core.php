@@ -53,6 +53,8 @@ class Core extends Base\Core
 
         $this->validateBuyPricing($input);
 
+        $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
+
         $terminal = (new Entity)->build($input);
 
         $terminal->merchant()->associate($merchant);
@@ -1245,6 +1247,31 @@ class Core extends Base\Core
         ];
 
         (new Validator())->validateInput('gateway_input', $gatewayInput);
+    }
+
+    /**
+     * Add Merchant mobile contact in Notes if Applicable
+     * @param array $input
+     */
+    protected function addMerchantMobileContactInNotesIfApplicable(&$input)
+    {
+        if(isset($input[Entity::MERCHANT_MOBILE_CONTACT]) === false)
+        {
+            return $input;
+        }
+
+        if(isset($input[Entity::NOTES]) === false)
+        {
+            $input[Entity::NOTES] = [];
+        }
+
+        $input[Entity::NOTES][Entity::MERCHANT_MOBILE_CONTACT] =  $input[Entity::MERCHANT_MOBILE_CONTACT];
+
+        $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
+
+        unset($input[Entity::MERCHANT_MOBILE_CONTACT]);
+
+        return $input;
     }
 
     protected function validateAcquirerByCountry($merchant, array $input)

@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity
     const APP                           = 'app';
     const OFFLINE                       = 'offline';
     const FPX                           = 'fpx';
+    const MERCHANT_MOBILE_CONTACT       = 'merchant_mobile_contact';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';

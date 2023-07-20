@@ -80,6 +80,7 @@ class Validator extends Base\Validator
         Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
         Entity::OFFLINE                     => 'sometimes|string',
+        Entity::MERCHANT_MOBILE_CONTACT     => 'sometimes|string|numeric|size:12',
     ];
 
     protected static $gatewayInputRules = [
@@ -100,6 +101,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_HULK,
+        Payment\Gateway::UPI_AXISOLIVE,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::UPI_CITI,
         Payment\Gateway::UPI_JUSPAY,
