@@ -89,9 +89,11 @@ const AddItems: React.FC<AddItemsProps> = ({ showNotification }) => {
       const promises = transformedData.map((payload) => addNewLineItem(edit_id, payload));
       const promiseResponses = await Promise.allSettled(promises);
 
+      const successfulOrders: any = [];
+
       promiseResponses.forEach((response) => {
         if (response.status === 'fulfilled') {
-          setOrder(response.value.data.edited_order);
+          successfulOrders.push(response.value.data.edited_order);
           showNotification({
             type: 'success',
             message: 'Product added successfully',
@@ -104,6 +106,14 @@ const AddItems: React.FC<AddItemsProps> = ({ showNotification }) => {
         }
       });
 
+      // This is needed because in the backend they are adding the line items in a parallel fashion, and sometimes whats happening is that some particular line item is taking longer to update and I am thhough waiting for the all the line items to be updated before updating the order, so in that case the order is getting updated with the old line items and not the new ones. So to fix this I am getting the order with the maximum line items and updating the order with that. Ideally this case should have been handled in the backend, but we mutually agreed that we will not be making any changes in the backend, because we are hitting the external shopify api and thus handling the case on FE
+      const updatedOrder = getMaxLineItemsEntry(successfulOrders);
+
+      setOrder(updatedOrder);
+      showNotification({
+        type: 'success',
+        message: 'Product added successfully',
+      });
       handleReset();
     } catch (error) {
       showNotification({
@@ -193,6 +203,23 @@ function formatResponse(products) {
       ...others,
     }));
   });
+}
+
+function getMaxLineItemsEntry(entries) {
+  let maxLineItemsEntry = null;
+  let maxLineItemsCount = 0;
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const lineItemsCount = entry.line_items.length;
+
+    if (lineItemsCount > maxLineItemsCount) {
+      maxLineItemsEntry = entry;
+      maxLineItemsCount = lineItemsCount;
+    }
+  }
+
+  return maxLineItemsEntry;
 }
 
 export default AddItems;

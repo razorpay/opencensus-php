@@ -27,6 +27,12 @@ export const OrderEditingModalWrapper = styled.div`
     height: 572px;
   }
 
+  @media only screen and (max-width: 767px) {
+    .modal-body {
+      height: auto !important;
+    }
+  }
+
   .scroll {
     max-height: 200px;
     overflow: scroll;
