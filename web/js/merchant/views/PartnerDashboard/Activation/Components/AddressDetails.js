@@ -1,14 +1,7 @@
 import React from 'react';
-import Input, { Label } from 'common/new-ui/Input';
+import Input from 'common/new-ui/Input';
 import { pinCode } from 'common/utils/validators';
 import { states } from 'merchant/helpers/data';
-import FileUpload from 'merchant/components/File/Upload';
-
-const OPTION_AADHAR = { name: 'aadhar', label: 'Aadhar' };
-const OPTION_PASSPORT = { name: 'passport', label: 'Passport' };
-const OPTION_VOTER_ID = { name: 'voter_id', label: 'Voter Id' };
-
-export const addressProofOptions = [OPTION_AADHAR, OPTION_PASSPORT, OPTION_VOTER_ID];
 
 export const stateOptions = ['--Select--'].concat(
   Object.keys(states).map((c) => {
@@ -42,23 +35,11 @@ const AddressDetails = ({
   addressDetails,
   isFormLocked,
   formState,
-  progress,
   onFormChange,
-  onFileUpload,
-  onFileClose,
   autoFillFromPinCode,
   commonLockedFields = [],
 }) => {
-  const selectedAddressProof = formState.address_proof_type || OPTION_AADHAR.name;
-  const addressProofFrontLabel = `${selectedAddressProof}_front`;
-  const addressProofBackLabel = `${selectedAddressProof}_back`;
-  const addressFrontValue = addressDetails && addressDetails[addressProofFrontLabel];
-  const addressBackValue = addressDetails && addressDetails[addressProofBackLabel];
   const isAddressSame = formState?.isOpAddressSameAsRegAddress;
-  const frontAddressFileName = addressFrontValue && addressFrontValue[0]?.metadata?.file_name;
-  const backAddressFileName = addressBackValue && addressBackValue[0]?.metadata?.file_name;
-  if (addressFrontValue && addressFrontValue[0]) addressFrontValue[0].name = frontAddressFileName;
-  if (addressBackValue && addressBackValue[0]) addressBackValue[0].name = backAddressFileName;
 
   return (
     <form onChange={onFormChange} className="Form Form--tabular">
@@ -86,12 +67,12 @@ const AddressDetails = ({
       <Input
         name="business_registered_city"
         label="Registered Business City"
-        defaultValue={addressDetails.business_registered_city}
         disabled={isFormLocked || commonLockedFields.includes('business_registered_city')}
         size="small"
         required
         className="Input--capitalize"
         value={formState.business_registered_city || addressDetails.business_registered_city}
+        autoRender
       />
       <Input.Select
         name="business_registered_state"
@@ -101,6 +82,7 @@ const AddressDetails = ({
         required
         value={formState.business_registered_state || addressDetails.business_registered_state}
         disabled={isFormLocked || commonLockedFields.includes('business_registered_state')}
+        autoRender
       />
       <Input.Radio
         name="isOpAddressSameAsRegAddress"
@@ -157,44 +139,6 @@ const AddressDetails = ({
           />
         </>
       )}
-      <Input.Select
-        name="address_proof_type"
-        label="Address Proof"
-        size="small"
-        options={addressProofOptions}
-        value={selectedAddressProof}
-        required
-      />
-
-      <div className="Input">
-        <Label text="Address Proof Front" />
-        <FileUpload
-          name={addressProofFrontLabel}
-          files={addressFrontValue}
-          accept={['jpg', 'png', 'pdf']}
-          maxSize={4194304} // 4MB
-          progress={progress}
-          showCloseBtn
-          customClassName="transactionlimit-fileupload Input-content"
-          onFileChange={(file) => onFileUpload(file, addressProofFrontLabel)}
-          onCloseClick={() => onFileClose(addressFrontValue[0]?.id, addressProofFrontLabel)}
-        />
-      </div>
-
-      <div className="Input">
-        <Label text="Address Proof Back" />
-        <FileUpload
-          name={addressProofBackLabel}
-          files={addressBackValue}
-          accept={['jpg', 'png', 'pdf']}
-          maxSize={4194304} // 4MB
-          progress={progress}
-          showCloseBtn
-          customClassName="transactionlimit-fileupload Input-content"
-          onFileChange={(file) => onFileUpload(file, addressProofBackLabel)}
-          onCloseClick={() => onFileClose(addressBackValue[0]?.id, addressProofBackLabel)}
-        />
-      </div>
     </form>
   );
 };

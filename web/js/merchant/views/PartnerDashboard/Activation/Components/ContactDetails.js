@@ -31,7 +31,6 @@ const ContactDetails = ({
         validator={email()}
       />
       <Input
-        type="number"
         name="contact_mobile"
         label="Contact Number"
         info="We will reach out to this phone for any account related issues"

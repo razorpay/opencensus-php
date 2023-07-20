@@ -31,28 +31,10 @@ const getFieldObjects = (fields, data) => {
   return fieldObjects;
 };
 
-const getAddressUploadData = (data) => {
-  const documentsData = data?.partner_activation?.documents;
-  const fieldObjects = {};
-  if (Object.keys(documentsData).length > 0) {
-    const addressProofType = Object.keys(documentsData)[0].split('_', 1)[0]; // 'eg. aadhar_front -> aadhar';
-    const addressFrontLabel = `${addressProofType}_front`;
-    const addressBackLabel = `${addressProofType}_back`;
-
-    fieldObjects.address_proof_type = addressProofType;
-    fieldObjects[addressFrontLabel] = documentsData[addressFrontLabel];
-    fieldObjects[addressBackLabel] = documentsData[addressBackLabel];
-  }
-  return fieldObjects;
-};
-
 const activationFormatter = (data) => {
   const contactDetails = getFieldObjects(contactDetailFields, data);
   const businessDetails = getFieldObjects(businessDetailFields, data);
-  const addressDetails = {
-    ...getFieldObjects(addressDetailFields, data),
-    ...getAddressUploadData(data),
-  };
+  const addressDetails = getFieldObjects(addressDetailFields, data);
   return {
     ...data,
     contact_details: contactDetails,

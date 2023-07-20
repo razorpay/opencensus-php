@@ -38,6 +38,7 @@ import { commisionsHandler } from 'merchant/views/PartnerDashboard/Commissions/_
 import { submerchantKYCHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/KYC/__tests__/mocks/handlers';
 import { codEngineHandlers } from 'merchant/views/MagicCheckout/CODSettings/__tests__/mocks/handlers';
 import { magicOrderAnalyticsHandler } from 'merchant/views/MagicCheckout/OrderAnalytics/__tests__/mocks/handlers';
+import { partnerActivationHandler } from 'merchant/views/PartnerDashboard/Activation/__tests__/mocks/handlers';
 import { magicShopifyOrderEditingHandler } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/__test__/mocks/handlers';
 
 export const handlers = [
@@ -868,5 +869,6 @@ export const handlers = [
   ...submerchantKYCHandlers,
   ...codEngineHandlers,
   ...magicOrderAnalyticsHandler,
+  ...partnerActivationHandler,
   ...magicShopifyOrderEditingHandler,
 ];

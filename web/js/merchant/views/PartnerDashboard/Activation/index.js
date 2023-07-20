@@ -22,7 +22,7 @@ import {
 import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
 import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
 import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
-import useActivation, { fetchActivationData } from './Hooks/useActivation';
+import useActivation from './Hooks/useActivation';
 import NeedsClarification from './Components/NeedsClarifications';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
@@ -42,7 +42,6 @@ const Activation = (props) => {
   const [businessDetails, setBusinessDetails] = useState({});
   const [addressDetails, setAddressDetails] = useState({});
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
   const [isConsentTNC, setIsConsentTNC] = useState(false);
   const [formState, setFormState] = useState({});
   const [isSaving, setIsSaving] = useState();
@@ -136,10 +135,7 @@ const Activation = (props) => {
       business_operation_city: activationData.business_operation_city,
       business_operation_state: activationData.business_operation_state,
     };
-    setAddressDetails({
-      ...addressDetailsData,
-      ...activationData.partner_activation.documents,
-    });
+    setAddressDetails(addressDetailsData);
     setFormState((state) => {
       return {
         ...state,
@@ -404,99 +400,6 @@ const Activation = (props) => {
     setActiveTab(activeTab + 1);
   };
 
-  const onFileUpload = (uploadedFile, field) => {
-    const onUploadProgress = (progressEvent) => {
-      setProgress(Math.round((100 * progressEvent.loaded) / progressEvent.total));
-    };
-    if (uploadedFile) {
-      const formData = new FormData();
-      formData.append('document_type', field);
-      formData.append('file', uploadedFile);
-      formData.append('is_partner_kyc', '1');
-      merchantFetch({
-        url: 'merchant/documents/upload',
-        method: 'POST',
-        data: formData,
-        mode: 'live',
-        onUploadProgress,
-      })
-        .then((response) => {
-          if (response.data) {
-            updateActivationState(response.data);
-            setFormState((state) => {
-              return {
-                ...state,
-                [field]: uploadedFile,
-              };
-            });
-            props.showNotification({
-              type: 'success',
-              message: 'File uploaded successfully',
-            });
-          }
-          return response;
-        })
-        .catch((err) => {
-          if (err.errors.length && err.errors[0]) {
-            props.showNotification({
-              type: 'error',
-              message: err.errors,
-            });
-          }
-          return err;
-        });
-    }
-  };
-
-  const onFileClose = (fileId, field) => {
-    if (fileId) {
-      merchantFetch({
-        url: `merchant/documents/doc_${fileId}`,
-        method: 'delete',
-        mode: 'live',
-      })
-        .then((res) => {
-          if (res.success) {
-            props.showNotification({
-              type: 'success',
-              message: 'File deleted successfully',
-            });
-
-            setFormState((state) => {
-              return {
-                ...state,
-                [field]: null,
-              };
-            });
-
-            fetchActivationData()
-              .then((data) => {
-                updateActivationState(data);
-              })
-              .catch(() => {
-                props.showNotification({
-                  type: 'error',
-                  message: 'Something went wrong!',
-                });
-              });
-          }
-        })
-        .catch(() => {
-          props.showNotification({
-            type: 'error',
-            message: 'File Not Found!',
-          });
-        });
-    } else {
-      setFormState((state) => {
-        return {
-          ...state,
-          [field]: null,
-        };
-      });
-    }
-  };
-
   const submitForm = async () => {
     const reqData = getRequestData();
     reqData.submit = '1';
@@ -742,9 +645,6 @@ const Activation = (props) => {
                         businessDetails={businessDetails}
                         addressDetails={addressDetails}
                         onFormChange={onFormChange}
-                        progress={progress}
-                        onFileUpload={onFileUpload}
-                        onFileClose={onFileClose}
                         autoFillFromPinCode={autoFillFromPinCode}
                         isFormLocked={isFormLocked}
                         data={data}
