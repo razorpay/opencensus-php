@@ -5222,60 +5222,80 @@ class Service extends Base\Service
                     'payment_id'       => $paymentId,
                 ]);
 
-            $this->repo->transaction(function () use ($payment, & $data, $extraProperties)
-            {
-                $this->repo->payment->lockForUpdateAndReload($payment);
+            $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
 
-                try
+            $resource = $this->getNewProcessor($payment->merchant)->getCallbackMutexResource($payment);
+
+            $data = $this->mutex->acquireAndRelease(
+                $resource,
+                function() use ($payment, $data, $extraProperties, $paymentProcessor)
                 {
-                    if ($payment->getMethod() === Payment\Method::CARD and
-                        $payment->isRecurring() and
-                        $payment->getRecurringType() === Payment\RecurringType::AUTO and
-                        isset($payment->token->cardMandate) and
-                        $payment->token->cardMandate->getMandateHub() === IIN\MandateHub::MANDATE_HQ)
-                    {
-                        $this->getNewProcessor($payment->merchant)
-                            ->setPayment($payment)
-                            ->failMandateHQPaymentAFANotApproved($payment);
-                    }
-                    else {
-                        $this->getNewProcessor($payment->merchant)
-                            ->setPayment($payment)
-                            ->timeoutPayment();
-                    }
+                    $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
 
-                    if ($payment->getMethod() === Payment\Method::NACH and
-                        $payment->isRecurring() and
-                        $payment->getRecurringType() === Payment\RecurringType::INITIAL)
-                    {
-                       $this->moveTimedoutRecurringNachPaymentTokensToRejectedState($payment);
-                    }
-
-                    $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
-
-                    $payment->reload();
-
-                    $data['payment'] = $payment->toArrayPublic();
-
-                    $this->trace->info(
-                        TraceCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS,
-                        [
-                            'payment_id'       => $payment->getId(),
-                            'payment_status'   => $payment->getStatus()
-                        ]);
-
-                    $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS, $payment, null, $extraProperties);
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException($e);
-
-                    $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_ERROR, $payment, $e, $extraProperties);
-
-                    $data['retry_timeout'] = true;
-                }
-            });
+                    return $this->mutex->acquireAndRelease($orderMutex,
+                        function() use ($payment, $data, $extraProperties, $paymentProcessor)
+                        {
+                            return $this->timeoutPaymentProcess($payment, $data, $extraProperties, $paymentProcessor);
+                        });
+                });
         }
+
+        return $data;
+    }
+
+    private function timeoutPaymentProcess($payment, $data, $extraProperties, $paymentProcessor)
+    {
+        $this->repo->transaction(function () use ($payment, & $data, $extraProperties, $paymentProcessor)
+        {
+            $this->repo->payment->lockForUpdateAndReload($payment);
+
+            try
+            {
+                if ($payment->getMethod() === Payment\Method::CARD and
+                    $payment->isRecurring() and
+                    $payment->getRecurringType() === Payment\RecurringType::AUTO and
+                    isset($payment->token->cardMandate) and
+                    $payment->token->cardMandate->getMandateHub() === IIN\MandateHub::MANDATE_HQ)
+                {
+                    $paymentProcessor->setPayment($payment)
+                        ->failMandateHQPaymentAFANotApproved($payment);
+                }
+                else {
+                    $paymentProcessor->setPayment($payment)
+                        ->timeoutPayment();
+                }
+
+                if ($payment->getMethod() === Payment\Method::NACH and
+                    $payment->isRecurring() and
+                    $payment->getRecurringType() === Payment\RecurringType::INITIAL)
+                {
+                    $this->moveTimedoutRecurringNachPaymentTokensToRejectedState($payment);
+                }
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+
+                $payment->reload();
+
+                $data['payment'] = $payment->toArrayPublic();
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS,
+                    [
+                        'payment_id'       => $payment->getId(),
+                        'payment_status'   => $payment->getStatus()
+                    ]);
+
+                $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS, $payment, null, $extraProperties);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+
+                $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_ERROR, $payment, $e, $extraProperties);
+
+                $data['retry_timeout'] = true;
+            }
+        });
 
         return $data;
     }
