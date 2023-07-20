@@ -471,8 +471,9 @@ trait Authorize
             $request = $this->callAuthenticationGatewayBasedOnApplicationIfApplicable($payment, $input, $request, $gatewayInput);
         }
 
-        if (($request !== null) and
-            (empty($request['redirect']) === false))
+        if ((($request !== null) and
+                (empty($request['redirect']) === false)) ||
+            (isset($request['auth_step']) and ($request['auth_step'] === '3ds2Auth') and isset($gatewayInput['skip'])))
         {
             return $request;
         }
@@ -486,7 +487,7 @@ trait Authorize
             ($payment->getAuthType() === Payment\AuthType::_3DS) and
             ($payment->getAuthenticationGateway() !== Gateway::VISA_SAFE_CLICK))
         {
-            return $this->validateAndReturnRedirectResponseIfApplicable($payment, []);
+            return $this->validateAndReturnRedirectResponseIfApplicable($payment,[],$gatewayInput);
         }
 
         //
@@ -547,6 +548,14 @@ trait Authorize
 
         if((isset($input['ip']) === true)){
             $gatewayInput['ip'] = $input['ip'];
+        }
+
+        if(isset($input['device_information'])){
+            $gatewayInput['device_information'] = $input['device_information'];
+        }
+
+        if(isset($input['skip'])){
+            $gatewayInput['skip'] = $input['skip'];
         }
 
         // URL for the second authenticate call of 3ds 2.0 payment
@@ -11092,10 +11101,10 @@ trait Authorize
 
             $redirectAddressCollection = $this->shouldRedirectForAddressCollection($payment);
 
-            if (($this->shouldRedirect($payment) === false) and
+            if ((($this->shouldRedirect($payment) === false) and
                 ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false) and
                 ($redirectDcc === false) and
-                ($redirectAddressCollection === false))
+                ($redirectAddressCollection === false)) || isset($gatewayInput['skip']))
             {
                 return null;
             }
@@ -11141,6 +11150,12 @@ trait Authorize
             {
                 $redirectUrl = $this->route->getUrl('payment_redirect_to_address_collect', ['id' => $trackId]);
                 $httpMethod = $this->route::getApiRoute('payment_redirect_to_address_collect')[0];
+            }
+            elseif (isset($gatewayInput['authentication']['authentication_channel']) && $gatewayInput['authentication']['authentication_channel'] === 'app')
+            {
+                $redirectUrl = $this->route->getUrl('payment_redirect_to_auth_info_get', ['id' => $trackId]);
+                $data['submit_authentication_information'] = true;
+                $data['network'] = $gatewayInput['card']['network'];
             }
             else
             {
@@ -11447,6 +11462,21 @@ trait Authorize
                 if (isset($input['ip'])){
                     $inputDetails['ip'] = $input['ip'];
                 }
+
+                if (isset($input['authentication'])) {
+                    if (isset($input['authentication']['auth_step'])){
+                        $inputDetails['auth_step'] = $input['authentication']['auth_step'];
+                    }
+                    if(isset($input['authentication']['3DS2_data'])){
+                        $inputDetails['device_information'] = $input['authentication']['3DS2_data']['device_information'];
+                    }
+                }
+
+                if (isset($input['skip'])){
+                    $inputDetails['skip'] = $input['skip'];
+                }
+
+
 
                 /*
                  * In double redirect scenario terminal will be set

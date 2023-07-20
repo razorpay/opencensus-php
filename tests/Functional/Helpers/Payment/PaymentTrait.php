@@ -2731,6 +2731,18 @@ trait PaymentTrait
         return $url;
     }
 
+    public function getPaymentRedirectToAuthInfoUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_auth_info_get', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
     public function getPaymentRedirectToDCCInfoUrl($trackId)
     {
         $params = [

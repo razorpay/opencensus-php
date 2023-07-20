@@ -1069,6 +1069,7 @@ class CardPaymentService
                 'emi_plan_fetch.duration'           => 'content.duration',
                 'emi_plan_fetch.durations'          => 'content.durations',
                 'emi_plan_fetch.cobranding_partner' => 'content.cobranding_partner',
+                '3DS2_data.device_information'      => 'content.input.device_information'
             ];
 
             $requestTrace = [];

@@ -2197,6 +2197,18 @@ class Service extends Base\Service
         {
            $this->updateTokenDetails($entity, $payment);
         }
+
+        //For 3ds2 sdk we have to initiate callback during fetch payment call
+        if(isset($entity['authentication']['authentication_channel']) &&
+            $entity['authentication']['authentication_channel'] == "app")
+        {
+            if($this->app['basicauth']->isPrivateAuth())
+            {
+                $secret = $this->app->config->get('app.key');
+                $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
+                $this->callback($payment->getPublicId(), $hash, ["gateway" => $payment['gateway']]);
+            }
+        }
         return $entity;
     }
 

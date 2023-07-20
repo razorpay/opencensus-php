@@ -20,6 +20,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Customer;
 use RZP\Models\Settlement\Merchant;
 use RZP\Models\Merchant\Preferences;
+use RZP\Services\CredcaseSigner;
 use View;
 use Crypt;
 use Carbon\Carbon;
@@ -138,6 +139,21 @@ class PaymentCreateController extends Controller
         $this->logPaymentRequestEvent($input);
 
         $data = $this->createPaymentWihoutCoproto($input);
+
+        if (isset($input['authentication']['authentication_channel']) &&
+            ($input['authentication']['authentication_channel'] == "app"))
+        {
+            $input['skip'] = true;
+            $input['rearch'] = false;
+            if ((isset($data['processed_via_pg_router'])) === false or
+                ($data['processed_via_pg_router'] === false)) {
+                $authoriseResponse = $this->postRedirectToAuthorize(str_replace("pay_","",$data['payment_id']), $input);
+            }
+            if (isset($authoriseResponse['auth_step']) && isset($authoriseResponse['content']) && isset($authoriseResponse['threeDSServerTransID']))
+            {
+                $data += $authoriseResponse;
+            }
+        }
 
         if ((isset($data['processed_via_pg_router'])) === true and
             ($data['processed_via_pg_router'] === true))
@@ -811,9 +827,14 @@ class PaymentCreateController extends Controller
             ->with('data', $response);
     }
 
-    public function postRedirectToAuthorize($id)
+    public function postRedirectToAuthorize($id, array $data = [])
     {
         $input = Request::all();
+
+        if (isset($data['skip'])){
+            $input['skip'] = true;
+            $input['rearch'] = $data['rearch'];
+        }
 
         $input['ip'] = $this->app['request']->getClientIp();
 
@@ -831,7 +852,11 @@ class PaymentCreateController extends Controller
 
         //This is to ensure nothing is breaking in existing flows
         //Adding check for 3ds 2.0 second authenticate POST call
-        if ((!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL))) and (!((isset($input['browser']) === true) and (isset($input['auth_step']) === true))))
+        if ((!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL)))
+            and (!((isset($input['browser']) === true) and (isset($input['auth_step']) === true)))
+            and isset($input['authentication']['authentication_channel'])
+            and !($input['authentication']['authentication_channel'] === "app")
+        )
         {
             $input = [];
         }
@@ -875,6 +900,107 @@ class PaymentCreateController extends Controller
         $this->logResponseIfApplicable($response);
 
         return $response;
+    }
+
+    public function postRedirectToAuthenticateInfo($id)
+    {
+        $input = Request::all();
+
+        $input['ip'] = $this->app['request']->getClientIp();
+
+        if (empty($input['rearch']) === false)
+        {
+            $data = $this->app['pg_router']->paymentAuthenticate($id, [], true);
+
+            if (empty($data['html']) === false)
+            {
+                return $data['html'];
+            }
+
+            return $data;
+        }
+
+        //This is to ensure nothing is breaking in existing flows
+        //Adding check for 3ds 2.0 second authenticate POST call
+        if ((!((isset($input['browser']) === true) and (isset($input['auth_step']) === true)))
+            and isset($input['authentication']['authentication_channel'])
+            and !($input['authentication']['authentication_channel'] === "app"))
+        {
+            $input = [];
+        }
+
+        $data = $this->service(E::PAYMENT)->redirectToAuthorize($id, $input);
+        if ((is_array($data)) and
+            (isset($data['request']) === false))
+        {
+            if((isset($this->input['provider'])) and ($this->app['rzp.mode'] != 'test'))
+            {
+                assertTrue ($data !== null);
+
+                return $this->returnCheckoutCallbackView($data);
+            }
+        }
+
+        //return callback view for Frictionless payments
+        if ((is_array($data)) and (isset($data['request']) === false))
+        {
+            if((isset($input['browser']) === true) and (isset($input['auth_step']) === true))
+            {
+                return $this->returnCheckoutCallbackView($data);
+            }
+        }
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        if (isset($data['request']) && isset($data['request']['3DS2_data'])) {
+            return $this->processSDKData($data);
+        }
+        //sdk response for 3ds2
+
+        $data['razorpay_signature'] = $this->getSignature($data);
+        $response = $this->processCoprotoData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
+    }
+
+    protected function getSignature(array $data)
+    {
+        $publicKey = null;
+
+        if (isset($data['razorpay_payment_id']) === true)
+        {
+            $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($data['razorpay_payment_id']));
+
+            $publicKey = $payment->getPublicKey();
+
+            $this->trace->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_TRACE, [
+                'payment_id'   => $data['razorpay_payment_id'],
+                'merchant_id'  => $payment->getMerchantId(),
+            ]);
+        }
+
+        if ((empty($publicKey) === true) and
+            (isset($data['razorpay_order_id']) === true))
+        {
+            $order = $this->repo->order->findOrFail(Order\Entity::stripDefaultSign($data['razorpay_order_id']));
+
+            $publicKey = $order->getPublicKey();
+
+            $this->trace->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_TRACE, [
+                'order_id'     => $data['razorpay_order_id'],
+                'merchant_id'  => $order->getMerchantId(),
+            ]);
+        }
+
+        ksort($data);
+
+        $str = implode('|', $data);
+
+        return (new CredcaseSigner)->sign($str, $publicKey);
     }
 
     public function postUpdateAndRedirectToAuthorize($id)
@@ -1497,12 +1623,29 @@ class PaymentCreateController extends Controller
 
         $response['razorpay_payment_id'] = $data['payment_id'];
 
-        $next = [
-            [
-                'action' => 'redirect',
-                'url'    => $data['request']['url'],
-            ],
-        ];
+        if (isset($data['submit_authentication_information']) && ($data['submit_authentication_information'] === true)){
+            $threeDS2  = [
+                'network' => $data['network'],
+                'message_version' => $data['3ds_protocol_version'],
+                'directory_server_id' => $data['threeDSServerTransID']
+            ];
+
+            $next = [
+                [
+                    'action' => 'submit_authentication_information',
+                    'url'    => $data['request']['url'],
+                    '3DS2_data' => $threeDS2
+                ],
+            ];
+        }
+        else {
+            $next = [
+                [
+                    'action' => 'redirect',
+                    'url'    => $data['request']['url'],
+                ],
+            ];
+        }
 
         if (empty($data['request']['otp_generate_url']) === false)
         {
@@ -2090,6 +2233,24 @@ class PaymentCreateController extends Controller
             return true;
         }
         return false;
+    }
+
+    private function processSDKData(array $data): array
+    {
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $initialiseSdk['action'] = "initiate_challenge_via_sdk";
+        $initialiseSdk['3DS2_data'] = $data['request']['3DS2_data'];
+
+        $poll['action'] = "poll";
+
+        $url = $this->route->getUrl('payment_fetch_by_id', ['id' => $data['payment_id']]);
+        $poll['url'] = $url;
+
+        $nextData =array($initialiseSdk, $poll);
+
+        $response['next'] = $nextData;
+        return $response;
     }
 
 

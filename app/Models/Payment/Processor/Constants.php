@@ -111,7 +111,7 @@ class Constants
 
     // default time out for upi and card subsequent payment
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO = 2160;
-    
+
     const AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES = 4320;
 
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO = 4320;
