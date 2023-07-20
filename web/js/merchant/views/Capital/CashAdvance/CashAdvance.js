@@ -2,6 +2,7 @@ import './styles/error-alert.styl';
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
+import { Alert as BladeAlert } from '@razorpay/blade/components';
 import {
   CASH_ADVANCE_BASE_URL,
   CASH_ADVANCE_SECTIONS,
@@ -32,7 +33,7 @@ import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
 import Settings from './views/Settings';
-import { isMerchantNew, showSettings } from './utils';
+import { isADayAgo, isMerchantNew, showSettings } from './utils';
 import Alert from 'common/new-ui/Alert';
 
 const Loader = () => {
@@ -326,7 +327,7 @@ class CashAdvance extends React.Component {
 
   render() {
     const {
-      list: { data: withdrawalsData = null, loading: withdrawalsLoading } = {},
+      list: { data: withdrawalsData = {}, loading: withdrawalsLoading } = {},
       match: {
         params: { section },
       },
@@ -361,11 +362,23 @@ class CashAdvance extends React.Component {
     const showSuccess = locEsignClicked && partner_id === 'GROMOR';
     const showBanner = (showSuccess || !isGromorModalOpen) && !isDateExpired;
 
+    const hasDisbursedForADayWithdrawals = withdrawalsData?.find(
+      (item) => item.status === 'DISBURSED' && isADayAgo(item?.disbursed_at),
+    );
+
     return (
       <div className="cash-advance-container">
         {showBanner && this.renderBanner(showSuccess ? 'signed' : 'unsigned')}
-
         <tabbed-container>
+          {hasDisbursedForADayWithdrawals ? (
+            <BladeAlert
+              contrast="low"
+              title="Repayment for your last withdrawal is unavailable"
+              description="Withdrawals and repayments are temporarily down. While we work on fixing this, please reach out to us at capital-support@razorpay.com to repay and clear any pending dues."
+              intent="notice"
+              isFullWidth
+            />
+          ) : null}
           <h1 className="cash-advance-title">Cash Advance</h1>
           <header>
             {withdrawalsData && (

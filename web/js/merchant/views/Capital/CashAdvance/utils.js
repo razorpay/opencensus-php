@@ -119,8 +119,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         id: CASH_ADVANCE_CAROUSEL_SLIDES.ZERO_OUTSTANDING_BALANCE,
         title: 'Automatic Repayment',
         subTitle: 'From Settlement Balance',
-        body:
-          'Your future due amount will be deducted in parts, from your settlement balance on a daily basis.',
+        body: 'Your future due amount will be deducted in parts, from your settlement balance on a daily basis.',
         cta: {
           text: 'Withdraw',
           actionId: 'WITHDRAW',
@@ -132,8 +131,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         id: CASH_ADVANCE_CAROUSEL_SLIDES.WITHDRAW_PROMPT_DUE_TO_INACTIVITY,
         title: 'Withdrawal Balance',
         subTitle: <Amount value={availableWithdrawalBalance} />,
-        body:
-          'Hey, You haven’t withdrawn for last 3 days. Start withdrawing more to increase the chances of getting higher withdrawal limit.',
+        body: 'Hey, You haven’t withdrawn for last 3 days. Start withdrawing more to increase the chances of getting higher withdrawal limit.',
       };
     case CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT:
       return {
@@ -141,8 +139,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         id: CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT,
         title: 'Total Credit Limit',
         subTitle: <Amount value={internalCreditLimit} />,
-        body:
-          'Your continuous withdrawals and regular on-time due repayments will increase the chances of getting higher withdrawal limit.',
+        body: 'Your continuous withdrawals and regular on-time due repayments will increase the chances of getting higher withdrawal limit.',
       };
     case CASH_ADVANCE_CAROUSEL_SLIDES.AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT: {
       const { nextRepayInterestAmount = 0, nextRepayPrincipalAmount = 0 } = getNextRepayBreakup({
@@ -175,8 +172,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         id: CASH_ADVANCE_CAROUSEL_SLIDES.FULL_DAY_AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT,
         title: 'Today’s Repayable Amount',
         subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount} />,
-        body:
-          'Due to the low settlement balance, today’s repayable amount has not been collected. You can repay the amount manually by clicking on the button below.',
+        body: 'Due to the low settlement balance, today’s repayable amount has not been collected. You can repay the amount manually by clicking on the button below.',
       };
     }
     case CASH_ADVANCE_CAROUSEL_SLIDES.THREE_DAY_REPAYMENT_FAILED_PROMPT: {
@@ -190,8 +186,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         id: CASH_ADVANCE_CAROUSEL_SLIDES.THREE_DAY_REPAYMENT_FAILED_PROMPT,
         title: 'Due Repayment Amount',
         subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount} />,
-        body:
-          'You have missed your repayments for the last 3 days due to low settlement balance. Repay now to avoid getting additional fees.',
+        body: 'You have missed your repayments for the last 3 days due to low settlement balance. Repay now to avoid getting additional fees.',
       };
     }
     default:
@@ -246,4 +241,10 @@ export const isMerchantNew = () => {
   return false;
   // if (!liveByDate) return false;
   // return moment(liveByDate).unix().valueOf() > NEW_MERCHANT_TIMESTAMP;
+};
+
+export const isADayAgo = (date) => {
+  if (!date) return false;
+  const yesterday = moment().subtract(1, 'd');
+  return moment(date).isBefore(yesterday);
 };
