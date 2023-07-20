@@ -30,7 +30,7 @@ class EnachRbl extends Base
 {
     const STEP                  = 'register';
     const GATEWAY               = Payment\Gateway::ENACH_RBL;
-    const FILE_NAME             = 'rbl-enach/outgoing/MNDT_INP/MMS-CREATE-RATN-RATNA0001-{$date}-ESIGN000001-INP';
+    const FILE_NAME             = 'rbl-enach/outgoing/MNDT_INP/MMS-CREATE-RATN-RATNA0001-{$date}-ESIGN{$sequence}-INP';
     const INDIVIDUAL_FILE_NAME  = 'MMS-CREATE-RATN-RATNA0001-{$date}-ESIGN{$sequence}-INP';
     const EXTENSION             = FileStore\Format::ZIP;
     const INDIVIDUAL_EXTENSION  = FileStore\Format::XML;
@@ -46,6 +46,8 @@ class EnachRbl extends Base
      * @var array
      */
     protected $fileStore;
+
+    protected $zipFileSize = 900;
 
     public function fetchEntities(): PublicCollection
     {
@@ -129,30 +131,43 @@ class EnachRbl extends Base
 
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getZipFileToWriteName(false);
+            $count = count($fileData);
 
-            $zipFilePath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $fileName . '.zip';
+            $totalZipFiles = ((int) floor($count / $this->zipFileSize));
 
-            $fileName = $this->getZipFileToWriteName();
+            $zipFileNum = 0;
 
-            $this->createZipFileWithData($fileData, $zipFilePath);
+            while($zipFileNum <= $totalZipFiles)
+            {
+                $fileName = $this->getZipFileToWriteName($zipFileNum + 1, false);
 
-            $creator = new FileStore\Creator;
+                $zipFilePath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $fileName . '.zip';
 
-            $file = $creator->extension(static::EXTENSION)
-                            ->localFilePath($zipFilePath)
-                            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[static::EXTENSION][0])
-                            ->name($fileName)
-                            ->store(FileStore\Store::S3)
-                            ->type(static::FILE_TYPE)
-                            ->entity($this->gatewayFile)
-                            ->metadata(static::FILE_METADATA)
-                            ->save()
-                            ->getFileInstance();
+                $fileName = $this->getZipFileToWriteName($zipFileNum + 1);
 
-            $fileStoreIds[] = $file->getId();
+                [$startInd, $endInd] = $this->getSubarrayIndexes($zipFileNum, $totalZipFiles, $count);
 
-            $this->fileStore = $fileStoreIds;
+                $this->createZipFileWithData($fileData, $zipFilePath, $startInd, $endInd);
+
+                $creator = new FileStore\Creator;
+
+                $file = $creator->extension(static::EXTENSION)
+                    ->localFilePath($zipFilePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[static::EXTENSION][0])
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(static::FILE_TYPE)
+                    ->entity($this->gatewayFile)
+                    ->metadata(static::FILE_METADATA)
+                    ->save()
+                    ->getFileInstance();
+
+                $fileStoreIds[] = $file->getId();
+
+                $this->fileStore = $fileStoreIds;
+
+                $zipFileNum++;
+            }
 
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
@@ -252,7 +267,7 @@ class EnachRbl extends Base
         return $rows;
     }
 
-    protected function createZipFileWithData(array $data, string $zipFilePath)
+    protected function createZipFileWithData(array $signedXmlData, string $zipFilePath, $startXmlInd, $endXmlInd)
     {
         $zip = new ZipArchive();
 
@@ -265,23 +280,27 @@ class EnachRbl extends Base
                 ]);
         }
 
-        foreach ($data as $index => $signedXml)
+        while($startXmlInd <= $endXmlInd)
         {
-            $fileName = $this->getIndividualFileToWriteNameWithExt($index + 1);
+            $fileName = $this->getIndividualFileToWriteNameWithExt($startXmlInd + 1);
 
-            $zip->addFromString($fileName, $signedXml);
+            $zip->addFromString($fileName, $signedXmlData[$startXmlInd]);
+
+            $startXmlInd++;
         }
 
         $zip->close();
     }
 
-    protected function getZipFileToWriteName($withFullFilePath = true)
+    protected function getZipFileToWriteName($index, $withFullFilePath = true)
     {
         $begin = $this->gatewayFile->getBegin() + self::NUM_SECS_IN_ONE_DAY;
 
         $date = Carbon::createFromTimestamp($begin, Timezone::IST)->format('dmY');
 
-        $fileName = strtr(static::FILE_NAME, ['{$date}' => $date]);
+        $sequence = str_pad($index, 6, '0', STR_PAD_LEFT);
+
+        $fileName = strtr(static::FILE_NAME, ['{$date}' => $date, '{$sequence}' => $sequence]);
 
         if ($withFullFilePath === false)
         {
@@ -350,5 +369,19 @@ class EnachRbl extends Base
         }
 
         return $mailData;
+    }
+
+    protected function getSubarrayIndexes($zipFileNum, $totalZipFiles, $totalRecords): array
+    {
+        $startInd = ($zipFileNum * $this->zipFileSize);
+        if($zipFileNum === $totalZipFiles){
+            $remainder = ($totalRecords % $this->zipFileSize);
+            $endInd = $startInd + $remainder - 1;
+        }
+        else
+        {
+            $endInd = (($zipFileNum + 1) * $this->zipFileSize) - 1;
+        }
+        return [$startInd, $endInd];
     }
 }
