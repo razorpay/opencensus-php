@@ -943,7 +943,7 @@ trait RepositoryFetch
         return $collection;
     }
 
-    protected function checkWdaRouteForFetchPayment(string $connectionType) : bool
+    protected function checkWdaRouteForFetchPayment($connectionType) : bool
     {
         return $this->checkIfWDARoute($connectionType) === true;
 
@@ -1445,13 +1445,14 @@ trait RepositoryFetch
         return $entity;
     }
 
-    public function checkIfWDARoute(string $connectionType = null) : bool
+    public function checkIfWDARoute($connectionType = null) : bool
     {
         try
         {
+
             $experiment = $this->app['api.route']->getWdaRouteExperimentName();
 
-            if(is_null($experiment) === false and ($this->app['api.route']->isWDAServiceRoute() === true) and
+            if(is_null($connectionType) === false and is_null($experiment) === false and ($this->app['api.route']->isWDAServiceRoute() === true) and
                 ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
                 $this->isExperimentEnabled($experiment) === true and $this->app->runningUnitTests() === false)
             {
