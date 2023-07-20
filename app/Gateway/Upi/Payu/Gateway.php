@@ -12,6 +12,7 @@ use RZP\Gateway\Upi\Payu\Fields;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Base\WalletTrait;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
+use RZP\Gateway\Upi\Base\Response;
 
 class Gateway extends Base\Gateway
 {
@@ -63,7 +64,20 @@ class Gateway extends Base\Gateway
 
             $input['gateway'] = $result;
 
-            return $this->upiCallback($input);
+            $data = $this->upiCallback($input);
+
+            if (empty($data['acquirer']) === false && empty($input['gateway']) === false)
+            {
+                $gateway = $input['gateway'];
+                if (empty($gateway['data']) === false)
+                {
+                    $response = new Response($gateway['data']);
+                    $upi = $response->getUpi();
+                    $data['acquirer']['gateway_payment_id'] = $upi['gateway_payment_id'] ?? null;
+                }
+
+            }
+            return $data;
         }
         if ($method === Payment\Method::WALLET)
         {
@@ -79,8 +93,8 @@ class Gateway extends Base\Gateway
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)
     {
-        // Used for PayU emandate as well, since gateway does not allow setting 
-        // separate URL for diff methods at their end. 
+        // Used for PayU emandate as well, since gateway does not allow setting
+        // separate URL for diff methods at their end.
         // Pls make sure changes in this flow, do not break for emandate.
         // In future, move UPI callback to staticS2SCallbackGatewayWithModeAndMethod
         // For emandate, already handled there.

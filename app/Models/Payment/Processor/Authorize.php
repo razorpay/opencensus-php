@@ -13052,9 +13052,10 @@ trait Authorize
                     switch ($payment->getMethod())
                     {
                         case Method::UPI:
-                            if ((empty($data['upi']) === false) and (empty($data['upi']['gateway_payment_id']) === false))
+                            if ((empty($data['acquirer']) === false) and (empty($data['acquirer']['gateway_payment_id']) === false))
                             {
-                                $gatewayPaymentId = $data['upi']['gateway_payment_id'];
+                                $gatewayPaymentId = $data['acquirer']['gateway_payment_id'];
+
                             }
                             break;
                         case Method::NETBANKING:
