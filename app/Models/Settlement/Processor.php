@@ -75,30 +75,19 @@ class Processor extends Base\Core
      * every day, irrespective of holidays, but transfer
      * for these settlements get initiated only on
      * non-holidays at a time defined by the merchant.
+     *
+     * As a part of RSR-3104; no merchant will be allowed to be initiating daily settlement
      */
     public function processDailySettlements(array $input)
     {
-        $this->increaseAllowedSystemLimits();
+        $errorInfo = [
+            'input'        => $input,
+            'message'      => 'No daily settlements processing is allowed from API.',
+        ];
 
-        $this->setDebugStatus($input);
+        $this->trace->info(TraceCode::DAILY_SETTLEMENTS_NOT_ALLOWED, $errorInfo);
 
-        $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
-
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
-
-        if ($shouldProcess === true)
-        {
-            $data = $this->mutex->acquireAndRelease(
-                $mutexResource,
-                function ()
-                {
-                    return $this->createDailySettlements();
-                },
-                self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
-        }
-
-        return $data;
+        return $errorInfo;
     }
 
     public function processFailedSettlements(array $input)
@@ -131,13 +120,38 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel, string $balanceType = Balance\Type::PRIMARY)
     {
+        $merchantIds = [];
+        $notAllowedMIDs = [];
+
+        // take MIDs directly from input
+        $inputMIDs = $input['merchant_ids'] ?? [];
+
+        // allow only inter-nodal MIDs to be processed further; rest MIDs will be logged & ignored from the input
+        foreach ($inputMIDs as $index => $inputID)
+        {
+            if (in_array($inputID, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+            {
+                $notAllowedMIDs[] = $inputID;
+            }
+            else
+            {
+                $merchantIds[] = $inputID;
+            }
+        }
+        // if there exist not allowed merchants; print those
+        if(sizeof($notAllowedMIDs) > 0) {
+            $errorInfo = [
+                'merchant_ids' => $notAllowedMIDs,
+                'message'      => 'No settlements processing allowed for these merchants from API.',
+            ];
+            $this->trace->info(TraceCode::SETTLEMENT_PROCESS_NOT_ALLOWED, $errorInfo);
+        }
+
         $this->setDebugStatus($input);
 
         $this->preSettlementProcessing($input);
 
         $useQueue = $this->shouldUseQueue($input);
-
-        $merchantIds = $input['merchant_ids'] ?? [];
 
         $params =[
             'created_at'          => $input['created_at'] ?? null,
@@ -274,6 +288,11 @@ class Processor extends Base\Core
         return $mids;
     }
 
+    /**
+     * @param array $setlIds - RSR-3104 - if input settlements IDs belong to API only (created in API
+     * & not in NSS) then only this method will allow those to be retried.
+     * @return array
+     */
     protected function retrySettlements(array $setlIds)
     {
         $setlAttempts = new Base\PublicCollection;
@@ -764,6 +783,19 @@ class Processor extends Base\Core
         {
             try
             {
+                // As a part of RSR-3104; apart from inter-nodal MIDs, no merchants will be allowed to be queued for settlement creation
+                if (in_array($merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+                {
+                    $errorInfo = [
+                        'merchant_id' => $merchantId,
+                        'message'     => 'This merchant is not allowed to be queued for settlements creation from API.',
+                    ];
+                    $this->trace->info(TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_SKIPPED, $errorInfo);
+                    $result['enqueue_failed'] += 1;
+                    Cache::decrement($CountKey);
+                    continue;
+                }
+
                 //
                 // passing $bucketTimestamp is not necessary
                 // for now passing this, just to track the performance
@@ -958,27 +990,19 @@ class Processor extends Base\Core
         return (bool) isset($input['use_queue']) ?? false;
     }
 
+    /**
+     * As a part of RSR-3104; no adhoc settlements will be allowed
+     */
     public function processAdhocSettlements(array $input)
     {
-        $this->increaseAllowedSystemLimits();
+        $errorInfo = [
+            'input'        => $input,
+            'message'      => 'No Adhoc settlement processing is allowed from API.',
+        ];
 
-        $mutexResource = sprintf(self::MUTEX_ADHOC_RESOURCE, $this->mode);
+        $this->trace->info(TraceCode::ADHOC_SETTLEMENTS_NOT_ALLOWED, $errorInfo);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
-
-        if ($shouldProcess === true)
-        {
-            $data = $this->mutex->acquireAndRelease(
-                $mutexResource,
-                function ()
-                {
-                    return $this->createAdhocSettlements();
-                },
-                self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
-        }
-
-        return $data;
+        return $errorInfo;
     }
 
     protected function createAdhocSettlements(): array

@@ -18,6 +18,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
+use RZP\Models\Settlement\SettlementServiceMigration;
 
 class Create extends Job
 {
@@ -223,15 +224,27 @@ class Create extends Job
         {
             $this->delete();
 
-            $this->trace->count(
-                Metric::MERCHANT_SETTLEMENT_PROCESSED,
-                [
-                    'channel' => $channel,
-                ]);
+            if (in_array($this->merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_DISPATCH_INITIATE_NOT_ALLOWED,
+                    [
+                        'merchant_id' => $this->merchantId,
+                        'message'     => 'Cannot dispatch merchant to initiate settlement as it is not allowed for from API.',
+                    ]);
+            }
+            else
+            {
+                $this->trace->count(
+                    Metric::MERCHANT_SETTLEMENT_PROCESSED,
+                    [
+                        'channel' => $channel,
+                    ]);
 
-            $shouldInitiate = isset($this->params['daily_settlement']) ? false : true ;
+                $shouldInitiate = isset($this->params['daily_settlement']) ? false : true ;
 
-            $this->dispatchForSettlementInitiateIfRequired($channel, $shouldInitiate);
+                $this->dispatchForSettlementInitiateIfRequired($channel, $shouldInitiate);
+            }
         }
     }
 

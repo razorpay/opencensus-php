@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
@@ -174,7 +175,8 @@ class Core extends Base\Core
 
     /**
      * will add the merchant to settlement bucket which will be derive based on settlement time provided
-     *
+     * As a part of RSR-3104; apart from inter-nodal MIDs no merchants will be allowed to be added to
+     * the settlement bucket
      * @param string $transactionId
      * @param string $merchantId
      * @param        $settlementTime
@@ -206,6 +208,17 @@ class Core extends Base\Core
 
         if ($status === true)
         {
+            return false;
+        }
+
+        if (in_array($merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_BUCKETING_NOT_ALLOWED,
+                [
+                    'merchant_id' => $merchantId,
+                    'message'     => 'Cannot push this merchant to bucket as settlement not allowed for it from API.',
+                ]);
             return false;
         }
 
@@ -563,15 +576,6 @@ class Core extends Base\Core
         }
 
         $this->repo->settlement_bucket->markAsComplete($merchant->getId(), $balanceType, $timestamp);
-    }
-
-    public function addToNextBucket(string $merchantId, string $balanceType = Balance\Type::PRIMARY)
-    {
-        $currentTimestamp = Carbon::now(Timezone::IST);
-
-        $bucketTimestamp = Preference::getNextBucket($currentTimestamp->getTimestamp());
-
-        $this->addToBucket($merchantId, $bucketTimestamp, $balanceType);
     }
 
     /**

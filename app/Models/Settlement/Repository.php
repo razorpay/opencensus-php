@@ -28,6 +28,13 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
+    /**
+     * As a part of RSR-3104; now this settlement retry will be possible only
+     * for the settlements created via API & won't work for settlement created via NSS.
+     *
+     * @param array $setlIds
+     * @return mixed
+     */
     public function getFailedSettlementsForRetry(array $setlIds)
     {
         $merchantId = $this->repo->merchant->dbColumn(M\Entity::ID);
@@ -43,6 +50,7 @@ class Repository extends Base\Repository
                       ->where(Entity::STATUS, '=', Status::FAILED)
                       ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                      ->where(Entity::IS_NEW_SERVICE, '=', 0)
                       ->with('merchant', 'merchant.bankAccount')
                       ->get();
 

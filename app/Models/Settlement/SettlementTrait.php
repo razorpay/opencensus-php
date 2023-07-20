@@ -840,6 +840,17 @@ trait SettlementTrait
 
         $merchant = $this->merchants[$merchantId];
 
+        // As a part of RSR-3104; apart from inter-nodal MIDs, no merchants will be allowed to create settlement
+        if (in_array($merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+        {
+            $errorInfo = [
+                'merchant_id' => $merchantId,
+                'message'     => 'No settlements creation is allowed for this merchants from API.',
+            ];
+            $this->trace->info(TraceCode::SETTLEMENT_CREATE_NOT_ALLOWED, $errorInfo);
+            return [null, null];
+        }
+
         if ($this->isDebugEnabled() === true)
         {
             $this->trace->info(

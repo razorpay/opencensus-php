@@ -180,6 +180,14 @@ class SettlementServiceMigration
 
     ];
 
+    // Keep this list updated.
+    // Reference -- app/Models/Settlement/NodalAccount.php
+    const INTER_NODAL_API_MIDS = [
+        //inter-nodal API mids (LIVE & TEST)
+        '9KmKJncCnrvko6','9LAQrNwLUOthh5','9KmLPrgmHhqjri','9KmHswlZnMMR7I','9KmPH3HU8XjHrq','9KmMiCZ2rN1Bms',
+        '10000000000000','10000000000009',  // MIDs belong to UTs
+    ];
+
     //this contans parent blacklisted mids, linked greylisted mids, and mswipe mids. These all are unblocked for migration To AXIS3.
     const MIGRATION_BLACKLISTED_MIDS_TO_AXIS3 = [
 
