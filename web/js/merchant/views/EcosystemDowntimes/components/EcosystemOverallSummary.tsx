@@ -4,7 +4,7 @@ import {
   EcosystemOverallSummaryContainer,
   EcosystemStatusIconContainer,
 } from 'merchant/views/EcosystemDowntimes/styles';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 import { METHOD_NAMES_MAP, STATUS } from 'merchant/views/EcosystemDowntimes/constants';
 import { ActivityIcon, Text } from '@razorpay/blade/components';
 

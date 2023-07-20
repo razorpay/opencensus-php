@@ -6,7 +6,7 @@ import type {
 import { METHOD_NAMES_MAP, STATUS } from 'merchant/views/EcosystemDowntimes/constants';
 import { Alert, Text } from '@razorpay/blade/components';
 import moment from 'moment';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 
 type DowntimeDetailsOverallStatusPropTypes = {
   instrument: InstrumentMetaData;

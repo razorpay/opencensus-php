@@ -63,7 +63,7 @@ export const CollapsibleArray = ({
               >
                 <Counter
                   contrast="high"
-                  intent="neutral"
+                  variant="neutral"
                   size="medium"
                   value={10000}
                   max={arr.length - 1}

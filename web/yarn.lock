@@ -3915,10 +3915,10 @@
     react-native-svg "12.1.0"
     react-native-tab-view "2.15.1"
 
-"@razorpay/blade@8.11.3":
-  version "8.11.3"
-  resolved "https://npm.pkg.github.com/download/@razorpay/blade/8.11.3/bce9dba1e378acf195ad9c3c4b6698448e8e0888#bce9dba1e378acf195ad9c3c4b6698448e8e0888"
-  integrity sha512-qMM51xBtr7ecnfXEKIBCB8MJQbr//SbaCLK+BhdPvIgKzWHLRAhdugaMeZ+wIvc2aIsbwpG6rFrSuXwxoQ1SAw==
+"@razorpay/blade@9.1.2":
+  version "9.1.2"
+  resolved "https://npm.pkg.github.com/download/@razorpay/blade/9.1.2/81e6b38329723f6a24252c984aedf58b463cb14e#81e6b38329723f6a24252c984aedf58b463cb14e"
+  integrity sha512-2C18IFh07/CXIRdDRLW/v1SSsBbNjsuwlzZepFfQXCwqduKu866Q3niHYIiPmrm6IWBBIIg7e8FkhKNWva455g==
   dependencies:
     "@babel/runtime" "7.16.5"
     "@floating-ui/react" "0.24.2"
@@ -4749,22 +4749,13 @@
     "@reportportal/client-javascript" "^5.0.6"
     jest-cli "^27.0.6"
 
-"@reportportal/agent-js-playwright@5.0.5":
-  version "5.0.5"
-  resolved "https://registry.npmjs.org/@reportportal/agent-js-playwright/-/agent-js-playwright-5.0.5.tgz#700573321b1ea1785aebb67192cf5e317bc6e91f"
-  integrity sha512-9Cuzx8VeIR/W1il38LLmscwG/VYkWWnMiDlYuL9rdXjqu+PDQ6am/fyWTg1KTAtfY4LwvR46h4NXNebeo4W6ow==
+"@reportportal/agent-js-playwright@5.0.11", "@reportportal/agent-js-playwright@5.0.5", "@reportportal/agent-js-playwright@5.0.8":
+  version "5.0.11"
+  resolved "https://registry.yarnpkg.com/@reportportal/agent-js-playwright/-/agent-js-playwright-5.0.11.tgz#d01de99d5371f8db7f6aea4742b2d5a08902c5fa"
+  integrity sha512-WeKqwCk9Y8P6mTVcJnMGHPWWB09hYNd4m2QlgvnpIKn1qPaXNzvW/TyCitbAzdGi7kX5Z2vD5yHRkaNq7wtAHA==
   dependencies:
-    "@reportportal/client-javascript" "^5.0.6"
-    axios "^0.24.0"
-    strip-ansi "^6.0.1"
-
-"@reportportal/agent-js-playwright@5.0.8":
-  version "5.0.8"
-  resolved "https://registry.npmjs.org/@reportportal/agent-js-playwright/-/agent-js-playwright-5.0.8.tgz#81344469f6672bb7cb274f6e7d830716142ef889"
-  integrity sha512-DKZpV1IDBuN7LZAzu9yo+EvRFK1f0hEkzkA2UTAhAAn4X1CaAVkqc6iQW6qDO3gT4sAFPZB1P7SYG0rLCvyHLw==
-  dependencies:
-    "@reportportal/client-javascript" "^5.0.6"
-    strip-ansi "^6.0.1"
+    "@reportportal/client-javascript" "^5.0.8"
+    strip-ansi "6.0.1"
 
 "@reportportal/client-javascript@5.0.7":
   version "5.0.7"
@@ -4787,6 +4778,18 @@
     glob "^7.2.0"
     uniqid "^5.4.0"
     universal-analytics "^0.5.3"
+
+"@reportportal/client-javascript@^5.0.8":
+  version "5.0.12"
+  resolved "https://registry.yarnpkg.com/@reportportal/client-javascript/-/client-javascript-5.0.12.tgz#b6d9254014545ca56599c05105854ea814561f1e"
+  integrity sha512-ECLvuDLV7KyKs0wG9Sis3ZqHOq9VMg3fywm1VDegd5HGDKC1hoXxFKfz6ngPY8FZ5O1nt1UJvgEs47shtPHQCg==
+  dependencies:
+    axios "^0.27.2"
+    axios-retry "^3.4.0"
+    glob "^7.2.3"
+    ini "^2.0.0"
+    uniqid "^5.4.0"
+    uuid "^9.0.0"
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
@@ -10968,6 +10971,14 @@ axios-retry@^3.2.4:
     "@babel/runtime" "^7.15.4"
     is-retry-allowed "^2.2.0"
 
+axios-retry@^3.4.0:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.5.1.tgz#d902f69fe1b2a71902e29605318f887bef0981c6"
+  integrity sha512-mQRJ4IyAUnYig14BQ4MnnNHHuH1cNH7NW4JxEUD6mNJwK6pwOY66wKLCwZ6Y0o3POpfStalqRC+J4+Hnn6Om7w==
+  dependencies:
+    "@babel/runtime" "^7.15.4"
+    is-retry-allowed "^2.2.0"
+
 axios@0.21.1:
   version "0.21.1"
   resolved "https://registry.npmjs.org/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
@@ -10975,7 +10986,7 @@ axios@0.21.1:
   dependencies:
     follow-redirects "^1.10.0"
 
-axios@0.24.0, axios@^0.24.0:
+axios@0.24.0:
   version "0.24.0"
   resolved "https://registry.npmjs.org/axios/-/axios-0.24.0.tgz#804e6fa1e4b9c5288501dd9dff56a7a0940d20d6"
   integrity sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==
@@ -17721,7 +17732,7 @@ glob@^6.0.1:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.0, glob@^7.0.3, glob@^7.0.5, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0:
+glob@^7.0.0, glob@^7.0.3, glob@^7.0.5, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0, glob@^7.2.3:
   version "7.2.3"
   resolved "https://registry.npmjs.org/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
   integrity sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==
@@ -29640,6 +29651,13 @@ strip-ansi@6.0.0:
   dependencies:
     ansi-regex "^5.0.0"
 
+strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
 strip-ansi@^3.0.0, strip-ansi@^3.0.1:
   version "3.0.1"
   resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-3.0.1.tgz#6a385fb8853d952d5ff05d0e8aaf94278dc63dcf"
@@ -29653,13 +29671,6 @@ strip-ansi@^4.0.0:
   integrity sha512-4XaJ2zQdCzROZDivEVIDPkcQn8LMFSa8kj8Gxb/Lnwzv9A8VctNZ+lfivC/sV3ivW8ElJTERXZoPBRrZKkNKow==
   dependencies:
     ansi-regex "^3.0.0"
-
-strip-ansi@^6.0.0, strip-ansi@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
 
 strip-bom@^2.0.0:
   version "2.0.0"
@@ -31667,6 +31678,11 @@ uuid@^7.0.3:
   version "7.0.3"
   resolved "https://registry.npmjs.org/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
   integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
+
+uuid@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.0.tgz#592f550650024a38ceb0c562f2f6aa435761efb5"
+  integrity sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==
 
 v8-compile-cache@^2.0.3, v8-compile-cache@^2.1.0, v8-compile-cache@^2.3.0:
   version "2.3.0"

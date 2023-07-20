@@ -12,7 +12,7 @@ import { Badge } from '@razorpay/blade/components';
 import AccountDetail from 'merchant/views/Wallet/AccountDetail';
 import { withNoWrap } from 'merchant/views/Wallet/styled';
 
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 import { fetchAccounts } from 'merchant/views/Wallet/queries';
 import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/Accounts/constants';

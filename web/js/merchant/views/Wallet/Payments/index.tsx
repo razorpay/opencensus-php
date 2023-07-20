@@ -11,7 +11,7 @@ import Filters from 'merchant/views/Wallet/Payments/Filters';
 
 import { SessionContext } from 'merchant/views/Wallet/context';
 import { fetchPayments } from 'merchant/views/Wallet/queries';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/AccountDetail/constants';
 
 import type {

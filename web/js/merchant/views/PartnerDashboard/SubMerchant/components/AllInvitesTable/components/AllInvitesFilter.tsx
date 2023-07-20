@@ -11,7 +11,7 @@ import { FilterContainer, InputContainer, ButtonContainer } from './styles';
 import { PaginationParamsType } from 'common/typings';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { isEmpty } from '@razorpay/blade/utils';
+import { isEmpty } from 'lodash';
 
 export type AllInvitesFiltersType = {
   name: string;

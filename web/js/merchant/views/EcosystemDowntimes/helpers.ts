@@ -16,7 +16,7 @@ import type {
   StaticInstrumentMappingType,
   SuccessRateResponseType,
 } from './types';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 
 export const extractInstrumentType = (keys: string[]): string | null => {
   const ignoreFields = ['method', 'srKey'];

@@ -24,7 +24,7 @@ import EcosystemHealthError from 'merchant/views/EcosystemDowntimes/components/E
 import { Text, Heading } from '@razorpay/blade/components';
 import DowntimeDetailsContainer from './DowntimeDetailsContainer';
 import { Modal, ModalBody } from 'common/components/Modal';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 
 const MethodsContainer = (): JSX.Element => {
   const { state, dispatch } = useContext(EcosystemDowntimeContext);

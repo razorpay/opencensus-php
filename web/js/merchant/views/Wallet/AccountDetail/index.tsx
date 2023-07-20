@@ -9,7 +9,7 @@ import { Alert, Badge } from '@razorpay/blade/components';
 import AccountBalanceContainer from 'merchant/views/Wallet/AccountDetail/containers/AccountBalanceContainer';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 
 import { fetchAccountById } from 'merchant/views/Wallet/queries';
 import { SessionContext } from 'merchant/views/Wallet/context';

@@ -6,7 +6,7 @@ import {
   INSTRUMENT_TYPE_NAMES_MAP,
   METHOD_NAMES_MAP,
 } from 'merchant/views/EcosystemDowntimes/constants';
-import { toTitleCase } from '@razorpay/blade/utils';
+import { toTitleCase } from 'common/utils';
 
 type DowntimeDetailsHeaderType = {
   instrument: InstrumentMetaData;
