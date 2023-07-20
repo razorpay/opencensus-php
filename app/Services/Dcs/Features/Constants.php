@@ -181,6 +181,7 @@ class Constants
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
     const GaiSyncPayouts = 'sync_payouts';
+    const PassCustomUdfFss = 'pass_custom_udf_fss';
 
     //reporting service features
     const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
@@ -199,6 +200,7 @@ class Constants
      * Stores the mapping of the features to their corresponding dcs keys
      */
     public static $featureToDCSKeyMapping = [
+        self::PassCustomUdfFss => "rzp/pg/org/cards/banking_program/CardsConfig",
         self::RefundEnabled => "example/pg/merchant/refund/Features",
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
@@ -394,6 +396,7 @@ class Constants
      * This is required for migrating features.
      */
     public static array $apiFeatureNameToDCSFeatureName = [
+        self::PassCustomUdfFss                                              => self::PassCustomUdfFss,
         self::RefundEnabled                                                 => self::RefundEnabled,
         self::DisableAutoRefund                                             => self::DisableAutoRefund,
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
@@ -609,6 +612,7 @@ class Constants
      * Stores the mapping of the Prg features to their corresponding handlers
      */
     public static array $dcsNewOrgFeatures = [
+        self::PassCustomUdfFss => 'direct',
         self::AdditionalFieldsHdfcOnboarding => 'direct',
         self::HideInstrumentRequest         => 'direct',
         self::QualityCheckIntimationEmail   => 'direct',
