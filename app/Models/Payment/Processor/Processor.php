@@ -1618,15 +1618,16 @@ class Processor
 
             $customCheckResults = $this->performCustomChecksToRouteViaUpsRearchFlow($input, $merchant, $currentRouteName);
 
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ROUTING_CRITERIA,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'dimensions'    => $customCheckResults['dimensions'],
+                'route'         => $currentRouteName,
+                'route_via_ups' => $customCheckResults['route_via_ups'],
+            ]);
+
             if ($customCheckResults['route_via_ups'] === false)
             {
-                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ROUTING_CRITERIA_FAILED_REASON,
-                    [
-                        'merchant_id'   => $merchant->getId(),
-                        'reason'        => $customCheckResults['reason'],
-                    ]
-                );
-
                 return false;
             }
 
@@ -1636,14 +1637,12 @@ class Processor
                 return false;
             }
 
-            /*
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from UPS re-arch traffic
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_UPS,
                 $this->mode);
             if ($result === 'on') {
                 return false;
             }
-            */
 
             $library = $input['_']['library'] ?? '';
 
@@ -1700,154 +1699,150 @@ class Processor
      */
     private function performCustomChecksToRouteViaUpsRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array
     {
-        $response = [
-            'route_via_ups' => false,
-            'reason' => ''
-        ];
+        $routeViaReArch = true;
+        $dimensions = array_fill(0, 35, 0);
 
-        if ($this->isUpiRearchRoute($currentRouteName) == false)
-        {
-            $response['reason'] = 'Condition: isUpiRearchRoute() is false';
-            return $response;
-        }
+        $response = [
+            'route_via_ups' => $routeViaReArch
+        ];
 
         if (empty($input[Payment\Entity::METHOD]) === true)
         {
-            $response['reason'] = 'Condition: input[METHOD] is empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[0] = 1;
         }
 
         if ($input[Payment\Entity::METHOD] !== Payment\METHOD::UPI)
         {
-            $response['reason'] = 'Condition: input[METHOD] is not UPI';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[1] = 1;
         }
 
         if (empty($input[Payment\Entity::RECURRING]) === false)
         {
-            $response['reason'] = 'Condition: input[RECURRING] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[2] = 1;
         }
 
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
-            $response['reason'] = 'Condition: input[SUBSCRIPTION_ID] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[3] = 1;
         }
 
         if (empty($input[Payment\Entity::INVOICE_ID]) === false)
         {
-            $response['reason'] = 'Condition: input[INVOICE_ID] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[4] = 1;
         }
 
         if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
         {
-            $response['reason'] = 'Condition: input[PAYMENT_LINK_ID] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[5] = 1;
         }
 
         if (empty($input[Payment\Entity::TOKEN_ID]) === false)
         {
-            $response['reason'] = 'Condition: input[TOKEN_ID] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[6] = 1;
         }
 
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $response['reason'] = 'Condition: input[TOKEN] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[7] = 1;
         }
 
         if (empty($input[Payment\Entity::SAVE]) === false)
         {
-            $response['reason'] = 'Condition: input[SAVE] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[8] = 1;
         }
 
         if (empty($input[Payment\Entity::OFFER_ID]) === false)
         {
-            $response['reason'] = 'Condition: input[OFFER_ID] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[9] = 1;
         }
 
         if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
         {
-            $response['reason'] = 'Condition: input[CHARGE_ACCOUNT] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[10] = 1;
         }
 
         if (empty($input['reward_ids']) === false)
         {
-            $response['reason'] = 'Condition: input[reward_ids] is not empty';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[11] = 1;
         }
 
         if ($merchant->isFeeBearerPlatform() === false)
         {
-            $response['reason'] = 'Condition: isFeeBearerPlatform() is false';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[12] = 1;
         }
 
         if ($merchant->isRazorpayOrgId() === false)
         {
-            $response['reason'] = 'Condition: isRazorpayOrgId() is false';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[13] = 1;
         }
 
         if ($this->isOtmPayment($input) === true)
         {
-            $response['reason'] = 'Condition: isOtmPayment() is true';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[14] = 1;
         }
 
         if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true)
         {
-            $response['reason'] = 'Condition: input[UPI][MODE] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[15] = 1;
         }
 
         if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true)
         {
-            $response['reason'] = 'Condition: input[UPI][PROVIDER] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[16] = 1;
         }
 
         if ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE]) === true) and
             ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE] !== Payment\UpiMetadata\Type::DEFAULT))
         {
-            $response['reason'] = 'Condition: input[UPI][TYPE] is set and not DEFAULT';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[17] = 1;
         }
 
         if (isset($input[Payment\Entity::RECEIVER]) === true)
         {
-            $response['reason'] = 'Condition: input[RECEIVER] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[18] = 1;
         }
 
         if (isset($input[Payment\Entity::UPI_PROVIDER]) === true)
         {
-            $response['reason'] = 'Condition: input[UPI_PROVIDER] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[19] = 1;
         }
 
         if (isset($input[Payment\Entity::CHARGE_ACCOUNT]) === true)
         {
-            $response['reason'] = 'Condition: input[CHARGE_ACCOUNT] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[20] = 1;
         }
 
         if (isset($input['application']) === true)
         {
-            $response['reason'] = 'Condition: input[application] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[21] = 1;
         }
 
         if (isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
         {
-            $response['reason'] = 'Condition: input[BILLING_ADDRESS] is set';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[22] = 1;
         }
 
         if (empty($input[Payment\Entity::ORDER_ID]) === false)
@@ -1861,43 +1856,43 @@ class Processor
                 // Check if offers exist in the order
                 if ($order->hasOffers() === true)
                 {
-                    $response['reason'] = 'Condition: Offers exist in the order';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[23] = 1;
                 }
 
                 // Check if discounts are applicable to the order
                 if ($order->isDiscountApplicable() === true)
                 {
-                    $response['reason'] = 'Condition: Discounts are applicable to the order';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[24] = 1;
                 }
 
                 // Check if product ID exists in the order
                 if ($order->getProductId() !== null)
                 {
-                    $response['reason'] = 'Condition: Product ID exists in the order';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[25] = 1;
                 }
 
                 // Check if fee config ID exists in the order
                 if ($order->getFeeConfigId() !== null)
                 {
-                    $response['reason'] = 'Condition: Fee config ID exists in the order';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[26] = 1;
                 }
 
                 // Check if invoice exists in the order
                 if ($order->invoice !== null)
                 {
-                    $response['reason'] = 'Condition: Invoice exists in the order';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[27] = 1;
                 }
 
                 // Check if tax invoice meta exists in the order meta
                 if (isset($orderMeta[Order\OrderMeta\Type::TAX_INVOICE]) === true)
                 {
-                    $response['reason'] = 'Condition: Tax invoice meta exists in the order meta';
-                    return $response;
+                    $routeViaReArch = false;
+                    $dimensions[28] = 1;
                 }
             }
 
@@ -1907,8 +1902,8 @@ class Processor
             if ((empty($orderTransfers) === false) and
                 (count($orderTransfers) > 0))
             {
-                $response['reason'] = 'Condition: Order transfers exist';
-                return $response;
+                $routeViaReArch = false;
+                $dimensions[29] = 1;
             }
         }
 
@@ -1916,13 +1911,34 @@ class Processor
         if ((empty($input['currency']) === false) and
             ($input['currency'] !== Currency\Currency::INR))
         {
-            $response['reason'] = 'Condition: Currency is not INR';
-            return $response;
+            $routeViaReArch = false;
+            $dimensions[30] = 1;
         }
+
+        if ($this->isUpiRearchRoute($currentRouteName) == false)
+        {
+            $routeViaReArch = false;
+            $dimensions[31] = 1;
+        }
+
+        if ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW]) === true) &&
+            ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW] === UpiMetadata\Flow::IN_APP))
+        {
+            $routeViaReArch = false;
+            $dimensions[32] = 1;
+        }
+
+        $dimensions[33] = (string) strtolower($input['_']['library'] ?? 'unknown');
+
+        $dimensions[34] = (string) $currentRouteName;
+
+        $dimensionsString = implode(', ', $dimensions);
 
         // if none of the condition evaluated as true, the request can be routed via UPS
         // after checking the razorx variant
-        $response['route_via_ups'] = true;
+        $response['route_via_ups'] = $routeViaReArch;
+        $response['dimensions'] = $dimensionsString;
+
         return $response;
     }
 
