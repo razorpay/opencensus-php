@@ -278,7 +278,7 @@ describe('User model', () => {
   test('get isIssuingBulkUploadEnabled: exp disabled', () => {
     const user = getDefaultUserObj();
 
-    jest.spyOn(user, 'getExpStatus').mockReturnValue(false);
+    jest.spyOn(user, 'isFeatureEnabled').mockReturnValue(false);
     jest.spyOn(user, 'userRole', 'get').mockReturnValue('manager');
 
     const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
@@ -288,7 +288,7 @@ describe('User model', () => {
   test('get isIssuingBulkUploadEnabled: when exp enabeld, but role criteria not met', () => {
     const user = getDefaultUserObj();
 
-    jest.spyOn(user, 'getExpStatus').mockReturnValue(true);
+    jest.spyOn(user, 'isFeatureEnabled').mockReturnValue(true);
     jest.spyOn(user, 'userRole', 'get').mockReturnValue('support');
 
     const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
@@ -298,7 +298,7 @@ describe('User model', () => {
   test('get isIssuingBulkUploadEnabled: exp enabled, role criteria met', () => {
     const user = getDefaultUserObj();
 
-    jest.spyOn(user, 'getExpStatus').mockReturnValue(true);
+    jest.spyOn(user, 'isFeatureEnabled').mockReturnValue(true);
     jest.spyOn(user, 'userRole', 'get').mockReturnValue('manager');
 
     const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;

@@ -41,11 +41,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
               Transactions
             </NavLink>
           </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user) =>
-              user.isIssuingDashboardEnabled || user.isIssuingFundsTabEnabled
-            }
-          >
+          <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>
             <NavLink to={walletPaths.funds}>Funds</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>

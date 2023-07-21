@@ -948,17 +948,17 @@ export default class User {
   }
 
   get isIssuingDashboardEnabled() {
-    return this.getExpStatus('issuinghq_wallet_dashboard_enabled');
-  }
-
-  get isIssuingFundsTabEnabled() {
-    return this.getExpStatus('issuinghq_wallet_fundstab_enabled');
+    return (
+      this.isFeatureEnabled('razorpay_wallet') ||
+      this.getExpStatus('issuinghq_wallet_dashboard_enabled')
+    );
   }
 
   get isIssuingBulkUploadEnabled() {
     const allowedRoles = [rolesList.MANAGER, rolesList.OWNER, rolesList.FINANCE];
     return (
-      this.getExpStatus('issuinghq_wallet_bulk_actions_enabled') &&
+      (this.isFeatureEnabled('razorpay_wallet') ||
+        this.getExpStatus('issuinghq_wallet_bulk_actions_enabled')) &&
       allowedRoles.indexOf(this.userRole) > -1
     );
   }

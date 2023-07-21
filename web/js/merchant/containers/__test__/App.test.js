@@ -16,9 +16,6 @@ describe('Idle timer', () => {
 
   test('should show timeout popup after 2 seconds if org feature flag "logout_admin_inactivity" is enabled', async () => {
     renderApp();
-    await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'Wallet' })).toBeInTheDocument();
-    });
     await delay(2000);
     await waitFor(() => {
       expect(screen.getByText('Your session has Expired!')).toBeInTheDocument();
