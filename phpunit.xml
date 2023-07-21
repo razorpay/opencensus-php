@@ -36,7 +36,6 @@
             <directory>./tests/Functional/PaperMandate/</directory>
             <directory>./tests/Functional/UserRole/</directory>
             <directory>./tests/Functional/Adjustment/</directory>
-            <directory>./tests/Functional/BharatQrPayment/</directory>
             <directory>./tests/Functional/Governor/</directory>
             <directory>./tests/Functional/Card/</directory>
             <directory>./tests/Functional/EdgeThrottler/</directory>
@@ -219,7 +218,6 @@
         <testsuite name="Features-4 Test Suite">
             <directory>./tests/Functional/Tax/</directory>
             <directory>./tests/Functional/Transaction/</directory>
-            <directory>./tests/Functional/Transfer/</directory>
             <directory>./tests/Functional/User/</directory>
             <directory>./tests/Functional/UserRole/</directory>
         </testsuite>
@@ -229,6 +227,7 @@
             <directory>./tests/Functional/QrCode/</directory>
             <directory>./tests/Functional/Workflow/</directory>
             <directory>./tests/Functional/Reminders/</directory>
+            <directory>./tests/Functional/Refund/</directory>
         </testsuite>
         <testsuite name="Features-4-2 Test Suite">
             <directory>./tests/Unit/</directory>
@@ -313,7 +312,6 @@
             <exclude>./tests/Functional/Payment/NbPlusService/</exclude>
             <exclude>./tests/Functional/Payment/TerminalAuthentication/</exclude>
             <exclude>./tests/Functional/Payment/TerminalRotator/</exclude>
-            <exclude>./tests/Functional/Payment/Transfers/</exclude>
             <exclude>/tests/Functional/Payment/AcknowledgeTest.php</exclude>
             <exclude>/tests/Functional/Payment/AuthorizeTest.php</exclude>
             <exclude>/tests/Functional/Payment/BajajFinservEmiTest.php</exclude>
@@ -388,18 +386,7 @@
             <exclude>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</exclude>
         </testsuite>
         <testsuite name="Smart Collect Test Suite">
-            <directory>./tests/Functional/VirtualAccount</directory>
-            <directory>./tests/Functional/VirtualVpaPrefix</directory>
-            <directory>./tests/Functional/UpiTransfer</directory>
             <directory>./tests/Functional/BankTransfer</directory>
-            <directory>./tests/Functional/BharatQrPayment</directory>
-            <directory>./tests/Functional/QrCode</directory>
-        </testsuite>
-        <testsuite name="Route Test Suite">
-            <directory>./tests/Functional/Transfer/</directory>
-            <directory>./tests/Functional/Payment/Transfers/</directory>
-            <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
-            <file>./tests/Functional/Merchant/AccountTest.php</file>
         </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
@@ -436,8 +423,18 @@
             <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
 
         </testsuite>
+        <testsuite name="Enterprise Apps Test Suite">
+            <directory>./tests/Functional/Transfer/</directory>
+            <directory>./tests/Functional/VirtualAccount/</directory>
+            <directory>./tests/Functional/VirtualAccount</directory>
+            <directory>./tests/Functional/VirtualVpaPrefix</directory>
+            <directory>./tests/Functional/UpiTransfer</directory>
+            <directory>./tests/Functional/BharatQrPayment</directory>
+            <directory>./tests/Functional/Payment/Transfers/</directory>
+            <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
+            <file>./tests/Functional/Merchant/AccountTest.php</file>
+        </testsuite>
         <testsuite name="Post Payment Test Suite">
-<!--            <directory>./tests/Functional/Refund/</directory>-->
             <directory>./tests/Functional/Settlement/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-1_Test_Suite">
