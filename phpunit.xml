@@ -236,6 +236,7 @@
             <directory>./tests/Unit/Models/Merchant/BusinessDetail/</directory>
             <directory>./tests/Unit/Models/Merchant/Bvs/</directory>
             <exclude>./tests/Unit/AdminFetch</exclude>
+            <exclude>./tests/Unit/Models/BankingAccount/</exclude>
             <exclude>./tests/Unit/Services/Dcs</exclude>
             <exclude>./tests/Unit/CapitalCollections</exclude>
             <exclude>./tests/Unit/CircuitBreaker</exclude>
@@ -515,6 +516,7 @@
         <testsuite name="UT_RazorpayX_Test-1_Suite">
             <directory>./tests/Functional/BankingAccountService/</directory>
             <directory>./tests/Functional/BankingAccount/</directory>
+            <directory>./tests/Unit/Models/BankingAccount/</directory>
         </testsuite>
         <testsuite name="UT_RazorpayX_Test-2_Suite">
             <directory>./tests/Unit/Models/Contact</directory>
