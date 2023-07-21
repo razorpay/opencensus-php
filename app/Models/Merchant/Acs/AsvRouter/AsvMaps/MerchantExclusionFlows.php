@@ -228,6 +228,17 @@ final class MerchantExclusionFlows
         'payment_validate_vpa' => true,
         'customer_fetch_tokens_internal' => true,
         'payment_create_jsonp' => true,
+        'payment_create_private_json' => true,
+        'payment_callback_with_key_get' => true,
+        'payment_refund' => true,
+        'refund_create' => true,
+        'scrooge_entities_fetch' => true,
+        'refund_scrooge_transaction_create' => true,
+        'refund_scrooge_fetch_fee' => true,
+        'refund_fetch_fee' => true,
+        'refund_fetch_by_id' => true,
+        'refund_fetch_creation_data' => true,
+        'adj_add' => true,
     );
 
     public static function isExclusionFLow(string $flow): bool
