@@ -1152,7 +1152,9 @@ trait Capture
     {
         try
         {
-            (new Commission\Core)->createFromCapturedPayment($payment);
+            $commissions = (new Commission\Core)->createFromCapturedPayment($payment);
+
+            $this->app->partnerships->createCommissionShadowPhase($commissions, $payment);
         }
         catch (\Throwable $e)
         {

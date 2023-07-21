@@ -64,7 +64,7 @@ class Service extends Base\Service
         return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission, $id) {
 
             $commission = $this->core()->capture($commission)->toArrayPublic();
-            $this->core()->dispatchCommissionCaptureToPRTS($commission[Entity::PARTNER_ID], [$id]);
+            $this->app->partnerships->dispatchCommissionCaptureToPRTS($commission[Entity::PARTNER_ID], [$id]);
             return $commission;
 
         });

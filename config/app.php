@@ -588,7 +588,9 @@ return array(
 
     '1cc_coupon_drop_off_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_DROP_OFF_EXP_ID'),
 
-    'partnership_service_commission_sync_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SYNC_EXP_ID'),
+    'prts_commission_dual_write_exp_id' => env('PRTS_COMMISSION_DUAL_WRITE_EXP_ID'),
+
+    'prts_commission_shadow_phase_exp_id' => env('PRTS_COMMISSION_SHADOW_PHASE_EXP_ID'),
 
     'partnership_service_commission_shadow_phase_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SHADOW_PHASE_EXP_ID'),
 

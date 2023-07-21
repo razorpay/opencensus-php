@@ -71,10 +71,12 @@ final class Metric
 
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';
 
-    const PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS    = 'partnership_commission_sync_job_push_success';
-    const PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_FAILURE    = 'partnership_commission_sync_job_push_failure';
-    const PARTNERSHIP_COMMISSION_CAPTURE_JOB_PUSH_SUCCESS = 'partnership_commission_capture_job_push_success';
-    const PARTNERSHIP_COMMISSION_CAPTURE_JOB_PUSH_FAILURE = 'partnership_commission_capture_job_push_failure';
+    // PRTS service metrics and dimensions
+    const PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH = 'prts_commissions_shadow_phase_event_dispatch';
+    //const COMMISSION_DUAL_WRITE = 'commission_dual_write';
+    //const COMMISSION_CREATE = 'commission_create';
+    //const COMMISSION_CAPTURE = 'commission_capture';
+
 
 
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE = 'partner_bulk_update_onboarding_source_failure';
