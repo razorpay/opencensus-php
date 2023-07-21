@@ -14,6 +14,15 @@ try{
   } else if(window.opener){
   opener.setPaymentID(payment_id);
   }
+  var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
+      if (iosBridge) {
+            iosBridge.postMessage({
+                action: 'setPaymentID',
+                body: {
+                    payment_id,
+                }
+            });
+      }
 } catch(e){}
 </script>
 

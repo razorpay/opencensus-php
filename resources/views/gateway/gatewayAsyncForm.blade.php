@@ -188,6 +188,17 @@
     var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
     var isIntentFlow = (CheckoutBridge || iosBridge) && data.type === 'intent';
 
+    try {
+        if (iosBridge) {
+            iosBridge.postMessage({
+                action: 'setPaymentID',
+                body: {
+                    payment_id: data.payment_id,
+                }
+            });
+        }
+    } catch (e) {}
+
     if (data.type === 'async' && data.method === 'app' && data.provider === 'cred') {
         $('message-txt').innerText = 'Please complete the payment on the CRED app';
     }
