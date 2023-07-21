@@ -178,6 +178,7 @@ class Constants
     const CrossOrgLogin = 'cross_org_login';
     const OtpAutoReadAndSubmitDisabled = 'otp_auto_read_submit_disabled';
     const WalletPaytmAutoDebit = 'auto_debit';
+    const WalletAutoDebitEnabled = 'wallet_auto_debit_enabled';
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
     const GaiSyncPayouts = 'sync_payouts';
@@ -378,6 +379,7 @@ class Constants
         self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
         self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features',
         self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
+        self::WalletAutoDebitEnabled => 'rzp/pg/merchant/wallet/Features',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -573,6 +575,7 @@ class Constants
         APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
         APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
         APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
+        APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
     ];
 
     /**
