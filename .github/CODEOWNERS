@@ -186,6 +186,8 @@ app/Models/Base/Traits/ExternalScroogeRepo.php      @razorpay/scrooge
 #
 # Blocking PR merge on certain entities as they are being moved to no-code-app service.
 # Any update on this entities, will require explicit approval from nocode-apps team.
+app/Http/Controllers/PlinkController.php                        @razorpay/nocode
+app/Http/Controllers/InvoiceController.php                      @razorpay/nocode
 app/Http/Controllers/PaymentLinkController.php                  @razorpay/nocode
 app/Jobs/PaymentPageProcessor.php                               @razorpay/nocode
 app/Models/PaymentLink                                          @razorpay/nocode
@@ -204,6 +206,27 @@ resources/views/payment_button                                  @razorpay/nocode
 resources/views/payment_handle                                  @razorpay/nocode
 resources/views/payment_link                                    @razorpay/nocode
 resources/views/payment_link/partials                           @razorpay/nocode
+resources/views/emails/invoice                                  @razorpay/nocode
+resources/views/emails/invoice/customer                         @razorpay/nocode
+resources/views/emails/invoice/customer/custom                  @razorpay/nocode
+resources/views/emails/invoice/merchant                         @razorpay/nocode
+resources/views/emails/payment_link                             @razorpay/nocode
+resources/views/invoice                                         @razorpay/nocode
+app/Models/Invoice                                              @razorpay/nocode
+tests/Functional/Invoice                                        @razorpay/nocode
+tests/Functional/Invoice/Helpers                                @razorpay/nocode
+tests/Functional/PaymentLink                                    @razorpay/nocode
+tests/Functional/PaymentLink/Helpers                            @razorpay/nocode
+tests/Unit/Models/PaymentLink                                   @razorpay/nocode
+tests/Unit/Models/PaymentLink/Template/Helpers                  @razorpay/nocode
+tests/Unit/Models/PaymentLink/Template                          @razorpay/nocode
+tests/Unit/Models/PaymentLink/PaymentPageItem/Helpers           @razorpay/nocode
+tests/Unit/Models/PaymentLink/PaymentPageItem                   @razorpay/nocode
+tests/Unit/Models/PaymentLink/NocodeCustomUrl/Helpers           @razorpay/nocode
+tests/Unit/Models/PaymentLink/NocodeCustomUrl                   @razorpay/nocode
+tests/Unit/Models/PaymentLink/Helpers                           @razorpay/nocode
+tests/Unit/Models/PaymentLink/CustomDomain/WebhookProcessor     @razorpay/nocode
+tests/Unit/Models/PaymentLink/CustomDomain                      @razorpay/nocode
 
 
 #
