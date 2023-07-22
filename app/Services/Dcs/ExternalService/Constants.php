@@ -31,6 +31,7 @@ class Constants
         "rzp/pg/merchant/paymentlinks/Features" => "payment-links",
         "rzp/pg/org/paymentlinks/Features" => "payment-links",
         "rzp/nocode/merchant/paymentlink/Features" => "payment-links",
+        "rzp/pg/org/care/TicketCreation" => "care",
         "rzp/platform/merchant/reporting/CustomReports" => "reporting",
         "rzp/platform/org/reporting/CustomReports" => "reporting",
     ];

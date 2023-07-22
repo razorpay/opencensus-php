@@ -1147,6 +1147,18 @@ return [
 
     'dcs_service_integrations' => [
         'mock'      => env('DCS_EXTERNAL_MOCK', false),
+        'care' => [
+            'live'       => [
+                'url'       => env('CARE_SERVICE_HOST'),
+                'username'  => env('CARE_SERVICE_USER'),
+                'password'  => env('CARE_SERVICE_PASSWORD'),
+            ],
+            'test'       => [
+                'url'       => env('CARE_SERVICE_HOST'),
+                'username'  => env('CARE_SERVICE_USER'),
+                'password'  => env('CARE_SERVICE_PASSWORD'),
+            ]
+        ],
         'checkout-affordability-api' => [
             'live'       => [
                 'url'       => env('CHECKOUT_AFFORDABILITY_API_LIVE_URL'),

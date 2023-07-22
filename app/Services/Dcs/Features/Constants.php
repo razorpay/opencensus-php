@@ -105,6 +105,7 @@ class Constants
     const EnablePayerNameForPL = 'enable_payer_name_for_pl';
     const HideNoExpiryForPL = 'hide_no_expiry_for_pl';
     const ShowPnameInChkoutPl = 'show_pname_in_chkout_pl';
+    const OrgFreshdeskCreateTicket = 'freshdesk_create_ticket';
     const CloseQrOnDemand    = 'close_api_enabled';
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
@@ -241,6 +242,7 @@ class Constants
         self::ConfigEnabled => "rzp/pg/merchant/checkout/CheckoutConfiguration",
         self::RewardsOnMxDashboardEnabled => "rzp/pg/merchant/checkout/Rewards",
         self::OrgLogoEnabled => "rzp/pg/org/checkout/CheckoutTheme",
+        self::OrgFreshdeskCreateTicket => "rzp/pg/org/care/TicketCreation",
         self::CollectCustomerAddressEnabled => "rzp/pg/merchant/checkout/AdditionalCustomerProperties",
         self::TruecallerLoginDisabled => "rzp/pg/merchant/checkout/TruecallerCustomization",
         self::TruecallerLoginOnContactScreenDisabled => "rzp/pg/merchant/checkout/TruecallerCustomization",
@@ -406,6 +408,7 @@ class Constants
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
         self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
+        APIFeaturesConstants::ORG_FRESHDESK_CREATE_TICKET                   => self::OrgFreshdeskCreateTicket,
         APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT                      => self::UpiNumberDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0                         => self::UpiNumberInPreferredSectionDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1                         => self::UpiNumberInUpiSectionDisabled,
@@ -622,6 +625,7 @@ class Constants
         self::ShowCustomDccDisclosures       => 'direct',
         self::AdminPasswordResetEnabled => 'direct',
         self::SkipKycVerification => 'direct',
+        self::OrgFreshdeskCreateTicket => 'client',
         self::EnableAutomateIIR     => 'direct'
     ];
 
