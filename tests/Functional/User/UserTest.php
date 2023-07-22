@@ -10879,6 +10879,55 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testUserRegisterSkipSendSignupOtpViaSms()
+    {
+        // setting dev env in the test case
+
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $smsPayload = [
+            'otp'        => '00007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $storkMock = $this->getMockBuilder(\RZP\Services\Mock\Stork::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['sendSms'])
+                          ->getMock();
+
+        $this->app->instance('stork', $storkMock);;
+
+        $storkMock->expects($this->never())->method('sendSms');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'   => '+91 9012345678',
+            'skip_sms_request' => true
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testUserRegisterSendSignupOtpViaSmsMobileExistsWithCountryCode()
     {
         $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);

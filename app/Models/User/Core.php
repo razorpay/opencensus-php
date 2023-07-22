@@ -226,6 +226,21 @@ class Core extends Base\Core
 
         $otp = $this->generateOtpForLoginSignup($receiver, $input);
 
+        if ((isset($input[Entity::SKIP_SMS_REQUEST]) === true) and
+            (Environment::isLowerEnvironment($this->app['env']) === true))
+        {
+            $skipSmsVerification = $input[Entity::SKIP_SMS_REQUEST];
+
+            unset($input[Entity::SKIP_SMS_REQUEST]);
+
+            if (($skipSmsVerification === true) or
+                ($skipSmsVerification === '1'))
+
+            {
+                return array_only($otp, 'token');
+            }
+        }
+
         try
         {
             if($messageSendViaStork === true)

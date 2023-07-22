@@ -6272,6 +6272,18 @@ return [
         ]
     ],
 
+    'testUserRegisterSkipSendSignupOtpViaSms' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testUserRegisterSendSignupOtpUnsupportedCountryCode' => [
         'request' => [
             'url'     => '/users/register/otp',

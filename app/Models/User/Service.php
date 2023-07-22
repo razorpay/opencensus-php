@@ -3053,12 +3053,12 @@ class Service extends Base\Service
 
     /**
      * Update the user's name
-     * 
+     *
      * @param array $input The input data containing the new name.
      * @return array mixed The response from the name update operation.
      * @throws Exception\BadRequestException If the input is invalid or the username is empty or not different from the current name.
      */
-    public function postUpdateUserName(array $input) 
+    public function postUpdateUserName(array $input)
     {
         $this->trace->info(TraceCode::USER_NAME_UPDATE_REQUEST, $input);
 
@@ -3067,7 +3067,7 @@ class Service extends Base\Service
         $this->validator->validateInput('update_user_name', $input);
 
         $response = $this->core->postUpdateUserName($input[Entity::NAME], $this->user);
-        
+
         return $response;
     }
 }
