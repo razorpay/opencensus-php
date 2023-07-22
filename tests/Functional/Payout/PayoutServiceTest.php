@@ -5254,7 +5254,7 @@ class PayoutServiceTest extends TestCase
             $boolMetricCaptured,
             [
                 'route_name' => 'payout_approve',
-                'message'    => 'ErrorCode: PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_NOT_FOUND is not defined'
+                'message'    => 'PAYOUT is not a valid class'
             ]
         );
 

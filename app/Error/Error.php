@@ -936,11 +936,6 @@ class Error extends Support\Fluent
         {
             throw new Exception\InvalidArgumentException('null provided for errorcode');
         }
-
-        if (defined(ErrorCode::class.'::'.$code) === false)
-        {
-            throw new Exception\InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
-        }
     }
 
     protected static function checkErrorClass($class)
