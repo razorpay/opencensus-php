@@ -1150,6 +1150,7 @@ trait Capture
      */
     public function createPartnerCommission(Payment\Entity $payment)
     {
+        $feeBearer = $payment->getFeeBearer(true);
         try
         {
             $commissions = (new Commission\Core)->createFromCapturedPayment($payment);
@@ -1170,6 +1171,13 @@ trait Capture
                     'payment_id' => $payment->getId(),
                     'message'    => $e->getMessage(),
                 ]);
+        }
+        finally
+        {
+            // if fee bearer for both commission rule and payment rule are not same then
+            // fee bearer in payment is getting updated based on commission rule as we are evaluating rules based on payment
+            // so we need to set it back to original value
+            $payment->setFeeBearer($feeBearer);
         }
     }
 
