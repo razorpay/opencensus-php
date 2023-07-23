@@ -9014,7 +9014,18 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFail($mid);
 
-        $merchantSettleToPartner = $this->core()->getPartnerBankAccountIdsForSubmerchants([$mid]);
+        $merchantSettleToPartner = [];
+
+        $properties = [
+            'id'            =>  $mid,
+            'experiment_id' =>  $this->app['config']->get('app.partner_bank_account_param_removal_exp_id'),
+        ];
+        $isPartnerBankAccountExpEnabled = $this->core()->isSplitzExperimentEnable($properties,'enable');
+
+        if($isPartnerBankAccountExpEnabled === false)
+        {
+            $merchantSettleToPartner = $this->core()->getPartnerBankAccountIdsForSubmerchants([$mid]);
+        }
 
         $email = "";
 
@@ -9035,8 +9046,8 @@ class Service extends Base\Service
         // RSR-2002; global_hold_status & global_hold_reason will be provided to new settlement service as Global config.
         return [
             "active"                           => $merchant->isActivated(),
-            "parent"                           => $this->settlementToPartner($mid),
-            "partner_bank_account"             => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+            "parent"                           => !$isPartnerBankAccountExpEnabled ? $this->settlementToPartner($mid) : null,
+            "partner_bank_account"             => (empty($merchantSettleToPartner) == false && isset($merchantSettleToPartner[$mid])) ? $merchantSettleToPartner[$mid] : null,
             "pan_details"                      => $this->getMerchantPANDetails($merchant),
             "purpose_code"                     => $merchant->getPurposeCode(),
             "iec_code"                         => $merchant->getIecCode(),

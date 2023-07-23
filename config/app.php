@@ -669,4 +669,7 @@ return array(
     '1cc_be_abandoned_cart' => env('1CC_BE_ABANDONED_CART'),
 
     'icic_whitelisted_merchants_experiment_id' => env('ICIC_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
+
+    'partner_bank_account_param_removal_exp_id' => env('PARTNER_BANK_ACCOUNT_PARAM_REMOVAL_EXP_ID'),
+
 );

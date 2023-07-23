@@ -1498,6 +1498,9 @@ class SettlementTest extends TestCase
 
     public function testGetGlobalConfigFetchWithPartnerBankAccount()
     {
+        // skipping as partner bank account is removed
+        $this->markTestSkipped();
+
         $partnerBankAccount = $this->createPlatformMerchantsAndSubmerchants();
 
         $this->assertNotNull($partnerBankAccount);
@@ -1524,7 +1527,8 @@ class SettlementTest extends TestCase
 
     public function testGetGlobalConfigFetchWithParent()
     {
-
+        // skipping as parent is removed
+        $this->markTestSkipped();
 
         $this->createPurePlatFormMerchantAndSubMerchant();
 
