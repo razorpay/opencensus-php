@@ -4351,6 +4351,13 @@ class Core extends Base\Core
 
         if ($allowedToFetch === false)
         {
+            $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENT_LIMIT_ALERT, [
+                'merchant_id'         => $merchantId,
+                'expected_attempts'   => $expectedAttempts,
+                'count_of_statements' => $countOfStatements,
+                'channel'             => $channel
+            ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
@@ -4554,7 +4561,8 @@ class Core extends Base\Core
                     TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_FAILED,
                     [
                         Entity::ACCOUNT_NUMBER => $reconDetail[Entity::ACCOUNT_NUMBER],
-                        Entity::CHANNEL        => $channel
+                        Entity::CHANNEL        => $channel,
+                        Entity::MERCHANT_ID    => $reconDetail[Entity::MERCHANT_ID]
                     ]
                 );
 

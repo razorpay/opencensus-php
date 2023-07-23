@@ -242,7 +242,8 @@ class Service extends Base\Service
                 TraceCode::INSERT_AND_UPDATE_BAS_FAILURE,
                 [
                     Entity::ACCOUNT_NUMBER => $accountNumber,
-                    Entity::CHANNEL        => $channel
+                    Entity::CHANNEL        => $channel,
+                    Entity::MERCHANT_ID    => $merchantId
                 ]
             );
 

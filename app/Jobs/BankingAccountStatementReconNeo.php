@@ -49,11 +49,11 @@ class BankingAccountStatementReconNeo extends Job
 
     public function handle()
     {
+        $BASCore = new BAS\Core;
+
         try
         {
             parent::handle();
-
-            $BASCore = new BAS\Core;
 
             $basDetails = $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
 
@@ -160,6 +160,8 @@ class BankingAccountStatementReconNeo extends Job
                 $traceData = $this->params;
 
                 $traceData['message'] = $operation = 'Deleting the job after configured number of tries for gateway exception';
+
+                $traceData[BAS\Entity::MERCHANT_ID] = $BASCore->getBasDetails()->getMerchantId();
 
                 $this->trace->error(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
 
