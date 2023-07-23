@@ -8,3 +8,14 @@ defaults:
     # By default all histogram use following buckets
     timer_type: histogram
     buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000]
+
+mappings:
+  - match: dashboard_http_requests_api_downstream*
+    timer_type: histogram
+    buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]
+    name: "dashboard_http_requests_api_downstream_duration"
+
+  - match: dashboard_http_requests*
+    timer_type: histogram
+    buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]
+    name: "dashboard_http_requests_duration"
