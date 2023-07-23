@@ -25,6 +25,7 @@ class Constants
     const UPDATE_MISSING_STATEMENT      = 'update_missing_statement';
     const INSERT_MISSING_STATEMENT      = 'insert_missing_statement';
     const SUSPECTED_MISMATCH_TIMESTAMP  = 'suspected_mismatch_timestamp';
+    const CRON_EXCLUSION_MERCHANT_LIST  = 'cron_exclusion_merchant_list';
 
     // Clean Up tooling Constants
     const CLEAN_UP_CONFIG       = 'clean_up_config';

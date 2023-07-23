@@ -1186,6 +1186,26 @@ return [
         ]
     ],
 
+    'testRblAutomatedReconWithAccountsExcludedFromRun' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/automate_recon/rbl',
+            'content' => [
+                'account_numbers'              => ['2224440041626905','2224440041626910'],
+                'cron_exclusion_merchant_list' => ['2224440041626910'],
+                'save_in_redis'                => true,
+                'new_cron_setup'               => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '2224440041626905' => [
+                    'fetch_missing_statement' => 'success'
+                ]
+            ]
+        ]
+    ],
+
     'testRblAutomatedReconWithPriorityAccountNumbers' => [
         'request'  => [
             'method'  => 'POST',

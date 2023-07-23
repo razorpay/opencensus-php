@@ -4511,6 +4511,8 @@ class Core extends Base\Core
 
         $lastReconciledAtLimit = $input[BASConstants::LAST_RECONCILED_AT_LIMIT] ?? null;
 
+        $exclusionMerchantList = $input[BASConstants::CRON_EXCLUSION_MERCHANT_LIST] ?? null;
+
         $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_INITIATED, [
             Entity::CHANNEL                       => $channel,
             BASConstants::ACCOUNT_NUMBERS_PRESENT => count($accountNumbers),
@@ -4518,7 +4520,7 @@ class Core extends Base\Core
 
         // Get Account numbers from gateway_balance_change_at which are recently changed if no account numbers are
         // provided beforehand in the input.
-        $accountNumbers = $this->getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconLimit);
+        $accountNumbers = $this->getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconLimit, $exclusionMerchantList);
 
         // Decide From and To Date from last_reconciled_at from basDetails
         $reconDetails = $this->getFromAndToDateFromLastReconciledAt($accountNumbers, $channel, $lastReconciledAtLimit);
@@ -4581,7 +4583,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconlimit)
+    public function getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconlimit, $exclusionMerchantList)
     {
         // Give priority to account number from Cron input if passed.
         if (empty($accountNumbers) === false)
@@ -4617,6 +4619,11 @@ class Core extends Base\Core
             ]);
 
             $accountNumbers = array_unique(array_merge($accountNumbers, $priorityAccountNumbers));
+
+            if(empty($exclusionMerchantList) === false)
+            {
+                $accountNumbers = array_diff($accountNumbers, $exclusionMerchantList);
+            }
 
             $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
                 Entity::CHANNEL    => $channel,

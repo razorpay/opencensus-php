@@ -13216,6 +13216,69 @@ class RblBankingAccountStatementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testRblAutomatedReconWithAccountsExcludedFromRun()
+    {
+        $oldDateTime = Carbon::create(2023, 5, 2, 14, 25, 10, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $basdBeforeTest = $this->getDbEntity('banking_account_statement_details', [
+            'account_number' => '2224440041626905',
+            'channel'        => 'rbl'
+        ]);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basdBeforeTest[Entity::ID],
+            [BasDetails\Entity::PAGINATION_KEY => 'next_key']);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'account_number'            => '2224440041626906',
+            'channel'                   => 'rbl',
+            'pagination_key'            => 'next_key1',
+            'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            'last_reconciled_at'        => Carbon::now(Timezone::IST)->subDays(2)->startOfDay()->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'account_number'            => '2224440041626907',
+            'channel'                   => 'rbl',
+            'pagination_key'            => 'next_key3',
+            'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subDays(2)->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'account_number'            => '2224440041626908',
+            'channel'                   => 'rbl',
+            'pagination_key'            => null,
+            'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+        ]);
+
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        $expectedParams = [
+            BasEntity::CHANNEL              => 'rbl',
+            BasEntity::ACCOUNT_NUMBER       => '2224440041626905',
+            BasEntity::FROM_DATE            => Carbon::now(Timezone::IST)->subDays(1)->startOfDay()->getTimestamp(),
+            BasEntity::TO_DATE              => Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp(),
+            BASConstants::EXPECTED_ATTEMPTS => 1,
+            BASConstants::PAGINATION_KEY    => null,
+            BasEntity::SAVE_IN_REDIS        => '1',
+        ];
+
+        Queue::assertPushed(BankingAccountStatementReconNeo::class, function($job) use ($expectedParams)
+        {
+            $this->assertArraySelectiveEquals($expectedParams, $job->getParams());
+
+            return true;
+        });
+
+        Carbon::setTestNow();
+    }
+
     public function testRblAutomatedReconWithPriorityAccountNumbers()
     {
         $oldDateTime = Carbon::create(2023, 5, 2, 14, 25, 10, Timezone::IST);
