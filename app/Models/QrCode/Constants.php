@@ -81,6 +81,4 @@ class Constants
     const MAX_RETRY_ATTEMPTS_FOR_QR_CODE_URL_SHORTEN_GIMLI_FAILURES = 3;
 
     const REQUEST_SOURCE              = 'X-Razorpay-Request-Source';
-
-    const QR_CODE_V2_ICICI_PREFIX = 'RZP';
 }

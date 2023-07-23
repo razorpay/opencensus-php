@@ -2163,7 +2163,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_DUPLICATE_NOTIFICATION                     = 'QR_PAYMENT_DUPLICATE_NOTIFICATION';
     const QR_PAYMENT_CALLBACK_SKIPPED                           = 'QR_PAYMENT_CALLBACK_SKIPPED';
     const QR_PAYMENT_GATEWAY_CALLBACK                           = 'QR_PAYMENT_GATEWAY_CALLBACK';
-    const PROCESS_QR_PAYMENT_REQUEST                            = 'PROCESS_QR_PAYMENT_REQUEST';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BAD_REQUEST_BQR_PAYMENT_FAILED                        = 'BAD_REQUEST_BQR_PAYMENT_FAILED';
