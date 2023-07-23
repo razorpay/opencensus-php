@@ -102,7 +102,7 @@ class DisputesClient
         {
             return self::AUTH_TYPE_PRIVATE;
         }
-        
+
         return $this->app['basicauth']->getAuthType();
     }
 
@@ -223,6 +223,12 @@ class DisputesClient
             === RazorxTreatment::RAZORX_VARIANT_ON;
     }
 
+    private function is4xxException(RequestException $e): bool
+    {
+        return ($e->getCode() >= 400) &&
+            ($e->getCode() < 500);
+    }
+
     /**
      * @throws \Throwable
      * @throws GuzzleException
@@ -258,24 +264,34 @@ class DisputesClient
 
             return $this->formatResponse($response);
         }
-        catch (\Throwable $e)
+        catch (RequestException $e)
         {
-            $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT, [
-                'route' => $this->app['api.route']->getCurrentRouteName(),
-            ]);
-
             $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
                 'error_message' => $e->getMessage(),
                 'url'  => $url,
                 'retries'=> $retry_count,
             ]);
 
-            if ($retry_count < self::MAX_RETRIES)
+            if ($e->hasResponse() && $this->is4xxException($e) === true)
             {
-                return $this->requestAndGetParseBody($method, $path, $payload, $retry_count + 1);
-            }
+                $resp = $this->formatResponse($e->getResponse());
 
-            throw $e;
+                throw new Exception\BadRequestException($resp['error']['code'] ?? ErrorCode::BAD_REQUEST_ERROR, null, $resp['error'],
+                    $resp['error']['description'] ?? '');
+            }
+            else
+            {
+                $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT, [
+                    'route' => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+
+                if ($retry_count < self::MAX_RETRIES)
+                {
+                    return $this->requestAndGetParseBody($method, $path, $payload, $retry_count + 1);
+                }
+
+                throw $e;
+            }
         }
     }
 }
