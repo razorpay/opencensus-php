@@ -12289,6 +12289,16 @@ class Route
             '1cc_fee_rule_associations',
             '1cc_clear_fee_rule',
 
+            '1cc_order_edit_search_products',
+            '1cc_order_edit_get_orders',
+            '1cc_order_edit_get_order',
+            '1cc_order_edit_begin_order_edit',
+            '1cc_order_edit_commit_order_edit',
+            '1cc_order_edit_add_item_discount',
+            '1cc_order_edit_remove_item_discount',
+            '1cc_order_edit_add_item_variant',
+            '1cc_order_edit_edit_line_item_quantity',
+            '1cc_order_edit_add_custom_item',
             'growth_get_public_asset_details',
 
             //CAC
@@ -14672,6 +14682,17 @@ class Route
             '1cc_fetch_all_countries_with_zone',
             '1cc_cod_engine_config_summary',
             '1cc_clear_fee_rule',
+
+            '1cc_order_edit_search_products',
+            '1cc_order_edit_get_orders',
+            '1cc_order_edit_get_order',
+            '1cc_order_edit_begin_order_edit',
+            '1cc_order_edit_commit_order_edit',
+            '1cc_order_edit_add_item_discount',
+            '1cc_order_edit_remove_item_discount',
+            '1cc_order_edit_add_item_variant',
+            '1cc_order_edit_edit_line_item_quantity',
+            '1cc_order_edit_add_custom_item',
 
             // Terminal downtimes
             'manual_downtime_fetch',
