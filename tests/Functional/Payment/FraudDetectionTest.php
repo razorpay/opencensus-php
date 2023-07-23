@@ -1251,7 +1251,7 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield', $shieldClient);
 
-        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <@SPJJUJN4D> <@S0375TGETD0> <@U042S5040AF>";
+        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <!subteam^S0375TGETD0>,<@U042S5040AF>";
 
         $slackPayload = [
             'channel' => \Config::get('slack.channels.risk'),
@@ -1293,7 +1293,7 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield.slack', $shieldSlackClient);
 
-        \Config::set('applications.shield.slack.cc_user_ids', 'SPJJUJN4D,S0375TGETD0,U042S5040AF');
+        \Config::set('applications.shield.slack.cc_user_ids', '<!subteam^S0375TGETD0>,<@U042S5040AF>');
 
         \Config::set('applications.shield.slack.eligible_rule_codes', 'power_bank_rules,international_ddos_rule');
 

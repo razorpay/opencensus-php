@@ -232,23 +232,9 @@ class Notify
             $body = $body . $ruleText;
         }
 
-        $footer = '';
+        $tagUsers = $this->config->get('applications.shield.slack.cc_user_ids');
 
-        $listOfUserIds = explode(',', $this->config->get('applications.shield.slack.cc_user_ids'));
-
-        $listOfUserIds = array_unique(array_filter($listOfUserIds));
-
-        if (empty($listOfUserIds) === false)
-        {
-            $slackCcUserList = array_map(
-                function($userId)
-                {
-                    return sprintf(self::SLACK_USER_NOTIFY_TPL, $userId);
-                },
-                $listOfUserIds);
-
-            $footer = sprintf(self::SLACK_NOTIFY_CC_TPL, implode(' ', $slackCcUserList));
-        }
+        $footer = sprintf(self::SLACK_NOTIFY_CC_TPL, $tagUsers);
 
         $message = $header . $body . $footer;
 
