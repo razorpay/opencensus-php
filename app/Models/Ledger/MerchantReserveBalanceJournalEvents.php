@@ -51,7 +51,7 @@ class MerchantReserveBalanceJournalEvents
 
         $moneyParams[Constants::AMOUNT]                       = strval($creditAmount);
         $moneyParams[Constants::BASE_AMOUNT]                  = strval($creditAmount);
-        $moneyParams[Constants::RESERVE_BALANCE_AMOUNT]                = strval($creditAmount);
+        $moneyParams[Constants::RESERVE_BALANCE_AMOUNT]       = strval($creditAmount);
         $moneyParams[Constants::CREDIT_CONTROL_AMOUNT]        = strval($creditAmount);
 
         return $moneyParams;

@@ -2284,6 +2284,140 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
     }
 
+    public function testMerchantCapturePaymentWithReserveBalanceLoadingUsecase()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['notes'] = [
+            "type"          => "reserve_balance",
+            "merchant_id"   => "JVoa37lqQ0hMMv"
+        ];
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+
+        $input = array('count' => 2);
+        $ledgerOutboxEntities = $this->getEntities('ledger_outbox', $input, true);
+
+        $this->assertGreaterThan(1, count($ledgerOutboxEntities['items']));
+
+        $gatewayCapturedOutboxEntry = [];
+        if ($ledgerOutboxEntities['count'])
+            $gatewayCapturedOutboxEntry = $ledgerOutboxEntities['items'][1];
+
+
+        $gatewayCapturedPayload = base64_decode($gatewayCapturedOutboxEntry['payload_serialized']);
+
+        $actualGatewayCapturedLedgerOutboxEntry = json_decode($gatewayCapturedPayload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_gateway_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "reserve_balance_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualGatewayCapturedLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualGatewayCapturedLedgerOutboxEntry['transactor_id']);
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "gmv_amount" => "50000",
+                "merchant_balance_amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "reserve_balance_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+        
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+    }
+
     public function getPaymentArrayForFeeCreditLoading()
     {
         //

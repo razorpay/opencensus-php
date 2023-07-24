@@ -45,23 +45,7 @@ class CaptureJournalEvents
             return [];
         }
 
-        $additionalParams = [];
-
-        $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditLoadingPaymentInfo($payment);
-
-        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
-        {
-            $type = $creditLoadingPaymentInfo[Constants::TYPE];
-
-            if($type === Constants::FEE_CREDIT)
-            {
-                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
-            }
-            else if($type === Constants::REFUND_CREDIT)
-            {
-                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
-            }
-        }
+        $additionalParams = (new CaptureJournalEvents())->getAdditionalGmvAccountingParams($payment);
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
@@ -117,51 +101,12 @@ class CaptureJournalEvents
         return $message;
     }
 
-    // This function identifies payments made by any merchant to a razorpay internal merchant
-    public function extractCreditLoadingPaymentInfo(Payment\Entity $payment) : array
-    {
-        if($payment->getNotes() === null)
-        {
-            return [
-                Constants::IS_CREDIT_LOADING_PAYMENT    => false
-            ];
-        }
-
-        $notes = $payment->getNotes()->toArray();
-
-        $type = (isset($notes["type"]) === true) ? $notes["type"] : "";
-
-        if($type === Constants::FEE_CREDIT or $type === Constants::REFUND_CREDIT)
-        {
-            return [
-                Constants::IS_CREDIT_LOADING_PAYMENT    => true,
-                Constants::TYPE                         => $type
-            ];
-        }
-
-        return [
-            Constants::IS_CREDIT_LOADING_PAYMENT    => false
-        ];
-    }
-
     public static function fetchRulesForPaymentCredits(Transaction\Entity $transaction, Payment\Entity $payment)
     {
-        $rule = null;
+        $rule = (new CaptureJournalEvents())->getAdditionalGmvAccountingParams($payment);
 
-        $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditLoadingPaymentInfo($payment);
-
-        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        if (count($rule) > 0)
         {
-            $type = $creditLoadingPaymentInfo[Constants::TYPE];
-
-            if($type === Constants::FEE_CREDIT)
-            {
-                $rule[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
-            }
-            else if($type === Constants::REFUND_CREDIT)
-            {
-                $rule[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
-            }
             return $rule;
         }
 
@@ -230,9 +175,9 @@ class CaptureJournalEvents
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
-        $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditLoadingPaymentInfo($payment);
+        $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
 
-        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
@@ -350,5 +295,61 @@ class CaptureJournalEvents
         }
 
         return $moneyParams;
+    }
+
+    protected function getAdditionalGmvAccountingParams(Payment\Entity $payment)
+    {
+        $rule = [];
+
+        $creditOrReserveBalanceLoadingPaymentInfo = $this->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
+
+        if($creditOrReserveBalanceLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
+        {
+            $type = $creditOrReserveBalanceLoadingPaymentInfo[Constants::TYPE];
+
+            if($type === Constants::FEE_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
+            }
+            else if($type === Constants::REFUND_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
+            }
+            else if($type === Constants::RESERVE_BALANCE)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::RESERVE_BALANCE_GMV;
+            }
+        }
+
+        return $rule;
+    }
+
+    // This function identifies payments made by any merchant to a razorpay internal merchant
+    public function extractCreditOrReserveBalanceLoadingPaymentInfo(Payment\Entity $payment) : array
+    {
+        if($payment->getNotes() === null)
+        {
+            return [
+                Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => false
+            ];
+        }
+
+        $notes = $payment->getNotes()->toArray();
+
+        $type = (isset($notes["type"]) === true) ? $notes["type"] : "";
+
+        if(($type === Constants::FEE_CREDIT) or
+            ($type === Constants::REFUND_CREDIT) or
+            ($type === Constants::RESERVE_BALANCE))
+        {
+            return [
+                Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => true,
+                Constants::TYPE                                            => $type
+            ];
+        }
+
+        return [
+            Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => false
+        ];
     }
 }

@@ -177,14 +177,16 @@ class Constants
     const TOPIC         = 'topic';
     const MESSAGE       = 'message';
 
-    const IS_CREDIT_LOADING_PAYMENT = "is_credit_loading_payment";
+    const IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT = "is_credit_or_reserve_balance_loading_payment";
 
     const FEE_CREDIT        = "fee_credit";
     const REFUND_CREDIT     = "refund_credit";
     const AMOUNT_CREDIT     = "amount_credit";
+    const RESERVE_BALANCE   = "reserve_balance";
 
-    const FEE_CREDIT_GMV    = "fee_credit_gmv";
-    const REFUND_CREDIT_GMV = "refund_credit_gmv";
-    const AMOUNT_CREDIT_GMV = "amount_credit_gmv";
-    const GMV_ACCOUNTING    = "gmv_accounting";
+    const FEE_CREDIT_GMV      = "fee_credit_gmv";
+    const REFUND_CREDIT_GMV   = "refund_credit_gmv";
+    const RESERVE_BALANCE_GMV = "reserve_balance_gmv";
+    const AMOUNT_CREDIT_GMV   = "amount_credit_gmv";
+    const GMV_ACCOUNTING      = "gmv_accounting";
 }

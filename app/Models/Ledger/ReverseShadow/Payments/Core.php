@@ -186,7 +186,7 @@ class Core extends Base\Core
             }
         }
 
-        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
+        $creditOrReserveBalanceLoadingPaymentInfo = $this->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
 
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
         //Todo: how do we charge this amount from acquirer bank.
@@ -208,7 +208,7 @@ class Core extends Base\Core
             $moneyParams[Constants::TAX]                        = strval(0);
             $moneyParams[Constants::COMMISSION]                 = strval(0);
         }
-        else if ($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        else if ($creditOrReserveBalanceLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
@@ -275,28 +275,17 @@ class Core extends Base\Core
 
     protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount): array
     {
+        $rule = [];
+
         $feeCredits = $merchantAccountBalances[Constants::MERCHANT_FEE_CREDITS];
 
         $amountCredits = $merchantAccountBalances[Constants::MERCHANT_AMOUNT_CREDITS];
 
-        $rule = [];
+        $additionalParams = $this->getAdditionalGmvAccountingParams($payment);
 
-        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
-
-        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        if (count($additionalParams) > 0)
         {
-            $type = $creditLoadingPaymentInfo[Constants::TYPE];
-
-            if($type === Constants::FEE_CREDIT)
-            {
-                $rule[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
-            }
-            else if($type === Constants::REFUND_CREDIT)
-            {
-                $rule[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
-            }
-
-            return $rule;
+            return $additionalParams;
         }
 
         if($this->isPostpaid($payment) === true)
@@ -338,23 +327,7 @@ class Core extends Base\Core
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
-        $additionalParams = [];
-
-        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
-
-        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
-        {
-            $type = $creditLoadingPaymentInfo[Constants::TYPE];
-
-            if($type === Constants::FEE_CREDIT)
-            {
-                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
-            }
-            else if($type === Constants::REFUND_CREDIT)
-            {
-                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
-            }
-        }
+        $additionalParams = $this->getAdditionalGmvAccountingParams($payment);
 
         $journalPayload = array(
             Constants::TRANSACTOR_ID                => $transactorId,
@@ -381,33 +354,6 @@ class Core extends Base\Core
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
 
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
-    }
-
-    // This function identifies payments made by any merchant to a razorpay internal merchant
-    public function extractCreditLoadingPaymentInfo(Payment\Entity $payment) : array
-    {
-        if($payment->getNotes() === null)
-        {
-            return [
-                Constants::IS_CREDIT_LOADING_PAYMENT    => false
-            ];
-        }
-
-        $notes = $payment->getNotes()->toArray();
-
-        $type = (isset($notes["type"]) === true) ? $notes["type"] : "";
-
-        if($type === Constants::FEE_CREDIT or $type === Constants::REFUND_CREDIT)
-        {
-            return [
-                Constants::IS_CREDIT_LOADING_PAYMENT    => true,
-                Constants::TYPE                         => $type
-            ];
-        }
-
-        return [
-            Constants::IS_CREDIT_LOADING_PAYMENT    => false
-        ];
     }
 
     public  function createLedgerEntryForCaptureGatewayCommissionReverseShadow(Payment\Entity $payment, $reconGatewayFee, $reconGatewayServiceTax)
@@ -455,5 +401,61 @@ class Core extends Base\Core
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
 
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+    }
+
+    // This function identifies payments made by any merchant to a razorpay internal merchant
+    public function extractCreditOrReserveBalanceLoadingPaymentInfo(Payment\Entity $payment) : array
+    {
+        if($payment->getNotes() === null)
+        {
+            return [
+                Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => false
+            ];
+        }
+
+        $notes = $payment->getNotes()->toArray();
+
+        $type = (isset($notes["type"]) === true) ? $notes["type"] : "";
+
+        if(($type === Constants::FEE_CREDIT) or
+            ($type === Constants::REFUND_CREDIT) or
+            ($type === Constants::RESERVE_BALANCE))
+        {
+            return [
+                Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => true,
+                Constants::TYPE                                            => $type
+            ];
+        }
+
+        return [
+            Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => false
+        ];
+    }
+
+    protected function getAdditionalGmvAccountingParams(Payment\Entity $payment)
+    {
+        $rule = [];
+
+        $creditOrReserveBalanceLoadingPaymentInfo = $this->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
+
+        if($creditOrReserveBalanceLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
+        {
+            $type = $creditOrReserveBalanceLoadingPaymentInfo[Constants::TYPE];
+
+            if($type === Constants::FEE_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
+            }
+            else if($type === Constants::REFUND_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
+            }
+            else if($type === Constants::RESERVE_BALANCE)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::RESERVE_BALANCE_GMV;
+            }
+        }
+
+        return $rule;
     }
 }
