@@ -4514,13 +4514,15 @@ EOT;
         return $paymentIds;
     }
 
-    public function fetchPaymentsByContacts(array $contacts, int $skip, int $count) : Base\PublicCollection
+    public function fetchPaymentsByContactsExcludingRoutePayments(array $contacts, int $skip, int $count) : Base\PublicCollection
     {
         $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
 
         return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->whereIn(Entity::CONTACT, $contacts)
             ->where(Entity::CREATED_AT, '>=', $nowMinus6Months)
+            ->whereNotIn(Entity::METHOD, [Method::TRANSFER])
+            ->whereNull(Entity::TRANSFER_ID)
             ->with(['merchant', 'refunds'])
             ->skip($skip)
             ->take($count)

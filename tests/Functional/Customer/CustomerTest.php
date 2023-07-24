@@ -1061,6 +1061,147 @@ class CustomerTest extends TestCase
         $this->assertNotContains($payment4->getPublicId(), $paymentIds);
     }
 
+    public function testSupportPageOTPVerifyWhenValidInputIsPassedExpectsOTPVerificationAndCustomerPaymentsExcludingTransferWithoutTransferId()
+    {
+        $this->ba->directAuth();
+
+        $this->mockRaven();
+
+        $contact = '+919988776666';
+
+        // send OTP
+        $response = $this->sendOtp($contact);
+
+        $content = [
+            'contact' => $contact,
+            'mode' => 'test',
+            'otp' => '0007',
+        ];
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => Merchant\Account::DEMO_PAGE_ACCOUNT]);
+
+        $request = array(
+            'url' => '/support/otp/verify',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776666',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '9988776666',
+            'merchant_id' => '10000000000001',
+            'method'      => 'transfer',
+            'transfer_id' => null
+        ]);
+
+        // Other Customer payments
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['success']);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+    }
+
+    public function testSupportPageOTPVerifyWhenValidInputIsPassedExpectsOTPVerificationAndCustomerPaymentsExcludingTransferWithTransferId()
+    {
+        $this->ba->directAuth();
+
+        $this->mockRaven();
+
+        $contact = '+919988776666';
+
+        // send OTP
+        $response = $this->sendOtp($contact);
+
+        $content = [
+            'contact' => $contact,
+            'mode' => 'test',
+            'otp' => '0007',
+        ];
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => Merchant\Account::DEMO_PAGE_ACCOUNT]);
+
+        $request = array(
+            'url' => '/support/otp/verify',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776666',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '9988776666',
+            'merchant_id' => '10000000000001',
+            'method'      => 'transfer',
+        ]);
+
+        // Other Customer payments
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUG',
+            'status'        => 'processed',
+            'source_id'     => $payment2['id'],
+            'to_id'         => '10000000000004',
+            'to_type'       => 'merchant',
+        ]);
+
+        $this->fixtures->edit('payment', $payment2['id'], [
+            'transfer_id' => 'LhV9fg1fXklNUG'
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['success']);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+    }
+
     public function testSupportPageOTPVerifyWhenInvalidInputIsPassedExpectsOTPVerificationFailureWithIncorrectOTPException()
     {
         $this->ba->directAuth();
@@ -1165,6 +1306,155 @@ class CustomerTest extends TestCase
         $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
 
         $this->assertEquals('failed', $paymentDetails[$payment3->getPublicId()]['status']);
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsExcludingTransferWithoutTransferIdWithCustomerContact()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'     => '+919988776655',
+            'merchant_id' => '10000000000000',
+            'status'      => 'captured',
+            'method'      => 'card',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000001',
+            'status'      => 'pending',
+        ]);
+
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000001',
+            'status'      => 'failed',
+            'method'      => 'transfer',
+            'transfer_id' => null
+        ]);
+
+        // Other Customer payments
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'     => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment5 = $this->fixtures->create('payment', [
+            'contact'     => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment5->getPublicId(), $paymentIds);
+
+        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
+
+        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
+
+        $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsExcludingTransferWithTransferIdWithCustomerContact()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'     => '+919988776655',
+            'merchant_id' => '10000000000000',
+            'status'      => 'captured',
+            'method'      => 'card',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000001',
+            'status'      => 'pending',
+        ]);
+
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000001',
+            'status'      => 'failed',
+            'method'      => 'transfer'
+        ]);
+
+        // Other Customer payments
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'     => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment5 = $this->fixtures->create('payment', [
+            'contact'     => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUG',
+            'status'        => 'processed',
+            'source_id'     => $payment3['id'],
+            'to_id'         => '10000000000004',
+            'to_type'       => 'merchant',
+        ]);
+
+        $this->fixtures->edit('payment', $payment3['id'], [
+            'transfer_id' => 'LhV9fg1fXklNUG'
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment5->getPublicId(), $paymentIds);
+
+        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
+
+        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
+
+        $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserNotLoggedInExpectsFailureWithUnauthorizedException()

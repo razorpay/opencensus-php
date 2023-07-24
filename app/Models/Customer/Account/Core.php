@@ -1609,7 +1609,7 @@ class Core extends Base\Core
         $this->repo->payment->setMerchantIdRequiredForMultipleFetch(false);
         $this->repo->refund->setMerchantIdRequiredForMultipleFetch(false);
 
-        $payments = $this->repo->payment->fetchPaymentsByContacts($contacts, $skip, $count);
+        $payments = $this->repo->payment->fetchPaymentsByContactsExcludingRoutePayments($contacts, $skip, $count);
 
         $paymentsDetails = [];
 
