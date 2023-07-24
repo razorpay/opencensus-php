@@ -15866,6 +15866,7 @@ class Route
             'bas_banking_accounts_notifications',
             'merchant_fetch_internal',
             'internal_merchant_fetch',
+            'merchant_fetch_internal_users'
         ],
 
         'myoperator' => [

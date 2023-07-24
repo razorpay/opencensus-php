@@ -1906,6 +1906,46 @@ class BankingAccountServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testInternalMerchantUsersFetch()
+    {
+        // create fixtures
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $user->getId(),
+            'product'       => 'banking',
+            'role'          => 'owner',
+        ]);
+
+        // set up auth
+        $this->ba->bankingAccountServiceAppAuth();
+
+        // set up headers
+        $this->ba->setAppAuthHeaders([
+            'x-product-name' => 'banking'
+        ]);
+
+        // execute test
+        $dataToReplace = [
+            'request' => [
+                'url'   => '/merchants/' . $merchant->getId(). '/internal-users'
+            ],
+            'response' => [
+                'content' => [
+                    [
+                        'id'    => $user->getId(),
+                        'role'  => 'owner',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
 
     private function assertNotificationsForStatusChange(array $bankingAccount, string $status)
     {

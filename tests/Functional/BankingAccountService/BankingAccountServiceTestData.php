@@ -1233,5 +1233,16 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testInternalMerchantUsersFetch' => [
+        'request'  => [
+            'url'     => '/merchants/{id}/internal-users',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];
