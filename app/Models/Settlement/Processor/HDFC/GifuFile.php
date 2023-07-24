@@ -316,7 +316,7 @@ class GifuFile extends Base\BaseGifuFile
 
         foreach ($data as $datum)
         {
-            $totalSum = $totalSum + $datum->total_amount - $datum->total_fee - $datum->total_mdr;
+            $totalSum = $totalSum + $datum->total_amount - $datum->total_fee;
         }
 
         return $totalSum/100;
