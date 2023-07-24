@@ -38,5 +38,7 @@ jobs:
           repository: ${{ github.repository }}
           tags: ${{ github.sha }}
           dockerfile: Dockerfile.rzp
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+          secrets: |
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_USERNAME=rzp
 
