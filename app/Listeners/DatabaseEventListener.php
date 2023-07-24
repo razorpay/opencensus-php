@@ -44,8 +44,7 @@ class DatabaseEventListener
     {
         $rand = rand(1,10000);
 
-        if (($rand > $this->sampleRate) and
-            ($event->connectionName !== ConnectionType::PAYMENT_FETCH_REPLICA))
+        if ($rand > $this->sampleRate)
         {
             return;
         }
