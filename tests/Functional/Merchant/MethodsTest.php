@@ -1669,7 +1669,6 @@ class MethodsTest extends TestCase
         $this->ba->checkoutServiceProxyAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
-        $this->fixtures->merchant->addFeatures(['enable_intl_bank_transfer']);
         $this->fixtures->merchant->enablePaytm();
         $this->fixtures->merchant->enableIntlBankTransfer();
 
@@ -1695,7 +1694,6 @@ class MethodsTest extends TestCase
         $this->ba->checkoutServiceProxyAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
-        $this->fixtures->merchant->addFeatures(['enable_intl_bank_transfer']);
         $this->fixtures->merchant->enablePaytm();
         $this->fixtures->merchant->enableIntlBankTransfer();
 

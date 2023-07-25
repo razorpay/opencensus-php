@@ -63,14 +63,37 @@ return [
       'response' => [
           'content'     => [
               'error' => [
-                  'description'   => PublicErrorDescription::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+                  'description'   => PublicErrorDescription::BAD_REQUEST_TERMS_AND_CONDITIONS_NOT_CHECKED,
               ],
           ],
           'status_code' => 400,
       ],
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_TERMS_AND_CONDITIONS_NOT_CHECKED,
+        ],
+    ],
+
+    'testFailCreateAccountForCurrencyCloudMozartError' => [
+      'request' => [
+          'url' => '/international/virtual_accounts',
+          'method' => 'post',
+          'content' => [
+              'accept_b2b_tnc' => 1,
+              'va_currency' => "USD",
+          ]
+      ],
+      'response' => [
+          'content'     => [
+              'error' => [
+                  'description'   => PublicErrorDescription::GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED,
+              ],
+          ],
+          'status_code' => 502,
+      ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED,
         ],
     ],
 

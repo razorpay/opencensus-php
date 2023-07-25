@@ -53,6 +53,7 @@ use function GuzzleHttp\default_ca_bundle;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Pricing\Entity as PricingEntity;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 
 class Service extends Base\Service
@@ -943,6 +944,25 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        if ($this->merchant->hasValidPurposeCodeForGlobalBankTransfer() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS, null,
+                        [
+                            'purpose_code' => $this->merchant->getPurposeCode() ?? '',
+                        ]);
+        }
+
+        // IEC code required for some purpose codes
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1689314331594219?thread_ts=1688468005.859769&cid=C024U3B04LD
+        if ((in_array($this->merchant->getPurposeCode(), PurposeCodeList::IEC_REQUIRED) === true) and 
+            (empty($this->merchant->getIecCode()) === true))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE, null,
+                        [
+                            'purpose_code' => $this->merchant->getPurposeCode() ?? '',
+                        ]);
+        }
+
         if(!isset($input['va_currency']))
         {
             $input['va_currency'] = Currency::USD;
@@ -953,10 +973,17 @@ class Service extends Base\Service
             throw new \Exception("Currency/Method Not Supported for International Bank Transfer");
         }
 
-        if (($this->merchant->isInternational() === false) or
-            ($input['va_currency'] === Currency::USD and boolval($input['accept_b2b_tnc']) === false))
+        if ($this->merchant->isInternational() === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,null,[
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INTERNATIONAL_NOT_ENABLED_FOR_INTL_BANK_TRANSFER, null,
+                        [
+                            'international' => $this->merchant->isInternational(),
+                        ]);
+        }
+
+        if ($input['va_currency'] === Currency::USD and boolval($input['accept_b2b_tnc']) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMS_AND_CONDITIONS_NOT_CHECKED, null, [
                 'international'         => $this->merchant->isInternational(),
                 't&c'                   => $input['accept_b2b_tnc'],
             ]);
@@ -991,11 +1018,11 @@ class Service extends Base\Service
                         ]);
                     }
 
-                    $responseBody = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'account_create',$requestBody);
+                    $responseBody = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'account_create', $requestBody);
 
                     if(!isset($responseBody['data']['account_id']) || !isset($responseBody['data']['contact_id']))
                     {
-                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED, null, [
+                        throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_VIRTUAL_ACCOUNT_CREATION_FAILED, null, [
                             'response' => $responseBody,
                         ]);
                     }
@@ -1025,7 +1052,7 @@ class Service extends Base\Service
                         ]
                     );
 
-                    throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,
                         null,
                         [
                             'error_desc' => $e->getMessage(),
@@ -1114,7 +1141,17 @@ class Service extends Base\Service
 
     protected function getFundingAccountDetailsByCurrency($request, $va_currency)
     {
-        $response = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'get_funding_account',$request);
+        try
+        {
+            $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
+        }
+        catch (\Exception $ex)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
+                        [
+                            'error_data' => $ex->getData() ?? [],
+                        ]);
+        }
 
         $funding_accounts = $response['data']['funding_accounts'];
 
@@ -1256,7 +1293,7 @@ class Service extends Base\Service
 
     public function getAddressEntityForB2B($paymentId = '')
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER) === false)
+        if ($this->merchant->isInternational() === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                         [

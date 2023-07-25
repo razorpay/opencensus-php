@@ -3844,6 +3844,16 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function hasValidPurposeCodeForGlobalBankTransfer()
+    {
+        if (in_array($this->getPurposeCode(), PurposeCodeList::OPGSP_EXPORT_APPROVED_PURPOSE_CODE) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function getQueueableRelations()
     {
         /**

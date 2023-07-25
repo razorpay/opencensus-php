@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\InternationalBankTransfer;
 
 use Mail;
 use Mockery;
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
@@ -16,6 +17,7 @@ use RZP\Mail\Merchant\AuthorizedPaymentsReminder;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
@@ -58,8 +60,6 @@ class InternationalBankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer',$merchantDetail['merchant_id']);
-
         $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
 
         $this->mockMozartResponseForCurrencyCloud();
@@ -70,6 +70,16 @@ class InternationalBankTransferTest extends TestCase
         $request['content']['va_currency'] = "USD";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'purpose_code' => PurposeCodeList::P1004,
+                        ]);
 
         $response = $this->sendRequest($request);
 
@@ -111,8 +121,6 @@ class InternationalBankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer',$merchantDetail['merchant_id']);
-
         $this->fixtures->pricing->createPricingPlanWithoutMethods("dummyId",["intl_bank_transfer"]);
 
         $this->ba->adminAuth();
@@ -129,6 +137,16 @@ class InternationalBankTransferTest extends TestCase
         $request['content']['va_currency'] = "USD";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'purpose_code' => PurposeCodeList::P1004,
+                        ]);
 
         $this->sendRequest($request);
 
@@ -167,8 +185,6 @@ class InternationalBankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer',$merchantDetail['merchant_id']);
-
         $this->fixtures->pricing->createPricingPlanWithoutMethods($planId,["intl_bank_transfer"]);
 
         $this->ba->adminAuth();
@@ -188,8 +204,6 @@ class InternationalBankTransferTest extends TestCase
 
         $this->fixtures->user->createUserForMerchant($merchantDetail2['merchant_id']);
 
-        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer',$merchantDetail2['merchant_id']);
-
         $this->ba->adminAuth();
 
         $this->merchantAssignPricingPlan($planId, $merchant2['id']);
@@ -204,6 +218,16 @@ class InternationalBankTransferTest extends TestCase
         $request['content']['va_currency'] = "USD";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'purpose_code' => PurposeCodeList::P1004,
+                        ]);
 
         $this->sendRequest($request);
 
@@ -254,6 +278,45 @@ class InternationalBankTransferTest extends TestCase
         $this->testData[__FUNCTION__];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'purpose_code' => PurposeCodeList::P1004,
+                        ]);
+
+        $response = $this->startTest();
+    }
+
+    public function testFailCreateAccountForCurrencyCloudMozartError()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud(199);
+
+        $this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'purpose_code' => PurposeCodeList::P1004,
+                        ]);
 
         $response = $this->startTest();
     }
@@ -721,6 +784,38 @@ class InternationalBankTransferTest extends TestCase
                 {
                     if($action == 'account_create')
                     {
+                        if ($amount === 199)
+                        {
+                            $j = '{
+                                    "data": {},
+                                    "error": {
+                                      "description": "Too many requests have been made to the api. Please refer to the Developer Center for more information",
+                                      "gateway_error_code": "too_many_requests",
+                                      "gateway_error_description": "Too many requests have been made to the api. Please refer to the Developer Center for more information",
+                                      "gateway_status_code": 429,
+                                      "internal_error_code": "GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED"
+                                    },
+                                    "success": false
+                                  }';
+
+                            $response = (json_decode($j, true));
+
+                            $errorCode = $response['error']['internal_error_code'];
+
+                            throw new Exception\GatewayErrorException(
+                                $errorCode,
+                                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                                [
+                                    'error' => $response['error'],
+                                    'data' => $response['data']
+                                ],
+                                null,
+                                'onboarding/currency_cloud/v1/account_create');
+
+                            return ($response);
+                        }
+
                         return [
                             'data' =>[
                                 'account_id'    => "66f51c98-1ef8-4e48-97de-aac0353ba2b4",
@@ -903,7 +998,7 @@ class InternationalBankTransferTest extends TestCase
 
     protected function collectAddress($payment, $merchantUserId = null)
     {
-        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer', $payment['merchant_id']);
+        $this->fixtures->merchant->enableInternational($payment['merchant_id']);
 
         $addressPayload = [
             'url' => '/v1/b2b-exports/' . $payment['public_id'] . '/address',

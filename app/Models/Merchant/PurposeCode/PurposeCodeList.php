@@ -1134,6 +1134,49 @@ class PurposeCodeList
         self::P0807,
     ];
 
+    // List of codes approved for CC VA account creation
+    // https://razorpay.slack.com/archives/C024U3B04LD/p1688614779764399?thread_ts=1688468005.859769&cid=C024U3B04LD
+    const OPGSP_EXPORT_APPROVED_PURPOSE_CODE = [
+        self::P0103,
+        self::P1004,
+        self::P1005,
+        self::P1006,
+        self::P1007,
+        self::P1008,
+        self::P1009,
+        self::P0802,
+        self::P0807,
+        self::P1020,
+        self::P1002,
+        self::P1104,
+        self::P1099,
+        self::P1015,
+        self::P1016,
+        self::P1017,
+        self::P1019,
+        self::P1107,
+        self::P1109,
+        self::P1701,
+        self::P0301,
+        self::P0302,
+        self::P0304,
+        self::P0305,
+        self::P0306,
+        self::P0801,
+        self::P0803,
+        self::P0804,
+        self::P0805,
+        self::P0806,
+        self::P0808,
+        self::P1013,
+        self::P1014,
+        self::P1101,
+        self::P1103,
+        self::P1105,
+        self::P1106,
+        self::P1108,
+    ];
+
     public static function getPurposeCodeDescDescription($purposeCode): string
     {
         return self::$purposeCodeDescMappings[$purposeCode];

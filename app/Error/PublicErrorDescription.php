@@ -1781,4 +1781,14 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID                                 = 'Token used is invalid to approve/reject this Payout';
 
     const BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED                                = 'Your payment could not be completed due to a temporary technical issue. To complete the payment, use another payment instrument.';
+
+    // intl bank transfer
+    const BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS                        = 'Selected purpose code is not eligible for this payment method.';
+    const BAD_REQUEST_INTERNATIONAL_NOT_ENABLED_FOR_INTL_BANK_TRANSFER              = 'Your account is not international enabled. Enable international payments for your account.';
+    const BAD_REQUEST_TERMS_AND_CONDITIONS_NOT_CHECKED                              = 'Before you can proceed you must read and accept the Terms and Conditions.';
+    const GATEWAY_ERROR_VIRTUAL_ACCOUNT_CREATION_FAILED                             = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
+    const BAD_REQUEST_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT                  = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
+    const GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED                                  = 'You have exceeded your rate limit, please try again after sometime.';
+    const BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST                     = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
+    const BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE                   = 'IEC Code is required for your category of business.';
 }
