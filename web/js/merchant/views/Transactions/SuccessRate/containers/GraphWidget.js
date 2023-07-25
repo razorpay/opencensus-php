@@ -35,6 +35,7 @@ import {
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
 import { DEFAULT_GROUP_BY } from 'merchant/views/Transactions/SuccessRate/constants';
+import { StyledContainer } from 'merchant/views/Transactions/SuccessRate/styles';
 
 const GraphWidget = (props) => {
   const {
@@ -107,7 +108,7 @@ const GraphWidget = (props) => {
   };
 
   return (
-    <div className="metrics-container" data-testid="success-rate-graph-widget">
+    <StyledContainer data-testid="success-rate-graph-widget">
       <Tabs
         className="sr-metrics"
         justified={true}
@@ -168,7 +169,7 @@ const GraphWidget = (props) => {
           );
         })}
       </Tabs>
-    </div>
+    </StyledContainer>
   );
 };
 

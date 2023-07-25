@@ -1,0 +1,45 @@
+import styled from 'styled-components';
+import { makeSize } from '@razorpay/blade/utils';
+
+export const StyledContainer = styled.div(
+  ({ theme }) => `
+    .sr-metrics {
+      .nav.nav-tabs {
+        ::-webkit-scrollbar {
+          height: ${makeSize(8)};
+          cursor: pointer;
+        }
+        ::-webkit-scrollbar-track {
+          background: ${theme.colors.surface.border.normal.highContrast};
+          border-radius: ${theme.border.radius.small}px;
+          cursor: pointer;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: ${theme.colors.brand.gray[600].highContrast};
+          border-radius:  ${theme.border.radius.large}px;
+          cursor: pointer;
+        }
+        :hover::-webkit-scrollbar-thumb {
+          background: ${theme.colors.brand.gray[400].highContrast};
+          border-radius: ${theme.border.radius.large}px;
+          cursor: pointer;
+        }
+      }
+      .nav.nav-tabs > li {
+        background-color: red;
+        @media screen and (min-width: ${makeSize(1300)}) {
+          min-width: 17vw;
+        }
+        @media screen and (max-width: ${makeSize(1300)}) {
+          min-width: 18vw;
+        }
+        @media screen and (max-width: ${theme.breakpoints.l}px) {
+          min-width: ${makeSize(250)};
+        }
+      }
+      .tab-content {
+        margin-top: ${theme.spacing[5]}px;
+      }
+    } 
+  `,
+);
