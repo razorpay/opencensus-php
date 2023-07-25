@@ -399,6 +399,8 @@ class Core extends Base\Core
                     'input'       => $this->removeSecretFieldsForTrace($input),
                 ]);
 
+            $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
+
             $syncInstruments = false;
             if( isset($input[TerminalConstants::SYNC_INSTRUMENTS]) )
             {

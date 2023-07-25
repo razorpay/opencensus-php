@@ -828,7 +828,8 @@ return [
                 'vpa'                  => 'some@axis',
                 'type'                 => [
                     'non_recurring' => '1',
-                    'in_app'         => '1',
+                    'in_app'        => '1',
+                    'ios'         => '1',
                 ],
                 'notes' =>[
                     'optimizer_description' =>'Enabling',

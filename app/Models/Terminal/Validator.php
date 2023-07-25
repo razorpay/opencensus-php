@@ -273,7 +273,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
-
+    
     protected static $upiCitiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_citi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -1220,6 +1220,19 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::EXPECTED                   => 'sometimes|boolean|in:0,1',
+    ];
+
+    protected static $upiAxisoliveEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_axisolive',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::MERCHANT_MOBILE_CONTACT    => 'sometimes|string|size:12',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [

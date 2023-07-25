@@ -533,13 +533,15 @@ class TerminalTest extends TestCase
         $data = [
             'gateway'                   => 'upi_axisolive',
             'type'                      => [
-                'in_app' => '0',
+                'non_recurring' => '1',
+                'ios'=> '1',
             ],
+            'merchant_mobile_contact' => '919686580148',
         ];
 
         $content = $this->editTerminal($terminal->getId(), $data);
 
-        $this->assertEquals($content['type'], ['non_recurring']);
+        $this->assertEquals($content['type'], ['non_recurring','in_app','ios']);
     }
 
     public function testCreateUPIInAppIOSTerminal()
