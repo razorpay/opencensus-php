@@ -181,6 +181,8 @@ class Entity extends Base\PublicEntity
         {
             case 'gateway_payment_callback_get':
             case 'gateway_payment_callback_post':
+            case 'upi_transfer_process':
+            case 'upi_transfer_process_test':
             case 'gateway_payment_callback_bharatqr':
                 $requestSource = [
                     'source'        => 'callback',

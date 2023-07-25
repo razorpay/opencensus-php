@@ -83,7 +83,9 @@ class Service extends Base\Service
         {
             $routeName = $this->app['api.route']->getCurrentRouteName();
 
-            if ($routeName === 'gateway_payment_callback_post')
+            if (($routeName === 'gateway_payment_callback_post') or
+                ($routeName === 'upi_transfer_process') or
+                ($routeName === 'upi_transfer_process_test'))
             {
                 [$terminal, $gatewayResponse] = $this->getDedicatedTerminalAndGatewayResponse($input, $gatewayClass, $gateway);
             }

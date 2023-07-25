@@ -3052,4 +3052,73 @@ class NonVirtualAccountQrCodeTest extends TestCase
         );
 
     }
+
+    public function testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute()
+    {
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000]
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->makeIciciQrPaymentViaUpiTransferRoute($request);
+
+        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+    }
+
+    public function testProcessIciciQrPaymentOnSharedTerminalForMultipleUseQrViaVPACallbackRoute()
+    {
+        $qrCode = $this->createQrCode(
+            [
+                'type'  => 'upi_qr',
+                'usage' => 'multiple_use'
+            ]
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->makeIciciQrPaymentViaUpiTransferRoute($request);
+
+        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+    }
+
+    public function testProcessIciciQrPaymentOnSharedTerminalViaVPACallbackRouteWithoutRZPPrefix()
+    {
+        $qrCode = $this->createQrCode(
+            [
+                'type'  => 'upi_qr',
+                'usage' => 'multiple_use'
+            ]
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeIciciQrPaymentViaUpiTransferRoute($request);
+
+        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+    }
 }

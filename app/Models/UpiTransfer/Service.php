@@ -5,6 +5,8 @@ namespace RZP\Models\UpiTransfer;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Models\QrCode;
+use RZP\Models\BharatQr;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -12,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Account;
+use RZP\Models\QrCode\Constants;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
 
@@ -20,6 +23,8 @@ class Service extends Base\Service
     protected $core;
 
     protected $terminal;
+
+    private bool $isQrCodePayment = false;
 
     public function __construct()
     {
@@ -39,17 +44,20 @@ class Service extends Base\Service
 
         $valid           = false;
         $gatewayResponse = [];
+        $transactionId   = '';
 
         try
         {
             [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);
 
-            $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
-                                                                             $gatewayResponse['callback_data']);
-
-            $upiTransferRequestId = $upiTransferRequest ? $upiTransferRequest->getPublicId() : null;
-
-            $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequestId);
+            if ($this->isQrCodePayment === true)
+            {
+                [$valid, $transactionId] = $this->processQrPayment($gatewayResponse, $gateway);
+            }
+            else
+            {
+                [$valid, $transactionId] = $this->processUpiTransfer($gatewayResponse, $terminal);
+            }
         }
         catch (\Exception $e)
         {
@@ -59,7 +67,7 @@ class Service extends Base\Service
         return [
             'valid'          => $valid,
             'message'        => null,
-            'transaction_id' => $gatewayResponse['upi_transfer_data'][GatewayResponseParams::PROVIDER_REFERENCE_ID] ?? '',
+            'transaction_id' => $transactionId,
         ];
     }
 
@@ -75,6 +83,18 @@ class Service extends Base\Service
                 return $gatewayClass->preProcessServerCallback($input, false, true);
             });
 
+        if ($this->isIciciQrCodePayment($gatewayResponse, $gateway) === true)
+        {
+            $this->isQrCodePayment = true;
+
+            if (str_starts_with($gatewayResponse[Fields::MERCHANT_TRAN_ID], Constants::QR_CODE_V2_ICICI_PREFIX))
+            {
+                $gatewayResponse[Fields::MERCHANT_TRAN_ID] = substr($gatewayResponse[Fields::MERCHANT_TRAN_ID], strlen(Constants::QR_CODE_V2_ICICI_PREFIX));
+            }
+
+            return [null, $gatewayResponse];
+        }
+
         $terminal = Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_FETCH_TERMINAL],
             function() use ($gatewayResponse, $gateway, $gatewayClass)
             {
@@ -84,6 +104,19 @@ class Service extends Base\Service
         $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
 
         return [$terminal, $gatewayResponse];
+    }
+
+    private function isIciciQrCodePayment($gatewayResponse, $gateway): bool
+    {
+        if (($gateway === Payment\Gateway::UPI_ICICI) and
+            (isset($gatewayResponse[Fields::MERCHANT_TRAN_ID]) === true))
+        {
+            $merchantTranID = $gatewayResponse[Fields::MERCHANT_TRAN_ID];
+
+            return (str_ends_with($merchantTranID, QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+        }
+
+        return false;
     }
 
     public function processUpiTransferPaymentInternal($input, $gateway)
@@ -308,5 +341,46 @@ class Service extends Base\Service
         $this->mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
 
         $this->app['basicauth']->setModeAndDbConnection($this->mode);
+    }
+
+    /**
+     * @param mixed $gatewayResponse
+     * @param       $gateway
+     *
+     * @return array
+     */
+    public function processQrPayment(mixed $gatewayResponse, $gateway)
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_QR_PAYMENT_REQUEST,
+            [
+                'gateway_response' => $gatewayResponse,
+                'gateway'          => $gateway,
+            ]);
+
+        (new BharatQr\Service)->processPayment($gatewayResponse, $gateway);
+
+        return [true, $gatewayResponse[Fields::BANK_RRN] ?? ''];
+    }
+
+    /**
+     * @param mixed $gatewayResponse
+     * @param mixed $terminal
+     * @param bool  $valid
+     *
+     * @return array
+     */
+    public function processUpiTransfer(mixed $gatewayResponse, mixed $terminal): array
+    {
+        $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
+                                                                         $gatewayResponse['callback_data']);
+
+        $upiTransferRequestId = $upiTransferRequest ? $upiTransferRequest->getPublicId() : null;
+
+        $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequestId);
+
+        $transactionId = $gatewayResponse['upi_transfer_data'][GatewayResponseParams::PROVIDER_REFERENCE_ID] ?? '';
+
+        return [$valid, $transactionId];
     }
 }

@@ -158,6 +158,21 @@ trait NonVirtualAccountQrCodeTrait
         return $response;
     }
 
+    private function makeIciciQrPaymentViaUpiTransferRoute($request)
+    {
+        $this->ba->directAuth();
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['valid']);
+
+        return $response;
+    }
+
     private function makeUpiIciciPaymentInternal($request)
     {
         $this->ba->appAuth();
@@ -330,6 +345,23 @@ trait NonVirtualAccountQrCodeTrait
                 ]
             ]
         ]);
+    }
+
+    public function runQrPaymentAssertions(mixed $qrCodeId, string $rrn): void
+    {
+        $qrPayment        = $this->getDbLastEntity('qr_payment');
+        $payment          = $this->getDbLastEntity('payment');
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
     }
 
 }
