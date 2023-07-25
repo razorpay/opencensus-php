@@ -175,7 +175,7 @@ class Activate extends Base\Core
 
         // Merchant's has_key_access is set to true when website or App Store url or PlayStore url is set.
 
-        if (((new Merchant\Detail\Core())->hasWebsite($merchant) === true) and
+        if (((new Merchant\Detail\Core())->hasBusinessWebsiteOrAppUrls($merchant) === true) and
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);

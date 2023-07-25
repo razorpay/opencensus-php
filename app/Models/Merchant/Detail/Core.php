@@ -3033,7 +3033,7 @@ class Core extends Base\Core
                 'merchant_id'      => $merchant->getId()
             ]);
 
-        if ((new Detail\Core())->hasWebsite($merchant) === false)
+        if ($this->hasBusinessWebsiteOrAppUrls($merchant) === false)
         {
             return;
         }
@@ -5518,8 +5518,8 @@ class Core extends Base\Core
         if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
             $this->trace->info(TraceCode::MERCHANT_ORG_ID_NOT_RAZORPAY_ORG_ID, [
-                'merchant_id'   => $merchantDetails->getId(),
-                'org_id'        => $merchantDetails->merchant->getOrgId(),
+                'merchant_id' => $merchantDetails->getId(),
+                'org_id'      => $merchantDetails->merchant->getOrgId(),
             ]);
 
             return Status::UNDER_REVIEW;
@@ -5530,7 +5530,7 @@ class Core extends Base\Core
         if ($merchantDetails->merchant->isLinkedAccount() === true)
         {
             $this->trace->info(TraceCode::MERCHANT_ACTIVATED_AS_LINKED_ACCOUNT, [
-                'merchant_id'   => $merchantDetails->getId(),
+                'merchant_id' => $merchantDetails->getId(),
             ]);
 
             return Status::ACTIVATED;
@@ -5558,10 +5558,10 @@ class Core extends Base\Core
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
         $eligibleForAMP = (
-            $isWhitelisted === true AND
-            $isImpersonated === false AND
-            $this->hasRiskTags($merchantDetails->merchant) === false AND
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false AND
+            $isWhitelisted === true and
+            $isImpersonated === false and
+            $this->hasRiskTags($merchantDetails->merchant) === false and
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false and
             (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0
             // Merchant should not go in AMP from NC or UR if already been in NC
         );
@@ -5580,18 +5580,29 @@ class Core extends Base\Core
             MVD\Constants::NUMBER
         );
 
-        if ($this->hasBusinessWebsite($merchantDetails) === true or $this->hasAppUrls($merchantDetails) === true)
+        if ($this->hasBusinessWebsiteOrAppUrls($merchantDetails->merchant) === true)
         {
             $eligibleForAMP = (
-                $eligibleForAMP AND
-                optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED AND
+                $eligibleForAMP and
+                optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
                 optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED
             );
         }
 
         if ($eligibleForAMP === true)
         {
-            $splitzVariant = (new Detail\Core)->getSplitzResponse($merchantId, 'merchant_automation_activation_exp_id');
+            // Experiment Name For Automation Activation
+
+            $experimentName = 'merchant_automation_activation_exp_id';
+
+            $isWebsiteMerchant = $this->hasBusinessWebsiteOrAppUrls($merchantDetails->merchant);
+
+            if ($isWebsiteMerchant === false)
+            {
+                $experimentName = 'no_website_merchant_automation_activation_exp_id';
+            }
+
+            $splitzVariant = $this->getSplitzResponse($merchantId, $experimentName);
 
             $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails, $websitePolicy, $negativeKeyword);
 
@@ -5605,19 +5616,22 @@ class Core extends Base\Core
 
                 return $activationStatusAutomation;
             }
-            else if ($splitzVariant === Merchant\Constants::SPLITZ_PILOT)
+            else
             {
-                try
+                if ($splitzVariant === Merchant\Constants::SPLITZ_PILOT)
                 {
-                    (new Service)->saveBusinessDetailsForMerchant($merchantId, [
-                        BusinessDetailEntity::METADATA => [
-                            'activation_status' => $activationStatusAutomation
-                        ]
-                    ]);
-                }
-                catch (\Throwable $ex)
-                {
-                    $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+                    try
+                    {
+                        (new Service)->saveBusinessDetailsForMerchant($merchantId, [
+                            BusinessDetailEntity::METADATA => [
+                                'activation_status' => $activationStatusAutomation
+                            ]
+                        ]);
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+                    }
                 }
             }
 
@@ -5635,6 +5649,12 @@ class Core extends Base\Core
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
+
+        $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchantId,
+            Constant::SIGNATORY_VALIDATION,
+            MVD\Constants::NUMBER
+        );
 
         if ($this->hasBusinessWebsite($merchantDetails) === true)
         {
@@ -5676,12 +5696,6 @@ class Core extends Base\Core
                     }
                 }
 
-                $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
-                    $merchantId,
-                    Constant::SIGNATORY_VALIDATION,
-                    MVD\Constants::NUMBER
-                );
-
                 if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED and
@@ -5697,11 +5711,19 @@ class Core extends Base\Core
         }
         else
         {
+            if ($this->hasAppUrls($merchantDetails) === false)
+            {
+                if (optional($signatory)->getStatus() === BvsValidation\Constants::VERIFIED)
+                {
+                    return Status::ACTIVATED;
+                }
+            }
+
             return Status::ACTIVATED_MCC_PENDING;
         }
     }
 
-    private function hasAppUrls(Entity $merchantDetails): bool
+    public function hasAppUrls(Entity $merchantDetails): bool
     {
         $appUrls = optional($merchantDetails->businessDetail)->getAppUrls();
 
@@ -5709,7 +5731,7 @@ class Core extends Base\Core
             empty($appUrls[BusinessDetailConstants::APPSTORE_URL]) === false;
     }
 
-    private function hasBusinessWebsite($merchantDetails): bool
+    public function hasBusinessWebsite($merchantDetails): bool
     {
         return empty($merchantDetails->getWebsite()) === false;
     }
@@ -9727,7 +9749,7 @@ class Core extends Base\Core
 
     }
 
-    public function hasWebsite(Merchant\Entity $merchant)
+    public function hasBusinessWebsiteOrAppUrls(Merchant\Entity $merchant)
     {
         // To check whether any of the business website/appstore url/ playstore url is present
 

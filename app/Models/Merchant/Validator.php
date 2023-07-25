@@ -1823,7 +1823,7 @@ class Validator extends Base\Validator
 
         if (($merchant->getHasKeyAccess() === true))
         {
-            if (((new Detail\Core()))->hasWebsite($merchant) === false)
+            if (((new Detail\Core()))->hasBusinessWebsiteOrAppUrls($merchant) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Website details are missing');

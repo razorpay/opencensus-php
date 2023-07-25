@@ -148,7 +148,20 @@ class UpdateMerchantContext extends Job
 
             $app = App::getFacadeRoot();
 
-            $splitzResult = $detailCore->getSplitzResponse($this->merchantId, 'merchant_automation_activation_exp_id');
+            // Experiment For Automation Activation For Website Merchant
+
+            $experimentName = 'merchant_automation_activation_exp_id';
+
+            $isWebsiteMerchant = $detailCore->hasBusinessWebsiteOrAppUrls($merchant);
+
+            if ($isWebsiteMerchant === false)
+            {
+                // Experiment For Automation Activation For Website Merchant
+
+                $experimentName = 'no_website_merchant_automation_activation_exp_id';
+            }
+
+            $splitzResult = $detailCore->getSplitzResponse($this->merchantId, $experimentName);
 
             $businessDetailMetadata = optional($app['repo']->merchant_business_detail->getBusinessDetailsForMerchantId($this->merchantId))->getMetadata();
 

@@ -360,6 +360,17 @@ class CoreTest extends TestCase
         (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload);
     }
 
+    private function createSignatoryValidationFixture($merchantId)
+    {
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => 'signatory_validation',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+    }
+
     private function createWebsitePolicyAndNegativeKeywordFixtures($merchantId)
     {
         $this->fixtures->create('merchant_verification_detail', [
@@ -3246,11 +3257,6 @@ class CoreTest extends TestCase
             'submitted'                 => true,
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchantDetails->getId(),
-        ];
-
         $output = [
             "response" => [
                 "variant" => [
@@ -3259,7 +3265,7 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
+        $this->mockAllSplitzTreatment($output);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
@@ -3292,11 +3298,6 @@ class CoreTest extends TestCase
             'category'             => '5945',
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
         $output = [
             "response" => [
                 "variant" => [
@@ -3305,7 +3306,7 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
+        $this->mockAllSplitzTreatment($output);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
@@ -4084,14 +4085,9 @@ class CoreTest extends TestCase
             'submitted'                 => true,
         ]);
 
-        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
         ]);
-
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
 
         $output = [
             "response" => [
@@ -4101,7 +4097,7 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
+        $this->mockAllSplitzTreatment($output);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
 
@@ -6298,7 +6294,7 @@ class CoreTest extends TestCase
 
         $merchantDetails->shouldReceive('getWebsite')->andReturn('www.test.com');
 
-        $response = (new DetailCore())->hasWebsite($merchant);
+        $response = (new DetailCore())->hasBusinessWebsiteOrAppUrls($merchant);
 
         $this->assertTrue($response);
     }
@@ -6646,11 +6642,6 @@ class CoreTest extends TestCase
             'submitted'                 => true,
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchantDetails->getId(),
-        ];
-
         $output = [
             "response" => [
                 "variant" => [
@@ -6659,22 +6650,25 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
+        $this->mockAllSplitzTreatment($output);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusWebsiteAbsentSplitzKqu()
     {
+
+        // Here the merchant signatory is not present hence the merchant will be in AMP
+
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
 
         $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6688,14 +6682,9 @@ class CoreTest extends TestCase
             'submitted'                 => true,
         ]);
 
-        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
-            'category'             => '5945',
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category' => '5945',
         ]);
-
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
 
         $output = [
             "response" => [
@@ -6705,9 +6694,95 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
+        $this->mockAllSplitzTreatment($output);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusWebsiteAbsentSplitzKquSignatoryVerified()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+        ]);
+
+        $this->createSignatoryValidationFixture($merchantDetails->getId());
+
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category' => '5945',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusWebsiteAbsentSplitzLiveSignatoryVerified()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+        ]);
+
+        $this->createSignatoryValidationFixture($merchantDetails->getId());
+
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category' => '5945',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusWebsiteAppURLsAbsentSplitzKqu()
@@ -6715,12 +6790,12 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
 
         $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6736,7 +6811,7 @@ class CoreTest extends TestCase
         ]);
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
-            'category'             => '5945',
+            'category' => '5945',
         ]);
 
         $input = [
