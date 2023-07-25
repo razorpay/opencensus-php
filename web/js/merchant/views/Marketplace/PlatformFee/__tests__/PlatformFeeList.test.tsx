@@ -11,6 +11,7 @@ import PlatformFee from 'merchant/views/Marketplace/PlatformFee/List';
 import { platformFeeData, platformFeeDataEmpty } from './mocks/fixtures';
 import { platformFeeListSuccess, platformFeeListError } from './mocks/handlers';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import * as analytics from 'common/utils/analytics';
 
 jest.mock('common/ui/HeaderAction', () => ({
   __esModule: true,
@@ -24,12 +25,25 @@ jest.spyOn(NotificationsActions, 'showNotification');
 const location = {
   search: '',
 };
+
+const state = {
+  session: {
+    user: {
+      id: 'testUserId',
+    },
+  },
+};
+
 describe('Platform Fee List', () => {
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+
   afterEach(() => {
     jest.clearAllMocks();
   });
   const renderApp = () => {
-    render(<PlatformFee location={location} />);
+    render(<PlatformFee location={location} />, {
+      initialState: state,
+    });
   };
 
   test('should render spinner if loading', () => {
@@ -84,6 +98,22 @@ describe('Platform Fee List', () => {
 
     await waitFor(() => {
       expect(screen.queryByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
+    });
+  });
+
+  test('should capture platformFee tab opened event', async () => {
+    server.use(platformFeeListSuccess());
+    renderApp();
+    await waitFor(() => {
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        screen: 'platform fee page',
+        objectName: 'route partnership platform fee',
+        actionName: 'tab opened',
+        properties: {
+          mid: 'testUserId',
+        },
+        toLumberjack: true,
+      });
     });
   });
 

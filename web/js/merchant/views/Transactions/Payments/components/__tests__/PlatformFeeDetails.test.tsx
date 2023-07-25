@@ -1,7 +1,8 @@
 import React from 'react';
 import PlatformFeeDetails from 'merchant/views/Transactions/Payments/components/PlatformFeeDetails';
-import { render, screen, userEvent } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import * as analytics from 'common/utils/analytics';
 
 jest.mock('common/ui/LoaderDots', () => () => <>loading</>);
 
@@ -11,6 +12,14 @@ jest.mock('@razorpay/blade/components', () => ({
   __esModule: true,
   Amount: ({ value }) => <>{value}</>,
 }));
+
+const state = {
+  session: {
+    user: {
+      id: 'testUserId',
+    },
+  },
+};
 
 describe('PlatformFeeDetails', () => {
   interface PlatformFeeProps {
@@ -61,8 +70,12 @@ describe('PlatformFeeDetails', () => {
     payment.fee + payment.tax + items[0].tax + items[0].fees + items[1].tax + items[1].fees;
   const totalGST = payment.tax + items[0].tax + items[1].tax;
 
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+
   const renderApp = ({ transfer, payments }: PlatformFeeProps) => {
-    return render(<PlatformFeeDetails payment={payments} transfers={transfer} />);
+    return render(<PlatformFeeDetails payment={payments} transfers={transfer} />, {
+      initialState: state,
+    });
   };
 
   test('should render Razorpay Fee and platform fee details when transfers and payments are present', async () => {
@@ -94,5 +107,19 @@ describe('PlatformFeeDetails', () => {
     renderApp({ transfer: { ...transfers, items: [] }, payments: { ...payment } });
     await userEvent.click(screen.getByText('Platform Fee = 0'));
     expect(screen.getByText('No Transactions Found'));
+  });
+  test('should capture tab opened event', async () => {
+    renderApp({ transfer: { ...transfers }, payments: { ...payment } });
+    await waitFor(() => {
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        screen: 'payment details page',
+        objectName: 'route partnership payment details',
+        actionName: 'tab opened for platform fee',
+        properties: {
+          mid: 'testUserId',
+        },
+        toLumberjack: true,
+      });
+    });
   });
 });

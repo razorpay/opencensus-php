@@ -5,6 +5,7 @@ import PlatformFeeDetails from 'merchant/views/Marketplace/PlatformFee/Details';
 import { platformFeedDetailsData as data, reversalsData } from './mocks/fixtures';
 import { platformFeeDetailsSuccess, reversalSuccess } from './mocks/handlers';
 import * as modals from 'merchant_common/reducers/modals';
+import * as analytics from 'common/utils/analytics';
 
 jest.mock('@razorpay/blade/components', () => ({
   __esModule: true,
@@ -29,9 +30,20 @@ jest.mock('merchant/views/Marketplace/Transfers/components/TransferReversal', ()
 
 jest.spyOn(modals, 'openModal');
 
+const state = {
+  session: {
+    user: {
+      id: 'testUserId',
+    },
+  },
+};
 describe('Platform Fee Details', () => {
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+
   const renderApp = () => {
-    render(<PlatformFeeDetails id={data.id} />);
+    render(<PlatformFeeDetails id={data.id} />, {
+      initialState: state,
+    });
   };
 
   test('should render loader if data is loading', () => {
@@ -93,6 +105,23 @@ describe('Platform Fee Details', () => {
 
     await waitFor(() => {
       expect(modals.openModal).toHaveBeenCalled();
+    });
+  });
+
+  test('should capture platformFeeDetails tab opened event', async () => {
+    server.use(platformFeeDetailsSuccess(data));
+    server.use(reversalSuccess(reversalsData));
+    renderApp();
+    await waitFor(() => {
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        screen: 'platform fee details page',
+        objectName: 'route partnership platform fee details',
+        actionName: 'tab opened',
+        properties: {
+          mid: 'testUserId',
+        },
+        toLumberjack: true,
+      });
     });
   });
 });

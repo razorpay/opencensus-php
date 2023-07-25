@@ -8,6 +8,7 @@ import {
 } from 'merchant/views/Marketplace/Accounts/__tests__/mocks/fixtures';
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import * as analytics from 'common/utils/analytics';
 
 jest.mock('merchant/views/Marketplace/Accounts/components/AccountsList', () => ({
   __esModule: true,
@@ -35,9 +36,12 @@ jest.mock('merchant/components/ShowWhen', () => ({
 const defaultReduxState = getInitialReduxState({
   isAllowedEdit: true,
   isRouteLinkedAccountCreationDisabled: true,
+  id: 'testUserId',
 });
 
 describe('Reversal List', () => {
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+
   const renderApp = (state = defaultReduxState) => {
     render(<AccountsList location={location} />, { initialState: state });
   };
@@ -48,6 +52,22 @@ describe('Reversal List', () => {
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(accountsData.items[0].id)).toBeInTheDocument();
+    });
+  });
+
+  test('should capture Linked account tab opened event', async () => {
+    server.use(accountsListSuccess());
+    renderApp();
+    await waitFor(() => {
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        screen: 'Linked account page',
+        objectName: 'linked account',
+        actionName: 'tab opened',
+        properties: {
+          mid: 'testUserId',
+        },
+        toLumberjack: true,
+      });
     });
   });
 

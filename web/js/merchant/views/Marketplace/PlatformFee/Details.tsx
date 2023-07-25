@@ -23,7 +23,9 @@ import { openModal } from 'merchant_common/reducers/modals';
 import ReversalModal from 'merchant/views/Marketplace/Transfers/ReversalModal';
 import { OpenModalPayload } from 'common/typings/Store/modal';
 import { Notification } from 'common/typings/Store/notifications';
+import { User } from 'common/typings';
 import { fetchTransfersById, fetchReversals } from './api';
+import { platformFeeDetailsOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 
 const ERROR_CODE_CTAS_MAP = {
   BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT: 'Please create another transfer.',
@@ -40,6 +42,7 @@ interface PlatformFeeDetailsProps {
   showNotification?: ActionCreator<Notification>;
   openModal?: ActionCreator<OpenModalPayload>;
   id: string;
+  user: User;
 }
 
 interface transferTypes {
@@ -82,6 +85,7 @@ const PlatformFeeDetailsContainer = ({
   id,
   showNotification,
   openModal,
+  user,
 }: PlatformFeeDetailsProps): JSX.Element => {
   const [transferData, setTransferData] = useState<transferTypes>();
   const [reversalsData, setReversalsData] = useState<reversalType>();
@@ -120,6 +124,10 @@ const PlatformFeeDetailsContainer = ({
     refetch();
     refetchReversal();
   }, [id]);
+
+  useEffect(() => {
+    platformFeeDetailsOpenedAnalytics(user.id);
+  }, []);
 
   const openReversalModal = (transfer) => {
     openModal?.({
@@ -288,5 +296,8 @@ const PlatformFeeDetailsContainer = ({
 };
 
 export default compose<any>(
-  connect(null, (dispatch) => bindActionCreators({ showNotification, openModal }, dispatch)),
+  connect(
+    (state) => ({ user: state.session.user }),
+    (dispatch) => bindActionCreators({ showNotification, openModal }, dispatch),
+  ),
 )(PlatformFeeDetailsContainer);

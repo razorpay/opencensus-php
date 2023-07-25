@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose, ActionCreator, bindActionCreators } from 'redux';
 import { useQuery } from 'react-query';
@@ -17,10 +17,12 @@ import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import { PlatformFeeListFilter } from 'merchant/views/Marketplace/PlatformFee/components/PlatformFeeListFilter';
 import { ContentBox } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 import { Notification } from 'common/typings/Store/notifications';
+import { User } from 'common/typings';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
 import { fetchTransfers } from './api';
+import { platformFeeOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 
 const source = {
   title: 'Source Id',
@@ -52,6 +54,7 @@ interface PlatformFeeProps {
   history: History;
   location: Location;
   isPlatformFeeTabEnabled: boolean;
+  user: User;
 }
 
 interface listItemsProps {
@@ -72,6 +75,7 @@ const PlatformFee = ({
   history,
   location,
   isPlatformFeeTabEnabled,
+  user,
 }: PlatformFeeProps): JSX.Element => {
   const [paginationState, setPagination] = useState({
     skip: 0,
@@ -115,6 +119,10 @@ const PlatformFee = ({
     refetch();
     setItems([]);
   };
+
+  useEffect(() => {
+    platformFeeOpenedAnalytics(user.id);
+  }, []);
 
   return (
     <ProductWrapper

@@ -29,6 +29,10 @@ import { navItems } from 'merchant/views/Marketplace/NavItems';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 import { Box } from '@razorpay/blade/components';
 import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
+import {
+  linkedAccountTabOpenedAnalytics,
+  linkedAccountDashboardAccessGrantedAnalytics,
+} from 'merchant/views/Marketplace/MarketplaceAnalytics';
 
 @connect(
   (state) => {
@@ -48,6 +52,10 @@ export default class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
   };
+
+  componentDidMount() {
+    linkedAccountTabOpenedAnalytics(this.props.user.id);
+  }
 
   onToggleDashboardAccess = (account, cb) => {
     const { toggleDashboardAccess, showNotification, updateAccount } = this.props;
@@ -73,6 +81,9 @@ export default class AccountsListContainer extends ListContainer {
                     account.name
                   }"`,
                 });
+                if (checked) {
+                  linkedAccountDashboardAccessGrantedAnalytics(this.props.user.id);
+                }
 
                 updateAccount({
                   ...account,

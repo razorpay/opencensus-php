@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Amount } from '@razorpay/blade/components';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import AmountOld from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import LoaderDots from 'common/ui/LoaderDots';
+import { User } from 'common/typings';
+import { paymentDetailsOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 import { platformFeeCalculator } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
 
 const AmountContainer = styled.span(({ theme }) => ({
@@ -48,14 +52,18 @@ interface PlatformFeeProps {
       id: string;
     }[];
   };
+  user: User;
 }
 
-const PlatformFeeDetails = ({ payment, transfers }: PlatformFeeProps): JSX.Element => {
+const PlatformFeeDetails = ({ payment, transfers, user }: PlatformFeeProps): JSX.Element => {
   const { fee, tax, amount_transferred } = payment;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { loading, items } = transfers;
   const { totalFeeAmount, totalFee, totalRazorpayFee, totalTax, platformFee } =
     platformFeeCalculator({ fee, tax, amount_transferred, loading, items });
+  useEffect(() => {
+    paymentDetailsOpenedAnalytics(user.id);
+  }, []);
   return (
     <div>
       <div className="m-b">
@@ -108,4 +116,6 @@ const PlatformFeeDetails = ({ payment, transfers }: PlatformFeeProps): JSX.Eleme
   );
 };
 
-export default PlatformFeeDetails;
+export default compose<any>(connect((state) => ({ user: state.session.user }), null))(
+  PlatformFeeDetails,
+);
