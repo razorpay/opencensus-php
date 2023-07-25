@@ -4489,6 +4489,19 @@ EOT;
             ->count();
     }
 
+    public function fetchPaymentCountByTokenForUpiInRange($tokenId, $start, $end)
+    {
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->select($this->dbColumn('*'))
+            ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+            ->where(Payment\Entity::METHOD, '=', Method::UPI)
+            ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
+            ->where(Payment\Entity::CREATED_AT, '>', $start)
+            ->where(Payment\Entity::CREATED_AT, '<', $end)
+            ->where(Payment\Entity::STATUS, '=', 'created')
+            ->count();
+    }
+
     public function getDualWriteMismatchPayments(int $from, int $to): array
     {
         $query = sprintf(

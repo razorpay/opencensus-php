@@ -324,7 +324,14 @@ class Entity extends Base\PublicEntity
 
         $sequenceNumber = new SequenceNumber($this->getConfirmedAt(), $this->freshTimestamp());
 
-        return $sequenceNumber->generate($this->getFrequency());
+        $sequenceNo = $sequenceNumber->generate($this->getFrequency());
+
+        if (($this->getFrequency() === Frequency::DAILY) and ($this->getUsedCount() > 1))
+        {
+            return $sequenceNo + 1;
+        }
+
+        return $sequenceNo;
     }
 
     public function getOrderAttribute()

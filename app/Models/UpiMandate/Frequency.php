@@ -19,6 +19,7 @@ class Frequency
      * @var string[]
      */
     public static $allowedFrequencies = [
+         self::DAILY,
          self::AS_PRESENTED,
          self::MONTHLY,
          self::WEEKLY,

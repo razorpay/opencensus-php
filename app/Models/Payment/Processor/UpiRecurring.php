@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\UpiMandate;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Services\Reminders;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Entity;
@@ -521,6 +522,23 @@ trait UpiRecurring
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Debit not allowed at this time. Debit needs to be charged within the cycle & 26 hours before the last date',
+                    null,
+                    []);
+            }
+        }
+
+        if($upiMandate->getFrequency() === UpiMandate\Frequency::DAILY)
+        {
+            $count = $this->repo->payment->fetchPaymentCountByTokenForUpiInRange(
+                $token->getId(),
+                Carbon::parse('today', Timezone::IST)->getTimestamp(),
+                Carbon::now(Timezone::IST)->getTimestamp()
+            );
+
+            if ($count > 0)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Debit has been already initiated for the current cycle. Please initiate the debit in next cycle to charge the customer',
                     null,
                     []);
             }
