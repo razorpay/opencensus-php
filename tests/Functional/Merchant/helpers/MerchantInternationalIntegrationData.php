@@ -13,7 +13,55 @@ return [
         ],
     ],
 
+    'testFetchInternationalVirtualAccountsAchAndSwiftEnabled' => [
+        'request'  => [
+            'url'       => '/international/virtual_accounts',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchInternationalVirtualAccountsAchEnabledSwiftDisabled' => [
+        'request'  => [
+            'url'       => '/international/virtual_accounts',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchDisabledInternationalVirtualAccounts' => [
+        'request'  => [
+            'url'       => '/international/virtual_accounts',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
     'testFetchInternationalVirtualAccountsByValidVACurrency' => [
+        'request'  => [
+            'url'       => '/international/virtual_account/USD',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFetchDisabledInternationalVirtualAccountsByValidVACurrency' => [
         'request'  => [
             'url'       => '/international/virtual_account/USD',
             'method'    => 'GET',

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\InternationalIntegration;
 use mysql_xdevapi\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Gateway;
@@ -36,6 +37,7 @@ class Core extends Base\Core
     const STATUS            = 'status';
     const ACTIVATED         = 'activated';
     const DEACTIVATED       = 'deactivated';
+    const REASON            = 'reason';
 
     // Routing Code Types
 
@@ -221,14 +223,14 @@ class Core extends Base\Core
 
              $virtual_bank_accounts = $this->fetchIntlVirtualBankAccountsForGateway($merchantId,Gateway::CURRENCY_CLOUD);
 
-             if(count($virtual_bank_accounts) === 0)
+             if(count($virtual_bank_accounts['accounts']) === 0)
              {
                  return [];
              }
 
              $response = [];
 
-             $response[self::ACCOUNT] = $this->fetchVirtualAccountByVACurrencyFromVirtualAccounts($virtual_bank_accounts,$va_currency);
+             $response[self::ACCOUNT] = $this->fetchVirtualAccountByVACurrencyFromVirtualAccounts($virtual_bank_accounts['accounts'],$va_currency);
 
             if(isset($input[self::AMOUNT]) === true && isset($input[self::CURRENCY]) === true)
             {
@@ -293,7 +295,18 @@ class Core extends Base\Core
                     ]
                 );
 
-                return [];
+                return [
+                    'accounts' => []
+                ];
+            }
+
+            if($mii->isInternationalVirtualAccountDisabled() === true)
+            {
+                return  [
+                    'status' => Self::DEACTIVATED,
+                    'reason' => 'Selected purpose code is not eligible for this payment method.',
+                    'accounts' => []
+                ];
             }
 
             $bank_accounts_json = $mii->getBankAccount();
@@ -341,7 +354,11 @@ class Core extends Base\Core
                 ]
             );
 
-            return $bank_accounts;
+            return [
+                'accounts' => $bank_accounts,
+                'status' => Self::ACTIVATED
+            ]
+        ;
     }
 
     private function redactBankAccounts($bank_accounts)
@@ -385,6 +402,91 @@ class Core extends Base\Core
             }
             return $routing_details[0];
         }
+    }
+
+    public function disableInternationalVirtualAccount($merchantId, $gateway, $reason)
+    {
+        try {
+            $this->repo->merchant->findOrFail($merchantId);
+
+            $mii = $this->repo->merchant_international_integrations
+                ->getByMerchantIdAndIntegrationEntity($merchantId, $gateway);
+            if(isset($mii) == false)
+            {
+                $this->trace->info(
+                    TraceCode::INTERNATIONAL_BANK_TRANSFERS_ACCOUNT_NOT_FOUND,
+                    [
+                        'bank_accounts' => []
+                    ]
+                );
+                return;
+            }
+
+            if ($mii->isInternationalVirtualAccountDisabled() === true) {
+                return;
+            }
+
+            $notes = $mii->getNotes();
+            $notes = isset($notes) === true ? $notes->toArray() : [];
+            $notes[self::STATUS] = self::DEACTIVATED;
+            $notes[self::REASON] = $reason;
+            $mii->setNotes($notes);
+            $this->repo->merchant_international_integrations->saveOrFail($mii);
+            $this->sendSlackNotication("Intl Virtual Account Deactivated", $merchantId, $reason);
+            $this->trace->info(TraceCode::MERCHANT_INTERNATIONAL_VA_DEACTIVATED, [
+                'merchantId' => $merchantId,
+                'reason' => $reason
+            ]);
+        } catch (\Exception $e) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                $e->getMessage());
+        }
+
+    }
+
+    private function sendSlackNotication($message, $merchantId, $reason) {
+        $webhookUrl = app('config')->get('slack.endpoint');
+        $channel = app('config')->get('slack.channels.cross_border_alerts');
+        $slackEnabled = app('config')->get('slack.is_slack_enabled');
+        if ($slackEnabled === false) {
+            return;
+        }
+        $payload = [
+            "channel" => $channel,
+            "username" => "cross-border-alerts",
+            "icon_emoji" => ":slack:",
+            "blocks" => [
+                [
+                    "type" => "header",
+                    "text" => [
+                        "type" => "plain_text",
+                        "text" => $message,
+                        "emoji" => true
+                    ]
+                ],
+                [
+                    "type" => "section",
+                    "fields" => [
+                        [
+                            "type" => "mrkdwn",
+                            "text" => "*MerchantId:* ".$merchantId
+                        ],
+                        [
+                            "type" => "mrkdwn",
+                            "text" => "*Reason:* ".$reason
+                        ],
+                        [
+                            "type" => "mrkdwn",
+                            "text" => "*Owner:* <@U04D92F2QTZ>"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $response = Requests::request($webhookUrl, [], json_encode($payload), "POST");
     }
 
     public function getByIntegrationKey($integrationKey)

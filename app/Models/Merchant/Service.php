@@ -11648,6 +11648,10 @@ class Service extends Base\Service
             $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
         }
 
+        if ($merchant->hasValidPurposeCodeForGlobalBankTransfer() === false) {
+            (new InternationalIntegration\Core)->disableInternationalVirtualAccount($merchantId, Payment\Gateway::CURRENCY_CLOUD, "purpose_code_not_eligible");
+        }
+
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [

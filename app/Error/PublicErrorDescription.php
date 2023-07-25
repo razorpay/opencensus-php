@@ -1791,4 +1791,5 @@ class PublicErrorDescription
     const GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED                                  = 'You have exceeded your rate limit, please try again after sometime.';
     const BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST                     = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
     const BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE                   = 'IEC Code is required for your category of business.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED                               = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
 }

@@ -153,6 +153,32 @@ class CheckoutInternationalPreferencesTest extends TestCase {
         $this->assertEquals(0,$response['methods']['intl_bank_transfer']['swift']);
     }
 
+    public function testGetCheckoutPreferencesForCurrencyCloudDisabledIntlBankAccount()
+    {
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift'=> 0,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => ['status' => 'deactivated'],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+        $this->assertCount(0, $response['methods']['intl_bank_transfer']);
+    }
+
     public function testGetCheckoutPreferencesForCurrencyCloudSWIFTEnabledWithPL()
     {
         $intlBankTransferModes = [

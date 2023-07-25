@@ -398,7 +398,7 @@ class Core extends Base\Core
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
-        $data[Entity::INTL_BANK_TRANSFER] = $methods->getIntlBankTransferEnabledForMerchant();
+        $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
 
         if ($netbankingEnabled === true)
         {
@@ -487,6 +487,15 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    public function getInternationalBankTransferMethods(Methods\Entity $methods):array
+    {
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity($methods->getMerchantId(),Gateway::CURRENCY_CLOUD);
+        if (isset($mii) === false || $mii->isInternationalVirtualAccountDisabled() === true) {
+            return [];
+        }
+        return $methods->getIntlBankTransferEnabledForMerchant();
     }
 
     public function addUpiType(Merchant\Entity $merchant, array $data):array
@@ -646,6 +655,10 @@ class Core extends Base\Core
     //method to add ACH and swift payment modes for intl_bank_transfer method
     public function addIntlBankTransferMethodsIfApplicable(Methods\Entity $methods, array & $data)
     {
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity($methods->getMerchantId(),Gateway::CURRENCY_CLOUD);
+        if (isset($mii) === false || $mii->isInternationalVirtualAccountDisabled() === true) {
+            return [];
+        }
         $intl_bank_transfer_modes = $methods->getIntlBankTransferEnabledModes();
 
         foreach (Methods\Entity::getAddonMethodsList(Methods\Entity::INTL_BANK_TRANSFER) as $mode)

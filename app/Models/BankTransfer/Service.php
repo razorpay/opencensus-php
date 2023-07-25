@@ -1018,11 +1018,24 @@ class Service extends Base\Service
                         ]);
                     }
 
-                    $responseBody = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'account_create', $requestBody);
-
-                    if(!isset($responseBody['data']['account_id']) || !isset($responseBody['data']['contact_id']))
+                    try
                     {
-                        throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_VIRTUAL_ACCOUNT_CREATION_FAILED, null, [
+                        $responseBody = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'account_create', $requestBody);
+                    }
+                    catch (\Exception $ex)
+                    {
+                        // handle mozart service error
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED, null,
+                                    [
+                                        'error_desc' => $ex->getMessage() ?? '',
+                                        'error_code' => $ex->getCode() ?? '',
+                                    ]);
+                    }
+
+                    if(!isset($responseBody['data']) || !isset($responseBody['data']['account_id']) || !isset($responseBody['data']['contact_id']))
+                    {
+                        // handle CC gateway errors
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED, null, [
                             'response' => $responseBody,
                         ]);
                     }
@@ -1370,6 +1383,11 @@ class Service extends Base\Service
                 }
 
                 $merchantInternationalIntegration  = (new \RZP\Models\Merchant\InternationalIntegration\Repository)->getByMerchantIdAndIntegrationEntity($merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+                if($merchantInternationalIntegration->isInternationalVirtualAccountDisabled() === true)
+                {
+                    continue;
+                }
 
                 $parentRZPAccountId = $this->app['config']->get('gateway.currency_cloud.rzp_parent_account_id');
 
@@ -1814,12 +1832,9 @@ class Service extends Base\Service
             ]);
             throw $ex;
         }
-        $notes = [
-            'beneficiary_id' => $createBeneficiaryResponse['data']['id']
-        ];
-
-        // Todo: If notes for currency cloud is used somewhere else then we have to check and set
-
+        $notes = $mii->getNotes();
+        $notes = isset($notes) === true ? $notes->toArray() : [];
+        $notes['beneficiary_id'] = $createBeneficiaryResponse['data']['id'];
         $mii->setNotes($notes);
         $this->repo->merchant_international_integrations->saveOrFail($mii);
 

@@ -6,12 +6,14 @@ namespace Unit\Models\Merchant\Methods;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\CrossBorderCommonUseCases;
 use RZP\Models\Merchant\Attribute\Type;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Attribute\Service;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
+use RZP\Models\Merchant\InternationalIntegration as InternationalIntegration;
 
 class CoreTest extends TestCase
 {
@@ -133,10 +135,10 @@ class CoreTest extends TestCase
           'ach' => 1,
         ];
         $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+        $this->createMerchantInternationalIntegrationFixtures($methods->merchant->id);
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals(1,$data['intl_bank_transfer']['usd']);
-
     }
 
     public function testIntlBankTransferSWIFTIsEnabled()
@@ -145,6 +147,7 @@ class CoreTest extends TestCase
             'swift' => 1,
         ];
         $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+        $this->createMerchantInternationalIntegrationFixtures($methods->merchant->id);
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals(1,$data['intl_bank_transfer']['swift']);
@@ -157,10 +160,24 @@ class CoreTest extends TestCase
             'swift' => 1,
         ];
         $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+        $this->createMerchantInternationalIntegrationFixtures($methods->merchant->id);
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals(1,$data['intl_bank_transfer']['usd']);
         $this->assertEquals(1,$data['intl_bank_transfer']['swift']);
+    }
+
+    public function testIntlBankTransferDisabled()
+    {
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift' => 1,
+        ];
+        $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+        $this->createMerchantInternationalIntegrationFixtures($methods->merchant->id, 'deactivated');
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+        $this->assertCount(0,$data['intl_bank_transfer']);
     }
 
     public function testSodexoIsEnabled()
@@ -183,6 +200,22 @@ class CoreTest extends TestCase
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
 
         $this->assertTrue($data['sodexo']);
+    }
+
+    public function createMerchantInternationalIntegrationFixtures($merchantId, $status = '')
+    {
+        $bankAccount = '[{"bank_name": "Community Federal Savings Bank", "va_currency": "SWIFT", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "GB51TCCL12345692979037", "routing_details": [{"routing_code": "TCCLGB123", "routing_type": "bic_swift"}], "beneficiary_name": "ALPHA CORP"}]';
+        $notes = [];
+        if(isset($status)) {
+            $notes['status'] = $status;
+        }
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantId,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => $notes,
+            InternationalIntegration\Entity::BANK_ACCOUNT => $bankAccount,
+        ]);
     }
 
 

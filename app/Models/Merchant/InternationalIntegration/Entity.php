@@ -113,4 +113,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::NOTES, $notes);
     }
+
+    public function isInternationalVirtualAccountDisabled()
+    {
+        $notes = $this->getNotes();
+        return isset($notes) === true  && isset($notes[Core::STATUS]) === true && $notes[Core::STATUS] === Core::DEACTIVATED;
+    }
 }

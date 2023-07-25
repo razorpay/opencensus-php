@@ -13773,6 +13773,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForCurrencyCloudDisabledIntlBankAccount' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCurrencyCloudSWIFTEnabledWithPL' => [
         'request' => [
             'url' => '/preferences',

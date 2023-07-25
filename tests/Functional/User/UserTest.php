@@ -11627,6 +11627,53 @@ class UserTest extends TestCase
         $this->assertNotNull($response);
     }
 
+    public function testAdminPurposeCodeDetailsPatchIneligbleForIntlBankTransfer()
+    {
+        $merchant1 = $this->fixtures->create('merchant');
+
+        // create in both test and live mode.
+        // during update, it checks if entity shoudldSync
+        // RepositoryUpdateTestAndLive@dualUpdateFetchEntities
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchant1->getId(),
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchant1->getId(),
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'url' => '/purpose/code',
+                'method' => 'PATCH',
+                'content' => [
+                    'purpose_code' => 'P0001',
+                    'merchant_id' => $merchant1->getId(),
+                ],
+            ],
+            'response' => [
+                'content' => [],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+        $response = $this->startTest();
+        $this->assertNotNull($response);
+        $mii = $this->getLastEntity('merchant_international_integrations', true);
+        $this->assertEquals('purpose_code_not_eligible', $mii['notes']['reason']);
+        $this->assertEquals('deactivated', $mii['notes']['status']);
+    }
+
     public function testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled()
     {
         $this->enableRazorXTreatmentForBlockBankingRoutes();

@@ -85,7 +85,8 @@ class InternationalBankTransferTest extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(1,$content);
+        $this->assertCount(1,$content['accounts']);
+        $this->assertEquals("activated",$content['status']);
 
         $mii = $this->getLastEntity('merchant_international_integrations',true);
 
@@ -109,7 +110,8 @@ class InternationalBankTransferTest extends TestCase
         $response = $this->sendRequest($request);
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(2,$content);
+        $this->assertCount(2,$content['accounts']);
+        $this->assertEquals("activated",$content['status']);
 
     }
 
@@ -674,6 +676,43 @@ class InternationalBankTransferTest extends TestCase
         $updatedPaymentEntity = $this->getLastPayment(true);
 
         $this->assertNotNull($updatedPaymentEntity['reference16']);
+    }
+
+    public function testCaptureCronForB2BPaymentsForDisableIntlAccount()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => ['status' => 'deactivated'],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->fixtures->edit('payment',$paymentEntity['id'],[
+            'reference2' => 'doc_10000011111112'
+        ]);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b',$merchantDetail['merchant_id']);
+
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->cronAuth();
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+        $secondResponse = $this->sendRequest($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment(true);
+
+        $this->assertNull($updatedPaymentEntity['reference16']);
     }
 
     public function testSettlementCronForB2BPayments()

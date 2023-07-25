@@ -86,14 +86,14 @@ return [
       'response' => [
           'content'     => [
               'error' => [
-                  'description'   => PublicErrorDescription::GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED,
+                  'description'   => PublicErrorDescription::BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED,
               ],
           ],
-          'status_code' => 502,
+          'status_code' => 400,
       ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED,
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED,
         ],
     ],
 
@@ -230,6 +230,18 @@ return [
     ],
 
     'testCaptureCronForB2BPayments' => [
+        'request' => [
+            'url' => '/b2b/payments/capture',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCaptureCronForB2BPaymentsForDisableIntlAccount' => [
         'request' => [
             'url' => '/b2b/payments/capture',
             'method' => 'post'
