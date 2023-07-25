@@ -2138,23 +2138,46 @@ class Processor
                 {
                     date_default_timezone_set('Asia/Kolkata');
 
+                    $start = $token->getCreatedAt();
+                    $startInstance = Carbon::parse($start);
+                    $startInstance->setTimezone('Asia/Kolkata');
+
+                    $startOfCycle = Carbon::now()->getTimestamp();
+                    $startOfCycleInstance = Carbon::parse($startOfCycle);
+                    $startOfCycleInstance->setTimezone('Asia/Kolkata');
+
+                    $cycleCountTillNow = -1 ; // Setting this as -1, so that unsupported frequency can't be charged, if somehow it reached this flow
+                    $allowedMaxPaymentsPerCycle = 3;
+
                     switch ($token->getFrequency()) {
                         case SubscriptionRegistration\Entity::WEEKLY:
-                            $start = strtotime("sunday -1 week");
+                            $startOfWeek = $startInstance->startOfWeek();
+                            $cycleCountTillNow = $startOfWeek->diffInWeeks(Carbon::now('Asia/Kolkata'));
+                            $startOfCycle = $startOfCycleInstance->startOfWeek()->getTimestamp();
                             break;
 
                         case SubscriptionRegistration\Entity::MONTHLY:
-                            $start = strtotime(date('Y-m-01 00:00:00'));
+                            $startOfMonth = $startInstance->startOfMonth();
+                            $cycleCountTillNow = $startOfMonth->diffInMonths(Carbon::now('Asia/Kolkata'));
+                            $startOfCycle = $startOfCycleInstance->startOfMonth()->getTimestamp();
+                            $allowedMaxPaymentsPerCycle = 2;
                             break;
 
                         case SubscriptionRegistration\Entity::YEARLY:
-                            $start = strtotime(date('Y-01-01 00:00:00'));
+                            $startOfYear = $startInstance->startOfYear();
+                            $cycleCountTillNow = $startOfYear->diffInYears(Carbon::now('Asia/Kolkata'));
+                            $startOfCycle = $startOfCycleInstance->startOfYear()->getTimestamp();
+                            $allowedMaxPaymentsPerCycle = 2;
                             break;
                     }
 
                     $noOfAutoPayments = $this->repo->payment->fetchPaymentCountByTokenForCardInRange($token->getId(), $start, Carbon::now()->getTimestamp());
+                    $noOfAutoPaymentsInCurrentCycle = $this->repo->payment->fetchPaymentCountByTokenForCardInRange($token->getId(), $startOfCycle, Carbon::now()->getTimestamp());
 
-                    if ($noOfAutoPayments > 0) {
+
+                    if (($noOfAutoPayments > $cycleCountTillNow) or
+                        ($noOfAutoPaymentsInCurrentCycle >= $allowedMaxPaymentsPerCycle))
+                    {
                         throw new Exception\BadRequestValidationFailureException("Debit is not as per the defined frequency of the Mandate.");
                     }
                 }
