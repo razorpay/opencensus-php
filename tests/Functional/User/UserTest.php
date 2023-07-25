@@ -2483,8 +2483,6 @@ class UserTest extends TestCase
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
 
-        $this->mockGetNoApplicationRequestOnLOSService($losServiceMock);
-
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
@@ -3775,8 +3773,6 @@ class UserTest extends TestCase
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
-
-        $this->mockGetNoApplicationRequestOnLOSService($losServiceMock);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -9921,8 +9917,6 @@ class UserTest extends TestCase
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
 
-        $this->mockGetNoApplicationRequestOnLOSService($losServiceMock);
-
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
@@ -9988,79 +9982,6 @@ class UserTest extends TestCase
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
             'referral_code'         => 'invalidCode'
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->startTest($testData);
-
-        $merchantAccessMap = $this->getDbEntity('merchant_access_map',
-            [
-                'merchant_id' => $merchant->getId()
-            ], 'test');
-
-        $this->assertEmpty($merchantAccessMap);
-
-        $this->assertNotContains('Ref-' . '10000000000000', $merchant->tagNames());
-    }
-
-    public function testCapitalReferralWhenMerchantLOCAppExistDuringLogin()
-    {
-        $merchant = $this->fixtures->create('merchant');
-
-        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
-            'id'    => "FL0nl7kME8j3Dd",
-            'email' => 'hello123@gmail.com',
-            'confirm_token'  => null,
-            'signup_via_email' => 1,
-            'password' => 'hello123'
-        ]);
-
-        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
-        $this->fixtures->create('referrals', ["product" => 'capital']);
-
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => $merchant->getId(),
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
-
-        $this->fixtures->create('pricing:two_percent_pricing_plan', [
-            'plan_id' => '10000000000000',
-            'type'    => 'pricing',
-        ]);
-
-        $configAttributes = [
-            'default_plan_id' => '10000000000000',
-            'entity_id'       => $app->getId(),
-            'entity_type'     => 'application',
-        ];
-
-        $this->fixtures->create('partner_config', $configAttributes);
-
-        $this->mockCapitalPartnershipSplitzExperiment();
-
-        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-
-        $this->app->instance('losService', $losServiceMock);
-
-        $this->mockGetProductsRequestOnLOSService($losServiceMock);
-
-        $this->mockGetApplicationRequestOnLOSService($losServiceMock);
-
-        $testData = & $this->testData['testCapitalReferralFlowDuringLogin'];
-
-        $content = [
-            'email'                 => 'hello123@gmail.com',
-            'password'              => 'hello123',
-            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-            'referral_code'         => 'teslacomikejzc'
         ];
 
         $testData['request']['content'] = $content;

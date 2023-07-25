@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use Throwable;
 use ApiResponse;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
@@ -26,6 +27,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
@@ -80,6 +82,8 @@ class CapitalSubmerchantUtility
         }
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 
     /**
@@ -216,12 +220,6 @@ class CapitalSubmerchantUtility
             return false;
         }
 
-        // If the merchant has the capital loc tag attached or it has an existing LOC application, we will not consume referral code.
-        if($merchant->isTagAddedBasedOnPrefix(Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX) === true)
-        {
-            return false;
-        }
-
         $isCapitalPartnershipExpEnabled = $this->isCapitalPartnershipEnabledForPartner($referral->getMerchantId());
 
         if ($isCapitalPartnershipExpEnabled === false)
@@ -229,18 +227,112 @@ class CapitalSubmerchantUtility
             return false;
         }
 
-        $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+        // If the merchant has the capital loc tag attached and it has banking product owner user, we will not make merchant a submerchant.
+        $isCapitalSubmerchant = $this->isCapitalLocTagAttachedAndHasBankingProduct($merchant);
 
-        $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
-
-        $response = $this->fetchApplicationsForMerchantAndProduct($merchant->getId(), $locProductId);
-
-        if(empty($response) === false and empty($response['body']) === false and empty($response['body']['applications']) === false)
+        if ($isCapitalSubmerchant === true)
         {
+            $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+            (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
+
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * This function throws error if the merchant already has LOC tag attached and banking product owner access
+     *
+     * @param string $email
+     * @param Entity $partner
+     *
+     * @return Entity|null
+     * @throws BadRequestException
+     */
+    public function validateIfNonExistingCapitalSubmerchant(string $email, Merchant\Entity $partner): ?Merchant\Entity
+    {
+        $subMerchants = $this->repo->merchant->fetchByEmailAndOrgId($email);
+
+        $subMerchant = $subMerchants->first();
+
+        if((new CapitalSubmerchantUtility())->isCapitalLocTagAttachedAndHasBankingProduct($subMerchant) === true)
+        {
+            (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $subMerchant->getId(), PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+
+            $this->trace->info(
+                TraceCode::BATCH_EXISTING_ACCOUNT_MARK_CAPITAL_SUBMERCHANT,
+                [
+                    'partner_id'                    => $partner->getId(),
+                    'account_id'                    => $subMerchant->getId(),
+                    'account_name'                  => $subMerchant->getName() ?? null,
+                    'email'                         => $subMerchant->getEmail() ?? null,
+                    'isExistingCapitalSubmerchant'  => true
+                ]);
+
+            $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $subMerchant->getId();
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                Entity::EMAIL,
+                null,
+                $description
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::BATCH_EXISTING_ACCOUNT_MARK_CAPITAL_SUBMERCHANT,
+                [
+                    'partner_id'                    => $partner->getId(),
+                    'account_id'                    => $subMerchant->getId(),
+                    'account_name'                  => $subMerchant->getName() ?? null,
+                    'email'                         => $subMerchant->getEmail() ?? null,
+                    'isExistingCapitalSubmerchant'  => false
+                ]);
+        }
+        return $subMerchant;
+    }
+
+    public function isCapitalLocTagAttachedAndHasBankingProduct(Merchant\Entity $merchant)
+    {
+        if($merchant->isTagAddedBasedOnPrefix(Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX) === true)
+        {
+            $merchantUsersCount = $merchant->users()
+                ->where(Merchant\Detail\Entity::ROLE, Role::OWNER)
+                ->where(Entity::PRODUCT, Product::BANKING)
+                ->count();
+
+            if ($merchantUsersCount > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent(Entity $partner, string $merchantId, string $source)
+    {
+        $properties = [
+            "source"         => $source,
+            "partner_id"     => $partner->getId(),
+            "merchant_id"    => $merchantId
+        ];
+
+        app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_INVITE_SUBMERCHANT_WITH_EXISTING_APPLICATION, $partner, null, $properties);
+    }
+
+    public function trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent(Entity $partner, string $merchantId, string $source)
+    {
+        $properties = [
+            "source"         => $source,
+            "partner_id"     => $partner->getId(),
+            "merchant_id"    => $merchantId
+        ];
+
+        app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_INVITE_EXISTING_SUBMERCHANT_LINKED, $partner, null, $properties);
     }
 
     /**

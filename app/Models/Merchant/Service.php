@@ -374,7 +374,14 @@ class Service extends Base\Service
 
         if ($isCapitalSubmerchant === true)
         {
-            $merchantDetailsInput          = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+            $subMerchantsCount = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL])->count();
+
+            // If email provided in input has an existing account linked, we will not consume input provided by partner to update merchant details
+            if($subMerchantsCount === 0)
+            {
+                $merchantDetailsInput = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+            }
+
             $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $merchant);
         }
 
@@ -590,35 +597,60 @@ class Service extends Base\Service
                 }
             }
 
+            $merchantAlreadyExist = false;
+
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.capital_invite_existing_merchant_via_batch_experiment_id'),
+            ];
+
+            $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+
+            if(empty($input['actual_product']) == false && $input['actual_product'] === Product::CAPITAL && $isExpEnabled === true)
+            {
+                $subMerchantsCount = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL])->count();
+
+                if($subMerchantsCount > 0)
+                {
+                    $merchantAlreadyExist = true;
+
+                    $input['existing_merchant'] = true;
+                }
+            }
+
             $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function() use ($merchant, $isLinkedAccount, $input, $optimizeCreationFlow) {
 
                 return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
             });
 
             $data = [
-                'status'        => 'success',
-                'merchant_id'   => $output['id'] ?? null,
-                'partner_id'    => $merchant->getId(),
-                'source'        => $source,
+                'status' => 'success',
+                'merchant_id' => $output['id'] ?? null,
+                'partner_id' => $merchant->getId(),
+                'source' => $source,
                 'product_group' => $product
             ];
 
-            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
-                                                     $merchant, null,
-                                                     $data);
+            if($merchantAlreadyExist == false)
+            {
+                $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                    $merchant, null,
+                    $data);
 
-            $this->trace->info(TraceCode::PARTNERSHIP_SUBMERCHANT_SIGNUP, [
-                'data' => $data
-            ]);
+                $this->trace->info(TraceCode::PARTNERSHIP_SUBMERCHANT_SIGNUP, [
+                    'data' => $data
+                ]);
 
-            $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
+                $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
 
-            $dimension = [
-                'partner_type' => $merchant->getPartnerType(),
-                'source'       => $source
-            ];
+                $dimension = [
+                    'partner_type' => $merchant->getPartnerType(),
+                    'source' => $source
+                ];
 
-            $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+                $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+            }
+
             $submerchantId = $output['id'] ?? "";
             $this->core()->pushSettleToPartnerSubmerchantMetrics($merchant->getId(), $submerchantId);
 
@@ -6859,6 +6891,7 @@ class Service extends Base\Service
                                                                 $merchant,
                                                                 $ownerId,
                                                                 $product,
+                                                                $actualProduct,
                                                                 array $createFlags)
     {
         $v2CreateFlow    = $createFlags['v2CreateFlow'];
@@ -6875,14 +6908,28 @@ class Service extends Base\Service
 
         unset($input['allow_reversals']);
 
-        $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_CORE], function () use ($input, $merchant, $isLinkedAccount, $v2CreateFlow, $optimise) {
+        $isExistingMerchantForCapital = false;
 
-            /** @var  Core */
-            $merchantCore = $this->core();
+        // For capital submerchant requests, we are allowing existing merchants to be linked to the partner. Hence we will skip account creation.
+        if($actualProduct === Product::CAPITAL && empty($input['existing_merchant']) === false && $input['existing_merchant'] === true)
+        {
+            $subMerchant = (new CapitalSubmerchantUtility())->validateIfNonExistingCapitalSubmerchant($input[Entity::EMAIL], $merchant);
 
-            /** @var Entity */
-            return $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $v2CreateFlow, $optimise);
-        });
+            $isExistingMerchantForCapital = true;
+
+            unset($input['existing_merchant']);
+        }
+        else
+        {
+            $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_CORE], function () use ($input, $merchant, $isLinkedAccount, $v2CreateFlow, $optimise) {
+
+                /** @var  Core */
+                $merchantCore = $this->core();
+
+                /** @var Entity */
+                return $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $v2CreateFlow, $optimise);
+            });
+        }
 
         $newUser = null;
 
@@ -6899,10 +6946,16 @@ class Service extends Base\Service
                 $response['partner_user_mapping'] = $this->attachSubMerchantUserIfApplicable($ownerId, $subMerchant, $merchant, $product);
             });
 
-            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant, & $response) {
+
+            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant, $isExistingMerchantForCapital, & $response) {
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
                 $response['merchant_access_map'] = $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+
+                if($isExistingMerchantForCapital === true)
+                {
+                    (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($merchant, $subMerchant->getId(), PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+                }
             });
         }
 
@@ -6913,7 +6966,19 @@ class Service extends Base\Service
         {
             try
             {
-                [$newUser, $createdNewUser] = Tracer::inspan(['name' => HyperTrace::CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE], function () use ($subMerchant, $merchant, $product) {
+                [$newUser, $createdNewUser] = Tracer::inspan(['name' => HyperTrace::CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE], function () use ($subMerchant, $merchant, $product, $isExistingMerchantForCapital) {
+
+                    if($isExistingMerchantForCapital === true)
+                    {
+                        $merchantUsers = $subMerchant->users()
+                            ->where(Merchant\Detail\Entity::ROLE, 'owner')
+                            ->where(Entity::PRODUCT, Product::BANKING);
+
+                        if($merchantUsers->count() > 0)
+                        {
+                            return [$merchantUsers->first(), false];
+                        }
+                    }
 
                     return $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
                 });
@@ -7004,19 +7069,20 @@ class Service extends Base\Service
         $createFlags['linkedAccount'] = $isLinkedAccount;
 
 
-        list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $createFlags) {
+        list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $actualProduct, $createFlags) {
             if ($createFlags['v2CreateFlow'] === false) {
                 [$subMerchant, $newUser, $createdNew, $response] = $this->repo->transactionOnLiveAndTest(function () use (
                     $input,
                     $merchant,
                     $ownerId,
+                    $actualProduct,
                     $createFlags,
                     $product
                 ) {
-                    return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $createFlags);
+                    return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $actualProduct, $createFlags);
                 });
             } else {
-                [$subMerchant, $newUser, $createdNew, $response] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $createFlags);
+                [$subMerchant, $newUser, $createdNew, $response] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $actualProduct, $createFlags);
             }
             return [$subMerchant, $newUser, $createdNew, $response];
         });
@@ -12136,7 +12202,10 @@ class Service extends Base\Service
 
         CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
 
-        (new Detail\Service)->saveMerchantDetails($merchantDetailsInput, $subMerchant);
+        if(empty($merchantDetailsInput) === false)
+        {
+            (new Detail\Service)->saveMerchantDetails($merchantDetailsInput, $subMerchant);
+        }
 
         CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($subMerchant, $partner, $createCapitalApplicationInput, PartnerConstants::ADD_MULTIPLE_ACCOUNT);
 

@@ -2133,9 +2133,19 @@ class Service extends Base\Service
 
                 $flag = (new CapitalSubmerchantUtility())->isCapitalReferralCodeApplicable($merchant, $referral);
 
+                $this->trace->info(TraceCode::PARTNER_REFERRAL_FOR_CAPITAL, [
+                    'merchant_id' => $merchant->getId(),
+                    'partner_id'  => $referral->getMerchantId(),
+                    'refer_flag'  => $flag
+                ]);
+
                 if($flag === true)
                 {
                     $this->applyReferralPartner($referral, $merchant);
+
+                    $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+                    (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
 
                     $this->createCapitalApplicationIfApplicable($merchant, $referral);
                 }

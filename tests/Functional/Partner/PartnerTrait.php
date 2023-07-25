@@ -40,6 +40,23 @@ trait PartnerTrait
         $this->mockSplitzTreatment($input, $output);
     }
 
+    public function mockCapitalPartnershipLinkExistingMerchantExperiment(): void
+    {
+        $input = [
+            "experiment_id" => "MHIdmG63xbEsxC",
+            "id" => self::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+    }
+
     public function mockCreateApplicationRequestOnLOSService($mockLOSService): void
     {
         $mockLOSService->shouldReceive('sendRequest')

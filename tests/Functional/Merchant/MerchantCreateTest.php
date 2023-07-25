@@ -49,6 +49,7 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\PartnershipsRateLimiter;
+use RZP\Tests\Functional\Merchant\Partner\PartnerTest;
 use RZP\Models\Merchant\Attribute as MerchantAttribute;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -1811,6 +1812,119 @@ class MerchantCreateTest extends TestCase
         //Bus::assertDispatched(SubMerchantTaggingJob::class, function (SubMerchantTaggingJob $job) {
         //    return $job->getTagPrefix() === MerchantConstants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX;
         //});
+    }
+
+    public function testCreateExistingSubMerchantByResellerBatchForLOC()
+    {
+        Mail::fake();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        //Bus::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping(MerchantConstants::RESELLER);
+
+        $this->ba->batchAppAuth();
+
+        $merchant = $this->getDbEntities('merchant', ['email' => 'test@razorpay.com'] );
+
+        $this->fixtures->merchant->edit($merchant[0]['id'],
+            [
+                'name'      =>  'Erebor Travels',
+            ]
+        );
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockCapitalPartnershipLinkExistingMerchantExperiment();
+
+        // assert that LOS Service gets one request to get product list and one request to create capital application
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        // start test
+        $this->startTest();
+
+        // assert that submerchant do not receive an email since it has an existing user
+        Mail::assertNotQueued(CreateSubMerchantAffiliateForLOC::class);
+
+        // assert that partner is not sent an email, since it's batch service
+        Mail::assertNotQueued(CreateSubMerchantPartnerForLOC::class);
+
+        $submerchant = $merchant[0];
+
+        // assert that partner's reseller app is mapped to submerchant in merchant_access_map
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        // assert that new submerchant's user is created and email/contact number match
+        $submerchantUser = $this->getLastEntity('user', true);
+
+        $this->assertNotEquals('+91' . $testData['request']['content']['contact_mobile'], $submerchantUser['contact_mobile']);
+
+        // assert that submerchant user is given access to banking product
+        $mapping = $this->fixtures->user->getMerchantUserMapping(
+            $submerchant['id'],
+            $submerchantUser['id'],
+            'banking'
+        );
+
+        $this->assertEquals(1, count($mapping));
+
+        // assert that contact mobile is not saved in merchant detail
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertNotEquals(
+            '+91' . $testData['request']['content']['contact_mobile'],
+            $submerchantDetail['contact_mobile']
+        );
+
+        // assert that merchant attribute for X_MERCHANT_INTENT:CAPITAL_LOC_EMI is added in live mode
+        $res = $this->repo->merchant_attribute->connection(Mode::LIVE)
+            ->getKeyValues(
+                $submerchant["id"],
+                Product::BANKING,
+                MerchantAttribute\Group::X_MERCHANT_INTENT,
+                [MerchantAttribute\Type::CAPITAL_LOC_EMI]
+            );
+
+        $this->assertNotEmpty($res);
+    }
+
+    public function testCreateExistingCapitalSubMerchantByResellerBatchForLOC()
+    {
+        Mail::fake();
+
+        $merchant = $this->getDbEntities('merchant', ['email' => 'test@razorpay.com'] );
+
+        $user = $this->fixtures->create('user', ['email' => 'test@razorpay.com']);
+
+        (new PartnerTest())->markBankingSubmerchantAsCapitalSubmerchant($merchant[0]['id'], '11000000000000');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant[0]['id'],
+            'user_id'       => $user->getId(),
+            'role'          => 'owner',
+            'product'       => 'banking',
+        ]);
+
+        $this->markPartnerAndCreateAppAndUserMapping(MerchantConstants::RESELLER);
+
+        $this->ba->batchAppAuth();
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockCapitalPartnershipLinkExistingMerchantExperiment();
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $this->testData[__FUNCTION__]['response']['content']['error']['description'] . $merchant[0]['id'];
+
+        $this->startTest();
     }
 
     public function testCreateSubMerchantByResellerBatchForLOCInvalidBusinessType()
