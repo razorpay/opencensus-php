@@ -24,6 +24,22 @@ export const options = {
   minMatchCharLength: 5,
 };
 
+export const multiKeyOptions = {
+  keys: [
+    {
+      name: 'tags.value',
+      weight: 0.4,
+    },
+    {
+      name: 'title',
+      weight: 0.6,
+    },
+  ],
+  includeScore: true,
+  threshold: 0.15,
+  minMatchCharLength: 2,
+};
+
 export const feature = 'allow_cfb_international';
 
 export const getEligibleProductsForMerchants = (

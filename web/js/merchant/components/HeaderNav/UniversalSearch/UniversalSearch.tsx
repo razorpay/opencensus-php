@@ -1,6 +1,8 @@
 import useOnClickOutside from 'common/hooks/useOnClickOutside';
 import { useResizeLayout } from 'common/hooks/useResizeLayout';
+import useDebounce from 'common/utils/useDebounce';
 import Fuse from 'fuse.js';
+import FtuxTooltip from 'merchant/components/HeaderNav/UniversalSearch/components/FtuxTooltip';
 import { fetchEnrollmentStatus as fetchEnrollmentStatusFn } from 'merchant/reducers/bundlePricing';
 import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
 import {
@@ -9,7 +11,6 @@ import {
   setLoading as setLoadingFn,
 } from 'merchant/reducers/instrumentRequests';
 import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'merchant/reducers/websitecompliance';
-import useDebounce from 'common/utils/useDebounce';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
@@ -17,19 +18,19 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import ProductListing from './components/ProductListing';
 import SearchBar from './components/SearchBar';
+import { POPULAR_PRODUCTS } from './constants/SearchProducts';
 import { CommonStateProps, ProductType, UniversalSearchPropInterface } from './typings';
 import {
   feature,
   getEligibleProductsForMerchants,
+  handleTestModeVisibility,
+  multiKeyOptions,
   options,
   trackSearchTypeInitiated,
   TRACK_TYPE_DEBOUNCE_DURATION,
-  handleTestModeVisibility,
 } from './utils';
-import FtuxTooltip from 'merchant/components/HeaderNav/UniversalSearch/components/FtuxTooltip';
-import { POPULAR_PRODUCTS } from './constants/SearchProducts';
-import { getOnlyKeywordSentence } from './utils/keywordExtractor';
 import { entitySearch } from './utils/EntitySearch';
+import { getProductSearchResults } from './utils/productSearch';
 
 type UniversalSearchProps = RouteComponentProps & UniversalSearchPropInterface;
 
@@ -65,7 +66,7 @@ const UniversalSearch = ({
   const inputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const listingRef = useRef(null);
-  const fuseSearch = useRef<any>(null);
+  const fuseSearch = useRef<any>({});
   const isDeviceInBreakpoint = useResizeLayout({ innerWidth: 930 });
 
   const debouncedTrackCall = useDebounce(trackSearchTypeInitiated, TRACK_TYPE_DEBOUNCE_DURATION);
@@ -88,7 +89,8 @@ const UniversalSearch = ({
   };
 
   const setUpIndexing = ({ products }): void => {
-    fuseSearch.current = new Fuse(products, options);
+    fuseSearch.current.query = new Fuse(products, options);
+    fuseSearch.current.multiKey = new Fuse(products, multiKeyOptions);
   };
 
   useEffect((): void => {
@@ -178,8 +180,10 @@ const UniversalSearch = ({
       if (entitySearchResults.success) {
         products = entitySearchResults.results;
       } else {
-        const sentence = getOnlyKeywordSentence(searchQuery);
-        const productSearchResults = fuseSearch.current.search(sentence, { limit: 15 });
+        const productSearchResults = getProductSearchResults({
+          FuseClient: fuseSearch.current,
+          query: searchQuery,
+        });
         products = [...productSearchResults, ...entitySearchResults.results];
       }
     }

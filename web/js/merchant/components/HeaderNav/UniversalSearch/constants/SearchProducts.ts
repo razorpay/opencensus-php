@@ -85,6 +85,7 @@ const SEARCH_PRODUCTS_TITLES = {
   ...SIDEEBAR_PRODUCTS_TITLES,
   ...ACCOUNT_N_SETTINGS_TITLES,
   refunds: 'Refunds',
+  upi: 'UPI',
   orders: 'Orders',
   disputes: 'Disputes',
   batch_refunds: 'Batch refunds',
@@ -374,7 +375,13 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.upi,
     url: SEARCH_PRODUCTS_URL.UPI_QR,
-    tags: [{ value: 'UPI App' }, { value: 'Google Pay' }, { value: 'Phone Pe' }, { value: 'BHIM' }],
+    tags: [
+      { value: 'upi' },
+      { value: 'UPI App' },
+      { value: 'Google Pay' },
+      { value: 'Phone Pe' },
+      { value: 'BHIM' },
+    ],
     icon: AccountNSettingsIcons.payment_methods,
     group: ['in: Payment methods'],
     additionalCondition: ({ user, mode, instruments }: EligibleProductsTypes): boolean =>
@@ -700,7 +707,12 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.capture_refund_settings,
     url: SEARCH_PRODUCTS_URL.CAPTURE_AND_REFUND_SETTINGS,
-    tags: [{ value: 'Capture payment' }, { value: 'Automatic capture' }, { value: 'refund' }],
+    tags: [
+      { value: 'refund' },
+      { value: 'instant refund' },
+      { value: 'Capture payment' },
+      { value: 'Automatic capture' },
+    ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.payments_refunds,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
@@ -725,6 +737,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     title: SEARCH_PRODUCTS_TITLES.bank_account_details,
     url: SEARCH_PRODUCTS_URL.BANK_ACCOUNT_DETAILS,
     tags: [
+      { value: 'bank' },
+      { value: 'bank account' },
       { value: 'update bank account' },
       { value: 'change bank account' },
       { value: 'Add bank account' },
