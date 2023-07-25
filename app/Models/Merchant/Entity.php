@@ -1240,6 +1240,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::SHOW_MOR_TNC) === true);
     }
 
+    public function isSettlementByCurrencyEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SETTLEMENT_BY_CURRENCY) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *

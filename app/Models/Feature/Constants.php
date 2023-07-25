@@ -1877,6 +1877,8 @@ class Constants
      */
     const GAI_PAYOUTS_SYNC = 'gai_payouts_sync';
 
+    const SETTLEMENT_BY_CURRENCY = 'settlement_by_currency';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2585,6 +2587,7 @@ class Constants
         self::ORG_AUTOMATE_IIR                => true,
         self::DISABLE_AUTOMATE_IIR            => true,
         self::DIRECT_DEBIT_VIA_TOKEN_BATCH    => true,
+        self::SETTLEMENT_BY_CURRENCY          => true,
     ];
 
     // Entity type constants

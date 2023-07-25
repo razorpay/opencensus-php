@@ -192,6 +192,7 @@ class Constants
     // settlements service features
     const SettlementsServiceOnboarding = 'settlement_service_onboarded';
     const SettlementsServiceStopSMS = 'stop_settlement_sms';
+    const EnableSettlementByCurrency = 'enable_settlement_by_currency';
 
     const DirectDebitViaTokenBatch = 'direct_debit_via_token_batch';
 
@@ -382,6 +383,7 @@ class Constants
         self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features',
         self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::WalletAutoDebitEnabled => 'rzp/pg/merchant/wallet/Features',
+        self::EnableSettlementByCurrency => 'rzp/pg/merchant/settlements/SettlementModels',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -579,6 +581,7 @@ class Constants
         APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
         APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
         APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
+        APIFeaturesConstants::SETTLEMENT_BY_CURRENCY                        => self::EnableSettlementByCurrency,
     ];
 
     /**
@@ -612,6 +615,7 @@ class Constants
         self::EnableApprovalViaOAuth => 'direct',
         self::GaiSyncPayouts => 'direct',
         self::DirectDebitViaTokenBatch => 'direct',
+        self::EnableSettlementByCurrency => 'direct',
     ];
 
     /**

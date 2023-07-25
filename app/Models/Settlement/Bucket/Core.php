@@ -332,6 +332,15 @@ class Core extends Base\Core
                     throw new Exception\LogicException('Remitter Name or Address not found for OPGSP Settlement Gateway');
                 }
             }
+
+            // Checks if Merchant is enabled for Currency Level Settlements
+            if($payment->merchant->isSettlementByCurrencyEnabled() === true)
+            {
+                $meta += [
+                    "settlement_by_currency" => true,
+                    "payment_currency" => $payment->getCurrency()
+                ];
+            }
         }
 
         // Add meta details for refund type txn
@@ -551,13 +560,23 @@ class Core extends Base\Core
                 $metaSource = $txnSource;
         }
 
-        return [
+        $meta = [
             'source_type'       => $metaSource->getEntity(),
             'source_id'         => $metaSource->getId(),
             'source_method'     => $metaSource->getMethod(),
             'source_settled'    => $metaSource->transaction->isSettled(),
             'international'     => $international
         ];
+
+        if($txn->merchant->isSettlementByCurrencyEnabled() === true && $metaSource->getEntity() === Transaction\Type::PAYMENT)
+        {
+            $meta += [
+                "settlement_by_currency" => true,
+                "payment_currency" => $metaSource->getCurrency()
+            ];
+        }
+        
+        return $meta;
     }
 
     /**
