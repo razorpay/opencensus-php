@@ -595,7 +595,7 @@ return [
                 'contact_verified' => false
             ],
             'banking_account' => [
-                'id' => 'Ji8Osy16V60siZ',
+                'id' => 'JuLWj2OnFAcg72',
                 'created_at' => 1655375595507,
                 'updated_at' => 1682054894768,
                 'beneficiary_name' => '',
@@ -644,7 +644,7 @@ return [
                 'created_at' => 1658041903068,
                 'updated_at' => 1682054894775,
                 'business_id' => 'LVFoXUXt8aLGQt',
-                'banking_account_id' => 'Ji8Osy16V60siZ',
+                'banking_account_id' => 'JuLWj2OnFAcg72',
                 'application_number' => '203128886',
                 'application_status' => 'created',
                 'sub_status' => 'none',
@@ -955,7 +955,7 @@ return [
 
             'banking_account_activation_details' => [
                 'id' => 'bacc_JuLWj2OnFAcg72',
-                'banking_account_id' => 'bacc_JuLWj2OnFAcg72',
+                'banking_account_id' => 'JuLWj2OnFAcg72',
                 'created_at' => 1658041903,
                 'updated_at' => 1682054894,
                 'merchant_city' => 'eastdelhi',

@@ -148,6 +148,9 @@ class Constants
 
     const NOTIFICATION_TYPE_STATUS_CHANGE    = 'status_change';
 
+    const NOTIFICATION_TYPE_DOCKET_EMAIL     = 'docket_email';
+    const NOTIFICATION_INPUT_DOCKET_DATA     = 'docket_data';
+
     const BANKING_ACCOUNT_STATUS_CHANGED     = 'banking_account_status_changed';
 
     const BANKING_ACCOUNT_SUB_STATUS_CHANGED = 'banking_account_sub_status_changed';

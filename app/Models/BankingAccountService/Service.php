@@ -878,34 +878,50 @@ class Service extends Base\Service
             $errorMsg = null;
             try
             {
-                (new Validator)->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+                $validator = new Validator();
+                $validator->setStrictFalse(); // to allow extra fields in input
+
+                $validator->validateInput(Validator::NOTIFICATION_INPUT_VALIDATION, $input);
 
                 $notificationType = $input[Constants::NOTIFICATION_TYPE];
 
-                $bankingAccount = $input[Constants::BANKING_ACCOUNT];
-
-                $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
-
-                switch ($notificationType)
+                if ($notificationType == Constants::NOTIFICATION_TYPE_DOCKET_EMAIL)
                 {
-                    case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
-                        $validatorOp = $input[Constants::VALIDATOR_OP];
-
-                        $bankingAccountCore->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
-                        break;
-
-                    case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
-                        $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
-                        $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
-
-                        // called when a banking_account's status or sub status is updated
-                        $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
-                        break;
-
-                    default:
-                        throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+                    $this->handleDocketEmailNotification($input, $res);
                 }
-
+                else
+                {
+                    (new Validator)->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+    
+                    $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+    
+                    $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
+    
+                    switch ($notificationType)
+                    {
+                        case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
+                            $validatorOp = $input[Constants::VALIDATOR_OP];
+    
+                            $bankingAccountCore->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
+                            break;
+    
+                        case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
+                            $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
+                            $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
+    
+                            // called when a banking_account's status or sub status is updated
+                            $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
+                            break;
+    
+                        default:
+                            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+                    }
+                    array_push($res, [
+                        'banking_account_id' => array_get($input, 'banking_account.id', ''),
+                        'success'            => true,
+                        'error'              => null,
+                    ]);
+                }
             }
             catch (\Exception $e)
             {
@@ -917,18 +933,60 @@ class Service extends Base\Service
                     ]);
 
                 $errorMsg = $e->getMessage();
-            }
-            finally
-            {
+
+
                 array_push($res, [
                     'banking_account_id' => array_get($input, 'banking_account.id', ''),
-                    'success'            => empty($errorMsg),
+                    'success'            => false,
                     'error'              => $errorMsg,
                 ]);
             }
         }
 
         return $res;
+    }
+
+    protected function handleDocketEmailNotification($input, &$res)
+    {
+        try
+        {
+            $notificationData = $input[Constants::NOTIFICATION_INPUT_DOCKET_DATA];
+            $validator = new Validator();
+            $validator->setStrictFalse(); // to allow extra fields in input
+
+            $validator->validateInput(Validator::DOCKET_EMAIL_DATA_VALIDATION, $notificationData);
+
+            $subject = $notificationData['subject'];
+            $viewData = $notificationData['view_data'];
+            $viewData['subject'] = $subject;
+
+            $recipients = $notificationData['recipients'];
+            $otherRecipeints = array_slice($recipients, 1);
+
+            $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
+            $bankingAccountCore->enqueueDocketEmail($viewData, $recipients[0], $otherRecipeints);
+
+            return array_push($res, [
+                'message' => 'Docket email queued',
+                'success' => true,
+                'error'   => null,
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::BAS_SEND_NOTIFICATION_FAILED,
+                [
+                    'banking_account_id' => array_get($input, 'banking_account.id', ''),
+                    'error'              => $e->getMessage()
+                ]);
+            
+            array_push($res, [
+                'message' => $e->getMessage(),
+                'success' => false,
+                'error'   => true,
+            ]);
+        }
     }
 
     protected function tokenizeValueViaVault(string $element): string

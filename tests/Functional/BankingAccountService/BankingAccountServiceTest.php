@@ -33,6 +33,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -1805,6 +1806,17 @@ class BankingAccountServiceTest extends TestCase
                 }
             }
         }
+    }
+
+    public function testBasNotifyDocketEmail()
+    {
+        Mail::fake();
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(DocketMail::class);
     }
 
     public function mockSalesForce(string $method, int $count)

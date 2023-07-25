@@ -994,6 +994,57 @@ return [
         ],
     ],
 
+    'testBasNotifyDocketEmail' => [
+        'request'  => [
+            'url'     => '/bas/banking_accounts/notifications',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'notification_type' => 'docket_email',
+                    'docket_data'   => [
+                        'subject' => 'RazorpayX | Stamp Paper and Docs | Acme Corp | 80123 | Private Public Limited Company',
+                        'view_data' => [
+                            'merchantName' => 'Acme Corp',
+                            'refNo' => '80123',
+                            'entityType' => 'Private Public Limited Company',
+                            'address' => 'A-123, ABC, Mumbai, Maharashtra, 400001',
+                            'city' => 'Mumbai, 400001',
+                            'pocName' => 'John Doe',
+                            'pocPhoneNumber' => '9876543210',
+                            'attachment_url' => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                        ],
+                        'recipients' => [
+                            [
+                                'name' =>  "Rangaswamy S",
+                                'email' => "rangaswamy.s@lesconcierges.in",
+                            ],
+                            [
+                                'name' =>  "Lohith M",
+                                'email' => "lohith.m@lesconcierges.in",
+                            ],
+                            [
+                                'name' =>  "Syed",
+                                'email' => "syed@lesconcierges.in",
+                            ],
+                            [
+                                'name' =>  "X Onboarding",
+                                'email' => "x-caonboarding@razorpay.com",
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'message' => 'Docket email queued',
+                    'success' => true,
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateSignatory' => [
         'request'  => [
             'url'     => '/merchant/banking_application/business/10000000000000/applications/10000000000000',

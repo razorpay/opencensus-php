@@ -280,7 +280,7 @@ class BasDtoAdapter
         'lead_follow_up_date'                                                           => 'lead_follow_up_date',
 
         'banking_account_activation_details.id'                                         => 'banking_account_application.id',
-        'banking_account_activation_details.banking_account_id'                         => 'banking_account_application.id',
+        'banking_account_activation_details.banking_account_id'                         => 'banking_account.id',
         'banking_account_activation_details.created_at'                                 => 'banking_account_application.created_at',
         'banking_account_activation_details.updated_at'                                 => 'banking_account_application.updated_at',
 

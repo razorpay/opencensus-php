@@ -3278,16 +3278,7 @@ class Core extends Base\Core
                 // Download PDF
                 [$viewData, $recipients, $otherRecipients] = $this->getDocketMailData($bankingAccount, $url);
 
-                // Send email
-                $mailable = new DocketMail($viewData, $recipients, $otherRecipients);
-
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
-                    'stage'             => 'core >> download pdf',
-                    'viewData'          => $viewData,
-                    'recipients'        => $recipients,
-                ]);
-
-                Mail::queue($mailable);
+                $this->enqueueDocketEmail($viewData, $recipients, $otherRecipients);
 
                 return true;
             }
@@ -3308,6 +3299,20 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function enqueueDocketEmail($viewData, $recipients, $otherRecipients)
+    {
+        // Send email
+        $mailable = new DocketMail($viewData, $recipients, $otherRecipients);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+            'stage'             => 'core >> download pdf',
+            'viewData'          => $viewData,
+            'recipients'        => $recipients,
+        ]);
+
+        Mail::queue($mailable);
     }
 
     private function generateAndGetCredentials(Entity $bankingAccount)

@@ -11,7 +11,9 @@ class Validator extends Base\Validator
     const ARCHIVE_BANKING_ACCOUNT   = 'archive_banking_account';
     const UNARCHIVE_BANKING_ACCOUNT = 'unarchive_banking_account';
 
+    const NOTIFICATION_INPUT_VALIDATION = 'notification_input_validation';
     const HANDLE_NOTIFICATION_VALIDATION = 'handle_notification_validation';
+    const DOCKET_EMAIL_DATA_VALIDATION = 'docket_email_data_validation';
 
     const SUPPORTED_ARTEFACT_TYPE = [
       Constant::BUSINESS_PAN,
@@ -34,6 +36,10 @@ class Validator extends Base\Validator
         Constant::DETAILS           => 'required|array',
     ];
 
+    protected static $notificationInputValidationRules = [
+        Constants::NOTIFICATION_TYPE => 'required|string',
+    ];
+
     protected static $handleNotificationValidationRules = [
         Constants::NOTIFICATION_TYPE                  => 'required|string',
         Constants::VALIDATOR_OP                       => 'required_if:notification_type,x_pro_activation',
@@ -54,6 +60,20 @@ class Validator extends Base\Validator
         'banking_account.banking_account_activation_details.additional_details' => 'sometimes|array',
         'banking_account.banking_account_activation_details.contact_verified'   => 'required_if:notification_type,status_change|integer',
         'banking_account.banking_account_activation_details.sales_team'         => 'required_if:notification_type,x_pro_activation|string',
+    ];
+
+    protected static $docketEmailDataValidationRules = [
+        'subject'   => 'required|string',
+        'view_data' => 'required|array',
+        'view_data.merchantName'    => 'required|string',
+        'view_data.refNo'           => 'required|string',
+        'view_data.entityType'      => 'required|string',
+        'view_data.address'         => 'required|string',
+        'view_data.city'            => 'required|string',
+        'view_data.pocName'         => 'required|string',
+        'view_data.pocPhoneNumber'  => 'required|string',
+        'view_data.attachment_url'  => 'required|string',
+        'recipients' => 'required|array',
     ];
 
     protected static $archiveBankingAccountRules = [
