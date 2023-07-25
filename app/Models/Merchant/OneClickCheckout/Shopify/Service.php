@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
+use Illuminate\Support\Str;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use Throwable;
@@ -961,8 +962,9 @@ class Service extends Base\Service
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
                     ['checkout_id' => $checkoutId, 'reason' => $e->getMessage()]);
 
-                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT, ['error_type' => 'shopify_1cc_apply_coupon_error']);
+                $errorType = $this->segregateShopifyUpdateEmail5xxError($e->getMessage());
 
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT, ['error_type' => $errorType]);
             }
         }
 
@@ -1703,6 +1705,16 @@ class Service extends Base\Service
         (new OneClickCheckoutCore)->update1CcOrder($order->getId(), [
             'tax_details' => $taxDetails
         ]);
+    }
+
+    private function segregateShopifyUpdateEmail5xxError(string $errorMessage): string
+    {
+        $isShopifyError = Str::contains($errorMessage, ['500', '501', '502', '503', '504',]);
+        if ($isShopifyError === true)
+        {
+            return 'shopify_5xx_error';
+        }
+        return 'shopify_1cc_apply_coupon_error';
     }
 
 }
