@@ -368,14 +368,14 @@ class Webhooks extends Base\Core
         }
         catch (BadRequestException $e)
         {
+            $error = $e->getError();
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
                 [
                     'status'      => 'failed',
-                    'reason'      => $error['internal_error_code'],
+                    'reason'      => strtolower($error['internal_error_code']),
                     'refund_type' => $refundType
                 ]);
-            $error = $e->getError();
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
                 [
