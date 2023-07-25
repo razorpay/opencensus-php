@@ -5,6 +5,8 @@ namespace RZP\Tests\P2p\Service\UpiAxisOlive\Device;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\P2p\Preferences\Constants;
 
+use RZP\Models\Admin;
+use RZP\Models\Admin\Service as AdminService;
 use  RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\P2p\Service\UpiAxisOlive\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
@@ -24,6 +26,27 @@ class PreferencesTest extends TestCase
 
         $helper->withSchemaValidated();
 
+        $banklist = $this->setPopularBankListInRedis();
+
+        $response = $helper->getGatewayPreferences($this->gateway, []);
+
+        $this->assertArrayHasKey('customer', $response);
+
+        $this->assertArrayHasKey('gateways', $response);
+
+        $this->assertArrayHasKey('popular_banks', $response);
+        
+        $this->assertEquals(4, count($response['popular_banks']));
+
+        $this->assertArraySelectiveEquals($banklist, $response['popular_banks']);
+    }
+
+    public function testGetGatewayPreferencesWithoutPopularBankList()
+    {
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
         $response = $helper->getGatewayPreferences($this->gateway, []);
 
         $this->assertArrayHasKey('customer', $response);
@@ -32,7 +55,9 @@ class PreferencesTest extends TestCase
 
         $this->assertArrayHasKey('popular_banks', $response);
 
-        $this->assertArraySelectiveEquals(Constants::getPopularBanksList(), $response['popular_banks']);
+        $this->assertEquals(8, count($response['popular_banks']));
+
+        $this->assertArraySelectiveEquals(Constants::getStaticPopularBanksList(), $response['popular_banks']);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()
@@ -52,7 +77,7 @@ class PreferencesTest extends TestCase
         $helper = $this->getPreferencesHelper();
 
         $response = $helper->getGatewayPreferences($this->gateway, []);
-        
+
         $this->assertArrayHasKey('tpv', $response);
 
         $this->assertArrayHasKey('is_tpv', $response);
@@ -128,5 +153,33 @@ class PreferencesTest extends TestCase
         $response = $helper->getGatewayPreferences($this->gateway, $content);
 
         $this->expectExceptionMessage($this->fixtures->customer->getPublicId()."xyz is not a valid id");
+    }
+
+    public function setPopularBankListInRedis()
+    {
+        $banklist = [
+                        [
+                            'priority'  => '1',
+                            'iin'       => '119753',
+                        ],
+                        [
+                           'priority'  => '2',
+                           'iin'       => '246894',
+                        ],
+                        [
+                           'priority'  => '3',
+                           'iin'       => '607152',
+                        ],
+                        [
+                           'priority'  => '4',
+                           'iin'       => '123333',
+                        ]
+                   ];
+
+        (new Admin\Service)->setConfigKeys([
+               Admin\ConfigKey::UPI_TURBO_POPULAR_BANK_LIST => $banklist,
+        ]);
+
+        return $banklist;
     }
 }

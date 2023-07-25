@@ -262,6 +262,7 @@ class Validator extends Base\Validator
         ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST                     => 'filled|array',
         ConfigKey::DEFAULT_PRICING_FOR_ACH                                             => 'filled|array',
         ConfigKey::DEFAULT_PRICING_FOR_SWIFT                                           => 'filled|array',
+        ConfigKey::UPI_TURBO_POPULAR_BANK_LIST                                         => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

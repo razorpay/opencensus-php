@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Preferences;
 
 use RZP\Models\Order;
 use RZP\Models\P2p\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
@@ -82,8 +83,30 @@ class Processor extends Base\Processor
                     Entity::GATEWAY    => $this->getGateway(),
                 ],
             ],
-            Entity::POPULAR_BANKS   => Constants::getPopularBanksList(),
+            Entity::POPULAR_BANKS   => $this->getPopularBankListForSDK(),
         ];
+    }
+
+    private function getPopularBankListForSDK()
+    {
+        $adminService = new AdminService;
+
+        $popularBankList = null;
+
+        try {
+            // Code that can throw an exception
+            $popularBankList = $adminService->getConfigKey(['key' => ConfigKey::UPI_TURBO_POPULAR_BANK_LIST]);
+
+        } catch (\Exception $e) {
+            $this->trace()->error(TraceCode::BANKING_ERROR_CODE_MAPPING_NOT_FOUND);
+        } finally {
+            // only if popular bank list option is available we will return it
+            if(!empty($popularBankList) && count($popularBankList) > 0)
+            {
+                return  $popularBankList;
+            }
+            return Constants::getStaticPopularBanksList();
+        }
     }
 
     private function getSDKVersionLimitations()

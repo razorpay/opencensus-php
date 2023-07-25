@@ -376,8 +376,9 @@ class ConfigKey
 
     const DEFAULT_OPGSP_TRANSACTION_LIMIT_USD = SELF::PREFIX . 'default_opgsp_transaction_limit_usd';
 
-
     const SET_CARD_METADATA_NULL = SELF::PREFIX. 'set_card_metadata_null';
+
+    const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
 
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
@@ -573,6 +574,7 @@ class ConfigKey
         self::RX_CA_MISSING_STATEMENT_DETECTION_ICICI,
         self::DEFAULT_PRICING_FOR_ACH,
         self::DEFAULT_PRICING_FOR_SWIFT,
+        self::UPI_TURBO_POPULAR_BANK_LIST,
     ];
 
     const REDIS_CONFIG_MAP = [
