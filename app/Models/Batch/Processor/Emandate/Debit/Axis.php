@@ -3,9 +3,11 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingBaseEntity;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as Headings;
@@ -17,6 +19,10 @@ class Axis extends Base
     const STATUS_SUCCESS  = 'success';
     const STATUS_FAILURE  = 'failure';
     const STATUS_REJECTED = 'rejected';
+    
+    // for instrumentation only
+    const PAYMENT_SUCCESS   = 'success';
+    const PAYMENT_FAILED    = 'failed';
 
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
@@ -86,5 +92,40 @@ class Axis extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Headings::HEADING_DEBIT_ACCOUNT]);
+    }
+    
+    public function shouldSendToBatchService(): bool
+    {
+        $key = Carbon::now()->getTimestamp();
+        
+        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_EMANDATE_DEBIT_AXIS_MIGRATION;
+        
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+        
+        return (strtolower($variant) === 'on');
+    }
+    
+    protected function getBankStatus($status): string
+    {
+        $status = strtolower($status);
+        
+        if (in_array($status, $this->allowedStatuses) === false)
+        {
+            return "";
+        }
+        
+        if ($status === self::STATUS_SUCCESS)
+        {
+            return self::PAYMENT_SUCCESS;
+        }
+        else if ($status === self::STATUS_FAILURE or $status === self::STATUS_REJECTED)
+        {
+            return self::PAYMENT_FAILED;
+        }
+        
+        return "";
     }
 }

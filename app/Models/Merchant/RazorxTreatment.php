@@ -668,7 +668,11 @@ final class RazorxTreatment
 
     // Experiment to migrate sbi bank debit file batch processing
     public const BATCH_SERVICE_EMANDATE_DEBIT_SBI_MIGRATION = "batch_service_emandate_debit_sbi_migration";
-
+    
+    // Experiment to migrate axis bank debit file batch processing
+    public const BATCH_SERVICE_EMANDATE_DEBIT_AXIS_MIGRATION = "batch_service_emandate_debit_axis_migration";
+    
+    
     // Experiment to migrate merchant_risk_fact to datalake
     public const MERCHANT_RISK_FACT_MIGRATION = "merchant_risk_fact_migration";
 

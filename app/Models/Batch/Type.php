@@ -230,9 +230,12 @@ class Type
 
     const EMANDATE_DEBIT_ENACH_RBL    = 'emandate_debit_enach_rbl';
 
-    const EMANDATE_DEBIT_SBI    = 'emandate_debit_sbi';
-
-
+    const EMANDATE_DEBIT_SBI          = 'emandate_debit_sbi';
+    
+    const EMANDATE_DEBIT_AXIS         = 'emandate_debit_axis';
+    
+    
+    
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //

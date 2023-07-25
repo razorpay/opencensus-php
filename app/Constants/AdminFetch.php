@@ -672,6 +672,7 @@ class AdminFetch
                         'enach_npci_netbanking',
                         'emandate_debit_enach_rbl',
                         'emandate_debit_sbi',
+                        'emandate_debit_axis',
                         'auth_link',
                         'recurring_charge',
                         'recurring_charge_bulk',
