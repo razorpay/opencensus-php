@@ -231,6 +231,7 @@ class Service extends Base\Service
                     $receiverType = empty($item[Pricing\Entity::RECEIVER_TYPE]) ? null : $item[Pricing\Entity::RECEIVER_TYPE];
                     $amountRangeActive = 0; //empty($item[Pricing\Entity::AMOUNT_RANGE_ACTIVE]) ? 0 : $item[Pricing\Entity::AMOUNT_RANGE_ACTIVE];
                     $procurer = empty($item[Pricing\Entity::PROCURER]) ? null : $item[Pricing\Entity::PROCURER];
+                    $feeBearer = empty($item[Pricing\Entity::FEE_BEARER]) ? null : $item[Pricing\Entity::FEE_BEARER];
 
                     // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
                     $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
@@ -248,7 +249,8 @@ class Service extends Base\Service
                         $orgId,
                         $appName,
                         $receiverType,
-                        $procurer
+                        $procurer,
+                        $feeBearer
                     );
 
                     if ($existingRule === null)
@@ -307,7 +309,8 @@ class Service extends Base\Service
                                 $orgId,
                                 $appName,
                                 $receiverType,
-                                $procurer
+                                $procurer,
+                                $feeBearer
                             );
 
                             (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule, $orgId);

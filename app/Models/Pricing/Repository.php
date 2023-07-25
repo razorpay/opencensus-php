@@ -682,6 +682,7 @@ class Repository extends Base\Repository
         $appName = null,
         $receiverType = null,
         $procurer = null,
+        $feeBearer = null,
     )
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)
@@ -702,6 +703,9 @@ class Repository extends Base\Repository
         }
         if (!empty($procurer)) {
             $rule = $rule->where(Entity::PROCURER,'=',$procurer);
+        }
+        if (!empty($feeBearer)) {
+            $rule = $rule->where(Entity::FEE_BEARER,'=',$feeBearer);
         }
 
         return $rule->first();
