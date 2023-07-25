@@ -2,7 +2,7 @@ import React from 'react';
 import Amount from 'common/ui/Amount';
 import { connect } from 'react-redux';
 
-function CurrentBalance({ currentBalance, handleContactUs, user, handlAddFunds }) {
+function CurrentBalance({ currentBalance }) {
   const balance = currentBalance.data?.balance || 0;
 
   return (
@@ -21,20 +21,6 @@ function CurrentBalance({ currentBalance, handleContactUs, user, handlAddFunds }
             />
           </div>
         </div>
-        <div class="balances-add-funds">
-          {!user.isOrgAxis && (
-            <button class="btn btn-outline" onClick={() => handlAddFunds('current')}>
-              Add Funds
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div class="bal-cont-footer">
-        <p>
-          Add funds to your account to process refunds/transfers when the account balance goes low.
-          Adding large funds to your account? <a onClick={handleContactUs}> Contact Us</a>
-        </p>
       </div>
     </div>
   );
