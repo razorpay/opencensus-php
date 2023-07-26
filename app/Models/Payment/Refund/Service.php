@@ -66,6 +66,8 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
+const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
+
 class Service extends Base\Service
 {
     protected $mutex;
@@ -3975,6 +3977,18 @@ class Service extends Base\Service
         $response = [];
 
         $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($input[RefundConstants::REFUND_ID]);
+
+        if (empty($transaction) == true) {
+            $error_data = [];
+
+            $error_data['code'] = TRANSACTION_NOT_FOUND;
+
+            $error_data['message'] = "Transaction for the provided refund id is not present in API";
+
+            $response['error'] = $error_data;
+
+            return $response;
+        }
 
         //Can add more data here in future if needed related to transaction
         $transaction_data ['transaction_id'] = $transaction->getId();
