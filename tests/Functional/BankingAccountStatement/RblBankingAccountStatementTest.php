@@ -3903,6 +3903,83 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(21450, $balance['balance']);
     }
 
+    public function testDuplicateCreditUtrMappingToExternalByDefault()
+    {
+        $this->testRblReversalFailureMapping();
+
+        $addDuplicateCreditRecordMockResponse = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => 'R-123456-Z-BI',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '315.45'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S808069',
+                                'txnSrlNo' => '  50',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        $this->setMozartMockResponse($addDuplicateCreditRecordMockResponse);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $transactionEntries = $this->getDbEntities('transaction');
+
+        $external = $this->getDbLastEntity('external');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[3]['entity_type']);
+        $this->assertEquals($external['utr'], $basEntries[3]['utr']);
+        $this->assertEquals($external['id'], $basEntries[3]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[3]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[3]['id']);
+        $this->assertEquals($external['transaction_id'], $transactionEntries[3]['id']);
+    }
+
     public function testRblSlackAlertThrownForRecon()
     {
         $channel = Channel::RBL;

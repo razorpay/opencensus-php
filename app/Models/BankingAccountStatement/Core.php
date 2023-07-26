@@ -3390,10 +3390,14 @@ class Core extends Base\Core
             'reversals_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
         ]);
 
+        $countOfLinkedReversals = 0;
+
         foreach ($reversals as $key => $reversal)
         {
             if ($reversal->getTransactionId() !== null)
             {
+                $countOfLinkedReversals += 1;
+
                 $data = [
                     'channel'                    => $basEntity->getChannel(),
                     'amount'                     => $basEntity->getAmount(),
@@ -3428,6 +3432,28 @@ class Core extends Base\Core
         {
             return $unlinkedReversals[0];
         }
+
+        if (($countOfLinkedReversals >= 1) and
+            (count($unlinkedReversals) === 0))
+        {
+            $createExternalSource = true;
+            $remarks              = 'multiple linked reversals with same utr with no unlinked reversals present ' . $utr;
+
+            $data = [
+                'channel'      => $basEntity->getChannel(),
+                'amount'       => $basEntity->getAmount(),
+                'merchant_id'  => $basEntity->getMerchantId(),
+                'reversal_ids' => $reversals->getQueueableIds(),
+                'utr'          => $utr
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DUPLICATE_REVERSAL_FOUND_FOR_SAME_UTR, [
+                'data' => $data,
+            ]);
+
+            return null;
+        }
+
         // RBL has confirmed that UTR will be unique across all transactions
         // of RBL and so we not process this account statement record
         if (count($unlinkedReversals) > 1)
