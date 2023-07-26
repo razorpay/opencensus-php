@@ -118,6 +118,7 @@ class Entity extends Base\PublicEntity
     const VIRTUAL_UPI_MERCHANT_PREFIX    = 'virtual_upi_merchant_prefix';
     const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
 
+
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
     //

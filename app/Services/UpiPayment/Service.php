@@ -22,6 +22,7 @@ use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use GuzzleHttp\Psr7\Request as Psr7Request;
 use Psr\Http\Client\NetworkExceptionInterface;
+use \RZP\Models\Terminal\Entity as TerminalEntity;
 
 /**
  * Service implements the UPI Payments service client
@@ -1322,6 +1323,17 @@ class Service
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
+        if($this->gateway === Payment\Gateway::UPI_AXISOLIVE)
+        {
+            if(isset($input[Entity::TERMINAL][TerminalEntity::NOTES]) === true)
+            {
+                if(isset($input[Entity::TERMINAL][TerminalEntity::NOTES][TerminalEntity::MERCHANT_MOBILE_CONTACT]) === true)
+                {
+                    $input[Entity::TERMINAL][TerminalEntity::MERCHANT_MOBILE_CONTACT] = $input[Entity::TERMINAL][TerminalEntity::NOTES][TerminalEntity::MERCHANT_MOBILE_CONTACT];
+                }
+            }
         }
 
         foreach ($input as $key => $data)
