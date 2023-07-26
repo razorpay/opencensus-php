@@ -51,6 +51,10 @@ class Core extends Base\Core
 
     const MAGIC_CHECKOUT_SERVICE_SHOPIFY_PATH        = 'v1/integrations/shopify';
 
+    const MAGIC_CHECKOUT_SERVICE_PATH                = 'v1/magic/shopify';
+
+    const MOVE_ORDER                                 = 'order/move';
+
     const CUSTOMER_ACCOUNTS                          = 'customer_accounts';
 
     protected $monitoring;
@@ -981,6 +985,19 @@ class Core extends Base\Core
 
     }
 
+    //Function which returns location id from where orders will be fulfilled for Wingreen Merchant
+    public function getLocationIDForStateAndCountry(string $stateCode, string $countryCode): int {
+        if(strtolower($countryCode) === 'in')
+        {
+            switch(strtolower($stateCode)) {
+                case 'karnataka' : return 80770269487;
+                case 'maharashtra' : return 80770236719;
+                default : return 80770367791; //Delhi Location used for other than karnataka and Maharashtra
+            }
+        }
+        return 80770236719; //Mumbai Location used for international orders.
+    }
+
     public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[]): array
     {
         $start = millitime();
@@ -1342,7 +1359,7 @@ class Core extends Base\Core
         $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
         $totalTax =  (new Utils)->formatNumber($checkout['data']['node']['totalTax']['amount']);
-        
+
         $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
 
         $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
@@ -2608,6 +2625,45 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::SHOPIFY_AUTOMATIC_ACCOUNT_CREATION_ERROR,[
                 'error'=> $e->getMessage()
+            ]);
+            return [];
+        }
+    }
+
+    public function moveFulfillmentOrders($rzpOrder, $shopifyOrder)
+    {
+        try {
+
+            $customerDetails = $rzpOrder['customer_details'];
+            $shippingAddress = $customerDetails['shipping_address'];
+            $body = [
+                'merchant_id' => $this->merchant->getId(),
+                'shopify_order_id' => $shopifyOrder['order']['id'],
+                'location_id' => $this->getLocationIDForStateAndCountry($shippingAddress['state'],$shippingAddress['country']),
+                'order_id' => $rzpOrder['id'],
+            ];
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_PATH . '/' . self::MOVE_ORDER;
+
+            $this->trace->info(TraceCode::MOVE_FULFILLMENT_ORDERS_STARTED,[
+                'merchant_id'=>$body['merchant_id'],
+                'order_id'=>$rzpOrder['id'],
+            ]);
+
+            $this->app['magic_checkout_service_client']->sendRequest($path, $body, Requests::POST);
+
+            $this->trace->info(TraceCode::MOVE_FULFILLMENT_ORDERS_SUCCESS,[
+                'merchant_id'=>$body['merchant_id'],
+                'order_id'=>$rzpOrder['id'],
+            ]);
+
+            return [];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::MOVE_FULFILLMENT_ORDERS_ERROR,[
+                'error'=> $e->getMessage(),
+                'order_id'=>$rzpOrder['id'],
             ]);
             return [];
         }

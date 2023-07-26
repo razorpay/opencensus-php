@@ -695,6 +695,12 @@ class Service extends Base\Service
 
         $this->updateRzpOrder($order, $shopifyOrder);
 
+        //sending fulfillments payload only in case of wingreen merchant
+        if($this->merchant->getId() === 'JIpL0bNjli3EKr')
+        {
+            (new Core)->moveFulfillmentOrders($orderArray, $shopifyOrder);
+        }
+
         $analytics = new Analytics();
 
         $analytics->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
