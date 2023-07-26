@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -63,6 +64,25 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The max_amount field is mandatory for UPI mandate creation.',
+                Entity::MAX_AMOUNT
+            );
+        }
+
+        $merchant = $this->repo->merchant->find($orderInput['merchant_id']);
+
+        $merchantCategoryMaxAmount = Validator::BFSI_MAX_AMOUNT_LIMIT;
+
+        if(($merchant !== null) and
+            ($merchant->isBFSIMerchantCategory() === false))
+        {
+            $merchantCategoryMaxAmount = Validator::NON_BFSI_MAX_AMOUNT_LIMIT;
+        }
+
+
+        if (($input[Entity::MAX_AMOUNT]) > $merchantCategoryMaxAmount)
+        {
+            throw new BadRequestValidationFailureException(
+                'Max amount for UPI recurring payment for this merchant category code cannot be greater than Rs. '.($merchantCategoryMaxAmount/100).'.00',
                 Entity::MAX_AMOUNT
             );
         }

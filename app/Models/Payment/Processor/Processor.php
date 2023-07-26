@@ -6931,6 +6931,8 @@ class Processor
 
                 $orderId = $input['order_id'];
 
+                $core->validateTokenInput($upitoken, $this->order);
+
                 $this->upiMandate = $core->create($upitoken, $this->order, null);
             }
 
