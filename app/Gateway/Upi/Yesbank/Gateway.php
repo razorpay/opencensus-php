@@ -150,20 +150,23 @@ class Gateway extends Mindgate\Gateway
      */
     protected function isDuplicateUnexpectedPaymentV2($input)
     {
-        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAndGateway($input['upi']['npci_reference_id'], $this->gateway);
+        $rrn = $input['upi']['npci_reference_id'];
+
+        $amount = $input['payment']['amount'];
+
+        $merchantReference = $input['upi']['merchant_reference'];
+
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAmountAndGatewayAndMerchantReference($rrn, $this->gateway, $amount, $merchantReference);
 
         if (empty($upiEntity) === false)
         {
-            if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
-            {
-                throw new Exception\LogicException(
-                    'Duplicate Unexpected payment with same amount',
-                    null,
-                    [
-                        'callbackData' => $input
-                    ]
-                );
-            }
+            throw new Exception\LogicException(
+                'Duplicate Unexpected payment with same amount',
+                null,
+                [
+                    'callbackData' => $input
+                ]
+            );
         }
     }
 

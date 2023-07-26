@@ -540,6 +540,25 @@ class UpiHdfcReconTest extends TestCase
         $this->assertTrue($response['success']);
     }
 
+    public function testAmountMismatchPaymentCreation()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeAmountMismatchPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
     /**
      * Tests the duplicate unexpected payment creation
      * for recon edge cases invalid paymentId, rrn mismatch ,Multiple RRN.
@@ -992,6 +1011,7 @@ class UpiHdfcReconTest extends TestCase
         $content['terminal']['gateway'] = 'upi_mindgate';
         $content['terminal']['gateway_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
         $content['payment']['vpa'] = 'unexpectedpayment@hdfcbank';
+        $content['meta']['reason'] = 'amount_mismatch';
 
         return $content;
     }
@@ -1004,6 +1024,19 @@ class UpiHdfcReconTest extends TestCase
     {
         $request = [
             'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function makeAmountMismatchPaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/amountmismatch',
             'method' => 'POST',
             'content' => $content,
         ];

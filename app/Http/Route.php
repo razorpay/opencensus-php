@@ -150,6 +150,7 @@ class Route
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_razorpaywallet'            => ['post',     'payments/razorpaywallet',                        'PaymentCreateController@postCreateRazorpayWalletPayment'           ],
         'payment_create_upi_unexpected'            => ['post',     'payments/create/upi/unexpected',                 'PaymentCreateController@postCreateUpiUnexpectedPayment'            ],
+        'payment_create_upi_amountmismatch'        => ['post',     'payments/create/upi/amountmismatch',             'PaymentCreateController@postCreateUpiPaymentAmountMismatch'        ],
         'payment_update_and_redirect'              => ['post',     'payments/{id}/updateAndRedirect',                'PaymentCreateController@postUpdateAndRedirectToAuthorize'          ],
         'payment_redirect_to_dcc_info'             => ['get',      'payments/{id}/dcc_info',                         'PaymentCreateController@getRedirectToDCCInfo'                     ],
         'payment_redirect_to_address_collect'      => ['get',      'payments/{id}/address_collect',                  'PaymentCreateController@getRedirectToAddressCollect'               ],
@@ -5944,6 +5945,7 @@ class Route
         'growth_slack_csv_cron',
 
         'payment_create_upi_unexpected',
+        'payment_create_upi_amountmismatch',
 
         'create_fraud_batch',
         'post_batch_bulk_fraud_notify',
@@ -16012,6 +16014,7 @@ class Route
         'recon' => [
             'test_mailgun',
             'payment_create_upi_unexpected',
+            'payment_create_upi_amountmismatch',
             'upi_transfer_process_internal',
             'payment_callback_bharatqr_internal',
             'payment_upi_authorize_failed',

@@ -470,6 +470,21 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Amount mismatch cases can be considered as unexpected payment with the new amount.
+     * @return mixed
+     */
+    public function postCreateUpiPaymentAmountMismatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::PAYMENT)->createUpiPaymentAmountMismatch($input);
+
+        $response['art_request_id'] = $input['meta']['art_request_id'];
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Creates a dummy payment and
      * returns corresponding fees and tax
      * Used where customer is the fee-bearer and the

@@ -191,7 +191,7 @@ class Gateway extends Base\Gateway
 
         // It checks if the version is V2,which is request from art
         if ((empty($input['meta']['version']) === false) and
-            ($input['meta']['version'] === 'api_v2'))
+            ($input['meta']['version'] === 'api_v2') )
         {
             $this->isDuplicateUnexpectedPaymentV2($input);
 
@@ -209,20 +209,23 @@ class Gateway extends Base\Gateway
      */
     protected function isDuplicateUnexpectedPaymentV2($input)
     {
-        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAndGateway($input['upi']['npci_reference_id'], $this->gateway);
+        $rrn = $input['upi']['npci_reference_id'];
+
+        $amount = $input['payment']['amount'];
+
+        $merchantReference = $input['upi']['merchant_reference'];
+
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAmountAndGatewayAndMerchantReference($rrn, $this->gateway, $amount, $merchantReference);
 
         if (empty($upiEntity) === false)
         {
-            if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
-            {
-                throw new Exception\LogicException(
-                    'Duplicate Unexpected payment with same amount',
-                    null,
-                    [
-                        'callbackData' => $input
-                    ]
-                );
-            }
+            throw new Exception\LogicException(
+                'Duplicate Unexpected payment with same amount',
+                null,
+                [
+                    'callbackData' => $input
+                ]
+            );
         }
     }
 

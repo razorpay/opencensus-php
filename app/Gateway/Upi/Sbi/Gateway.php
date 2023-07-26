@@ -1076,22 +1076,22 @@ class Gateway extends Base\Gateway
 
         $gateway = $callbackData['terminal']['gateway'];
 
-        $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
+        $amount = $callbackData['payment']['amount'];
+
+        $merchantReference = $callbackData['upi']['merchant_reference'];
+
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAmountAndGatewayAndMerchantReference($rrn, $this->gateway, $amount, $merchantReference);
 
         if (empty($upiEntity) === false)
         {
             // TODO: To fix this logic later by freezing one rrn i.e updating old payment rrn and create new payment
-
-            if ($upiEntity->getAmount() === (int) ($callbackData['payment']['amount']))
-            {
-                throw new Exception\LogicException(
-                    'Duplicate Unexpected payment with same amount',
-                    null,
-                    [
-                        'callbackData' => $callbackData
-                    ]
-                );
-            }
+            throw new Exception\LogicException(
+                'Duplicate Unexpected payment with same amount',
+                null,
+                [
+                    'callbackData' => $callbackData
+                ]
+            );
         }
     }
 

@@ -2275,6 +2275,7 @@ trait PaymentTrait
             ],
             'meta' => [
                 "art_request_id" => '123423454',
+                "art_reason"     => 'amount_mismatch',
                 "version"        => 'api_v2',
             ]
         ];

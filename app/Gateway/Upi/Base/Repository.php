@@ -182,6 +182,28 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function findAllByNpciReferenceIdAmountAndGatewayAndMerchantReference(string $npciReferenceId, string $gateway,string $amount, string $merchantReference, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+            ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+            ->where(Entity::AMOUNT, '=',$amount)
+            ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
+            ->where('action', '=', $action)
+            ->where('gateway', '=', $gateway)
+            ->get();
+    }
+
+    public function fetchByNpciReferenceIdAmountAndGatewayAndMerchantReference(string $npciReferenceId, string $gateway,string $amount, string $merchantReference, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+            ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+            ->where(Entity::AMOUNT, '=',$amount)
+            ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
+            ->where('action', '=', $action)
+            ->where('gateway', '=', $gateway)
+            ->first();
+    }
+  
     public function fetchAllByMerchantReferenceAndNpciReferenceIdAndGateway(string $merchantReference, string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
     {
         return $this->newQuery()

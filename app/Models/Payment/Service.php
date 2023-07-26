@@ -1983,6 +1983,10 @@ class Service extends Base\Service
             $merchantId = $terminal->getMerchantId();
         }
 
+        if (empty($input['meta']['art_remarks']) === false and $input['meta']['art_remarks'] === "amount_mismatch"){
+            $merchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
@@ -5754,6 +5758,119 @@ class Service extends Base\Service
                     'gateway'                   => $gateway,
                 ]
             );
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * Creates payment for post recon edge case amount mismatch.
+     * @param array $input
+     * @return array
+     */
+    public function createUpiPaymentAmountMismatch(array $input)
+    {
+        $unexpectedPaymentId = null;
+
+        (new Payment\Validator)->validateInput('create_upi_unexpected_payment', $input);
+
+        $npciReferenceId = $input['upi']['npci_reference_id'];
+
+        $gateway = $input['terminal']['gateway'];
+
+        $amount = $input['payment']['amount'];
+
+        $merchantReference = $input['upi']['merchant_reference'];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::UPI_AMOUNT_MISMATCH_PAYMENT_CREATION_INITIATED,
+                [
+                    'merchant_reference'        => $merchantReference,
+                    'npci_reference_id'         => $npciReferenceId,
+                    'unexpected_payment_ref_id' => $input['upi']['merchant_reference'],
+                    'amount'                    => $input['payment']['amount'],
+                    'gateway'                   => $gateway
+                ]);
+
+            $upiEntity = $this->repo->upi->findAllByNpciReferenceIdAmountAndGatewayAndMerchantReference($npciReferenceId, $gateway,$amount, $merchantReference);
+
+            if ((empty($upiEntity) === false) and ($upiEntity->count() > 0))
+            {
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        'amount'            => $amount,
+                        'npci_reference_id' => $npciReferenceId,
+                        'merchant_reference'=> $merchantReference,
+                        'gateway'           => $gateway,
+                    ],
+                    'Duplicate Payments Found for amount mismatch'
+                );
+            }
+
+            $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
+
+            if (empty($response['payment_id']) === false)
+            {
+                $unexpectedPaymentId = $response['payment_id'];
+
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($unexpectedPaymentId);
+                }
+                catch (\Throwable $exception){}
+
+                $this->trace->info(
+                    TraceCode::UPI_AMOUNT_MISMATCH_PAYMENT_CREATED,
+                    [
+                        'payment_id'        => $unexpectedPaymentId,
+                        'amount'            => $amount,
+                        'merchant_reference'=> $merchantReference,
+                        'npci_reference_id' => $npciReferenceId,
+                        'gateway'           => $gateway,
+
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::UPI_AMOUNT_MISMATCH_PAYMENT_CREATION_FAILED,
+                    [
+                        'merchant_reference'=> $merchantReference,
+                        'amount'            => $amount,
+                        'npci_reference_id' => $npciReferenceId,
+                        'gateway'           => $gateway,
+
+                    ]);
+            }
+
+            return [
+                'payment_id' => $unexpectedPaymentId,
+                'success' => (empty($unexpectedPaymentId) === false),
+            ];
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::UPI_AMOUNT_MISMATCH_PAYMENT_CREATION_FAILED,
+                [
+                    'merchant_reference'        => $merchantReference,
+                    'amount'                    => $amount,
+                    'npci_reference_id'         => $npciReferenceId,
+                    'gateway'                   => $gateway,
+                    'payment_id'                => $unexpectedPaymentId,
+                ]
+            );
+
+            $ex->getError()->setMetadata(['payment_id' => $unexpectedPaymentId]);
 
             throw $ex;
         }
