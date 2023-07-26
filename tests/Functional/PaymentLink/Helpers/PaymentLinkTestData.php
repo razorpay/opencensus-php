@@ -1403,7 +1403,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Primary Reference Id\'s Mismatch.'
+                    'description' => 'No Records Found'
                 ],
             ],
             'status_code' => 400,

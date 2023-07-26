@@ -524,6 +524,8 @@ class Response
     {
         $routes = [
             'payment_cancel',
+            'payment_page_fetch_records',
+            'payment_page_fetch_records_option',
             'payment_create_ajax',
             'payment_otp_submit',
             'payment_otp_resend',
@@ -636,6 +638,8 @@ class Response
         $routes = [
             'app_fetch_payments',
             'support_page_otp_verify',
+            'payment_page_fetch_records',
+            'payment_page_fetch_records_options'
         ];
 
         if (in_array($route, $routes, true) === true)

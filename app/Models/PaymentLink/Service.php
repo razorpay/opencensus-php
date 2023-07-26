@@ -413,7 +413,7 @@ class Service extends Base\Service
         catch (\Throwable)
         {
             throw new BadRequestValidationFailureException(
-                'Primary Reference Id\'s Mismatch.');
+                'No Records Found');
         }
 
         $valid = $this->checkSecondaryRefIds($input,$paymentPageRecord, $udfSchema);

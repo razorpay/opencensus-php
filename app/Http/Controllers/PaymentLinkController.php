@@ -471,6 +471,44 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchRecordsForPLOptions(string $paymentLinkId, CurrentRequest $request)
+    {
+        $this->cloudflareRequest();
+
+        $response = ApiResponse::json([]);
+
+        $origin = $request->headers->get('origin');
+
+        $urls = $this->app['config']->get('app.payment_page_allowed_cors_url');
+
+        $originHost = $this->identifyHost($origin);
+
+        $urlHosts = [];
+
+        foreach ($urls as $url)
+        {
+            $urlHosts[] = $this->identifyHost($url);
+        }
+
+        if (in_array($originHost, $urlHosts) === true || $this->service()->cdsHas($origin))
+        {
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
+
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+            return $response;
+        }
+
+        $response->headers->set(
+            'Access-Control-Allow-Origin',
+            $this->app['config']->get('app.payment_link_hosted_base_url')
+        );
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
+    }
+
     public function handleExists(string $slug)
     {
         $exists = $this->service()->paymentHandleExists($slug);
