@@ -20,6 +20,10 @@ class ApiTraceProcessor
 {
     protected $app;
 
+    // identifies if it is first log for the request
+    // used to drop fields which won't change in subsequent logs for that request
+    private bool $isFirstLog;
+
     //
     // This regex is copied from
     // https://adamcaudill.com/2011/10/20/masking-credit-cards-for-pci/
@@ -129,6 +133,7 @@ class ApiTraceProcessor
     public function __construct($app)
     {
         $this->app = $app;
+        $this->isFirstLog = true;
     }
 
     public function __invoke(array $record)
@@ -171,7 +176,19 @@ class ApiTraceProcessor
 
         $this->addTraceAttributesForWorkers($record);
 
+        $this->addRouteName($record);
+
+        $this->dropRecurringLogFields($record);
+
+        $this->isFirstLog = false;
+
         return $record;
+    }
+
+    // adds route name instead of url
+    protected function addRouteName(& $record): void
+    {
+        $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
     }
 
     protected function addHighTierLogEntry(& $record): void
@@ -536,6 +553,36 @@ class ApiTraceProcessor
         if ($jobUuid !== null)
         {
             $record['request']['job_uuid'] = $jobUuid;
+        }
+    }
+
+    // Drops recurring and superfluous log fields
+    private function dropRecurringLogFields(array &$record): void
+    {
+        if ($this->isFirstLog === false) {
+            // unset product it remains same throughout request
+            unset($record['request']['product']);
+
+            // client ip doesn't changes during request
+            unset($record['request']['client_ip']);
+
+            // user_email is either not available or gets scrubbed
+            unset($record['request']['user_email']);
+
+            // mode remains constant for request
+            unset($record['mode']);
+
+            // method(GET,POST etc) remains constant for request
+            unset($record['request']['method']);
+
+            // tlsVersion not required
+            unset($record['request']['x-amzn-tls-version']);
+
+            // remove url
+            unset($record['request']['url']);
+
+            // remove channel constant values
+            unset($record['channel']);
         }
     }
 }

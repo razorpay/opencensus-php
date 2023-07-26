@@ -42,7 +42,7 @@ class DatabaseEventListener
      */
     public function handle(QueryExecuted $event)
     {
-        $rand = rand(1,10000);
+        $rand = rand(1,500000);
 
         if ($rand > $this->sampleRate)
         {
