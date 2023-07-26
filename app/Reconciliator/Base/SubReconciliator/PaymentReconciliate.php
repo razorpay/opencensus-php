@@ -426,7 +426,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewayAmount($this->payment, $rowDetails);
 
-        if ($this->payment->isRoutedThroughCardPayments() === true)
+        if ($this->payment->isRoutedThroughCardPayments() === true or $this->payment->getCpsRoute() ===  Payment\Entity::REARCH_CARD_PAYMENT_SERVICE )
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
         }
