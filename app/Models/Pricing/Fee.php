@@ -3,9 +3,13 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Constants\Environment;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Exception\LogicException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -118,6 +122,8 @@ class Fee extends Base\Core
      */
     public function calculateMerchantFees($entity): array
     {
+        $startTimeMs = round(microtime(true) * 1000);
+
         list($rzpFee, $rzpTax, $rzpFeeSplit) = $this->calculateMerchantRZPFees($entity);
 
         list($partnerFee, $partnerTax, $partnerFeeSplit) = $this->calculatePartnerFees($entity);
@@ -130,12 +136,23 @@ class Fee extends Base\Core
 
         $this->validateFees($entity, $totalFee);
 
+        $endTimeMs = round(microtime(true) * 1000);
+        $timeTaken = $endTimeMs - $startTimeMs;
+        $this->trace->histogram(Metrics::PRICING_FEE_CALCULATION_TIME_IN_MS, $timeTaken);
+
         return [$totalFee, $totalTax, $feeSplit];
     }
 
     public function calculateTerminalFees($entity, $pricing): array
     {
         list($rzpFee, $rzpTax, $rzpFeeSplit) = $this->calculateTerminalRZPFees($entity, $pricing);
+
+        return [$rzpFee, $rzpTax, $rzpFeeSplit];
+    }
+
+    public function calculateVASFees(array $input, string $merchant_id, $feature): array
+    {
+        list($rzpFee, $rzpTax, $rzpFeeSplit) = $this->calculateVASRZPFees($input, $merchant_id, $feature);
 
         return [$rzpFee, $rzpTax, $rzpFeeSplit];
     }
@@ -170,6 +187,42 @@ class Fee extends Base\Core
         $calculator = Calculator\Base::make($entity, Product::PRIMARY, 'terminal');
 
         return $calculator->calculate($pricing);
+    }
+
+    public function getMerchantEntity($merchant_id){
+        $merchant_entity = (new \RZP\Models\Merchant\Repository())->getMerchant($merchant_id);
+
+        $entity = new PublicEntity();
+        $entity->merchant = $merchant_entity;
+        $this->trace->info(
+            TraceCode::VAS_PRICING_FETCH_REQUEST,
+            [
+                'Merchant Plan Id :' => $merchant_entity->getPricingPlanId(),
+            ]);
+
+        return $entity;
+    }
+
+    /**
+     * @throws LogicException
+     * @throws ServerErrorException
+     */
+    public function calculateVASRZPFees(array $input, string $merchant_id, $feature): array
+    {
+        try {
+            $entity = $this->getMerchantEntity($merchant_id);
+        } catch (\Exception)
+        {
+            throw new Exception\ServerErrorException("Merchant Entity Fetch Failed for MID: $merchant_id" ,ErrorCode::SERVER_ERROR_MERCHANT_ENTITY_FETCH_FAILED);
+        }
+
+        $calculator = new Calculator\PayAsYouGo($entity, Product::PRIMARY);
+
+        $pricingPlanId = $entity->merchant->getPricingPlanId();
+
+        $pricing = $this->repo->getPricingRulesByPlanIdProductAndFeatureWithoutOrgId($pricingPlanId, Product::PRIMARY, $feature);
+
+        return $calculator->calculateVASPrice($pricing, $feature, $input);
     }
 
     protected function getCalculator($entity)
@@ -252,11 +305,11 @@ class Fee extends Base\Core
      * do not have a pricing rule defined for them.
      *
      * @param Plan              $pricingPlan
-     * @param Base\PublicEntity $entity
+     * @param PublicEntity $entity
      *
      * @return Plan
      */
-    protected function addFallbackPricingRules(Plan $pricingPlan, Base\PublicEntity $entity)
+    protected function addFallbackPricingRules(Plan $pricingPlan, PublicEntity $entity)
     {
         $merchant = $entity->merchant;
 
@@ -328,7 +381,7 @@ class Fee extends Base\Core
         return $pricingPlan;
     }
 
-    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, Base\PublicEntity $entity)
+    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, PublicEntity $entity)
     {
         $merchant = $entity->merchant;
 
@@ -507,7 +560,7 @@ class Fee extends Base\Core
         return self::DEFAULT_PRICING_PLAN_ID;
     }
 
-    public function getProductForEntity(Base\PublicEntity $entity): string
+    public function getProductForEntity(PublicEntity $entity): string
     {
         // Source entities which creates transaction on multiple balance have balance itself.
 
@@ -521,7 +574,7 @@ class Fee extends Base\Core
         return Product::PRIMARY;
     }
 
-    protected function getCustomPricingPlan(Base\PublicEntity $entity)
+    protected function getCustomPricingPlan(PublicEntity $entity)
     {
         return null;
     }

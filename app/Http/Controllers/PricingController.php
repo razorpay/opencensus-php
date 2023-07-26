@@ -163,4 +163,13 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function calculateVASPrice()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->calculateVASPrice($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

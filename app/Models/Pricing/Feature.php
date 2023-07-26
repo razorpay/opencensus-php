@@ -22,6 +22,10 @@ class Feature
     const TOKEN_HQ                = 'token_hq';
     const UPI_INAPP               = 'upi_inapp';
 
+    // vas specific pricing features
+    const SMS                     = 'sms';
+    const AFFORDABILITY           = 'affordability';
+
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
         self::PAYMENT,
@@ -35,6 +39,13 @@ class Feature
         self::SETTLEMENT_ONDEMAND,
         self::OPTIMIZER,
         self::ESAUTOMATIC_RESTRICTED,
+        self::TOKEN_HQ,
+        self::AFFORDABILITY_WIDGET,
+    ];
+
+    const VAS_FEATURE_LIST = [
+        self::AFFORDABILITY,
+        self::SMS,
         self::TOKEN_HQ
     ];
 

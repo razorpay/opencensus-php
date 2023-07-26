@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
         Entity::APP_NAME                => 'sometimes|nullable|string',
-        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment,affordability_widget|nullable|string',
+        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment,affordability_widget,sms|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
@@ -144,6 +144,15 @@ class Validator extends Base\Validator
         'terminals.*.plan_id'     => 'required|alpha_num',
         'terminals.*.gateway'     => 'required|string',
         'payment'                 => 'required|array',
+    ];
+
+    protected static $vasPricingCostRules = [
+        'merchant_id'                               => 'required|string|size:14',
+        Entity::FEATURE                             => 'required|string|in:affordability,sms,token_hq',
+        Pricing\Calculator\PayAsYouGo::UNITS        => 'sometimes|nullable|integer|min:0',
+        Pricing\Calculator\PayAsYouGo::AMOUNT       => 'sometimes|nullable|integer|min:0',
+        Pricing\Calculator\PayAsYouGo::METHOD       => 'required_unless:feature,sms|nullable|string',
+        Pricing\Calculator\PayAsYouGo::FREQUENCY    => 'sometimes|nullable|in:daily,weekly,monthly,yearly'
     ];
 
     protected function validatePlanName($input)
@@ -379,6 +388,15 @@ class Validator extends Base\Validator
             ];
         }
 
+        if (in_array($input[Entity::FEATURE], Feature::VAS_FEATURE_LIST))
+        {
+            // Valid pricing methods for which payment method type can be added
+            $validPricingMethods = array_merge(
+                Pricing\Calculator\PayAsYouGo::AFFORDABILITY_METHOD_LIST,
+                Pricing\Calculator\PayAsYouGo::TOKENHQ_METHOD_LIST,
+                [null]);
+        }
+
         if (empty($input[Entity::PAYMENT_METHOD_TYPE]) === false)
         {
             $pricingMethod = $input[Entity::PAYMENT_METHOD];
@@ -388,6 +406,25 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The payment method type field may be sent only when payment method is ' .
                     implode('/', $validPricingMethods));
+            }
+
+            if (in_array($input[Entity::FEATURE], Feature::VAS_FEATURE_LIST))
+            {
+                $validPricingMethodTypes = [
+                    null,
+                    Pricing\Calculator\PayAsYouGo::FREQUENCY_DAILY,
+                    Pricing\Calculator\PayAsYouGo::FREQUENCY_MONTHLY,
+                    Pricing\Calculator\PayAsYouGo::FREQUENCY_YEARLY
+                ];
+
+                $pricingMethodType = $input[Entity::PAYMENT_METHOD_TYPE];
+                if (in_array($pricingMethodType, $validPricingMethodTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The payment method type field can contain only ' .
+                        implode('/', $validPricingMethodTypes) .
+                        ' in case of VAS type features');
+                }
             }
         }
     }

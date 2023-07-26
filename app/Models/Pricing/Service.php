@@ -374,6 +374,32 @@ class Service extends Base\Service
         return $buyPricingRules->toArrayWithItems();
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    public function calculateVASPrice($input)
+    {
+        $this->trace->info(
+            TraceCode::VAS_PRICING_FETCH_REQUEST,
+            [
+                'request body' => $input,
+            ]);
+
+        (new Validator())->validateInput("vasPricingCost", $input);
+
+        $merchant_id = $input[Base\PublicEntity::MERCHANT_ID];
+        $feature = $input[Entity::FEATURE];
+
+        $input[Pricing\Calculator\PayAsYouGo::UNITS] = $input[Pricing\Calculator\PayAsYouGo::UNITS] ?? 0;
+        $input[Pricing\Calculator\PayAsYouGo::METHOD] = $input[Pricing\Calculator\PayAsYouGo::METHOD] ?? null;
+        $input[Pricing\Calculator\PayAsYouGo::AMOUNT] = $input[Pricing\Calculator\PayAsYouGo::AMOUNT] ?? 0;
+        $input[Pricing\Calculator\PayAsYouGo::FREQUENCY] = $input[Pricing\Calculator\PayAsYouGo::FREQUENCY] ?? null;
+
+
+        return (new Pricing\Fee())->calculateVASFees($input, $merchant_id, $feature);
+
+    }
+
     private function redactBulkInput($input)
     {
         return [];

@@ -1493,6 +1493,10 @@ return [
         ],
     ],
 
+    'pricing' => [
+        'secret'        => env('PRICING_API_SECRET'),
+    ],
+
     'developer_console' => [
         'enabled'   => env('DEVELOPER_CONSOLE_ENABLED', false),
         'host'     => env('DEVELOPER_CONSOLE_HOST'),

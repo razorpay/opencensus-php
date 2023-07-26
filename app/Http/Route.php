@@ -880,6 +880,8 @@ class Route
         'emerchantpay_get_request_data'            => ['get',      'merchant/international/apm_request',             'MerchantApmEnablementController@getEmerchantpayRequestData'        ],
         'emerchantpay_create_request_data'         => ['post',     'merchant/international/apm_request',             'MerchantApmEnablementController@postEmerchantpayRequestData'       ],
         'emerchantpay_owner_delete'                => ['delete',   'merchant/international/apm_request/owner',       'MerchantApmEnablementController@deleteEmerchantpayRequestOwner'    ],
+
+        //pricing related routes
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
         'buy_pricing_terminal_cost'                => ['post',     'buy_pricing/terminal_cost',                      'PricingController@postCalculateBuyPricingCost'                     ],
@@ -899,6 +901,10 @@ class Route
         'buy_pricing_delete_plan_rule_force'       => ['delete',   'buy_pricing/{planId}/rule/{ruleId}/force',       'PricingController@deleteBuyPlanGroupedRuleForce'                   ],
         'pricing_update_plan_rule'                 => ['patch',    'pricing/{planId}/rule/{ruleId}',                 'PricingController@updatePlanRule'                                  ],
         'buy_pricing_update_plan_rule'             => ['patch',    'buy_pricing/{planId}/rule/{ruleId}',             'PricingController@updateBuyPricingPlanRule'                        ],
+
+        //pricing-sdk related routes
+        'pricing_get_vas_price'                   =>  ['get',     'pricing/vas/fetch',                              'PricingController@calculateVASPrice'                               ],
+
         'schedule_create'                          => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
         'schedule_fetch'                           => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
         'schedule_fetch_multiple'                  => ['get',      'schedules',                                      'ScheduleController@getSchedules'                                   ],
@@ -5951,6 +5957,8 @@ class Route
         'payment_card_recon_create_transaction',
 
         'developer_console_maintenance',
+
+        'pricing_get_vas_price',
 
         'payout_update_tax_payment_id',
 
@@ -15939,6 +15947,10 @@ class Route
             'ledger_fetch_multiple_transactions',
             'fetch_account_types_ledger',
             'delete_merchants_ledger',
+        ],
+
+        'pricing' => [
+            'pricing_get_vas_price',
         ],
 
         'payout_link_customer_page' => [
