@@ -309,6 +309,40 @@ class GatewayController extends Controller
             ];
         }
 
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Redirecting to dark for hdfc recurring payment test merchant id
+        if(($gatewayDriver === Gateway::UPI_MINDGATE) and  ($routeName === 'gateway_payment_callback_recurring'))
+        {
+            $newInput = Request::getContent();
+            $decodeData = json_decode($newInput, true);
+
+            if ((isset($decodeData['payload']) === true) and
+                (isset($decodeData['ivToken']) === true) and
+                (isset($decodeData['pgMerchantId']) === 'HDFC000023254578'))
+            {
+                try
+                {
+                    $headers = Request::header();
+                    $content = Request::getContent();
+
+                    $decodeData['requestInfo']['pspRefNo'] = 'MI1bEF1yXyrVLM1create1';
+
+                    $redirect = $gateway->redirectCallbackIfRequired($decodeData, $content, $headers);
+                }
+                catch (\Exception $exception)
+                {
+                    $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYMENT_CALLBACK_FAILURE);
+
+                    return $gateway->postProcessServerCallback($input, $exception);
+                }
+                if (empty($redirect) === false)
+                {
+                    return $redirect;
+                }
+            }
+        }
+
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
         if ((isset($input['upi_mandate']) === true) and
@@ -316,8 +350,6 @@ class GatewayController extends Controller
         {
             return $this->processMandateServerCallback($input, $gatewayDriver);
         }
-
-        $routeName = $this->app['api.route']->getCurrentRouteName();
 
         if ((Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true) and
             ($routeName === 'gateway_payment_callback_recurring'))
