@@ -7787,7 +7787,7 @@ trait Authorize
                 'rupay_recurring'                 => $rupay_recurring
             ];
 
-            if ($payment['recurring'] === false){
+            if ($payment['recurring'] === false && Environment::isEnvironmentQA($this->app['env']) === false){
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
