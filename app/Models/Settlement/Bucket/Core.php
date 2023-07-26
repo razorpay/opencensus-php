@@ -332,15 +332,53 @@ class Core extends Base\Core
                     throw new Exception\LogicException('Remitter Name or Address not found for OPGSP Settlement Gateway');
                 }
             }
+        }
 
-            // Checks if Merchant is enabled for Currency Level Settlements
-            if($payment->merchant->isSettlementByCurrencyEnabled() === true)
+        // If this feature flag is enabled on a merchant, we do settlements on currency level
+        // Transactions like payments, refunds, adjustments on disputes / payments can be handled
+        // on basis of currencies. In case of reversals or adjustments without payments linkage
+        // we use INR as default with assumptions INR balance will always be greater than any other
+        // currencies balance.
+        // Handling Payment, Adjustments and any other type of transactions here expect refunds.
+        // which is currently handled in below getMetaForSource function to avoid multiple DB Fetch
+        // for external entities.
+        
+        if($txn->merchant->isSettlementByCurrencyEnabled() === true)
+        {
+            $payment = null;
+
+            if ($txn->isTypePayment() === true)
             {
-                $meta += [
-                    "settlement_by_currency" => true,
-                    "payment_currency" => $payment->getCurrency()
-                ];
+                $payment = $txn->source;
             }
+
+            if ($txn->isTypeAdjustment() === true)
+            {
+                $adjustment = $txn->source;
+            
+                if(isset($adjustment) === true)
+                {
+                    if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
+                    {
+                        $payment = $adjustment->entity->payment;
+                    }
+        
+                    if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
+                    {
+                        $payment = $adjustment->entity;
+                    }
+                }
+            }
+
+            if(empty($meta) === true || isset($meta) === false)
+            {
+                $meta = [];
+            }
+
+            $meta += [
+                "settlement_by_currency" => true,
+                "payment_currency" => $payment ? $payment->getCurrency() : Currency::INR
+            ];
         }
 
         // Add meta details for refund type txn
