@@ -1,10 +1,9 @@
 import React, { useContext } from 'react';
-import AsyncButton from 'react-async-button';
-import Button from 'common/new-ui/Button';
+import { Button, Box } from '@razorpay/blade/components';
 import FIRCFormContext from './FIRCFormContext';
 
 const Confirm = ({ onConfirm }) => {
-  const { formState, handlePrev } = useContext(FIRCFormContext);
+  const { formState, handlePrev, isSubmitting } = useContext(FIRCFormContext);
   const { purpose_code, purpose_code_desc, iec_code } = formState;
 
   return (
@@ -23,18 +22,20 @@ const Confirm = ({ onConfirm }) => {
         )}
       </div>
 
-      <div className="footer-section">
-        <AsyncButton
-          type="button"
-          className="btn btn-primary next-btn m-0"
-          text="Confirm"
-          pendingText="Updating..."
-          onClick={onConfirm}
-        />
-        <Button.Transparent className="back-btn m-0" onClick={handlePrev}>
-          Back
-        </Button.Transparent>
-      </div>
+      <Box
+        display="flex"
+        gap="1rem"
+        paddingX="1.5rem"
+        paddingBottom="spacing.6"
+        className="footer-section"
+      >
+        <Button onClick={handlePrev} variant="secondary" isFullWidth>
+          Select Another
+        </Button>
+        <Button onClick={onConfirm} isLoading={isSubmitting} isFullWidth>
+          Confirm
+        </Button>
+      </Box>
     </div>
   );
 };

@@ -20,7 +20,17 @@ export const activateAccount =
       dispatch(activateAccountSuccess({ type, response: response?.data ?? [] }));
       return response;
     } catch (error) {
-      dispatch(activateAccountError({ type, error }));
+      let errors: string[] = [];
+
+      if (error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors)) {
+        errors = error.errors;
+      } else if (error instanceof Error) {
+        errors = [error.message];
+      } else {
+        errors = ['Something went wrong. Please try again later.'];
+      }
+
+      dispatch(activateAccountError({ type, errors }));
       throw error;
     }
   };

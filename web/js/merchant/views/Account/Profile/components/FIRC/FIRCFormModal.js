@@ -4,6 +4,7 @@ import FIRCFormContext from './FIRCFormContext';
 import SelectPurposeCode from './SelectPurposeCode';
 import EnterIECCode from './EnterIECCode';
 import Confirm from './Confirm';
+import TicketSuccess from 'merchant/views/Account/Profile/components/FIRC/TicketSuccess';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
@@ -11,18 +12,21 @@ import { getPurposeCodes, updatePurposeCode } from 'merchant/reducers/profile';
 import { MODAL_HEADING, SPECIAL_PURPOSE_CODES, computeSearch } from './utility';
 import 'merchant/views/Account/Profile/components/FIRC/css/firc.styl';
 
+import { createSupportTicketForPurposeCode } from 'merchant/views/Account/Profile/components/FIRC/service';
+
 const FIRCFormModal = (props) => {
+  const { closeModal, showNotification, onSubmit, editMode, user, code } = props;
+
   const [step, setStep] = useState(1);
   const [list, setList] = useState({ isLoading: true, data: [] });
   const [search, setSearch] = useState({ text: '', results: [] });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [state, setState] = useState({
-    purpose_code: '',
+    purpose_code: code ?? '',
     purpose_code_desc: '',
     is_purpose_code_special: false,
     iec_code: '',
   });
-
-  const { closeModal, showNotification, onSubmit } = props;
 
   useEffect(() => {
     getPurposeCodes()
@@ -80,6 +84,29 @@ const FIRCFormModal = (props) => {
       iec_code: state.iec_code ? state.iec_code : null,
     };
 
+    setIsSubmitting(true);
+
+    // In edit mode, raise a support ticket to update the purpose code
+    if (editMode) {
+      return createSupportTicketForPurposeCode({
+        user,
+        oldPurposeCode: code,
+        newPurposeCode: formData.purpose_code,
+      })
+        .then(() => {
+          setStep(4);
+        })
+        .catch(() => {
+          showNotification({
+            type: 'error',
+            message: 'Failed to raise support ticket.',
+          });
+        })
+        .finally(() => {
+          setIsSubmitting(false);
+        });
+    }
+
     return onSubmit(formData)
       .then(({ data }) => {
         if (data.success === true) {
@@ -95,10 +122,16 @@ const FIRCFormModal = (props) => {
           message: 'Sorry! Update failed.',
         });
       })
-      .finally(() => closePopup());
+      .finally(() => {
+        setIsSubmitting(false);
+        closePopup();
+      });
   }, [
     closePopup,
     onSubmit,
+    code,
+    editMode,
+    user,
     showNotification,
     state.iec_code,
     state.purpose_code,
@@ -121,6 +154,8 @@ const FIRCFormModal = (props) => {
         return <EnterIECCode onChange={handleInput} />;
       case 3:
         return <Confirm onConfirm={handleConfirm} />;
+      case 4:
+        return <TicketSuccess onClose={closePopup} />;
       default:
         return null;
     }
@@ -134,6 +169,8 @@ const FIRCFormModal = (props) => {
         handlePrev,
         handleNext,
         closePopup,
+        existingCode: code,
+        isSubmitting,
       }}
     >
       <div className="firc-container">
@@ -144,10 +181,12 @@ const FIRCFormModal = (props) => {
   );
 };
 
+const mapStateToProps = (state) => ({ user: state.session.user });
+
 const mapDispatchToProps = {
   closeModal: fnCloseModal,
   showNotification: fnShowNotification,
   onSubmit: updatePurposeCode,
 };
 
-export default connect(null, mapDispatchToProps)(FIRCFormModal);
+export default connect(mapStateToProps, mapDispatchToProps)(FIRCFormModal);

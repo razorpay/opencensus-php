@@ -9,8 +9,10 @@ import Accordion, {
 import FIRCFormContext from './FIRCFormContext';
 
 const SelectPurposeCode = (props) => {
-  const { formState, handleNext } = useContext(FIRCFormContext);
+  const { formState, existingCode, handleNext } = useContext(FIRCFormContext);
   const { search, onSearch, clearSearch, onSelect, purposeCodeList } = props;
+  const disabled =
+    formState.purpose_code === '' || (existingCode && formState.purpose_code === existingCode);
 
   if (purposeCodeList.isLoading) {
     return (
@@ -91,11 +93,7 @@ const SelectPurposeCode = (props) => {
       </div>
 
       <div className="footer-section">
-        <Button.Primary
-          className="btn-block"
-          disabled={formState.purpose_code === ''}
-          onClick={handleNext}
-        >
+        <Button.Primary className="btn-block" disabled={disabled} onClick={handleNext}>
           Next
         </Button.Primary>
       </div>

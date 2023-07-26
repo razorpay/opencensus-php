@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -33,10 +33,19 @@ const AcknowledgementPopup = lazy(
     ),
 );
 
+const PurposeCodeIneligiblePopup = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PurposeCodeIneligiblePopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/PurposeCodeIneligiblePopup'
+    ),
+);
+
 const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
   leafList,
   config,
   apiError,
+  isIneligiblePurposeCodeModalOpen,
+  purposeCode,
   fetchB2bAccounts,
   fetchPurposeCode,
   showNotification,
@@ -64,6 +73,17 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
     });
   };
 
+  const onOpenPurposeCodeIneligiblePopup = useCallback(() => {
+    openModal({
+      size: 'medium',
+      component: (
+        <SuspenseWithLoader>
+          <PurposeCodeIneligiblePopup code={purposeCode} />
+        </SuspenseWithLoader>
+      ),
+    });
+  }, [openModal, purposeCode]);
+
   /**
    * We are calling the fetch purpose code api to check if purpose code is
    * attached with the merchant or not, depending upon which we'll ask merchant
@@ -79,10 +99,16 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
     if (apiError) {
       showNotification({
         type: 'error',
-        message: apiError?.errors,
+        message: apiError,
       });
     }
-  }, [apiError]);
+  }, [apiError, showNotification]);
+
+  useEffect(() => {
+    if (isIneligiblePurposeCodeModalOpen && purposeCode) {
+      onOpenPurposeCodeIneligiblePopup();
+    }
+  }, [isIneligiblePurposeCodeModalOpen, onOpenPurposeCodeIneligiblePopup, purposeCode]);
 
   return (
     <ErrorBoundary rank={Ranks.P1} team={Teams.CROSS_BORDER} resetOnProps>
@@ -105,6 +131,7 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
 
 const mapStateToProps = (state) => ({
   apiError: state.b2bExportsAccounts.error,
+  isIneligiblePurposeCodeModalOpen: state.b2bExportsAccounts.isIneligiblePurposeCodeModalOpen,
 });
 
 const mapDispatchToProps = (dispatch) =>

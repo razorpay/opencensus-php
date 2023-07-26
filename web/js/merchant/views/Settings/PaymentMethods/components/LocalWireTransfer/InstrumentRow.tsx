@@ -14,6 +14,7 @@ import {
   DETAIL_FIELDS,
   DEACTIVATED,
   VA_USD,
+  RAZORPAY_SUPPORT_LINK,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 
 //components
@@ -82,7 +83,10 @@ const InstrumentRow: React.FC<InstrumentRowPropsInterface> = (props) => {
           message={`Your ${accountDetails?.va_currency} Bank account has been deactivated`}
           action={
             <p>
-              To activate your account, please <a>contact our support team</a>
+              To activate your account, please{' '}
+              <a target="_blank" href={RAZORPAY_SUPPORT_LINK} rel="noreferrer noopener">
+                contact our support team
+              </a>
             </p>
           }
         />

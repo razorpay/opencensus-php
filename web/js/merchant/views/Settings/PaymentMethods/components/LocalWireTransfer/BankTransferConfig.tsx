@@ -18,7 +18,10 @@ import {
   BankTransferConfigInterface,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
-import { VA_USD } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import {
+  VA_USD,
+  DEACTIVATED,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 
 const FircFormModal = lazy(
   () =>
@@ -33,6 +36,8 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
     isFetching,
     user,
     fircData,
+    accountsDeactivated,
+    reason,
     openModal,
     ...props
   }) => {
@@ -42,8 +47,11 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
       if (!purposeCode || !promoterPan) {
         return ACTION_REQUIRED;
       }
+      if (accountsDeactivated) {
+        return DEACTIVATED;
+      }
       return GREYED;
-    }, [purposeCode, promoterPan]);
+    }, [purposeCode, promoterPan, accountsDeactivated]);
     const shouldShowAction = containerStatus !== GREYED;
     const shouldShowListAction = containerStatus === GREYED && !isFetching;
 
@@ -52,13 +60,23 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
         size: 'medium',
         component: (
           <SuspenseWithLoader>
-            <FircFormModal />
+            <FircFormModal editMode={Boolean(purposeCode)} code={purposeCode} />
           </SuspenseWithLoader>
         ),
       });
     };
 
     const getContainerError = (): ContainerErrorType | boolean => {
+      if (accountsDeactivated) {
+        return {
+          message: reason,
+          action: (
+            <p>
+              Update your <a onClick={addPurposeCode}>purpose code</a>
+            </p>
+          ),
+        };
+      }
       if (!purposeCode) {
         return {
           message: `Purpose code is required for activating ${method} account`,
@@ -90,11 +108,13 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
       containerError: getContainerError(),
     };
 
-    return <Component {...props} config={config} />;
+    return <Component {...props} purposeCode={purposeCode} config={config} />;
   };
 
   const mapStateToProps = (state) => ({
     accounts: state.b2bExportsAccounts.data,
+    accountsDeactivated: state.b2bExportsAccounts.accountsDeactivated,
+    reason: state.b2bExportsAccounts.reason,
     isFetching: state.b2bExportsAccounts.isLoading,
     user: state.session.user,
     fircData: state.profile.fircDetails,

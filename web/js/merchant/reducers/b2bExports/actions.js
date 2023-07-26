@@ -153,6 +153,8 @@ const createPayoutSuccess = () => {
   };
 };
 
+const closePurposeCodeIneligibleModal = () => {};
+
 export {
   uploadInvoice,
   uploadInvoiceError,
@@ -176,4 +178,5 @@ export {
   fetchBeneficiaryDetailsPending,
   fetchBeneficiaryDetailsSuccess,
   fetchBeneficiaryDetailsError,
+  closePurposeCodeIneligibleModal,
 };

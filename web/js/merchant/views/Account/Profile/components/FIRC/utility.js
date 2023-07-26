@@ -16,7 +16,7 @@ export const MONTHS = [
 export const MODAL_HEADING = {
   1: 'Select Purpose Code',
   2: 'Importer/Exporter Code',
-  3: 'Confirmation',
+  3: 'Confirm Purpose Code',
 };
 
 export const SPECIAL_PURPOSE_CODES = ['P0103', 'P0807'];

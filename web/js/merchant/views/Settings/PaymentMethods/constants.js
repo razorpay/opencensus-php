@@ -17,6 +17,7 @@ export const ZESTMONEY = 'ZestMoney';
 export const GETSIMPL = 'Simpl';
 export const FLEXIPAY = 'Flexipay';
 export const DISABLED_INSTRUMENT = [ZESTMONEY, GETSIMPL, FLEXIPAY];
+export const DEACTIVATED = 'deactivated';
 
 export const statusClass = {
   Request: 'btn btn-primary',

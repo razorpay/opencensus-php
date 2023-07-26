@@ -122,7 +122,7 @@ function b2bExportsAccountsReducer(
     case `${B2B_EXPORTS_FETCH_ACCOUNTS}::ERROR`: {
       return merge(state, {
         isLoading: false,
-        error: action.payload,
+        error: action.payload?.errors,
       });
     }
     case `${B2B_EXPORTS_FETCH_ACCOUNTS}::SUCCESS`: {

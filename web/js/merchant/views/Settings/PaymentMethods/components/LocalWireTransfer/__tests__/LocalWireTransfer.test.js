@@ -1,5 +1,8 @@
 import { render, screen, waitFor, userEvent } from 'test-utils';
-import { getLeafListData } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
+import {
+  getLeafListData,
+  getAccounts,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
 
 import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
 
@@ -138,6 +141,45 @@ describe('When all required info is available for ACH account creation', () => {
     expect(showNotification).toHaveBeenCalledWith({
       type: 'error',
       message: ['dummy error'],
+    });
+  });
+});
+
+describe('When purpose code provided is not valid for ACH', () => {
+  const fetchPurposeCode = jest.spyOn(purposeCodeActions, 'fetchPurposeCode');
+  const openModal = jest.spyOn(modalActions, 'openModal');
+  const leafList = getLeafListData(GREYED);
+
+  test('Should open PurposeCodeIneligible Popup on render', () => {
+    fetchPurposeCode.mockImplementation(() => (dispatch) => {
+      return dispatch({
+        type: 'GET_FIRC_DETAILS::SUCCESS',
+        payload: {
+          data: {
+            merchants: [
+              {
+                purpose_code: '12121',
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    renderComponent(
+      { leafList },
+      {
+        session: { user: { promoter_pan_name: 'sanchit' } },
+        b2bExportsAccounts: {
+          isIneligiblePurposeCodeModalOpen: true,
+          data: getAccounts(),
+        },
+      },
+    );
+
+    expect(openModal).toHaveBeenCalledWith({
+      size: 'medium',
+      component: expect.any(Object),
     });
   });
 });

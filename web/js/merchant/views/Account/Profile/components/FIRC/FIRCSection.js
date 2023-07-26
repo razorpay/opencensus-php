@@ -65,24 +65,34 @@ const SelectHSCode = ({ clickHandler }) => (
   </SuspenseWithLoader>
 );
 
-const EditValue = ({ code, description, showPopper = false }) => (
-  <div>
-    <span>
-      {code}
-      {showPopper && (
-        <Popover align="top" theme="dark">
-          <PopoverBody>
-            <b>{code}</b> - {description}
-          </PopoverBody>
-        </Popover>
-      )}
-    </span>
+const EditValue = ({ code, description, showPopper = false, onEditPurposeCode }) => {
+  const handleEditClick = () => {
+    if (typeof onEditPurposeCode === 'function') {
+      onEditPurposeCode(code);
+    } else {
+      raiseTicket();
+    }
+  };
 
-    <Button.Transparent onClick={() => raiseTicket()}>
-      <i className="i i-edit p-l" />
-    </Button.Transparent>
-  </div>
-);
+  return (
+    <div>
+      <span>
+        {code}
+        {showPopper && (
+          <Popover align="top" theme="dark">
+            <PopoverBody>
+              <b>{code}</b> - {description}
+            </PopoverBody>
+          </Popover>
+        )}
+      </span>
+
+      <Button.Transparent onClick={handleEditClick}>
+        <i className="i i-edit p-l" />
+      </Button.Transparent>
+    </div>
+  );
+};
 
 const DownloadText = ({ clickHandler }) => (
   <a onClick={clickHandler}>
@@ -116,12 +126,12 @@ const FIRCSection = (props) => {
     });
   };
 
-  const openFircForm = () => {
+  const openFircForm = (code) => {
     props.openModal({
       size: 'medium',
       component: (
         <SuspenseWithLoader>
-          <FIRCFormModal />
+          <FIRCFormModal editMode={Boolean(code)} code={code} />
         </SuspenseWithLoader>
       ),
     });
@@ -179,6 +189,7 @@ const FIRCSection = (props) => {
                     code={data.purpose_code}
                     description={data.purpose_code_desc}
                     showPopper={true}
+                    onEditPurposeCode={openFircForm}
                   />
                 ) : (
                   <SelectPurposeCode clickHandler={openFircForm} />

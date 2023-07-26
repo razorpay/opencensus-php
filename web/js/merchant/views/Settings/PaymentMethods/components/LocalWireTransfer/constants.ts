@@ -13,3 +13,4 @@ export const ACTIVATED = 'activated';
 export const DEACTIVATED = 'deactivated';
 export const VA_USD = 'USD';
 export const VA_SWIFT = 'SWIFT';
+export const RAZORPAY_SUPPORT_LINK = 'https://razorpay.com/support/#request';

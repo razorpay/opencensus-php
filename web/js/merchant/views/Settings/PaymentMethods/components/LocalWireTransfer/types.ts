@@ -59,6 +59,8 @@ export interface LocalWireTransferPropsInterface {
   leafList: LeafListType;
   config: BankTransferConfigType;
   apiError: { errors?: Array<string> };
+  purposeCode?: string;
+  isIneligiblePurposeCodeModalOpen: boolean;
   fetchPurposeCode: () => void;
   fetchB2bAccounts: () => void;
   showNotification: (payload: { type: string; message: unknown }) => void;
@@ -94,6 +96,8 @@ export interface BankTransferConfigInterface {
   fircData: { data: { purpose_code: string | null } };
   openModal: (payload: { size: string; component: JSX.Element }) => void;
   props: unknown;
+  accountsDeactivated: boolean;
+  reason: string;
 }
 
 export interface AccountBalancePropsInterface {
@@ -108,3 +112,10 @@ export interface AccountBalancePropsInterface {
   openModal: (payload: { size: string; component: JSX.Element }) => void;
   closeModal: () => void;
 }
+
+export type PurposeCodeIneligibleProps = {
+  code?: string;
+  onOpen: (payload: unknown) => void;
+  onClose: () => void;
+  onCloseAction: () => void;
+};
