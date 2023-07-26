@@ -17,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\DCS\EnableDisableReadFromDCS;
 use RZP\Jobs\DCS\ValidateFeaturesAPIAndDCS;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -1649,6 +1650,14 @@ class Service extends Base\Service
             ValidateFeaturesAPIAndDCS::dispatchNow($input, $this->mode);
             return [
                 'response' => 'DCS Features validate Job dispatched',
+            ];
+        }
+        if ((isset($input['flow']) === true) and ($input['flow'] === 'read_enable'))
+        {
+            // Job to validate the entities in DCS and API for a flag
+            EnableDisableReadFromDCS::dispatchNow($input, $this->mode);
+            return [
+                'response' => 'DCS Read Enable Disable Job dispatched',
             ];
         }
         else

@@ -839,7 +839,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function setDCSConfigKey(string $key, $newValue): array
+    public function setDCSConfigKey(string $key, $newValue): array
     {
         $keys = [];
         $oldValue = Cache::get($key);

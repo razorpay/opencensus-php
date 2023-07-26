@@ -2,11 +2,14 @@
 
 namespace RZP\Jobs\DCS;
 
+use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\Job;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Core;
+use RZP\Models\Feature\Entity;
 use RZP\Services\Dcs\Features\Type;
 use RZP\Trace\TraceCode;
 
@@ -39,7 +42,12 @@ class ValidateFeaturesAPIAndDCS extends Job
             'input' => $this->input
         ]);
 
-        try {
+        try
+        {
+            $assignApi = isset($this->input['assign_api']) === true ? $this->input['assign_api'] : false;
+
+            $assignDcs = isset($this->input['assign_dcs']) === true ? $this->input['assign_dcs'] : false;
+
             if (isset($this->input['feature_name']) === true)
             {
                 $dcsReadEnabledFeatures = $this->input['feature_name'];
@@ -54,12 +62,12 @@ class ValidateFeaturesAPIAndDCS extends Job
 
             // Validate for Org features
             if (key_exists(Type::ORG, $dcsReadEnabledFeatures) === true) {
-                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::ORG], Type::ORG);
+                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::ORG], Type::ORG, $assignApi, $assignDcs);
             }
 
             // Validate for Merchant features
             if (key_exists(Type::MERCHANT, $dcsReadEnabledFeatures) === true) {
-                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::MERCHANT], Type::MERCHANT);
+                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::MERCHANT], Type::MERCHANT, $assignApi, $assignDcs);
             }
         }
         catch(\Throwable $e)
@@ -67,7 +75,7 @@ class ValidateFeaturesAPIAndDCS extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::VALIDATE_ENTITY_ID_API_DCS_FEATURE_JOB_FAILED
+                TraceCode::DCS_VALIDATE_FEATURES_API_AND_DCS_JOB_FAILED
             );
         }
         finally
@@ -77,11 +85,13 @@ class ValidateFeaturesAPIAndDCS extends Job
     }
 
     /**
-     * @param $dcsReadEnabledFeatures
-     * @param $entityType
+     * @param array $dcsReadEnabledFeatures
+     * @param string $entityType
+     * @param bool $assignApi
+     * @param bool $assignDcs
      * @return void
      */
-    public function validateEntityIdsForFeature($dcsReadEnabledFeatures, $entityType): void
+    public function validateEntityIdsForFeature(array $dcsReadEnabledFeatures, string $entityType, bool $assignApi, bool $assignDcs): void
     {
 
         $dcs = App::getFacadeRoot()['dcs'];
@@ -130,6 +140,52 @@ class ValidateFeaturesAPIAndDCS extends Job
                 'api_diff' => $apiDiff,
                 'dcs_diff' => $dcsDiff
             ]);
+
+            if ($assignApi === true)
+            {
+                // no need to check via client so hardcoding the variant.
+                $variant = 'on_direct_dcs_rs';
+
+                // if complete diff $apiDiff will be as ["id1", "id2"]
+                // if partial diff then $apiDiff will be as ["1" => "id1", "2" => "id2" ]
+                foreach ($apiDiff as $key => $entityId)
+                {
+                    AssignMerchantFeatures::dispatch($this->mode, $variant, $feature , $entityType, $entityId);
+                }
+
+                $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
+                    "entity_id"   =>  $apiDiff
+                ]);
+            }
+
+            if ($assignDcs === true)
+            {
+
+                $successfulMerchant = [];
+                foreach ($dcsDiff as $key => $entityId)
+                {
+                    $featureParam = [
+                        Entity::ENTITY_TYPE => $entityType,
+                        Entity::ENTITY_ID   => $entityId,
+                        Entity::NAME        => $feature,
+                    ];
+
+                    $core = new Core();
+                    try
+                    {
+                        //change here
+                        $core->create($featureParam);
+                        $successfulMerchant[] = $entityId;
+                    }
+                    catch (\Exception $e)
+                    {
+                        $this->trace->traceException($e, Trace::ERROR, TraceCode::DCS_FEATURE_API_SYNC_FAILED);
+                    }
+                }
+                $this->trace->info(TraceCode::DCS_FEATURE_API_SYNC_SUCCESSFUL, [
+                    "entity_id"   =>  $successfulMerchant
+                ]);
+            }
         }
     }
 }

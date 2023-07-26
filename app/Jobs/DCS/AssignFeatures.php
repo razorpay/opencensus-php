@@ -5,7 +5,6 @@ namespace RZP\Jobs\DCS;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Job;
 use RZP\Exception;
-use RZP\Models\Feature;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
@@ -31,16 +30,7 @@ class AssignFeatures extends Job
     public function handle()
     {
         parent::handle();
-
-        if ((isset($this->input['flow']) === true) and ($this->input['flow'] === 'validate'))
-        {
-            (new ValidateFeaturesAPIAndDCS($this->input, $this->mode))->validate();
-        }
-        else
-        {
-            $this->assign();
-        }
-
+        $this->assign();
     }
 
     protected function assign(): void
