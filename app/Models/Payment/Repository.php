@@ -2673,7 +2673,7 @@ EOT;
                         ->pluck('payment_count', 'offer_id')
                         ->toArray();
 
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT, true);
 
         $warmData = $this->newQueryWithConnection($connectionType)
                          ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
