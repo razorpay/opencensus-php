@@ -721,7 +721,7 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
 
-        $apMock->shouldReceive('bankStatementFetchTriggerCron')->andReturn([]);
+        $apMock->shouldReceive('bankStatementFetchTriggerCron')->once()->with(['is_recon' => '1'])->andReturn([]);
 
         $this->app->instance('accounting-payouts', $apMock);
 

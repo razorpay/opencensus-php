@@ -482,11 +482,11 @@ class Service
         return $this->makeRequest(null, $url, $input);
     }
 
-    public function bankStatementFetchTriggerCron()
+    public function bankStatementFetchTriggerCron(array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TRIGGER_BANK_STATEMENT_FETCH_CRON);
 
-        return $this->makeRequest(null, $url);
+        return $this->makeRequest(null, $url, $input);
     }
 
     public function zohoStatementSyncCron()

@@ -191,7 +191,7 @@ class AccountingPayoutsController extends Controller
 
     public function bankStatementFetchTriggerCron()
     {
-        return $this->service->bankStatementFetchTriggerCron();
+        return $this->service->bankStatementFetchTriggerCron($this->input);
     }
 
     public function zohoStatementSyncCron()

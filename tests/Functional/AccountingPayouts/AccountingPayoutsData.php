@@ -515,6 +515,9 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/accounting-integration/bank-statement/fetch-trigger-cron',
+            'content'   => [
+                'is_recon' => true
+            ],
         ],
         'response' => [
             'content' => []
