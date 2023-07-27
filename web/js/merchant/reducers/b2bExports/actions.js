@@ -12,6 +12,7 @@ import {
   B2B_EXPORTS_GET_BALANCE,
   B2B_EXPORTS_GET_BENEFICIARY,
   B2B_EXPORTS_CREATE_PAYOUT,
+  B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL,
 } from './constants';
 
 const fetchB2bAccounts = () => {
@@ -153,7 +154,11 @@ const createPayoutSuccess = () => {
   };
 };
 
-const closePurposeCodeIneligibleModal = () => {};
+const closePurposeCodeIneligibleModal = () => {
+  return {
+    type: B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL,
+  };
+};
 
 export {
   uploadInvoice,

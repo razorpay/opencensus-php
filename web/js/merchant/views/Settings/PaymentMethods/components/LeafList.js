@@ -1,14 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { Link as NavLink } from 'react-router-dom';
 import { Text, Link } from '@razorpay/blade/components';
+import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { setFeatureFlag } from 'merchant/reducers/b2bExports/actions';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const Paypal = lazy(() =>
@@ -85,14 +82,7 @@ const DocumentLink = ({ link, method }) => {
   );
 };
 
-const LeafList = ({
-  instrument,
-  intermediateInstrument,
-  user,
-  isB2BEnabled,
-  fetchFeatureStatus,
-  setFeatureFlag,
-}) => {
+const LeafList = ({ instrument, intermediateInstrument, user }) => {
   const [filter, setFilter] = useState('active');
 
   const ulRef = useRef(null);
@@ -107,25 +97,9 @@ const LeafList = ({
     }
   };
 
-  /**
-   * this checks if B2B instrument container has to be shown to a
-   * merchant using feature flag status
-   */
-  const checkB2BFeatureFlag = async () => {
-    const response = await fetchFeatureStatus(user?.id, 'enable_intl_bank_transfer');
-    if (response?.success) {
-      setFeatureFlag({ isB2BEnabled: response?.data?.status });
-    }
-  };
-
   useEffect(() => {
     addShadow();
   });
-
-  //calls the function when merchant is on international tab
-  useEffect(() => {
-    instrument?.slug === 'international' && checkB2BFeatureFlag();
-  }, [instrument]);
 
   if (!instrument) return null;
 
@@ -218,7 +192,7 @@ const LeafList = ({
       {instrument.leafList.map((leafList) => {
         if (
           (leafList.slug === 'localcurrencytransfer' || leafList.slug === 'swiftbanktransfer') &&
-          (!isB2BEnabled || !user?.international)
+          !user?.international
         )
           return null;
         if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
@@ -364,11 +338,6 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   instrument: state.instrumentRequests.leafInstrument,
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
-  isB2BEnabled: state.b2bExportsAccounts.featureFlags?.isB2BEnabled,
 });
 
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ setFeatureFlag, fetchFeatureStatus }, dispatch);
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(LeafList);
+export default connect(mapStateToProps)(LeafList);

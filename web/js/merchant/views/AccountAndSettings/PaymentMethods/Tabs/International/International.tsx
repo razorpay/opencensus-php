@@ -4,8 +4,6 @@ import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import PaymentMethodsSection from 'merchant/views/AccountAndSettings/PaymentMethods/components/Section';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
-import { setFeatureFlag as setFeatureFlagFn } from 'merchant/reducers/b2bExports/actions';
-import { fetchFeatureStatus as fetchFeatureStatusFn } from 'merchant/reducers/config';
 import { bindActionCreators } from 'redux';
 import { MerchantICProductStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
@@ -21,8 +19,6 @@ import {
   User,
   InstrumentListItem,
   LeafListItem as LeafListItemType,
-  FetchFeatureStatusType,
-  SetFeatureFlagType,
 } from 'common/typings';
 import Firc from 'merchant/views/Settings/Configuration/components/FircAnnouncements/Firc';
 import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
@@ -64,12 +60,9 @@ const SwiftBankTransfer = lazy(
 type NewType = {
   user: User;
   instrument?: InstrumentListItem;
-  isB2BEnabled: boolean;
   fetchWorkflowStatus: () => void;
   showNotification: ShowNotificationType;
   fetchUser: () => void;
-  setFeatureFlag: SetFeatureFlagType;
-  fetchFeatureStatus: FetchFeatureStatusType;
 };
 
 export type Props = NewType;
@@ -77,34 +70,10 @@ export type Props = NewType;
 const International = ({
   user,
   instrument,
-  isB2BEnabled,
   fetchWorkflowStatus,
   showNotification,
   fetchUser,
-  setFeatureFlag,
-  fetchFeatureStatus,
 }: Props): JSX.Element => {
-  /**
-   * this checks if B2B instrument container has to be shown to a
-   * merchant using feature flag status
-   */
-  useEffect(() => {
-    const checkB2BFeatureFlag = async () => {
-      if (user.id) {
-        try {
-          const response = await fetchFeatureStatus(user.id, 'enable_intl_bank_transfer');
-          /* istanbul ignore else */
-          if (response?.success && response.data) {
-            setFeatureFlag({ isB2BEnabled: response.data.status });
-          }
-          // eslint-disable-next-line no-empty
-        } catch {}
-      }
-    };
-
-    checkB2BFeatureFlag();
-  }, [user.id]);
-
   const [productStatus, setProductStatus] = useState<MerchantICProductStatus | null>(null);
   const [isLoading, setLoading] = useState(true);
   const listItemRef = useRef<HTMLDivElement>(null);
@@ -200,7 +169,6 @@ const International = ({
             if (
               isInternationalLeafItemDisabled({
                 leafList: leafListItem,
-                isB2BEnabled,
                 user,
               })
             ) {
@@ -227,14 +195,11 @@ const International = ({
 const mapStateToProps = (state) => ({
   user: state.session.user,
   instrument: state.instrumentRequests.leafInstrument,
-  isB2BEnabled: state.b2bExportsAccounts.featureFlags?.isB2BEnabled,
 });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
-      setFeatureFlag: setFeatureFlagFn,
-      fetchFeatureStatus: fetchFeatureStatusFn,
       fetchWorkflowStatus: () =>
         fetchWorkflowStatusAction(WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI),
       showNotification: showNotificationFn,

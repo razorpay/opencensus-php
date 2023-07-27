@@ -1,4 +1,5 @@
 import { set, merge } from 'common/utils/immutable';
+import { setItem } from 'common/utils/localStorage';
 
 import {
   B2B_EXPORTS_TRANSACTIONS_FETCH,
@@ -10,7 +11,11 @@ import {
   B2B_EXPORTS_GET_BALANCE,
   B2B_EXPORTS_GET_BENEFICIARY,
   B2B_EXPORTS_CREATE_PAYOUT,
+  B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY,
+  B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL,
 } from './constants';
+
+import { extractVirtualAccountDetails, extractPurposeCodeError } from './helpers';
 
 const transactionInitialStates = {
   isLoading: false,
@@ -112,6 +117,9 @@ function b2bExportsAccountsReducer(
       isActivating: false,
       error: null,
     },
+    accountsDeactivated: false,
+    reason: '',
+    isIneligiblePurposeCodeModalOpen: false,
   },
   action,
 ) {
@@ -120,16 +128,27 @@ function b2bExportsAccountsReducer(
       return set(state, 'isLoading', true);
     }
     case `${B2B_EXPORTS_FETCH_ACCOUNTS}::ERROR`: {
+      // check for ineligible purpose code error;
+      const { isIneligiblePurposeCodeModalOpen, error } = extractPurposeCodeError(
+        action.payload?.errors ?? [],
+      );
+
       return merge(state, {
         isLoading: false,
-        error: action.payload?.errors,
+        error,
+        isIneligiblePurposeCodeModalOpen,
       });
     }
     case `${B2B_EXPORTS_FETCH_ACCOUNTS}::SUCCESS`: {
-      const accounts = action.payload?.data ?? [];
+      const { reason, accounts, accountsDeactivated, isIneligiblePurposeCodeModalOpen } =
+        extractVirtualAccountDetails(action.payload?.data ?? {});
+
       return merge(state, {
         isLoading: false,
-        data: Array.isArray(accounts) ? accounts : [],
+        reason,
+        accountsDeactivated, // There is a case when virtual accounts are deactivated because merchant has changed their purpose code
+        data: accounts,
+        isIneligiblePurposeCodeModalOpen,
       });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::PENDING`: {
@@ -139,14 +158,27 @@ function b2bExportsAccountsReducer(
       });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::ERROR`: {
-      return set(state, action.payload?.type, {
-        isActivating: false,
-        error: action.payload?.error,
+      const { isIneligiblePurposeCodeModalOpen, error } = extractPurposeCodeError(
+        action.payload?.errors ?? [],
+      );
+
+      return merge(state, {
+        isIneligiblePurposeCodeModalOpen,
+        [action.payload?.type]: {
+          isActivating: false,
+          error,
+        },
       });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::SUCCESS`: {
+      const { reason, accounts, accountsDeactivated, isIneligiblePurposeCodeModalOpen } =
+        extractVirtualAccountDetails(action.payload?.response ?? {});
+
       return merge(state, {
-        data: action.payload?.response,
+        reason,
+        accountsDeactivated,
+        data: accounts,
+        isIneligiblePurposeCodeModalOpen,
         [action.payload?.type]: {
           isActivating: false,
           error: null,
@@ -158,6 +190,11 @@ function b2bExportsAccountsReducer(
         ...state.featureFlags,
         ...action.payload,
       });
+    }
+    case B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL: {
+      // update localStorage to not to open this modal again on same error
+      setItem(B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY, true);
+      return set(state, 'isIneligiblePurposeCodeModalOpen', false);
     }
     default:
       return state;

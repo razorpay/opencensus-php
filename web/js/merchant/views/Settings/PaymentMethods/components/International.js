@@ -1,17 +1,13 @@
 import React, { useEffect } from 'react';
-import Amount from 'common/ui/Amount';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import withInternationalConfig from 'merchant/views/Settings/Configuration/InternationalConfig';
 import Non3dsCardsActivation from './Non3dsCardsActivation';
 import { trackIsButtonVisible } from 'merchant/views/Settings/Configuration/Questionnaire/analytics';
-
-const statusMap = {
-  approved: 'activated',
-  no_action_received: 'disabled',
-  in_review: 'under_review',
-  rejected: 'rejected',
-};
+import { Box, Text } from '@razorpay/blade/components';
+import {
+  InternationalPayments,
+  ProductInfo,
+} from 'merchant/views/Settings/PaymentMethods/components/InternationalPayments';
 
 const International = ({
   config: {
@@ -36,70 +32,58 @@ const International = ({
     trackIsButtonVisible(isRequestAccessAllowed && !isInternationalBlackList && isWebsiteAdded);
   }, [isRequestAccessAllowed]);
 
-  if (!isWebsiteAdded || isInternationalBlackList) {
+  if (!isWebsiteAdded || isInternationalBlackList || !internationalEnabled) {
     return (
-      <li className="international-leaf-item alert-info">
-        <div>
-          <div className="detail">
-            <strong>International Cards</strong>
-            {isInternationalBlackList && (
-              <p>International Cards is not supported for your business type</p>
-            )}
-            {!isWebsiteAdded && (
-              <p>Please update your website to request for international cards</p>
-            )}
-          </div>
-        </div>
-      </li>
+      <InternationalPayments
+        config={{
+          isKycComplete,
+          isWebsiteAdded,
+          questionnaireStatus,
+          currentStatusOnHeader,
+          isRequestAccessAllowed,
+          isInternationalBlackList,
+        }}
+        onRequestAccessClick={onRequestAccessClick}
+      />
     );
   }
 
   return (
     <li className="international-leaf-item">
-      <div>
-        <div className="detail">
-          <strong>International Cards</strong>
-          {isTogglerVisible && (
-            <span className="toggler-btn" style={{ marginLeft: '10px' }}>
-              <SwitchField
-                defaultChecked={internationalEnabled}
-                onChange={(isChecked, postActionCB) => {
-                  toggleInternationalization(isChecked, postActionCB);
-                }}
-                type="prime"
-              />
-              {internationalEnabled ? (
-                <b className="text-primary">Enabled</b>
-              ) : (
-                <b className="text-faded">Disabled</b>
-              )}
-            </span>
-          )}
-          <p className="desc">On Payment Gateway, Pages, Links and Invoices</p>
-        </div>
-        {isRequestAccessAllowed && (
-          <button
-            className="btn btn-primary ml-5"
-            onClick={onRequestAccessClick}
-            disabled={!isKycComplete}
+      <Box>
+        <Box>
+          <Text as="span" weight="bold">
+            International Cards
+          </Text>
+          <Text>On Payment Gateway, Pages, Links and Invoices</Text>
+        </Box>
+        {isTogglerVisible && (
+          <Box
+            display="flex"
+            marginLeft="spacing.4"
+            alignItems="center"
+            gap="spacing.2"
+            alignSelf="flex-start"
           >
-            {questionnaireStatus &&
-            questionnaireStatus.new_flow &&
-            questionnaireStatus.enablement_progress === 'in_progress'
-              ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
-              : 'Request'}
-          </button>
+            <SwitchField
+              defaultChecked={internationalEnabled}
+              onChange={(isChecked, postActionCB) => {
+                toggleInternationalization(isChecked, postActionCB);
+              }}
+              type="prime"
+            />
+            <Text as="span" weight="bold" color="action.text.link.default">
+              Enabled
+            </Text>
+          </Box>
         )}
-        {currentStatusOnHeader && (
-          <InternationalStatusLabel status={statusMap[currentStatusOnHeader]} />
-        )}
-      </div>
+      </Box>
 
       {internationalEnabled && <Non3dsCardsActivation />}
 
       {!!isAnyProductIntlApproved && (
         <>
-          <div className="spacer-10" />
+          <Box height="spacing.4" />
 
           <ProductInfo
             product="pg"
@@ -113,7 +97,7 @@ const International = ({
             disabled={!isKycComplete}
           />
 
-          <div className="spacer-20" />
+          <Box height="spacing.4" />
 
           <ProductInfo
             product="otherProducts"
@@ -128,74 +112,6 @@ const International = ({
         </>
       )}
     </li>
-  );
-};
-
-const ProductInfo = ({
-  title,
-  status,
-  product,
-  transactionSize,
-  settlementCycle,
-  showStatusLabel,
-  showRequestAccessBtn,
-  onRequestAccessClick,
-  questionnaireStatus,
-}) => {
-  let description;
-  switch (status) {
-    case 'rejected':
-      description =
-        'Currently we do not support international payments for these products. Please reach out to support for any queries';
-      break;
-    case 'in_review':
-      description =
-        'Request has been submitted. We are verifying your request. This would take roughly 3-5 days.';
-      break;
-    case 'no_action_received':
-      description = `Raise a request to activate international card payments on ${
-        product === 'pg' ? 'payment gateway' : 'other products'
-      }`;
-      break;
-    case 'approved':
-      description = (
-        <>
-          <p>
-            Transaction Size Enabled :{' '}
-            <strong>
-              <Amount value={transactionSize} currency="INR" />
-            </strong>
-          </p>
-          <p>
-            Settlement Cycle :&nbsp;<strong>T+{settlementCycle}</strong>
-          </p>
-        </>
-      );
-      break;
-    default:
-      return null;
-  }
-  return (
-    <div className="product-info">
-      <div className="product-title">
-        <strong>{title}</strong>
-
-        {showRequestAccessBtn ? (
-          <a role="button" className="ml-5" onClick={onRequestAccessClick}>
-            <strong>
-              {questionnaireStatus?.new_flow &&
-              questionnaireStatus.enablement_progress === 'in_progress'
-                ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
-                : 'Request Access'}
-            </strong>
-          </a>
-        ) : (
-          showStatusLabel && <InternationalStatusLabel status={statusMap[status]} />
-        )}
-      </div>
-      <div className="spacer-10" />
-      {description}
-    </div>
   );
 };
 
