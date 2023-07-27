@@ -3,20 +3,17 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
-use RZP\Exception;
-use RZP\Models\FileStore\Accessor;
-use RZP\Models\Merchant\Detail;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
 use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
-use RZP\Trace\TraceCode;
 
 class InvoiceReport extends BaseReport
 {
@@ -155,7 +152,7 @@ class InvoiceReport extends BaseReport
         }
     }
 
-    public function getpgInvoiceTemplateDate($data, $merchant, $invoiceBreakup, $platformFeeDetails = null)
+    public function getPgInvoiceTemplateData($data, $merchant, $invoiceBreakup)
     {
         $this->month = $data['month'];
 
@@ -165,7 +162,7 @@ class InvoiceReport extends BaseReport
 
         if ($data['gst_applicable'] === true )
         {
-            $this->getInvoiceNew($data, $invoiceBreakup, $platformFeeDetails);
+            $this->getInvoiceNew($data, $invoiceBreakup);
 
             $this->groupData();
 
@@ -178,18 +175,15 @@ class InvoiceReport extends BaseReport
     /**
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function setInvoiceVariables($invoiceBreakup, $platformFeeDetails = null)
+    protected function setInvoiceVariables($invoiceBreakup)
     {
         $invoice = null;
 
         if ($invoiceBreakup->count() === 0)
         {
-            if (empty($platformFeeDetails) === true or empty($platformFeeDetails[Invoice\Entity::AMOUNT]) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invoice not generated yet for merchant ' . $this->merchant->getId() . ' for year ' . $this->year . ' and month ' . $this->month
-                );
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice not generated yet for merchant ' . $this->merchant->getId() . ' for year ' . $this->year . ' and month ' . $this->month
+            );
         }
         else
         {
@@ -234,9 +228,9 @@ class InvoiceReport extends BaseReport
     /**
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function getInvoiceNew(array $input, $invoiceBreakup, $platformFeeDetails = null)
+    protected function getInvoiceNew(array $input, $invoiceBreakup)
     {
-        $this->setInvoiceVariables($invoiceBreakup, $platformFeeDetails);
+        $this->setInvoiceVariables($invoiceBreakup);
 
         // Different fee component rows
         foreach ($invoiceBreakup as $index => $entity)
@@ -250,6 +244,11 @@ class InvoiceReport extends BaseReport
             // this is to remove the line column with the 0 tax amount
             if(($amount === 0) and ($tax === 0))
             {
+                continue;
+            }
+            else if ($type === Invoice\Type::PLATFORM_FEE and $amount <= 0)
+            {
+                // TODO: keep this edge case until a solution is finalised on this
                 continue;
             }
 
@@ -295,45 +294,6 @@ class InvoiceReport extends BaseReport
                 $this->reportData[] = $row;
             }
         }
-
-        $this->setPlatformFeeDetailsInReport($platformFeeDetails);
-    }
-
-    protected function setPlatformFeeDetailsInReport($platformFeeDetails = null)
-    {
-        if (empty($platformFeeDetails) === true or
-            empty($platformFeeDetails[Invoice\Entity::AMOUNT]) === true or
-            $platformFeeDetails[Invoice\Entity::AMOUNT] <= 0) // TODO: keep this edge case until a solution is finalised on this
-        {
-            return;
-        }
-
-        $row = $this->getNewRow();
-
-        $row[self::GST_SAC_CODE] = Invoice\Type::DEFAULT_GST_SAC_CODE;
-
-        $row[self::DESCRIPTION] = Invoice\Type::PLATFORM_FEE_DESCRIPTION;
-
-        $row[self::AMOUNT] = $platformFeeDetails[Invoice\Entity::AMOUNT];
-
-        $row[self::TAX_TOTAL] = $platformFeeDetails[Invoice\Entity::TAX];
-
-        $row[self::GRAND_TOTAL] = $row[self::AMOUNT] + $row[self::TAX_TOTAL];
-
-        if (count($this->taxComponents) === 1)
-        {
-            $row[self::IGST] = $row[self::TAX_TOTAL];
-        }
-        else
-        {
-            $taxComponentValue = (int) round($row[self::TAX_TOTAL] / 2);
-
-            $row[self::CGST] = $taxComponentValue;
-
-            $row[self::SGST] = $taxComponentValue;
-        }
-
-        $this->reportData[] = $row;
     }
 
     protected function groupDataForSummaryByPageType(

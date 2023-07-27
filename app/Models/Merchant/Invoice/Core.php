@@ -32,7 +32,6 @@ use RZP\Jobs\AdjustmentInvoiceEntityCreate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\EInvoice\PgEInvoice as PgEInvoiceJob;
-use RZP\Models\Transfer\Service as TransferService;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
@@ -795,7 +794,11 @@ class Core extends Base\Core
         return true;
     }
 
-    public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup, $platformFeeDetails = null) : array
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
+    public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup) : array
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
@@ -808,7 +811,7 @@ class Core extends Base\Core
             'merchant_id'     => $merchant->getId(),
         ];
 
-        $data = (new InvoiceReport())->getpgInvoiceTemplateDate($input, $merchant, $invoiceBreakup, $platformFeeDetails);
+        $data = (new InvoiceReport())->getPgInvoiceTemplateData($input, $merchant, $invoiceBreakup);
 
         return [$date, $isGstApplicable, $data];
     }
@@ -824,9 +827,9 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = [], $platformFeeDetails = null): array
+    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []): array
     {
-        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $month, $year, $invoiceBreakup, $platformFeeDetails);
+        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $month, $year, $invoiceBreakup);
 
         $data['merchant'] = $merchant;
 
@@ -911,7 +914,6 @@ class Core extends Base\Core
 
     /**
      * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\BadRequestException
      */
     public function getSignedUrlForPgInvoice($year, $month, $merchantId): string
     {
@@ -941,9 +943,7 @@ class Core extends Base\Core
 
             $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData($merchantId, $month, $year);
 
-            $platformFeeDetails = (new TransferService())->getPlatformFeeDetailsForMerchant($merchantId, $month, $year);
-
-            $file = (new PdfGenerator())->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup, $platformFeeDetails);
+            $file = (new PdfGenerator())->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
         }
 
         return (new FileStore\Accessor())->getSignedUrlOfFile($file);

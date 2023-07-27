@@ -375,11 +375,8 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function fetchPlatformFeeReversalDetailsForMerchant(string $merchantId, array $linkedAccounts, int $month, int $year)
+    public function fetchPlatformFeeReversalDetailsForMerchant(string $merchantId, array $linkedAccounts, int $beginTimestamp, int $endTimestamp)
     {
-        $startOfMonth   = Carbon::create($year, $month);
-        $endOfMonth     = Carbon::create($year, $month, $startOfMonth->daysInMonth, 23, 59, 59);
-
         $transferIdCol          = $this->repo->transfer->dbColumn((TransferEntity::ID));
         $transferToIdCol        = $this->repo->transfer->dbColumn(TransferEntity::TO_ID);
         $transferToTypeCol      = $this->repo->transfer->dbColumn(TransferEntity::TO_TYPE);
@@ -398,7 +395,7 @@ class Repository extends Base\Repository
                     ->join(Table::TRANSFER, $transferIdCol, '=', $reversalEntityIdCol)
                     ->where($transferToTypeCol, '=', 'merchant')
                     ->whereNotIn($transferToIdCol, $linkedAccounts)
-                    ->whereBetween($trxnCreatedAtCol, [$startOfMonth->timestamp, $endOfMonth->timestamp])
+                    ->whereBetween($trxnCreatedAtCol, [$beginTimestamp, $endTimestamp])
                     ->first();
     }
 }

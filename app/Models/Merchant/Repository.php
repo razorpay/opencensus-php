@@ -301,12 +301,12 @@ class Repository extends Base\Repository
 
         if (empty($merchantIds) === false)
         {
-            $query = $query->whereIn(Entity::ID, $merchantIds);
+            $query = $query->whereIn($merchantIdCol, $merchantIds);
         }
 
         if (empty($merchantIdsExcluded) === false)
         {
-            $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
+            $query = $query->whereNotIn($merchantIdCol, $merchantIdsExcluded);
         }
 
         return $query->get()

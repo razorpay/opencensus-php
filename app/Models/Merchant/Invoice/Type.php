@@ -25,6 +25,9 @@ class Type
     // Commission on Pricing Bundle fee charged
     const PRICING_BUNDLE        = 'pricing_bundle';
 
+    // Platform fee charged to marketplace merchants
+    const PLATFORM_FEE          = 'platform_fee';
+
     // Fee on Instant Refunds
     const INSTANT_REFUNDS       = 'instant_refunds';
 
@@ -46,23 +49,24 @@ class Type
     const DEFAULT_GST_SAC_CODE = '';
 
     protected static $typeToSacMap = [
-        self::CARD_LTE_2K   => 997158,
-        self::CARD_GT_2K    => 997158,
-        self::OTHERS        => 997158,
-        self::ADJUSTMENT    => 997158,
-        self::VALIDATION    => 997158,
-        self::PRICING_BUNDLE       => 997158,
-        self::RX_TRANSACTIONS      => 997158,
-        self::RX_ADJUSTMENTS       => 997158,
-        self::INSTANT_REFUNDS      => 997158,
+        self::CARD_LTE_2K           => 997158,
+        self::CARD_GT_2K            => 997158,
+        self::OTHERS                => 997158,
+        self::ADJUSTMENT            => 997158,
+        self::VALIDATION            => 997158,
+        self::PRICING_BUNDLE        => 997158,
+        self::PLATFORM_FEE          => 997158,
+        self::RX_TRANSACTIONS       => 997158,
+        self::RX_ADJUSTMENTS        => 997158,
+        self::INSTANT_REFUNDS       => 997158,
         // This is kept to support older invoice
-        self::NON_CARD             => 997158,
+        self::NON_CARD              => 997158,
         // This is kept to support older invoice
-        self::REFUND_LTE_1K        => 997158,
+        self::REFUND_LTE_1K         => 997158,
         // This is kept to support older invoice
-        self::REFUND_GT_1K_LTE_10K => 997158,
+        self::REFUND_GT_1K_LTE_10K  => 997158,
         // This is kept to support older invoice
-        self::REFUND_GT_10K        => 997158,
+        self::REFUND_GT_10K         => 997158,
     ];
 
     const DEFAULT_DESCRIPTION = 'Commission';
@@ -74,11 +78,11 @@ class Type
     const RX_ADJUSTMENTS_DESCRIPTION        = 'RazorpayX Adjustments';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const PRICING_BUNDLE_DESCRIPTION        = 'Fee for pricing bundle subscription';
+    const PLATFORM_FEE_DESCRIPTION          = 'Platform Fee';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
     const REFUND_GT_1K_LTE_10K_DESCRIPTION  = 'Fee on Instant Refund > INR 1,000 & <= INR 10,000';
     const REFUND_GT_10K_DESCRIPTION         = 'Fee on Instant Refund > INR 10,000';
-    const PLATFORM_FEE_DESCRIPTION          = 'Platform Fee';
 
     protected static $typeToDescriptionMap = [
         self::CARD_LTE_2K            => self::CARD_LTE_2K_DESCRIPTION,
@@ -86,6 +90,7 @@ class Type
         self::OTHERS                 => self::OTHERS_DESCRIPTION,
         self::VALIDATION             => self::VALIDATION_DESCRIPTION,
         self::PRICING_BUNDLE         => self::PRICING_BUNDLE_DESCRIPTION,
+        self::PLATFORM_FEE           => self::PLATFORM_FEE_DESCRIPTION,
         self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
         self::RX_ADJUSTMENTS         => self::RX_ADJUSTMENTS_DESCRIPTION,
         self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
@@ -107,6 +112,7 @@ class Type
         self::OTHERS,
         self::VALIDATION,
         self::PRICING_BUNDLE,
+        self::PLATFORM_FEE
     ];
 
     public static function getAllPrimaryBalanceTypes(): array
@@ -118,6 +124,7 @@ class Type
             self::OTHERS,
             self::VALIDATION,
             self::PRICING_BUNDLE,
+            self::PLATFORM_FEE
         ];
     }
 

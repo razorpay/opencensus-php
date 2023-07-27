@@ -2,10 +2,8 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
-use RZP\Models\Merchant\RazorxTreatment;
 use View;
 use Carbon\Carbon;
-
 use mikehaertl\tmp\File;
 use mikehaertl\wkhtmlto\Pdf;
 
@@ -15,8 +13,10 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\BankingInvoiceReport;
+use RZP\Models\Transfer\Service as TransferService;
 
 class PdfGenerator extends Base\Core
 {
@@ -162,7 +162,7 @@ class PdfGenerator extends Base\Core
         return $pdfContent;
     }
 
-    public function generatePgInvoice($merchantId, $month, $year, $invoiceBreakup, $platformFeeDetails = null): Filestore\Entity
+    public function generatePgInvoice($merchantId, $month, $year, $invoiceBreakup): Filestore\Entity
     {
         $name = $this->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
@@ -170,7 +170,7 @@ class PdfGenerator extends Base\Core
 
         $eInvoiceData = (new EInvoice\PgEInvoice())->getEInvoiceDataForPdf($merchantId, $month, $year, EInvoice\Types::PG);
 
-        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData, $platformFeeDetails);
+        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData);
 
         $pdfContent = $this->getPdfContentForPgInvoice($html);
 
@@ -186,9 +186,9 @@ class PdfGenerator extends Base\Core
             ->getFileInstance();
     }
 
-    protected function getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = [], $platformFeeDetails = null) : string
+    protected function getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []) : string
     {
-        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData, $platformFeeDetails) ;
+        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
 
         if($this->isMerchantPGInvoiceV2($merchant->getId()) === true)
         {

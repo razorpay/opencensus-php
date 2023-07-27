@@ -9,12 +9,12 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Transfer\Service as TransferService;
 use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Models\FundAccount\Validation\Entity as FAVEntity;
 
@@ -577,6 +577,7 @@ class Processor extends Base\Core
      * @param $balanceId
      *
      * @return array
+     * @throws Exception\RuntimeException|Exception\LogicException
      */
     public function calculateFeesForInvoiceByTypeForPrimary(string $type, $balanceId)
     {
@@ -591,6 +592,8 @@ class Processor extends Base\Core
         $refundReversalFeeAmount = [];
 
         $pricingBundleFeeAmount = [];
+
+        $platformFeeAmount = [];
 
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
@@ -822,16 +825,47 @@ class Processor extends Base\Core
                 $balanceId);
         }
 
+        if ($type === Type::PLATFORM_FEE)
+        {
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                $platformFeeAmount = $cacheResult;
+            }
+            else
+            {
+                $platformFeeAmount = (new TransferService())->getPlatformFeeDetailsForMerchant($this->merchantId, $this->month, $this->year, $this->beginTimestamp, $this->endTimestamp);
+
+                if (empty($platformFeeAmount) === true)
+                {
+                    $platformFeeAmount = [
+                        Entity::AMOUNT => 0,
+                        Entity::TAX => 0
+                    ];
+                }
+
+                $this->storeResultsInCache($cacheKey, $platformFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
+
+            $this->logMerchantInvoiceResult($type, 'pg_invoice_' . $type, 'platform_fee_amount', $platformFeeAmount, $balanceId);
+        }
+
         $amount  = $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT]
                     + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT] + $pricingBundleFeeAmount[Entity::AMOUNT]
-                    - $refundReversalFeeAmounts[Entity::AMOUNT];
+                    - $refundReversalFeeAmounts[Entity::AMOUNT] + $platformFeeAmount[Entity::AMOUNT];
 
         // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
         // That mean they want the Tax should always be equal to 18% of the fees(amount) that we charge from the Merchant
         if(in_array($type, Type::$taxablePrimaryCommissionTypes, true) === true)
         {
             return [
-                // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
+                // This is to round the TAX as per the GST Compliance i.e. Normal rounding (PHP_ROUND_HALF_UP)
                 Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
                 Entity::AMOUNT  => $amount,
             ];
@@ -1035,6 +1069,7 @@ class Processor extends Base\Core
                 //    'others'                  => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'validation'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'pricing_bundle'          => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+                //    'platform_fee'            => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 // ]
 
                 $primaryCommissionTypes = Type::getAllPrimaryBalanceTypes();

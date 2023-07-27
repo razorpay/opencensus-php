@@ -3,7 +3,9 @@
 namespace RZP\Models\Transfer;
 
 use Throwable;
+use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -1454,11 +1456,7 @@ class Service extends Base\Service
         return array_unique($merchantIds);
     }
 
-    /**
-     * @throws BadRequestValidationFailureException
-     * @throws BadRequestException
-     */
-    public function getPlatformFeeDetailsForMerchant(string $merchantId, int $month, int $year): ?array
+    public function getPlatformFeeDetailsForMerchant(string $merchantId, int $month, int $year, int $beginTimestamp, int $endTimestamp): ?array
     {
         try
         {
@@ -1471,7 +1469,7 @@ class Service extends Base\Service
 
             $merchantLinkedAccounts = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($merchantId);
 
-            $platformFeeTransferDetails = $this->repo->transfer->fetchPlatformFeeTransferDetailsForMerchant($merchantId, $merchantLinkedAccounts, $month, $year)->getAttributes();
+            $platformFeeTransferDetails = $this->repo->transfer->fetchPlatformFeeTransferDetailsForMerchant($merchantId, $merchantLinkedAccounts, $beginTimestamp, $endTimestamp)->getAttributes();
 
             if (empty($platformFeeTransferDetails) === true or empty($platformFeeTransferDetails['amount']) === true)
             {
@@ -1491,21 +1489,23 @@ class Service extends Base\Service
             }
 
             // fetch transfer reversals for the given month, year and merchant
-            $platformFeeReversalDetails = $this->repo->reversal->fetchPlatformFeeReversalDetailsForMerchant($merchantId, $merchantLinkedAccounts, $month, $year)->getAttributes();
+            $platformFeeReversalDetails = $this->repo->reversal->fetchPlatformFeeReversalDetailsForMerchant($merchantId, $merchantLinkedAccounts, $beginTimestamp, $endTimestamp)->getAttributes();
 
             if (empty($platformFeeReversalDetails) === true or empty($platformFeeReversalDetails['amount']) === true)
             {
                 $platformFeeReversalDetails['amount'] = 0;
             }
 
-            // for reversals, we are deducting amount & tax as follows:
+            // for reversals, we are deducting amount as follows:
             // amount = -(reversal_amount/1.18)
-            // tax    = -(reversal_amount*0.152)
-            $nettAmount = round((($platformFeeTransferDetails['amount'] - $platformFeeReversalDetails['amount']) * 1.0)/1.18) + $platformFeeTransferDetails['fee'];
-            $nettTax    = round(($platformFeeTransferDetails['amount'] - $platformFeeReversalDetails['amount']) * 0.152) + $platformFeeTransferDetails['tax'];
+            $partnerFee = round((($platformFeeTransferDetails['amount'] - $platformFeeReversalDetails['amount']) * 1.0)/1.18);
+            $rzpFee = $platformFeeTransferDetails['fee'] - $platformFeeTransferDetails['tax'];
+
+            $platformFee = $partnerFee + $rzpFee;
+            $nettTax    = round($partnerFee * Merchant\Invoice\Constants::GST_PERCENTAGE) + $platformFeeTransferDetails['tax'];
 
             $platformFeeDetails = [
-                'amount'    => $nettAmount,
+                'amount'    => $platformFee,
                 'tax'       => $nettTax
             ];
 
@@ -1515,6 +1515,10 @@ class Service extends Base\Service
                     'merchant_id'           => $merchantId,
                     'month'                 => $month,
                     'year'                  => $year,
+                    'begin_timestamp'       => $beginTimestamp,
+                    'end_timestamp'         => $endTimestamp,
+                    'platform_fee_transfer' => $platformFeeTransferDetails,
+                    'platform_fee_reversal' => $platformFeeReversalDetails,
                     'platform_fee_details'  => $platformFeeDetails,
                 ]
             );
@@ -1528,9 +1532,11 @@ class Service extends Base\Service
                 Logger::ERROR,
                 TraceCode::MERCHANT_MONTHLY_INVOICE_PLATFORM_FEE_FETCH_ERROR,
                 [
-                    'merchant_id'   => $merchantId,
-                    'month'         => $month,
-                    'year'          => $year
+                    'merchant_id'       => $merchantId,
+                    'month'             => $month,
+                    'year'              => $year,
+                    'begin_timestamp'   => $beginTimestamp,
+                    'end_timestamp'     => $endTimestamp,
                 ]
             );
         }
