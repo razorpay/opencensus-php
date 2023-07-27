@@ -2467,6 +2467,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAS_SOURCE_LINKING_ASYNC_RETRY_DISPATCH_FAILURE       = 'BAS_SOURCE_LINKING_ASYNC_RETRY_DISPATCH_FAILURE';
     const BAS_SOURCE_LINKING_RETRY_INITIATE                     = 'BAS_SOURCE_LINKING_RETRY_INITIATE';
     const BAS_SOURCE_LINKING_RETRY_FAILURE                      = 'BAS_SOURCE_LINKING_RETRY_FAILURE';
+    const BAS_SOURCE_LINKING_RETRY_PAYOUT                       = 'BAS_SOURCE_LINKING_RETRY_PAYOUT';
+    const BAS_SOURCE_LINKING_RETRY_SUCCESS                      = 'BAS_SOURCE_LINKING_RETRY_SUCCESS';
 
     /**
      * Payout Async Approve Trace Codes

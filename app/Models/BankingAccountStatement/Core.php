@@ -4949,7 +4949,27 @@ class Core extends Base\Core
         /* @var \RZP\Models\Payout\Entity $payout */
         $payout = $this->repo->payout->findOrFail($payoutId);
 
-        (new Payout\Core)->handlePayoutTransactionForDirectBanking($payout);
+        $this->trace->info(
+            TraceCode::BAS_SOURCE_LINKING_RETRY_PAYOUT,
+            [
+                'payout_id' => $payout->getId(),
+                'status'    => $payout->getStatus()
+            ]);
+
+        if ($payout->isStatusProcessed() === false)
+        {
+            return null;
+        }
+
+        $debitBas = (new Payout\Core)->handlePayoutTransactionForDirectBanking($payout);
+
+        $this->trace->info(
+            TraceCode::BAS_SOURCE_LINKING_RETRY_SUCCESS,
+            [
+                'payout_id'    => $payout->getId(),
+                'status'       => $payout->getStatus(),
+                'debit_bas_id' => optional($debitBas)->getId(),
+            ]);
     }
 
     public function checkReArchFlow(string $accountNumber, string $channel)
