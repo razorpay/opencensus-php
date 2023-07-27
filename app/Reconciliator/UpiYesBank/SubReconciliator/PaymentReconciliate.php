@@ -55,11 +55,15 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
     // todo: Fill in these fields when we add unexpected flows
     const CALL_BACK_FIELD_MAPPING = [];
 
+    const PREFIX = "RZPY";
+
     protected $gatewayName  = Gateway::UPI_YESBANK;
 
     protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::ORDER_NUMBER] ?? null;
+
+        $paymentId = $this->getActualPaymentId($paymentId);
 
         $reconStatus = $this->getReconPaymentStatus($row);
 
@@ -109,6 +113,8 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
         $referenceNumber = $this->getReferenceNumber($row);
 
         $paymentId = $row[self::ORDER_NUMBER] ?? null;
+
+        $paymentId = $this->getActualPaymentId($paymentId);
 
         if ((empty($referenceNumber) === true) or
             (empty($paymentId) === true))
@@ -420,5 +426,42 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
         $callbackData['data']['version'] = 'v2';
 
         return $callbackData;
+    }
+
+    /**
+     * @param mixed $paymentId
+     * @return mixed|string
+     */
+    private function getActualPaymentId(mixed $paymentId): mixed
+    {
+        if ($paymentId !== null)
+        {
+
+            //If paymentId contains PREFIX and is not valid paymentId
+            if ((str_starts_with($paymentId, self::PREFIX) === true)
+                and (UniqueIdEntity::verifyUniqueId($paymentId, false) === false))
+            {
+
+                // trim the PREFIX from the paymentId and check
+                $trimmedPaymentId = substr($paymentId, strlen(self::PREFIX));
+
+                if (UniqueIdEntity::verifyUniqueId($trimmedPaymentId, false) === true)
+                {
+                    //if $trimmedPaymentId is valid paymentId, return trimmedPaymentId.
+                    $this->trace->info(
+                        TraceCode::TRIMMING_PAYMENT_ID,
+                        [
+                            'original_payment_id'              => $paymentId,
+                            'trimmed_payment_id'               => $trimmedPaymentId,
+                        ]);
+
+
+                    return $trimmedPaymentId;
+                }
+
+            }
+
+        }
+        return $paymentId;
     }
 }

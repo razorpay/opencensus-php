@@ -597,7 +597,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'Legal Name'             => 'ABC Group PVT LTD',
                 'Store Name'             => 'DEF',
                 'MCC'                    => '1234',
-                'Order No'               => $row['payment']['id'],
+                'Order No'               => 'RZPY'.$row['payment']['id'], // appending as we are adding prefix to block pushpayments for YESB
                 'Trans Ref No.'          => '2000000000',
                 'Customer Ref No.'       => '25700000000',
                 'NPCI Response Code'     => '0',

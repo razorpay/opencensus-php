@@ -10070,6 +10070,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_PAYMENT_NOTES_APPEND                       = 'RAZORX_PAYMENT_NOTES_APPEND';
     const PAYMENT_NOTES_SKIPPED                             = 'PAYMENT_NOTES_SKIPPED';
 
+    const TRIMMING_PAYMENT_ID                               = 'TRIMMING_PAYMENT_ID';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

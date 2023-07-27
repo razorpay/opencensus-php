@@ -56,6 +56,50 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
         );
     }
 
+    public function testPaymentYesbankReconciliation_WithPrefix()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_yesbank';
+
+        $this->makeUpiYesbankPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(
+            function(&$content, $action = null)
+            {
+                if ($action === 'yesbank_recon')
+                {
+                    $content[0]['Customer Ref No']    = '227121351902';
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $this->paymentReconAsserts($payment->toArray());
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals
+        (
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiYesBank',
+                'status'          => 'processed',
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
     public function testUpiYesBankUnexpectedPaymentRecon()
     {
         $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
