@@ -6352,9 +6352,9 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10200, $transaction['amount']);
 
-        $this->assertEquals(9900, $transaction['credit']);
+        $this->assertEquals(10100, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(100, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -6415,9 +6415,11 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10100, $transaction['amount']);
 
-        $this->assertEquals(9800, $transaction['credit']);
+        $this->assertEquals(9900, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(100, $transaction['debit']);
+
+        $this->assertEquals(200, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -6477,9 +6479,11 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10120, $transaction['amount']);
 
-        $this->assertEquals(9820, $transaction['credit']);
+        $this->assertEquals(9940, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(120, $transaction['debit']);
+
+        $this->assertEquals(180, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -6539,9 +6543,11 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10180, $transaction['amount']);
 
-        $this->assertEquals(9880, $transaction['credit']);
+        $this->assertEquals(10060, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(180, $transaction['debit']);
+
+        $this->assertEquals(120, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -6597,11 +6603,13 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10236, $transaction['amount']);
 
-        $this->assertEquals(9882, $transaction['credit']);
+        $this->assertEquals(10118, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(236, $transaction['debit']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(118, $transaction['fee']);
+
+        $this->assertEquals(18, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
@@ -6655,11 +6663,13 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10118, $transaction['amount']);
 
-        $this->assertEquals(9764, $transaction['credit']);
+        $this->assertEquals(9882, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(118, $transaction['debit']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(236, $transaction['fee']);
+
+        $this->assertEquals(36, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
@@ -6713,11 +6723,13 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10142, $transaction['amount']);
 
-        $this->assertEquals(9788, $transaction['credit']);
+        $this->assertEquals(9930, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(142, $transaction['debit']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(212, $transaction['fee']);
+
+        $this->assertEquals(32, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
@@ -6771,11 +6783,13 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10212, $transaction['amount']);
 
-        $this->assertEquals(9858, $transaction['credit']);
+        $this->assertEquals(10070, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(212, $transaction['debit']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(142, $transaction['fee']);
+
+        $this->assertEquals(22, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
@@ -6846,7 +6860,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010236, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(89764, $balance['credits']);
 
@@ -6916,7 +6930,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010118, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(89882, $balance['credits']);
 
@@ -6985,7 +6999,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010142, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(89858, $balance['credits']);
 
@@ -7054,7 +7068,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010212, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(89788, $balance['credits']);
 
@@ -7116,9 +7130,9 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10236, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(118, $transaction['fee']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(18, $transaction['tax']);
 
         $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
 
@@ -7126,7 +7140,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010236, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
 
@@ -7188,9 +7202,9 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10118, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(236, $transaction['fee']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(36, $transaction['tax']);
 
         $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
 
@@ -7198,7 +7212,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010118, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
 
@@ -7259,9 +7273,9 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10142, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(212, $transaction['fee']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(32, $transaction['tax']);
 
         $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
 
@@ -7269,7 +7283,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010142, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
 
@@ -7330,9 +7344,9 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10212, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(142, $transaction['fee']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(22, $transaction['tax']);
 
         $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
 
@@ -7340,7 +7354,7 @@ class PaymentCreateTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(1010212, $balance['balance']);
+        $this->assertEquals(1010000, $balance['balance']);
 
         $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
 
@@ -7402,15 +7416,15 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['debit']);
+        $this->assertEquals(180, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(180, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(999700, $balance['balance']);
+        $this->assertEquals(999820, $balance['balance']);
 
         $order = $this->getLastEntity('order');
 
@@ -7473,7 +7487,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(200, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -7539,15 +7553,15 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['credit']);
 
-        $this->assertEquals(300, $transaction['debit']);
+        $this->assertEquals(180, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(180, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->assertEquals(999700, $balance['balance']);
+        $this->assertEquals(999820, $balance['balance']);
 
         $order = $this->getLastEntity('order');
 
@@ -7612,7 +7626,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(200, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -7996,7 +8010,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(180, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -8075,7 +8089,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(200, $transaction['fee']);
 
         $this->assertEquals(0 , $transaction['tax']);
 
@@ -8152,7 +8166,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(180, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -8231,7 +8245,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(0, $transaction['debit']);
 
-        $this->assertEquals(300, $transaction['fee']);
+        $this->assertEquals(200, $transaction['fee']);
 
         $this->assertEquals(0, $transaction['tax']);
 
@@ -8348,11 +8362,11 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals(10236, $transaction['amount']);
 
-        $this->assertEquals(9882, $transaction['credit']);
+        $this->assertEquals(10118, $transaction['credit']);
 
-        $this->assertEquals(354, $transaction['fee']);
+        $this->assertEquals(118, $transaction['fee']);
 
-        $this->assertEquals(54, $transaction['tax']);
+        $this->assertEquals(18, $transaction['tax']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
 
