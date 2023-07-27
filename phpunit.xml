@@ -116,7 +116,6 @@
             <exclude>/tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/Invitation/</directory>
-            <directory>./tests/Functional/Key/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
@@ -191,13 +190,11 @@
         <testsuite name="Features-3 Test Suite">
             <directory>./tests/Functional/BankingAccountStatement/</directory>
             <directory>./tests/Functional/Setting/</directory>
-            <directory>./tests/Functional/OAuth/</directory>
             <directory>./tests/Functional/AppFramework/</directory>
             <directory>./tests/Functional/Pricing/</directory>
         </testsuite>
         <testsuite name="Features-3-1 Test Suite">
             <directory>./tests/Functional/Payout/</directory>
-            <directory>./tests/Functional/RequestLog/</directory>
             <file>./tests/Unit/PayoutDetails/CoreTest.php</file>
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
@@ -205,19 +202,15 @@
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>
             <directory>./tests/Functional/Promotion/</directory>
-            <directory>./tests/Functional/RazorX/</directory>
             <directory>./tests/Functional/Request/</directory>
             <directory>./tests/Functional/Risk/</directory>
-            <directory>./tests/Functional/Schedule/</directory>
             <directory>./tests/Functional/Lambda/</directory>
-            <directory>./tests/Functional/Mailgun/</directory>
             <directory>./tests/Functional/Storage/</directory>
             <directory>./tests/Functional/Pagination/</directory>
             <directory>./tests/Functional/Survey/</directory>
         </testsuite>
         <testsuite name="Features-4 Test Suite">
             <directory>./tests/Functional/Tax/</directory>
-            <directory>./tests/Functional/Transaction/</directory>
             <directory>./tests/Functional/User/</directory>
             <directory>./tests/Functional/UserRole/</directory>
         </testsuite>
@@ -226,7 +219,6 @@
             <directory>./tests/Functional/VirtualAccount/</directory>
             <directory>./tests/Functional/QrCode/</directory>
             <directory>./tests/Functional/Workflow/</directory>
-            <directory>./tests/Functional/Reminders/</directory>
             <directory>./tests/Functional/Refund/</directory>
         </testsuite>
         <testsuite name="Features-4-2 Test Suite">
@@ -289,9 +281,7 @@
         </testsuite>
         <testsuite name="Feature-7-1 Test Suite">
             <directory>./tests/Functional/Merchant/Bvs/</directory>
-            <directory>./tests/Functional/Merchant/BvsVerification/</directory>
             <directory>./tests/Functional/Modules/Acs/</directory>
-            <directory>./tests/Functional/Modules/Acs/Wrapper/</directory>
             <directory>./tests/Unit/Models/Merchant/Asv/</directory>
             <directory>./tests/Functional/Merchant/Slabs/</directory>
             <directory>./tests/Functional/Merchant/Store/</directory>
@@ -531,6 +521,18 @@
             <directory>./tests/Functional/Item/</directory>
             <directory>./tests/Functional/PaymentLink/</directory>
             <directory>./tests/Unit/Models/PaymentLink</directory>
+        </testsuite>
+        <testsuite name="Platform Test Suite">
+            <directory>./tests/Functional/Key/</directory>
+            <directory>./tests/Functional/Mailgun/</directory>
+            <directory>./tests/Functional/OAuth/</directory>
+            <directory>./tests/Functional/Reminders/</directory>
+            <directory>./tests/Functional/RazorX/</directory>
+            <directory>./tests/Functional/Schedule/</directory>
+            <directory>./tests/Functional/Transaction/</directory>
+            <directory>./tests/Functional/Merchant/BvsVerification/</directory>
+            <directory>./tests/Functional/RequestLog/</directory>
+            <directory>./tests/Functional/Modules/Acs/Wrapper/</directory>
         </testsuite>
     </testsuites>
     <listeners>
