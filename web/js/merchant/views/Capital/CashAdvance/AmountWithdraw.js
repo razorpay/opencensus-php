@@ -511,10 +511,8 @@ export default class AmountWithdraw extends React.Component {
 
   getMaxWithdrawableAmount = () => {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const {
-      max_withdraw_amount,
-      min_withdraw_amount,
-    } = withdrawalConfigurationDetails.configuration;
+    const { max_withdraw_amount, min_withdraw_amount } =
+      withdrawalConfigurationDetails.configuration;
 
     const maxAmount = Math.min(parseInt(max_withdraw_amount, 10), this.getInternalCreditBalance());
 
@@ -887,7 +885,10 @@ export default class AmountWithdraw extends React.Component {
   };
 
   isRepaymentFrequencyDays90 = () => {
-    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.DAYS_90;
+    return (
+      this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.DAYS_90 &&
+      this.props?.withdrawalConfigurationDetails?.data?.configuration?.end_day_limit === '90'
+    );
   };
 
   isFungibleLimitProductType = () => {
@@ -903,10 +904,8 @@ export default class AmountWithdraw extends React.Component {
       case REPAYMENT_FREQUENCY_TYPES.BIMONTHLY: {
         const startOfMonth = moment().startOf('month').startOf('date');
         const halfMonth = moment().startOf('month').add(14, 'days').endOf('date');
-        const {
-          repayment_date1,
-          repayment_date2,
-        } = this.props.withdrawalConfigurationDetails.data.configuration;
+        const { repayment_date1, repayment_date2 } =
+          this.props.withdrawalConfigurationDetails.data.configuration;
 
         if (moment().isBetween(startOfMonth, halfMonth)) {
           return moment().set('date', repayment_date2).endOf('day');
@@ -915,8 +914,8 @@ export default class AmountWithdraw extends React.Component {
         }
       }
       case REPAYMENT_FREQUENCY_TYPES.MONTHLY: {
-        const dueDate = this.props?.withdrawalConfigurationDetails?.data?.configuration
-          ?.repayment_date;
+        const dueDate =
+          this.props?.withdrawalConfigurationDetails?.data?.configuration?.repayment_date;
         return moment.unix(dueDate);
       }
       default:
@@ -1087,7 +1086,7 @@ export default class AmountWithdraw extends React.Component {
     return (
       <div className="automated-withdraw-tooltip">
         <div className="flex automated-withdraw-tooltip--enabled">
-          <div clasName="automated-withdraw-tooltip--enabled--heading">Automated Withdrawals</div>
+          <div className="automated-withdraw-tooltip--enabled--heading">Automated Withdrawals</div>
           <div className="automated-withdraw-tooltip--enabled-content">
             <div className="enabled-dot" />
             ENABLED
