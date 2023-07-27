@@ -3234,4 +3234,51 @@ class OrderTest extends TestCase
         $this->assertEquals($taxDetails, $orderEntity['tax_details']);
 
     }
+
+    public function testFetch1CCOrderWithTaxableParameter()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT   => 100000,
+            Order\Entity::RECEIPT  => 'R1',
+            Order\Entity::CURRENCY => 'INR',
+        ];
+
+        $this->createOrder($orderData);
+        $order = $this->getDbLastOrder();
+
+        $lineItems = [
+            [
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 1',
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 10000,
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 1,
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_TAXABLE => true,
+            ],
+            [
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 2',
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 20000,
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 2,
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_TAXABLE => false,
+            ],
+            [
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 3',
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 20000,
+                Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 2,
+            ],
+        ];
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => [
+                    'line_items_total' => $order->getAmount(),
+                    'line_items' =>  $lineItems,
+                    ],
+                'type'     => 'one_click_checkout',
+            ]);
+
+        $orderMeta = $this->getDbLastEntity('order_meta');
+        $this->assertNotNull($orderMeta);
+    }
 }

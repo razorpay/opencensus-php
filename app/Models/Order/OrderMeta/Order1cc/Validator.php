@@ -70,6 +70,7 @@ class Validator extends Base\Validator
         Fields::LINE_ITEM_IMAGE_URL                                              => 'sometimes|url',
         Fields::LINE_ITEM_PRODUCT_URL                                            => 'sometimes|url',
         Fields::LINE_ITEM_NOTES                                                  => 'sometimes|array',
+        Fields::LINE_ITEM_TAXABLE                                                => 'sometimes|boolean',
     ];
 
     protected static $promotionRules = [

@@ -41,6 +41,7 @@ class Fields
     const LINE_ITEM_DIMENSIONS_WIDTH        = 'width';
     const LINE_ITEM_DIMENSIONS_HEIGHT       = 'height';
     const PROMOTIONS_REFERENCE_ID           = 'reference_id';
+    const LINE_ITEM_TAXABLE                 = 'taxable';
     const PROMOTIONS_TYPE                   = 'type';
     const PROMOTIONS_CODE                   = 'code';
     const PROMOTIONS_VALUE                  = 'value';
