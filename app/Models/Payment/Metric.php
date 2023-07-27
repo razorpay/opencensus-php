@@ -165,7 +165,7 @@ class Metric extends Base\Core
             self::PAYMENT_REQUEST_ROUTE => $route,
         ];
 
-        $extraDimensions = $this->getDefaultDimentions();
+        $extraDimensions = $this->getDefaultDimentions($payment);
 
         $dimensions = array_merge($dimensions, $extraDimensions);
 
