@@ -39,11 +39,27 @@ export {
   PlayIcon,
   FileTextIcon,
   MinusIcon,
+  Card,
+  CardBody,
+  CardFooter,
+  CardFooterLeading,
+  CardFooterTrailing,
+  CardHeader,
+  CardHeaderLeading,
+  CardHeaderTrailing,
+  CardHeaderIcon,
+  CardHeaderCounter,
+  CardHeaderBadge,
+  CardHeaderIconButton,
+  CardFooterAction,
+  CardHeaderText,
+  CardHeaderLink,
+  Divider,
+  Skeleton,
 } from '@razorpay/blade/components';
 
 // patched blade components
 export { ActionList } from './blade.patch';
-
 // custom components
 export * from './StatusIndicator';
 export * from './CollapsibleForm';

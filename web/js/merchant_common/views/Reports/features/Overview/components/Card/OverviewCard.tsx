@@ -1,17 +1,27 @@
 import React from 'react';
 import defaultIcon from 'assets/reports/default.svg';
 import { CardPropsType } from 'merchant_common/views/Reports/features/Overview/types';
-import { CardWrapper, Header, Footer, CardLink, CardIcon, TextWrapper } from './style';
-import { Heading, ReportModal, Text } from 'merchant_common/views/Reports/components';
+import { CardContainer } from './style';
 import { availableLinks, reportTypeIconsMap } from './configs';
-import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import { ClickableButton } from 'merchant_common/views/Reports/components/styled';
 import { NON_OWNED_CONFIG_TYPE } from 'merchant_common/views/Reports/constants';
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+  CardHeaderIcon,
+  ReportModal,
+  Text,
+  Box,
+  Link,
+} from 'merchant_common/views/Reports/components';
+import { toTitleCase } from 'common/utils';
+import { Icon } from 'merchant_common/views/Reports/components/styled';
 
 const mapStateToProps = ({ session }) => {
   const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);
@@ -22,12 +32,11 @@ const mapDispatchToProps = (dispatch) => ({
   openModal: (modal) => dispatch(openModal(modal)),
 });
 
-export const Card = connect(
+export const OverviewCard = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(({ data, openModal, isSchedulesEnabled }: CardPropsType): JSX.Element => {
-  const { name, description, id, type } = data;
-  const { theme } = useTheme();
+)(({ data, openModal, isSchedulesEnabled }: CardPropsType) => {
+  const { name, description, id, type, type_title } = data;
   const availableLinksArr = availableLinks({
     isSchedulesEnabled: type === NON_OWNED_CONFIG_TYPE ? false : isSchedulesEnabled,
   });
@@ -66,41 +75,45 @@ export const Card = connect(
   };
 
   return (
-    <CardWrapper aria-label={`${name} Card`} theme={theme}>
-      <div>
-        <Header theme={theme}>
-          <CardIcon src={reportTypeIconsMap[type] ?? defaultIcon} size="32px" />
-          <Heading variant="regular" weight="bold" type="subtle" contrast="low">
-            {name}
-          </Heading>
-        </Header>
-        <TextWrapper theme={theme}>
-          <Text
-            truncateAfterLines={3}
-            variant="body"
-            type="subdued"
-            weight="regular"
-            contrast="low"
-          >
-            {description}
-          </Text>
-        </TextWrapper>
-      </div>
-      <Footer count={availableLinksArr.length} theme={theme}>
-        {availableLinksArr.map((link) => (
-          // eslint-disable-next-line
-          //@ts-ignore
-          <ClickableButton
-            key={link.label}
-            aria-label={`${link.label} Button`}
-            onClick={() => onLinkClick(link.type)}
-          >
-            <Text variant="body" type="normal" weight="bold">
-              <CardLink theme={theme}>{link.label}</CardLink>
+    <CardContainer>
+      <Card elevation="midRaised">
+        <CardHeader>
+          <CardHeaderLeading
+            subtitle={`(${toTitleCase(`${type_title ?? type}`)})`}
+            title={name}
+            prefix={
+              <CardHeaderIcon
+                icon={() => <Icon src={reportTypeIconsMap[type] ?? defaultIcon} size="32px" />}
+              />
+            }
+          />
+        </CardHeader>
+        <CardBody>
+          <Box display="flex" flexDirection="column" justifyContent="space-between" height="100%">
+            <Text
+              truncateAfterLines={3}
+              variant="body"
+              type="subdued"
+              weight="regular"
+              contrast="low"
+            >
+              {description}
             </Text>
-          </ClickableButton>
-        ))}
-      </Footer>
-    </CardWrapper>
+            <Box marginTop="spacing.6" display="flex" justifyContent="space-between">
+              {availableLinksArr.map((link) => (
+                <Link
+                  accessibilityLabel={`${link.label} Button`}
+                  key={link.type}
+                  onClick={() => onLinkClick(link.type)}
+                  variant="button"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </Box>
+          </Box>
+        </CardBody>
+      </Card>
+    </CardContainer>
   );
 });

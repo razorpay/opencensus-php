@@ -2,18 +2,6 @@ import styled from 'styled-components';
 import bannerBGImage from 'assets/reports/overview-banner.png';
 import bannerAccentImage from 'assets/reports/overview-accent.png';
 
-export const OverViewBannerWrapper = styled.div(
-  ({ theme }) => `
-  background: #ffffff;
-  border-bottom-left-radius: ${theme.border.radius.large}px;
-  border-bottom-right-radius: ${theme.border.radius.large}px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: ${theme.spacing[5]}px;
-  min-height: 254px;
-`,
-);
-
 export const BannerBGImage = styled.div(
   ({ theme }) => `
   width: 500px;

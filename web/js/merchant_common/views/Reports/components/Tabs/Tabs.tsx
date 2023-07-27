@@ -3,7 +3,7 @@ import { NavLink, withRouter } from 'react-router-dom';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { StyledTab, TabsHeader } from './styled';
 import { TabsPropType } from './types';
-import { Text } from 'merchant_common/views/Reports/components';
+import { Box, Text } from 'merchant_common/views/Reports/components';
 
 const Tab = withRouter(({ children, to, exact, location }: any) => {
   const { pathname } = location;
@@ -20,7 +20,7 @@ const Tab = withRouter(({ children, to, exact, location }: any) => {
 });
 
 const TabPanel = ({ children }) => {
-  return <div>{children}</div>;
+  return <Box>{children}</Box>;
 };
 
 export const Tabs = ({ tabs, basePath }: TabsPropType): JSX.Element => {
@@ -29,11 +29,7 @@ export const Tabs = ({ tabs, basePath }: TabsPropType): JSX.Element => {
   };
 
   return (
-    <div
-      style={{
-        padding: '24px 20px',
-      }}
-    >
+    <Box padding={['spacing.7', 'spacing.6', 'spacing.7', 'spacing.6']}>
       <TabsHeader>
         {tabs.map(({ to, exact, label }) => {
           return (
@@ -46,13 +42,13 @@ export const Tabs = ({ tabs, basePath }: TabsPropType): JSX.Element => {
 
       {tabs.map(({ to, component }) => {
         return (
-          <div key={to}>
+          <Box key={to}>
             <TabPanel>
               <ShowWhenRoute key={to} exact path={attachBasePath(to)} component={component} />
             </TabPanel>
-          </div>
+          </Box>
         );
       })}
-    </div>
+    </Box>
   );
 };

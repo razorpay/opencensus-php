@@ -7,9 +7,10 @@ import {
   Heading,
   SelectInput,
   ActionList,
+  Divider,
 } from 'merchant_common/views/Reports/components';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
-import { Card } from 'merchant_common/views/Reports/features/Overview/components/Card';
+import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';
 import { OverviewBanner } from 'merchant_common/views/Reports/features/Overview/components/OverviewBanner';
 import { overviewConfigFilterOptions } from 'merchant_common/views/Reports/features/Overview/constants/common';
@@ -214,6 +215,7 @@ export const OverviewSection = ({
           </Dropdown>
         </DropdownWrapper>
       </AccessabilityToolbar>
+      <Divider />
       <CardContainer theme={theme}>{renderOverviewCards()}</CardContainer>
     </>
   );

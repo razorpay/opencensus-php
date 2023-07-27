@@ -31,7 +31,6 @@ export const AccessabilityToolbar = styled.div(
   display: flex;
   border-top-left-radius: ${theme.border.radius.large}px;
   border-top-right-radius: ${theme.border.radius.large}px;
-  border-bottom: ${theme.border.width.thin}px solid #e2e8ea;
   padding: ${theme.spacing[4]}px;
   background: #ffffff;
   align-items: center;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import {
-  OverViewBannerWrapper,
   BannerBGImage,
   OverViewContent,
   BannerAccentImage,
@@ -58,9 +57,17 @@ const OverviewBannerComponent = ({ loading, openModal, isSchedulesEnabled }): JS
   };
 
   return (
-    <OverViewBannerWrapper theme={theme}>
+    <Box
+      borderBottomLeftRadius="large"
+      borderBottomRightRadius="large"
+      position="relative"
+      overflow="hidden"
+      marginBottom="spacing.5"
+      minHeight="254px"
+      backgroundColor="surface.background.level2.lowContrast"
+    >
       <OverViewContent>
-        <div>
+        <Box>
           <Title contrast="low">
             {isSchedulesEnabled
               ? 'Generate & schedule reports for all your business transactions, settlements & subscription'
@@ -69,7 +76,7 @@ const OverviewBannerComponent = ({ loading, openModal, isSchedulesEnabled }): JS
           <Text variant="body" type="muted" contrast="low">
             All your products reports in one place, now with new and better interface.
           </Text>
-        </div>
+        </Box>
         <Box flexWrap="wrap" marginTop="spacing.11" display="flex">
           {isSchedulesEnabled && (
             <Box marginRight="spacing.4">
@@ -103,7 +110,7 @@ const OverviewBannerComponent = ({ loading, openModal, isSchedulesEnabled }): JS
       </OverViewContent>
       <BannerBGImage theme={theme} />
       <BannerAccentImage theme={theme} />
-    </OverViewBannerWrapper>
+    </Box>
   );
 };
 

@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen } from 'test-utils';
-import { Card } from 'merchant_common/views/Reports/features/Overview/components/Card/index';
+import { OverviewCard } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
 import { cardProp } from './fixtures/cardProps';
 import { availableLinks } from 'merchant_common/views/Reports/features/Overview/components/Card/configs';
 
 describe('OverviewCard', () => {
   const App = (props) => {
-    return <Card {...props} />;
+    return <OverviewCard {...props} />;
   };
 
   test('should render card component without any error', () => {
