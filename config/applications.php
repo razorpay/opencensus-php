@@ -1183,6 +1183,18 @@ return [
                 'password'  => env('PG_ROUTER_SECRET'),
             ],
         ],
+        'magic-checkout-service' => [
+            'live'       => [
+                'url'       => env('MAGIC_CHECKOUT_SERVICE_URL'),
+                'username'  => env('MAGIC_CHECKOUT_SERVICE_KEY'),
+                'password'  => env('MAGIC_CHECKOUT_SERVICE_PW'),
+            ],
+            'test'       => [
+                'url'       => env('MAGIC_CHECKOUT_SERVICE_URL'),
+                'username'  => env('MAGIC_CHECKOUT_SERVICE_KEY'),
+                'password'  => env('MAGIC_CHECKOUT_SERVICE_PW'),
+            ],
+        ],
         'capital-los' => [
             'live'=>[
                 'url'      => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),

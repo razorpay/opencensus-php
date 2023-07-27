@@ -185,6 +185,23 @@ class Constants
     const GaiSyncPayouts = 'sync_payouts';
     const PassCustomUdfFss = 'pass_custom_udf_fss';
 
+    // magic checkout dcs features
+    const OneCcEnabled = 'one_cc_enabled';
+    const OneCcDualCheckout = 'one_cc_dual_checkout';
+    const OneCcDisableEmailCookie = 'one_cc_disable_email_cookie';
+    const OneCcOverrideTheme = 'one_cc_override_theme';
+    const OneCcReportingTest = 'one_cc_reporting_test';
+    const OneCcMerchantDashboard = 'one_cc_merchant_dashboard';
+    const OneCcStoreAccount = 'one_cc_store_account';
+    const OneCcAddressSyncOff = 'one_cc_address_sync_off';
+    const OneCcGAAnalytics = 'one_cc_ga_analytics';
+    const OneCcFBAnalytics = 'one_cc_fb_analytics';
+    const OneCcConsentDefault = 'one_cc_consent_default';
+    const OneCcConsentNotDefault = 'one_cc_consent_notdefault';
+    const OneCcCouponDisableCOD = 'one_cc_coupon_disable_cod';
+    const OneCcInputEnglish = 'one_cc_input_english';
+    const OneCcMandatoryLogin = 'one_cc_mandatory_login';
+
     //reporting service features
     const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
     const ConsolidatedTxnReportOfAllSubmerchants = 'consolidated_txn_report_of_all_submerchants';
@@ -203,6 +220,21 @@ class Constants
      * Stores the mapping of the features to their corresponding dcs keys
      */
     public static $featureToDCSKeyMapping = [
+        self::OneCcEnabled => "rzp/pg/merchant/checkout/magic/GlobalControls",
+        self::OneCcDualCheckout => "rzp/pg/merchant/checkout/magic/GlobalControls",
+        self::OneCcMerchantDashboard => "rzp/pg/merchant/checkout/magic/Dashboard",
+        self::OneCcReportingTest => "rzp/pg/merchant/checkout/magic/Dashboard",
+        self::OneCcMandatoryLogin => "rzp/pg/merchant/checkout/magic/AccountControls",
+        self::OneCcStoreAccount => "rzp/pg/merchant/checkout/magic/AccountControls",
+        self::OneCcDisableEmailCookie => "rzp/pg/merchant/checkout/magic/AccountControls",
+        self::OneCcGAAnalytics => "rzp/pg/merchant/checkout/magic/Analytics",
+        self::OneCcFBAnalytics => "rzp/pg/merchant/checkout/magic/Analytics",
+        self::OneCcOverrideTheme => "rzp/pg/merchant/checkout/magic/UIControls",
+        self::OneCcInputEnglish => "rzp/pg/merchant/checkout/magic/UIControls",
+        self::OneCcConsentDefault => "rzp/pg/merchant/checkout/magic/Address",
+        self::OneCcConsentNotDefault => "rzp/pg/merchant/checkout/magic/Address",
+        self::OneCcAddressSyncOff => "rzp/pg/merchant/checkout/magic/Address",
+        self::OneCcCouponDisableCOD => "rzp/pg/merchant/checkout/magic/Payment",
         self::PassCustomUdfFss => "rzp/pg/org/cards/banking_program/CardsConfig",
         self::RefundEnabled => "example/pg/merchant/refund/Features",
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
@@ -578,6 +610,21 @@ class Constants
         APIFeaturesConstants::REPORTING_GENRERIC_NOTES                      => self::SettlementReconReportWithNotes,
         APIFeaturesConstants::CONSOLIDATED_ORG_REPORTS                      => self::ConsolidatedTxnReportOfAllSubmerchants,
         APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
+        APIFeaturesConstants::ONE_CLICK_CHECKOUT                            => self::OneCcEnabled,
+        APIFeaturesConstants::ONE_CLICK_DUAL_CHECKOUT                       => self::OneCcDualCheckout,
+        APIFeaturesConstants::ONE_CC_DISABLE_EMAIL_COOKIE                   => self::OneCcDisableEmailCookie,
+        APIFeaturesConstants::ONE_CLICK_OVERRIDE_THEME                      => self::OneCcOverrideTheme,
+        APIFeaturesConstants::ONE_CC_REPORTING_TEST                         => self::OneCcReportingTest,
+        APIFeaturesConstants::ONE_CC_MERCHANT_DASHBOARD                     => self::OneCcMerchantDashboard,
+        APIFeaturesConstants::ONE_CC_STORE_ACCOUNT                          => self::OneCcStoreAccount,
+        APIFeaturesConstants::ONE_CC_ADDRESS_SYNC_OFF                       => self::OneCcAddressSyncOff,
+        APIFeaturesConstants::ONE_CC_GA_ANALYTICS                           => self::OneCcGAAnalytics,
+        APIFeaturesConstants::ONE_CC_FB_ANALYTICS                           => self::OneCcFBAnalytics,
+        APIFeaturesConstants::ONE_CC_CONSENT_DEFAULT                        => self::OneCcConsentDefault,
+        APIFeaturesConstants::ONE_CC_CONSENT_NOTDEFAULT                     => self::OneCcConsentNotDefault,
+        APIFeaturesConstants::ONE_CC_COUPON_DISABLE_COD                     => self::OneCcCouponDisableCOD,
+        APIFeaturesConstants::ONE_CC_INPUT_ENGLISH                          => self::OneCcInputEnglish,
+        APIFeaturesConstants::ONE_CC_MANDATORY_LOGIN                        => self::OneCcMandatoryLogin,
         APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
         APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
         APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
