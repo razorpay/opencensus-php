@@ -18,6 +18,15 @@ class Gateway extends Base\Gateway
         return $gateway->response();
     }
 
+    public function preferences(Context $context)
+    {
+        $gateway = Factory::make($context, Contracts\PreferencesGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
+        return $gateway->response();
+    }
+
     public function bankAccount(Context $context)
     {
         $gateway = Factory::make($context, Contracts\BankAccountGateway::class);

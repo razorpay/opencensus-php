@@ -165,6 +165,10 @@ class Metric extends Base\Core
             self::PAYMENT_REQUEST_ROUTE => $route,
         ];
 
+        $extraDimensions = $this->getDefaultDimentions();
+
+        $dimensions = array_merge($dimensions, $extraDimensions);
+
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME, $requestTime, $dimensions);
     }
 
@@ -567,6 +571,14 @@ class Metric extends Base\Core
         if (isset($input['method']) === true)
         {
             $dimensions[self::LABEL_PAYMENT_METHOD] = $input['method'];
+
+            if(isset($dimensions[self::LABEL_PAYMENT_METHOD]) === true && $dimensions[self::LABEL_PAYMENT_METHOD] ==='upi')
+            {
+                if(isset($input['flow']) === true)
+                {
+                    $dimensions[self::LABEL_UPI_FLOW] = $input['flow'];
+                }
+            }
         }
 
         return $dimensions;

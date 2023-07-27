@@ -28,4 +28,9 @@ class Entity extends Base\Entity
     const MIN                       = 'min';
     const BLOCKED                   = 'blocked';
 
+    const PREFERENCES               = 'preferences';
+    protected $entity             = 'p2p_preferences';
+    protected static $sign        = 'preferences';
+
+
 }

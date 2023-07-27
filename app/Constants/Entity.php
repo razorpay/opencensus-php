@@ -445,6 +445,7 @@ class Entity
     const P2P_MANDATE_PATCH      = 'p2p_mandate_patch';
     const P2P_BLACKLIST          = 'p2p_blacklist';
     const P2P_COMPLAINT          = 'p2p_complaint';
+    const P2P_PREFERENCES        = 'p2p_preferences';
 
     // P2P Gateways
     const P2P_UPI_AXIS           = 'p2p_upi_axis';
@@ -1368,6 +1369,7 @@ class Entity
         self::P2P_MANDATE_PATCH    => \RZP\Models\P2p\Mandate\Patch::class,
         self::P2P_BLACKLIST         => \RZP\Models\P2p\BlackList::class,
         self::P2P_COMPLAINT         => \RZP\Models\P2p\Complaint::class,
+        self::P2P_PREFERENCES       => \RZP\Models\P2p\Preferences::class,
 
         self::P2P_UPI_SHARP      => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS       => \RZP\Gateway\P2p\Upi::class,

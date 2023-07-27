@@ -62,7 +62,21 @@ class Processor extends Base\Processor
             $preferencesResponse[Entity::TPV] = $this->getTPVContents($input);
         }
 
-        return $preferencesResponse;
+        $this->gatewayInput->put(Entity::PREFERENCES, $preferencesResponse);
+
+        return $this->callGateway();
+    }
+
+    /**
+     * @param array $input
+     * This is a function to return same preferences data from previous action
+     * @return array
+     */
+    public function getPreferencesSuccess(array $input): array
+    {
+        $this->initialize(Action::GET_PREFERENCES_SUCCESS, $input);
+
+        return $input;
     }
 
     private function getCustomerData(CustomerEntity $customer)
