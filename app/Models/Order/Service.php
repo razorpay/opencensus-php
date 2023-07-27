@@ -3,11 +3,11 @@
 namespace RZP\Models\Order;
 
 use App;
+use Request;
 use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
-use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -151,6 +151,11 @@ class Service extends Base\Service
             $input['public_key'] = (new Core())->getOrderPublicKey($this->merchant);
 
             $input['merchant_id'] = $this->merchant->getId();
+
+            $rawBodyInput['body_string'] = Request::getContent();
+            $rawBodyInput['content_header'] = Request::header('Content-Type');
+
+            $input['raw_req'] = $rawBodyInput;
 
             $order = $this->app['pg_router']->createOrder($input, true);
 
