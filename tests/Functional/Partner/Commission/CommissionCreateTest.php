@@ -30,6 +30,7 @@ use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Models\Partner\Commission\Invoice;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Models\Merchant\Constants as MeConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -44,6 +45,7 @@ class CommissionCreateTest extends TestCase
     use MocksSplitz;
     use CommissionTrait;
     use DbEntityFetchTrait;
+    use MocksPartnershipsService;
 
     protected function setUp(): void
     {
@@ -1297,6 +1299,89 @@ class CommissionCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('automated_comm_payout', $partner->getId());
         $this->mockAutoApprovalFinanceExp($partner->getId());
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('processed', $invoice['status']);
+        Mail::assertNotSent(CommissionOpsInvoice::class);
+        Mail::assertNotSent(CommissionInvoice::class);
+
+        $testData = $this->testData['testInvoiceFetchAfterAutoApproved'];
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvoiceAutoApprovedAndPushToPrtsWhenExpEnabled()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
+
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->startTest($testData);
+
+        // calling generate invoice twice should still create only one invoice
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => $now->month,
+            'year'          => $now->year,
+            'status'        => 'issued',
+            'gross_amount'  => 1770,
+            'tax_amount'    => 270,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount'        => 1770,
+                'gross_amount'  => 1770,
+                'tax_amount'    => 270,
+                'net_amount'    => 1770,
+                'tax_inclusive' => true,
+            ]
+        ];
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', $partner->getId());
+        $this->mockAutoApprovalFinanceExp($partner->getId());
+        $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
+
         $testData = $this->testData['testInvoiceAction'];
 
         $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
@@ -3119,6 +3204,24 @@ class CommissionCreateTest extends TestCase
     {
         $input = [
             "experiment_id" => "KjN1fFEK7MA7r3",
+            "id"            => $merchantId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    private function mockPartnershipServiceShadowPhaseExp(string $merchantId)
+    {
+        $input = [
+            "experiment_id" => "MC39BcG9NndaVH",
             "id"            => $merchantId,
         ];
 

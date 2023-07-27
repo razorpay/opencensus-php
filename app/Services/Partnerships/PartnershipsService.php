@@ -13,15 +13,17 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
-use RZP\Models\Merchant\Core;
 use RZP\Constants\Environment;
 use RZP\Models\Partner\Metric;
 use RZP\Http\Request\Requests;
 use RZP\Models\Order\ProductType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\PartnershipServiceAsync;
 use RZP\Models\Partner\Commission\Entity;
+use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 
@@ -237,6 +239,27 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, self::GET_LAST_PARTNER_MIGRATION, Requests::POST);
     }
 
+    public function updateInvoiceStatusAsync($parameters, $partnerId)
+    {
+        try
+        {
+            if ($this->isPrtsInvoiceSyncEnabled($partnerId))
+             {
+                $path = self::UPDATE_INVOICE_STATUS;
+                PartnershipServiceAsync::dispatch($parameters, $path);
+             }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PRTS_UPDATE_INVOICE_STATUS_JOB_DISPATCHING_ERROR,
+                $parameters
+            );
+        }
+    }
+
     public function upsertPartnerConfig($parameters)
     {
         return $this->sendRequest($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST);
@@ -304,6 +327,7 @@ class PartnershipsService extends Base\Service
                 TraceCode::PRTS_COMMISSION_DUAL_WRITE_FAILED,
                 [ $commission->toArrayPublic() ]
             );
+
             $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_dual_write', 'success' => false]);
         }
     }
@@ -338,7 +362,7 @@ class PartnershipsService extends Base\Service
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCH_FAILED,
+                TraceCode::PRTS_COMMISSION_SHADOW_PHASE_FAILED,
                 $data
             );
             $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_capture', 'success' => false]);
@@ -383,6 +407,56 @@ class PartnershipsService extends Base\Service
         }
     }
 
+    /**
+     * Dispatch commission invoice event to partnership service
+     *
+     * @param CommissionInvoice\Entity $invoice
+     * @param string                                        $month
+     * @param string                                        $year
+     * @param bool                                          $regenerateInvoice
+     *
+     * @return void
+     */
+    public function createInvoiceShadowPhase(CommissionInvoice\Entity $invoice, string $month, string $year, bool $regenerateInvoice)
+    {
+        try
+        {
+             if (!$this->isPrtsInvoiceSyncEnabled($invoice->getMerchantId()))
+             {
+                 return;
+             }
+            $invoicePayload = [
+                'partner_id'       => $invoice->getMerchantId(),
+                'month'            => $month,
+                'year'             => $year,
+                'invoice_id'       => $invoice->getId(),
+                'force_regenerate' => $regenerateInvoice,
+            ];
+
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($invoicePayload) {
+                // Job will be dispatched only after the transaction commits.
+                $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING,
+                                   [
+                                       'mode' => $this->mode,
+                                       'id'   => $invoicePayload['invoice_id'],
+                                   ]
+                );
+                $messageId = $this->app->partnerships->pushRawJob($invoicePayload, 'prts_common');
+                $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHED, [
+                    'id'        => $invoicePayload['invoice_id'],
+                    'messageId' => $messageId
+                ]);
+                $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH_SUCCESS);
+            }));
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING_ERROR, [
+               'error'      => $ex->getMessage(),
+               'invoice_id' => $invoice->getId(),
+            ]);
+        }
+    }
 
     private function isDualWriteExpEnabled(Entity $commission): bool
     {
@@ -391,7 +465,7 @@ class PartnershipsService extends Base\Service
             'experiment_id' => $this->app['config']->get('app.prts_commission_dual_write_exp_id'),
         ];
 
-        return (new Core())->isSplitzExperimentEnable(
+        return (new MerchantCore())->isSplitzExperimentEnable(
             $properties, 'enable', TraceCode::PRTS_COMMISSION_DUAL_WRITE_SPLITZ_ERROR
         );
     }
@@ -403,11 +477,27 @@ class PartnershipsService extends Base\Service
             'experiment_id' => $this->app['config']->get('app.prts_commission_shadow_phase_exp_id'),
         ];
 
-        return (new Core())->isSplitzExperimentEnable(
+        return (new MerchantCore())->isSplitzExperimentEnable(
             $properties, 'enable', TraceCode::PRTS_COMMISSION_SHADOW_PHASE_SPLITZ_ERROR
         );
     }
 
+    /**
+     * Checks whether merchant is allowed for partnership service sync.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    private function isPrtsInvoiceSyncEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.prts_commission_invoice_shadow_phase_exp_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
 
     /**
      * Pushes the job to the SQS queue based on the queue config key and connection.
@@ -416,7 +506,7 @@ class PartnershipsService extends Base\Service
      *
      * @return  string
      */
-    private function pushRawJob(array $data, string $queueConfigKey): string
+    public function pushRawJob(array $data, string $queueConfigKey): string
     {
         $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
         $connection = $this->getQueueConnection();

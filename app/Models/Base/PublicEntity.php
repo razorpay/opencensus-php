@@ -444,6 +444,7 @@ class PublicEntity extends UniqueIdEntity
         return array_only($attributes, $this->reconAppInternal);
     }
 
+
     /**
      * Create a new Eloquent Collection instance.
      *

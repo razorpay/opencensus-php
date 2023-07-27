@@ -196,6 +196,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
+        $this->app->partnerships->updateInvoiceStatusAsync(['id'=> $invoice->getId(), 'status'=> $invoice->getStatus()], $invoice->getMerchantId());
+
         Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice, $input) {
             // clear on Hold For Partner after workflow is approved
             $data = [ Commission\Constants::INVOICE_ID => $invoice->getId() ];
@@ -214,6 +216,8 @@ class Core extends Base\Core
         $invoice->setStatus($input[Entity::ACTION]);
 
         $this->repo->saveOrFail($invoice);
+
+        $this->app->partnerships->updateInvoiceStatusAsync(['id'=> $invoice->getId(), 'status'=> $invoice->getStatus()], $invoice->getMerchantId());
 
         $attrs = [
             'invoiceId'        =>  $invoice->getId(),
@@ -939,7 +943,7 @@ class Core extends Base\Core
 
         $invoice = $this->build($partner, $invoiceCreateInput);
 
-        $this->repo->transaction(function() use ($partner, $invoice, $month, $year) {
+        $this->repo->transaction(function() use ($partner, $invoice, $month, $year, $regenerateIfExists, $forceRegenerate) {
 
             $created = $this->createLineItemsForInvoice($partner, $invoice, $month, $year);
 
@@ -976,6 +980,7 @@ class Core extends Base\Core
             {
                 CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
             }
+            $this->app->partnerships->createInvoiceShadowPhase($invoice, $month, $year, $regenerateIfExists||$forceRegenerate);
         });
     }
 

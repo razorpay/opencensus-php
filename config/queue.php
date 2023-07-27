@@ -363,6 +363,10 @@ return [
         'test'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_TEST'),
         'live'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_LIVE')
     ],
+    'prts_common' => [
+        'test'      => env('AWS_PARTNERSHIPS_COMMON_QUEUE_TEST'),
+        'live'      => env('AWS_PARTNERSHIPS_COMMON_QUEUE_LIVE')
+    ],
     'fund_account_validation' => [
         'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
         'live'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
