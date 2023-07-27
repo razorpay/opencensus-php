@@ -70,7 +70,13 @@ function WebsiteAppDetailsNudge({
     }
   }, []);
 
-  if (!isMobileResolution || !shouldShowNudge || !user.isWebsiteComplianceFlowEnabled) return null;
+  if (
+    !isMobileResolution ||
+    !shouldShowNudge ||
+    !user.isWebsiteComplianceFlowEnabled ||
+    user?.website_policy_verification_status === 'verified'
+  )
+    return null;
 
   const onUpdateClick = () => {
     analyticsTrack({

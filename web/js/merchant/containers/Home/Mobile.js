@@ -306,6 +306,7 @@ class AnalyticsMobile extends Component {
             <WebsiteComplianceNudge screen="Home page" />
             {user.isWebsiteComplianceFlowEnabled &&
               this.props.canShowL1ActivationModals &&
+              user?.website_policy_verification_status !== 'verified' && // if website policy verification status is verified don't show modal
               this.renderWebsiteCompliancePrompt()}
             {carouselItem.length ? (
               <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />

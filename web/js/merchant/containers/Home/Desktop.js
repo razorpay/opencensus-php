@@ -193,20 +193,14 @@ class AnalyticsDesktop extends Component {
       transactionAmount,
       // from parent component
       canShowL1ActivationModals,
-      isNcEligibile,
     } = this.props;
-
-    if (!canShowL1ActivationModals) return;
-    const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
-    if (
-      !user.isInstantActivationEnabled ||
-      !['poi_verified', 'L1_instantly_activated'].includes(activationState)
-    )
-      return;
-
     const recommendationModalShown = LocalStorageService.getItem(
       `product_recommendation_modal_shown-${user.current}`,
     );
+
+    if (!canShowL1ActivationModals) return;
+
+    const isWebsitePolicyVerified = user?.website_policy_verification_status === 'verified';
     if (
       // experiments
       user.isProductRecommendationEnabled &&
@@ -215,7 +209,9 @@ class AnalyticsDesktop extends Component {
       !recommendationModalShown
     ) {
       this.renderProductRecommendationPrompt();
-    } else if (user.isWebsiteComplianceFlowEnabled) {
+    }
+    // if website policy verification status is verified don't show modal
+    else if (user.isWebsiteComplianceFlowEnabled && !isWebsitePolicyVerified) {
       this.renderWebsiteCompliancePrompt();
     }
   };
@@ -228,7 +224,6 @@ class AnalyticsDesktop extends Component {
     LocalStorageService.setItem(`product_recommendation_modal_shown-${user.current}`, true);
   };
 
-  // prettier-ignore
   renderWebsiteCompliancePrompt = () => {
     if (this.state.isWebsiteComplianceModalShown) return;
     const { activationData, websiteSectionDetailsData, websiteComplianceModalVisibility } =

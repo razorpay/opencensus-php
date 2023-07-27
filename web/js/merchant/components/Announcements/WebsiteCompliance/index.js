@@ -25,6 +25,9 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
   const bannerColor = nudgeType === 'soft' ? 'warning' : 'danger';
   const bannerTitle = websiteComplianceEntryPointsData[nudgeType].title;
 
+  const isWebsitePolicyVerified = user?.website_policy_verification_status === 'verified';
+  const isWebsitePolicyFailed = user?.website_policy_verification_status === 'failed';
+
   useEffect(() => {
     // send analytics on banner load
     if (shouldShowBanner && user.isWebsiteComplianceFlowEnabled) {
@@ -42,10 +45,16 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
     }
   }, []);
 
-  if (!shouldShowBanner || !user.isWebsiteComplianceFlowEnabled) return null;
+  // if `isWebsitePolicyVerified` website policy verification status is verified don't show modal
+  if (!shouldShowBanner || !user.isWebsiteComplianceFlowEnabled || isWebsitePolicyVerified)
+    return null;
 
   return (
-    <AnnouncementBanner title={bannerTitle} theme={bannerColor} canBeClosed={false}>
+    <AnnouncementBanner
+      title={bannerTitle}
+      theme={bannerColor}
+      canBeClosed={!isWebsitePolicyFailed} // if `isWebsitePolicyFailed` website policy verification status is failed, don't let them close banner
+    >
       <div className="website-compliance-announcement-container">
         <div className="announcement-content">
           <p>

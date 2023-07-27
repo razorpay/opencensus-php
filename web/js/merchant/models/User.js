@@ -1138,9 +1138,13 @@ export default class User {
   }
 
   get isWebsiteComplianceModalNonDismissible() {
+    // if `isWebsitePolicyFailed` is failed make the non dismissible modal
+    const isWebsitePolicyFailed = this.website_policy_verification_status === 'failed';
+
     return (
       this.isOrgRZP &&
-      getSplitzExperimentVariant('website_compliance_modal_exp')?.variables?.result === 'on'
+      getSplitzExperimentVariant('website_compliance_modal_exp')?.variables?.result === 'on' &&
+      isWebsitePolicyFailed
     );
   }
 
