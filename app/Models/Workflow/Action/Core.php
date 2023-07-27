@@ -1161,6 +1161,8 @@ class Core extends Base\Core
             MerchantNotificationsConstants::MERCHANT_NAME                      => $merchant->getName(),
             MerchantNotificationsConstants::MESSAGE_SUBJECT                    => $input[Constants::MESSAGE_SUBJECT],
             MerchantNotificationsConstants::MESSAGE_BODY                       => $input[Constants::MESSAGE_BODY],
+            MerchantNotificationsConstants::DASHBOARD_URL                      => app('config')->get('applications.international_payment_methods_dashboard_url'),
+            MerchantNotificationsConstants::PAYPAL_URL                         => app('config')->get('applications.international_payment_methods_paypal_url'),
         ]);
 
         if (array_key_exists($event, MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK) === true)

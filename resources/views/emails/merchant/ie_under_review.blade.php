@@ -29,15 +29,10 @@
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Hi {{ $merchant_name }},</p>
 
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        Your request to activate international card payments is under review.
-                                        <br>
-                                        We’ll verify your details in a few days and share an update by {{$update_date}}.
+                                        We are currently reviewing your request to enable international payments. Please give us a few days to verify your details.
                                     </p>
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        <strong> Note: </strong> You’ll be able to collect international card payments only after verification is complete.
-                                    </p>
-                                    <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        To check details, go to the ‘International payments’ option in ‘Account and Settings’ section on your Razorpay dashboard: <a href="https://dashboard.razorpay.com/app/payment-methods?instrument=international">https://dashboard.razorpay.com/app/payment-methods?instrument=international</a>
+                                        Check your activation status here: <a href={{ $dashboard_url }}>{{$dashboard_url}}</a>
                                     </p>
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
                                         Thank you,

@@ -1742,4 +1742,8 @@ return [
         ],
         'secret'        => env('APP_MAGIC_CHECKOUT_SERVICE_SECRET'),
     ],
+
+    'international_payment_methods_dashboard_url' => env('INTERNATIONAL_PAYMENT_METHODS_DASHBOARD_URL'),
+
+    'international_payment_methods_paypal_url' => env('INTERNATIONAL_PAYMENT_METHODS_PAYPAL_URL'),
 ];

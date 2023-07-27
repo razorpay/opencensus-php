@@ -29,12 +29,10 @@
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Hi {{ $merchant_name }},</p>
 
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        Your request to activate international card payments was successful.
-                                        <br>
-                                        You can now collect international card payments on payment gateway.
+                                        Your request to activate international payments is successful. You can now access international cards, global bank transfers (ACH, SEPA, CHAPS, and SWIFT) and local payment methods (Trustly, GiroPay, SofortPay) on payment gateway.
                                     </p>
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        To check details, go to the ‘International payments’ option in ‘Account and Settings’ section on your Razorpay dashboard: <a href="https://dashboard.razorpay.com/app/payment-methods?instrument=international">https://dashboard.razorpay.com/app/payment-methods?instrument=international</a>
+                                        Go to your account dashboard here <a href={{ $dashboard_url }}>{{ $dashboard_url }}</a>
                                     </p>
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
                                         Thank you,

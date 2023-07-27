@@ -215,7 +215,7 @@ class Core extends Base\Core
         //To be removed (post final testing)
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['approval action' => 'reached to createMerchantWorkflow']);
     }
-    
+
     /**
      * @throws Exception\BadRequestException
      */
@@ -228,15 +228,15 @@ class Core extends Base\Core
               'International Enablement Detail Not Present'
             );
         }
-        
+
         $detailUrl = $data[Constants::NEW][Constants::DETAIL_URL];
-        
+
         $pieces = explode('/', $detailUrl);
 
         return $pieces[count($pieces)-1];
     }
-    
-    
+
+
     /**
      * @throws Exception\BadRequestException
      */
@@ -260,13 +260,13 @@ class Core extends Base\Core
     private function sendNotificationForInReviewState($merchant)
     {
         $tatDaysLater = Carbon::now()->addDays(DashboardConstants::IE_TAT_DAYS)->format('M d,Y');
-
         $args = [
             DashboardConstants::MERCHANT => $merchant,
             DashboardEvents::EVENT       => DashboardEvents::IE_UNDER_REVIEW,
             DashboardConstants::PARAMS   => [
                 DashboardConstants::MERCHANT_NAME => $merchant->getName(),
                 DashboardConstants::UPDATE_DATE   => $tatDaysLater,
+                DashboardConstants::DASHBOARD_URL => app('config')->get('applications.international_payment_methods_dashboard_url'),
             ]
         ];
 
@@ -287,12 +287,12 @@ class Core extends Base\Core
         {
             $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
                 $merchant->getId(), Constants::MERCHANT_KEY, Name::TOGGLE_INTERNATIONAL_REVAMPED);
-    
+
             if (is_null($workflowActions) === false)
             {
                 // Ideally should have only one workflow action
                 $action = $workflowActions->first();
-    
+
                 $productNames = $this->getProductNamesFromActionEntityData($action);
             }
         }
@@ -301,7 +301,7 @@ class Core extends Base\Core
             // sync between old international enabling flows with product based international flows.
             // For old international enabling flows(which are not closed before product based international goes live),
             // all the products are enabled if workflow is approved
-            
+
             if (($permission === Name::EDIT_MERCHANT_INTERNATIONAL_NEW or
                 $permission === Name::EDIT_MERCHANT_INTERNATIONAL) === true)
             {
@@ -310,9 +310,9 @@ class Core extends Base\Core
             else
             {
                 $permissionProductCategories = array_flip(ProductInternationalMapper::PRODUCT_PERMISSION);
-        
+
                 $permissionProductCategory = $permissionProductCategories[$permission];
-        
+
                 if (array_key_exists($permission, $permissionProductCategories) === false)
                 {
                     throw new Exception\BadRequestException(
@@ -321,7 +321,7 @@ class Core extends Base\Core
                       ['data' => $permission]
                     );
                 }
-        
+
                 $productNames = ProductInternationalMapper::PRODUCT_CATEGORIES[$permissionProductCategory];
             }
         }
@@ -380,9 +380,9 @@ class Core extends Base\Core
     public function processWorkflowRequestRejection(Action\Entity $action, array $extraData)
     {
         $version  = 'v1';
-        
+
         $actionPermission = $action->permission->getName();
-        
+
         if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED)
         {
             $version = 'v2';
@@ -390,7 +390,7 @@ class Core extends Base\Core
 
         $rejectionReason = ($version === 'v2') ? $this->extractRejectionReasonV2FromPayload($extraData) :
                                 $this->extractRejectionReasonFromPayload($extraData);
-        
+
         if ($version !== 'v2')
         {
             $rejectionTags = $this->extractRejectionTagsFromPayload($extraData);
@@ -417,7 +417,7 @@ class Core extends Base\Core
 
         return Constants::REJECTION_REASON_PREFIX . $rejectionReason;
     }
-    
+
     private function extractRejectionReasonFromPayload(array $extraData)
     {
         $rejectionReason = $extraData[Constants::REJECTION_REASON_KEY] ?? Constants::REJECT_REASON_MERCHANT_LOOKS_RISKY;
@@ -481,6 +481,8 @@ class Core extends Base\Core
             DashboardEvents::EVENT       => $event,
             DashboardConstants::PARAMS   => [
                 DashboardConstants::MERCHANT_NAME => $merchant['name'],
+                DashboardConstants::DASHBOARD_URL => app('config')->get('applications.international_payment_methods_dashboard_url'),
+                DashboardConstants::PAYPAL_URL    => app('config')->get('applications.international_payment_methods_paypal_url'),
             ]
         ];
 
@@ -527,7 +529,7 @@ class Core extends Base\Core
             // Models/Workflow/Observer/MerchantSelfServeObserver.php file
 
             $this->notifyMerchantInternationalEnablementApprovalV2($action);
-            
+
             return;
         }
 

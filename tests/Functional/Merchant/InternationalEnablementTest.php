@@ -190,7 +190,6 @@ class InternationalEnablementTest extends TestCase
                 }),
                 Mockery::on(function($actualText) use ($text, $useRegexForText) {
                     $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
-
                     if ($useRegexForText === true)
                     {
                         if (preg_match($text, $actualText) === 0)
@@ -560,17 +559,19 @@ class InternationalEnablementTest extends TestCase
     public function storkMockForUnderReview()
     {
         $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
-
+        $dashboardUrl = app('config')->get('applications.international_payment_methods_dashboard_url');
         $expectedStorkParameters = [
-            'update_date' => $tatDaysLater,
+            'dashboard_url' => $dashboardUrl,
         ];
 
-        $this->expectStorkSendSmsRequest('sms.dashboard.ie_under_review', '1234567890', $expectedStorkParameters);
+        $this->expectStorkSendSmsRequest('sms.dashboard.ie_under_review_v4', '1234567890', $expectedStorkParameters);
 
         $this->expectStorkSendWhatsappMessageRequest('Hi testname,
-Your request to activate international card payments is under review. We’ll verify your details in a few days and share an update by ' . $tatDaysLater . '.
-Note: You’ll be able to collect international card payments only after verification is complete.
-To check details, go to the ‘International payments’ option in ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/payment-methods?instrument=international
+
+We are currently reviewing your request to activate international payments. Please give us a few days to verify your details.
+
+Check your activation status here: '.$dashboardUrl.'
+
 Thank you,
 Team Razorpay',
         '1234567890'
@@ -579,12 +580,18 @@ Team Razorpay',
 
     public function storkMockForApprove()
     {
-        $this->expectStorkSendSmsRequest('sms.dashboard.ie_successful', '1234567890');
+        $dashboardUrl = app('config')->get('applications.international_payment_methods_dashboard_url');
+        $expectedStorkParameters = [
+            'dashboard_url' => $dashboardUrl,
+        ];
+        $this->expectStorkSendSmsRequest('sms.dashboard.ie_successful_v4', '1234567890', $expectedStorkParameters);
 
         $this->expectStorkSendWhatsappMessageRequest('Hi testname,
-Your request to activate international card payments was successful.
-You can now collect international card payments on payment gateway, payment pages, payment links, and invoices.
-To check details, go to the ‘International payments’ option in ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/payment-methods?instrument=international
+
+Your request to activate international payments is successful. You can now access international cards, global bank transfers (ACH, SEPA, CHAPS, and SWIFT) and local payment methods (Trustly, GiroPay, SofortPay) on payment gateway, payment pages, payment links, and invoices.
+
+Go to your account dashboard here '.$dashboardUrl.'
+
 Thank you,
 Team Razorpay',
             '1234567890'

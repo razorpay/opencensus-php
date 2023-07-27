@@ -93,6 +93,8 @@ class Constants
     const ADDITIONAL_WEBSITE                       = 'additional_website';
 
     const UPDATE_DATE                              = 'update_date';
+    const DASHBOARD_URL                            = 'dashboard_url';
+    const PAYPAL_URL                               = 'paypal_url';
 
     const LAST_3                                   = 'last_3';
 

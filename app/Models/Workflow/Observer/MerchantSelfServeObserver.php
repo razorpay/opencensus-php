@@ -314,6 +314,8 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
             Merchant\Constants::PARAMS       => [
                 DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
                 DashboardConstants::UPDATE_DATE   => $rejectionRetryAfterDate,
+                DashboardConstants::DASHBOARD_URL => app('config')->get('applications.international_payment_methods_dashboard_url'),
+                DashboardConstants::PAYPAL_URL => app('config')->get('applications.international_payment_methods_paypal_url'),
             ]
         ];
 
