@@ -115,6 +115,13 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
 
         $merchantTranId = trim($row[self::MERCHANT_TRAN_ID]);
 
+        if (strpos($row[self::MERCHANT_ID], self::UPI_TRANSFER_MERCHANT_ID) !== false and
+            (str_starts_with($merchantTranId, QrCode\Constants::QR_CODE_V2_ICICI_PREFIX) and
+             (str_ends_with($merchantTranId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))))
+        {
+            return true;
+        }
+
         $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
 
         if ((strlen($merchantTranId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
@@ -274,6 +281,17 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
             }
 
             $callbackData[$callbackField] = $row[$reconColumn];
+        }
+
+        if (isset($row[self::MERCHANT_TRAN_ID]) === true)
+        {
+            $merchantTranId = trim($row[self::MERCHANT_TRAN_ID]);
+
+            if (str_starts_with($merchantTranId, QrCode\Constants::QR_CODE_V2_ICICI_PREFIX))
+            {
+                $callbackData[UpiIciciFields::MERCHANT_TRAN_ID] = substr($merchantTranId,
+                                                                         strlen(QrCode\Constants::QR_CODE_V2_ICICI_PREFIX));
+            }
         }
 
         //
