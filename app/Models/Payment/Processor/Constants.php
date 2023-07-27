@@ -122,4 +122,8 @@ class Constants
     const OPTIMIZER_GATEWAY_DATA = 'optimizer_gateway_data';
     const DATA                   = 'data';
 
+    // Max allowed capture
+    //Adding 2 days and 5.5 hours UTC timestamp to handle edge cases of last 5.5 hours of the day.
+    const MAX_ALLOWED_CAPTURE_TIME = (2*24*60*60) + 5.5*60*60;
+
 }

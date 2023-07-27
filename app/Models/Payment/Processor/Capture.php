@@ -3,8 +3,10 @@
 namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Metric;
 use RZP\Jobs;
+use DateTime;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -41,6 +43,7 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\OrderOutbox\Entity as OrderOutboxEntity;
 use RZP\Models\OrderOutbox\Constants as OrderOutboxConstants;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Jobs\MerchantBasedBalanceUpdateV1;
@@ -675,6 +678,29 @@ trait Capture
     {
         try
         {
+            //for paysecure and fulcrum, card details will not be available after T+2 DAYS
+            if ($this->payment->getGateway() ===  Payment\Gateway::PAYSECURE or $this->payment->getGateway() ===  Payment\Gateway::FULCRUM
+                && $this->payment->isGatewayCaptured() === false){
+                //Adding 2 days and 5.5 hours UTC timestamp to handle edge cases of last 5.5 hours of the day.
+                $maxTimestampOfTheDay = $this->payment->getCreatedAt() + PaymentConstants::MAX_ALLOWED_CAPTURE_TIME;
+
+                $dateTime = new DateTime();
+                $dateTime->setTimestamp($maxTimestampOfTheDay);
+                $dateTime->setTime(23, 59, 59);
+                $maxTimeEpoch = $dateTime->getTimestamp();
+                if (Carbon::now(Timezone::IST)->getTimestamp()  > $maxTimeEpoch)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_CAPTURE_FAILURE,
+                        ['payment_id' => $this->payment->getId(),
+                        'merchant_id'=> $this->payment->getMerchantId(),
+                         'max_epoc_time' => $maxTimeEpoch
+                        ]);
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_MORE_THAN_2_DAYS);
+                }
+            }
+
             $callToGatewayStartTime = microtime(true);
 
             if ($this->payment->isGatewayCaptured() === false)
@@ -760,6 +786,12 @@ trait Capture
      */
     protected function handleExceptionOnCapture(array $data, \Throwable $ex)
     {
+
+        if (($ex instanceof Exception\BadRequestException) === true &&
+            $ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_MORE_THAN_2_DAYS) {
+            throw $ex;
+        }
+
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
             $this->dispatchAsyncCapture($data);
