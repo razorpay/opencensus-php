@@ -38,3 +38,13 @@ export const formatDate = (value) => {
 export const formatEpochDate = (epoch) => {
   return moment.unix(epoch).format('Do MMM, YYYY hh:mm A');
 };
+
+// calculates the depth of object
+export const calculateMaxDepth = (json, depth = 0) => {
+  return Math.max(
+    depth,
+    ...Object.values(json)
+      .filter((obj) => typeof obj === 'object')
+      .map((obj) => calculateMaxDepth(obj, depth + 1)),
+  );
+};

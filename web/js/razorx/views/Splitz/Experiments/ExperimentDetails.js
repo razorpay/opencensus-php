@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import AddEditExperiment from './AddEditExperiment';
 import WhitelistExperiment from './WhitelistExperiment';
-import * as experimentHelpers from './experimentHelpers';
+import {
+  stringifyNull,
+  getAudienceRules,
+  ruleOperatorMap,
+  isComplexRule,
+} from './experimentHelpers';
 import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
@@ -306,9 +311,18 @@ export default class ExperimentDetails extends React.Component {
         </div>
       );
     } else {
-      const audienceRules = data.audience
-        ? experimentHelpers.getAudienceRules(data.audience)
-        : undefined;
+      const isJsonEmpty = !data.audience;
+      let audienceRules, isRuleComplex;
+
+      if (isJsonEmpty) {
+        audienceRules = undefined;
+      } else {
+        isRuleComplex = isComplexRule(data.audience);
+      }
+
+      if (!isJsonEmpty && !isRuleComplex) {
+        audienceRules = getAudienceRules(data.audience);
+      }
 
       content = (
         <div className="entity-details">
@@ -542,7 +556,25 @@ export default class ExperimentDetails extends React.Component {
               );
             })}
           </div>
-          {audienceRules && audienceRules.rules.length && audienceRules.rules[0].operator ? (
+
+          {!isJsonEmpty && isRuleComplex && (
+            <>
+              <br />
+              <br />
+              <div className="pad-highlight">
+                <div className="title" style={{ position: 'inherit', fontSize: '18px' }}>
+                  Audience Rules
+                </div>
+                <pre>{JSON.stringify(JSON.parse(data.audience), undefined, 2)}</pre>
+              </div>
+            </>
+          )}
+
+          {!isJsonEmpty &&
+          !isRuleComplex &&
+          audienceRules &&
+          audienceRules.rules.length &&
+          audienceRules.rules[0].operator ? (
             <React.Fragment>
               <br />
               <br />
@@ -555,7 +587,7 @@ export default class ExperimentDetails extends React.Component {
                     <div className="flex-row">
                       <div>&nbsp;{rule.key}</div>
                       <div>
-                        <b>&nbsp;{experimentHelpers.ruleOperatorMap[rule.operator]}&nbsp;</b>
+                        <b>&nbsp;{ruleOperatorMap[rule.operator]}&nbsp;</b>
                       </div>
                       {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
                         <div
@@ -566,7 +598,7 @@ export default class ExperimentDetails extends React.Component {
                           {rule.value}
                         </div>
                       ) : (
-                        <div>{experimentHelpers.stringifyNull(rule.value)}</div>
+                        <div>{stringifyNull(rule.value)}</div>
                       )}
                     </div>
                     {i < audienceRules.rules.length - 1 && (

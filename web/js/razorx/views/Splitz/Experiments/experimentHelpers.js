@@ -1,3 +1,5 @@
+import { calculateMaxDepth } from 'razorx/helpers/utils';
+
 export const stringifyNull = (value) => (value === null ? 'null' : value);
 
 export const getAudienceRules = (audience) => {
@@ -16,6 +18,12 @@ export const getAudienceRules = (audience) => {
       };
     }),
   };
+};
+
+export const isComplexRule = (jsonString) => {
+  const depth = 6;
+
+  return calculateMaxDepth(JSON.parse(jsonString)) > depth;
 };
 
 export const createAudienceRules = (audienceRules) =>
@@ -44,4 +52,9 @@ export const ruleOperatorMap = {
   '!==': 'not equal to',
   belongsTo: 'belongs to',
   doesNotBelongTo: "doesn't belong to",
+};
+
+export const RULE_TYPE = {
+  simpleRule: 'simpleRule',
+  complexRule: 'complexRule',
 };

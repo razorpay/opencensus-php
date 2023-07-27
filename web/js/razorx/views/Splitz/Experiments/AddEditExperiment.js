@@ -2,7 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { PowerSelect } from 'react-power-select';
-import * as experimentHelpers from './experimentHelpers';
+import {
+  stringifyNull,
+  getAudienceRules,
+  isComplexRule,
+  createAudienceRules,
+  isEmptyRules,
+  ruleOperatorMap,
+  RULE_TYPE,
+} from './experimentHelpers';
 import { ModalContent } from 'common/new-ui/Modal';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
@@ -42,29 +50,39 @@ export default class AddEditExperiment extends React.Component {
     ];
     let selectedType = 'ramping';
 
+    let ruleType = RULE_TYPE.simpleRule;
+    let complexRules = '';
     if (this.props.isEdit) {
       // handle segments case
       variants = this.props.data.variants;
-
+      ruleType =
+        this.props.data.audience && isComplexRule(this.props.data.audience)
+          ? RULE_TYPE.complexRule
+          : RULE_TYPE.simpleRule;
       selectedType = this.props.data.type;
+      complexRules = this.props.data.audience;
 
-      const audienceRules = this.props.data.audience
-        ? experimentHelpers.getAudienceRules(this.props.data.audience)
-        : undefined;
-      ruleCondition = audienceRules?.ruleCondition || ruleCondition;
-      rules = audienceRules?.rules || rules;
+      if (ruleType === RULE_TYPE.simpleRule) {
+        const audienceRules = this.props.data.audience
+          ? getAudienceRules(this.props.data.audience)
+          : undefined;
+        ruleCondition = audienceRules?.ruleCondition || ruleCondition;
+        rules = audienceRules?.rules || rules;
+      }
     }
-
     return {
+      complexRules,
       isSaving: false,
       isFetchingProjects: true,
       isFetchingSegments: true,
       isFetchingGroups: false,
+      isJsonValid: false,
       groups: [],
       projects: [],
       segments: [],
       ruleCondition,
       rules,
+      ruleType,
       variants,
       selectedType,
       selectedProject: null,
@@ -95,12 +113,15 @@ export default class AddEditExperiment extends React.Component {
               value: Number(form.trafficAllocation),
             }
           : undefined,
-        audience: experimentHelpers.isEmptyRules(this.state.rules)
-          ? undefined
-          : experimentHelpers.createAudienceRules({
-              ruleCondition: this.state.ruleCondition,
-              rules: this.state.rules,
-            }),
+        audience:
+          this.state.ruleType === RULE_TYPE.complexRule
+            ? this.state.complexRules
+            : isEmptyRules(this.state.rules)
+            ? undefined
+            : createAudienceRules({
+                ruleCondition: this.state.ruleCondition,
+                rules: this.state.rules,
+              }),
         variants: this.state.variants,
         mentions: this?.mentions?.replace(/ /g, '').split(','),
       },
@@ -159,6 +180,10 @@ export default class AddEditExperiment extends React.Component {
 
     if (!this.state.variants.length || !this.state.variants[0].name.length) {
       return 'Please add a variant';
+    }
+
+    if (this.state.ruleType === RULE_TYPE.complexRule && !this.state.isJsonValid) {
+      return 'Please add valid JSON';
     }
 
     let totalWeight = 0;
@@ -240,6 +265,36 @@ export default class AddEditExperiment extends React.Component {
 
   handleSelectGroup = ({ option }) => {
     this.setState({ selectedGroup: option });
+  };
+
+  handleSelectChange = (event) => {
+    this.setState({
+      ruleType: event.target.value,
+    });
+  };
+
+  handleComplexRuleChange = (event) => {
+    const json = event.target.value;
+    let isJsonValid = false;
+
+    try {
+      JSON.parse(json);
+      isJsonValid = true;
+    } catch (error) {
+      isJsonValid = false;
+    }
+
+    this.setState({
+      complexRules: json,
+      isJsonValid,
+    });
+  };
+
+  formatJson = () => {
+    const { complexRules } = this.state;
+
+    const formattedJson = JSON.stringify(JSON.parse(complexRules), undefined, 2);
+    this.setState({ complexRules: formattedJson });
   };
 
   componentDidMount() {
@@ -333,6 +388,21 @@ export default class AddEditExperiment extends React.Component {
     ].map((op) => (
       <option key={op.value} value={op.value}>
         {op.label}
+      </option>
+    ));
+
+    const ruleTypeOptions = [
+      {
+        label: 'Simple Rule',
+        value: RULE_TYPE.simpleRule,
+      },
+      {
+        label: 'Complex Rule',
+        value: RULE_TYPE.complexRule,
+      },
+    ].map((ruleOptions) => (
+      <option key={ruleOptions.value} value={ruleOptions.value}>
+        {ruleOptions.label}
       </option>
     ));
 
@@ -477,144 +547,175 @@ export default class AddEditExperiment extends React.Component {
                 Audience Rules
               </div>
               <SelectField
-                name="ruleCondition"
-                label="Rule Condition"
-                defaultValue={ruleCondition}
-                value={ruleCondition}
-                onChange={({ target: { value } }) => this.setState({ ruleCondition: value })}
+                name="ruleType"
+                label="Rule Type"
+                defaultValue={isEdit ? this.state.ruleType : RULE_TYPE.simpleRule}
+                onChange={this.handleSelectChange}
+                required
               >
-                {['and', 'or'].map((op, i) => (
-                  <option key={i} value={op}>
-                    {op.toUpperCase()}
-                  </option>
-                ))}
+                {ruleTypeOptions}
               </SelectField>
-              {rules.map((rule, i) => (
-                <div key={i}>
-                  <div className="flex-row" style={{ alignItems: 'center' }}>
-                    <input
-                      type="text"
-                      placeholder="Key"
-                      value={rule.key}
-                      onChange={(e) => {
-                        const newRules = [...rules];
-                        newRules[i] = {
-                          ...newRules[i],
-                          key: e.target.value,
-                        };
-                        this.setState({
-                          rules: newRules,
-                        });
-                      }}
-                    />
-                    <PowerSelect
-                      options={Object.keys(experimentHelpers.ruleOperatorMap)}
-                      optionComponent={(op) => experimentHelpers.ruleOperatorMap[op.option]}
-                      searchEnabled={false}
-                      showClear={false}
-                      placeholder="operator"
-                      selected={experimentHelpers.ruleOperatorMap[rule.operator]}
-                      onChange={({ option }) => {
-                        const newRules = [...rules];
-                        newRules[i] = {
-                          ...newRules[i],
-                          operator: option,
-                        };
-                        this.setState({
-                          rules: newRules,
-                        });
-                      }}
-                    />
-                    {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
-                      <SearchableSelectField
-                        name=""
-                        optionComponent={({ option }) => (
-                          <div>
-                            {option.name} - {option.id}
-                          </div>
-                        )}
-                        placeholder="Select a segment"
-                        searchIndices={['id', 'name']}
-                        trackBy="id"
-                        options={segments || []}
-                        selected={this.getSelectedSegment(rule.value)}
-                        onChange={(o) => {
-                          const newRules = [...rules];
-                          newRules[i] = {
-                            ...newRules[i],
-                            value: o.option.id,
-                          };
-                          this.setState({
-                            rules: newRules,
-                          });
-                        }}
-                        selectStyleProps={{
-                          margin: '0',
-                          width: '97%',
-                        }}
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        placeholder="Value"
-                        value={experimentHelpers.stringifyNull(rule.value)}
-                        onChange={(e) => {
-                          const newRules = [...rules];
-                          newRules[i] = {
-                            ...newRules[i],
-                            value: e.target.value,
-                          };
-                          this.setState({
-                            rules: newRules,
-                          });
-                        }}
-                      />
-                    )}
+              {this.state.ruleType === RULE_TYPE.simpleRule ? (
+                <>
+                  <SelectField
+                    name="ruleCondition"
+                    label="Rule Condition"
+                    defaultValue={ruleCondition}
+                    value={ruleCondition}
+                    onChange={({ target: { value } }) => this.setState({ ruleCondition: value })}
+                  >
+                    {['and', 'or'].map((op, i) => (
+                      <option key={i} value={op}>
+                        {op.toUpperCase()}
+                      </option>
+                    ))}
+                  </SelectField>
 
-                    <span
-                      style={{
-                        marginLeft: '2px',
-                        fontSize: '20px',
-                        width: '25px',
-                      }}
-                      className="cross"
+                  {rules.map((rule, i) => (
+                    <div key={i}>
+                      <div className="flex-row" style={{ alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          placeholder="Key"
+                          value={rule.key}
+                          onChange={(e) => {
+                            const newRules = [...rules];
+                            newRules[i] = {
+                              ...newRules[i],
+                              key: e.target.value,
+                            };
+                            this.setState({
+                              rules: newRules,
+                            });
+                          }}
+                        />
+                        <PowerSelect
+                          options={Object.keys(ruleOperatorMap)}
+                          optionComponent={(op) => ruleOperatorMap[op.option]}
+                          searchEnabled={false}
+                          showClear={false}
+                          placeholder="operator"
+                          selected={ruleOperatorMap[rule.operator]}
+                          onChange={({ option }) => {
+                            const newRules = [...rules];
+                            newRules[i] = {
+                              ...newRules[i],
+                              operator: option,
+                            };
+                            this.setState({
+                              rules: newRules,
+                            });
+                          }}
+                        />
+                        {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
+                          <SearchableSelectField
+                            name=""
+                            optionComponent={({ option }) => (
+                              <div>
+                                {option.name} - {option.id}
+                              </div>
+                            )}
+                            placeholder="Select a segment"
+                            searchIndices={['id', 'name']}
+                            trackBy="id"
+                            options={segments || []}
+                            selected={this.getSelectedSegment(rule.value)}
+                            onChange={(o) => {
+                              const newRules = [...rules];
+                              newRules[i] = {
+                                ...newRules[i],
+                                value: o.option.id,
+                              };
+                              this.setState({
+                                rules: newRules,
+                              });
+                            }}
+                            selectStyleProps={{
+                              margin: '0',
+                              width: '97%',
+                            }}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            placeholder="Value"
+                            value={stringifyNull(rule.value)}
+                            onChange={(e) => {
+                              const newRules = [...rules];
+                              newRules[i] = {
+                                ...newRules[i],
+                                value: e.target.value,
+                              };
+                              this.setState({
+                                rules: newRules,
+                              });
+                            }}
+                          />
+                        )}
+
+                        <span
+                          style={{
+                            marginLeft: '2px',
+                            fontSize: '20px',
+                            width: '25px',
+                          }}
+                          className="cross"
+                          onClick={() => {
+                            this.setState({
+                              rules: rules.filter((r, index) => index !== i),
+                            });
+                          }}
+                        />
+                      </div>
+                      {i < rules.length - 1 && (
+                        <div className="flex-row" style={{ justifyContent: 'center' }}>
+                          <span style={{ margin: '8px' }} className="square-pills label-semi-muted">
+                            {ruleCondition.toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <br />
+                  <div className="flex-row" style={{ justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn btn--pill"
                       onClick={() => {
                         this.setState({
-                          rules: rules.filter((r, index) => index !== i),
+                          rules: [
+                            ...rules,
+                            {
+                              operator: '',
+                              key: '',
+                              value: '',
+                            },
+                          ],
                         });
                       }}
-                    />
+                    >
+                      + Add Rule
+                    </button>
                   </div>
-                  {i < rules.length - 1 && (
-                    <div className="flex-row" style={{ justifyContent: 'center' }}>
-                      <span style={{ margin: '8px' }} className="square-pills label-semi-muted">
-                        {ruleCondition.toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-              <br />
-              <div className="flex-row" style={{ justifyContent: 'center' }}>
-                <button
-                  type="button"
-                  className="btn btn--pill"
-                  onClick={() => {
-                    this.setState({
-                      rules: [
-                        ...rules,
-                        {
-                          operator: '',
-                          key: '',
-                          value: '',
-                        },
-                      ],
-                    });
-                  }}
-                >
-                  + Add Rule
-                </button>
-              </div>
+                </>
+              ) : (
+                <>
+                  <TextAreaField
+                    label="Complex Rules"
+                    placeholder="Enter your complex conditions here"
+                    value={this.state.complexRules}
+                    defaultValue={isEdit ? this.state.complex_rules : ''}
+                    onChange={this.handleComplexRuleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={this.formatJson}
+                    disabled={!this.state.isJsonValid}
+                  >
+                    Format JSON
+                  </button>
+                </>
+              )}
             </div>
             <br />
             <br />
