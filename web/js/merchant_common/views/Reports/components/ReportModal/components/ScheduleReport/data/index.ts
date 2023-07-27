@@ -13,38 +13,45 @@ const weeks = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday
 
 export const getDataDurations = (custom?: boolean) => [
   {
-    label: 'Past 24 hours',
-    value: 'past_24_hours',
+    label: 'Same Day',
+    value: 'same_day',
   },
   ...(custom
     ? [
         {
-          label: 'Past 2 days',
-          value: 'past_2_days',
+          label: 'Previous Day',
+          value: 'previous_day',
         },
+      ]
+    : []),
+
+  {
+    label: 'Same Week',
+    value: 'same_week',
+  },
+  ...(custom
+    ? [
         {
-          label: 'Past 3 days',
-          value: 'past_3_days',
+          label: 'Previous Week',
+          value: 'previous_week',
         },
       ]
     : []),
   {
-    label: 'Past Week',
-    value: 'past_week',
+    label: 'Same Month',
+    value: 'same_month',
   },
-  // TODO:
-  // Later stage.
-  // {
-  //   label: 'Past 15 days',
-  //   value: 'past_15_days',
-  // },
+  ...(custom
+    ? [
+        {
+          label: 'Previous Month',
+          value: 'previous_month',
+        },
+      ]
+    : []),
   {
-    label: 'Past Month',
-    value: 'past_month',
-  },
-  {
-    label: 'Past Quarter',
-    value: 'past_quater',
+    label: 'Previous Quarter',
+    value: 'previous_quarter',
   },
 ];
 
@@ -88,16 +95,16 @@ export const pastMonthRepetitions = [
 
 export const getRepetitions = (dataDuration: string, custom?: boolean) => {
   switch (dataDuration) {
-    case 'past_24_hours':
-    case 'past_2_days':
-    case 'past_3_days':
+    case 'same_day':
+    case 'previous_day':
       return [
         {
           label: 'Daily',
           value: 'daily',
         },
       ];
-    case 'past_week':
+    case 'same_week':
+    case 'previous_week':
       return custom
         ? weeks.map((week, weekIndex) => ({
             label: `Weekly on ${week}`,
@@ -110,14 +117,8 @@ export const getRepetitions = (dataDuration: string, custom?: boolean) => {
               value: 'weekly',
             },
           ];
-    case 'past_15_days':
-      return [
-        {
-          label: 'In 15 days',
-          value: 'in_15_days',
-        },
-      ];
-    case 'past_month':
+    case 'same_month':
+    case 'previous_month':
       return custom
         ? pastMonthRepetitions
         : [
@@ -127,11 +128,11 @@ export const getRepetitions = (dataDuration: string, custom?: boolean) => {
               dateIndex: 1,
             },
           ];
-    case 'past_quater':
+    case 'previous_quarter':
       return [
         {
           label: 'Quarterly',
-          value: 'quaterly',
+          value: 'monthly',
         },
       ];
     default:

@@ -36,7 +36,17 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
   };
 
   switch (selectedDataDuration?.value) {
-    case 'past_24_hours':
+    case 'same_day':
+      return {
+        ...baseWhenScheduleConfig,
+        task: {
+          ...baseWhenScheduleConfig.task,
+          day: {
+            start: 0,
+          },
+        },
+      };
+    case 'previous_day':
       return {
         ...baseWhenScheduleConfig,
         task: {
@@ -46,27 +56,18 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
           },
         },
       };
-    case 'past_2_days':
+    case 'same_week':
       return {
         ...baseWhenScheduleConfig,
+        day: selectedRepetition?.weekIndex ?? 0,
         task: {
           ...baseWhenScheduleConfig.task,
-          day: {
-            start: -2,
+          week: {
+            start: 0,
           },
         },
       };
-    case 'past_3_days':
-      return {
-        ...baseWhenScheduleConfig,
-        task: {
-          ...baseWhenScheduleConfig.task,
-          day: {
-            start: -3,
-          },
-        },
-      };
-    case 'past_week':
+    case 'previous_week':
       return {
         ...baseWhenScheduleConfig,
         day: selectedRepetition?.weekIndex ?? 0,
@@ -77,19 +78,18 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
           },
         },
       };
-
-    case 'past_15_days':
+    case 'same_month':
       return {
         ...baseWhenScheduleConfig,
-        interval: 15,
+        day: selectedRepetition?.dateIndex ?? 0,
         task: {
           ...baseWhenScheduleConfig.task,
-          day: {
-            start: -15,
+          month: {
+            start: 0,
           },
         },
       };
-    case 'past_month':
+    case 'previous_month':
       return {
         ...baseWhenScheduleConfig,
         day: selectedRepetition?.dateIndex ?? 0,
@@ -100,7 +100,7 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
           },
         },
       };
-    case 'past_quater':
+    case 'previous_quarter':
       return {
         ...baseWhenScheduleConfig,
         interval: 3,
@@ -116,10 +116,14 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
   }
 };
 
-export const checkSelectedDataDuration = (matchWith: string) => {
+export const checkSelectedDataDuration = (matchWith: string, dayIndex?: number) => {
+  const shouldCompareDay = ['same_week', 'previous_day', 'same_month', 'previous_month'].includes(
+    matchWith,
+  );
+
   // check if duration exist without custom bool
   const isMatchedWithoutCustom = getDataDurations(false).find((e) => e.value === matchWith);
-  if (isMatchedWithoutCustom)
+  if (isMatchedWithoutCustom && (shouldCompareDay ? dayIndex === 0 : true))
     return {
       isCustomEnabled: false,
       selectedDataDuration: isMatchedWithoutCustom,
@@ -151,42 +155,43 @@ export const getSelectedDataDuration = (scheduleData: ScheduleType) => {
   };
 
   switch (true) {
-    case scheduleData?.task?.day?.start === -1:
+    case scheduleData?.task?.day?.start === 0 && scheduleData?.task.type === 'daily':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_24_hours'),
+        ...checkSelectedDataDuration('same_day'),
       };
-    case scheduleData?.task?.day?.start === -2:
+    case scheduleData?.task?.day?.start === -1 && scheduleData?.task.type === 'daily':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_2_days'),
-      };
-    case scheduleData?.task?.day?.start === -3:
-      return {
-        whenTime,
-        ...checkSelectedDataDuration('past_3_days'),
+        ...checkSelectedDataDuration('previous_day'),
       };
     // day is left, for selectedRepetition
-    case scheduleData?.task?.week?.start === -1:
+    case scheduleData?.task?.week?.start === 0 && scheduleData?.task.type === 'weekly':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_week'),
+        ...checkSelectedDataDuration('same_week', scheduleData?.day),
       };
-    case scheduleData?.task?.day?.start === -15 && scheduleData?.interval === 15:
+    case scheduleData?.task?.week?.start === -1 && scheduleData?.task.type === 'weekly':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_15_days'),
+        ...checkSelectedDataDuration('previous_week', scheduleData?.day),
       };
-    // day is left, for selectedRepetition
-    case scheduleData?.task?.month?.start === -1:
+    case scheduleData?.task?.month?.start === 0 && scheduleData?.task.type === 'monthly':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_month'),
+        ...checkSelectedDataDuration('same_month', scheduleData?.day),
       };
-    case scheduleData?.task?.month?.start === -3 && scheduleData?.interval === 3:
+    case scheduleData?.task?.month?.start === -1 && scheduleData?.task.type === 'monthly':
       return {
         whenTime,
-        ...checkSelectedDataDuration('past_quater'),
+        ...checkSelectedDataDuration('previous_month', scheduleData?.day),
+      };
+    case scheduleData?.task?.month?.start === -3 &&
+      scheduleData?.interval === 3 &&
+      scheduleData?.task.type === 'monthly':
+      return {
+        whenTime,
+        ...checkSelectedDataDuration('previous_quarter'),
       };
     default:
       return null;
@@ -201,7 +206,19 @@ export const reverseScheduleData = (schedule: ScheduleType) => {
   const { isCustomEnabled, selectedDataDuration } = data;
 
   const selectedRepetition = getRepetitions(selectedDataDuration?.value, isCustomEnabled).find(
-    (e) => e.value === schedule?.task?.type,
+    (e: { label: string; value: string; weekIndex?: number; dateIndex?: number }) => {
+      const isSameType = e.value === schedule?.task?.type;
+      const shouldCompareDay = ['weekly', 'monthly'].includes(schedule?.task?.type ?? '');
+
+      switch (true) {
+        case shouldCompareDay && schedule?.task?.type === 'weekly':
+          return isSameType && schedule?.day === e.weekIndex;
+        case shouldCompareDay && schedule.task?.type === 'monthly':
+          return isSameType && schedule?.day === e.dateIndex;
+        default:
+          return isSameType;
+      }
+    },
   );
 
   if (!selectedRepetition) return null;
