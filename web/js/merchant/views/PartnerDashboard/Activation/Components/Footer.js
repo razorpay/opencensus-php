@@ -72,7 +72,9 @@ const Footer = ({
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_L1_FORM)) {
-    buttons.push(<SubmitL1Form canSubmitL1Form={canSubmitL1Form} submitL1={submitL1} key="2" />);
+    // users can only submit the form if consent is checked
+    // and consent can only be given if the all the required fields are filled
+    buttons.push(<SubmitL1Form canSubmitL1Form={isConsentTNC} submitL1={submitL1} key="2" />);
   }
 
   return (

@@ -71,7 +71,7 @@ const AddressDetails = ({
         size="small"
         required
         className="Input--capitalize"
-        value={formState.business_registered_city || addressDetails.business_registered_city}
+        value={formState.business_registered_city}
         autoRender
       />
       <Input.Select

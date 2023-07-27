@@ -140,6 +140,7 @@ const Activation = (props) => {
       return {
         ...state,
         isOpAddressSameAsRegAddress: validateBothAddressSame(addressDetailsData),
+        business_registered_city: addressDetailsData.business_registered_city,
       };
     });
 
