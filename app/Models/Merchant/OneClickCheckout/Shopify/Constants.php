@@ -60,6 +60,7 @@ class Constants
     const PROVIDER_TYPE_LIST         = 'provider_type_list';
     const GOOGLE_UNIVERSAL_ANALYTICS = 'google_universal_analytics';
     const SHOPIFY_CHECKOUT_ID        = 'shopify_checkout_id';
+    const SHOPIFY_CHECKOUT_CURRENCY  = 'shopify_checkout_currency';
     const STOREFRONT_ID              = 'storefront_id';
     const NOTES                      = 'notes';
     const PARTIALLY_PAID_ORDER       = 'partially_paid_order';

@@ -26,7 +26,7 @@ class Analytics extends Base\Core
         $this->cache = $this->app['cache'];
     }
 
-    public function setShopifyOrderInCache(array $shopifyOrder, array $rzpOrder, string $paymentMethod): void
+    public function setShopifyOrderInCache(array $shopifyOrder, array $rzpOrder, $payment): void
     {
         $key = 'NA';
         $result = 'fail';
@@ -37,7 +37,7 @@ class Analytics extends Base\Core
             $key = $this->getCacheKey($this->getOrderKey($shopifyOrder['order_status_url']));
             $this->cache->set(
                 $key,
-                $this->extractPayload($shopifyOrder, $rzpOrder, $paymentMethod),
+                $this->extractPayload($shopifyOrder, $rzpOrder, $payment),
                 self::SHOPIFY_ANALYTICS_CACHE_KEY_TTL
             );
             $result = 'success';
@@ -114,8 +114,10 @@ class Analytics extends Base\Core
     }
 
     // extractPayload returns the required fields for a Shopify order required by Google Analytics.
-    protected function extractPayload(array $shopifyOrder, array $rzpOrder, string $paymentMethod): array
+    protected function extractPayload(array $shopifyOrder, array $rzpOrder, $payment): array
     {
+        $paymentMethod = $payment->getMethod();
+
         $customerDetails = [
             'shipping_address' => $shopifyOrder['shipping_address'],
             'billing_address'  => $shopifyOrder['billing_address'],
@@ -138,7 +140,7 @@ class Analytics extends Base\Core
             'order_id'         => $shopifyOrder['name'],
             'total_tax'        => $shopifyOrder['total_tax'], // NOTE: Tax is currently not supported.
             'payment_method'   => $paymentMethod,
-            'payment_currency' => 'INR', // NOTE: Hardcoding as INR until we get further clarification and testing.
+            'payment_currency' => $payment['currency'] ?? 'INR',
             'customer_details' => $customerDetails,
             'shipping_country' => $customerDetails['shipping_address']['country'],
         ];
@@ -198,6 +200,8 @@ class Analytics extends Base\Core
             $shopifyCheckoutId = $rzpOrder[Constants::NOTES][Constants::STOREFRONT_ID] ?? '';
         }
 
+        $checkoutCurrency = $shopifyOrder['currency'] ?? 'INR';
+
         return [
             Constants::PROVIDER_TYPE_LIST => $providerTypeList,
             Constants::SHOPIFY_CHECKOUT_ID => $shopifyCheckoutId,
@@ -212,6 +216,7 @@ class Analytics extends Base\Core
                 Constants::TOTAL_SHIPPING => strval($rzpOrder[Constants::SHIPPING_FEE] / 100),
                 Constants::TRANSACTION_COUPON => $promotions,
                 Constants::TRANSACTION_ID => $shopifyOrder[Constants::NAME],
+                Constants::SHOPIFY_CHECKOUT_CURRENCY  => $checkoutCurrency,
             ]
         ];
     }

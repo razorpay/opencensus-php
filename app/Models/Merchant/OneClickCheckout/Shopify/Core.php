@@ -915,7 +915,7 @@ class Core extends Base\Core
 
             $order = json_decode($order, true);
 
-            $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
+            $this->updateShopifyTransaction($order['order'], $rzpPayment);
 
             $promotions = $rzpOrder['promotions'];
 
@@ -923,7 +923,7 @@ class Core extends Base\Core
             {
                 if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
                 {
-                    $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+                    $this->updateShopifyGCTransaction($order['order'], $promotion);
                 }
                 else
                 {
@@ -1082,7 +1082,7 @@ class Core extends Base\Core
 
         $order = json_decode($order, true);
 
-        $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
+        $this->updateShopifyTransaction($order['order'], $rzpPayment);
 
         $promotions = $rzpOrder['promotions'];
 
@@ -1092,7 +1092,7 @@ class Core extends Base\Core
         {
             if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
             {
-                $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+                $this->updateShopifyGCTransaction($order['order'], $promotion);
             }
             else
             {
@@ -1881,16 +1881,18 @@ class Core extends Base\Core
         return [$firstName, $lastName];
     }
 
-    protected function updateShopifyGCTransaction(string $merchantOrderId, $promotion): array
+    protected function updateShopifyGCTransaction(array $shopifyOrder, $promotion): array
     {
         $start = millitime();
+
+        $merchantOrderId = $shopifyOrder['id'];
 
         $txn = [
             'kind'              => 'sale',
             'amount'            => $promotion['value']/100,
             'source'            => 'external',
             'processing_method' => 'manual',
-            'currency'          => 'INR',
+            'currency'          => $shopifyOrder['currency'] ?? 'INR',
             'authorization'     => 'GIFT CARD - '.strtoupper($promotion['code']),
             'gateway' => 'Gift Card',
             'status'  => 'success',
@@ -1940,11 +1942,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
+    protected function updateShopifyTransaction(array $shopifyOrder, array $payment): array
     {
         $start = millitime();
 
-        $body = $this->getTransactionBody($merchantOrderId, $payment);
+        $merchantOrderId = $shopifyOrder['id'];
+
+        $body = $this->getTransactionBody($shopifyOrder, $payment);
 
         $client = $this->getShopifyClientByMerchant();
 
@@ -2050,15 +2054,17 @@ class Core extends Base\Core
         }
     }
 
-    protected function getTransactionBody(string $merchantOrderId, array $payment): array
+    protected function getTransactionBody(array $shopifyOrder, array $payment): array
     {
+        $merchantOrderId = $shopifyOrder['id'];
+
         $txn = [
             'kind'              => 'sale',
             'amount'            => $payment['amount']/100,
             'order_id'          => $merchantOrderId,
             'source'            => 'external',
             'processing_method' => 'manual',
-            'currency'          => 'INR',
+            'currency'          => $shopifyOrder['currency'] ?? 'INR',
         ];
 
         $paymentMethod = $payment['method'];

@@ -51,7 +51,8 @@ class Validator extends Base\Core
         Order\Entity $order,
         Payment\Entity $payment,
         Merchant\Entity $merchant,
-        string $merchantRzpOrderId): bool
+        string $merchantRzpOrderId,
+        $rzpPaymentRefundTxn): bool
     {
         if ($order->is1ccShopifyOrder() === false)
         {
@@ -93,6 +94,21 @@ class Validator extends Base\Core
                     'order_id'    => $order->getPublicId(),
                     'payment_id'  => $payment->getPublicId(),
                     'merchant_id' => $merchant->getPublicId(),
+                ]);
+            return false;
+        }
+
+        if($rzpPaymentRefundTxn['currency'] !== $payment->getCurrency())
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                    'type'             => 'mismatch_currency',
+                    'order_id'         => $order->getPublicId(),
+                    'payment_id'       => $payment->getPublicId(),
+                    'merchant_id'      => $merchant->getPublicId(),
+                    'refund_currency'  => $rzpPaymentRefundTxn['currency'],
+                    'payment_currency' => $payment->getCurrency(),
                 ]);
             return false;
         }

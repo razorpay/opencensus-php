@@ -401,7 +401,7 @@ class Service extends Base\Service
             [
                 'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
                 'amount'           => $amount,
-                'currency'         => 'INR',
+                'currency'         => $checkout['totalPrice']['currencyCode'] ?? 'INR',
                 'payment_capture'  => 1,
                 'line_items_total' => $amount,
                 'notes'            => $orderNotes,
@@ -411,7 +411,7 @@ class Service extends Base\Service
 
         $checkoutParams = [
             'order_id'              => $order->getPublicId(),
-            'currency'              => 'INR',
+            'currency'              => $checkout['totalPrice']['currencyCode'] ?? 'INR',
             'name'                  => $this->merchant->getBillingLabel(),
             'one_click_checkout'    => true,
             'customer_cart'         => (new Pixels)->getDataForFbPixels($checkout),
@@ -572,7 +572,7 @@ class Service extends Base\Service
 
         $checkoutParams = [
             'order_id'           => $input['order_id'],
-            'currency'           => 'INR',
+            'currency'           => $checkout['currency'] ?? 'INR',
             'name'               => $this->merchant->getBillingLabel(),
             'one_click_checkout' => true,
             'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
@@ -703,7 +703,7 @@ class Service extends Base\Service
 
         $analytics = new Analytics();
 
-        $analytics->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
+        $analytics->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment);
 
         // send GA purchase event only on async flow
         // todo: remove this if condition when we enable events for sync flow too

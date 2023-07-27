@@ -145,18 +145,20 @@ class Webhooks extends Base\Core
             return;
         }
 
-        $isRzpPayment = $this->isRzpPayment($input);
-        if ($isRzpPayment === false)
+        $rzpPaymentRefundTxn = $this->getRzpRefundTxn($input);
+
+        if (empty($rzpPaymentRefundTxn) === true)
         {
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
                 ['status' => 'not_applicable', 'reason' => 'non_rzp_order']);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
                   'type'             => 'non_rzp_order',
                   'transactions'     => $input['transactions'],
-                  'razorpay_payment' => $isRzpPayment,
+                  'razorpay_payment' => $rzpPaymentRefundTxn,
                 ]);
             return;
         }
@@ -293,7 +295,8 @@ class Webhooks extends Base\Core
         // set the merchant after we get the correct mode
         $this->findAndSetMerchantOrFail($configs['merchant_id']);
 
-        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId);
+        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId, $rzpPaymentRefundTxn);
+
         if ($isValid === false)
         {
             $this->trace->count(
@@ -395,18 +398,18 @@ class Webhooks extends Base\Core
      * In case a refund is issued for a 1cc order where a gift card was applied then Shopify returns
      * a txn with gateway as Gift card. We do not want that txn.
      * @param Webhook input
-     * @return Bool
+     * @return Array
      */
-    protected function isRzpPayment(array $input): bool
+    protected function getRzpRefundTxn(array $input): array
     {
         foreach ($input['transactions'] as $refundTxn)
         {
             if ($refundTxn['gateway'] === 'Razorpay')
             {
-                return true;
+                return $refundTxn;
             }
         }
-        return false;
+        return [];
     }
 
     protected function storeCartInCache(array $data)
