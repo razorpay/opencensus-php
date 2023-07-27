@@ -183,6 +183,7 @@ class Constants
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
     const GaiSyncPayouts = 'sync_payouts';
+    const PersonalisationV3Disabled = 'personalisation_v3_disabled';
     const PassCustomUdfFss = 'pass_custom_udf_fss';
 
     // magic checkout dcs features
@@ -413,6 +414,7 @@ class Constants
         self::ConsolidatedTxnReportOfAllSubmerchants => 'rzp/platform/org/reporting/CustomReports',
         self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
         self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features',
+        self::PersonalisationV3Disabled => 'rzp/pg/merchant/checkout/Personalisation',
         self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::WalletAutoDebitEnabled => 'rzp/pg/merchant/wallet/Features',
         self::EnableSettlementByCurrency => 'rzp/pg/merchant/settlements/SettlementModels',
@@ -626,6 +628,7 @@ class Constants
         APIFeaturesConstants::ONE_CC_INPUT_ENGLISH                          => self::OneCcInputEnglish,
         APIFeaturesConstants::ONE_CC_MANDATORY_LOGIN                        => self::OneCcMandatoryLogin,
         APIFeaturesConstants::CORPORATE_BANKS                               => self::CorporateBankingEnabled,
+        APIFeaturesConstants::PERSONALISATION_V3_DISABLED                   => self::PersonalisationV3Disabled,
         APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
         APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
         APIFeaturesConstants::SETTLEMENT_BY_CURRENCY                        => self::EnableSettlementByCurrency,
@@ -661,6 +664,7 @@ class Constants
         self::OtpAutoReadAndSubmitDisabled => 'direct',
         self::EnableApprovalViaOAuth => 'direct',
         self::GaiSyncPayouts => 'direct',
+        self::PersonalisationV3Disabled => 'direct',
         self::DirectDebitViaTokenBatch => 'direct',
         self::EnableSettlementByCurrency => 'direct',
     ];

@@ -1877,6 +1877,8 @@ class Constants
      */
     const GAI_PAYOUTS_SYNC = 'gai_payouts_sync';
 
+    const PERSONALISATION_V3_DISABLED = 'p13n_v3_disabled';
+
     const SETTLEMENT_BY_CURRENCY = 'settlement_by_currency';
 
     public static $recurringFeatures = [
@@ -1934,6 +1936,7 @@ class Constants
         self::DISABLE_UPI_NUM_ON_L1,
         self::SHOW_CUSTOM_DCC_DISCLOSURES,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
+        self::PERSONALISATION_V3_DISABLED,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2586,6 +2589,7 @@ class Constants
         self::GAI_PAYOUTS_SYNC                => true,
         self::ORG_AUTOMATE_IIR                => true,
         self::DISABLE_AUTOMATE_IIR            => true,
+        self::PERSONALISATION_V3_DISABLED     => true,
         self::DIRECT_DEBIT_VIA_TOKEN_BATCH    => true,
         self::SETTLEMENT_BY_CURRENCY          => true,
     ];
