@@ -507,6 +507,9 @@ class Service extends Base\Service
                             'message'     => 'Consents are not present.'
                         ]);
 
+                        //This function can be removed in future when service agreement is not received in request payload.
+                        $this->unsetServiceAgreementConsent($input);
+
                         $this->storeConsents($merchantId, $input);
 
                         $isExpEnabled = $this->isMerchantConsentV2ExperimentEnabled($merchantId);
@@ -4442,5 +4445,21 @@ class Service extends Base\Service
         $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
 
         return $this->core->submitMerchantInternal($input, $merchantDetails);
+    }
+
+    private function unsetServiceAgreementConsent(array &$input)
+    {
+        if (isset($input[DEConstants::DOCUMENTS_DETAIL]) === true)
+        {
+            $documentDetailsInput = &$input[DEConstants::DOCUMENTS_DETAIL];
+
+            foreach ($documentDetailsInput as $key => $document)
+            {
+                if ($document['type'] === ConsentConstant::SERVICE_AGREEMENT)
+                {
+                    unset($documentDetailsInput[$key]);
+                }
+            }
+        }
     }
 }

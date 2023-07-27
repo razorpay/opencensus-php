@@ -5536,7 +5536,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantConsents = \DB::connection('test')->select("select * from merchant_consents where merchant_id = '$merchantId'ORDER BY created_at DESC LIMIT 3 ");
 
-        $values = ["L2_Privacy Policy","L2_Service Agreement","L2_Terms and Conditions"];
+        $values = ["L2_Privacy Policy","L2_Terms and Conditions"];
 
         $expectedConsents = [];
 
@@ -5544,7 +5544,7 @@ class ActivationTest extends OAuthTestCase
             $expectedConsents[] = $consent->consent_for;
         }
 
-        $this->assertCount(3, $expectedConsents);
+        $this->assertCount(2, $expectedConsents);
         $this->assertEmpty(array_diff($values, $expectedConsents));
 
     }

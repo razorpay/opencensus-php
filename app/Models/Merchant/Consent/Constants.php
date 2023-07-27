@@ -172,8 +172,7 @@ class Constants
 
     const TEMPLATE_ID_MAPPING   =  [
         'https://razorpay.com/privacy/'     => 'merchant_consent_privacy_template_id',
-        'https://razorpay.com/terms/'       => 'merchant_consent_terms_template_id',
-        'https://razorpay.com/agreement/'   => 'merchant_consent_service_template_id',
+        'https://razorpay.com/terms/'       => 'merchant_consent_terms_template_id'
     ];
 
     const TEMPLATE_ID          = 'template_id';
@@ -181,4 +180,6 @@ class Constants
     const METADATA             = 'metadata';
 
     const PARTNER_AUTH_TERMS   = 'PartnerAuth_Terms & Conditions';
+
+    const SERVICE_AGREEMENT    = 'Service Agreement';
 }
