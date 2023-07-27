@@ -5689,6 +5689,10 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('success', $bvsValidation['validation_status']);
 
         $this->assertEquals('verified', $verificationDetail['status']);
+
+        $response = (new Detail\Service)->fetchMerchantDetails();
+
+        $this->assertEquals('verified', $response['website_policy_verification_status']);
     }
 
     public function testKafkaFailureForWebsitePolicy()
@@ -5783,6 +5787,10 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('failed', $verificationDetail['status']);
 
         $this->assertNull($merchantWebsiteDetail['admin_website_details']['website']);
+
+        $response = (new Detail\Service)->fetchMerchantDetails();
+
+        $this->assertEquals('failed', $response['website_policy_verification_status']);
     }
 
     public function testKafkaSuccessForLegalDocumentWithExtraFieldsInPayload()
@@ -6148,6 +6156,10 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('success', $bvsValidation['validation_status']);
 
         $this->assertEquals('verified', $verificationDetail['status']);
+
+        $response = (new Detail\Service)->fetchMerchantDetails();
+
+        $this->assertNull($response['website_policy_verification_status']);
 
     }
 

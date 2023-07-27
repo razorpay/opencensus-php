@@ -11,6 +11,7 @@ use RZP\lib\TemplateEngine;
 use RZP\Constants\Environment;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use Throwable;
@@ -205,6 +206,17 @@ class Service extends Base\Service
         $merchantDetails = $this->core->getMerchantDetails($this->merchant);
 
         $response = $this->core->createResponse($merchantDetails);
+
+        $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $this->merchant->getId(),
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        if (empty($websitePolicy) === false)
+        {
+            $response['website_policy_verification_status'] = $websitePolicy->getStatus();
+        }
 
         $partnerActivation = (new Partner\Core())->getPartnerActivation($this->merchant);
 
