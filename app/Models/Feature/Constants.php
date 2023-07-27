@@ -3628,6 +3628,11 @@ class Constants
             'display_name'  => 'Enable White-labelled wallet feature',
             'documentation' => 'Single source of truth for wallet feature enablement status for a merchant.'
         ],
+        self::REFUND_PENDING_STATUS => [
+            'feature'       => self::REFUND_PENDING_STATUS,
+            'display_name'  => 'Feature to show refund pending status',
+            'documentation' => ''
+        ],
     ];
 
     /**
