@@ -34,10 +34,12 @@ use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\RequestProcessor\Base as ReqBase;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 
 class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
     use UpiUnexpectedPaymentRefundHandler;
+    use VirtualAccountUnexpectedPaymentRefundHandler;
 
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
@@ -397,6 +399,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->repo->saveOrFail($this->payment);
 
         $this->handleUnExpectedPaymentRefundInRecon($this->payment);
+
+        $this->handleVAUnExpectedPaymentRefundInRecon($this->payment);
     }
 
     public function resetRowProcessingAttributes()

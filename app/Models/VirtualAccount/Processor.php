@@ -26,6 +26,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
+use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -33,6 +34,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 abstract class Processor extends Base\Core
 {
     use UpiUnexpectedPaymentRefundHandler;
+    use VirtualAccountUnexpectedPaymentRefundHandler;
 
     /**
      * @var Entity
@@ -60,6 +62,13 @@ abstract class Processor extends Base\Core
 
     const REQUEST_FROM   = 'request_from';
     const REQUEST_SOURCE = 'request_source';
+    const SOURCE = 'source';
+    const SOURCE_FILE = 'file';
+    const SOURCE_TEST = 'test';
+    public static $sourceToDisableRefunds = [
+        self::SOURCE_FILE,
+        self::SOURCE_TEST,
+    ];
 
     const BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED  = '%s Virtual Account is closed';
 
@@ -312,6 +321,25 @@ abstract class Processor extends Base\Core
                     ];
 
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
+                }
+                else if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+                    ($entity->getUnexpectedReason() === self::VIRTUAL_ACCOUNT_NOT_FOUND))
+                {
+                    $requestSource = json_decode($entity->getRequestSource(), true);
+
+                    if((empty($requestSource) === false) and
+                        empty($requestSource[self::SOURCE]) === false and
+                        in_array($requestSource[self::SOURCE], self::$sourceToDisableRefunds))
+                    {
+                        $payment = $paymentProcessor->getPayment();
+
+                        $this->trace->info(
+                            TraceCode::VIRTUAL_ACCOUNT_REFUND_NOT_ALLOWED,
+                            $entity->toArrayTrace()
+                        );
+
+                        $this->handleVAUnExpectedPaymentRefundInCallback($payment);
+                    }
                 }
             }
         }

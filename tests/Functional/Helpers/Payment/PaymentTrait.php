@@ -3721,6 +3721,27 @@ trait PaymentTrait
                               }));
     }
 
+    protected function enableRazorXTreatmentForDisableRefundsUnexpectedPayment()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::UNEXPECTED_VA_PAYMENT_REFUND_DELAY)
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+    }
+
     // For testing new refund V2 flow.
     // Create transaction entity.
     public function createTransactionForRefunds($input = [], $reconcile = false)

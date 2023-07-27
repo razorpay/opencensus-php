@@ -238,6 +238,63 @@ return [
         ]
     ],
 
+    'testBankTransferRblUnexpected' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'ft',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'reconDataForRefundDelay' => [
+        'transaction_type'              =>  'N',
+        'tran_id'                       =>  'M261296',
+        'amount'                        =>  '3439.46',
+        'utr_number'                    =>  'CMS480098890',
+        'rrn_number'                    =>  'IMPS 006722951703 FROM ENTERPRISES',
+        'sender_ifsc'                   =>  'SBIN0000000',
+        'sender_acct_number'            =>  37366555177,
+        'sender_acct_type'              =>  'Current Account',
+        'sender_acct_name'              =>  'ENTERPRISES',
+        'benef_acct_type'               =>  'Current Account',
+        'benef_acct_number'             =>  'RAND123',
+        'benef_name'                    =>  '',
+        'credit_date'                   =>  '08-03-2020 221042',
+        'credit_acct_number'            =>  409000863333,
+        'corporate_code'                =>  'SATCDCDD',
+        'sender_information'            =>  'Some Random comments'
+    ],
+
     'testRblBankTransferWithEmptyPayeeAccount' => [
         'request' => [
             'url'     => '/ecollect/validate/rbl/test',

@@ -760,6 +760,9 @@ final class RazorxTreatment
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
 
+    // Unexpected payment refund delay to T+1
+    const UNEXPECTED_VA_PAYMENT_REFUND_DELAY = 'unexpected_va_payment_refund_delay';
+
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 

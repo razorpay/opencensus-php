@@ -44,6 +44,7 @@ use RZP\Models\BankTransfer\Status as S;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\BankTransferRequest\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -52,8 +53,10 @@ use RZP\Models\VirtualAccount\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\PaymentReconciliate as VirtualAccRbl;
 
 class BankTransferTest extends TestCase
 {
@@ -65,6 +68,7 @@ class BankTransferTest extends TestCase
     use VirtualAccountTrait;
     use TestsBusinessBanking;
     use AttemptReconcileTrait;
+    use ReconTrait;
 
     protected $virtualAccountId;
 
@@ -75,6 +79,7 @@ class BankTransferTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
@@ -2480,6 +2485,88 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(343946, $payment['amount']);
         $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+    }
+
+    public function testBankTransferRblUnexpected()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $account = $this->getRblVaBankAccount();
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND123';
+
+        $this->ba->directAuth();
+
+        $this->enableRazorXTreatmentForDisableRefundsUnexpectedPayment();
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertNull($payment['refund_at']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+
+        // Do a recon and verify if refund_at is being updated
+        $data[] = $this->testData['reconDataForRefundDelay'];
+
+        $file = $this->writeToExcelFile($data, 'virtualAccRbl2', 'files/settlement','Sheet1');
+
+        $uploadedFile = $this->createUploadedFile($file, 'Sale Approved.xlsx');
+        $this->reconcile($uploadedFile, Base::VIRTUAL_ACC_RBL);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertNotNull($payment['refund_at']);
+
+    }
+
+    public function createUploadedFile(string $url, $fileName = 'file.xlsx', $mime = null): UploadedFile
+    {
+        $mime = $mime ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        return new UploadedFile(
+            $url,
+            $fileName,
+            $mime,
+            null,
+            true);
+    }
+
+    public function testBankTransferRblUnexpectedWithRazorXOff()
+    {
+        $testData = $this->testData['testBankTransferRblUnexpected'];
+
+        $this->getRblVaBankAccount();
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND123';
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['refund_at']);
 
         $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
         $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
