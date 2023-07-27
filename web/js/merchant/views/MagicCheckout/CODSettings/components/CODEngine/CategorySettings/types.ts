@@ -20,7 +20,7 @@ export type PageInfo = {
 
 export type Product = {
   id: string;
-  image_url?: string;
+  image_url: string;
   internal_category: string | null;
   internal_id?: string | null;
   name: string;
@@ -31,13 +31,3 @@ export type APIPayload = {
   items: Product[];
   id?: string;
 };
-
-export interface ProductModalProps {
-  id?: string;
-  item_categories: Record<string, unknown>[];
-  mode?: string;
-  createCategory: (payload: Record<string, unknown>) => Promise<unknown>;
-  updateCategory: (payload: Record<string, unknown>) => Promise<unknown>;
-  closeModal: () => void;
-  showNotification: (payload: Record<string, unknown>) => void;
-}

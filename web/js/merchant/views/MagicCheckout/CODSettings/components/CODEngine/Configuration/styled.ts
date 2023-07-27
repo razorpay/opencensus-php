@@ -68,9 +68,9 @@ export const ModalBody = styled.div(
 `,
 );
 
-export const ActionItem = styled.div(
-  ({ theme }) => `
-  border-top: 1px dashed ${theme.colors.surface.border.normal.lowContrast};
+export const ActionItem = styled.div<{ borderTop?: string }>(
+  ({ theme, borderTop }) => `
+  border-top: ${borderTop ?? `1px dashed ${theme.colors.surface.border.normal.lowContrast}`};
   display: flex;
   justify-content: space-between;
   padding-top: ${theme.spacing[6]}px;

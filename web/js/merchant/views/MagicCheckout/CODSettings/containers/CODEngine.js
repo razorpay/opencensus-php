@@ -15,6 +15,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { validateConfig, setEditMode } from 'merchant/reducers/magicCheckout/codEngine/action';
 
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 
 function CODEngine(props) {
   const { codEngineConfig, openModal, validateConfig, setEditMode } = props;
@@ -35,7 +36,9 @@ function CODEngine(props) {
         validateConfig('item_categories', false);
         hasError = true;
       } else {
-        const hasZones = item_categories.every((c) => c.zones?.length);
+        const hasZones = item_categories.every(
+          (c) => c.zones?.length || c.type === SERVICEABILITY_TYPES.BLACKLISTED,
+        );
         if (!hasZones) {
           validateConfig('mapping', false);
           hasError = true;

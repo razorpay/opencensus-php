@@ -178,3 +178,13 @@ export const codEngineHandlers = [
     );
   }),
 ];
+
+export const createCategoryFailureHandler = () => {
+  return rest.post('*/merchant/api/:mode/1cc/shipping/cod/item/category', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      //@ts-ignore
+      ctx.errors(['Some error occured']),
+    );
+  });
+};

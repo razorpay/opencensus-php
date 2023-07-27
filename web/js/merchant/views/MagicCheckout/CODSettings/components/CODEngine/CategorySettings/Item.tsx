@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 
 import { Product } from './types';
 import { ProductImage } from './styled';
-import { SELECT_ALL_PRODUCTS } from './constants';
 
 type ProductItemProps = {
   item: Product & {
@@ -31,16 +30,14 @@ const ProductItem = ({
           id={item.id}
           type="checkbox"
           ref={inputRef}
-          checked={item.selected}
+          defaultChecked={item.selected}
           className="modal-checkbox"
           onChange={handleChange}
         />
 
-        {item.id !== SELECT_ALL_PRODUCTS.id ? (
-          <ProductImage>
-            <img src={item.image_url} alt={item.name} loading="lazy" />
-          </ProductImage>
-        ) : null}
+        <ProductImage>
+          <img src={item.image_url} alt={item.name} loading="lazy" />
+        </ProductImage>
         <label htmlFor={item.id}>{item.name}</label>
       </div>
       {isDisabled ? <p className="in-zone-text">In {item.internal_category} category</p> : null}

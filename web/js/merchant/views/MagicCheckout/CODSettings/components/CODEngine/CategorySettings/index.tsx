@@ -21,6 +21,7 @@ import {
   validateConfig,
   updateEngineConfig,
   deleteCategory,
+  createCategory,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
 
 import {
@@ -45,12 +46,18 @@ const CategorySettings = ({
   validateConfig,
   updateEngineConfig,
   deleteCategoryAction,
+  createCategoryAction,
+  showNotification,
   openModal,
   closeModal,
 }): JSX.Element => {
   const { item_categories, configs, validations, zones } = codEngineConfig;
+  const { cod_engine_type: codEngineType } = configs;
+
   const [errorText, setErrorText] = useState('');
-  const [canCreateCategories, setCanCreateCategories] = useState(item_categories.length > 0);
+  const [canCreateCategories, setCanCreateCategories] = useState(
+    configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && item_categories.length > 0,
+  );
 
   useEffect(() => {
     if (!validations.item_categories) {
@@ -60,9 +67,15 @@ const CategorySettings = ({
     }
   }, [validations, item_categories]);
 
-  const handleToggleClick = (toggleState) => {
-    setCanCreateCategories(toggleState);
+  useEffect(() => {
+    setCanCreateCategories(
+      codEngineType === COD_ENGINE_TYPES.PRODUCT && item_categories.length > 0,
+    );
+  }, [item_categories, codEngineType]);
+
+  const updateEngineType = (toggleState) => {
     validateConfig('item_categories', true);
+    validateConfig('mapping', true);
     let payload = {};
     if (toggleState) {
       payload = {
@@ -82,6 +95,28 @@ const CategorySettings = ({
       };
     }
     updateEngineConfig(payload);
+  };
+
+  const handleToggleClick = (toggleState) => {
+    if (item_categories.length === 0 && toggleState) {
+      createCategoryAction({
+        is_default: true,
+        items: [],
+      })
+        .then(() => {
+          updateEngineType(toggleState);
+        })
+        .catch(() => {
+          showNotification({
+            type: 'error',
+            message: () => (
+              <DisplayNotificationTxt notificationTxt="Something went wrong, please try again" />
+            ),
+          });
+        });
+    } else {
+      updateEngineType(toggleState);
+    }
   };
 
   const deleteCategory = useCallback((id) => {
@@ -148,7 +183,7 @@ const CategorySettings = ({
     <div className="cod-setting-item">
       <SettingsLabel
         value="Product categories"
-        required
+        required={canCreateCategories}
         errorText={errorText}
         popoverContent={POPOVER_CONTENT.categories}
       />
@@ -171,7 +206,7 @@ const CategorySettings = ({
                     columns={[
                       categoryName,
                       productCount,
-                      actions({ onEditClick, handleDeleteClick }),
+                      actions({ onEditClick, onDeleteClick: handleDeleteClick }),
                     ]}
                   />
                   <p onClick={createMoreCategories} className="add-more-button">
@@ -200,6 +235,7 @@ const mapDispatchToProps = (dispatch) =>
       validateConfig,
       updateEngineConfig,
       deleteCategoryAction: deleteCategory,
+      createCategoryAction: createCategory,
     },
     dispatch,
   );

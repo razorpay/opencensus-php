@@ -16,9 +16,8 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
   itemsKey,
   rowRenderer,
   spinner,
-  selectAll,
 }: InfiniteLoaderProps<T>): JSX.Element => {
-  const [data, setData] = useState<T[]>(selectAll ? [selectAll as T] : []);
+  const [data, setData] = useState<T[]>([]);
   const [hasNext, setHasNext] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<Record<string, string[]> | null>(null);
@@ -84,13 +83,13 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
 
   useEffect(() => {
     setNext(null);
-    setData(selectAll ? [selectAll as T] : []);
+    setData([]);
     setHasNext(true);
   }, [searchText]);
 
   return (
     <>
-      {data?.length > 1 ? data.map((item) => rowRenderer(item, data)) : null}
+      {data?.length ? data.map((item) => rowRenderer(item)) : null}
       <div ref={element}>
         <Box paddingY="spacing.4" />
       </div>

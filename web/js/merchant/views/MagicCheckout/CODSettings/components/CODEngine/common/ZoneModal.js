@@ -92,7 +92,7 @@ function ZoneModal({ closeModal, mode, id, showNotification, zones, createZone, 
       }),
     );
     collapseAllCountries(true);
-    listRef.current.recomputeRowHeights();
+    listRef.current?.recomputeRowHeights();
   };
 
   const updateParentSelectedStatus = (code, status, count = 1) => {
@@ -172,7 +172,7 @@ function ZoneModal({ closeModal, mode, id, showNotification, zones, createZone, 
   };
 
   const confirmZone = (zoneName) => {
-    const locations = getLocationsPayload(filteredCountries, zone);
+    const locations = getLocationsPayload(filteredCountries, zone, editMode);
     if (!locations.length) {
       showNotification({
         type: 'error',
@@ -226,7 +226,7 @@ function ZoneModal({ closeModal, mode, id, showNotification, zones, createZone, 
   const handleCollapse = (code, index) => {
     collapsibleCountries[code] = !collapsibleCountries[code];
     setCollapsibleCountries(JSON.parse(JSON.stringify(collapsibleCountries)));
-    listRef.current.recomputeRowHeights(index);
+    listRef.current?.recomputeRowHeights(index);
   };
   if (isLoading) {
     return (

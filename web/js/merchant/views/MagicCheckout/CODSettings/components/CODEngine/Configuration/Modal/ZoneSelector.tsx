@@ -14,12 +14,14 @@ const ZoneSelector = ({
   setSelectedRuleIds,
   openId,
   setOpenId,
+  isCODBlocked,
 }: {
   zone: Record<string, unknown>;
   selectedRuleIds: string[];
   setSelectedRuleIds: (ids: string[] | Record<string, string[]>) => void;
   openId: string;
   setOpenId: (id: string) => void;
+  isCODBlocked: boolean;
 }): JSX.Element => {
   const zoneId = zone.id as string;
   const isOpen = openId === zoneId;
@@ -50,7 +52,7 @@ const ZoneSelector = ({
   return (
     <ActionSelector key={zoneId} forCategory>
       <Box display="flex" alignItems="center">
-        <Checkbox isChecked={isSelected} onChange={handleChange}>
+        <Checkbox isChecked={isSelected} onChange={handleChange} isDisabled={isCODBlocked}>
           <span />
         </Checkbox>
         <ZoneLabel onClick={toggleCollapse}>
@@ -68,6 +70,7 @@ const ZoneSelector = ({
           <FeeRuleSelector
             selectedRuleIds={selectedRuleIds[zoneId] || []}
             setSelectedRuleIds={modifiedSetSelectedRuleIds}
+            isCODBlocked={isCODBlocked}
           />
         </Box>
       ) : null}

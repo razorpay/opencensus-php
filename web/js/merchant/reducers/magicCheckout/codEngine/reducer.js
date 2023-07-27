@@ -160,6 +160,10 @@ export const magicCODSettingsReducer = (state = initialState, action) => {
       });
     }
 
+    case ACTIONS.MAP_FEE_RULE_SUCCESS:
+    case ACTIONS.MAP_CATEGORIES_SUCCESS:
+      return merge(state, { loading: { ...state.loading, mapping: false } });
+
     case ACTIONS.VALIDATE_CONFIG:
       return merge(state, {
         ...state,
@@ -205,6 +209,8 @@ export const magicCODSettingsReducer = (state = initialState, action) => {
     case ACTIONS.CREATE_CATEGORY_ERROR:
     case ACTIONS.UPDATE_CATEGORY_ERROR:
     case ACTIONS.DELETE_CATEGORY_ERROR:
+    case ACTIONS.MAP_FEE_RULE_ERROR:
+    case ACTIONS.MAP_CATEGORIES_ERROR:
       return merge(state, {
         loading: {
           summary: false,

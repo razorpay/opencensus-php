@@ -140,7 +140,7 @@ export const forAllCountries = (countries, status, fn) => {
 
 export const marginLeft = [0, '25px', '40px'];
 
-export const getLocationsPayload = (countries, zone) => {
+export const getLocationsPayload = (countries, zone, isEditMode) => {
   // global check
   const locations = [];
   // return locations;
@@ -150,7 +150,7 @@ export const getLocationsPayload = (countries, zone) => {
     // eslint-disable-next-line no-continue
     if (!selected && total_selected === 0 && total_children !== 0) continue;
     const fullCountrySelected = total_children === 0 ? selected : total_children === total_selected;
-    if (fullCountrySelected) {
+    if (fullCountrySelected && !isEditMode) {
       let id;
       if (zone) {
         const existingZone = zone.locations?.find(

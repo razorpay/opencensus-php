@@ -42,7 +42,7 @@ const ConfirmSettings = ({
       } else {
         params.cod_engine_type = COD_ENGINE_TYPES.SLAB_ELIGIBILITY;
       }
-    } else if (item_categories.length) {
+    } else if (configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && item_categories.length) {
       params.cod_engine_type = COD_ENGINE_TYPES.PRODUCT;
     } else {
       params.cod_engine_type = COD_ENGINE_TYPES.LOCATION;

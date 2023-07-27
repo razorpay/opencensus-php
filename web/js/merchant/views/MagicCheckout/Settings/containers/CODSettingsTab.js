@@ -45,7 +45,7 @@ const CODSettingsTab = ({
   }, []);
 
   const switchCODSettingsMode = (toggleState) => {
-    const modalAction = toggleState ? 'enabled' : 'disabled';
+    const modalAction = !toggleState ? 'enabled' : 'disabled';
     const params = {
       cod_engine: !codSettings,
       platform,
@@ -95,9 +95,9 @@ const CODSettingsTab = ({
       });
   };
 
-  const onToggleClick = (toggleState) => {
-    const modalState = toggleState ? 'enable' : 'disable';
-    const modalAction = () => switchCODSettingsMode(toggleState);
+  const onToggleClick = () => {
+    const modalState = !codSettings ? 'enable' : 'disable';
+    const modalAction = () => switchCODSettingsMode(codSettings);
     const { header, desc, subText, secondaryCtaLabel, primaryCtaLabel } =
       SWITCH_TEXTS[modalState].codSettings;
 

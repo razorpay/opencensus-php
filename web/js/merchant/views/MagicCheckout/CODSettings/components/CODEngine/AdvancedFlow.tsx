@@ -9,13 +9,9 @@ import { updateEngineConfig } from 'merchant/reducers/magicCheckout/codEngine/ac
 
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
-const AdvancedFlow = ({ item_categories, updateEngineConfig }) => {
+const AdvancedFlow = ({ item_categories, updateEngineConfig, configs }) => {
   useEffect(() => {
-    if (item_categories.length > 0) {
-      updateEngineConfig({
-        cod_engine_type: COD_ENGINE_TYPES.PRODUCT,
-      });
-    } else {
+    if (configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && item_categories.length === 0) {
       updateEngineConfig({
         cod_engine_type: COD_ENGINE_TYPES.LOCATION,
       });
@@ -30,6 +26,7 @@ const AdvancedFlow = ({ item_categories, updateEngineConfig }) => {
 };
 const mapStateToProps = (state) => ({
   item_categories: state.magicCODEngine.item_categories,
+  configs: state.magicCODEngine.configs,
 });
 
 const mapDispatchToProps = (dispatch) =>

@@ -57,29 +57,27 @@ export const categoryName = {
 export const productCount = {
   title: 'Product count',
   columnClass: 'text-left',
-  value: (item) => item?.item_count || item?.items?.length,
+  value: (item) => (!item.is_default ? item?.item_count || item?.items?.length : null),
 };
 
 export const actions = ({ onDeleteClick, onEditClick }) => ({
   title: 'Action',
   columnClass: 'text-left',
   value: (item) => {
-    return (
-      item && (
-        <div className="flex zone-actions">
-          {onEditClick && <IconButton onClick={onEditClick(item.id)} icon={EditComposeIcon} />}
-          {onDeleteClick && (
-            <div className="delete-button">
-              <IconButton
-                aria-label="edit"
-                onClick={onDeleteClick(item.id)}
-                variant="primary"
-                icon={TrashIcon}
-              />
-            </div>
-          )}
-        </div>
-      )
-    );
+    return item && !item.is_default ? (
+      <div className="flex zone-actions">
+        {onEditClick && <IconButton onClick={onEditClick(item.id)} icon={EditComposeIcon} />}
+        {onDeleteClick && (
+          <div className="delete-button">
+            <IconButton
+              aria-label="edit"
+              onClick={onDeleteClick(item.id)}
+              variant="primary"
+              icon={TrashIcon}
+            />
+          </div>
+        )}
+      </div>
+    ) : null;
   },
 });

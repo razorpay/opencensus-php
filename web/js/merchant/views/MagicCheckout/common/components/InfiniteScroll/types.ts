@@ -3,12 +3,11 @@ export interface InfiniteLoaderProps<ItemType> {
   pageSize?: number;
   className?: string;
   isCursorBased?: boolean;
-  rowRenderer: (item: ItemType, allItems: ItemType[]) => React.ReactNode;
+  rowRenderer: (item: ItemType) => React.ReactNode;
   spinner?: React.ReactNode;
   queryKey: string;
   itemsKey: string;
   searchText?: string;
-  selectAll?: Record<string, unknown>;
 }
 
 export type QueryParams = {

@@ -13,7 +13,12 @@ import {
   formatFeeRuleRange,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/utils';
 
-const FeeRuleSelector = ({ selectedRuleIds, setSelectedRuleIds, cod_engine_config }) => {
+const FeeRuleSelector = ({
+  selectedRuleIds,
+  setSelectedRuleIds,
+  cod_engine_config,
+  isCODBlocked,
+}) => {
   const { fee_rules } = cod_engine_config;
 
   const handleChange = (e) => {
@@ -51,7 +56,7 @@ const FeeRuleSelector = ({ selectedRuleIds, setSelectedRuleIds, cod_engine_confi
       </Box>
       {fee_rules?.map((rule) => {
         const { order_range, fee } = formatFeeRuleRange(rule);
-        const isDisabled = disabledRuleIds.includes(rule.id);
+        const isDisabled = isCODBlocked || disabledRuleIds.includes(rule.id);
         return (
           <SelectorItem key={rule.id} className={`${isDisabled ? 'disabled-item' : ''}`}>
             <Box display="flex" alignItems="center">

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -18,9 +18,7 @@ import { MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants'
 import {
   APIPayload,
   Product,
-  ProductModalProps,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/CategorySettings/types';
-import { SELECT_ALL_PRODUCTS } from './constants';
 
 const SettingModal = lazy(
   () =>
@@ -28,6 +26,16 @@ const SettingModal = lazy(
       /* webpackChunkName: "MagicCODCategorySettings" */ 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/SettingModal'
     ),
 );
+
+interface ProductModalProps {
+  id?: string;
+  item_categories: Record<string, unknown>[];
+  mode?: string;
+  createCategory: (payload: Record<string, unknown>) => Promise<unknown>;
+  updateCategory: (payload: Record<string, unknown>) => Promise<unknown>;
+  closeModal: () => void;
+  showNotification: (payload: Record<string, unknown>) => void;
+}
 
 const ProductsModal = ({
   id,
@@ -49,8 +57,7 @@ const ProductsModal = ({
   };
 
   const confirmCategory = (categoryName) => {
-    const categoryProducts = products.filter((item) => item.product_id !== SELECT_ALL_PRODUCTS.id);
-    if (!categoryProducts.length) {
+    if (!products.length) {
       showNotification({
         type: 'error',
         message: 'Select atleast one product to create a category',
@@ -59,7 +66,7 @@ const ProductsModal = ({
       const actionFn = isEditMode ? updateCategory : createCategory;
       const payload: APIPayload = {
         name: categoryName,
-        items: categoryProducts as Product[],
+        items: products as Product[],
       };
       if (category?.id) payload.id = category.id as string;
       actionFn(payload)
@@ -85,28 +92,9 @@ const ProductsModal = ({
     }
   };
 
-  const handleSelectedProduct = (
-    { name, id, image_url }: Product,
-    status: boolean,
-    allItems: Product[],
-  ) => {
+  const handleSelectedProduct = ({ name, id, image_url }: Product, status: boolean) => {
     if (status) {
-      if (id === SELECT_ALL_PRODUCTS.id) {
-        const selectableProducts = allItems.filter(
-          (item) => !item.internal_category || item.internal_category === category?.name,
-        );
-        setProducts(
-          selectableProducts.map(({ name, id, image_url }) => ({
-            product_name: name,
-            product_id: id,
-            image_url,
-          })),
-        );
-      } else {
-        setProducts([...products, { product_name: name, product_id: id, image_url }]);
-      }
-    } else if (id === SELECT_ALL_PRODUCTS.id) {
-      setProducts([]);
+      setProducts([...products, { product_name: name, product_id: id, image_url }]);
     } else {
       setProducts(products.filter((p) => p.product_id !== id));
     }
@@ -133,13 +121,7 @@ const ProductsModal = ({
     }
   }, []);
 
-  const getSelectedStatus = useCallback(
-    (item) => {
-      const isStatus = products.some((product) => product.product_id === item.id);
-      return isStatus;
-    },
-    [products],
-  );
+  const getSelectedStatus = (item) => products.some((product) => product.product_id === item.id);
 
   return (
     <SuspenseWithLoader type="center">
@@ -157,16 +139,13 @@ const ProductsModal = ({
         <InfiniteLoader<Product>
           isCursorBased
           pageSize={250}
-          selectAll={SELECT_ALL_PRODUCTS}
           url="1cc/shipping/cod/item/category/search/products"
-          rowRenderer={(item, allItems) => (
+          rowRenderer={(item) => (
             <ProductItem
               isDisabled={
                 (item.internal_id && item.internal_category !== category?.name) as boolean
               }
-              handleSelectedProduct={(item, status) =>
-                handleSelectedProduct(item, status, allItems)
-              }
+              handleSelectedProduct={handleSelectedProduct}
               key={item.id}
               item={{ ...item, selected: getSelectedStatus(item) }}
             />

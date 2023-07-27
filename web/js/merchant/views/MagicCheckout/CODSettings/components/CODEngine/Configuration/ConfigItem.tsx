@@ -15,7 +15,7 @@ import {
 import { ConfigItemWrapper, Seperator, SubText } from './styled';
 
 import { openModal } from 'merchant_common/reducers/modals';
-import { MAPPING_TYPES } from './constants';
+import { MAPPING_TYPES, SERVICEABILITY_TYPES, DEFAULT_CATEGORY_DESCRIPTION } from './constants';
 
 const ConfigurationModal = lazy(
   () => import(/* webpackChunkName: "MagicCODCategoryConfiguration" */ './Modal'),
@@ -23,8 +23,9 @@ const ConfigurationModal = lazy(
 
 const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
   const isZoneMapping = type === MAPPING_TYPES.ZONE;
-  const isEditMode = isZoneMapping ? item?.fee_rules?.length : item?.zones?.length;
-  const getSubText = (): JSX.Element => {
+  const isCODBlocked = item.type === SERVICEABILITY_TYPES.BLACKLISTED;
+  const isEditMode = isZoneMapping ? item?.fee_rules?.length : item?.zones?.length || isCODBlocked;
+  const getSubText = (): JSX.Element | string => {
     // hardcoded to india since COD is now supported only in india
     if (isZoneMapping) {
       return (
@@ -34,12 +35,14 @@ const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
         </SubText>
       );
     }
-    return (
+    return !item?.is_default ? (
       <SubText>
         <span>Total Items</span>
         <Seperator>|</Seperator>
-        <span>{item.item_count || item.items.length}</span>
+        <span>{item?.item_count || item?.items.length || 'NA'}</span>
       </SubText>
+    ) : (
+      DEFAULT_CATEGORY_DESCRIPTION
     );
   };
 
@@ -101,7 +104,13 @@ const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
         )}
       </Box>
       {isEditMode ? (
-        <DataTable customClass="settings-table }" items={items} columns={TABLE_COLUMS} />
+        !isCODBlocked ? (
+          <DataTable customClass="settings-table" items={items} columns={TABLE_COLUMS} />
+        ) : (
+          <Text weight="bold" marginTop="10px" type="subdued">
+            COD is blocked
+          </Text>
+        )
       ) : null}
     </ConfigItemWrapper>
   );

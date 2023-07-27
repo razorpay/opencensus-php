@@ -19,7 +19,10 @@ import {
   mapZonesToCategories,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
 
-import { MAPPING_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
+import {
+  MAPPING_TYPES,
+  SERVICEABILITY_TYPES,
+} from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 
 const Modal = ({
   type,
@@ -41,6 +44,30 @@ const Modal = ({
     isMappingForZones ? [] : {},
   );
 
+  const [isCODBlocked, setIsCODBlocked] = useState<boolean>(
+    item?.type === SERVICEABILITY_TYPES.BLACKLISTED,
+  );
+
+  const getCategoryConfigsPayload = () => {
+    if (isCODBlocked) {
+      return {
+        id: item.id,
+        type: SERVICEABILITY_TYPES.BLACKLISTED,
+      };
+    }
+
+    return {
+      id: item.id,
+      type: SERVICEABILITY_TYPES.SERVICEABLE,
+      configs: Object.keys(selectedRuleIds)
+        .filter((zid) => selectedRuleIds[zid].length)
+        .map((zid) => ({
+          zone_id: zid,
+          fee_rule_ids: selectedRuleIds[zid],
+        })),
+    };
+  };
+
   const handleSave = () => {
     let payload: Record<string, unknown> = {};
     if (isMappingForZones) {
@@ -50,15 +77,7 @@ const Modal = ({
         fee_rule_ids: selectedRuleIds,
       };
     } else {
-      payload = {
-        id: item.id,
-        configs: Object.keys(selectedRuleIds)
-          .filter((zid) => selectedRuleIds[zid].length)
-          .map((zid) => ({
-            zone_id: zid,
-            fee_rule_ids: selectedRuleIds[zid],
-          })),
-      };
+      payload = getCategoryConfigsPayload();
     }
     const actionFn = isMappingForZones ? mapFeeRulesToZones : mapZonesToCategories;
     actionFn(payload)
@@ -111,7 +130,12 @@ const Modal = ({
         />
       </ModalHeader>
       <ModalBody>
-        <Component selectedRuleIds={selectedRuleIds} setSelectedRuleIds={setSelectedRuleIds} />
+        <Component
+          selectedRuleIds={selectedRuleIds}
+          setSelectedRuleIds={setSelectedRuleIds}
+          isCODBlocked={isCODBlocked}
+          setIsCODBlocked={setIsCODBlocked}
+        />
       </ModalBody>
       <div className="actions-container">
         <div className="actions-text" />

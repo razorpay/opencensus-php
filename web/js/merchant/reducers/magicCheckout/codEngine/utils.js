@@ -1,4 +1,5 @@
 import { COD_ENGINES, COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 import countriesWithCodes from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/countries';
 
 // formats zone api response - adds stateCount & countryName (country_code <-> countryName) to each zone to show them in the preview table
@@ -58,26 +59,26 @@ export const formatResponse = (data) => {
     zones = buildZonesData(zones);
   }
   let mappingValidation = true;
+  const hasFeeRules = zones?.length ? zones.every((z) => z.fee_rules?.length) : false;
+  const hasZones = item_categories?.length
+    ? item_categories.every((c) => c.type === SERVICEABILITY_TYPES.BLACKLISTED || c.zones?.length)
+    : false;
+
   if (configs.engine === COD_ENGINES.ADVANCED) {
-    if (!item_categories?.length) {
-      const hasFeeRules = zones.every((z) => z.fee_rules?.length);
-      if (!hasFeeRules) {
-        mappingValidation = false;
-      }
-    } else {
-      const hasZones = item_categories.every((c) => c.zones?.length);
-      if (!hasZones) {
-        mappingValidation = false;
-      }
+    if (configs.cod_engine_type === COD_ENGINE_TYPES.LOCATION && !hasFeeRules) {
+      mappingValidation = false;
+    } else if (configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && !hasZones) {
+      mappingValidation = false;
     }
   }
   let editMode = !zones || !fee_rules || zones?.length === 0 || fee_rules?.length === 0;
   if (configs.engine === COD_ENGINES.ADVANCED) {
     if (
-      (configs.cod_engine_type === COD_ENGINE_TYPES.LOCATION && !zones?.fee_rules?.length) ||
-      (configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && !item_categories?.zones?.length)
-    )
+      (configs.cod_engine_type === COD_ENGINE_TYPES.LOCATION && !hasFeeRules) ||
+      (configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && !hasZones)
+    ) {
       editMode = true;
+    }
   }
   return { configs, zones, fee_rules, item_categories, editMode, mappingValidation };
 };
