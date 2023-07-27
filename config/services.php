@@ -92,6 +92,12 @@ return [
         'apikey' => env('EDGE_THROTTLER_API_KEY'),
     ],
 
+    'rate_limiter_service' => [
+        'host'   => env('RATE_LIMITER_SERVICE_HOST'),
+        'username' => env('RATE_LIMITER_SERVICE_USERNAME'),
+        'password' => env('RATE_LIMITER_SERVICE_PASSWORD'),
+    ],
+
     'developer_console' => [
         'host'     => env('DEVELOPER_CONSOLE_HOST'),
         'username' => env('DEVELOPER_CONSOLE_USERNAME'),

@@ -295,6 +295,11 @@ class EdgeThrottleController extends Controller
     public function listLimits()
     {
         $request = Request::instance();
+        $input = Request::all();
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->listLimits();
+        }
 
         $method = $request->method();
 

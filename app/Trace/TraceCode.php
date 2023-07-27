@@ -6071,6 +6071,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_PROXY_REQUEST_ERROR                              = 'EDGE_PROXY_REQUEST_ERROR';
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
+    const RATE_LIMITER_SERVICE_ERROR                            = 'RATE_LIMITER_SERVICE_ERROR';
+    const RATE_LIMITER_SERVICE_REQUEST                          = 'RATE_LIMITER_SERVICE_REQUEST';
 
     const EDGE_CONTROLLER_WORKFLOW_REQUEST                      = 'EDGE_CONTROLLER_WORKFLOW_REQUEST';
     const EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST               = 'EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST';

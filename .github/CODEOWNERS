@@ -11,6 +11,7 @@
 app/Http/BasicAuth/                                           @razorpay/spine-edge
 app/Http/Controllers/EdgeProxyController.php                  @razorpay/spine-edge
 app/Http/Controllers/EdgeThrottleController.php               @razorpay/spine-edge
+app/Http/Controllers/RateLimiterController.php                @razorpay/spine-edge
 app/Http/Controllers/KeyController.php                        @razorpay/spine-edge
 app/Http/Controllers/OAuthApplicationController.php           @razorpay/spine-edge
 app/Http/Controllers/OAuthTokenController.php                 @razorpay/spine-edge
