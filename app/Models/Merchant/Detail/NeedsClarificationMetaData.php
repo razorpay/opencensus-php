@@ -87,8 +87,31 @@ class NeedsClarificationMetaData
         DocumentType::ARTICLE_OF_ASSOCIATION    => [ReasonList::AUTHORIZED_SIGNATORY_MISMATCH,
                                                     ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT],
         DocumentType::MEMORANDUM_OF_ASSOCIATION => [ReasonList::AUTHORIZED_SIGNATORY_MISMATCH,
-                                                    ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT]
+                                                    ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT],
+
+        //Clarification reason mapping for additional documents
+        DocumentType::AMFI_CERTIFICATE                      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_AMFI_CERTIFICATE                  => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::NBFC_REGISTRATION_CERTIFICATE         => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_NBFC_REGISTRATION_CERTIFICATE     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::IRDAI_REGISTRATION_CERTIFICATE        => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_IRDAI_REGISTRATION_CERTIFICATE    => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SEBI_REGISTRATION_CERTIFICATE         => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_SEBI_REGISTRATION_CERTIFICATE     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::FFMC_LICENSE                          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_FFMC_LICENSE                      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::IATA_CERTIFICATE                      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_IATA_CERTIFICATE                  => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::AFFILIATION_CERTIFICATE               => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::INVOICE                               => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SLA_DOCUMENT                          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::FSSAI_CERTIFICATE                     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::MANUFACTURING_LICENSE                 => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LIQUOR_LICENSE                        => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::GOVT_AUTHORISATION_LETTER             => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::BAR_COUNCIL_CERTIFICATE               => [ReasonList::ILLEGIBLE_DOC],
     ];
+
     const MERCHANT_REASON_MAPPING = [
         Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER,],
 
