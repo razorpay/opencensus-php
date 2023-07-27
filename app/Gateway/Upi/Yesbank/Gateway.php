@@ -81,9 +81,9 @@ class Gateway extends Mindgate\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
-            $input[Fields::CUST_REF_ID] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID] ?? '';
-
-            $input[Entity::TYPE] = Base\Type::PAY;
+            $input[Fields::CUST_REF_ID]        = $input['data']['upi'][Fields::NPCI_REFERENCE_ID] ?? '';
+            $input[Fields::MERCHANT_REFERENCE] = $input['data']['upi'][Fields::MERCHANT_REFERENCE] ?? '';
+            $input[Entity::TYPE]               = Base\Type::PAY;
 
             $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 

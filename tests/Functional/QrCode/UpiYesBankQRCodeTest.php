@@ -151,6 +151,9 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals('closed', $qrCodeUpdatedEntity['status']);
         $this->assertEquals('107611570997', $payment['reference16']);
+        $upi = $this->getLastEntity('upi', true);
+        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+        $this->assertEquals($upi['merchant_reference'], $trValue);
     }
 
     public function testPaymentForClosedQrCode()
