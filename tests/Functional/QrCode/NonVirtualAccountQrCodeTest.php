@@ -2788,7 +2788,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
-        $this->assertEquals('ppiwallet', $payment['reference2']);
+        $this->assertEquals('wallet', $payment['reference2']);
     }
 
     public function testProcessIciciQrPaymentWithInvalidPayerAccountType()

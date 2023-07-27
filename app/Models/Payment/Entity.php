@@ -6093,6 +6093,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $data[self::UPI][self::PAYER_ACCOUNT_TYPE] = $this->getReference2();
         }
+
+        if ($this->getMethod() === Payment\Method::UPI)
+        {
+            $data[self::UPI][self::VPA] = $this->getVpa();
+        }
     }
 
     /**

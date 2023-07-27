@@ -14,6 +14,8 @@ class PayerAccountType
 
     const PAYER_ACCOUNT_TYPE_PPIWALLET = 'ppiwallet';
 
+    const PAYER_ACCOUNT_TYPE_WALLET = 'wallet';
+
     const PAYER_ACCOUNT_TYPE_NRE = 'NRE';
 
     const PAYER_ACCOUNT_TYPE_NRO = 'NRO';
@@ -24,14 +26,16 @@ class PayerAccountType
         self::PAYER_ACCOUNT_TYPE_CREDIT,
         self::PAYER_ACCOUNT_TYPE_PPIWALLET,
         self::PAYER_ACCOUNT_TYPE_NRE,
-        self::PAYER_ACCOUNT_TYPE_NRO
+        self::PAYER_ACCOUNT_TYPE_NRO,
+        self::PAYER_ACCOUNT_TYPE_WALLET
     ];
 
     // Every supported gateway payer account type should be mapped with internal payer account type
     protected static $payerAccountTypeMapping = [
         self::PAYER_ACCOUNT_TYPE_SAVINGS    => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_CREDIT     => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT,
-        self::PAYER_ACCOUNT_TYPE_PPIWALLET  => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_PPIWALLET,
+        self::PAYER_ACCOUNT_TYPE_PPIWALLET  => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_WALLET,
+        self::PAYER_ACCOUNT_TYPE_WALLET     => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_WALLET,
         self::PAYER_ACCOUNT_TYPE_CURRENT    => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_NRE        => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_NRO        => PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
