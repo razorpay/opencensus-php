@@ -7,7 +7,6 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Services\Mock\Scrooge;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;

@@ -300,7 +300,7 @@ abstract class Base extends Core
                             'payment_ids'   => $requestPaymentIds,
                         ];
 
-                        $response = App::getFacadeRoot()['nbplus.payments']->fetchNbPlusData($request, $entity);
+                        $response = $this->app['nbplus.payments']->fetchNbPlusData($request, $entity);
 
                         $start += $fetchLimit;
 
@@ -348,7 +348,7 @@ abstract class Base extends Core
                     'target' => $this->gatewayFile->getTarget(),
                     'type'   => $this->gatewayFile->getType()
                 ]);
-            
+
             throw new Exception\GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
                     'beam_response' => $beamResponse,

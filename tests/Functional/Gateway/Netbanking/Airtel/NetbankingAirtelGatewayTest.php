@@ -2,16 +2,19 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Airtel;
 
+use Mockery;
+
+use RZP\Constants\Mode;
+use RZP\Services\NbPlus;
 use RZP\Gateway\Base\Action;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentNbplusTrait;
 
 class NetbankingAirtelGatewayTest extends TestCase
 {
-    use PaymentTrait;
+    use PaymentNbplusTrait;
     use DbEntityFetchTrait;
 
     protected function setUp(): void
@@ -27,6 +30,10 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_airtel_terminal');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testPayment()
@@ -36,18 +43,12 @@ class NetbankingAirtelGatewayTest extends TestCase
         $payment = $this->getDbLastPayment()->toArray();
 
         $this->assertTestResponse($payment);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        // Assert that bank payment id exists and is an integer
-        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
-
-        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
-            FILTER_VALIDATE_INT) !== false);
     }
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'callback')
@@ -109,9 +110,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['STATUS'] = 'FAL';
-            $content['CODE']   = '900';
-            $content['HASH']   = 'undefined';
+            if ($action === NbPlus\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE'
+                        ]
+                    ],
+                ];
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -126,9 +136,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['STATUS'] = 'FAL';
-            $content['CODE']   = '900';
-            $content['HASH']   = '';
+            if ($action === NbPlus\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE'
+                        ]
+                    ],
+                ];
+            }
         });
 
         $data = $this->testData['testUndefinedHashFailedPayment'];
@@ -143,7 +162,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['HASH']   = 'undefined';
+            if ($action === NbPlus\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'GATEWAY_ERROR_INVALID_RESPONSE'
+                        ]
+                    ],
+                ];
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -176,7 +206,8 @@ class NetbankingAirtelGatewayTest extends TestCase
         $payment = $this->fixtures->create('payment:netbanking_created', [
             'bank'        => 'AIRP',
             'terminal_id' => '100NbAirtlTmnl',
-            'gateway'     => 'netbanking_airtel'
+            'gateway'     => 'netbanking_airtel',
+            'cps_route'   => 3,
         ]);
 
         $gatewayPayment = $this->fixtures->create('netbanking',
@@ -298,6 +329,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function testAuthResponseHashFailure()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockAuthHashFailure();
 
         $data = $this->testData[__FUNCTION__];
@@ -330,28 +363,43 @@ class NetbankingAirtelGatewayTest extends TestCase
 			});
 
 	    $this->doAuthPayment($this->payment);
-
-	    $gatewayEntity = $this->getLastEntity('netbanking', true);
-
-	    $expectedErrorMessage = substr($errorMessage, 0, 255);
-
-	    $this->assertEquals($expectedErrorMessage, $gatewayEntity[Entity::ERROR_MESSAGE]);
     }
 
     protected function mockSetVerifyFakeTransactionId()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['txns'][0]['txnid'] = '12345';
+            if ($action === NbPlus\Action::VERIFY)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 
     protected function mockPaymentFailure()
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            $content['STATUS'] = 'FAL';
-            $content['CODE']   = '902';
+            if ($action === NbPlus\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'GATEWAY_ERROR_INVALID_TERMINAL'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 
@@ -359,8 +407,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['code'] = '1';
-            $content['errorCode'] = '9002';
+            if ($action === NbPlus\Action::VERIFY)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'GATEWAY_ERROR_INVALID_PARAMETERS'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 
@@ -368,9 +426,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['code'] = '1';
-            $content['errorCode'] = '910';
-            $content['txns'] = [];
+            if ($action === NbPlus\Action::VERIFY)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 
@@ -378,10 +445,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-            $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
-            $content['txns'][0]['status'] = 'FAL';
+            if ($action === NbPlus\Action::VERIFY)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 
@@ -389,7 +464,18 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['txns'] = [];
+            if ($action === NbPlus\Action::VERIFY)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR => [
+                        NbPlus\Error::CODE => 'GATEWAY',
+                        NbPlus\Error::CAUSE => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+                        ]
+                    ],
+                ];
+            }
         });
     }
 

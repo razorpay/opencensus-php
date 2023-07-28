@@ -2,10 +2,9 @@
 
 namespace RZP\Services\Mock\NbPlus;
 
-use App;
 use RZP\Exception;
 use RZP\Models\Payment;
-
+use RZP\Exception\LogicException;
 use RZP\Services\NbPlus\Paylater;
 use RZP\Services\NbPlus\Service as NbPlusService;
 
@@ -35,13 +34,24 @@ class Service extends NbPlusService
             case Payment\Method::APP;
                 $class = new AppMethod();
                 break;
-            case Payment\Method::WALLET:
-                $class = new Wallet();
-                break;
             default:
                 throw new Exception\LogicException('Should not have reached here');
         }
 
         return $class;
+    }
+
+    /**
+     * @throws LogicException
+     */
+    public function fetchNbplusData(array $input, string $entity)
+    {
+        switch ($entity)
+        {
+            case 'netbanking':
+                return (new Netbanking)->fetchNbplusData($input, $entity);
+            default:
+                throw new Exception\LogicException('Should not have reached here');
+        }
     }
 }

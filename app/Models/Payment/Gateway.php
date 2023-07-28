@@ -4734,6 +4734,9 @@ class Gateway
                 self::NETBANKING_SBI,
                 self::NETBANKING_AXIS,
                 self::NETBANKING_HDFC,
+                self::NETBANKING_EQUITAS,
+                self::NETBANKING_AIRTEL,
+                self::NETBANKING_JSB,
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,

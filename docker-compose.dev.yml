@@ -139,7 +139,7 @@ services:
     command: ["--statsd.mapping-config=/tmp/statsd_mapping.yml"]
 
   api-redis-cluster:
-    image: grokzen/redis-cluster:5.0.9
+    image: grokzen/redis-cluster:6.0.0
     container_name: api-redis-cluster
 
 # in case you want to run tests outside docker but run server inside docker,

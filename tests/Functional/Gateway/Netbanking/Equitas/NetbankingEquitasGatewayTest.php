@@ -44,12 +44,7 @@ class NetbankingEquitasGatewayTest extends TestCase
 
         $this->assertTestResponse($paymentEntity);
 
-        $this->assertEquals('AB1234', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
-
-        $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $netbankingEntity);
+        $this->assertEquals('1234', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
     }
 
     public function testTpvPayment()
@@ -74,27 +69,19 @@ class NetbankingEquitasGatewayTest extends TestCase
 
         $this->assertEquals($payment['terminal_id'], $terminal->getId());
 
-        $this->assertEquals($payment['reference1'], Server::TRANSACTION_ID);
+        $this->assertEquals($payment['reference1'], '1234');
 
         $this->assertEquals($payment['status'], 'captured');
 
         $this->assertEquals($payment['amount'], $data['amount']);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertNotNull($gatewayPayment['account_number']);
-
-        $this->assertEquals($gatewayPayment['account_number'], $data['account_number']);
-
-        $this->assertEquals($gatewayPayment['bank_payment_id'], Server::TRANSACTION_ID);
-
-        $this->assertEquals($gatewayPayment['bank'], $data['bank']);
 
         $this->fixtures->merchant->disableTPV();
     }
 
     public function testTamperedAmount()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'callback')
@@ -117,6 +104,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testPaymentIdMismatch()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'callback')
@@ -139,6 +128,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testChecksumValidationFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -161,6 +152,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testAuthFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'callback')
@@ -179,6 +172,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testAuthInvalidStatus()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'callback')
@@ -197,6 +192,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testCallbackResponseError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -225,6 +222,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testAuthFailedVerifySuccess()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testAuthFailed();
@@ -247,6 +246,8 @@ class NetbankingEquitasGatewayTest extends TestCase
 
     public function testAuthSuccessVerifyFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testPayment();
@@ -280,14 +281,12 @@ class NetbankingEquitasGatewayTest extends TestCase
         $verify = $this->verifyPayment($payment['id']);
 
         assert($verify['payment']['verified'] === 1);
-
-        $gatewayPayment = $this->getDbLastEntityToArray('netbanking', 'test');
-
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     public function testVerifyInvalidResponse()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->testPayment();
@@ -315,6 +314,7 @@ class NetbankingEquitasGatewayTest extends TestCase
     public function testVerifyResponseError()
     {
         $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->testPayment();
@@ -343,6 +343,7 @@ class NetbankingEquitasGatewayTest extends TestCase
     public function testVerifyChecksumStatusFalse()
     {
         $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->testPayment();

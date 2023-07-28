@@ -156,8 +156,6 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
 
-        s($debitRow);
-
         $expectedDebitRow = [
             'ACH Transaction Code' => '67',
             'Destination Account Type' => '10',

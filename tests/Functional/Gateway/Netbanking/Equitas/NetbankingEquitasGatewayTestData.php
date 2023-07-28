@@ -138,7 +138,7 @@ return [
         ],
         'exception' => [
             'class'                     => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code'       => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
         ],
     ],
 
