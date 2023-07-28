@@ -44,7 +44,6 @@ class CardlessEmiProvider
     public static $disabledInstruments = [
         self::HCIN,
         self::FDRL,
-        self::ZESTMONEY,
         self::BARB,
     ];
 
