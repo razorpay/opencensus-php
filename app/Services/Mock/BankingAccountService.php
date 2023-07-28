@@ -705,7 +705,7 @@ class BankingAccountService
               'account_type' => '',
               'partner_bank' => '',
               'balance_id' => '',
-              'fts_fund_account_id' => '',
+              'fts_fund_account_id' => 'LVFoXUXt8aLGQt',
               'account_currency' => '',
               'ifsc' => 'RATN0000281',
               'urn' => '',

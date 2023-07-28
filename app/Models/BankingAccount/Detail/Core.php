@@ -52,10 +52,10 @@ class Core extends Base\Core
             {
                 $bankingAccountDetail = new Entity;
 
+                $bankingAccountDetail->setBankingAccountId($bankingAccount->getId());
+
                 $bankingAccountDetail->setGatewayKey($key);
             }
-
-            $bankingAccountDetail->bankingAccount()->associate($bankingAccount);
 
             $bankingAccountDetail->merchant()->associate($bankingAccount->merchant);
 

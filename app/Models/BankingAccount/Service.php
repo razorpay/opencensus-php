@@ -100,6 +100,7 @@ class Service extends Base\Service
 
             $id = $this->repo->banking_account->verifyIdAndStripSign($id);
 
+            // Merchant validation is happening in BankingAccountService using business_id
             return $this->bankingAccountService->getRblApplicationFromBasForInternalFetch($id);
         }
 
@@ -331,7 +332,7 @@ class Service extends Base\Service
      *
      * To be used to route request to BAS in case the application does not exist on API
      *
-     * @param string $id
+     * @param string $id public id of the banking account
      */
     public function checkAndGetBankingAccountId(string $id)
     {
@@ -2210,6 +2211,67 @@ class Service extends Base\Service
         }
 
         return $bankingAccounts;
+    }
+
+    private function buildEntityFromArray(array $bankingAccount): Entity
+    {
+        $ba = new Entity();
+
+        $input = [
+            Entity::CHANNEL                 => $bankingAccount[Entity::CHANNEL],
+            Entity::ACCOUNT_TYPE            => $bankingAccount[Entity::ACCOUNT_TYPE],
+            Entity::PINCODE                 => $bankingAccount[Entity::PINCODE],
+            Entity::ACCOUNT_IFSC            => $bankingAccount[Entity::ACCOUNT_IFSC],
+            Entity::ACCOUNT_NUMBER          => $bankingAccount[Entity::ACCOUNT_NUMBER],
+            Entity::BANK_REFERENCE_NUMBER   => $bankingAccount[Entity::BANK_REFERENCE_NUMBER],
+        ];
+
+        $ba->build($input);
+
+        $ba->setBasCaStatus($bankingAccount[Entity::STATUS]);
+        
+        $ba->setFtsFundAccountId($bankingAccount[Entity::FTS_FUND_ACCOUNT_ID]);
+        
+        $id = $this->repo->banking_account->verifyIdAndStripSign($bankingAccount[Entity::ID]);
+
+        $ba->setId($id);
+
+        $merchant = $this->repo->merchant->findOrFail($bankingAccount[Entity::MERCHANT_ID]);
+
+        $ba->merchant()->associate($merchant);
+
+        return $ba;
+    }
+
+
+    public function fetchRblApplicationFromApiAndBasForFts(string $bankingAccountId): Entity
+    {
+        // If id is not prefixed with 'bacc_' then prefix it
+        if (str_starts_with($bankingAccountId, Entity::getIdPrefix()) == false)
+        {
+            $bankingAccountId = 'bacc_' . $bankingAccountId;
+        }
+
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS,
+                [
+                    'id'      => $bankingAccountId,
+                ]);
+
+            $bankingAccountId = $this->repo->banking_account->verifyIdAndStripSign($bankingAccountId);
+
+            $bankingAccountArray = $this->bankingAccountService->getRblApplicationFromBasForInternalFetch($bankingAccountId);
+
+            $bankingAccount = $this->buildEntityFromArray($bankingAccountArray);
+
+            return $bankingAccount;
+        }
+
+        return $bankingAccount;
     }
 
     public function fetchRblApplicationFromApiAndBas(string $bankingAccountId, $input): array

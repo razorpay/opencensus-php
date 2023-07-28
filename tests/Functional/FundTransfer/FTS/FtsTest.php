@@ -70,6 +70,14 @@ class FtsTest extends TestCase
         $bankingAccount->balance()->associate($bankingBalance);
         $bankingAccount->save();
     }
+
+    public function setUpForRblOnBasUpiCredsUpdateTest()
+    {
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000000, '10000000000000',AccountType::DIRECT, Channel::RBL);
+    }
+
     public function setPartnerBankHealthNotificationConfigFetchLimitInRedis(int $limit)
     {
         $merchantNotificationConfigFetchLimit = (new Admin\Service)->getConfigKey(
@@ -334,6 +342,22 @@ class FtsTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($response['exception'], CreateAccount::VPAS_FIRST_LETTER_ERROR);
+    }
+
+    /**
+     * To test the case where banking account is stored on BAS
+     */
+    public function testGracefulUpdateForRblOnBasAccount()
+    {
+        $this->setUpForRblOnBasUpiCredsUpdateTest();
+
+        $this->mockBankingAccountService();
+
+        $this->ba->adminAuth();
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        $this->makeRequestAndGetContent($request);
     }
 
     protected function generateMockRequestForGracefulSourceAccountUpdate()

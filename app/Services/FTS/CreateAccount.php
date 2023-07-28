@@ -860,8 +860,8 @@ class CreateAccount extends Base
         // Fetch all the objects related to the relevant banking account
         $bankingAccountId     = $srcAccDetails[self::BANKING_ACCOUNT_ID];
 
-        /** @var BankingAccount\Entity */
-        $bankingAccountEntity = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
+        $bankingAccountEntity = (new BankingAccount\Service())->fetchRblApplicationFromApiAndBasForFts($bankingAccountId);
+
         $this->channel        = $bankingAccountEntity->getChannel();
         $processor            = $this->bankingAccountCore->getProcessor($this->channel);
 

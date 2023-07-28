@@ -52,6 +52,12 @@ class Entity extends PublicEntity
 
     // ---------------------------- Setters ----------------------------------- //
 
+    // For RBL on BAS leads, banking account is not always present in API DB
+    public function setBankingAccountId(string $bankingAccountId)
+    {
+        $this->setAttribute(self::BANKING_ACCOUNT_ID, $bankingAccountId);
+    }
+
     public function setGatewayKey(string $key)
     {
         $this->setAttribute(self::GATEWAY_KEY, $key);
