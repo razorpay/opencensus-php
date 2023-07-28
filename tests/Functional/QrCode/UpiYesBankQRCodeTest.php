@@ -60,7 +60,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQRWithoutAnyTerminal() :void
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 
@@ -300,7 +300,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrWithoutTerminal() :void
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 
@@ -475,7 +475,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithNoDedicatedTerminal()
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
 

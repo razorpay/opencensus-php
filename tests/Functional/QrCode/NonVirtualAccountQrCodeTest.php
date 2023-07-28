@@ -2194,6 +2194,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->mockSplitzTreatment($output);
 
+        $this->fixtures->create('terminal:dedicated_sharp_terminal');
+
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
         $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
@@ -2392,6 +2394,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
         ];
 
         $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('terminal:dedicated_sharp_terminal');
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 

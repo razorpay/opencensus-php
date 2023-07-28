@@ -669,9 +669,9 @@ class Generator extends QrCode\Generator
         //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
         $terminals = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-        $dedicatedTerminals = array_filter($terminals, function(Terminal\Entity $terminal)
+        $dedicatedTerminals = array_filter($terminals, function($terminal)
         {
-            return ($terminal->isShared() === false);
+            return (($terminal != null) and ($terminal->isShared() === false));
         });
 
         if (count($dedicatedTerminals) === 0)
