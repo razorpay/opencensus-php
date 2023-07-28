@@ -246,6 +246,8 @@ class TraceCode
 
     const FETCH_OAUTH_ACTION_FOR_MERCHANT           = 'FETCH_OAUTH_ACTION_FOR_MERCHANT';
     const OAUTH_MERCHANT_ACTIVATION_DETAILS         = 'OAUTH_MERCHANT_ACTIVATION_DETAILS';
+    
+    const USER_RENDER_DATA                          = 'USER_RENDER_DATA';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

@@ -16,6 +16,8 @@ class Constants
   const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION  = 'http_requests_api_downstream_duration';
   const METRIC_COUNTER_HTTP_REQUESTS                    = 'http_requests';
   const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION         = 'http_requests_duration';
+  const METRIC_USER_PAGE_RENDER                         = 'user_page_render';
+  const METRIC_HISTOGRAM_USER_PAGE_RENDER               = 'user_page_render_duration';
   const USER_LOGIN_COUNT                                = 'user_login_count';
   const USER_VERIFY_COUNT                               = 'user_verify_count';
   const USER_LOGOUT_COUNT                               = 'user_logout_count';
@@ -105,7 +107,9 @@ class Constants
   const LABEL_HTTP_REQUESTS_ORIGIN                  = 'origin';
   const LABEL_HTTP_REQUESTS_DOMAIN                  = 'domain';
   const LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT          = 'graphql_client';
-
+  
+  const LABEL_DASHBOARD_CBS                         = 'chunked_based_streaming';
+  
   const LABEL_RZP_TEAM                              = 'rzp_team';
 
   // Metric labels - HTTP_REQUESTS_API_DOWNSTREAM

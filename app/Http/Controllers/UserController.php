@@ -81,7 +81,7 @@ class UserController extends Controller
         return $data;
     }
 
-    public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $isChunkedBasedEnable = false)
+    public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isChunkedBasedEnable = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
 
@@ -217,6 +217,9 @@ class UserController extends Controller
 
             if ($isChunkedBasedEnable === false)
             {
+                $timeTaken = self::millitime() - $startTime;
+                $this->pushUserRenderDataToMetrics($timeTaken, false);
+                
                 return view('merchant.index', $data);
             }
 
@@ -235,7 +238,10 @@ class UserController extends Controller
                     // Chunk based straming: set flag to enable streaming
                     Session::put('is_merchant_login', true);
                 }
-
+                
+                $timeTaken = self::millitime() - $startTime;
+                $this->pushUserRenderDataToMetrics($timeTaken, true);
+                
                 return view('merchant.index', $data);
             }
             else
@@ -245,7 +251,10 @@ class UserController extends Controller
                 $this->trace->info(TraceCode::CHUNKED_DETAILS, [
                     'chunkRendered' => '2',
                 ]);
-
+                
+                $timeTaken = self::millitime() - $startTime;
+                $this->pushUserRenderDataToMetrics($timeTaken, true);
+                
                 echo($view);
                 ob_flush();
                 flush();
@@ -281,7 +290,41 @@ class UserController extends Controller
 
         return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
     }
-
+    
+    static function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+    
+    public function pushUserRenderDataToMetrics($timeTaken, $cbsFlow)
+    {
+        $domain = \Request::server('SERVER_NAME') ?? 'unknown_domain';
+        
+        $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
+        
+        $dimensions = [
+            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN   => ApiUrl::getRequestOrigin(),
+            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN   => $domain,
+            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE    => $currentRouteName,
+            MetricConstants::LABEL_DASHBOARD_CBS          => $cbsFlow,
+        ];
+        
+        $this->trace->info(TraceCode::USER_RENDER_DATA, $dimensions + ['time_taken' => $timeTaken]);
+        
+        try
+        {
+            $this->metrics->count(MetricConstants::METRIC_USER_PAGE_RENDER, EVENT_TRIGGER_COUNT, $dimensions);
+            
+            $this->metrics->histogram(MetricConstants::METRIC_HISTOGRAM_USER_PAGE_RENDER, $timeTaken, $dimensions);
+        }
+        catch (\Throwable $t)
+        {
+            $this->trace->warning(TraceCode::PUSH_METRICS_FAILED, [
+                'message' => $t->getMessage() ?? 'unknown_message',
+            ]);
+        }
+    }
+    
     /**
      * Returns the base template for angular.
      *
@@ -289,6 +332,8 @@ class UserController extends Controller
      */
     public function getIndex()
     {
+        $startTime = self::millitime();
+        
         $domain = \Request::server('SERVER_NAME');
 
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
@@ -325,7 +370,7 @@ class UserController extends Controller
 //            );
             }
 
-            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, false);
+            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, false);
         }
 
         // From here logic for chunked Based Streaming has started.
@@ -367,14 +412,14 @@ class UserController extends Controller
 
             $details = $secondChunkData['details'] ?? [];
 
-            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, true);
+            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, true);
         }
         else
         {
             // Chunk based straming: start streaming the response
             $response = new StreamedResponse();
 
-            $response->setCallback(function () use ($firstChunkData, $org, $userError, $orgError){
+            $response->setCallback(function () use ($firstChunkData, $org, $userError, $orgError, $startTime){
 
                 $firstDetails = $firstChunkData['details'] ?? [];
 
@@ -401,7 +446,7 @@ class UserController extends Controller
 
                 $secondDetails = $secondChunkData['details'] ?? [];
 
-                $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, true);
+                $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, $startTime, true);
             });
 
             return $response;
