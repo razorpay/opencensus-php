@@ -7878,4 +7878,602 @@ class CoreTest extends TestCase
 
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailsData['activation_status']);
     }
+
+    public function testOCRPassedActivationBlockKQU()
+    {
+        Queue::fake();
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_status" => "under_review",
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+                "clarification_reasons" => [
+                    "business_website" => [
+                        [
+                            "from" => "admin",
+                            "nc_count" => 1,
+                            "is_current" => true,
+                            "field_value" => "https://www.hempstrol.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ],
+                "clarification_reasons_v2" => [
+                    "business_website" => [
+                        [
+                            "from" => "admin",
+                            "nc_count" => 1,
+                            "is_current" => true,
+                            "field_value" => "https://www.hempstrol.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ]
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "verified",
+            "gstin_verification_status" => "verified",
+            "cin_verification_status" => "verified",
+            "international_activation_flow" => "whitelist",
+            "company_pan_doc_verification_status" => "verified",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGahWhUb2Ew",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "negative_keywords",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MGlLFiUREeLueC",
+            "metadata" => [
+                "result" => [
+                    "required" => [
+                        "policy disclosure" => [
+                            "phrases" => [
+                                "Payment" => 1,
+                                "Returns" => 1,
+                                "Contact us" => 1,
+                                "privacy policy" => 1
+                            ],
+                            "total_count" => 4,
+                            "unique_count" => 4
+                        ]
+                    ],
+                    "prohibited" => [
+                    ]
+                ],
+                "website_url" => "https://www.ilovesarees.com/"
+            ],
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGVEldWInOq",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "mcc_categorisation_website",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MGw1N8TTDPPCz5",
+            "metadata" => [
+                "status" => "completed",
+                "category" => "ecommerce",
+                "subcategory" => "women_clothing",
+                "predicted_mcc" => 5621,
+                "confidence_score" => 0.94
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGHX1Vf0bK2",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "website_policy",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH98mqZfN59Wx8",
+            "metadata" => [
+                "terms" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesares.myshopify.com/pages/terms-conditions"
+                        ],
+                        "confidence_score" => 0.5651,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "refund" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score" => 0.5465,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score" => 0.9853,
+                        "relevant_details" => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "shipping" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score" => 0.6079,
+                        "relevant_details" => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "relevant_details" => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH95NyX6wcWbG1",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "cin",
+            "artefact_identifier" => "number",
+            "status" => "initiated",
+            "audit_id" => "MGvjUr37Z52dur",
+            "metadata" => [
+                "bvs_validation_id" => "MH95Nv3tZnT44P",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933kTShboSkS",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "signatory_validation",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH987XQBcsGzp8",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "certificate_of_incorporation",
+            "artefact_identifier" => "doc",
+            "status" => "verified",
+            "audit_id" => "MGvjUr37Z52dur",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH96sJegGOKRdr",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "gstin",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+                "bvs_validation_id" => "MH96qkWCFYMRh5",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933fs4DyoDny",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "bank_account",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH933g9SNCgxta",
+            "metadata" => [
+                "bvs_validation_id" => "MH932IVI0TvVOs",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        // block_merchant_activations experiment id
+        $input = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => []
+        ];
+
+        // for regular merchants, there should be no call to block_merchant_activations experiment
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->times(0)
+            ->with($input)
+            ->andReturn($output);
+
+        (new UpdateMerchantContext(Mode::TEST, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'mcc_categorisation_website'
+        ]);
+
+        $this->assertEquals('verified', $verificationData['status']);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $businessDetail['metadata']['activation_status']);
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $merchantDetail[Entity::ACTIVATION_STATUS]);
+    }
+
+    public function testOCRPassedActivationBlockUnderReview()
+    {
+        $this->changeEnvToNonTest();
+
+        Queue::fake();
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce',
+            'partner_type' => 'aggregator'
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_status" => "under_review",
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+                "clarification_reasons" => [
+                    "business_website" => [
+                        [
+                            "from" => "admin",
+                            "nc_count" => 1,
+                            "is_current" => true,
+                            "field_value" => "https://www.hempstrol.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ],
+                "clarification_reasons_v2" => [
+                    "business_website" => [
+                        [
+                            "from" => "admin",
+                            "nc_count" => 1,
+                            "is_current" => true,
+                            "field_value" => "https://www.hempstrol.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ]
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "verified",
+            "gstin_verification_status" => "verified",
+            "cin_verification_status" => "verified",
+            "international_activation_flow" => "whitelist",
+            "company_pan_doc_verification_status" => "verified",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGahWhUb2Ew",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "negative_keywords",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MGlLFiUREeLueC",
+            "metadata" => [
+                "result" => [
+                    "required" => [
+                        "policy disclosure" => [
+                            "phrases" => [
+                                "Payment" => 1,
+                                "Returns" => 1,
+                                "Contact us" => 1,
+                                "privacy policy" => 1
+                            ],
+                            "total_count" => 4,
+                            "unique_count" => 4
+                        ]
+                    ],
+                    "prohibited" => [
+                    ]
+                ],
+                "website_url" => "https://www.ilovesarees.com/"
+            ],
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGVEldWInOq",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "mcc_categorisation_website",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MGw1N8TTDPPCz5",
+            "metadata" => [
+                "status" => "completed",
+                "category" => "ecommerce",
+                "subcategory" => "women_clothing",
+                "predicted_mcc" => 5621,
+                "confidence_score" => 0.94
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGHX1Vf0bK2",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "website_policy",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH98mqZfN59Wx8",
+            "metadata" => [
+                "terms" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesares.myshopify.com/pages/terms-conditions"
+                        ],
+                        "confidence_score" => 0.5651,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "refund" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score" => 0.5465,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score" => 0.9853,
+                        "relevant_details" => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "shipping" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score" => 0.6079,
+                        "relevant_details" => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "relevant_details" => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH95NyX6wcWbG1",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "cin",
+            "artefact_identifier" => "number",
+            "status" => "initiated",
+            "audit_id" => "MGvjUr37Z52dur",
+            "metadata" => [
+                "bvs_validation_id" => "MH95Nv3tZnT44P",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933kTShboSkS",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "signatory_validation",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH987XQBcsGzp8",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "certificate_of_incorporation",
+            "artefact_identifier" => "doc",
+            "status" => "verified",
+            "audit_id" => "MGvjUr37Z52dur",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH96sJegGOKRdr",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "gstin",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+                "bvs_validation_id" => "MH96qkWCFYMRh5",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933fs4DyoDny",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "bank_account",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH933g9SNCgxta",
+            "metadata" => [
+                "bvs_validation_id" => "MH932IVI0TvVOs",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $splitzInput = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => []
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        (new UpdateMerchantContext(Mode::TEST, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'mcc_categorisation_website'
+        ]);
+
+        $this->assertEquals('verified', $verificationData['status']);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
+    }
 }
