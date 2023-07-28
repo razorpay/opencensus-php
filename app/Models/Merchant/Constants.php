@@ -82,6 +82,7 @@ final class Constants
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
     const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
+    const PARTNER_REFERRAL_CODE                   = 'partner_referral_code';
 
     const CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX = 'capital-cc-submerchant-';
     const CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX            = 'capital-loc-submerchant-';

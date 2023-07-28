@@ -10,6 +10,23 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
+    'testSubmerchantPresignUpByPartner' => [
+        'request'  => [
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server'    => [
+                'HTTP_X-Razorpay-Account'    => '10000000000009',
+            ],
+            'content' => [
+                'contact_name'    => 'Test Contact name',
+            ],
+        ],
+        'response' => [
+            'content' => ['contact_name' => 'Test Contact name'],
+            'status' => 200
+        ],
+     ],
+
     'testRequestKycAccessByPartner' => [
         'request'  => [
             'url'     => '/partner/kyc_access_request',
@@ -1859,6 +1876,33 @@ return [
             ],
             'status_code' => 200,
         ],
+    ],
+
+
+    'testUserRegisterWithMobileWithReferralCode' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '8877665544',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            "content" => [
+                "contact_mobile"            => '8877665544',
+                "signup_via_email"          => 0,
+                "confirmed"                 => false,
+                "email_verified"            => false,
+                "contact_mobile_verified"   => true,
+                "email"                     => null
+            ]
+        ]
     ],
 
     'testAggregatorToResellerBulkUpdate' => [

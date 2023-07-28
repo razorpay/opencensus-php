@@ -54,6 +54,9 @@ final class Metric
     const MERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL = 'merchant_support_entities_creation_failure_total';
     const SUBMERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL = 'submerchant_support_entities_creation_failure_total';
 
+    const SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL = "submerchant_signup_linking_success_total";
+    const SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL = "submerchant_signup_linking_failure_total";
+
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
 
     const BUSINESS_BANKING_ENABLED_TRIGGER_FAILURE = 'business_banking_enabled_trigger_failure';

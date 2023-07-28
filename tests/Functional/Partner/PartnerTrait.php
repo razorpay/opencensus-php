@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
 use WpOrg\Requests\Response;
+use RZP\Models\Merchant\Referral;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -279,6 +280,26 @@ trait PartnerTrait
         $accessMap = $this->fixtures->create('merchant_access_map', $accessMapData);
 
         return [$subMerchant, $accessMap];
+    }
+
+    public function createPartner(string $partnerType)
+    {
+        // Create a partner so that it internally creates referrals
+        $merchantInput = [
+            'name'         => 'partner merchant',
+            'website'      => 'https://www.razorpay.com/',
+            'partner_type' => $partnerType
+        ];
+
+        $partnerMerchant = $this->fixtures->merchant->create($merchantInput);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => $partnerType, 'merchant_id' =>  $partnerMerchant['id'] ], true);
+
+        $this->fixtures->user->createUserForMerchant($partnerMerchant['id']);
+
+        (new Referral\Core())->createOrFetch($partnerMerchant);
+
+        return $partnerMerchant;
     }
 
     public function createPartnerMerchantAndSubMerchant(string $partnerType)

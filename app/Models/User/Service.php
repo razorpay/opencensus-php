@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Jobs\LinkSubMerchant;
 use RZP\Jobs\NotifyRas;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
@@ -623,14 +624,19 @@ class Service extends Base\Service
 
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::checkIfPhantomOnBoardingFlow($input);
 
+        $partnerReferralCode = $input['partner_referral_code'] ??'';
+
+        unset($input['partner_referral_code']);
+
         $verifySuccess = $this->core->verifySignupOtp($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response) {
+        $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode) {
 
             if ($verifySuccess === true) {
 
                 $referrer = $input['ref'] ?? '';
                 $businessName = $input['business_name'] ?? '';
+
                 $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
 
                 $heimdallTokenData = $this->handleHeimdallInvitation($input);
@@ -692,11 +698,64 @@ class Service extends Base\Service
 
                 $signupMethod = Constants::OTP;
                 $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
+                $this->processReferralCode($merchantData['id'], $partnerReferralCode);
                 $response = $data;
             }
         });
 
         return $response;
+    }
+
+
+    private function processReferralCode(string $merchantId, string $referralCode): void
+    {
+        try {
+
+            if(empty($referralCode) === true)
+            {
+                return;
+            }
+
+            $referral = (new Merchant\Referral\Core)->fetchReferralByReferralCode($referralCode);
+
+            if(empty($referral) == true)
+            {
+                return;
+            }
+
+            $properties = [
+                'id'            => $referral->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.submerchant_signup_referral_linking_exp_id'),
+            ];
+
+            $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled == false)
+            {
+                return;
+            }
+            $detailService = (new Merchant\Detail\Service());
+
+            $referralInput = $detailService->getReferralInput($referral);
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $detailService->applyReferralPartner($merchant, $referralInput);
+
+            $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL);
+
+        } catch(\Exception $e)
+        {
+            $this->trace->traceException($e,
+                                         Logger::ERROR,
+                                         TraceCode::SUBMERCHANT_SIGNUP_LINKING_JOB_DISPATCH_FAILURE,
+                                         [
+                                             'merchant_id'  => $merchantId,
+                                             'referralCode' => $referralCode,
+                                             'message'      => 'Error occurred while linking subM during signUp'
+                                         ]);
+            $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL);
+        }
     }
 
     protected function pushSegmentSignupEvent($userId, $customProperties)

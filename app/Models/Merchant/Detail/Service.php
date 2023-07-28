@@ -2059,9 +2059,15 @@ class Service extends Base\Service
 
             if (empty($referral) === false)
             {
+                //this would be for older dashboard flow where referral code is applied as part of pre_signup
                 $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
 
-                $this->applyReferralPartner($referral);
+                $subMerchant = $this->app['basicauth']->getMerchant();
+
+                $referralInput = $this->getReferralInput($referral);
+
+                $this->applyReferralPartner($subMerchant, $referralInput);
+
             }
 
             $this->saveMerchantDetailForPreSignUp($input);
@@ -2156,7 +2162,8 @@ class Service extends Base\Service
 
                 if($flag === true)
                 {
-                    $this->applyReferralPartner($referral, $merchant);
+                    $referralInput = $this->getReferralInput($referral);
+                    $this->applyReferralPartner($merchant, $referralInput);
 
                     $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
 
@@ -2271,14 +2278,17 @@ class Service extends Base\Service
     }
 
     /**
-     * @param ReferralEntity $referral
-     * @param Merchant\Entity|null $merchant
+     * @param        $subMerchant
+     * @param array  $input
      */
-    private function applyReferralPartner(Referral\Entity $referral, Merchant\Entity $merchant = null)
+    public function applyReferralPartner($subMerchant, array $input)
     {
-        $subMerchant = $this->app['basicauth']->getMerchant() ?? $merchant;
+        $refCode         = $input['referral_code'];
+        $requestProduct  = $input['request_product'] ?? Product::PRIMARY;
+        $referralProduct = $input['referral_product'] ?? Product::PRIMARY;
+        $partnerId       = $input['merchant_id'];
 
-        $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
+        $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
 
         $isCapitalLocSignupPageVisited = false;
 
@@ -2291,15 +2301,15 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::PARTNER_REFERRAL_FOR_CAPITAL,
                 [
-                    "referral_code"           => $referral->getReferralCode(),
+                    "referral_code"           => $refCode,
                     "referral_product"        => $referralProduct,
                     "actual_referral_product" => $actualReferralProduct,
-                    "partner_id"              => $referral->getMerchantId(),
+                    "partner_id"              => $partnerId,
                     "submerchant_id"          => $subMerchant->getId(),
                 ]
             );
 
-            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($referral->getMerchantId());
+            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($partnerId);
 
             if ($isCapitalPartnershipExpEnabled === false)
             {
@@ -2314,18 +2324,28 @@ class Service extends Base\Service
                 or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)));
         }
 
-        $requestProduct = $this->auth->getRequestOriginProduct();
-
-        if ($referralProduct === $requestProduct or ( $referral->getProduct() == Product::CAPITAL and $isCapitalLocSignupPageVisited ))
+        if ($referralProduct === $requestProduct or ( $referralProduct == Product::CAPITAL and $isCapitalLocSignupPageVisited ))
         {
             $mappingInput = [
-                'partner_id'     => $referral->getMerchantId(),
+                'partner_id'     => $partnerId,
                 'source'         => PartnerConstants::REFERRAL,
-                'actual_product' => $referral->getProduct() ?? Product::PRIMARY
+                'actual_product' => $referralProduct ?? Product::PRIMARY
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
         }
+    }
+
+    public function getReferralInput(Referral\Entity $referral): array
+    {
+        $input = [];
+
+        $input['request_product']  = $this->auth->getRequestOriginProduct();
+        $input['referral_code']    = $referral->getReferralCode();
+        $input['referral_product'] = $referral->getProduct();
+        $input['merchant_id']      = $referral->getMerchantId();
+
+        return $input;
     }
 
     private function applyPartnerSubMerchantMapping($subMerchant, $input, $product)

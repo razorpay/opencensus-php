@@ -14,6 +14,7 @@ use ReflectionFunction;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use RZP\Services\Mock\Raven;
 use WpOrg\Requests\Response;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
@@ -291,6 +292,17 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($legalEntity->getMcc(), 8931);
         $this->assertEquals('financial_services', $legalEntity->getBusinessCategory());
         $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
+    }
+
+    public function testSubmerchantPresignUpByPartner()
+    {
+        $this->createResellerPartnerSubmerchant(true, true);
+
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
     }
 
     public function testfetchSubmerchantActivationByPartner()
@@ -2519,7 +2531,7 @@ class PartnerExperienceTest extends OAuthTestCase
         );
     }
 
-    public function createResellerPartnerSubmerchant( bool $isContactMobileVerfied = false)
+    public function createResellerPartnerSubmerchant(bool $isContactMobileVerified = false, bool $addPricing = false)
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -2558,9 +2570,29 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->fixtures->on('test')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
         $this->fixtures->on('live')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
-        $this->fixtures->on('test')->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'testing@example.com','contact_mobile'=> '9123456788', 'contact_mobile_verified' => $isContactMobileVerfied]);
+        $this->fixtures->on('test')->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'testing@example.com','contact_mobile'=> '9123456788', 'contact_mobile_verified' => $isContactMobileVerified]);
 
         $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        if ($addPricing == true)
+        {
+            $subMerchantPricingPlan = [
+                'plan_id'             => 'LFbrOUOTRSyAqq',
+                'plan_name'           => 'testSubMPricingPlan',
+                'feature'             => 'payment',
+                'type'                => 'pricing',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 250,
+                'fixed_rate'          => 0,
+                'org_id'              => $subMerchant['org_id'],
+            ];
+
+            $this->fixtures->create('pricing', $subMerchantPricingPlan);
+            $this->fixtures->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['pricing_plan_id' => 'LFbrOUOTRSyAqq']);
+        }
     }
 
     private function mockSalesForce(string $method, int $count)
@@ -3388,5 +3420,105 @@ class PartnerExperienceTest extends OAuthTestCase
                 'email'        => $merchant->getEmail()
             ]
         ];
+    }
+
+
+    // The following testcase would create a merchant entity for the subM, attach the subM to the partner via referral code
+    public function testUserRegisterWithMobileWithReferralCode()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        //Create a dummy partner to fetch primary referral link
+        $partnerMerchant = $this->createPartner('aggregator');
+
+        $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
+
+        $referralCode = $referralLink['ref_code'];
+
+        $testData['request']['content']['partner_referral_code'] = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest();
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+                                        ['entity_owner_id' => $partnerMerchant['id'],
+                                         'merchant_id' => $createdSubM['id']
+                                        ]);
+        $this->assertNotNull($accessMap);
+
+        $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
+    }
+
+
+    // The following testcase would create a merchant for the subM, wouldn't attach the subM to partner as the experiment is disabled
+    public function testUserRegisterWithMobileWithReferralCodeWithExperimentDisable()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $testData = &$this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $partnerMerchant = $this->createPartner('aggregator');
+
+        $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
+
+        $referralCode = $referralLink['ref_code'];
+
+        $testData['request']['content']['partner_referral_code'] = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment([
+                                          "response" => [
+                                              "variant" => [
+                                                  "name" => 'disable',
+                                              ]
+                                          ]
+                                      ]);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+                                        ['entity_owner_id' => $partnerMerchant['id'],
+                                         'merchant_id'     => $createdSubM['id']
+                                        ]);
+        $this->assertNull($accessMap);
+
     }
 }
