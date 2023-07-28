@@ -34,6 +34,11 @@ class UpiTerminalOnboarding extends Base
             'vpa_handle'                          => $vpaHandle,
         ];
 
+        if(empty($mcc) === false)
+        {
+            $identifiers[Terminal\Entity::CATEGORY] = $mcc;
+        }
+
         $features = [
             Terminal\Entity::EXPECTED   =>  $expected,
             Terminal\Entity::UPI_FEATURES_TYPE => $merchantType,
