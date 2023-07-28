@@ -63,6 +63,15 @@ class Constants {
                 same is disabled"
             ],
 
+        ],
+        "rzp/pg/org/cards/banking_program/CardsConfig" => [
+            "pass_custom_udf_fss" => [
+                "type" => self::BOOLEAN,
+                "short_key" => DcsConstants::CustomUDFFlagConfig,
+                "description" => "enabling this feature on an org the merchants of the org will
+                allow passing the information (merchant related to identify merchant) into UDF(1-5) and restrict
+                the notes values and default value from being captured in the UDF"
+            ],
         ]
     ];
 }

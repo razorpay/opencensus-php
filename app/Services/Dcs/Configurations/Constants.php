@@ -21,6 +21,8 @@ class Constants
 
     const OrgDefaultIIR = 'default_iir_config';
 
+    const CustomUDFFlagConfig = "CustomUDFFlagConfig";
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -29,7 +31,8 @@ class Constants
         self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",
         self::CustomHardLimitConfigurations  => "rzp/pg/org/onboarding/banking_program/Config",
         self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
-        self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest"
+        self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
+        self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig"
     ];
 
 }

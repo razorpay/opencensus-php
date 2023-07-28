@@ -2591,6 +2591,7 @@ class Constants
         self::DISABLE_AUTOMATE_IIR            => true,
         self::PERSONALISATION_V3_DISABLED     => true,
         self::DIRECT_DEBIT_VIA_TOKEN_BATCH    => true,
+        DcsConstants::PassCustomUdfFss         => true,
         self::SETTLEMENT_BY_CURRENCY          => true,
     ];
 

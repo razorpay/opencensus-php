@@ -364,6 +364,15 @@ class FeaturesTest extends OAuthTestCase
                 `default_instruments_enablement` flag is enabled on the org and merchant level flag for disabling the
                 same is disabled"
                 ],
+            ],
+            "rzp/pg/org/cards/banking_program/CardsConfig" => [
+                "pass_custom_udf_fss" => [
+                    "type" => "bool",
+                    "short_key" => "CustomUDFFlagConfig",
+                    "description" => "enabling this feature on an org the merchants of the org will
+                allow passing the information (merchant related to identify merchant) into UDF(1-5) and restrict
+                the notes values and default value from being captured in the UDF"
+                ],
             ]
         ];
 
