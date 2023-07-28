@@ -141,6 +141,17 @@ trait Refund
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_INITIATED, $payment);
 
+        $this->trace->info(
+            TraceCode::PRE_REFUND_BUILD_VALIDATION_INFO,
+            [
+                'input' => $input,
+                'amount' => $input['amount'] ?? '',
+                'type' => gettype($input['amount']) ?? '',
+                'ctype_digit' => ctype_digit($input['amount'])??'',
+                'is_int' => is_int($input['amount'])?? '',
+            ]
+        );
+
         $refund = $this->buildRefundEntity($payment, $input, $batch, $batchId);
 
         try

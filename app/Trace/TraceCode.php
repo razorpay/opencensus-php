@@ -4939,6 +4939,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
     const REFUND_FEE_AND_TAX_RESET_TO_ZERO                      = 'REFUND_FEE_AND_TAX_RESET_TO_ZERO';
     const REFUND_TRANSACTION_NOT_FOUND                          = 'REFUND_TRANSACTION_NOT_FOUND';
+    const REFUND_AMOUNT_VALIDATION_INFO                         = 'REFUND_AMOUNT_VALIDATION_INFO';
+    const PRE_REFUND_BUILD_VALIDATION_INFO                      = 'PRE_REFUND_BUILD_VALIDATION_INFO';
 
     const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';

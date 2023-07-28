@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 
 class Validator extends Base\Validator
@@ -332,6 +333,14 @@ class Validator extends Base\Validator
         $payment = $this->payment;
 
         $amountToRefund = $input['amount'];
+
+        App::getFacadeRoot()['trace']->info(TraceCode::REFUND_AMOUNT_VALIDATION_INFO, [
+            'input' => $input,
+            'amount' => $amountToRefund,
+            'type' => gettype($amountToRefund),
+            'ctype_digit' => ctype_digit($amountToRefund),
+            'is_int' => is_int($amountToRefund)
+        ]);
 
         if (empty($amountToRefund) === true)
         {
