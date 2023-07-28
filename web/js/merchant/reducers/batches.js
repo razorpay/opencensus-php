@@ -359,7 +359,7 @@ export const notifyPaymentPageBatch = ({ id, batchId, data }) => {
   const { sms_notify, email_notify } = data;
   const payload = {
     notify_on: [],
-    Batch_id: batchId,
+    batch_id: batchId,
   };
   sms_notify && payload.notify_on.push('sms');
   email_notify && payload.notify_on.push('email');

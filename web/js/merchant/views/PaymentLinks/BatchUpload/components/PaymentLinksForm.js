@@ -10,7 +10,8 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 import { fetchReminders } from 'merchant/reducers/reminders';
 
-import track from '../track';
+import track from 'merchant/views/PaymentLinks/BatchUpload/track';
+import { BATCH_TYPE, NOTIFY_MESSAGE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 /**
  * Batch Payment Links Form
@@ -73,6 +74,8 @@ export default class extends React.Component {
   };
 
   render() {
+    const { batchType } = this.props;
+    const { BATCH_PAYMENT_PAGE, PAYMENT_LINK } = NOTIFY_MESSAGE;
     return (
       <div>
         <div class="form-group send-links-form">
@@ -117,7 +120,7 @@ export default class extends React.Component {
 
         <p class="m-t">
           <i class="i i-info-circle m-r" />
-          Payment Links with SMS and Email will be sent once the batch is created.
+          {batchType === BATCH_TYPE ? BATCH_PAYMENT_PAGE : PAYMENT_LINK}
         </p>
       </div>
     );

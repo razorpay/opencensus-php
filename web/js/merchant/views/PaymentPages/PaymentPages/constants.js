@@ -21,3 +21,7 @@ export const CREATE_PP_DOC_URL = 'https://razorpay.com/docs/payment-pages/';
 export const CREATE_BATCH_PP_DOC_URL = 'https://razorpay.com/docs/payments/payment-pages/batch';
 
 export const BATCH_PAYMENT_PAGES_BASE_URL = '/paymentpages/batchpaymentpages';
+export const NOTIFY_MESSAGE = {
+  BATCH_PAYMENT_PAGE: `If Notify ' via SMS' and ' via Email' is selected, Batch Page Link will be sent as soon as the batch is Processed. Incase you wish to send the link later, don't select the Notify 'via SMS' or 'via Email'. The option to send it later will be available under 'Actions' on 'Batch Details'.`,
+  PAYMENT_LINK: `Payment Links with SMS and Email will be sent once the batch is created.`,
+};

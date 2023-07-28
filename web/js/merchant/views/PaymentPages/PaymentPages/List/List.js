@@ -10,6 +10,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getUnitsDescription } from 'merchant/views/PaymentPages/PaymentPages/utils';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Button from 'common/new-ui/Button';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
@@ -204,7 +205,7 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                 <ShowItem>
                   <td>
                     <NavLink to={`/paymentpages/batchuploads/${item.id}/${item.title}`}>
-                      <button>Batch Details</button>
+                      <Button className="Button--primary">Batch Details</Button>
                     </NavLink>
                   </td>
                 </ShowItem>

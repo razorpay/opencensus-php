@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
 import { App } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/PaymentLinksForm';
+import { BATCH_TYPE, NOTIFY_MESSAGE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const onChangeMock = jest.fn();
 
@@ -33,5 +34,10 @@ describe('PaymentLinksForm', () => {
     await userEvent.click(checkboxes[0]);
     await userEvent.click(checkboxes[1]);
     expect(checkboxes.length).toBe(2);
+  });
+
+  test('should show batch notify message if batch type is "payment_page" ', () => {
+    renderApp({ batchType: BATCH_TYPE });
+    expect(screen.getByText(NOTIFY_MESSAGE.BATCH_PAYMENT_PAGE)).toBeInTheDocument();
   });
 });

@@ -37,7 +37,6 @@ export default class SendAllLinksModal extends Component {
       closeModal,
       fetchAll,
     } = this.props;
-    console.log('sendLinks:', type);
     let fetchAllType = '';
     const notifyFn =
       type === PAYMENT_PAGE
