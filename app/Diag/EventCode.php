@@ -1466,6 +1466,11 @@ class EventCode
         'name'  => 'partnerships.capital.application_created',
     ];
 
+    const UPI_RECURRING_PROMO_INTENT_AUTH_LINK_CLICKED = [
+        'group' => 'upi_recurring',
+        'name'  => 'upi_recurring.promo_intent_auth_link.clicked',
+    ];
+    
     const PARTNERSHIPS_CAPITAL_INVITE_EXISTING_SUBMERCHANT_LINKED  = [
         'group' => 'onboarding',
         'name'  => 'partnerships.capital.bulk.existing_submerchant_linked',

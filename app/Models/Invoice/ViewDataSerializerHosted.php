@@ -4,7 +4,9 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use Config;
+use RZP\Services;
 use RZP\Constants\Org;
+use RZP\Diag\EventCode;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -778,9 +780,22 @@ class ViewDataSerializerHosted extends Base\Core
 
                 try
                 {
-                    $isUserAgentAndroid = str_contains(strtolower($this->app->request->header(RequestHeader::USER_AGENT)), 'android');
+
+                    $userAgent = strtolower($this->app->request->header(RequestHeader::USER_AGENT));
+                    $isUserAgentAndroid = str_contains($userAgent, 'android');
 
                     $successfulPayment = $this->getSuccessfulPaymentForOrder($order);
+
+                    if ($upiAutopayPromoIntentVariant === 'on')
+                    {
+                        (new Services\UpiRecurringEvent())->pushUpiRecurringEvents(EventCode::UPI_RECURRING_PROMO_INTENT_AUTH_LINK_CLICKED, null, null, [
+                            'order_id'                  => $order->getPublicId(),
+                            'invoice_id'                => $this->invoice->getPublicId(),
+                            'merchant_id'               => $order->getMerchantId(),
+                            'userAgent'                 => $userAgent,
+                            'isUserAgentAndroid'        => $isUserAgentAndroid
+                        ]);
+                    }
 
                     if (($isUserAgentAndroid === true) and
                         ($upiAutopayPromoIntentVariant === 'on') and
@@ -802,9 +817,13 @@ class ViewDataSerializerHosted extends Base\Core
                             ]
                         ];
 
+                        $gatewayInput = array();
+
+                        $gatewayInput['upiAutopayPromoIntent'] = '1';
+
                         $paymentProcessor = new PaymentProcessor($order->merchant);
 
-                        $paymentResponse = $paymentProcessor->process($paymentRequest);
+                        $paymentResponse = $paymentProcessor->process($paymentRequest, $gatewayInput);
 
                         if(empty($paymentResponse["data"]["intent_url"]) === false)
                         {

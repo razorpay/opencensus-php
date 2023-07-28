@@ -628,15 +628,29 @@ trait Authorize
             // payment analytics, gateway_tokens entities gets appended inside $terminalGatewayInput.
             $terminalGatewayInput = $gatewayInput;
 
-            if ((($payment->isUpiRecurring() === true) and ($payment->isRecurringTypeInitial() === true)) and ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr'])))
+            if (($payment->isUpiRecurring() === true) and ($payment->isRecurringTypeInitial() === true))
             {
-                $this->trace->info(
-                    TraceCode::UPI_AUTOPAY_RECEIVER_TYPE_QRCODE_SAVE_LOG,
-                    [
-                        'isUpiRecurring'  => $payment->isUpiRecurring(),
-                        'isUpiQr'         => $input['_']['upiqr']
-                    ]);
-                $terminalGatewayInput['upi_autopay_payment_type'] = Payment\UpiMetadata\Mode::UPI_QR;
+                if ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr']))
+                {
+                    $this->trace->info(
+                        TraceCode::UPI_AUTOPAY_RECEIVER_TYPE_QRCODE_SAVE_LOG,
+                        [
+                            'isUpiRecurring'  => $payment->isUpiRecurring(),
+                            'isUpiQr'         => $input['_']['upiqr']
+                        ]);
+                    $terminalGatewayInput['upi_autopay_payment_type'] = Payment\UpiMetadata\Mode::UPI_QR;
+                }
+
+                if ((isset($gatewayInput['upiAutopayPromoIntent']) === true) and ($gatewayInput['upiAutopayPromoIntent'] === '1'))
+                {
+                    $this->trace->info(
+                        TraceCode::UPI_AUTOPAY_PROMOTIONAL_INTENT_SAVE_LOG,
+                        [
+                            'isUpiRecurring'  => $payment->isUpiRecurring(),
+                            'isPromoIntent'   => $gatewayInput['upiAutopayPromoIntent']
+                        ]);
+                    $terminalGatewayInput['upi_autopay_promo_intent'] = 'promo_intent';
+                }
             }
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);

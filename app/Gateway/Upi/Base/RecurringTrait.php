@@ -512,6 +512,11 @@ trait RecurringTrait
             {
                 $attr[Entity::GATEWAY_DATA][Constants::QR_PAYMENT] = '1';
             }
+
+            if ((isset($input['upi_autopay_promo_intent']) === true) and ($input['upi_autopay_promo_intent'] === 'promo_intent'))
+            {
+                $attr[Entity::GATEWAY_DATA][Constants::PROMO_INTENT] = '1';
+            }
         }
 
         return $this->createGatewayPaymentEntity($attr, $action, false);
