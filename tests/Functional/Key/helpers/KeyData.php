@@ -5,6 +5,22 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testVaActivatedMerchantCreateKeys' => [
+        'request' => [
+            'url'    => '/keys',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key'
+            ],
+        ],
+        'status_code' => 200
+    ],
+
     'testNewKeyIdRandom' => [
         'request' => [
             'url' => '/keys/rzp_test_TheTestAuthKey',

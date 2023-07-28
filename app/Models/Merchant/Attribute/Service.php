@@ -573,5 +573,9 @@ class Service extends Base\Service
         return [$requestorIdValue, $merchantNameValue];
     }
 
+    public function upsertProductsEnabledMerchantAttributeForX(string $merchantId)
+    {
+        $this->core->updateOrCreateAttribute($merchantId, Product::BANKING, Group::PRODUCTS_ENABLED, Type::X, 'true');
+    }
 
 }

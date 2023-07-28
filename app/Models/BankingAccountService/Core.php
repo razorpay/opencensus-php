@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Mail;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\Common;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
@@ -124,6 +125,8 @@ class Core extends Base\Core
             $basDetailEntity = $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
+
+            (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchantId);
 
             (new Merchant\Activate())->addPayoutFeatureIfApplicable($merchant, Mode::LIVE, true);
 

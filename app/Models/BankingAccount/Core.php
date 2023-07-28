@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Contact;
@@ -1441,6 +1442,8 @@ class Core extends Base\Core
             ];
 
             $this->updateBankingAccount($bankingAccount, $updateInput, $admin, true);
+
+            (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
 
             // For Adding payout feature without RZP KYC
             (new Activate())->addPayoutFeatureIfApplicable($bankingAccount->merchant, Mode::LIVE, true);

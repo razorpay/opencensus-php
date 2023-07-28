@@ -309,6 +309,40 @@ class KeyTest extends TestCase
         return $keyIds;
     }
 
+    public function testVaActivatedMerchantCreateKeys()
+    {
+        $merchant = $this->fixtures->create('merchant',['business_banking' => true , 'email' => 'test@gmail.com']);
+
+        $id = $merchant['id'];
+        $this->fixtures->terminal->createRXTerminal();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $id,
+            'business_type'     => '3'
+        ]);
+
+
+        $dataToReplace = [
+            'url' => '/merchants/va_activation/' . $id,
+            'method' => 'POST',
+            'content' => [
+                'create_va' => true,
+                'set_has_key_access' => true,
+            ],
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $user = $this->fixtures->user->createBankingUserForMerchant($id);
+
+
+        $this->ba->proxyAuth('rzp_live_' . $id, $user->getId());
+
+        $this->startTest();
+    }
+
     protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
         $storkMock->shouldReceive('sendSms')

@@ -96,6 +96,11 @@ class Core extends Base\Core
         return ($vaActivated === "true");
     }
 
+    public function updateOrCreateAttribute(string $merchantId, string $product, string $group, string $type, string $value)
+    {
+        $this->repo->merchant_attribute->updateOrCreateAttribute($merchantId, $product, $group, $type, $value);
+    }
+
     public function bulkUpdateAttributeValuesByIds(array $merchantAttributeIds, $newAttributeValue)
     {
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST,

@@ -79,4 +79,24 @@ class Repository extends Base\Repository
              ->whereIn($attributeIdColumn, $merchantAttributeIds)
              ->update([$attributeValueColumn => $newAttributevalue]);
     }
+
+    public function updateOrCreateAttribute(string $merchantId, string $product, string $group, string $type, string $value)
+    {
+        $result =  $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::PRODUCT, $product)
+            ->where(Entity::GROUP, $group)
+            ->where(Entity::TYPE, $type)
+            ->first();
+
+        if($result !== null)
+        {
+            $result->update([Entity::VALUE => $value]);
+        }
+        else
+        {
+            $this->create([Entity::MERCHANT_ID => $merchantId, Entity::PRODUCT => $product, Entity::GROUP => $group, Entity::TYPE => $type, Entity::VALUE => $value]);
+        }
+
+    }
 }

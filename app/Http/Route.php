@@ -366,6 +366,7 @@ class Route
         'merchant_daily_report'                    => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
         'merchant_product_switch'                  => ['post',     'merchants/product-switch',                       'MerchantController@postSwitchProductMerchant'                      ],
+        'proxy_for_activation_status'              => ['post',     'merchants/va_activation/{id}',     'MerchantController@proxyForActivationStatus' ],
         // Below route is a temporary route and should be deleted after the migration is completed
         'migration_multi_va_on_x'                  => ['post',     'merchants/banking-va-migration',                 'MerchantController@migrationBankingVAs'                            ],
         'affordability_widget_trial_period_update' => ['put',      'affordability/widget/trial_period',              'AffordabilityController@updateWidgetTrialPeriod'                        ],
@@ -4653,7 +4654,8 @@ class Route
         'mob_save_workflow',
         'merchant_consents_admin_fetch',
         'ufh_admin_upload_file',
-        'ufh_get_file_signed_url_by_mid'
+        'ufh_get_file_signed_url_by_mid',
+        'proxy_for_activation_status'
     ];
 
     /**
@@ -7222,6 +7224,7 @@ class Route
         'merchant_activation_clarifications_save_admin',
         'merchant_activation_clarifications_fetch_admin',
         'merchant_nc_revamp_eligibility_admin',
+        'proxy_for_activation_status',
         'merchant_ip_config_opt_status_admin',
         'merchant_ip_config_fetch_admin',
         'fund_management_balance_get_config',
@@ -8534,6 +8537,7 @@ class Route
         'merchant_ip_config_create_admin'                 => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_razorx_evaluate'                        => Permission::ADMIN_GET_APP_AUTH,
         'merchant_create_lead_to_salesforce_admin'        => Permission::VIEW_ACTIVATION_FORM,
+        'proxy_for_activation_status'                     => Permission::VIEW_ACTIVATION_FORM,
         'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
         'merchant_website_section_save'                   => Permission::EDIT_MERCHANT,
         'merchant_website_section_fetch'                  => Permission::VIEW_MERCHANT,
@@ -12357,6 +12361,7 @@ class Route
             'media_service_get_bucket',
             'media_service_upload_process',
             'admin_merchant_get_terminals',
+            'proxy_for_activation_status',
             'merchant_activation_eligibilty',
             'merchant_activation_clarifications_fetch',
             'merchant_nc_revamp_eligibility',

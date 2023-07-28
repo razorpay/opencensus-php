@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Services\TerminalsService;
 use Throwable;
 use RZP\Exception;
+use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Counter;
@@ -1000,6 +1001,8 @@ class Activate extends Base\Core
                     'series_prefix'      => $seriesPrefix,
                 ]);
 
+            (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
+
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
 
             $this->addSkipHoldFundsOnPayout($merchant);
@@ -1072,13 +1075,15 @@ class Activate extends Base\Core
 
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
+        $isMerchantVaActivated = (new Merchant\Core())->isXVaActivated($merchant);
+
         //
         // Assign payout feature if:
         // In live mode: check if merchant has been activated
         // In test mode: always
         //
         if (($mode === Mode::TEST) or
-            ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED) or $isCurrentAccountActivated)
+            ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED) or $isCurrentAccountActivated or ($isMerchantVaActivated === true) )
         {
             $featureParams = [
                 Feature\Entity::ENTITY_ID   => $merchant->getId(),
@@ -1145,7 +1150,9 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return (($merchant->isActivated() === true) and
+        $vaActivated = (new Merchant\Core())->isXVaActivated($merchant);
+
+        return ((($merchant->isActivated() === true) || ($vaActivated === true)) and
             (empty($merchant->getEmail()) === false));
         // This was done for YesBank moratorium. Not required now.
         // and ($this->blockRxActivationIfApplicable($merchant) === false));

@@ -4805,20 +4805,32 @@ class Processor
             return;
         }
 
-        // On live request, either RBL CA should be activated for merchant for proxy auth calls or merchant should be activated
-        if ($this->app['basicauth']->isProxyAuth() &&
-            $this->app['basicauth']->isProductBanking() &&
-            (new MerchantCore())->isRblCurrentAccountActivated($this->merchant))
+        // early return on basic checks to avoid complex computations
+        if ($merchant->isActivated())
         {
-            // adding this check due to PG onboarding pause
             return;
         }
-        else if ($merchant->isActivated() === false)
+        else if ($this->app['request.ctx']->getRoute() === 'proxy_for_activation_status')
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, null, null,
-                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+            // TODO: remove this condition once PG onboarding & VA-activation are resumed.
+            return;
         }
+
+        // extracting checks into vars for readability
+        $rblCaActivated     = (new MerchantCore())->isRblCurrentAccountActivated($merchant);
+        $isProxyRequest     = $this->app['basicauth']->isProxyAuth();
+        $isBankingRequest   = $this->app['basicauth']->isProductBanking();
+
+        if ($isProxyRequest && $isBankingRequest && $rblCaActivated)
+        {
+            // allow banking-proxy requests if RBL current-account is activated as it is required for Scan-and-Pay
+            return;
+        }
+
+        // if we are here, no criteria for access was met, throw an error
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR, null, null,
+            PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
     }
 
     protected function verifyMerchantIsLiveForLiveRequest()

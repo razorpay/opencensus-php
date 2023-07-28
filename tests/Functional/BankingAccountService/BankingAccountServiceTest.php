@@ -331,9 +331,9 @@ class BankingAccountServiceTest extends TestCase
                                                         'merchant_id'    => '10000000000000',
                                                     ]);
 
-        $this->assertEquals('ICICI', $merchant_attributes[0]->getValue());
-
         $this->assertEquals('ICICI', $merchant_attributes[1]->getValue());
+
+        $this->assertEquals('ICICI', $merchant_attributes[2]->getValue());
 
         $merchant_detail = $this->getDbEntity('merchant_detail',
                                               [

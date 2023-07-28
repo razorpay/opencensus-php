@@ -2637,6 +2637,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function proxyForActivationStatus(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->proxyForActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPreferencesBulk(string $group)
     {
         $input = Request::all();

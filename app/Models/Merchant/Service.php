@@ -7951,6 +7951,34 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function proxyForActivationStatus(string $merchantId, array &$input)
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchantId);
+
+        if($input['create_va'])
+        {
+            (new Merchant\Activate)->activateBusinessBankingIfApplicable($merchant);
+        }
+
+        if($input['set_has_key_access'])
+        {
+            $merchantDetail = $merchant->merchantDetail;
+
+            $vaActivated = (new Merchant\Core())->isXVaActivated($merchant);
+
+            if (((empty($merchantDetail->getWebsite()) === false) || ($vaActivated === true)) and
+                ($merchant->getHasKeyAccess() === false))
+            {
+                $merchant->setHasKeyAccess(true);
+                $this->repo->saveOrFail($merchant);
+            }
+        }
+
+        return ['success' => true];
+    }
+
     public function getRazorxTreatmentInBulk(array $input)
     {
         $response = [];
