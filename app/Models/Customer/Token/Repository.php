@@ -475,14 +475,18 @@ class Repository extends Base\Repository
         foreach ($queryResponseData->getEntities() as $entity)
         {
             $token = json_decode($entity->serializeToJsonString(), true);
+            $token['notes'] = json_decode($token['notes'], true);
 
             $merchant = $this->repo->merchant->find($token['merchant_id']);
             $customer = $this->repo->customer->findById($token['customer_id']);
 
-            $token->customer()->associate($customer);
-            $token->merchant()->associate($merchant);
+            $tokenEntity = new Token\Entity();
+            $tokenEntity->forceFill($token);
 
-            $collection->push($token);
+            $tokenEntity->customer()->associate($customer);
+            $tokenEntity->merchant()->associate($merchant);
+
+            $collection->push($tokenEntity);
         }
 
         return $collection;
