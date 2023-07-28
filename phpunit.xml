@@ -428,41 +428,42 @@
         <testsuite name="Post Payment Test Suite">
             <directory>./tests/Functional/Settlement/</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-1_Test_Suite">
+        <testsuite name="UT_Cards_Test_Suite">
             <directory>./tests/Functional/Gateway/AxisMigs/</directory>
-        </testsuite>
-        <testsuite name="UT_Anonymous-2_Test_Suite">
             <directory>./tests/Functional/Gateway/AxisGenius/</directory>
+            <directory>./tests/Functional/Gateway/Mpi/</directory>
+            <file>./tests/Functional/Gateway/File/FirstDataGatewayFileTest.php</file>
+            <directory>./tests/Functional/Gateway/Hitachi/</directory>
+            <directory>./tests/Functional/Gateway/FirstData/</directory>
+            <directory>./tests/Functional/Gateway/Paysecure/</directory>
+            <directory>./tests/Functional/Gateway/Card/</directory>
+            <directory>./tests/Functional/Gateway/Cybersource/</directory>
+            <directory>./tests/Functional/Gateway/Hdfc/</directory>
+        </testsuite>
+        <testsuite name="UT_Anonymous-1_Test_Suite">
             <directory>./tests/Functional/Gateway/Billdesk/</directory>
             <directory>./tests/Functional/Gateway/Enach/</directory>
             <directory>./tests/Functional/Gateway/Esigner/</directory>
             <directory>./tests/Functional/Gateway/Netbanking/</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-3_Test_Suite">
-            <directory>./tests/Functional/Gateway/Mpi/</directory>
+        <testsuite name="UT_Anonymous-2_Test_Suite">
             <directory>./tests/Functional/Gateway/File/</directory>
             <directory>./tests/Functional/Gateway/Paytm/</directory>
             <directory>./tests/Functional/Gateway/Reconciliation/</directory>
             <directory>./tests/Functional/Gateway/Sharp/</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-4_Test_Suite">
+        <testsuite name="UT_Anonymous-3_Test_Suite">
             <directory>./tests/Functional/Gateway/Upi/</directory>
-            <directory>./tests/Functional/Gateway/Hitachi/</directory>
             <directory>./tests/Functional/Gateway/CardlessEmi</directory>
             <directory>./tests/Functional/Gateway/Mozart/</directory>
             <directory>./tests/Functional/Gateway/PayLater</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-5_Test_Suite">
+        <testsuite name="UT_Anonymous-4_Test_Suite">
             <directory>./tests/Functional/Gateway/Wallet/</directory>
-            <directory>./tests/Functional/Gateway/FirstData/</directory>
-            <directory>./tests/Functional/Gateway/Paysecure/</directory>
-            <directory>./tests/Functional/Gateway/Card/</directory>
             <directory>./tests/Functional/Gateway/Ebs/</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-6_Test_Suite">
+        <testsuite name="UT_Anonymous-5_Test_Suite">
             <directory>./tests/Functional/Gateway/Mobikwik/</directory>
-            <directory>./tests/Functional/Gateway/Cybersource/</directory>
-            <directory>./tests/Functional/Gateway/Hdfc/</directory>
         </testsuite>
         <testsuite name="UT_UPI_Suite_Test_Suite">
             <directory>./tests/Functional/PaymentsUpi</directory>
