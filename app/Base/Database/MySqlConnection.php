@@ -130,6 +130,30 @@ class MySqlConnection extends BaseMySqlConnection
         return (in_array($routeName, $routes, true) === true);
     }
 
+    protected function handleQueryException(QueryException $e, $query, $bindings, Closure $callback)
+    {
+        $dbConfig = $this->getConfig();
+
+        $jobName = app('worker.ctx')->getJobName() ?? 'web';
+
+        $this->trace->count(Metric::DATABASE_ERROR_CLASSIFICATION, [
+            'database'              => $dbConfig['name'] ?? '',
+            'user'                  => $dbConfig['username'] ?? '',
+            'pod'                   => $jobName,
+            'error_code'            => $e->getCode(),
+            'retry'                 => false,
+            'func'                  => 'MySqlConnection::handleQueryException',
+        ]);
+
+        if ($this->transactions >= 1) {
+            throw $e;
+        }
+
+        return $this->tryAgainIfCausedByLostConnection(
+            $e, $query, $bindings, $callback
+        );
+    }
+
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
     {
         if ($this->causedByLostConnection($e->getPrevious()))
@@ -165,6 +189,17 @@ class MySqlConnection extends BaseMySqlConnection
                         'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
                     ]
                 );
+
+                $jobName = app('worker.ctx')->getJobName() ?? 'web';
+
+                $this->trace->count(Metric::DATABASE_ERROR_CLASSIFICATION, [
+                    'database'              => $dbConfig['name'] ?? '',
+                    'user'                  => $dbConfig['username'] ?? '',
+                    'pod'                   => $jobName,
+                    'error_code'            => $e->getCode(),
+                    'retry'                 => true,
+                    'func'                  => 'MySqlConnection::tryAgainIfCausedByLostConnection',
+                ]);
 
                 throw $ex;
             }

@@ -15,6 +15,7 @@ use PDO;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Tracing;
+use RZP\Base\Database\Metric;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
 use RZP\Base\Database\DetectsLostConnections;
@@ -84,6 +85,17 @@ class MySqlConnector extends BaseMySqlConnector
                     ]
                 );
 
+                $jobName = app('worker.ctx')->getJobName() ?? 'web';
+
+                $this->app['trace']->count(Metric::DATABASE_ERROR_CLASSIFICATION, [
+                    'database'          => $config['name'] ?? '',
+                    'user'              => $config['username'] ?? '',
+                    'pod'               => $jobName,
+                    'error_code'        => $e->getCode(),
+                    'retry'             => false,
+                    'func'              => 'MySqlConnector::connect',
+                ]);
+
                 // connection retry
                 try
                 {
@@ -98,6 +110,17 @@ class MySqlConnector extends BaseMySqlConnector
                             'func' => 'MySqlConnector::connect',
                         ]
                     );
+
+                    $jobName = app('worker.ctx')->getJobName() ?? 'web';
+
+                    $this->app['trace']->count(Metric::DATABASE_ERROR_CLASSIFICATION, [
+                        'database'          => $config['name'] ?? '',
+                        'user'              => $config['username'] ?? '',
+                        'pod'               => $jobName,
+                        'error_code'        => $e->getCode(),
+                        'retry'             => true,
+                        'func'              => 'MySqlConnector::connect',
+                    ]);
 
                     throw $ex;
                 }
