@@ -373,7 +373,6 @@ class Selector extends Base\Core
                 }
             }
         }
-
         if($isGooglePay === true)
         {
             $payment->setMethod(Method::UNSELECTED);

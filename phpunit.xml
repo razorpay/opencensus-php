@@ -379,6 +379,10 @@
         <testsuite name="Smart Collect Test Suite">
             <directory>./tests/Functional/BankTransfer</directory>
         </testsuite>
+        <testsuite name="QR Payment Test Suite">
+            <directory>./tests/Functional/QrCode</directory>
+<!--            <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>-->
+        </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
         </testsuite>
@@ -420,10 +424,11 @@
             <directory>./tests/Functional/VirtualAccount</directory>
             <directory>./tests/Functional/VirtualVpaPrefix</directory>
             <directory>./tests/Functional/UpiTransfer</directory>
-            <directory>./tests/Functional/BharatQrPayment</directory>
+            <directory>./tests/Functional/QrCode</directory>
             <directory>./tests/Functional/Payment/Transfers/</directory>
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
             <file>./tests/Functional/Merchant/AccountTest.php</file>
+            <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
         </testsuite>
         <testsuite name="Post Payment Test Suite">
             <directory>./tests/Functional/Settlement/</directory>

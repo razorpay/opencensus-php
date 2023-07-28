@@ -2198,12 +2198,12 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
-        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', 'LiveAccountMer');
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
             'test',
-            Account::TEST_ACCOUNT
+            'LiveAccountMer'
         );
 
         $qrCodeId = $qrCode['id'];
@@ -2230,14 +2230,14 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(100000, $payment->getAmount());
         $this->assertEquals('captured', $payment->getStatus());
 
-        $this->assertEquals(2360, $payment->getFee());
-        $this->assertEquals(360, $payment->getTax());
+        $this->assertEquals(2950, $payment->getFee());
+        $this->assertEquals(450, $payment->getTax());
 
         $this->assertCount(2, $feeBreakup);
         $this->assertEquals('payment', $feeBreakup[0]['name']);
-        $this->assertEquals(2000, $feeBreakup[0]['amount']); // 2.0% of 100000
+        $this->assertEquals(2500, $feeBreakup[0]['amount']); // 2.0% of 100000
         $this->assertEquals('tax', $feeBreakup[1]['name']);
-        $this->assertEquals(360, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
+        $this->assertEquals(450, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
     }
 
     public function testQrCodePricingForCreditCardWithoutSplitz(): void
@@ -2399,12 +2399,12 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
-        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', 'LiveAccountMer');
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
             'test',
-            Account::TEST_ACCOUNT
+            'LiveAccountMer'
         );
 
         $qrCodeId = $qrCode['id'];
@@ -2431,14 +2431,14 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(100000, $payment->getAmount());
         $this->assertEquals('captured', $payment->getStatus());
         // Ensure Default UPI Fees is Charged i.e. 1.50%
-        $this->assertEquals(1770, $payment->getFee());
-        $this->assertEquals(270, $payment->getTax());
+        $this->assertEquals(1180, $payment->getFee());
+        $this->assertEquals(180, $payment->getTax());
         // Fee Breakup Assertions
         $this->assertCount(2, $feeBreakup);
         $this->assertEquals('payment', $feeBreakup[0]['name']);
-        $this->assertEquals(1500, $feeBreakup[0]['amount']); // 1.50% of 100000
+        $this->assertEquals(1000, $feeBreakup[0]['amount']); // 1.50% of 100000
         $this->assertEquals('tax', $feeBreakup[1]['name']);
-        $this->assertEquals(270, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
+        $this->assertEquals(180, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
     }
     public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
     {

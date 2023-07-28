@@ -5,7 +5,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'smartcollectUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -59,7 +59,94 @@ jobs:
           GIT_COMMIT_ID: ${{ github.sha }}
           SONAR_PROJECT_ID: API_SMARTCOLLECT_UT
           TEST_SUITE_NAME: "Smart Collect Test Suite"
-          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest,/__w/api/api/app/Models/QrPayment
+          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  QR-Payment:
+    runs-on: [api-public]
+    if: github.event.deployment.environment == 'qrPaymentUT'
+    container:
+      image: c.rzp.io/razorpay/api:devstackxdebug3
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: QR Payment Test Suite
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: qr payment test suite
+        run: ci-assets/unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          GIT_COMMIT_ID: ${{ github.sha }}
+          SONAR_PROJECT_ID: API_QR_PAYMENT_UT
+          TEST_SUITE_NAME: "QR Payment Test Suite"
+          SOURCE_DIR: /__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/QrPayment,/__w/api/api/app/Models/BharatQr,/__w/api/api/app/Models/QrPaymentRequest
+          EXCLUDE_FILES: app/Models/QrCode/Upi/Core/**
     services:
       redis:
         credentials:
@@ -91,7 +178,7 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.deployment.environment == 'smep-partnerships-api'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -177,7 +264,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'routeUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -263,7 +350,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'paymentPageUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -349,7 +436,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_PAYOUTS'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -435,7 +522,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_CORE'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -521,7 +608,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'ES_ONDEMAND'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -598,7 +685,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'OnboardingAPIsUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/api:devstackxdebug3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
