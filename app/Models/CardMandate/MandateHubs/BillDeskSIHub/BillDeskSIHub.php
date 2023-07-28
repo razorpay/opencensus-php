@@ -435,7 +435,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         }
 
         $mandateAttributes = [
-            Mandate::MANDATE_ID                 => $response[Constants::ID] ?? null,
+            Mandate::MANDATE_ID                 => $response[Constants::MANDATE_ID] ?? null,
             Mandate::MANDATE_CARD_ID            => $card ? $card[Constants::CARD_ID] : null,
             Mandate::MANDATE_CARD_NAME          => $card ? $card[Constants::CARD_NAME] : null,
             Mandate::MANDATE_CARD_LAST4         => $card ? $card[Constants::CARD_LAST4] : null,
