@@ -10233,16 +10233,12 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-                {
-                    [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
-                    $this->repo->saveOrFail($txn);
-                }
-                else
-                {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment);
-                }
+                $this->repo->saveOrFail($txn);
+
+                (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment, $txn->getId());
+
                 // Also sets the transaction association with the payment.
                 // Fee Split would be null, as its the dummy transaction, so we are not saving fee split.
 

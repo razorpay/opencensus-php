@@ -29,9 +29,16 @@ trait ReverseShadowTrait
         {
             $transactionDate = $entity->getUpdatedAt();
         }
+        
+        $currency = "INR";
+        if( $entity->merchant !== null)
+        {
+            $currency = $entity->merchant->getCurrency();
+        }
+
         return array(
             Constants::MERCHANT_ID               => $entity->getMerchantId(),
-            Constants::CURRENCY                  => $entity->getCurrency(),
+            Constants::CURRENCY                  => $currency,
             Constants::TRANSACTION_DATE          => $transactionDate,
         );
     }

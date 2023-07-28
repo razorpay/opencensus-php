@@ -312,14 +312,17 @@ class Core extends Base\Core
         return $rule;
     }
 
-    public function createLedgerEntryForGatewayCaptureReverseShadow(Payment\Entity $payment)
+    public function createLedgerEntryForGatewayCaptureReverseShadow(Payment\Entity $payment, $apiTransactionId = null)
     {
         if ($payment->isDirectSettlement() === true)
         {
             return [];
         }
 
-        $apiTransactionId =  UniqueIdEntity::generateUniqueId();;
+        if ($apiTransactionId === null)
+        {
+            $apiTransactionId =  UniqueIdEntity::generateUniqueId();
+        }
 
         $transactorId = $payment->getPublicId();
 
@@ -335,7 +338,7 @@ class Core extends Base\Core
             Constants::CURRENCY                     => Constants::INR_CURRENCY,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::TRANSACTION_DATE             => $payment->getUpdatedAt(),
-            Constants::ADDITIONAL_PARAMS             => (count($additionalParams) > 0) ? $additionalParams : null,
+            Constants::ADDITIONAL_PARAMS            => (count($additionalParams) > 0) ? $additionalParams : null,
             Constants::API_TXN_ID                   => $apiTransactionId,
             Constants::IDENTIFIERS                  => [
                 Constants::GATEWAY          => $gateway,

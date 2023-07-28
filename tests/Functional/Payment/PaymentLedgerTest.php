@@ -2611,10 +2611,10 @@ class PaymentLedgerTest extends TestCase
 
     // PaymentMerchantCaptured
 
-    private function getPaymentMerchantCapturedJournalResponsePayload($transactorId)
+    private function getPaymentMerchantCapturedJournalResponsePayload($transactorId, $journalId = "LLJMPzXXyjC93B")
     {
         return [
-            "id"=> 'LLJMDzRZGnZhGA',
+            "id"=> $journalId,
             "created_at"=> 1677466532,
             "updated_at"=> 1677466532,
             "amount"=> "2000",
@@ -2729,7 +2729,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2765,7 +2774,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2798,7 +2816,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2829,7 +2856,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2862,7 +2898,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2893,7 +2938,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2924,7 +2978,16 @@ class PaymentLedgerTest extends TestCase
 
         $paymentId = $payment['id'];
 
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
         $journalId = $journal['id'];
 
@@ -2992,7 +3055,7 @@ class PaymentLedgerTest extends TestCase
 
             $txn = $this->getDbLastEntity('transaction');
 
-            $this->assertNull($txn, 'txn should not be created');
+            $this->assertNotNull($txn, 'authorised txn should be present');
 
             $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
 
@@ -3012,7 +3075,16 @@ class PaymentLedgerTest extends TestCase
 
          $paymentId = $payment['id'];
 
-         $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+         $entry = $this->getDbLastEntity('ledger_outbox');
+         $this->assertNotNull( $entry);
+         $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+         $payload = base64_decode($entry['payload_serialized']);
+         $actualOutboxEntry = json_decode($payload, true);
+         $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+         $this->assertNotNull( $apiTxnId);
+
+         $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
 
          $journalId = $journal['id'];
 
@@ -3078,7 +3150,7 @@ class PaymentLedgerTest extends TestCase
 
             $txn = $this->getDbLastEntity('transaction');
 
-            $this->assertNull($txn, 'txn should not be created');
+            $this->assertNotNull($txn, 'authorised txn should be present');
 
             $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
 
@@ -3180,8 +3252,17 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertEquals(2, count($ledgerOutboxEntities));
 
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
         $gatewayCaptureJournalResponse = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
-        $merchantCaptureJournalResponse = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $merchantCaptureJournalResponse = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
         $payload = base64_decode($ledgerOutboxEntities[0]['payload_serialized']);
         $actualGatewayCaptureLedgerOutboxEntry = json_decode($payload, true);
         $merchantCaptureJournalResponse['id'] = $actualGatewayCaptureLedgerOutboxEntry['api_txn_id'];
