@@ -44,6 +44,10 @@ trait RecurringTrait
         // Env=1 signifies its a dark payment
         if ((int) $env === 1)
         {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE,
+                [
+                    'message'    => 'Redirection to dark',
+                ]);
             // Only if we are not on dark, we need to redirect
             if ($this->isRunningOnDark() === false)
             {

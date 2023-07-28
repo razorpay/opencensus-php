@@ -319,7 +319,7 @@ class GatewayController extends Controller
 
             if ((isset($decodeData['payload']) === true) and
                 (isset($decodeData['ivToken']) === true) and
-                (isset($decodeData['pgMerchantId']) === 'HDFC000023254578'))
+                ($decodeData['pgMerchantId'] === 'HDFC000023254578'))
             {
                 try
                 {
@@ -327,6 +327,12 @@ class GatewayController extends Controller
                     $content = Request::getContent();
 
                     $decodeData['requestInfo']['pspRefNo'] = 'MI1bEF1yXyrVLM1create1';
+
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE,
+                        [
+                            'decodeData' => $decodeData,
+                            'message'    => 'hdfc redirection callback',
+                        ]);
 
                     $redirect = $gateway->redirectCallbackIfRequired($decodeData, $content, $headers);
                 }
