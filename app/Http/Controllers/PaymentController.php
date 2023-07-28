@@ -53,6 +53,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function getPaymentTimeline($id)
+    {
+        $input = Request::all();
+
+        $payment = $this->service()->getPaymentTimeline($id, $input);
+
+        return ApiResponse::json($payment);
+    }
+
     public function callApiForBackfilling()
     {
         $input = Request::all();

@@ -62,6 +62,8 @@ class Fetch extends BaseFetch
             // @codingStandardsIgnoreLine
             self::EXPAND_EACH =>
                 'filled|string|in:card,emi,emi_plan,disputes,transfer,token,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
+            Entity::METHOD   => 'sometimes|string',
+            Entity::ORDER_ID => 'sometimes|string|size:20',
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',
@@ -98,6 +100,8 @@ class Fetch extends BaseFetch
             Entity::TERMINAL_ID,
             Entity::SETTLED_BY,
             Merchant\Entity::COUNTRY_CODE,
+            Entity::METHOD,
+            Entity::ORDER_ID,
             EsRepository::QUERY,
         ],
         AuthType::ADMIN_AUTH => [

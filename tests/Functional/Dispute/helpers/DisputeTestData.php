@@ -1569,14 +1569,152 @@ return [
         ],
     ],
 
-    'testDisputeFetchCountProxyAuth'    => [
-        'request'   => [
+    'testDisputeFetchCountForOpenStatusProxyAuth' => [
+        'request' => [
             'method'        => 'get',
             'url'           => '/disputes-count?status=open',
         ],
-        'response'  => [
-            'content'       => [
-                'count'         => 3,
+        'response' => [
+            'content' => [
+                'count'               => 3,
+                'disputed_amount_sum' => 3000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchCountForUnderReviewStatusProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-count',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'under_review'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 1,
+                'disputed_amount_sum' => 2000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchCountForAllStatusProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-count',
+            'method'  => 'get',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 4,
+                'disputed_amount_sum' => 4000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchCountForNoDisputesProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-count',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'open',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 0,
+                'disputed_amount_sum' => 0
+            ],
+        ],
+    ],
+
+    'testDisputeFetchCountForOpenDisputesWithinTimeFrameProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-count',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'open',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 1,
+                'disputed_amount_sum' => 2000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchAggregateForOpenStatusProxyAuth' => [
+        'request' => [
+            'method'        => 'get',
+            'url'           => '/disputes-aggregate?status=open',
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 3,
+                'disputed_amount_sum' => 3000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchAggregateForUnderReviewStatusProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-aggregate',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'under_review'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 1,
+                'disputed_amount_sum' => 2000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchAggregateForAllStatusProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-aggregate',
+            'method'  => 'get',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 4,
+                'disputed_amount_sum' => 4000
+            ],
+        ],
+    ],
+
+    'testDisputeFetchAggregateForNoDisputesProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-aggregate',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'open',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 0,
+                'disputed_amount_sum' => 0
+            ],
+        ],
+    ],
+
+    'testDisputeFetchAggregateForOpenDisputesWithinTimeFrameProxyAuth' => [
+        'request' => [
+            'url'     => '/disputes-aggregate',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'open',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count'               => 1,
+                'disputed_amount_sum' => 2000
             ],
         ],
     ],

@@ -172,7 +172,7 @@ class DisputeController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getCountForFetchMultiple()
+    public function getAggregationForFetchMultiple()
     {
         $response = null;
         $variant = null;

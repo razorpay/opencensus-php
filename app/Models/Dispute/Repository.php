@@ -339,6 +339,8 @@ class Repository extends Base\Repository
     {
         $this->validateFetchParams($params);
 
+        $disputedAmountColumn = $this->dbColumn(Entity::AMOUNT);
+
         $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
 
         $merchantId = $this->merchant->getId();
@@ -349,7 +351,12 @@ class Repository extends Base\Repository
 
         $count = $query->count();
 
-        return ['count' => $count];
+        $disputedAmountSum = $query->sum($disputedAmountColumn);
+
+        return [
+            'count' => $count,
+            'disputed_amount_sum' => intval($disputedAmountSum),
+        ];
     }
 
     protected function addQueryParamGateway($query, $params)

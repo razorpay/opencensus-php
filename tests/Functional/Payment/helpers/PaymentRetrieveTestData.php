@@ -52,6 +52,41 @@ return [
         ],
     ],
 
+    'testRetrievePaymentsOnMerchantDashboardWithOrderIdValidationError' => [
+        'request' => [
+            'url' => '/payments',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The order id must be 20 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testRetrievePaymentsTimelineOnlyCreatedAtPresent' => [
+        'request' => [
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'created_at'    => 1645605902,
+                'authorized_at' => null,
+                'captured_at'   => null
+            ],
+        ],
+    ],
+
     'testRetrieveMultiplePaymentsWithCardDetails' => [
         'request' => [
             'url'     => '/payments',

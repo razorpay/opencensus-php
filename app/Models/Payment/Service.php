@@ -2216,6 +2216,32 @@ class Service extends Base\Service
         return $entity;
     }
 
+    public function getPaymentTimeline(string $id, array $input = []): array
+    {
+        $id = Entity::stripSignWithoutValidation($id);
+
+        $payment = $this->repo
+                        ->payment
+                        ->findOrFailByPublicIdWithParams($id, $input, ConnectionType::REPLICA);
+
+        $paymentMerchantId = $payment->getMerchantId();
+
+        if ($this->merchant->getId() !== $paymentMerchantId)
+        {
+            // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
+        }
+
+        $paymentTimeline = [
+            Entity::CREATED_AT    => $payment->getCreatedAt(),
+            Entity::AUTHORIZED_AT => $payment->getAuthorizeTimestamp(),
+            Entity::CAPTURED_AT   => $payment->getCaptureTimestamp(),
+        ];
+
+        return $paymentTimeline;
+    }
+
     public function fetchById(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);

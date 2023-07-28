@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Error\ErrorCode;
@@ -136,6 +137,323 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals(1, $payments['count']);
         $this->assertEquals('payment', $payments['items'][0]['entity']);
         $this->assertEquals($contact, $payments['items'][0]['contact']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithOrderIdWithoutTimeFilter()
+    {
+        $this->ba->proxyAuth();
+
+        $order1 = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+
+        $order2 = $this->fixtures->create('order', [
+            'amount' => 50000,
+        ]);
+
+        $orderId1 = $order1->getId();
+
+        $orderId2 = $order2->getId();
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId1,
+            'amount' => 50000,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId1,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId2,
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array('order_id' => $order1->getPublicId());
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(2, $payments['count']);
+
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+
+        $this->assertEquals('payment', $payments['items'][1]['entity']);
+
+        $this->assertEquals($order1->getPublicId(), $payments['items'][0]['order_id']);
+
+        $this->assertEquals($order1->getPublicId(), $payments['items'][1]['order_id']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithOrderIdWithTimeFilter()
+    {
+        $this->ba->proxyAuth();
+
+        $order1 = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+
+        $order2 = $this->fixtures->create('order', [
+            'amount' => 50000,
+        ]);
+
+        $orderId1 = $order1->getId();
+
+        $orderId2 = $order2->getId();
+
+        $this->fixtures->create('payment', [
+            'order_id'   => $orderId1,
+            'amount'     => 50000,
+            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'   => $orderId1,
+            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'   => $orderId1,
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'   => $orderId2,
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array(
+            'order_id' => $order1->getPublicId(),
+            'from'     => Carbon::now()->subHours(1)->getTimestamp(),
+            'to'       => Carbon::now()->addHours(1)->getTimestamp()
+        );
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $payments['count']);
+
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+
+        $this->assertEquals($order1->getPublicId(), $payments['items'][0]['order_id']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithOrderIdNoRecordsPresent()
+    {
+        $this->ba->proxyAuth();
+
+        $order1 = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+
+        $order2 = $this->fixtures->create('order', [
+            'amount' => 50000,
+        ]);
+
+        $orderId1 = $order1->getId();
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId1,
+            'amount' => 50000,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId1,
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array('order_id' => $order2->getPublicId());
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(0, $payments['count']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithOrderIdValidationError()
+    {
+        $this->ba->proxyAuth();
+
+        $order1 = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+
+        $order2 = $this->fixtures->create('order', [
+            'amount' => 50000,
+        ]);
+
+        $orderId1 = $order1->getId();
+
+        $this->fixtures->create('payment', [
+            'order_id' => $orderId1,
+            'amount'   => 50000,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'order_id'    => $orderId1,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order1->getId();
+
+        $response = $this->startTest();
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithMethodWithoutTimeFilter()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment', [
+            'method' => 'netbanking',
+            'amount' => 50000,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method' => 'upi',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method' => 'netbanking',
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array('method' => 'netbanking');
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(2, $payments['count']);
+
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+
+        $this->assertEquals('payment', $payments['items'][1]['entity']);
+
+        $this->assertEquals('netbanking', $payments['items'][0]['method']);
+
+        $this->assertEquals('netbanking', $payments['items'][1]['method']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithMethodWithTimeFilter()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment', [
+            'method'     => 'netbanking',
+            'amount'     => 50000,
+            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method'     => 'upi',
+            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method'     => 'netbanking',
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method'     => 'card',
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array(
+            'method' => 'netbanking',
+            'from'   => Carbon::now()->subHours(1)->getTimestamp(),
+            'to'     => Carbon::now()->addHours(1)->getTimestamp()
+        );
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $payments['count']);
+
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+
+        $this->assertEquals('netbanking', $payments['items'][0]['method']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWithMethodNoRecordsPresent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment', [
+            'method' => 'upi',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method' => 'card',
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array('method' => 'netbanking');
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(0, $payments['count']);
+    }
+
+    public function testRetrievePaymentsTimelineOnlyCreatedAtPresent()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'created_at' => 1645605902
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/payment/' . $payment->getPublicId() . '/timeline';
+
+        $response = $this->startTest();
+    }
+
+    public function testRetrievePaymentsTimelineCreatedAtAndAuthorizedAtPresent()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'created_at'    => 1645605902,
+            'authorized_at' => 1645605910,
+        ]);
+
+        $testData = & $this->testData['testRetrievePaymentsTimelineOnlyCreatedAtPresent'];
+
+        $testData['request']['url'] = '/merchant/payment/' . $payment->getPublicId() . '/timeline';
+
+        $testData['response']['content']['authorized_at'] = 1645605910;
+
+        $response = $this->startTest($testData);
+    }
+
+    public function testRetrievePaymentsTimelineCreatedAtAuthorizedAtAndCapturedAtPresent()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->fixtures->create('payment:captured', [
+            'created_at'    => 1645605902,
+            'authorized_at' => 1645605910,
+            'captured_at'   => 1645606189
+        ]);
+
+        $testData = & $this->testData['testRetrievePaymentsTimelineOnlyCreatedAtPresent'];
+
+        $testData['request']['url'] = '/merchant/payment/' . $payment->getPublicId() . '/timeline';
+
+        $testData['response']['content']['authorized_at'] = 1645605910;
+
+        $testData['response']['content']['captured_at'] = 1645606189;
+
+        $response = $this->startTest($testData);
     }
 
     public function testRetrievePaymentsOnMerchantDashboardWhenInputContactAndCountryCodeIsGivenExpectsPaymentsOfGivenContactWithAndWithoutCountryCode()
@@ -352,11 +670,6 @@ class PaymentRetrieveTest extends TestCase
                 'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
             ],
         );
-
-        $this->startTest($testData);
-
-        unset($testData['request']['content']['merchant_id']);
-        $testData['request']['content']['method'] = 'card';
 
         $this->startTest($testData);
     }

@@ -1249,11 +1249,226 @@ class DisputeTest extends TestCase
      * Reason: This endpoint will be called on merchant-dashboard on transaction page load as a notification
      * we want to avoid sending data for every such load to reduce bandwidth usage on merchant devices
      */
-    public function testDisputeFetchCountProxyAuth()
+    public function testDisputeFetchCountForOpenStatusProxyAuth()
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->times(3)->create('dispute');
+        $this->fixtures->times(3)->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchCountForUnderReviewStatusProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 2000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchCountForAllStatusProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'closed',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'won',
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchCountForNoDisputesProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchCountForOpenDisputesWithinTimeFrameProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['from'] = Carbon::now()->subHours(1)->getTimestamp();
+
+        $testData['request']['content']['to'] = Carbon::now()->addHours(1)->getTimestamp();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 2000,
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'closed',
+            'amount' => 3000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'open',
+            'amount' => 1000,
+            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'amount' => 2000,
+            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForOpenStatusProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->times(3)->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForUnderReviewStatusProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 2000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForAllStatusProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'closed',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'won',
+            'amount' => 1000,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForNoDisputesProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForOpenDisputesWithinTimeFrameProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['from'] = Carbon::now()->subHours(1)->getTimestamp();
+
+        $testData['request']['content']['to'] = Carbon::now()->addHours(1)->getTimestamp();
+
+        $this->fixtures->create('dispute', [
+            'amount' => 2000,
+            'created_at' => Carbon::now()->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'under_review',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'closed',
+            'amount' => 3000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status' => 'open',
+            'amount' => 1000,
+            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'amount' => 2000,
+            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+        ]);
 
         $response = $this->startTest();
 
