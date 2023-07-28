@@ -16,4 +16,5 @@ class Constants
     const PAYMENT_SUCCESS = 'payment_success';
     const PAYMENT_FAILURE = 'payment_failure';
     const WELCOME = 'welcome';
+    const PLAN_UPDATED = 'plan_updated';
 }

@@ -29,6 +29,9 @@ class Service extends Base\Service
             case Constants::WELCOME:
                 $mail = new PricingBundle\Welcome($data, $input[Constants::PACKAGE_NAME]);
                 break;
+            case Constants::PLAN_UPDATED:
+                $mail = new PricingBundle\PlanUpdated($data);
+                break;
         }
         Mail::send($mail);
 
