@@ -45,7 +45,8 @@ class TraceCode
 
     const API_GRACEFUL_SHUTDOWN_HAPPENING           = 'API_GRACEFUL_SHUTDOWN_HAPPENING';
     const ADMIN_LOGIN_DEBUG                         = 'ADMIN_LOGIN_DEBUG';
-
+    const ADMIN_ROUTE_DEBUG                         = 'ADMIN_ROUTE_DEBUG';
+    
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_DURATION                       = 'USER_LOGIN_DURATION';
     const SEND_LOGIN_OTP_DURATION                   = 'SEND_LOGIN_OTP_DURATION';

@@ -342,6 +342,17 @@ class ApiRequestAny
                 $baUser = $this->mode;
 
                 $pass = Config::get('api.auth_pass');
+
+                // TODO: Remove this once debug is completed.
+                $x = null;
+                if ($pass !== null)
+                {
+                    $x = (strlen($pass) >= 4) ? substr($pass, 0, 2) . substr($pass, -2) : null;
+                }
+                Trace::info(TraceCode::ADMIN_ROUTE_DEBUG, [
+                    'admin_user_mode'   => $baUser,
+                    'admin_user_value'  => $x,
+                ]);
             }
             else if ($clientType === 'user')
             {
