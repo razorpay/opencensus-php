@@ -11,7 +11,9 @@ use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
 
 class Service extends Base\Service
 {
@@ -58,6 +60,39 @@ class Service extends Base\Service
 
     public function createClarificationDetailAdmin($merchantId, array $input)
     {
+        // send the request to merchant onboarding service
+        // this should not affect the current flow, hence wrapped in try catch
+        try
+        {
+            $pgosNCProxyController = new NeedsClarificationProxyController();
+
+            $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true) {
+
+                $pgosInput['clarification_reasons'] = $input['clarification_reasons'];
+                $pgosInput['merchant_id'] = $merchantId;
+                $pgosInput['admin_email'] = $this->app['basicauth']->getAdmin()->getEmail();
+
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_save_admin', $pgosInput, $merchant);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route'    => 'merchant_activation_clarifications_save_admin',
+                    'response' => $response,
+                ]);
+
+                return $response;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
         $this->validator->validateAdminClarificationReasons($merchantId, $input);
 
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $input) {
@@ -122,13 +157,101 @@ class Service extends Base\Service
 
     public function getClarificationDetail($merchantId = null): array
     {
+        $isAdminRouteRequest = $merchantId ? true : false;
+
         $merchantId = $merchantId ?? $this->ba->getMerchantId();
+
+        // send the request to merchant onboarding service
+        // this should not affect the current flow, hence wrapped in try catch
+        try
+        {
+            $payload = [
+                "merchant_id" => $merchantId
+            ];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $pgosNCProxyController = new NeedsClarificationProxyController();
+
+            $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true) {
+
+                if ($isAdminRouteRequest === true)
+                {
+                    $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_fetch_admin', $payload, $merchant);
+
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'route'    => 'merchant_activation_clarifications_fetch_admin',
+                        'response' => $response
+                    ]);
+
+                    return $response;
+                }
+                else
+                {
+                    $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_fetch', $payload, $merchant);
+
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'route'    => 'merchant_activation_clarifications_fetch',
+                        'response' => $response
+                    ]);
+
+                    return $response;
+                }
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         return $this->core->getClarificationDetail($merchantId);
     }
 
     public function saveMerchantResponseToClarifications(array $input, string $merchantId)
     {
+
+        // send the request to merchant onboarding service
+        // this should not affect the current flow, hence wrapped in try catch
+        try {
+            $pgosNCProxyController = new NeedsClarificationProxyController();
+
+            $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true) {
+
+                $pgosInput['data'] = $input;
+
+                if ($input['submit'] == 1 or $input['submit'] == "1") {
+                    unset($pgosInput['data']);
+                    $pgosInput['submit'] = 1;
+                }
+
+                $pgosInput['merchant_id'] = $merchantId;
+
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_save', $pgosInput, $merchant);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route'     => 'merchant_activation_clarifications_save',
+                    'response'  => $response,
+                    'payload'   => $pgosInput,
+                ]);
+
+                return $response;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
         $this->validator->validateClarificationDetails($merchantId, $input);
 
         //NC Partial Submission
@@ -362,6 +485,37 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::NC_REVAMP_ELIGIBILITY, [
             'merchantId' => $merchantId
         ]);
+
+        // send the request to merchant onboarding service
+        // this should not affect the current flow, hence wrapped in try catch
+        try
+        {
+            $pgosNCProxyController = new NeedsClarificationProxyController();
+
+            $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true) {
+
+                $pgosInput['merchant_id'] = $merchantId;
+
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_nc_revamp_eligibility', $pgosInput, $merchant);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route' => 'merchant_nc_revamp_eligibility',
+                    'response' => $response,
+                ]);
+
+                return $response;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         return ["nc_revamp_enabled" => $this->isEligibleForRevampNC($merchantId)];
     }

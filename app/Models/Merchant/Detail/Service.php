@@ -92,6 +92,7 @@ use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
 use RZP\Models\Merchant\FreshdeskTicket\Entity as FDTicketEntity;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
@@ -1564,8 +1565,8 @@ class Service extends Base\Service
      * @return array
      */
 
-    public function getNCAdditionalDocuments(){
-
+    public function getNCAdditionalDocuments()
+    {
         return (new Core())->getNCAdditionalDocuments();
     }
 
