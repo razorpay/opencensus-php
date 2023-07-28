@@ -291,11 +291,6 @@ class UpiPaymentServiceTest extends TestCase
 
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'enable_timeout_on_upi_collect_expiry', 'on');
-        });
-
         $createdAt = time();
 
         // Updating the payment created timestamp to 14 < 20(expiry time) min old to test the time out behaviour
@@ -310,19 +305,20 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertNull($upiEntity);
     }
 
+
     /**
-     * Test timeout of collect payment without
-     * expiry time enabled
+     * Test timeout of collect payment with
+     * disable experiment on MID
      * @return void
      */
-    public function testCollectPaymentTimeoutWithoutMerchantExpiry(): void
+    public function testCollectPaymentTimeoutWithMerchantExpiryDisabled(): void
     {
         $this->payment['description'] = 'create_collect_success';
 
         $this->fixtures->merchant->addFeatures(['s2supi']);
 
         // Setting the collect expiry to 20 mins
-        $this->payment['upi']['expiry_time'] = 14;
+        $this->payment['upi']['expiry_time'] = 20;
 
         $response = $this->doS2sUpiPayment($this->payment);
 
@@ -344,11 +340,11 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->setRazorxMock(function ($mid, $feature, $mode)
         {
-            return $this->getRazoxVariant($feature, 'enable_timeout_on_upi_collect_expiry', 'on');
+            return $this->getRazoxVariant($feature, 'disable_timeout_on_upi_collect_expiry', 'on');
         });
 
         // Updating the payment created timestamp to 14 < 20(expiry time) min old to test the time out behaviour
-        $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt - 20 * 60]);
+        $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt - 14*60]);
 
         $this->timeoutOldPayment();
 
@@ -359,8 +355,59 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $paymentNew->getInternalErrorCode());
 
         $this->assertNull($upiEntity);
-
     }
+
+    /**
+     * Test timeout of collect payment with
+     * disable experiment on MID
+     * @return void
+     */
+    public function testCollectPaymentTimeoutWithMerchantBlocked(): void
+    {
+        $this->payment['description'] = 'create_collect_success';
+
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        // Setting the collect expiry to 20 mins
+        $this->payment['upi']['expiry_time'] = 20;
+
+        $response = $this->doS2sUpiPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS => 'created',
+                Entity::REFUND_AT => null,
+                Entity::CPS_ROUTE => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $createdAt = time();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'block_merchant_timeout_on_upi_collect_expiry', 'on');
+        });
+
+        // Updating the payment created timestamp to 14 < 20(expiry time) min old to test the time out behaviour
+        $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt - 14*60]);
+
+        $this->timeoutOldPayment();
+
+        $paymentNew = $this->getDbLastPayment();
+
+        $this->assertEquals('failed', $paymentNew->getStatus());
+
+        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $paymentNew->getInternalErrorCode());
+
+        $this->assertNull($upiEntity);
+    }
+
     /**
      * Test verify failed payments
      * @return void

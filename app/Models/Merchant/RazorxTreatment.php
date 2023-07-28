@@ -869,4 +869,14 @@ final class RazorxTreatment
     // This is a temporary experiment by Edge team to refactor authenticate middleware
     // TODO: remove experiment once all traffic is authenticated by BusinessAuth Middleware flow
     const EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT = 'edge_authenticate_middleware_experiment';
+
+    /**
+     * Razorx flag to disbale MID on timeout of upi collect payment with input expiry time
+     */
+    const DISABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'disable_timeout_on_upi_collect_expiry';
+
+    /**
+     * Razorx flag to block MID timeout on upi collect payment with input expiry time
+     */
+    const BLOCK_MERCHANT_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'block_merchant_timeout_on_upi_collect_expiry';
 }

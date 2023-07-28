@@ -2806,46 +2806,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getMetadata('flow') === Flow::INTENT);
     }
 
-    /** Checks if the payment is upi collect and
-     *  payment is non qr and recurring flows
-     * @return bool
-     */
-    public function isUpiCollectExcludeQrAndRecurring(): bool
-    {
-        if (($this->isUpi() === false) or
-            ($this->isUpiQr() === true) or
-            ($this->isUpiTransfer() === true) or
-            ($this->isBharatQr() === true) or
-            ($this->isUpiRecurring() === true) or
-            ($this->isUpiAutoRecurring() === true))
-        {
-            return false;
-        }
-
-        $upiMetadata = $this->fetchUpiMetadata();
-
-        $app = \App::getFacadeRoot();
-
-        if ((empty($upiMetadata) === true) or
-            ($upiMetadata instanceof UpiMetadata\Entity === false))
-        {
-            $app['trace']->info(TraceCode::PAYMENT_UPI_METADATA_NOT_FOUND,
-                [
-                    'payment_id'    => $this->getId(),
-                    'merchant_id'   => $this->getMerchantId(),
-                ]);
-
-            return false;
-        }
-
-        if (empty($upiMetadata->getFlow()) === false)
-        {
-            return $upiMetadata->getFlow() === Flow::COLLECT;
-        }
-
-        return false;
-    }
-
     /** Fetches UpiMetadata if already not set in payments metadata
      * @return array|mixed|null
      */
@@ -2890,6 +2850,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return (($this->isUpi() === true) and
                 ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
+    }
+
+    /**
+     * @param UpiMetadata\Entity $upiMetadata
+     * @return bool
+     */
+    public function isUpiOtmPayment(UpiMetadata\Entity $upiMetadata)
+    {
+        if ((empty($upiMetadata) === true) or
+            ($upiMetadata instanceof UpiMetadata\Entity === false))
+        {
+            return false;
+        }
+
+        if (empty($upiMetadata->getType()) === false)
+        {
+            return $upiMetadata->isOtm();
+        }
+
+        return false;
     }
 
     public function isCreditCardOnUpi(): bool
@@ -5392,36 +5372,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         /**
-         * isTimeoutApplicableOnUpiCollectExpiry() verifies if the
-         * payment is upi collect and is applicable to timeout
+         * Validates if the payment is upi collect
+         * and is applicable to timeout
          * the payments on input collect expiry time
          */
-        if ($this->isTimeoutApplicableOnUpiCollectExpiry() === true)
-        {
-            $app = \App::getFacadeRoot();
-
-            $upiMetadata = $this->fetchUpiMetadata();
-
-            if ((empty($upiMetadata) === true) or
-                ($upiMetadata instanceof UpiMetadata\Entity === false))
-            {
-                return $timeWindow;
-            }
-
-            $expiryWindow = $timeWindow;
-
-            if (empty($upiMetadata->getExpiryTime()) === false)
-            {
-                $expiryWindow = $upiMetadata->getExpiryTime() * 60;
-            }
-
-            $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY, [
-                'payment_id'    => $this->getId(),
-                'expiry_time'   => $expiryWindow,
-            ]);
-
-            $timeWindow = min($expiryWindow, self::PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW);
-        }
+        $timeWindow = $this->updateTimeoutWindowForUpiCollectIfApplicable($timeWindow);
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
@@ -6665,33 +6620,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
-    /** This checks if the experiment is enabled on merchant
-     *  for timeout on collect expiry time  sent in the request
-     * @return bool
-     */
-    public function isTimeoutApplicableOnUpiCollectExpiry()
-    {
-        $app = \App::getFacadeRoot();
-
-        if ($this->isUpiCollectExcludeQrAndRecurring() === false)
-        {
-            return false;
-        }
-
-        $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-            RazorxTreatment::ENABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
-            $app['rzp.mode']);
-
-        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_RAZORX_EXPERIMENT,
-            [
-                'payment_id'    => $this->getId(),
-                'variant'       => $variant,
-                'merchant_id'   => $this->getMerchantId(),
-            ]);
-
-        return (strtolower($variant) === 'on');
-    }
-
     public function isEligibleForFeeModelOverride(): bool {
         return
             (
@@ -6713,4 +6641,136 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return $this->isCard() && $this->getProvider() === self::SODEXO;
     }
+
+    /** This checks if the flow is collect and updates the
+     *  timeout on collect expiry time sent in the request
+     * @param $timeWindow
+     * @return int|mixed
+     */
+    public function updateTimeoutWindowForUpiCollectIfApplicable($timeWindow)
+    {
+        if (($this->isUpi() === false) or
+            ($this->isUpiQr() === true) or
+            ($this->isUpiTransfer() === true) or
+            ($this->isBharatQr() === true) or
+            ($this->isUpiRecurring() === true) or
+            ($this->isUpiAutoRecurring() === true))
+        {
+            return $timeWindow;
+        }
+
+        $app = \App::getFacadeRoot();
+
+        $upiMetadata = $this->fetchUpiMetadata();
+
+        if ((empty($upiMetadata) === true) or
+            ($upiMetadata instanceof UpiMetadata\Entity === false))
+        {
+            $app['trace']->info(TraceCode::PAYMENT_UPI_METADATA_NOT_FOUND,
+                [
+                    'payment_id'  => $this->getId(),
+                    'merchant_id' => $this->getMerchantId(),
+                ]);
+
+            return $timeWindow;
+        }
+
+        if ($this->isUpiOtmPayment($upiMetadata) === true)
+        {
+            return $timeWindow;
+        }
+
+        $isUpiCollect = false;
+
+        if (empty($upiMetadata->getFlow()) === false)
+        {
+            $isUpiCollect = ($upiMetadata->getFlow() === Flow::COLLECT);
+        }
+
+        if ($isUpiCollect === false)
+        {
+            return $timeWindow;
+        }
+
+        if (($this->isUpiCollectExpiryDisabled() === true) or
+            ($this->isMerchantDisabledOnCollectExpiry($this->getMerchantId()) === true))
+        {
+            return $timeWindow;
+        }
+
+        $expiryWindow = $timeWindow;
+
+        if (empty($upiMetadata->getExpiryTime()) === false)
+        {
+            $expiryWindow = $upiMetadata->getExpiryTime() * 60;
+        }
+
+        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY, [
+            'payment_id'  => $this->getId(),
+            'expiry_time' => $expiryWindow,
+        ]);
+
+        return min($expiryWindow, self::PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW);
+    }
+
+    /** isCollectExpiryDisabled() verifies if the
+     * experiment is disabled for all payments timeout
+     * on input collect expiry time
+     * @param $merchantId
+     * @return bool
+     */
+    public function isUpiCollectExpiryDisabled()
+    {
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment(
+            $app['request']->getTaskId(),
+            Merchant\RazorxTreatment::DISABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
+            $app['rzp.mode'] ?? Mode::LIVE
+        );
+
+        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_DISABLE_RAZORX_EXPERIMENT,
+            [
+                'variant'       => $variant,
+                'merchant_id'   => $this->getMerchantId(),
+            ]);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** isMerchantDisabledOnCollectExpiry() verifies if the
+     * experiment is disabled for MID timeout
+     * on input collect expiry time
+     * @param $merchantId
+     * @return bool
+     */
+    public function isMerchantDisabledOnCollectExpiry($merchantId)
+    {
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::BLOCK_MERCHANT_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
+            $app['rzp.mode'] ?? Mode::LIVE
+        );
+
+        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_RAZORX_EXPERIMENT, [
+            'payment_id'  => $this->getId(),
+            'variant'     => $variant,
+            'merchant_id' => $this->getMerchantId(),
+            ]);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }
