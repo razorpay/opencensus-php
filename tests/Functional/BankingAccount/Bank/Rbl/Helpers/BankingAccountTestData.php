@@ -5933,6 +5933,50 @@ return [
         ]
     ],
 
+    'testRblOnBasWebhookFailure' => [
+        'request' => [
+            'url'    => '/banking_accounts/internal/webhooks/account_info/rbl',
+            'method' => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Header' => [ 
+                        'TranID' => '220128134659', 
+                        'Corp_ID' => 'RZPAY' 
+                    ],
+                    'Body' => [
+                        'Account No.' => '4099834512998',
+                        'Customer Name' => 'Umakant Vashishtha',
+                        'Customer ID' => '203107174',
+                        'Account Open Date' => '09-06-2023',
+                        'IFSC' => 'RATN0000438',
+                        'RZP_Ref No' => '26180',
+                        'Address1' => 'SHOP NO 28 SHRI KRISHNA VIHAR',
+                        'Address2' => 'NEAR GANESH NAGAR NIWARU ROAD',
+                        'Address3' => 'JHOTWARA',
+                        'CITY' => 'JAIPU',
+                        'COUNTRY' => 'IN',
+                        'STATE' => 'RAJ',
+                        'PINCODE' => '302012',
+                        'Phone no.' => '9899807189',
+                        'Email Id' => 'rbl-on-bas@gmail.com'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Failure'
+                    ]
+                ]
+            ],
+        ]
+    ],
+
     'testActivateRblApplication' => [
         'request' => [
             'url'    => '/banking_accounts/bacc_JuLWj2OnFAcg72/activate',

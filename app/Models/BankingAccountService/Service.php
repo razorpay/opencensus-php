@@ -1210,13 +1210,13 @@ class Service extends Base\Service
 
     /**
      *
-     * @param string $bankingAccountId Banking account id
+     * @param string $applicationId Banking account id
      *
      * @param array  $apiInput
      *
      * @throws \Throwable
      */
-    public function updateRBLApplicationByApplicationIdOrReferenceNumber(string $applicationIdOrReferenceNumber, array $apiInput): array
+    public function updateRBLApplicationByApplicationId(string $applicationId, array $apiInput): array
     {
         $basInput = $this->basDtoAdapter->fromApiInputToBasInput($apiInput);
 
@@ -1238,7 +1238,7 @@ class Service extends Base\Service
 
         $merchantId = $this->getRequestMerchantId();
 
-        $response = $this->bankingAccountService->patchRBLApplicationComposite($applicationIdOrReferenceNumber, $basInput, $merchantId);
+        $response = $this->bankingAccountService->patchRBLApplicationComposite($applicationId, $basInput, $merchantId);
 
         // convert to API structure and return
         $data = $this->basDtoAdapter->fromBasResponseToApiResponse($response);
@@ -1248,6 +1248,35 @@ class Service extends Base\Service
             'apiInput' => $data,
         ]);
 
+        return $data;
+    }
+
+    /**
+     *
+     * @param string $bankingAccountId Banking account id
+     *
+     * @param array $apiInput
+     *
+     * @throws \Throwable
+     */
+    public function updateRBLApplicationByReferenceNumber(string $applicationIdOrReferenceNumber, array $apiInput): array
+    {
+        $basInput = $this->basDtoAdapter->fromApiInputToBasInput($apiInput);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE, [
+            'stage'     => 'Send request to BAS',
+            'apiInput'  => $apiInput,
+            'basInput'  => $basInput,
+        ]);
+
+        $response = $this->bankingAccountService->patchRBLApplicationCompositeByReferenceNumber($applicationIdOrReferenceNumber, $basInput);
+
+        // convert to API structure and return
+        $data = (new BasDtoAdapter())->fromBasResponseToApiResponse($response);
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE, [
+            'stage'     => 'Successful response',
+            'apiInput'  => $data,
+        ]);
         return $data;
     }
 

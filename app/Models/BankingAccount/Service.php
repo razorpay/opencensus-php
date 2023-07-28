@@ -357,7 +357,7 @@ class Service extends Base\Service
 
     public function updateApplicationOnBasByReferenceNumber(string $referenceNumber, array $input)
     {
-        return $this->bankingAccountService->updateRBLApplicationByApplicationIdOrReferenceNumber($referenceNumber, $input);
+        return $this->bankingAccountService->updateRBLApplicationByReferenceNumber($referenceNumber, $input);
     }
 
     public function updateApplicationOnBas(string $id, array $input)
@@ -367,7 +367,7 @@ class Service extends Base\Service
             $id = $this->repo->banking_account->verifyIdAndStripSign($id);
         }
 
-        return $this->bankingAccountService->updateRBLApplicationByApplicationIdOrReferenceNumber($id, $input);
+        return $this->bankingAccountService->updateRBLApplicationByApplicationId($id, $input);
     }
 
     /**

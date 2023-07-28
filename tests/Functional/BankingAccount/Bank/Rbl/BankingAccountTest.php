@@ -13935,6 +13935,15 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testRblOnBasWebhookFailure()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockBankingAccountProcessRblAccountOpeningWebhook('Failure');
+
+        $this->startTest();
+    }
+
     public function testActivateRblApplication()
     {
         $this->ba->adminAuth();

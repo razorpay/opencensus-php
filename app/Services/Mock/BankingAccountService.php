@@ -1275,4 +1275,9 @@ class BankingAccountService
             'failed_items' => $failedItems,
         ];
     }
+
+    public function patchRBLApplicationCompositeByReferenceNumber(string $referenceNumber, array $input)
+    {
+        return $this->patchRBLApplicationComposite($referenceNumber, $input);
+    }
 }

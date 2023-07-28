@@ -36,27 +36,28 @@ class BankingAccountService
     const POST  = 'POST';
     const PATCH = 'PATCH';
 
-    const GET_GENERATED_CREDENTIALS_PATH        = 'internal/rbl/banking_account/%s/credentials';
-    const GENERATE_CREDENTIALS_PATH             = 'internal/rbl/credentials';
-    const CHECK_SERVICEABILITY                  = 'check_serviceability';
-    const DOWNLOAD_DOCKET_PDF_PATH              = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
-    const PARTNER_LMS_RBL_APPLICATIONS          = 'partner_lms/rbl/applications';
-    const PARTNER_LMS_RBL_ASSIGN_BANK_POC       = 'partner_lms/rbl/business/%s/application/%s/assign_poc';
-    const PARTNER_LMS_RBL_ACTIVITY              = 'partner_lms/rbl/business/%s/application/%s/activity';
-    const PARTNER_LMS_RBL_GET_COMMENTS          = 'partner_lms/rbl/business/%s/application/%s/comments';
-    const PARTNER_LMS_RBL_ADD_COMMENT           = 'partner_lms/rbl/business/%s/application/%s/comment';
-    const PARTNER_LMS_RBL_COMPOSITE_APPLICATION = 'partner_lms/rbl/business/%s/composite-applications/%s';
-    const CREATE_BUSINESS                       = 'business';
-    const CREATE_RBL_ONBOARDING_APPLICATION     = 'business/%s/apply';
-    const COMPOSITE_APPLICATION                 = 'business/%s/composite-applications/%s';
-    const SEARCH_LEADS_PATH                     = 'admin/leads/search';
-    const GET_APPLICATION_STATUS_LOGS           = 'admin/business/%s/application/%s/application_status_logs?sort_order=desc';
-    const GET_APPLICATION_COMMENTS              = 'admin/business/%s/application/%s/comments';
-    const CREATE_APPLICATION_COMMENT            = 'admin/business/%s/application/%s/comment';
-    const UPDATE_APPLICATION_COMMENT            = 'admin/business/%s/application/%s/comments/%s';
-    const BULK_ASSIGN_ACCOUNT_MANAGER           = 'admin/banking_accounts/bulk_assign_account_manager';
-    const ACTIVATE_RBL_ACCOUNT                  = 'admin/business/%s/applications/%s/activate_account';
-    const RBL_ACCOUNT_OPENING_WEBHOOK           = 'webhooks/rbl/account_opening';
+    const GET_GENERATED_CREDENTIALS_PATH            = 'internal/rbl/banking_account/%s/credentials';
+    const GENERATE_CREDENTIALS_PATH                 = 'internal/rbl/credentials';
+    const CHECK_SERVICEABILITY                      = 'check_serviceability';
+    const DOWNLOAD_DOCKET_PDF_PATH                  = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
+    const PARTNER_LMS_RBL_APPLICATIONS              = 'partner_lms/rbl/applications';
+    const PARTNER_LMS_RBL_ASSIGN_BANK_POC           = 'partner_lms/rbl/business/%s/application/%s/assign_poc';
+    const PARTNER_LMS_RBL_ACTIVITY                  = 'partner_lms/rbl/business/%s/application/%s/activity';
+    const PARTNER_LMS_RBL_GET_COMMENTS              = 'partner_lms/rbl/business/%s/application/%s/comments';
+    const PARTNER_LMS_RBL_ADD_COMMENT               = 'partner_lms/rbl/business/%s/application/%s/comment';
+    const PARTNER_LMS_RBL_COMPOSITE_APPLICATION     = 'partner_lms/rbl/business/%s/composite-applications/%s';
+    const CREATE_BUSINESS                           = 'business';
+    const CREATE_RBL_ONBOARDING_APPLICATION         = 'business/%s/apply';
+    const COMPOSITE_APPLICATION                     = 'business/%s/composite-applications/%s';
+    const SEARCH_LEADS_PATH                         = 'admin/leads/search';
+    const GET_APPLICATION_STATUS_LOGS               = 'admin/business/%s/application/%s/application_status_logs?sort_order=desc';
+    const GET_APPLICATION_COMMENTS                  = 'admin/business/%s/application/%s/comments';
+    const CREATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comment';
+    const UPDATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comments/%s';
+    const BULK_ASSIGN_ACCOUNT_MANAGER               = 'admin/banking_accounts/bulk_assign_account_manager';
+    const ACTIVATE_RBL_ACCOUNT                      = 'admin/business/%s/applications/%s/activate_account';
+    const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
+    const COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER = 'business/%s/composite-applications-by-reference-number/%s';
 
     protected $baseUrl;
 
@@ -740,7 +741,7 @@ class BankingAccountService
      *
      * @throws \Throwable
      */
-    public function patchRBLApplicationComposite(string $applicationIdOrReferenceNumber, array $input, string $merchantId = null)
+    public function patchRBLApplicationComposite(string $applicationId, array $input, string $merchantId = null)
     {
         $businessId = '_';
 
@@ -751,7 +752,7 @@ class BankingAccountService
             $businessId = $this->getBusinessId($merchantId);
         }
 
-        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationIdOrReferenceNumber);
+        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationId);
 
         try
         {
@@ -766,6 +767,39 @@ class BankingAccountService
                                          TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE_ERROR,
                                          [
                                              'input' => $input
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Call BAS endpoint for composite update
+     *
+     * @param string $referenceNumber Banking Account Reference Number
+     *
+     * @param array $input Input
+     * 
+     * @throws \Throwable
+     */
+    public function patchRBLApplicationCompositeByReferenceNumber(string $referenceNumber, array $input)
+    {
+
+        $path = sprintf(self::COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER, '_', $referenceNumber);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, Request::METHOD_PATCH, [], [], $input, false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE_ERROR,
+                                         [
+                                            'input' => $input
                                          ]);
 
             throw $e;
