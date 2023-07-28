@@ -9,7 +9,7 @@ import qs from 'query-string';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
-  zIndex: 99,
+  zIndex: 9999,
   overflowY: 'auto',
   display: 'flex',
   justifyContent: 'center',
