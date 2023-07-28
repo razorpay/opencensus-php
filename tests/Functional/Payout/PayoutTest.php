@@ -35025,6 +35025,81 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
     }
 
+    public function setUpForSubAccountPayoutLive()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::ASSUME_SUB_ACCOUNT]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $masterMerchant = $this->getDbEntityById('merchant', '10000000000012');
+
+        [$subVirtualAccount, $masterBalance, $subBalance] = $this->createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant, 'live');
+
+        $this->fixtures->on('live')->edit('sub_virtual_account', $subVirtualAccount->getId(), [
+            'sub_account_type'      => 'sub_direct_account',
+            'master_account_number' => $masterBalance->getAccountNumber(),
+            'master_balance_id'     => $masterBalance->getId(),
+            'sub_account_number'    => '2224440041626905',
+        ]);
+
+        $featureToReplace = $this->getDbEntity('feature', ['name' => 'sub_virtual_account', 'entity_id' => '10000000000012'], 'live');
+
+        $this->fixtures->on('live')->edit('feature', $featureToReplace->getId(), ['name' => Feature\Constants::ASSUME_MASTER_ACCOUNT]);
+
+        $this->ba->privateAuth();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])
+                       ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsRequest = [
+            'product' => 'payout',
+            'transfer' => [
+                'preferred_source_account_id' => 12345678,
+            ]
+        ];
+
+        $mock->shouldReceive('shouldAllowTransfersViaFts')
+             ->andReturn([true, 'Dummy']);
+        $mock->shouldReceive('createAndSendRequest')
+             ->withArgs(function($endpoint, $method, $input) use ($ftsRequest)
+             {
+                 $this->assertArraySelectiveEquals($ftsRequest, $input);
+             });
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        return [$subVirtualAccount, $masterBalance, $subBalance];
+    }
+
+    public function setUpZeroPricingLive($mode = Payout\Mode::IMPS)
+    {
+        $planId = random_alphanum_string(14);
+
+        $this->fixtures->on('live')->create('pricing', [
+            'id'                  => 'zeroPricing000',
+            'plan_id'             => $planId,
+            'plan_name'           => 'Zero Pricing Plan',
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => ($mode === Payout\Mode::UPI) ? 'upi' : 'fund_transfer',
+            'auth_type'           => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'amount_range_active' => false,
+            'payouts_filter'      => null,
+            'org_id'              => '100000razorpay',
+            'account_type'        => AccountType::SHARED,
+            'channel'             => null,
+            'expired_at'          => null,
+            'created_at'          => time(),
+            'updated_at'          => time(),
+        ]);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+    }
+
     public function testSubAccountPayoutStatusUpdateToProcessedInLedgerShadow()
     {
         [$payout, $transaction] = $this->testCreateSubAccountPayout();
@@ -36082,6 +36157,46 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payload->payload->payout->entity->fund_account);
 
         $this->assertNotNull($payload->payload->payout->entity->fund_account->contact);
+    }
+
+    public function testSubAccountPayoutCreationUponWorkflowApproval()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->liveSetUp();
+
+        [$subVirtualAccount, $masterBalance, $subBalance] = $this->setUpForSubAccountPayoutLive();
+
+        $this->setUpZeroPricingLive();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $this->createPayoutWithWorkflow([ 'amount' => 2000 ], 'rzp_live_TheLiveAuthKey');
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals('pending', $payout['status']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT => 30]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH => 2]);
+
+        ApprovedPayoutProcessor::dispatch('live', [
+            'queue_if_low_balance'  => '',
+            'type'                  => 'workflow_callbacks_approved',
+        ], "pout_" . $payout['id'], true);
+
+        $payout->reload();
+
+        $this->assertEquals('initiated', $payout['status']);
     }
 
     private function sendWFApproveMockResponse($role = 'owner')

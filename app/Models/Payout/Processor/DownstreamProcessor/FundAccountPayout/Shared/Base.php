@@ -16,9 +16,11 @@ use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\SubVirtualAccount;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\CounterHelper;
@@ -31,6 +33,7 @@ use RZP\Models\Transaction\Core as TxnCore;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccountStatement\Details as BASD;
 use RZP\Models\Transaction\Processor\Payout as PayoutTxnProcessor;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
@@ -401,6 +404,12 @@ class Base extends FundAccountPayout\Base
         if ($payout->isSubAccountPayout() === true)
         {
             $accountType = Merchant\Balance\AccountType::DIRECT;
+
+            if ($payout->getMasterBalance() === null)
+            {
+                $this->setPayoutTypeAndMasterBalanceForSubAccount($payout);
+            }
+
             $merchantId  = $payout->getMasterBalance()->getMerchantId();
         }
 
@@ -495,5 +504,39 @@ class Base extends FundAccountPayout\Base
         }
 
         return true;
+    }
+
+    private function setPayoutTypeAndMasterBalanceForSubAccount(Entity $payout)
+    {
+        /** @var SubVirtualAccount\Entity $subVirtualAccount */
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubAccountNumber($payout->balance->getAccountNumber(), true);
+
+        if ((empty($subVirtualAccount) === true) or
+            ($subVirtualAccount->getSubAccountType() !== SubVirtualAccount\Type::SUB_DIRECT_ACCOUNT))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_DOES_NOT_EXIST);
+        }
+
+        $masterBASD = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($subVirtualAccount->getMasterBalanceId());
+
+        if (($masterBASD === null) or
+            (in_array($masterBASD->getStatus(), BASD\Status::getStatusesForWhichSubAccountPayoutIsAllowed()) === false))
+        {
+            throw new BadRequestValidationFailureException(
+                "Payouts not supported for the debit account."
+            );
+        }
+
+        $payout->setType(Entity::SUB_ACCOUNT);
+
+        $payout->setMasterBalance($subVirtualAccount->balance);
+
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_PAYOUT_TYPE_SET);
+
+        $this->trace->count(Metric::SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL,
+                            [
+                                SubVirtualAccount\Entity::MASTER_BALANCE_ID => $subVirtualAccount->balance->getId(),
+                                SubVirtualAccount\Entity::SUB_MERCHANT_ID   => $subVirtualAccount->getSubMerchantId(),
+                            ]);
     }
 }
