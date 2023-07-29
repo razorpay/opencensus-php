@@ -992,7 +992,7 @@ class Core extends Base\Core
         return $invalidAddresses;
     }
 
-    protected function createCustomerAppToken($customer, $input, $merchant)
+    public function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant;
@@ -1276,7 +1276,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function isCookieDisabledOnBrowser()
+    public function isCookieDisabledOnBrowser()
     {
         $key = $this->mode . '_checkcookie';
 
@@ -1290,7 +1290,7 @@ class Core extends Base\Core
         return false;
     }
 
-    protected function getTemporarySessionToken()
+    public function getTemporarySessionToken()
     {
         $temporaryId = Base\UniqueIdEntity::generateUniqueId();
 

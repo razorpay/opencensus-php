@@ -158,6 +158,14 @@ class Service extends Base\Service
             ],
         ];
 
+        // Doing this temporarily till we ramp up otp_verify_v2 to 100%.
+        // This should be removed post that.
+        $appToken = $this->core->createCustomerAppToken($customer, $input, $this->merchant);
+        $this->core->putAppTokenInSession($appToken);
+        if ($this->core->isCookieDisabledOnBrowser() === true) {
+            $response['session_id'] = $this->core->getTemporarySessionToken();
+        }
+
         $tokenCore = (new Token\Core());
 
         // Fetch existing tokens for global customer

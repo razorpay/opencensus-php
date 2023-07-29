@@ -10802,6 +10802,8 @@ class Route
         'customer_fetch_tokens_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
+        // Temporarily added to $session. Will be removed post OtpVerifyV2 100% RampUp
+        'global_customer_find_or_create_for_checkout',
         'merchant_methods_offers_checkout_internal',
         'offers_fetch_for_order'
     ];
