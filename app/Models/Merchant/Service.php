@@ -1441,15 +1441,15 @@ class Service extends Base\Service
 
         $orignalEmail = $merchant->getEmail();
 
-        $merchant = $this->core()->editEmail($merchant, $input);
-
-        $newEmail = $merchant->getEmail();
+        $newEmail = $input[Merchant\Entity::EMAIL];
 
         // handle user management on PG
         $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::PRIMARY);
 
         // handle user management on X
         $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::BANKING);
+
+        $merchant = $this->core()->editEmail($merchant, $input);
 
         return $merchant->toArrayPublic();
     }

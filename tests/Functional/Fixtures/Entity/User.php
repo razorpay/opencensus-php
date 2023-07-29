@@ -149,4 +149,20 @@ class User extends Base
                     ->where('product', $product)
                     ->get();
     }
+
+    public function getMerchantOwnerUsers(string $merchantId, string $product = 'primary')
+    {
+        return DB::table('merchant_users')
+                    ->where('merchant_id', $merchantId)
+                    ->where('role', 'owner')
+                    ->where('product', $product)
+                    ->get();
+    }
+
+    public function getUserById(string $userId)
+    {
+        return DB::table('users')
+                    ->where('id', $userId)
+                    ->get();
+    }
 }

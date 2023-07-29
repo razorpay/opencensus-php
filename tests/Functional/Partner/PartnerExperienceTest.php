@@ -64,8 +64,10 @@ class PartnerExperienceTest extends OAuthTestCase
     const DUMMY_APP_ID_2                = '10000RandomApp';
     const DUMMY_APP_ID_3                = '11111RandomApp';
     const DEFAULT_MERCHANT_ID           = '10000000000000';
+    const DEFAULT_PARTNER_ID            = '1X4hRFHFx4UiXt';
     const DEFAULT_SUBMERCHANT_ID        = '10000000000009';
     const DEFAULT_SUBMERCHANT_ID_2      = '10000000000010';
+    const DEFAULT_USER_ID               = 'RazorpayUserId';
     const RZP_ORG                       = '100000razorpay';
     const CURLEC_DEFAULT_MERCHANT_ID    = '10000121212121';
 
@@ -3180,6 +3182,184 @@ class PartnerExperienceTest extends OAuthTestCase
                 return true;
             }
         );
+    }
+
+    public function testPartnerEmailUpdate()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'random@gmail.com'
+            ]
+        );
+
+        $this->startTest();
+
+        $partnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID);
+        $partnerUser = $this->fixtures->user->getUserById($partnerUsers[0]->user_id);
+        $this->assertEquals($partnerUser[0]->email, 'partner1@razorpay.com');
+    }
+
+    public function testPartnerEmailUpdateWithExistingUser()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID,
+            [
+                'email' => 'partner1@razorpay.com'
+            ]);
+
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'random@gmail.com'
+            ]
+        );
+
+        $this->startTest();
+
+        $partnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID);
+        $partnerUser = $this->fixtures->user->getUserById($partnerUsers[0]->user_id);
+
+        $this->assertEquals($partnerUser[0]->id, $user->getId());
+        $this->assertEquals($partnerUser[0]->email, 'partner1@razorpay.com');
+    }
+
+    public function testPartnerEmailUpdateWithTeamUser()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'partner1@razorpay.com'
+            ], Role::FINANCE);
+
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'random@gmail.com'
+            ]
+        );
+
+        $this->startTest();
+
+        $partnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID);
+        $partnerUser = $this->fixtures->user->getUserById($partnerUsers[0]->user_id);
+
+        $this->assertEquals($partnerUsers[0]->user_id, $user->getId());
+        $this->assertEquals($partnerUser[0]->email, 'partner1@razorpay.com');
+    }
+
+    public function testPartnerEmailUpdateWithBankingAndPrimaryTeamUser()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => 'RazorpayUserId', 'merchant_id' => self::DEFAULT_PARTNER_ID, 'role' => Role::OWNER, 'product' => 'banking']);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'partner1@razorpay.com'
+            ], Role::FINANCE);
+
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'random@gmail.com'
+            ]
+        );
+
+        $this->startTest();
+
+        $partnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID,);
+        $partnerBankingUser = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID,'banking');
+        $submOwnerUser = $this->fixtures->user->getMerchantOwnerUsers('100submerchant');
+
+        $partnerUser = $this->fixtures->user->getUserById($partnerUsers[0]->user_id);
+
+        $this->assertEquals($partnerUsers[0]->user_id, $user->getId());
+        $this->assertEquals($partnerBankingUser[0]->user_id, $user->getId());
+        $this->assertEquals($submOwnerUser[0]->user_id, $user->getId());
+
+        $this->assertEquals($partnerUser[0]->email, 'partner1@razorpay.com');
+    }
+
+    /**
+     * Test partner email update with subm as partner
+     * consider this scenario and we are updating the email for user2
+     * PartnerId1 -> user1 -> owner
+     * SubMid1 -> user1 -> owner
+     * SubMid1 -> user2 -> owner
+     * subSubMid1 -> user2 -> owner
+     * @return void
+     */
+    public function testPartnerEmailUpdateWithSubmAsPartner()
+    {
+        $this->ba->adminAuth();
+
+        // create partner and submerchant
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => 'RazorpayUserId', 'merchant_id' => self::DEFAULT_PARTNER_ID, 'role' => Role::OWNER, 'product' => 'banking']);
+
+        $financeTeamUser = $this->fixtures->user->createUserForMerchant('100submerchant',
+            [
+                'email' => 'subm@razorpay.com'
+            ], Role::FINANCE);
+
+        // create owner user for sub merchant
+        $user = $this->fixtures->user->createUserForMerchant('100submerchant',
+            [
+                'email' => 'randomsubm@gmail.com'
+            ], Role::OWNER);
+
+        // update sub merchant email
+        $this->fixtures->merchant->edit(
+            '100submerchant',
+            [
+                'email' => 'randomsubm@gmail.com',
+                'partner_type' => 'aggregtor'
+            ]
+        );
+
+        // create submerchant 2
+        $this->fixtures->merchant->createAccount(self::DEFAULT_SUBMERCHANT_ID_2);
+
+        // create owner user for sub merchant 2
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => $user->getId(), 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID_2, 'role' => Role::OWNER]);
+
+        $this->startTest();
+
+        $partnerOwnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID,);
+        $subm2ownerUser = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_SUBMERCHANT_ID_2);
+        $subm1OwnerUsers = $this->fixtures->user->getMerchantOwnerUsers('100submerchant');
+
+        $submUser = $this->fixtures->user->getUserById($subm2ownerUser[0]->user_id);
+
+        $this->assertEquals(count($subm1OwnerUsers), 2);
+        $this->assertNotEquals($partnerOwnerUsers[0]->user_id, $subm2ownerUser[0]->user_id);
+
+        $this->assertEquals($submUser[0]->email, 'subm@razorpay.com');
+        $this->assertEquals($subm2ownerUser[0]->user_id, $financeTeamUser->getId());
     }
 
     private function setUpPurePlatformPartnerForSuccesfulPartnerTypeSwitch(array $activeTokens = []): array

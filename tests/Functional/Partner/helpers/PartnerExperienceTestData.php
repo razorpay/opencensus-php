@@ -1946,4 +1946,99 @@ return [
             'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => '1000000000plat' ] ]
         ]
     ],
+
+    'testPartnerEmailUpdate' => [
+        'request' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testPartnerEmailUpdateWithExistingUser' => [
+        'request' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testPartnerEmailUpdateWithTeamUser' => [
+        'request' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testPartnerEmailUpdateWithBankingAndPrimaryTeamUser' => [
+        'request' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'partner1@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testPartnerEmailUpdateWithSubmAsPartner' => [
+        'request' => [
+            'content' => [
+                'email' => 'subm@razorpay.com',
+            ],
+            'url' => '/merchants/100submerchant/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'subm@razorpay.com'
+            ]
+        ]
+    ],
 ];

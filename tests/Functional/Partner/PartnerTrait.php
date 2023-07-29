@@ -782,15 +782,17 @@ trait PartnerTrait
         return [$client, $user];
     }
 
-    public function setUpNonPurePlatformPartnerAndSubmerchant($partnerId = '10000000000000', $submerchantId = '100submerchant')
+    public function setUpNonPurePlatformPartnerAndSubmerchant($partnerId = '10000000000000', $submerchantId = '100submerchant', $userId = 'RazorpayUserId')
     {
         $client = $this->markMerchantAsNonPurePlatformPartner($partnerId, MerchantConstants::AGGREGATOR);
 
-        $user = $this->fixtures->user->createUserForMerchantONLiveAndTest($partnerId, [], Role::OWNER);
+        $user = $this->fixtures->user->createUserForMerchantONLiveAndTest($partnerId, ['id'=> $userId, 'email'=> 'random@gmail.com'], Role::OWNER);
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
         $this->fixtures->merchant->createAccount($submerchantId);
+
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => $userId, 'merchant_id' => $submerchantId, 'role' => Role::OWNER]);
 
         $this->createDefaultSubmerchantPricingPlan();
 
