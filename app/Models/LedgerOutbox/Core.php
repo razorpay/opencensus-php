@@ -748,6 +748,20 @@ class Core extends Base\Core
                     {
                         $isBulkJournal = true;
                     }
+                    else
+                    {
+                        $merchantId = $payload[LedgerConstants::MERCHANT_ID];
+
+                        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+                        {
+                            $this->updateRetryCountAndSoftDelete($entry, $retries);
+                            $successful++;
+                            array_push($successfulIds, $transactorId);
+                            continue;
+                        }
+                    }
 
                     $response = ($isBulkJournal === false) ? $ledgerService->createJournal($payload, $requestHeaders, true) : $ledgerService->createBulkJournal($payload, $requestHeaders, true);
 
