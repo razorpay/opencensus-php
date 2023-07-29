@@ -152,10 +152,12 @@ class Service extends Base\Service
 
             $input['merchant_id'] = $this->merchant->getId();
 
-            $rawBodyInput['body_string'] = Request::getContent();
-            $rawBodyInput['content_header'] = Request::header('Content-Type');
-
-            $input['raw_req'] = $rawBodyInput;
+            if ($this->app['api.route']->getCurrentRouteName() == 'order_create')
+            {
+                $rawBodyInput['body_string'] = Request::getContent();
+                $rawBodyInput['content_header'] = Request::header('Content-Type');
+                $input['raw_req'] = $rawBodyInput;
+            }
 
             $order = $this->app['pg_router']->createOrder($input, true);
 
