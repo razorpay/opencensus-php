@@ -4342,6 +4342,9 @@ class Route
         '1cc_shopify_insert_theme'                  => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/insert',                  'OneClickCheckoutController@insertShopifySnippet'                ],
         '1cc_shopify_render_magic_snippet'          => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/render',                  'OneClickCheckoutController@renderMagicSnippet'                ],
         '1cc_fetch_dashboard_analytics'             => ['get',        '1cc/analytics',                                        'OneClickCheckoutController@handleMerchantDashboardReq'                ],
+        '1cc_shopify_fetch_liquid_files'            => ['get',        '1cc/admin/merchants/{id}/shopify/theme/liquid_files',                  'OneClickCheckoutController@handleAdminDashboardThemeAutomationReq'                ],
+        '1cc_shopify_update_liquid_files'           => ['put',        '1cc/admin/merchants/{id}/shopify/theme/liquid_files',                  'OneClickCheckoutController@handleAdminDashboardThemeAutomationReq'                ],
+
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -8523,6 +8526,10 @@ class Route
          '1cc_shopify_fetch_themes',
          '1cc_shopify_insert_theme',
          '1cc_shopify_render_magic_snippet',
+         '1cc_shopify_fetch_liquid_files',
+         '1cc_shopify_update_liquid_files',
+
+
     ];
 
     public static $routePermission = [
@@ -10027,6 +10034,8 @@ class Route
         '1cc_shopify_insert_theme'                 => Permission::MAGIC_OPS,
         '1cc_shopify_render_magic_snippet'         => Permission::MAGIC_OPS,
         'admin_1cc_whitelist_coupons'              => Permission::MAGIC_OPS,
+        '1cc_shopify_fetch_liquid_files'           => Permission::MAGIC_OPS,
+        '1cc_shopify_update_liquid_files'          => Permission::MAGIC_OPS,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -14721,6 +14730,9 @@ class Route
             '1cc_order_edit_add_item_variant',
             '1cc_order_edit_edit_line_item_quantity',
             '1cc_order_edit_add_custom_item',
+
+            '1cc_shopify_fetch_liquid_files',
+            '1cc_shopify_update_liquid_files',
 
             // Terminal downtimes
             'manual_downtime_fetch',

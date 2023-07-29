@@ -9,11 +9,14 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 class Service extends Base\Service
 {
 
   protected $app;
+
+  const MAGIC_CHECKOUT_SERVICE_THEME_LIQUID_FILES_FETCH_PATH = 'v1/admin/shopify/theme/liquid_files';
 
   public function __construct()
   {
@@ -37,4 +40,38 @@ class Service extends Base\Service
   {
       return str_replace('1cc/', '', $path);
   }
+
+  public function handleAdminDashboardThemeAutomationReq(array $input): array
+  {
+      $routeName = $this->app['router']->currentRouteName();
+      $params = $this->app['router']->current()->parameters();
+      $merchantId = $params['id'];
+      $path = $this->getPathFromRouteName($routeName);
+      $method = $input['method'];
+      $body = $input['body'];
+      if ($method === 'GET') {
+          [$query, $headers] = (new Shopify\Service())->constructFetchQueryForMagicCheckoutService($merchantId);
+          $path = $path . $query;
+
+      } else {
+          [$body, $headers] = (new Shopify\Service())->constructPayloadForMagicCheckoutService($merchantId, $body);
+      }
+      return $this->app['magic_checkout_service_client']->sendRequest($path, $body, $method, $headers);
+  }
+
+  protected function getPathFromRouteName(string $route): string
+  {
+      switch ($route) {
+          case '1cc_shopify_fetch_liquid_files' :
+          case '1cc_shopify_update_liquid_files' :
+              return self::MAGIC_CHECKOUT_SERVICE_THEME_LIQUID_FILES_FETCH_PATH;
+          default:
+              throw new Exception\BadRequestException(
+                  ErrorCode::BAD_REQUEST_ERROR,
+                  null,
+                  null,
+                  "Not a valid request");
+      }
+  }
+
 }

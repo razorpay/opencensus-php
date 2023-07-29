@@ -374,4 +374,16 @@ class OneClickCheckoutController extends Controller
         $resp = (new MagicCheckoutService\Service)->handleMerchantDashboardReq($input);
         return ApiResponse::json($resp, 200);
     }
+
+    // Generic controller function for admin dashboard requests routed to magic-checkout-service
+    public function handleAdminDashboardThemeAutomationReq()
+    {
+        $input = [
+            'method' => Request::getMethod(),
+            'body'   => Request::all(),
+            'path'   => Request::path(),
+        ];
+        $resp = (new MagicCheckoutService\Service)->handleAdminDashboardThemeAutomationReq($input);
+        return ApiResponse::json($resp, 200);
+    }
 }

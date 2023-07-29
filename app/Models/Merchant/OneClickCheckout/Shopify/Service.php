@@ -1637,8 +1637,10 @@ class Service extends Base\Service
     }
 
     // returns shopId and oauth token for hitting magic-checkout-service
-    private function getMerchantAuthCredentials(): array
+    private function getMerchantAuthCredentials(string $merchantId): array
     {
+        $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
         $client = $this->getShopifyClientByMerchant();
 
         $accessToken = $client->getOAuthToken();
@@ -1649,9 +1651,9 @@ class Service extends Base\Service
     }
 
     // constructs query for magic-checkout service
-    private function constructFetchQueryForMagicCheckoutService(string $merchantId): array
+    public function constructFetchQueryForMagicCheckoutService(string $merchantId): array
     {
-        [$shopId, $accessToken] = $this->getMerchantAuthCredentials();
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId);
 
         $query = "?merchant_id={$merchantId}&shop_id={$shopId}";
 
@@ -1662,9 +1664,9 @@ class Service extends Base\Service
     }
 
     // constructs payload for magic-checkout service
-    private function constructPayloadForMagicCheckoutService(string $merchantId, array $input): array
+    public function constructPayloadForMagicCheckoutService(string $merchantId, array $input): array
     {
-        [$shopId, $accessToken] = $this->getMerchantAuthCredentials();
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId);
 
         $input['shop_id'] = $shopId;
 
