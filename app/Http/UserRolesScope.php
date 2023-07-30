@@ -49,6 +49,7 @@ class UserRolesScope
             // payment routes
             'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
             'payment_fetch_by_id'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES, [Role::AGENT]),
+            'payment_fetch_timeline' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES, [Role::AGENT]),
             'payment_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES, [Role::AGENT]),
             'payment_refund'         => Role::WRITER_ROLES,
 
@@ -423,6 +424,7 @@ class UserRolesScope
             'dispute_fetch'                                 => [Role::ADMIN, Role::OWNER, Role::SUPPORT, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
             'dispute_fetch_multiple'                        => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SUPPORT, Role::OPERATIONS, Role::FINANCE,],
             'dispute_fetch_multiple_count'                  => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR,],
+            'dispute_fetch_multiple_aggregate'              => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR,],
             'fd_create_ticket'                              => Role::ALL_ROLES,
             'fd_fetch_converations'                         => Role::ALL_ROLES,
             'fd_fetch_ticket'                               => Role::ALL_ROLES,
@@ -1331,6 +1333,7 @@ class UserRolesScope
             'merchant_analytics'             => true,
             'reconciliate_via_batch_service' => true,
             'dispute_fetch_multiple_count'   => true,
+            'dispute_fetch_multiple_aggregate' => true,
             'credits_fetch_multiple'         => true,
             'reports_monthly_invoice'        => true,
             'bulk_contact_create'            => true,

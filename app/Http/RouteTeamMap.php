@@ -426,6 +426,7 @@ class RouteTeamMap
         'customer_flagging_entity_details'                => [self::TEAM_PAYMENTS_RISK],
         'customer_flagging_post_grievance'                => [self::TEAM_PAYMENTS_RISK],
         'dispute_fetch_multiple_count'                    => [self::TEAM_PAYMENTS_RISK],
+        'dispute_fetch_multiple_aggregate'                => [self::TEAM_PAYMENTS_RISK],
         'merchant_international_enablement_submit'        => [self::TEAM_PAYMENTS_RISK],
 
         //settlements route
