@@ -80,7 +80,7 @@ class Repository extends BaseRepository
 
     public function findMultipleByPublicIds(array $ids): Base\PublicCollection
     {
-        $ids = Entity::verifyIdAndStripSignMultiple($ids);
+        $ids = Entity::verifyIdAndSilentlyStripSignMultiple($ids);
 
         return $this->newQuery()
                     ->findManyOrFailPublic($ids);
