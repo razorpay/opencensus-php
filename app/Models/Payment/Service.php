@@ -2733,9 +2733,14 @@ class Service extends Base\Service
         //for alternate payment methods
         if(Gateway::isDCCRequiredApp($payment->getWallet()) === true) {
             $countryCodes = (new Checkout)->getCountryCodesForAlternatePaymentMethods($payment->getWallet());
-        } else {
+        }
+        else
+        {
             // default we are returning us,gb and ca
-            $countryCodes = [Constants\Country::US,Constants\Country::GB, Constants\Country::CA];
+            /* For s2s we had harcoded only few countries before, making a change to fetch all countries
+                and display in avs screen
+                slack link: https://razorpay.slack.com/archives/C7WEGELHJ/p1690436848877569?thread_ts=1690375625.625109&cid=C7WEGELHJ */
+            $countryCodes = Constants\Country::getAllCountries();
         }
         $countries = [];
         foreach ($countryCodes as $code) {

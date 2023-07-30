@@ -1309,6 +1309,14 @@ class Country
         return strcasecmp($country1, $country2) == 0;
     }
 
+    public static function getAllCountries()
+    {
+        // Filter out the value India from the array
+        return array_filter(self::$countryCodeMapping, function ($code) {
+            return $code !== self::IN;
+        });
+    }
+
     public static function getcountryDetails()
     {
         $data = array();
