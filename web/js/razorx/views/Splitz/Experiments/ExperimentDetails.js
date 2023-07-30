@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import AddEditExperiment from './AddEditExperiment';
@@ -20,6 +20,7 @@ import { isRzpApprover } from 'razorx/user';
 import Comment from 'razorx/components/ui/Comment';
 import { EXPERIMENT_DELETE } from './constants';
 import { formatDate } from 'razorx/helpers/utils';
+const ExperimentOwnersForm = React.lazy(() => import('./AddExperimentOwners'));
 
 // eslint-disable-next-line react/no-unsafe
 @withRouter
@@ -194,6 +195,19 @@ export default class ExperimentDetails extends React.Component {
   };
 
   showAddExperiment = () => openModal(<ExperimentsModal experimentId={this.state.data} />);
+
+  showAddExperimentOwnersModal = () => {
+    openModal(
+      <Suspense fallback={<div>Loading...</div>}>
+        <ExperimentOwnersForm
+          data={this.state.data}
+          onEdit={this.onEdit}
+          header="Edit Experiment Owners"
+        />
+        ,
+      </Suspense>,
+    );
+  };
 
   showEditExperiment = () => {
     openModal(
@@ -655,6 +669,21 @@ export default class ExperimentDetails extends React.Component {
               </div>
             </>
           )}
+          <br />
+          <br />
+          {data?.metadata?.additional_owners?.length > 0 && (
+            <div className="pad-highlight">
+              <div className="title" style={{ position: 'inherit', fontSize: '18px' }}>
+                Additional Owners
+              </div>
+              <div className="flex-row">{data.metadata.additional_owners.join(', ')}</div>
+            </div>
+          )}
+          <br />
+          <br />
+          <button className="btn btn--primary" onClick={this.showAddExperimentOwnersModal}>
+            + Edit Experiment Owners
+          </button>
           <br />
           <br />
           <div>
