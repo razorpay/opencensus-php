@@ -3158,6 +3158,7 @@ class Route
         'partner_kyc_approve_reject'              => ['post',     'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKyc'                    ],
         'partner_kyc_approve_reject_cors'         => ['options',  'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKycCors'                ],
         'partner_kyc_revoke_access'               => ['post',     'partner/kyc_revoke_access',                      'PartnerKycAccessController@revokeKycAccess'                         ],
+        'get_partner_kyc_access_status'           => ['get',      'partner/kyc_access',                             'PartnerKycAccessController@getKycAccessStatus'                      ],
 
 
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
@@ -6753,6 +6754,7 @@ class Route
         'partner_referral_create',
         'commissions_invoice_status_change',
         'commissions_invoice_fetch',
+        'get_partner_kyc_access_status',
         'commissions_invoice_fetch_all',
 
         //balance configs
@@ -11162,6 +11164,7 @@ class Route
             'commissions_get',
             'commissions_get_multiple',
             'commissions_invoice_fetch',
+            'get_partner_kyc_access_status',
             'commissions_invoice_fetch_all',
             'commissions_invoice_status_change',
             'partner_activation_details',

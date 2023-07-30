@@ -652,6 +652,7 @@ class UserRolesScope
             'commissions_get'                                      => [Role::OWNER, Role::ADMIN],
             'commissions_get_multiple'                             => [Role::OWNER, Role::ADMIN],
             'commissions_invoice_fetch'                            => [Role::OWNER, Role::ADMIN],
+            'get_partner_kyc_access_status'                        => [Role::OWNER],
             'commissions_invoice_fetch_all'                        => [Role::OWNER, Role::ADMIN],
             'commissions_invoice_status_change'                    => [Role::OWNER, Role::ADMIN],
             'contact_create'                                       => [Role::OWNER, Role::ADMIN],

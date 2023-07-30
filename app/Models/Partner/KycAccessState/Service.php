@@ -51,6 +51,24 @@ class Service extends Base\Service
         return $accessMap->toArrayPublic();
     }
 
+    public function getKycAccessStatus($input)
+    {
+        (new Entity)->getValidator()->validateInput('get_access_status', $input);
+
+        $partnerId = $this->fetchPartnerFromReferralCode($input['ref_code']);
+
+        (new Validator)->validateMerchantReferredByPartner($partnerId, $this->merchant->getId());
+
+        return $this->core->getKycAccessStatus($partnerId, $this->merchant->getId());
+    }
+
+    protected function fetchPartnerFromReferralCode(string $referralCode)
+    {
+        $referral = $this->repo->referrals->getReferralByReferralCode($referralCode);
+
+        return $referral->getMerchantId();
+    }
+
     /**
      * @return MerchantEntity
      * @throws Exception\BadRequestValidationFailureException

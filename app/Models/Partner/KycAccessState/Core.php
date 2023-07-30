@@ -359,6 +359,20 @@ class Core extends Base\Core
         return $accessMapping;
     }
 
+    public function getKycAccessStatus(string $partnerId, string $subMerchantId)
+    {
+        $accessMap = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partnerId, $this->merchant->getId())->first();
+
+        $status =  'pending';
+
+        if( empty($accessMap) === false && ($accessMap->getState() !== State::PENDING_APPROVAL) )
+        {
+            $status = $accessMap->getState();
+        }
+
+        return [ 'status' => $status ];
+    }
+
     public function generateExpiryTime()
     {
         return Carbon::now(Timezone::IST)->timestamp + Constants::TOKEN_EXPIRY_TIME;

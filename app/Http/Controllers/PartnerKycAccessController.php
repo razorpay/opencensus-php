@@ -54,4 +54,13 @@ class PartnerKycAccessController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getKycAccessStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getKycAccessStatus($input);
+
+        return ApiResponse::json($response);
+    }
 }

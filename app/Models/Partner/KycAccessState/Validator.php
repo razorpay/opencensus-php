@@ -25,6 +25,10 @@ class Validator extends Base\Validator
         Entity::PARTNER_ID => 'required|string|size:14',
     ];
 
+    protected static $getAccessStatusRules = [
+        'ref_code'    => 'required|string',
+    ];
+
     protected static $tokenValidators = [
         'token'
     ];

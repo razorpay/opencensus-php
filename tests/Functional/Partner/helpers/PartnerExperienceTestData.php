@@ -213,6 +213,31 @@ return [
         ],
     ],
 
+    'testGetKycAccessStatusPending' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access?ref_code=teslacomikejzc ',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'pending',
+            ],
+        ],
+    ],
+
+    'testGetKycAccessStatusNonPending' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access?ref_code=teslacomikejzc ',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'approved',
+            ],
+        ],
+    ],
+
+
     'testSubmerchantKYCByPartnerWithMissingFeatureFlag' => [
         'request'  => [
             'url'     => '/merchant/activation',
