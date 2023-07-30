@@ -178,7 +178,7 @@ class ApiTraceProcessor
 
         $this->addRouteName($record);
 
-        $this->dropRecurringLogFields($record);
+//        $this->dropRecurringLogFields($record);
 
         $this->isFirstLog = false;
 
