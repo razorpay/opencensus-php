@@ -27,6 +27,7 @@ use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Terminal\Constants as APITerminalConstants;
 
 class Core extends Base\Core
 {
@@ -854,9 +855,11 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('banks not supported by gateway');
         }
 
-        $this->app['workflow']
-            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
+        if(!in_array($this->app['api.route']->getCurrentRouteName(),APITerminalConstants::BULK_TERMINAL_WRITE_ROUTES )) {
+            $this->app['workflow']
+                 ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+                 ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
+        }
 
         $syncInstruments = false;
         if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::ASSIGN_MERCHANT_BANKS) )

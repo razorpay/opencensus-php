@@ -755,7 +755,7 @@ class Service extends Base\Service
 
                         $returnData[$terminalId] = $updatedEnabledBanks["enabled"];
                     }
-                    catch ( Exception\BadRequestValidationFailureException $e)
+                    catch (\Exception $e)
                     {
                         $returnData[$terminalId] = $e->getMessage();
                     }
