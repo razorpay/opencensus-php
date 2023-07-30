@@ -223,7 +223,10 @@ class CustomerController extends Controller
 
         $data = $this->service(E::APP_TOKEN)->deleteAppTokensForGlobalCustomer($input);
 
-        return ApiResponse::json($data);
+        // Expire razorpay_api_session_v2 cookie along with razorpay_api_session cookie
+        return ApiResponse::json($data)
+            ->withoutCookie('razorpay_api_session')
+            ->withoutCookie('razorpay_api_session_v2');
     }
 
     public function postBankAccount($id)
