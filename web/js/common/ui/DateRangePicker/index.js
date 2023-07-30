@@ -126,7 +126,12 @@ class DateRangePicker extends Component {
     });
 
     if (!hideCustomPreset) {
-      presets.push(this.customPreset);
+      /**
+       * we are removing , custom range option from select field as
+       * from backend we are not supporting this feature , due to cost optim ization
+       * We have to come up with new data lake architecture to provide this feature
+       */
+      // presets.push(this.customPreset);
     }
 
     selectedPreset = selectedPreset || presets[defaultPreset || 0];
@@ -180,7 +185,6 @@ class DateRangePicker extends Component {
     }
 
     const { presets, selectedPreset, startDate, endDate } = this.state;
-
     return (
       <div className="rzp-daterange-picker clearfix">
         <div className="icon-container pull-left">{icon ? icon : <i class="i i-date-range" />}</div>
