@@ -221,7 +221,14 @@ class Repository extends Base\Repository
                    AND `transactions`.`merchant_id` = ?
             LIMIT  1
          */
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -261,7 +268,14 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType);
 
         $txns = $query->merchantId($merchantId)
                       ->where(function($query) use ($from, $to, $setlIds)
@@ -296,7 +310,14 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType);
 
         $txns = $query
                       ->merchantId($merchantId)
@@ -1138,7 +1159,14 @@ class Repository extends Base\Repository
         $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -1158,7 +1186,14 @@ class Repository extends Base\Repository
         $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])

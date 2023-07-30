@@ -3553,7 +3553,14 @@ EOT;
         //
         // will consider all the payments
         //
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType)
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
                       ->whereNotNull(Entity::TRANSACTION_ID);

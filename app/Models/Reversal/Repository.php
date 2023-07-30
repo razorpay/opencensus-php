@@ -5,6 +5,7 @@ namespace RZP\Models\Reversal;
 use DB;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Reversal;
@@ -92,7 +93,14 @@ class Repository extends Base\Repository
                    AND `reversals`.`merchant_id` = ?
             LIMIT  1
          */
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::ENTITY_TYPE), '=', E::REFUND)
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -145,9 +153,9 @@ class Repository extends Base\Repository
 
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
-
+        
         return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-                    ->selectRaw($columns)
+                     ->selectRaw($columns)
                     ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
                     ->merchantID($merchantId)
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)

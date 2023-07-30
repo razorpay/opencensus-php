@@ -3,10 +3,12 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use Carbon\Carbon;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundAccount\Type;
 
@@ -52,7 +54,14 @@ class Repository extends Base\Repository
         $favsBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $favsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')
