@@ -10,6 +10,7 @@ use Razorpay\Asv\Error\GrpcError;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
@@ -17,6 +18,7 @@ use RZP\Exception;
 use Razorpay\Asv\DbSource;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Trace\TraceCode;
+use RZP\lib\AwsTraceIdExtractor;
 
 class Base
 {
@@ -30,6 +32,8 @@ class Base
 
     protected $asvConfig;
 
+    protected $awsTraceIdExtractor;
+
 
     function __construct()
     {
@@ -39,9 +43,12 @@ class Base
 
         $this->trace = $app[Constant::TRACE];
 
+        $this->awsTraceIdExtractor = new AwsTraceIdExtractor();
+
         $this->asvSdkClient = $app[Constant::ASV_SDK_CLIENT];
 
         $this->asvConfig = $app->config->get(ASVV2Constant::ASV_CONFIG);
+
     }
 
     /**
@@ -55,9 +62,11 @@ class Base
         $requestMetadata = new RequestMetadata();
         $requestMetadata->setSourceDatabase(DbSource::ApiMaster);
         $requestMetadata->setTimeoutInMicroSeconds($this->asvConfig[ASVV2Constant::GRPC_TIMEOUT]);
+        $awsTraceId = "";
         try {
             $requestMetadata->setRequestId($this->app['request']->getId());
             $requestMetadata->setTaskId($this->app['request']->getTaskId());
+            $awsTraceId = $this->awsTraceIdExtractor->getAwsTraceId();
             // TODO: Add trace id
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::ACCOUNT_SERVICE_REQUEST_METADATA_ERROR, [
@@ -65,6 +74,9 @@ class Base
                 ]
             );
         }
+
+        $headers = [RequestHeader::X_AMAZON_TRACE_ID => $awsTraceId];
+        $requestMetadata->setHeaders($headers);
 
         return $requestMetadata;
     }
