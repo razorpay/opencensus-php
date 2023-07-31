@@ -2834,6 +2834,8 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals([], $this->getDbEntities('merchant_access_map')->toArray());
         $this->assertEquals([], $this->getDbEntities('partner_kyc_access_state')->toArray());
         $this->assertEquals([], $subMerchant->tagNames());
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $partnerId, 'user_id' => 'MerchantUser01']);
+        $this->assertEquals('easy_onboarding', $userDeviceDetails['signup_campaign']);
     }
 
     public function testMigrateResellerToPurePlatformJobSent(): void

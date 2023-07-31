@@ -5,6 +5,7 @@ namespace RZP\Models\Partner;
 use Event;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Partner;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Entity;
 use RZP\Exception\LogicException;
@@ -86,7 +87,7 @@ class MigrateResellerToPurePlatformPartner extends Core
 
                 $partner->setPartnerType(MerchantConstants::PURE_PLATFORM);
                 $this->repo->merchant->saveOrFail($partner);
-
+                (new Partner\Core())->updateSignupCampaignForPartner($partner);
                 $this->notifyPartnerAboutSwitch($partner);
             });
         }

@@ -24,6 +24,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\User\Role;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant as Merchant;
+use RZP\Models\DeviceDetail;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
@@ -1306,6 +1307,8 @@ class Core extends Detail\Core
                 app('authservice')->deleteApplication($existingAppId, $partner->getId());
             });
 
+            $this->updateSignupCampaignForPartner($partner);
+
             $this->trace->info(
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
                 ['merchant_id' => $partner->getId()]
@@ -1366,6 +1369,8 @@ class Core extends Detail\Core
 
                 $this->merchantAppCore->deleteMultipleApplications($existingAppIds);
             });
+
+            $this->updateSignupCampaignForPartner($partner);
 
             $this->trace->info(
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
@@ -1661,6 +1666,22 @@ class Core extends Detail\Core
             }
         }
         return $output;
+    }
+
+    public function updateSignupCampaignForPartner(Merchant\Entity $partner)
+    {
+        $primaryOwner = $partner->primaryOwner();
+        $existingDeviceDetails = $this->repo->user_device_detail->fetchByMerchantIdAndUserId($partner->getId(), $primaryOwner['id']);
+        if(empty($existingDeviceDetails) === true)
+        {
+            $ddInput = [
+                DeviceDetail\Entity::MERCHANT_ID => $partner->getId(),
+                DeviceDetail\Entity::USER_ID => $primaryOwner['id'],
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN => DeviceDetail\Constants::EASY_ONBOARDING,
+            ];
+
+            (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+        }
     }
 
     private function buildMerchantDetailsArray(Merchant\Entity $merchant): array

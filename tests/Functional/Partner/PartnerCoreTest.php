@@ -77,6 +77,8 @@ class PartnerCoreTest extends OAuthTestCase
         $this->assertOnAccessMaps($partnerId, $subMerchant, $managedAppId);
         $this->assertOnPartnerConfigs($resellerAppId, $managedAppId, $referredAppId);
         $this->assertOnMerchantUser($merchantOnLive, $subMerchant);
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $partnerId, 'user_id' => 'MerchantUser01']);
+        $this->assertEquals('easy_onboarding', $userDeviceDetails['signup_campaign']);
     }
 
     /**
