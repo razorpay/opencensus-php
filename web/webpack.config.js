@@ -73,8 +73,8 @@ module.exports = {
       ...config.output,
       path: isRedirector ? path.resolve(__dirname, `./public/dist`) : rootPublicFolderPath,
       publicPath: isRedirector ? publicPath : '/dist/',
-      filename: `js/${project}/[name].[chunkhash:8].js`,
-      chunkFilename: `js/${project}/[name].[chunkhash:8].js`,
+      filename: isProd ? `js/${project}/[name].[chunkhash:8].js` : `js/${project}/[name].js`,
+      chunkFilename: isProd ? `js/${project}/[name].[chunkhash:8].js` : `js/${project}/[name].js`,
       hashFunction: 'xxhash64',
     };
 
