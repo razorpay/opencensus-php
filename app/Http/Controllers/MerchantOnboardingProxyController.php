@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use App;
 use Request;
+use RZP\Constants\Country;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
@@ -119,7 +120,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         if (($this->isPGOSMigrationExperimentEnabled($merchantId, self::PGOS_SHADOW_MODE_EXPERIMENT_ID,
                                                     self::ENABLE) or
              in_array($routeKey, self::ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE)) and
-            (new Core)->isRegularMerchant($merchant) === true)
+            (new Core)->isRegularMerchant($merchant) === true and Country::matches($merchant->getCountry(), Country::IN) )
         {
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];

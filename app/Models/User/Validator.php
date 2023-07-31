@@ -87,7 +87,8 @@ class Validator extends Base\Validator
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
         Entity::TOKEN                           => 'sometimes|string',
         Entity::APP                             => 'sometimes|string',
-        Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean'
+        Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
     ];
 
     protected static $salesforceOtpRules = [
@@ -110,6 +111,7 @@ class Validator extends Base\Validator
         BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
         BDConstants::OTHERS                     => 'sometimes|string',
         Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [

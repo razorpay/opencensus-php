@@ -425,7 +425,8 @@ class Service extends Base\Service
             'is_m2m_referral'                      => $isM2MReferral,
             'phone'                                => $user[Entity::CONTACT_MOBILE] ?? "",
             'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
-            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboardingFlow
+            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboardingFlow,
+            Merchant\Constants::I18N_MY_ONBOARDING    => optional($merchant)->isSignupCampaign(DDConstants::I18N_MY_SIGNUP) === true,
         ];
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)
@@ -514,6 +515,8 @@ class Service extends Base\Service
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                                               $this->auth->getRequestOriginProduct(),
             Merchant\Entity::COUNTRY_CODE  => $countryCode ?? 'IN',
+            //Set by default OrgId to the OrgId from whether request is originated, Ex: Razorpay/Curlec,
+            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
         ];
 
         $merchantDetailInputData = [];

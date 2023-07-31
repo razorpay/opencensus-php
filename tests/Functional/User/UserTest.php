@@ -10849,6 +10849,39 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testForMYUserRegisterSendSignupOtpViaSms()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '+60 102106280',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testUserRegisterSendSignupOtpViaSmsMobileExistsWithCountryCode()
     {
         $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
@@ -10874,6 +10907,25 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => $user1["contact_mobile"],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testForMYUserRegisterSendSignupOtpViaSmsMobileExists()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '102106280', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => $user1["contact_mobile"],
+            'country_code'          => 'MY'
         ];
 
         $testData['request']['content'] = $content;
@@ -11219,6 +11271,33 @@ class UserTest extends TestCase
     }
 
     public function testUserRegisterVerifySignupOtpSms()
+    {
+        Config::set('applications.test_case.execution', false);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant["signup_via_email"], 0);
+    }
+
+    public function testForMYUserRegisterVerifySignupOtpSms()
     {
         Config::set('applications.test_case.execution', false);
 

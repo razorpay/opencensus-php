@@ -21,4 +21,5 @@ class Constants
         self::ANDROID,
         self::IOS
     ];
+    const I18N_MY_SIGNUP = 'i18n_my_signup';
 }

@@ -451,9 +451,10 @@ class Constants
     const RAS_SIGN_UP_SOURCE        = 'sign_up_service';
     const RAS_SIGN_UP_EVENT_TYPE    = 'sign_up_success';
 
-    // Country Code for Indian mobile numbers
+    // Country Code for Indian & Malaysia mobile numbers
     const SUPPORTED_COUNTRY_CODES_SIGNUP    = [
-        'IN'
+        'IN',
+        'MY'
     ];
 
     const X_SECOND_FACTOR_AUTH_ACTION   = 'x_second_factor_auth';

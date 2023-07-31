@@ -6272,6 +6272,18 @@ return [
         ]
     ],
 
+    'testForMYUserRegisterSendSignupOtpViaSms' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testUserRegisterSkipSendSignupOtpViaSms' => [
         'request' => [
             'url'     => '/users/register/otp',
@@ -6308,6 +6320,27 @@ return [
     ],
 
     'testUserRegisterSendSignupOtpViaSmsMobileExists' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testForMYUserRegisterSendSignupOtpViaSmsMobileExists' => [
         'request' => [
             'url'     => '/users/register/otp',
             'method'  => 'POST',
@@ -6475,6 +6508,30 @@ return [
                 'captcha'               => 'faked',
                 'token'                 => 'token',
                 'otp'                   => '0007',
+            ],
+        ],
+        'response' => [
+            "content" => [
+                "contact_mobile"            => '8877665544',
+                "signup_via_email"          => 0,
+                "confirmed"                 => false,
+                "email_verified"            => false,
+                "contact_mobile_verified"   => true,
+                "email"                     => null
+            ]
+        ]
+    ],
+
+    'testForMYUserRegisterVerifySignupOtpSms' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'country_code'          => 'MY',
             ],
         ],
         'response' => [

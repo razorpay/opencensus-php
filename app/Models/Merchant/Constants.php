@@ -1952,4 +1952,6 @@ final class Constants
         'all_under_review'  => self::ALL_UNDER_REVIEW,
         'all_activated'     => Detail\Status::PAYMENTS_ENABLED_STATUSES
     ];
+
+    const I18N_MY_ONBOARDING       = "i18n_my_onboarding";
 }
