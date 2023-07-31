@@ -16053,6 +16053,12 @@ class Route
             'checkout_1cc_configs_get',
         ],
 
+        'wallet_service' => [
+            'customer_fetch_internal_for_checkout',
+            'merchant_validate_public_auth_over_internal_auth',
+        ],
+
+
         'trusted_badge' => [
             'trusted_badge_get_experiment_list',
             'trusted_badge_put_experiment_list',

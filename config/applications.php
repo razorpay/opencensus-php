@@ -1632,6 +1632,14 @@ return [
         'secret'   => env('CHECKOUT_SERVICE_API_MONOLITH_SECRET'),
     ],
 
+    'wallet_service' => [
+        'mock'     => env('WALLET_SERVICE_MOCK', true),
+        'url'      => env('WALLET_SERVICE_URL'),
+        'timeout'  => env('WALLET_SERVICE_TIMEOUT'),
+        // secret used by wallet service to call API monolith
+        'secret'   => env('WALLET_SERVICE_API_MONOLITH_SECRET'),
+    ],
+
     'trusted_badge' => [
         'secret' => env('TRUSTED_BADGE_SECRET'),
     ],
