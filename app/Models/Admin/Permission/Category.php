@@ -14,6 +14,7 @@ class Category
     const SHIELD                       = 'shield';
     const ENTITY                       = 'entity';
     const DISPUTE                      = 'dispute';
+    const BARRICADE                    = 'barricade';
     const GENERAL                      = 'general';
     const PARTNER                      = 'partner';
     const PRICING                      = 'pricing';

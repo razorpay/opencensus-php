@@ -15,6 +15,8 @@ return [
         'accounting_integrations_admin_routes' => ['host_id' => 'accounting_integrations_admin_api'],
         'wallet_dashboard_proxy'               => ['host_id' => 'wallet'],
         'partnerships_service_proxy'           => ['host_id' => 'partnerships'],
+        'barricade_set_config'                 => ['host_id' => 'barricade'],
+        'barricade_get_config'                 => ['host_id' => 'barricade'],
 
         // disputes service proxy routes
         'dispute_ingestion'                => ['host_id' => 'disputes', 'timeout' => 600], // 10 minutes timeout
@@ -88,6 +90,12 @@ return [
             'auth'                => ['api', env('PARTNERSHIPS_API_SECRET')],
             'path_prefix_to_skip' => 'v1/partnerships/',
             'path_prefix_to_add'  => '',
+        ],
+        'barricade' => [
+            'host'                => env('BARRICADE_SERVICE_BASE_URL'),
+            'auth'                => [env('BARRICADE_SERVICE_KEY'), env('BARRICADE_SERVICE_SECRET')],
+            'path_prefix_to_skip' => 'v1/barricade/config/',
+            'path_prefix_to_add'  => 'twirp/barricade.config.v1.ConfigApi/',
         ],
     ],
 ];

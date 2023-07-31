@@ -267,6 +267,8 @@ class Name
     const VERIFY_PAYMENT                      = 'verify_payment';
     const VERIFY_REFUND                       = 'verify_refund';
     const BARRICADE_VERIFY_PAYMENT            = 'barricade_verify_payment';
+    CONST BARRICADE_DCS_CONFIG_SET            = 'barricade_dcs_config_set';
+    const BARRICADE_DCS_CONFIG_GET            = 'barricade_dcs_config_get';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const UPDATE_GEO_IP                       = 'update_geo_ip';

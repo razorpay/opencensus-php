@@ -895,6 +895,15 @@ return [
             ],
         ],
 
+        PermissionCategory::BARRICADE => [
+            Permission::BARRICADE_DCS_CONFIG_SET =>[
+                'assignable' => true,
+            ],
+            Permission::BARRICADE_DCS_CONFIG_GET =>[
+                 'assignable' => true,
+            ],
+        ],
+
         PermissionCategory::PRICING => [
             Permission::VIEW_PRICING_LIST         => [
                 'description' => 'view pricinglist',

@@ -236,7 +236,7 @@ class Route
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_transfer_batch'                   => ['post',     'payments/{id}/transfers/batch',                  'PaymentController@createTransferFromBatch'                         ],
         'payment_verify'                           => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
-        'barricade_payment_verify'                 => ['get',      'payments/barricade/{id}/verify',                 'PaymentController@getVerifyBarricade'                                       ],
+        'barricade_payment_verify'                 => ['get',      'barricade/payments/{id}/verify',                 'PaymentController@getVerifyBarricade'                              ],
         'payment_force_authorize'                  => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
@@ -1158,6 +1158,10 @@ class Route
         'edit_banking_configs'                     => ['post',       'banking_configs_upsert',                       'BankingConfigController@upsertBankingConfigs'                      ],
 
         'bulk_auto_create_iir'                     => ['post',       'admin/auto_create_iir_bulk',                   'TerminalController@bulkAutoCreateIIR'                              ],
+
+        // Routes for barricade configs
+        'barricade_set_config'                     => ['post',       'barricade/config/Set',                           'EdgeProxyController@proxy'                                   ],
+        'barricade_get_config'                     => ['post',       'barricade/config/Get',                           'EdgeProxyController@proxy'                                   ],
 
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
@@ -7844,6 +7848,10 @@ class Route
         'reporting_edit_throttle_settings',
         'reporting_config_edit_bulk',
 
+        // Barricade Admin Routes
+        'barricade_get_config',
+        'barricade_set_config',
+
         // UFH
         'ufh_get_file_signed_url_admin',
         'ufh_get_file_signed_url_by_mid',
@@ -8540,6 +8548,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
+        'barricade_get_config' => Permission::BARRICADE_DCS_CONFIG_GET,
         'dispute_ingestion'                             => Permission::BULK_DISPUTE_INGESTION_FOR_BANK,
         'dispute_dcs_config_add'                        => Permission::DISPUTES_DCS_CONFIG_UPDATE,
         'dispute_dcs_config_update'                     => Permission::DISPUTES_DCS_CONFIG_UPDATE,
@@ -10460,7 +10470,6 @@ class Route
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs'                          => Permission::VIEW_PAYOUT,
         'merchant_tpv_create'                          => Permission::CREATE_PAYOUT,
-
         //NPS
         'pending_survey_get'                           => '*',
         'update_survey_tracker'                        => Permission::CREATE_PAYOUT,
@@ -12381,6 +12390,8 @@ class Route
             'dispute_dcs_config_add',
             'dispute_dcs_config_update',
             'dispute_dcs_config_get',
+            'barricade_get_config',
+            'barricade_set_config',
             'merchant_fetch_rm_details',
             'merchant_put_rm_details',
             'merchant_patch_rm_details',
@@ -14779,10 +14790,10 @@ class Route
             'mock_hdfc_auth_enrolled',
             'mock_hdfc_payment',
         ],
+
         'barricade' => [
             'barricade_payment_verify',
         ],
-
         // These routes will be hit from the dashboard.
         // We create a new app because these routes when hit
         // won't have any merchant or admin in context.
