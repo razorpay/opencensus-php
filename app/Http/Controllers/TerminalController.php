@@ -52,7 +52,9 @@ class TerminalController extends Controller
 
     public function deleteTerminal(string $id)
     {
-        $data = $this->service()->deleteTerminal2($id);
+        $input = Request::all();
+
+        $data = $this->service()->deleteTerminal2($id, $input);
 
         return ApiResponse::json($data);
     }

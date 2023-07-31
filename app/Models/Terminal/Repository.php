@@ -2068,15 +2068,15 @@ class Repository extends Base\Repository
         return $terminal;
     }
 
-    public function deleteOrFail($entity)
+    public function deleteOrFail($entity, array $options = array())
     {
-        return $this->transaction(function() use ($entity)
+        return $this->transaction(function() use ($entity,$options)
         {
             $sync = $this->app['config']->get('applications.terminals_service.sync');
 
             if ($sync === true)
             {
-                (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+                (new Terminal\Service)->migrateTerminalDelete($entity->getId(),$options);
 
                 $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 

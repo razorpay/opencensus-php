@@ -321,7 +321,7 @@ class Service extends Base\Service
         $this->app['terminals_service']->proxyTerminalService('', "DELETE", $path);
     }
 
-    public function deleteTerminal2($id)
+    public function deleteTerminal2($id,$input)
     {
         $this->trace->info(
             TraceCode::TERMINAL_DELETE2,
@@ -345,7 +345,13 @@ class Service extends Base\Service
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($terminal, (new \stdClass));
 
-        $terminal = $this->repo->deleteOrFail($terminal);
+        $syncInstruments = false;
+        if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::DELETE_TERMINAL) )
+        {
+            $syncInstruments = true;
+        }
+
+        $terminal = $this->repo->terminal->deleteOrFail($terminal,[Constants::SYNC_INSTRUMENTS => $syncInstruments]);
 
         if ($terminal === null)
             return [];
@@ -1193,13 +1199,13 @@ class Service extends Base\Service
 
     }
 
-    public function migrateTerminalDelete(string $terminalId)
+    public function migrateTerminalDelete(string $terminalId, array $options = array())
     {
         $client = $this->app['terminals_service'];
 
         $terminal = $this->repo->terminal->getById($terminalId);
 
-        $terminal = $this->repo->transaction(function () use ($terminal, $client) {
+        $terminal = $this->repo->transaction(function () use ($terminal, $client,$options) {
 
             try{
                 $this->repo->terminal->lockForUpdateAndReload($terminal);
@@ -1213,7 +1219,7 @@ class Service extends Base\Service
 
             try
             {
-                $client->deleteTerminalById($terminal->getId());
+                $client->deleteTerminalById($terminal->getId(),$options);
             }
             catch (\Exception $exception)
             {

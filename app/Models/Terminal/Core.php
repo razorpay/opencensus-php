@@ -42,6 +42,13 @@ class Core extends Base\Core
                 'merchant_id'   => $merchant->getId(),
             ]);
 
+        $syncInstruments = false;
+        if( isset($input[TerminalConstants::SYNC_INSTRUMENTS]) )
+        {
+            $syncInstruments = $input[TerminalConstants::SYNC_INSTRUMENTS];
+            unset($input[TerminalConstants::SYNC_INSTRUMENTS]);
+        }
+
         $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $this->validateGatewayAllowed($input); // we do not want to allow the assigning of specific terminals, eg paysecure from admin dashboard
@@ -68,7 +75,7 @@ class Core extends Base\Core
 
         $this->validateNonDSRestriction($merchant, $terminal);
 
-        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync, TerminalConstants::SYNC_INSTRUMENTS => $syncInstruments]);
 
         return $terminal;
     }
@@ -862,7 +869,7 @@ class Core extends Base\Core
         }
 
         $syncInstruments = false;
-        if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::ASSIGN_MERCHANT_BANKS) )
+        if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL) )
         {
             $syncInstruments = $option[TerminalConstants::SYNC_INSTRUMENTS];
         }

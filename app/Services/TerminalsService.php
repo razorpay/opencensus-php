@@ -277,15 +277,31 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
-    public function deleteTerminalById(string $terminalId): array
+    public function deleteTerminalById(string $terminalId, array $additionalOptions = array()): array
     {
         $params = self::PARAMS[self::DELETE_TERMINAL_BY_ID];
 
         $path = sprintf($params[self::PATH], $terminalId);
 
+        $input = [Constants::SYNC_INSTRUMENTS => false];
+        if(isset($additionalOptions[Constants::SYNC_INSTRUMENTS])) {
+            $input[Constants::SYNC_INSTRUMENTS] = $additionalOptions[Constants::SYNC_INSTRUMENTS];
+        }
+
+        $path = $path . '?' . http_build_query($input);
+
+        $this->trace->info(TraceCode::TERMINAL_PROXY_CALL_ERROR_RETRY_ATTEMPT, ['content'=>$path]);
+
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+        $parsedResponse = $this->parseAndReturnResponse($response)['data']??[];
+
+        if($parsedResponse['status_code'] === 202) {
+            throw new Exception\MethodInstrumentsTerminalsSyncException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR,
+                $parsedResponse,202, "Method/Instruments need to be updated for the terminal change");
+        }
+
+        return $parsedResponse;
     }
 
     public function addMerchantToTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
