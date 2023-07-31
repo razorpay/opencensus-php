@@ -137,6 +137,8 @@ final class Shield
         self::ACTION_BLOCK,
     ];
 
+    const SHIELD_REDIS_KEY = '_shield_action';
+
     const EVALUATION_PAYLOAD    = 'evaluation_payload';
     const MOBILE_SDK = 'mobile_sdk';
     const ANDROID = 'android';

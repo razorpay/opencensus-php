@@ -32,6 +32,7 @@ use RZP\Models\Customer\Token\Repository;
 use RZP\Models\Customer\Token\Core;
 use RZP\Models\Feature;
 use Illuminate\Support\Str;
+use RZP\Constants\Shield as ShieldConstants;
 
 class CardPaymentService
 {
@@ -506,6 +507,8 @@ class CardPaymentService
         if($action === Action::AUTHORIZE)
         {
             $this->addThreeDSDetailsIfApplicable($content);
+
+            $this->addShieldActionResponseIfApplicable($content);
         }
 
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
@@ -975,6 +978,28 @@ class CardPaymentService
 
     }
 
+    protected function addShieldActionResponseIfApplicable(array & $data)
+    {
+        if((isset($data['input']['payment']['id']) === true) and
+            (isset($data['input']['payment']['international'])) and
+            ($data['input']['payment']['international'] === true))
+        {
+            $redisKey = $data['input']['payment']['id'] . ShieldConstants::SHIELD_REDIS_KEY;
+
+            if (empty($this->app) === true)
+            {
+                $this->app = App::getFacadeRoot();
+            }
+
+            $action = $this->app['cache']->get($redisKey);
+
+            if( empty($action) === false and $action === ShieldConstants::ACTION_REVIEW)
+            {
+                $data['input']['shield']['action'] = $action;
+            }
+        }
+    }
+
     public function get3ds2DetailsForNetwork($network, $merchant, $product) {
 
         $requestorId = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchant->getId(), $product, $network,Merchant\Attribute\Type::REQUESTER_ID);
@@ -1069,6 +1094,7 @@ class CardPaymentService
                 'emi_plan_fetch.duration'           => 'content.duration',
                 'emi_plan_fetch.durations'          => 'content.durations',
                 'emi_plan_fetch.cobranding_partner' => 'content.cobranding_partner',
+                'shield.action'                     => 'content.input.shield.action',
                 '3DS2_data.device_information'      => 'content.input.device_information'
             ];
 

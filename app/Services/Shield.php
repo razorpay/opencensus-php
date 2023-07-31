@@ -43,6 +43,8 @@ class Shield
 
     protected $app;
 
+    protected $cache;
+
     public function __construct($app)
     {
         $this->request = $app['request'];
@@ -58,6 +60,8 @@ class Shield
         $this->merchantCore = new Merchant\Core;
 
         $this->config = $app['config'];
+
+        $this->cache = $app['cache'];
 
         $this->queue = $app['queue'];
 
@@ -119,7 +123,7 @@ class Shield
 
             $response = $this->shieldClient->evaluateRules($shieldPayload);
 
-            $riskData = $this->parseShieldResponse($response);
+            $riskData = $this->parseShieldResponseAndCache($payment,$response);
 
             $riskData[ShieldConstants::EVALUATION_PAYLOAD] = $shieldPayload;
 
@@ -148,7 +152,7 @@ class Shield
         }
     }
 
-    protected function parseShieldResponse($response)
+    protected function parseShieldResponseAndCache(Payment\Entity $payment, $response)
     {
         $riskData = [];
 
@@ -169,6 +173,7 @@ class Shield
                 $riskData[Risk\Entity::RISK_SCORE]            = $response[ShieldConstants::MAXMIND_SCORE];
                 $riskData[ShieldConstants::TRIGGERED_RULES]   = $response[ShieldConstants::TRIGGERED_RULES] ?? [];
 
+                $this->storeShieldActionStatus($payment, $recommendedAction);
                 break;
 
             default:
@@ -575,5 +580,30 @@ class Shield
         }
 
         $payloadDetails[ShieldConstants::EARLY_SETTLEMENT_ENABLED] = $isEsEnabled;
+    }
+
+    protected function storeShieldActionStatus(Payment\Entity $payment, $action)
+    {
+        try{
+            if ($payment->isInternational() === true  and
+                $payment->isMethodCardOrEmi() === true and
+                $action === ShieldConstants::ACTION_REVIEW)
+            {
+                // caching the payment-id_shield_action key for 20 min
+
+                $redisKey = $payment->getId() . ShieldConstants::SHIELD_REDIS_KEY;
+                $ttl = 20;
+
+                $this->cache->put($redisKey, $action, $ttl*60);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::SHIELD_REDIS_CONFIGURATION_ERROR, [
+                'payment_id' => $payment->getId(),
+                'action'     => $action
+            ]);
+        }
+
     }
 }
