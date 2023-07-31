@@ -44,6 +44,8 @@ class Constants
     const EnableRoutePartnerships = 'route_for_partnerships_enabled';
     const ManualSettlementForSubmerchants = 'manual_settlement_for_submerchants';
     const ImportSettlement = 'import_settlement';
+    const LRSEducationFlow = 'lrs_education_flow';
+    const LRSImportFeeBreakup = 'lrs_import_fee_breakup';
     const SavedCardsDisabled = 'saved_cards_disabled';
     const CvvLessFlowDisabled = 'cvv_less_flow_disabled';
     const PaymentRetryDisabled = 'payment_retry_disabled';
@@ -268,6 +270,8 @@ class Constants
         self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ManualSettlementForSubmerchants => "rzp/pg/merchant/settlements/PartnershipsFeatures",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
+        self::LRSEducationFlow => "rzp/pg/merchant/cross_border/india/LRSFeatures",
+        self::LRSImportFeeBreakup => "rzp/pg/merchant/cross_border/india/LRSFeatures",
         self::SavedCardsDisabled => "rzp/pg/merchant/checkout/SavedCards",
         self::CvvLessFlowDisabled => "rzp/pg/merchant/checkout/SavedCards",
         self::PaymentRetryDisabled => "rzp/pg/merchant/checkout/PaymentCustomisation",
@@ -471,6 +475,8 @@ class Constants
         APIFeaturesConstants::SUBM_MANUAL_SETTLEMENT                        => self::ManualSettlementForSubmerchants,
         APIFeaturesConstants::ADDITIONAL_ONBOARDING                         => self::AdditionalFieldsHdfcOnboarding,
         self::ImportSettlement                                              => self::ImportSettlement,
+        self::LRSEducationFlow                                              => self::LRSEducationFlow,
+        self::LRSImportFeeBreakup                                           => self::LRSImportFeeBreakup,
         APIFeaturesConstants::NOFLASHCHECKOUT                               => self::SavedCardsDisabled,
         APIFeaturesConstants::CHECKOUT_DISABLE_RETRY                        => self::PaymentRetryDisabled,
         APIFeaturesConstants::CHECKOUT_DISABLE_I18N                         => self::InternationalizationDisabled,
@@ -650,6 +656,8 @@ class Constants
         self::EnableRoutePartnerships => 'direct',
         self::ManualSettlementForSubmerchants => 'direct',
         self::ImportSettlement => 'direct',
+        self::LRSEducationFlow => 'direct',
+        self::LRSImportFeeBreakup => 'direct',
         self::AdminLeadPartnerInviteEnabled => 'direct',
         self::PgLedgerReverseShadowEnabled => 'direct',
         self::CvvLessFlowDisabled => 'direct',

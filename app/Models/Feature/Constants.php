@@ -2497,6 +2497,8 @@ class Constants
         self::ENABLE_SETTLEMENT_FOR_B2B       => true,
         self::OPGSP_IMPORT_FLOW               => true,
         DcsConstants::ImportSettlement        => true,
+        DcsConstants::LRSEducationFlow        => true,
+        DcsConstants::LRSImportFeeBreakup     => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
         self::TOKEN_INTEROPERABILITY          => true,

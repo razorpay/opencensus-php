@@ -1185,6 +1185,16 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Dcs\Features\Constants::ImportSettlement) === true);
     }
 
+    public function isLRSEducationFlowEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Dcs\Features\Constants::LRSEducationFlow) === true);
+    }
+
+    public function isLRSImportFeeBreakupEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Dcs\Features\Constants::LRSImportFeeBreakup) === true);
+    }
+
     public function isAVSEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::AVS) === true);
