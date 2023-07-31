@@ -12,4 +12,12 @@ class Service extends Base\Service
 
         return $entityOrigin->toArrayPublic();
     }
+
+    public function fetch(array $input)
+    {
+        (new Validator())->validateInput('fetch', $input);
+        $entityOrigin = (new Core)->fetchEntityOriginByEntityIdAndType($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID]);
+
+        return $entityOrigin->attributesToArray();
+    }
 }

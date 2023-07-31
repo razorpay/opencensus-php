@@ -48,6 +48,39 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches EntityOrigin for a given Entity ID and Type
+     *
+     * @param string $entityId
+     * @param string $entityType
+     *
+     * @return Entity|null
+     */
+    public function fetchEntityOriginByEntityIdAndType(string $entityType, string $entityId): ?Entity
+    {
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityIdOnReadReplica($entityType, $entityId);
+
+//        Keeping this to track the misses. This should be removed in later (reverse shadow) phase of PRTS.
+        if (empty($entityOrigin) === true)
+        {
+            $entity = $this->fetchEntityByType($entityType, $entityId);
+            $entityOrigin = $this->fetchEntityOrigin($entity);
+
+            if (empty($entityOrigin) === false)
+            {
+                // If the entity origin is not empty, log it,
+                // It can be empty if the payment is not originated from an application
+                $this->trace->info(TraceCode::COMMISSION_PAYMENT_ORIGIN_NOT_PRESENT, [
+                    'entity_origin'     => $entityOrigin->toArray(),
+                    'entity_id'         => $entity->getId(),
+                    'source'            => 'partnerships'
+                ]);
+            }
+        }
+
+        return $entityOrigin;
+    }
+
+    /**
      * @param Base\PublicEntity $entity
      */
     public function createEntityOrigin(Base\PublicEntity $entity, $originType = null)

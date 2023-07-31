@@ -3320,6 +3320,8 @@ class Route
         'vault_token_renewal'                      => ['post',     'vault_token_renew',                              'AdminController@renewVaultToken'                                   ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'internal_entity_origin_fetch'             => ['get',      'internal/entity_origins',                        'EntityOriginController@fetch'                                       ],
+
         'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
         'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
         'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
@@ -6012,6 +6014,7 @@ class Route
         'fetch_commission_configs',
         'prts_fetch_merchant_entities',
         'fetch_partner_commission_invoice_feature',
+        'internal_entity_origin_fetch',
 
         'create_ledger_journal_batch',
 
@@ -15694,7 +15697,8 @@ class Route
         'partnerships' => [
             'fetch_commission_configs',
             'fetch_partner_commission_invoice_feature',
-            'prts_fetch_merchant_entities'
+            'prts_fetch_merchant_entities',
+            'internal_entity_origin_fetch'
         ],
 
         'terminals_service' => [

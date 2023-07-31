@@ -26,6 +26,14 @@ class Repository extends BaseRepository
                     ->first();
     }
 
+    public function fetchByEntityTypeAndEntityIdOnReadReplica(string $entityType, string $entityId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->first();
+    }
+
     public function fetchOriginApplicationsForPartner(string $partnerId, int $limit = 100)
     {
         $merchantApplicationIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::APPLICATION_ID);

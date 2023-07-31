@@ -206,7 +206,7 @@ class EntityOriginTest extends TestCase
     public function testCreatePaymentOriginPrivateAuth()
     {
         $this->markTestSkipped('Entity origin for merchant auth has been removed');
-        
+
         $this->mockCardVault();
 
         $merchantId = '10000000000000';
@@ -299,5 +299,22 @@ class EntityOriginTest extends TestCase
         $this->ba->subscriptionsAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchEntityOrigin()
+    {
+        $this->testEntityOriginCreateFromPaymentPublicKey();
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDbLastEntity('payment');
+        $origin = $this->getDbLastEntity('entity_origin');
+
+        $testData['request']['content']['entity_id']  = $payment->getId();
+        $testData['response']['content']['entity_id']  = $payment->getId();
+        $testData['response']['content']['origin_id']  = $origin->toArray()['origin_id'];
+
+        $this->startTest($testData);
     }
 }

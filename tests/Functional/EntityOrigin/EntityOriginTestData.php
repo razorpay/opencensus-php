@@ -129,6 +129,25 @@ return [
         ],
     ],
 
+    'testFetchEntityOrigin' => [
+        'request'  => [
+            'url'     => '/internal/entity_origins',
+            'method'  => 'GET',
+            'content' => [
+                'entity_type' => 'payment',
+                'entity_id'   => 'randPaymentId1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'payment',
+                'entity_id'   => 'MHyD1zmoruTQuq',
+                'origin_type' => 'application',
+                'origin_id'   => 'MHyD0gZMMSmoUL',
+            ],
+        ],
+    ],
+
     'testCreateOriginInvalidIdByInternalApp' => [
         'request'  => [
             'url'     => '/entity_origins',
