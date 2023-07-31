@@ -959,6 +959,17 @@ class Core extends Base\Core
                 in_array($parentMerchant->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
                 (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $parentMerchant) === false)
             {
+
+                $this->trace->info(TraceCode::PAYMENT_TRANSFER_TDS_CALCULATION_SKIPPED,
+                    [
+                    'partner_id'            => $parentMerchant?->getId(),
+                    'partner_type'          => $parentMerchant?->getPartnerType(),
+                    'merchant_id'           => $this->merchant?->getId(),
+                    'transfer_id'           => $transfer?->getId(),
+                    'transfer_payment_id'   => $transferPayment?->getId(),
+                    ]
+                );
+
                 return 0;
             }
 
