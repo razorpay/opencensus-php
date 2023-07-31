@@ -5,21 +5,21 @@ import {
 
 describe('platformFee calculator', () => {
   const data = {
-    fee: 200,
-    tax: 100,
-    amount_transferred: 300,
+    fee: 207,
+    tax: 32,
+    amount_transferred: 25000,
     loading: false,
     items: [
-      { tax: 60, fees: 150, amount: 100 },
-      { tax: 50, fees: 50, amount: 250 },
+      { tax: 10, fees: 60, amount: 20000, amount_reversed: 0 },
+      { tax: 2, fees: 15, amount: 5000, amount_reversed: 5000 },
     ],
   };
   const returnData = {
-    totalFeeAmount: 600,
-    totalFee: 400,
-    totalRazorpayFee: 610,
-    totalTax: 210,
-    platformFee: 350,
+    totalFeeAmount: 20282,
+    totalFee: 175,
+    totalRazorpayFee: 207,
+    totalTax: 32,
+    platformFee: 20075,
   };
   test('should return calculated values', () => {
     expect(platformFeeCalculator(data)).toStrictEqual({
@@ -29,10 +29,8 @@ describe('platformFee calculator', () => {
   test('should return calculated values if items are empty', () => {
     expect(platformFeeCalculator({ ...data, loading: true, items: [] })).toStrictEqual({
       ...returnData,
-      totalRazorpayFee: 300,
-      totalFee: 200,
-      totalTax: 100,
       platformFee: 0,
+      totalFeeAmount: 207,
     });
   });
 });

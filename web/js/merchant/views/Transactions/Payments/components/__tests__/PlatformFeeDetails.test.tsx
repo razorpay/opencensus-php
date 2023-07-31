@@ -34,41 +34,58 @@ describe('PlatformFeeDetails', () => {
         tax: number;
         fees: number;
         amount: number;
+        amount_reversed: number;
         recipient_details: { name: string };
         id: string;
       }[];
     };
   }
+
   const payment = {
-    amount_transferred: 10000,
-    tax: 100,
-    fee: 100,
+    fee: 207,
+    tax: 32,
+    amount_transferred: 25000,
   };
   const transfers = {
     items: [
       {
         id: '1',
-        amount: 2000,
         createdAt: 612345578,
-        tax: 50,
-        fees: 50,
+        tax: 10,
+        fees: 60,
+        amount: 20000,
+        amount_reversed: 0,
         recipient_details: { name: 'merchant' },
       },
       {
         id: '2',
-        amount: 200,
         createdAt: 612345578,
-        tax: 50,
-        fees: 50,
+        tax: 2,
+        fees: 15,
+        amount: 5000,
+        amount_reversed: 5000,
         recipient_details: { name: 'merchant test' },
       },
     ],
     loading: false,
   };
   const { items } = transfers;
-  const razorpayFeeAndTax =
-    payment.fee + payment.tax + items[0].tax + items[0].fees + items[1].tax + items[1].fees;
-  const totalGST = payment.tax + items[0].tax + items[1].tax;
+  const totalFeeAmount =
+    payment.fee +
+    items[0].fees +
+    items[0].amount -
+    items[0].amount_reversed +
+    items[1].fees +
+    items[1].amount -
+    items[1].amount_reversed;
+
+  const platformFee =
+    items[0].amount +
+    items[0].fees -
+    items[0].amount_reversed +
+    items[1].amount +
+    items[1].fees -
+    items[1].amount_reversed;
 
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
 
@@ -80,21 +97,19 @@ describe('PlatformFeeDetails', () => {
 
   test('should render Razorpay Fee and platform fee details when transfers and payments are present', async () => {
     renderApp({ transfer: { ...transfers }, payments: { ...payment } });
-    expect(
-      screen.getByText(paiseToRupees(payment.amount_transferred + payment.fee + payment.tax)),
-    ).toBeInTheDocument();
+    expect(screen.getByText(paiseToRupees(totalFeeAmount))).toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByText(`Razorpay Fee & Taxes = ${paiseToRupees(razorpayFeeAndTax)}`),
-    );
-    expect(screen.getByText(`GST = ${paiseToRupees(totalGST)}`)).toBeInTheDocument();
+    await userEvent.click(screen.getByText(`Razorpay Fee & Taxes = ${paiseToRupees(payment.fee)}`));
+    expect(screen.getByText(`GST = ${paiseToRupees(payment.tax)}`)).toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByText(`Platform Fee = ${paiseToRupees(items[0].amount + items[1].amount)}`),
-    );
+    await userEvent.click(screen.getByText(`Platform Fee = ${paiseToRupees(platformFee)}`));
 
     expect(
-      screen.getByText(`Payment to ${items[0].recipient_details.name} = ${items[0].amount}`),
+      screen.getByText(
+        `Payment to ${items[0].recipient_details.name} = ${
+          items[0].amount - items[0].amount_reversed
+        }`,
+      ),
     ).toBeInTheDocument();
   });
 

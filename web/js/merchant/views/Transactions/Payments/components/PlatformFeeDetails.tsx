@@ -50,6 +50,7 @@ interface PlatformFeeProps {
       amount: number;
       recipient_details: { name: string };
       id: string;
+      amount_reversed: number;
     }[];
   };
   user: User;
@@ -99,8 +100,8 @@ const PlatformFeeDetails = ({ payment, transfers, user }: PlatformFeeProps): JSX
                   items.map((item, index) => {
                     return (
                       <LinkContainer to={`/route/transfers/${item.id}`} key={`transfers-${index}`}>
-                        {`Payment to ${item?.recipient_details.name} = `}
-                        <AmountOld value={item.amount} />
+                        {`Payment to ${item.recipient_details?.name} = `}
+                        <AmountOld value={item.amount - item.amount_reversed} />
                       </LinkContainer>
                     );
                   })
