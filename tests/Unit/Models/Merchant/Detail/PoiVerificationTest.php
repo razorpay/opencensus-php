@@ -78,6 +78,17 @@ class PoiVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures();
 
+        $merchantId = $merchantDetail->getId();
+
+        $data = [
+            'business_category'    => 'financial_services',
+            'business_subcategory' => 'accounting'
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, $data);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, $data);
+
         $this->app->instance("rzp.mode", Mode::LIVE);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["promoter_pan"=>"BRRPK8070K"], $merchantDetail->merchant);

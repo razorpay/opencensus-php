@@ -1703,8 +1703,8 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->create(
             'merchant_detail',
             [
-                'merchant_id' => $merchantId,
-                'business_type' => '3',
+                'merchant_id'     => $merchantId,
+                'business_type'   => '3',
                 'activation_flow' => 'blacklist',
             ]
         );
@@ -1723,8 +1723,9 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
 
-        $this->assertNull($merchantDetail->getActivationFLow());
-        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+        $this->assertEquals('whitelist', $merchantDetail->getActivationFLow());
+
+        $this->assertEquals('whitelist', $merchantDetail->getInternationalActivationFlow());
     }
 
     public function testInstantActivationForUnregisteredBusinessForOlderMerchant()
@@ -1755,8 +1756,9 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
 
-        $this->assertNull($merchantDetail->getActivationFLow());
-        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+        $this->assertEquals('whitelist', $merchantDetail->getActivationFLow());
+
+        $this->assertEquals('whitelist', $merchantDetail->getInternationalActivationFlow());
     }
 
     public function testIAForUnregisteredBusinessFeatureEnabled()
@@ -2644,6 +2646,8 @@ class ActivationTest extends OAuthTestCase
             'business_type'           => 11,
             'merchant_id'             => $merchantId,
             'poi_verification_status' => 'verified',
+            'business_category'       => 'financial_services',
+            'business_subcategory'    => 'accounting',
         ];
 
         $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes);
@@ -2685,6 +2689,8 @@ class ActivationTest extends OAuthTestCase
 
         $attributes = [
             'business_type'           => 11,
+            'business_category'       => 'financial_services',
+            'business_subcategory'    => 'accounting',
             'merchant_id'             => $merchantId,
             'promoter_address_url'    => null,
             'poi_verification_status' => 'verified',
@@ -2811,6 +2817,10 @@ class ActivationTest extends OAuthTestCase
 
             $this->startTest($testData);
         }
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl', 'test');
+
+        $this->assertEquals('whitelist', $merchantDetail->getActivationFlow());
     }
 
     public function testKycSubmissionWithFailedPoaStatus()

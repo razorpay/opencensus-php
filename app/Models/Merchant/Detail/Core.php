@@ -1606,11 +1606,23 @@ class Core extends Base\Core
 
         if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
-            if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+            if ($this->mcore->isUnRegisteredOnBoardingEnabled($merchant,
                     $merchantDetails->isUnregisteredBusiness()) === true)
             {
-                $merchantDetails->setActivationFlow();
-                $merchantDetails->setInternationalActivationFlow();
+                $activationFlowForUnregistered = null;
+
+                $internationalActivationFlow = null;
+
+                if ($this->mcore->isRegularMerchant($merchant) === true)
+                {
+                    $activationFlowForUnregistered = $this->getActivationFlowForUnregistered($merchant, $merchantDetails);
+
+                    $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant);
+                }
+
+                $merchantDetails->setActivationFlow($activationFlowForUnregistered);
+
+                $merchantDetails->setInternationalActivationFlow($internationalActivationFlow);
 
                 return;
             }

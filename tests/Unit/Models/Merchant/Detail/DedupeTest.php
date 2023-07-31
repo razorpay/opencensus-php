@@ -374,8 +374,10 @@ class DedupeTest extends OAuthTestCase
         ]);
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
-            'business_type' => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
-            'merchant_id' => 'KFMWFIqabujap8'
+            'business_type'        => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            'merchant_id'          => 'KFMWFIqabujap8',
+            'business_category'    => 'financial_services',
+            'business_subcategory' => 'accounting',
         ]);
 
         $merchant = $merchantDetail->merchant;
