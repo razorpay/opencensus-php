@@ -3,11 +3,10 @@
 namespace RZP\Http\BasicAuth;
 
 use ApiResponse;
-use Razorpay\Trace\Logger as Trace;
-use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Constants\HyperTrace;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Constants\Mode;
@@ -15,11 +14,9 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Key\Metric;
-use RZP\Constants\Product;
 use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\Tracer;
 
 
@@ -207,6 +204,9 @@ abstract class AuthCreds
         \Database\DefaultConnection::set($mode);
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function setAndCheckMerchantActivatedForLive($merchant)
     {
         $this->setMerchant($merchant);
@@ -224,6 +224,10 @@ abstract class AuthCreds
         $this->merchant = $merchant;
     }
 
+
+    /**
+     * @throws BadRequestException
+     */
     public function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();

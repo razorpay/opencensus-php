@@ -3,12 +3,18 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use Illuminate\Routing\Router;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\HyperTrace;
-use RZP\Constants\Mode;
 use Illuminate\Support\Str;
+use RZP\Error\ErrorCode;
+use RZP\Http\BasicAuth\KeyAuthCreds;
+use RZP\Http\BasicAuth\ClientAuthCreds;
+use RZP\Http\BasicAuth\Type;
+use RZP\Http\Edge\Metric;
 use RZP\Http\Edge\PassportUtil;
 use Illuminate\Foundation\Application;
-use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Http\RequestContextV2;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
@@ -19,14 +25,27 @@ use RZP\Http\P2pRoute;
 use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Http\Edge\PreAuthenticate;
 use RZP\Http\Edge\PostAuthenticate;
-
+use RZP\Exception\BadRequestException;
+use Razorpay\OAuth\Application\Repository;
+use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 class Authenticate
 {
     // Lists of metrics
     const METRIC_AUTH_HANDLE_MILLISECONDS = 'authenticate_handle_milliseconds.histogram';
+
+    const PARTNER       = 'partner';
+    const OAUTH         = 'oauth';
+    const KEY           = 'key';
+    const KEY_ID        = 'key_id';
+    const MERCHANT_ID   = 'merchant_id';
+    const ACCOUNT_ID    = 'account_id';
+    const ROUTE         = 'route';
+    const PASSPORT_AUTH = 'passport_auth';
+
+    const PASSPORT_AUTH_TYPE = 'passport_auth_type';
+
 
     /**
      * Application instance
@@ -45,9 +64,34 @@ class Authenticate
      */
     protected $oauth;
 
+    /**
+     * @var Router
+     */
     protected $router;
 
+    /**
+     * Used to access passport related information stored during DecodePassportJWT middleware.
+     * @var RequestContextV2
+     */
     protected $requestContext;
+
+    /**
+     * @var Passport|null
+     */
+    protected $passport;
+
+    /**
+     * @var PassportUtil|null
+     */
+    protected $passportUtil;
+
+    /**
+     * Trace instance used for tracing
+     * @var \Razorpay\Trace\Logger
+     */
+    protected $trace;
+
+    protected $isPartnerAuth = false;
 
     /**
      * Create a new filter instance.
@@ -64,7 +108,13 @@ class Authenticate
 
         $this->router = $this->app['router'];
 
+        $this->trace = $this->app['trace'];
+
         $this->oauth = new OAuth();
+
+        $this->passport = $this->requestContext->passport;
+
+        $this->passportUtil = empty($this->passport) ? null : new PassportUtil($this->passport);
     }
 
     /**
@@ -83,21 +133,31 @@ class Authenticate
         $span = Tracer::startSpan(['name' => self::METRIC_AUTH_HANDLE_MILLISECONDS]);
         $scope = Tracer::withSpan($span);
 
-        Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRE_AUTHENTICATE], function () use ($request) {
-            return (new PreAuthenticate)->handle($request);
-        });
-
         $route = $this->router->currentRouteName();
 
         $this->ba->init();
 
-        [$successfulExecution, $error] = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT], function () {
-            return $this->authenticateUsingPassport();
-        });
-
-        if ($successfulExecution === true)
+        // check if the request should be authenticated using Edge passport
+        if ($this->requestContext->shouldAuthenticateUsingPassport)
         {
-            $ret = $error;
+            $this->isPartnerAuth = ($this->passport->consumer->type == self::PARTNER);
+            $passportAuthType = ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
+
+            $this->trace->info(TraceCode::AUTHENTICATING_USING_PASSPORT,
+                [
+                    self::KEY_ID             => $this->passport->credential->publicKey,
+                    self::MERCHANT_ID        => $this->passport->consumer->id,
+                    self::ROUTE              => $route,
+                    self::PASSPORT_AUTH_TYPE => $passportAuthType
+                ]
+            );
+
+            $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT], function () use($passportAuthType) {
+                return (empty($this->passport->oauth) ? $this->setBasicAuthContextsFromPassport($passportAuthType) : $this->setOauthContextsFromPassport($passportAuthType));
+            });
+
+            // few business logic still use ba passport to fetch roles etc, hence set it
+            $this->ba->setPassport($this->passport);
         }
         else
         {
@@ -138,14 +198,23 @@ class Authenticate
             $endAt - $startAt,
             $this->ba->getRequestMetricDimensions());
 
-        $passport = $this->requestContext->passport;
-
-        if (($passport !== null) and
-            ($passport->consumer !== null) and
-            ($passport->consumer->type !== null) and
-            ($passport->consumer->id !== null))
+        // add counter only for recognised auth types at edge
+        $passportAuthType = empty($this->passportUtil) ? null : $this->passportUtil->getAuthTypeFromPassport();
+        if (! empty($passportAuthType))
         {
-            Tracer::addAttribute($this->requestContext->passport->consumer->type, $this->requestContext->passport->consumer->id);
+            $this->trace->count(Metric::AUTHENTICATED_USING_PASSPORT_TOTAL, [
+                self::ROUTE              => $route,
+                self::PASSPORT_AUTH      => $this->requestContext->shouldAuthenticateUsingPassport,
+                self::PASSPORT_AUTH_TYPE => $passportAuthType
+            ]);
+        }
+
+        if (($this->passport !== null) and
+            ($this->passport->consumer !== null) and
+            ($this->passport->consumer->type !== null) and
+            ($this->passport->consumer->id !== null))
+        {
+            Tracer::addAttribute($this->passport->consumer->type, $this->passport->consumer->id);
         }
 
         // Non-null value indicates failure flow
@@ -355,98 +424,106 @@ class Authenticate
     }
 
     /**
-     * This is to check if the auth should be done by Edge Passport only
-     * or have a redundant auth at API also
+     * set basic auth contexts from edge passport that are required by business logic
      *
-     *
-     * @return bool
+     * @param string $authType
+     * @return ApiResponse|null
+     * @throws BadRequestException
      */
-    private function resolveOAuthLocally(): bool
+    private function setBasicAuthContextsFromPassport(string $authType)
     {
-        // if the request has a passport attached to it
-        if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
-        {
-            return false;
+        $this->ba->setBasicType($authType);
+        $authFlowType = $this->isPartnerAuth ? self::PARTNER : self::KEY;
+        $this->app['request.ctx']->setAuthFlowType($authFlowType);
+        $this->ba->setPartnerAuth($this->isPartnerAuth);
+
+        $authCredsClass = $this->isPartnerAuth ? ClientAuthCreds::class : KeyAuthCreds::class;
+        $this->ba->authCreds = new $authCredsClass($this->app, $this->passport->credential->publicKey);
+        $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+
+        // split by '-' to remove -acc_ if present in public key to get key
+        // get last 14 chars to get key id
+        $this->ba->authCreds->creds[self::KEY_ID] = substr($this->passport->credential->username, -14);
+
+        // ideally no business logic should need key entity
+        // TODO: remove setting key entity object
+        $this->ba->setKeyEntityFromKeyId(false);
+
+        $this->ba->authCreds->setPublicKey($this->passport->credential->publicKey);
+        $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
+
+        $this->ba->setMerchantById($this->passport->consumer->id);
+
+        $error = $this->passportUtil->doMissingChecksAtEdge();
+        if ($error !== null) {
+            throw $error;
         }
 
-        // if the attached passport has valid data to be used for oauth authentication and info extraction
-        $passportUtil = (new PassportUtil($this->requestContext->passport));
+        // will not throw any error as account id existence is already verified by edge
+        $this->ba->checkAndSetAccountScope();
 
-        if ($passportUtil->canPassportBeUsedForOauth() === false)
-        {
-            return false;
-        }
-
-        // if env is testing or bvt, skip using passport as these requests dont have a passport attached as of now
-        //TODO: Once Edge is integrated in BVT, remove bvt check
-        if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
-        {
-            return true;
-        }
-
-        // https://razorpay.slack.com/archives/C012ZGQQFDJ/p1674198992232559
-        return false;
-        // if the experiment is enabled for this request to use passport
-        //return $this->isRazorXEnabledForResolvingOAuthLocally();
-    }
-
-    //TODO : Need to remove this experiment after sometime
-    private function isRazorXEnabledForResolvingOAuthLocally(): bool{
-
-        $requestId = $this->app['request']->getId();
-        $mode      =  Mode::LIVE;
-        $variant   = $this->app->razorx->getTreatment($requestId, RazorxTreatment::USE_EDGE_PASSPORT_FOR_AUTH, $mode);
-
-        $log = [
-            'request_id' => $requestId,
-            'experiment' => $variant,
-            'mode'       => $mode,
-        ];
-
-        $this->app['trace']->info(TraceCode::RESOLVE_OAUTH_LOCALLY_RAZORX_VARIANT, $log);
-
-        return (strtolower($variant) === 'on');
+        return $this->passportUtil->checkAndSetPartnerMerchantScope();
     }
 
     /**
-     * if the auth should be done by Edge Passport only, then authenticate the request.
+     * set oauth contexts from edge passport that are required by business logic
      *
-     *
-     * @return array [bool $executedSuccessfully, mixed $error]
+     * @param string $authType
+     * @return ApiResponse|null
      */
-    private function authenticateUsingPassport(): array
+    private function setOauthContextsFromPassport(string $authType)
     {
-        if ($this->resolveOAuthLocally() === true)
+        $this->ba->setBasicType($authType);
+        $this->app['request.ctx']->setAuthFlowType(self::OAUTH);
+
+        // Public key is used to generate the callback URL parameter that is
+        // being sent with the payment create request to the gateway.
+        $publicKey = $this->passport->credential->publicKey;;
+        $this->ba->oauthPublicTokenAuth($publicKey, Type::PRIVATE_AUTH);
+
+        // authCreds will be initialized by oauthPublicTokenAuth
+        $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+
+        $merchantId = $this->passport->oauth->ownerId;;
+        $this->ba->setMerchantById($merchantId);
+
+        $userId = $this->passport->oauth->userId;;
+        try
         {
-            try
-            {
-                $passportOauth = new \RZP\Http\Edge\PassportAuth\OAuth();
-                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT_OAUTH],  function () use ($passportOauth) {
-                    return $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
-                });
-            }
-            catch (\Throwable $exception)
-            {
-                $dimensions = [
-                    'key_id' => $this->ba->getPublicKey()
-                ];
-                $log        = [
-                    'request_id'    => $this->app['request']->getId(),
-                    'error'         => $exception->getMessage(),
-                    'code'          => $exception->getCode(),
-                    'passport'      => $dimensions,
-                    'edge_trace_id' => $this->requestContext->edgeTraceId,
-
-                ];
-                $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_FAILED, $log);
-
-                return [false, null];
-            }
-            $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_SUCCEEDED,
-                                      ['request_id'    => $this->app['request']->getId()]);
-            // returns true only if oauth can be resolved locally and has executed successfully.
-            return [true, $ret];
+            $this->ba->setUserById($userId);
         }
-        return [false, null];
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::USER_CONTEXT_NOT_PRESENT_FOR_OAUTH_REQUEST,
+                [OAuthToken::MERCHANT_ID => $merchantId, 'error' => $ex]);
+        }
+
+        // keeping the merchant activation check in here as this will be supported by Edge in future
+        // this can be removed once edge starts supporting it natively
+        $error = $this->passportUtil->doMissingChecksAtEdge();
+        if ($error !== null) {
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
+        }
+
+        $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
+
+        // this flow is required for non pure platform partners who use oauth (Client Credentials mostly).
+        $error = $this->passportUtil->handleAccountAuthIfApplicable();
+        if ($error !== null)
+        {
+            return $error;
+        }
+
+        $this->ba->setAccessTokenId($this->passport->oauth->accessTokenId);
+        $this->ba->setOAuthClientId($this->passport->oauth->clientId);
+        $this->ba->setOAuthApplicationId($this->passport->oauth->appId);
+        $this->ba->setUserRoleWithUserIdAndMerchantId($merchantId, $userId);
+
+        $tokenScopes = $this->passportUtil->fetchOauthScopes();
+        $this->ba->setTokenScopes($tokenScopes);
+
+        $application = (new Repository())->findOrFail($this->passport->oauth->appId);
+        $this->ba->setPartnerMerchantId($application->getMerchantId());
+        return null;
     }
 }

@@ -29,8 +29,8 @@ class InvoiceMetricTest extends TestCase
         $mock = $this->createMetricsMock();
 
         $mock->expects($this->at(15))
-             ->method('count')
-             ->withConsecutive(
+            ->method('count')
+            ->withConsecutive(
                 [
                     'cache_misses_total',
                     1,
@@ -67,24 +67,24 @@ class InvoiceMetricTest extends TestCase
                         'type'    => 'query_cache',
                     ],
                 ],
-                 [
-                     'cache_misses_total',
-                     1,
-                     [
-                         'version' => 'v1',
-                         'entity'  => 'feature',
-                         'type'    => 'query_cache',
-                     ],
-                 ],
-                 [
-                     'cache_writes_total',
-                     1,
-                     [
-                         'version' => 'v1',
-                         'entity'  => 'feature',
-                         'type'    => 'query_cache',
-                     ],
-                 ],
+                [
+                    'cache_misses_total',
+                    1,
+                    [
+                        'version' => 'v1',
+                        'entity'  => 'feature',
+                        'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'cache_writes_total',
+                    1,
+                    [
+                        'version' => 'v1',
+                        'entity'  => 'feature',
+                        'type'    => 'query_cache',
+                    ],
+                ],
                 [
                     'http_requests_total',
                     1,
@@ -92,8 +92,17 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->at(0))
-             ->method('histogram')
-             ->withConsecutive(
+            ->method('histogram')
+            ->withConsecutive(
+                [
+                    'middleware_decode_passport_duration_ms',
+                    $this->greaterThanOrEqual(0),
+                    [],
+                ]);
+
+        $mock->expects($this->at(2))
+            ->method('histogram')
+            ->withConsecutive(
                 [
                     'authenticate_handle_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
@@ -107,8 +116,8 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->at(3))
-             ->method('histogram')
-             ->withConsecutive(
+            ->method('histogram')
+            ->withConsecutive(
                 [
                     'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
@@ -125,8 +134,17 @@ class InvoiceMetricTest extends TestCase
         $mock = $this->createMetricsMock();
 
         $mock->expects($this->at(0))
-             ->method('histogram')
-             ->withConsecutive(
+            ->method('histogram')
+            ->withConsecutive(
+                [
+                    'middleware_decode_passport_duration_ms',
+                    $this->greaterThanOrEqual(0),
+                    [],
+                ]);
+
+        $mock->expects($this->at(2))
+            ->method('histogram')
+            ->withConsecutive(
                 [
                     'authenticate_handle_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
@@ -139,9 +157,9 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ]);
 
-        $mock->expects($this->at(1))
-             ->method('histogram')
-             ->withConsecutive(
+        $mock->expects($this->at(3))
+            ->method('histogram')
+            ->withConsecutive(
                 [
                     'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),

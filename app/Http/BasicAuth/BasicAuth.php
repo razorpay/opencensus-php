@@ -14,6 +14,7 @@ use Lcobucci\JWT\Token\Builder as JWTBuilder;
 use Lcobucci\JWT\Signer as JWTSigner;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
+use Razorpay\Edge\Passport\Passport;
 use Razorpay\OAuth\OAuthServer;
 use RZP\Constants\HyperTrace;
 use RZP\Error\PublicErrorDescription;
@@ -598,19 +599,51 @@ class BasicAuth
         $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
     }
 
-    protected function setKeyEntityFromKeyId()
+    /**
+     * sets key entity object from key id
+     *
+     * @param bool $notExpired whether to fetch only not expired key for the given keyid
+     * @return void
+     */
+    public function setKeyEntityFromKeyId(bool $notExpired = true)
     {
         $keyId =  $this->authCreds->creds[self::KEY_ID];
 
-        if (empty($keyId) === false)
-        {
-            $key = $this->repo->key->findNotExpired($keyId);
-
-            if ($key !== null)
-            {
-                $this->authCreds->setKeyEntity($key);
-            }
+        if (empty($keyId)) {
+            return;
         }
+
+        $key = ($notExpired === true) ? $this->repo->key->findNotExpired($keyId) : $this->repo->key->find($keyId);
+
+        // if key is not present at API but present at Edge it is an inconsistency hence we log and exit with 401
+        if (empty($key)) {
+            $this->trace->info(TraceCode::PASSPORT_API_KEY_INVALID, [
+                'key_id' => $keyId,
+                'route'  => $this->route->getCurrentRouteName(),
+            ]);
+            return $this->authCreds->invalidApiKey();
+        }
+
+        // there can be race conditions due to sync delay between API and Edge
+        // so if the key is expired at API but active at Edge we log and exit with 401
+        if (($notExpired === false) && (! empty($key->getExpiredAt()))) {
+            $this->trace->info(TraceCode::PASSPORT_API_KEY_EXPIRED, [
+                'key_id' => $keyId,
+                'route'  => $this->route->getCurrentRouteName(),
+            ]);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
+        }
+
+
+        if ($key !== null)
+        {
+            $this->authCreds->setKeyEntity($key);
+        }
+    }
+
+    public function setPartnerAuth(bool $isPartnerAuth): void
+    {
+        $this->isPartnerAuth = $isPartnerAuth;
     }
 
     /**
@@ -2400,7 +2433,7 @@ class BasicAuth
      * Fetch merchant by ID and sets it to $this->merchant
      * for the current request
      */
-    protected function checkAndSetAccountScope()
+    public function checkAndSetAccountScope()
     {
         if (($this->isPartnerAuth() === true) or ($this->isAccountAuthAllowed() === false))
         {
@@ -2533,7 +2566,7 @@ class BasicAuth
         $this->setPassportImpersonationClaims(self::PASSPORT_IMPERSONATION_TYPE_PARTNER, $account->getId());
     }
 
-    protected function isPartnerAuthAllowed(): bool
+    public function isPartnerAuthAllowed(): bool
     {
         $partnerMerchant = $this->authCreds->getMerchant();
         //
@@ -3319,6 +3352,20 @@ class BasicAuth
             'bearer'         => empty($ctx->getBearerToken()) === false,
             'auth_flow_type' => $ctx->getAuthFlowType(),
         ];
+    }
+
+    /**
+     * sets ba passport
+     *
+     * @param Passport $passport
+     */
+    public function setPassport(Passport $passport): void
+    {
+        // convert edge passport object to associative array since ba passport is an array
+        // json_decode and json_encode will convert the object to associative array in full depth recursively
+        // there will not be any error since we verified passport is valid already
+        // this will not cause any performance impact as the passport does not have too many nested objects
+        $this->passport = json_decode(json_encode($passport), true);
     }
 
     /**

@@ -10,6 +10,7 @@ final class Metric
     const APP_AUTH_SUCCESS_TOTAL           = 'app_auth_success_count_total';
     const AUTHN_MISMATCH_TOTAL             = 'edge_authn_mismatch_total';
     const EDGE_AUTHFLOW_MISMATCH_TOTAL     = 'edge_authflow_mismatch_total';
-    const MIDDLEWARE_PREAUTH_DURATION_MS   = 'middleware_preauthenticate_duration_ms';
     const MIDDLEWARE_POSTAUTH_DURATION_MS  = 'middleware_postauthenticate_duration_ms';
+    const AUTHENTICATED_USING_PASSPORT_TOTAL     = 'authenticated_using_passport_total';
+    const MIDDLEWARE_DECODE_PASSPORT_DURATION_MS = 'middleware_decode_passport_duration_ms';
 }

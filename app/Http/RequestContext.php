@@ -2,7 +2,6 @@
 
 namespace RZP\Http;
 
-use Lcobucci\JWT\Parser;
 use Illuminate\Http\Request;
 
 use RZP\Models\Key;
@@ -16,7 +15,6 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use RZP\Exception\BadRequestException;
-use RZP\Trace\TraceCode;
 
 /**
  * @deprecated ...in favor of RequestContextV2, would take around one year time though.
@@ -169,6 +167,11 @@ final class RequestContext
      * @var null|string
      */
     protected $initialized = false;
+
+    /**
+     * @var RequestContextV2
+     */
+    protected $reqCtxV2;
 
     protected static Token\Parser $parser;
 
@@ -416,6 +419,7 @@ final class RequestContext
         $this->proxy              = false;
         $this->userId             = null;
         $this->authFlowType       = BasicAuth::KEY;
+        $this->reqCtxV2           = $this->app['request.ctx.v2'];
     }
 
     /**
@@ -480,7 +484,7 @@ final class RequestContext
         // Skipping this for partner auth for now. We have to fix on whether the client's merchant should be throttled
         // or the account passed in the input/header i.e. the sub merchant.
         //
-        if (str_contains($this->keyId, 'partner_') === true)
+        if ($this->isPartnerAuth())
         {
             $this->authFlowType = BasicAuth::PARTNER;
             return;
@@ -512,7 +516,8 @@ final class RequestContext
         if ($isPublicCallbackRoute === true)
         {
             $this->keySource = BasicAuth::ROUTE_PARAM;
-            $key = $this->request->route()->parameter('key_id');
+            $passportKey = $this->getPassportKey('publicKey');
+            $key = $passportKey ?? $this->request->route()->parameter('key_id');
         }
         // Else check key_id first, else fallback to auth user.
         if (empty($key) === true)
@@ -570,7 +575,7 @@ final class RequestContext
         $this->setInternalAppNameByAuth();
 
         if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or
-            (($isProxyRoute === true) and (str_contains($this->keyWithoutPrefix, 'partner_') === false)))
+            (($isProxyRoute === true) and ($this->isPartnerAuth() === false)))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
@@ -592,7 +597,9 @@ final class RequestContext
 
     protected function setAdditionalVarsForDirectAuth()
     {
-        $key = $this->request->input(BasicAuth::KEY_ID);
+        // use passport values if shouldAuthenticateUsingPassport is true
+        $passportKey = $this->getPassportKey();
+        $key = $passportKey ?? $this->request->input(BasicAuth::KEY_ID);
 
         if (empty($key) === false)
         {
@@ -718,7 +725,9 @@ final class RequestContext
 
     protected function setKeyModeAndSecret($key = null, $secret = null)
     {
-        $key = $key ?? $this->request->getUser();
+        // use passport values if shouldAuthenticateUsingPassport is true
+        $passportKey = $this->getPassportKey();
+        $key = $key ?? ($passportKey ?? $this->request->getUser());
         // If key is empty (direct auth & bearer token case) or is of invalid length just return from this method.
         if ($this->isKeyOfValidLength($key) === false)
         {
@@ -729,8 +738,19 @@ final class RequestContext
         $this->keyWithoutPrefix = substr($this->key, 9) ?: null;
         $this->secret           = $secret ?? $this->request->getPassword();
 
-        $mode       = substr($this->key, 4, 4) ?: null;
+        $passportMode = $this->reqCtxV2->shouldAuthenticateUsingPassport ? $this->reqCtxV2->passport->mode : null;
+        $mode         = $passportMode ?? substr($this->key, 4, 4) ?: null;
         $this->mode = Mode::exists($mode) ? $mode : null;
+    }
+
+    /**
+     * sets auth flow type
+     *
+     * @param string   $authFlowType
+     */
+    public function setAuthFlowType(string $authFlowType): void
+    {
+        $this->authFlowType = $authFlowType;
     }
 
     /**
@@ -742,5 +762,26 @@ final class RequestContext
         $validKeyLengths = array_merge(AuthCreds::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
 
         return (in_array(strlen($key), $validKeyLengths, true) === true);
+    }
+
+    /**
+     * Returns true if request is using partner creds
+     *
+     * @return bool
+     */
+    protected function isPartnerAuth()
+    {
+        return $this->reqCtxV2->shouldAuthenticateUsingPassport ? ($this->reqCtxV2->passport->consumer->type == 'partner') : str_contains($this->keyWithoutPrefix, 'partner_');
+    }
+
+    /**
+     * Returns key used for the request from passport if passport is usable else null
+     *
+     * @param string $param allowed params [username, publicKey]
+     * @return string|null
+     */
+    protected function getPassportKey(string $param = 'username')
+    {
+        return $this->reqCtxV2->shouldAuthenticateUsingPassport ? $this->reqCtxV2->passport->credential->{$param} : null;
     }
 }

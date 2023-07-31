@@ -14,6 +14,9 @@ use Illuminate\Cache\FileStore;
 use Illuminate\Support\Facades\Redis;
 
 use Config;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth\ClientAuthCreds;
+use RZP\Http\BasicAuth\KeyAuthCreds;
 use RZP\Services\EsClient;
 use RZP\Services\Mock\BeamService;
 use RZP\Tests\TestCase as ParentTestCase;
@@ -288,6 +291,64 @@ class TestCase extends ParentTestCase
 
         $this->assertArraySelectiveEquals($expected, $actual);
         $this->assertEqualsCanonicalizing(array_keys($expected), array_keys($actual));
+    }
+
+    /**
+     * Asserts that basicauth context has exactly same values set as expected
+     *
+     * @return void
+     */
+    protected function assertBaValues($keyId, $consumerId, $publicKey, $authCredsClass, $accountId = '', $mode = 'test', $isPartnerAuth = false,
+                                      $partnerMerchantId = null, $partnerApplicationId = null, $oauthApplicationId = null)
+    {
+        $ba = $this->app['basicauth'];
+        $this->assertEquals('private', $ba->getAuthType());
+        $this->assertEquals($ba->isPartnerAuth(), $isPartnerAuth);
+        $this->assertEquals($ba->getMode(), $mode);
+
+        $this->assertTrue($ba->authCreds instanceof $authCredsClass);
+        $this->assertEquals($ba->authCreds->creds[BasicAuth::KEY_ID], $keyId);
+        $this->assertEquals($ba->authCreds->creds[BasicAuth::ACCOUNT_ID], $accountId);
+        if ($authCredsClass instanceof KeyAuthCreds) {
+            $this->assertEquals($ba->getKeyEntity()->getId(), $keyId);
+        }
+
+        $this->assertEquals($ba->getPublicKey(), $publicKey);
+        $this->assertEquals($ba->getMerchantId(), $consumerId);
+        $this->assertEquals($ba->getPartnerMerchantId(), $partnerMerchantId);
+        $this->assertEquals($ba->getOAuthApplicationId(), $oauthApplicationId);
+        if ($authCredsClass instanceof ClientAuthCreds) {
+            $this->assertEquals($ba->authCreds->getPartnerApplicationId(), $partnerApplicationId);
+        }
+    }
+
+    /**
+     * Asserts that oauth in basicauth context has exactly same values set as expected
+     *
+     * @return void
+     */
+    protected function assertOauthValues($ownerId, $publicKey, $userId, $accessTokenId, $oauthClientId, $oauthApplicationId, $tokenScopes,
+                                         $partnerMerchantId = '', $accountId = '', $mode = 'test')
+    {
+        $ba = $this->app['basicauth'];
+        $this->assertEquals('private', $ba->getAuthType());
+        $this->assertFalse($ba->isPartnerAuth());
+        $this->assertTrue($ba->isOauth());
+        $this->assertEquals($ba->getMode(), $mode);
+
+        $this->assertTrue($ba->authCreds instanceof KeyAuthCreds);
+        $this->assertEquals($ba->authCreds->creds[BasicAuth::ACCOUNT_ID], $accountId);
+        $this->assertEquals($ba->getUser()->getId(), $userId);
+
+        $this->assertEquals($ba->getPublicKey(), $publicKey);
+        $this->assertEquals($ba->getMerchantId(), $ownerId);
+        $this->assertEquals($ba->getPartnerMerchantId(), $partnerMerchantId);
+
+        $this->assertEquals($ba->getAccessTokenId(), $accessTokenId);
+        $this->assertEquals($ba->getOAuthClientId(), $oauthClientId);
+        $this->assertEquals($ba->getOAuthApplicationId(), $oauthApplicationId);
+        $this->assertNull($ba->getUserRole());
+        $this->assertEquals($ba->getTokenScopes(), $tokenScopes);
     }
 
     /**

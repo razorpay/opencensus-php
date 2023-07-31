@@ -21,6 +21,13 @@ final class RequestContextV2
     public $hasPassportJwt = false;
 
     /**
+     * This variable is used to identify whether the request has to be authenticated using Edge passport and skip Authentication at API
+     *
+     * @var boolean
+     */
+    public $shouldAuthenticateUsingPassport = false;
+
+    /**
      * Value is true if attributes of passport from edge do not match with what is evaluated at api's end.
      * Note that $passport variable is (updated to)correct value still and should only be used in application.
      * This flag is used to send response header for functional environment only for coverage.

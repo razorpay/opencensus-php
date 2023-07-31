@@ -6076,6 +6076,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUSINESS_AUTH_MIDDLEWARE_FAILED                       = 'BUSINESS_AUTH_MIDDLEWARE_FAILED';
     const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
+    const PASSPORT_ATTRS_MISSING                                = 'PASSPORT_ATTRS_MISSING';
+    const PASSPORT_UNIDENTIFIED_REQUEST                         = 'PASSPORT_UNIDENTIFIED_REQUEST';
     const EDGE_AUTHORIZATION_MISMATCH                           = 'EDGE_AUTHORIZATION_MISMATCH';
     const EDGE_AUTHENTICATION_MISMATCH                          = 'EDGE_AUTHENTICATION_MISMATCH';
     const EDGE_IMPERSONATION_MISMATCH                           = 'EDGE_IMPERSONATION_MISMATCH';
@@ -6083,6 +6085,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_PROXY_REQUEST_ERROR                              = 'EDGE_PROXY_REQUEST_ERROR';
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
+
+    const PARTNER_AUTH_NOT_ALLOWED                              = 'PARTNER_AUTH_NOT_ALLOWED';
+    const ACCOUNT_AUTH_NOT_ALLOWED                              = 'ACCOUNT_AUTH_NOT_ALLOWED';
+
+    const PASSPORT_API_KEY_INVALID                              = 'PASSPORT_API_KEY_INVALID';
+    const PASSPORT_API_KEY_EXPIRED                              = 'PASSPORT_API_KEY_EXPIRED';
+    const PASSPORT_ACCOUNT_ID_INVALID                           = 'PASSPORT_ACCOUNT_ID_INVALID';
+
     const RATE_LIMITER_SERVICE_ERROR                            = 'RATE_LIMITER_SERVICE_ERROR';
     const RATE_LIMITER_SERVICE_REQUEST                          = 'RATE_LIMITER_SERVICE_REQUEST';
 

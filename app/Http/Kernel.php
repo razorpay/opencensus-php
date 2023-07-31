@@ -92,13 +92,13 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'passport_jwt'                  => Middleware\DecodePassportJwt::class,
+        'decode_passport_jwt'           => Middleware\DecodePassportJwt::class,
         'product_identifier'            => Middleware\ProductIdentifier::class,
         'proxysql'                      => Middleware\ProxySQL::class,
         'throttle'                      => Middleware\Throttle::class,
         'save_api_details'              => Middleware\SaveApiDetailsForDocumentation::class,
         'auth'                          => Middleware\Authenticate::class,
-        'business_auth'                      => Middleware\BusinessAuth::class,
+        'business_auth'                 => Middleware\BusinessAuth::class,
         'sdk_metric'                    => Middleware\SDKMetric::class,
         'admin_access'                  => Middleware\AdminAccess::class,
         'user_access'                   => Middleware\UserAccess::class,

@@ -4,7 +4,6 @@ namespace RZP\Http\BasicAuth;
 
 use ApiResponse;
 use Razorpay\OAuth\Client as OAuthClient;
-use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Constants\HyperTrace;
 use RZP\Error\ErrorCode;
@@ -49,6 +48,13 @@ class ClientAuthCreds extends AuthCreds
             return false;
         }
 
+        $this->fetchPartnerClient($keyId);
+
+        return (empty($this->partnerClient) === false);
+    }
+
+    public function fetchPartnerClient($keyId)
+    {
         try
         {
             $this->partnerClient = Tracer::inspan(['name' => HyperTrace::CLIENT_AUTH_CRED_IS_KEY_EXISTING], function ()  use ($keyId)
@@ -66,10 +72,7 @@ class ClientAuthCreds extends AuthCreds
         {
             $this->trace->error(TraceCode::BAD_REQUEST_INVALID_CLIENT_KEY, [self::CLIENT_ID => $this->getKey()]);
         }
-
-        return (empty($this->partnerClient) === false);
     }
-
     public function verifyKeyNotExpired()
     {
         $valid = (empty($this->partnerClient) === false);

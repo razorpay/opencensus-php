@@ -5,11 +5,9 @@ namespace RZP\Http\Middleware;
 use App;
 use RZP\Http\RouteLatencyGroup;
 use RZP\Http\RouteMaxLatency;
-use RZP\Trace\TraceCode;
 use RZP\Http\RouteTeamMap;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
-use Illuminate\Foundation\Application;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants\Metric;
@@ -26,7 +24,7 @@ final class Throttle
 
     public function __construct()
     {
-        $this->app = $app = App::getFacadeRoot();;
+        $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
     }

@@ -103,6 +103,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
+                'decode_passport_jwt',
                 'product_identifier',
                 'proxysql',
                 'auth',
@@ -136,6 +137,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1/upi',
             'namespace'     => $this->namespace . '\\P2p',
             'middleware'    => [
+                'decode_passport_jwt',
                 'product_identifier',
                 'throttle',
                 'auth',

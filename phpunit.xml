@@ -106,6 +106,7 @@
             <directory>./tests/Functional/BasicAuth/</directory>
             <directory>./tests/Functional/Store/</directory>
             <directory>./tests/Functional/Splitz/</directory>
+            <directory>./tests/Functional/PassportAuth/</directory>
         </testsuite>
         <testsuite name="Features-1 Test Suite">
             <directory>./tests/Functional/FileStore/</directory>

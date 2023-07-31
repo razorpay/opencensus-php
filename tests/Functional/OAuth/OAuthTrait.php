@@ -132,10 +132,10 @@ trait OAuthTrait
     {
         $client = $this->createOAuthApplicationAndGetClientByEnv($env);
 
-        return $this->generateOAuthAccessTokenPassposrtForClient($attributes, $client);
+        return $this->generateOAuthAccessTokenPassportForClient($attributes, $client);
     }
 
-    public function generateOAuthAccessTokenPassposrtForClient(array $attributes = [], $client)
+    public function generateOAuthAccessTokenPassportForClient(array $attributes = [], $client)
     {
         $defaultValues = $this->getDefaultAccessTokenValues($client);
 
