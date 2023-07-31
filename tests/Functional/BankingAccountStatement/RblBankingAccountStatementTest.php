@@ -13,7 +13,6 @@ use Database\Connection;
 
 use RZP\Constants;
 
-use RZP\Jobs\BankingAccountStatementReconProcessNeo;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
@@ -63,6 +62,7 @@ use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Jobs\BankingAccountStatementReconProcessNeo;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -4748,6 +4748,123 @@ class RblBankingAccountStatementTest extends TestCase
                             ],
                             [
                                 'pstdDate' => '2022-07-03T20:53:01.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => '209821811450_IMPSIN',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '164.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => '  2',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-07-04T02:51:23.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '50.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-04T00:00:00.000',
+                                    'txnDesc' => 'DEBIT IMPS 20000324344839',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '50.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807189',
+                                'txnSrlNo' => '  3',
+                                'valueDate' => '2022-07-04T00:00:00.000'
+                            ],
+                        ],
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblBulkResponseForDiscardingMissingRecords()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2022-07-03T20:51:21.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => '209821810000_IMPSIN',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '100.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S429654',
+                                'txnSrlNo' => ' 1',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-07-03T23:51:23.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '50.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => 'DEBIT IMPS 20000324344829',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '50.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807089',
+                                'txnSrlNo' => '  3',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-07-03T22:55:01.000',
                                 'transactionSummary' => [
                                     'instrumentId' => '',
                                     'txnAmt' => [
@@ -11479,6 +11596,112 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertTrue($boolMetricCaptured);
     }
 
+    public function testRblDiscardMissingAccountStatement()
+    {
+        $oldDateTime = Carbon::create(2022, 7, 5, 21, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::MISSING_STATEMENTS_FOUND,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'channel'       => 'rbl',
+                'is_monitoring' => false,
+            ]
+        );
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429654',
+                                    'balance'                   => 10000,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861681,
+                                    'bank_serial_number'        => 1,
+                                    'description'               => 'Credit to account',
+                                    'category'                  => 'customer_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '11450',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429655',
+                                    'balance'                   => 21450,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861781,
+                                    'bank_serial_number'        => 2,
+                                    'description'               => 'CREDIT NEFT',
+                                    'category'                  => 'bank_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $basdBeforeTest = $this->getDbEntity('banking_account_statement_details', ['account_number' => '2224440041626905', 'channel' => 'rbl']);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basdBeforeTest[Entity::ID],
+                              [BasDetails\Entity::PAGINATION_KEY => 'next_key']);
+
+        $mockedResponse = $this->getRblBulkResponseForDiscardingMissingRecords();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                       {
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   });
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData['testRblMissingAccountStatement'];
+
+        $this->startTest($testData);
+
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $merchantMissingStatementList = json_decode($this->app['redis']->get($redisKey), true);
+
+        $this->assertEmpty($merchantMissingStatementList);
+
+        $this->app['redis']->del($redisKey);
+
+        $this->assertFalse($boolMetricCaptured);
+
+        Carbon::setTestNow();
+    }
+
     public function testInsertRblMissingAccountStatement()
     {
         $oldDateTime = Carbon::create(2016, 1, 6, 12, 0, 0, Timezone::IST);
@@ -11719,6 +11942,85 @@ class RblBankingAccountStatementTest extends TestCase
                 $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload['additional_params']);
             }
         }
+
+        Carbon::setTestNow();
+    }
+
+    public function testAlreadyInsertedRblMissingAccountStatement()
+    {
+        $oldDateTime = Carbon::create(2022, 7, 5, 21, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->testRblAccountStatementCase1();
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $missingStatementsBeforeInsertion = [
+            [
+                'type'                => 'credit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'rbl',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034964',
+                'balance'             => 1000100,
+                'transaction_date'    => 1657132200,
+                'posted_date'         => 1657207800,
+                'bank_serial_number'  => 'S71034964',
+                'description'         => 'INF/NEFT/023629961691/SBIN0050103/TestRBL/Boruto',
+                'balance_currency'    => 'INR',
+            ]
+        ];
+
+        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 1]);
+
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $this->app['redis']->set($redisKey, json_encode($missingStatementsBeforeInsertion));
+
+        $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $initialCount = count($initialBasEntries);
+
+        $initialBasDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $initialStatementClosingBalance = $initialBasDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData['testInsertRblMissingAccountStatement'];
+
+        $this->startTest($testData);
+
+        $merchantMissingStatementList = json_decode($this->app['redis']->get($redisKey), true);
+
+        $this->assertEmpty($merchantMissingStatementList);
+
+        $this->app['redis']->del($redisKey);
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $this->assertCount($initialCount + 1, $basEntries);
+
+        $basDetails = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNull($basDetails->getLastReconciledAt());
+
+        $insertedStatement = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S71034964'
+        ])[0];
+
+        $this->assertEquals(1657207800, $insertedStatement['created_at']);
+
+        $this->assertGreaterThanOrEqual($insertedStatement['transaction_date'], $insertedStatement['created_at']);
+
+        Queue::assertPushed(BankingAccountStatementUpdate::class, 1);
 
         Carbon::setTestNow();
     }

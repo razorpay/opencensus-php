@@ -467,12 +467,19 @@ class Core extends Base\Core
                             $merchant);
                     }
 
+                    //get last statement in our db
+                    $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+
+                    $postedDateOfLastTransaction = isset($lastBankTxn) === true ? $lastBankTxn[Entity::POSTED_DATE] : null;
+
                     /**
                      * Removing statements not pertaining to the range
                      */
                     foreach ($missingTransactions as $key => $missingTransaction)
                     {
-                        if ($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE])
+                        if (($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE]) or
+                            ((isset($postedDateOfLastTransaction) === true) and
+                             ($missingTransaction[Entity::POSTED_DATE] > $postedDateOfLastTransaction)))
                         {
                             unset($missingTransactions[$key]);
                         }
@@ -1123,9 +1130,11 @@ class Core extends Base\Core
 
                     $basEntity->merchant()->associate($merchant);
 
-                    $basEntity->setCreatedAt($insertionDetails[Entity::CREATED_AT]);
+                    $missingStatementCreatedAt = max($insertionDetails[Entity::CREATED_AT], $statement[Entity::POSTED_DATE], $statement[Entity::TRANSACTION_DATE]);
 
-                    $basEntity->setUpdatedAt($insertionDetails[Entity::UPDATED_AT]);
+                    $basEntity->setCreatedAt($missingStatementCreatedAt);
+
+                    $basEntity->setUpdatedAt($missingStatementCreatedAt);
 
                     $balanceChange = $basEntity->getNetAmountBasedOnTransactionType();
 
@@ -1162,7 +1171,7 @@ class Core extends Base\Core
 
                     $this->insertedBasTransactionDetails = [
                         Transaction\Entity::ID         => $generateTransactionId,
-                        Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
+                        Transaction\Entity::CREATED_AT => max($insertionDetails['transaction_created_at'], $statement[Entity::POSTED_DATE])
                     ];
 
                     try
@@ -1307,9 +1316,11 @@ class Core extends Base\Core
 
                     $basEntity->merchant()->associate($merchant);
 
-                    $basEntity->setCreatedAt($insertionDetails[Entity::CREATED_AT]);
+                    $missingStatementCreatedAt = max($insertionDetails[Entity::CREATED_AT], $statement[Entity::POSTED_DATE], $statement[Entity::TRANSACTION_DATE]);
 
-                    $basEntity->setUpdatedAt($insertionDetails[Entity::UPDATED_AT]);
+                    $basEntity->setCreatedAt($missingStatementCreatedAt);
+
+                    $basEntity->setUpdatedAt($missingStatementCreatedAt);
 
                     $balanceChange = $basEntity->getNetAmountBasedOnTransactionType();
 
@@ -1348,7 +1359,7 @@ class Core extends Base\Core
 
                     $this->insertedBasTransactionDetails = [
                         Transaction\Entity::ID         => $generateTransactionId,
-                        Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
+                        Transaction\Entity::CREATED_AT => max($insertionDetails['transaction_created_at'], $statement[Entity::POSTED_DATE])
                     ];
 
                     try
