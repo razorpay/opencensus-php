@@ -198,8 +198,10 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   fetchReferralURL = () => {
+    const { user } = this.props;
     const { referralData } = this.state;
-    if (referralData === '') {
+
+    if (referralData === '' && !user.isPartner('pure_platform')) {
       merchantFetch({
         url: 'merchant/referral',
         mode: 'live',

@@ -1,14 +1,19 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, waitFor, userEvent, server } from 'common/services/test/test-utils';
+import { render, screen, waitFor, userEvent, server, delay } from 'common/services/test/test-utils';
 import { rest } from 'msw';
 import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
-import { referralData, fileUploadResponse, orgDetails } from './mocks/fixtures';
+import {
+  referralData as referralDataFixture,
+  fileUploadResponse,
+  orgDetails,
+} from './mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as analytics from 'common/utils/analytics';
+import { fetchReferralsHandler } from './mocks/once-handlers';
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
 // TODO : covered only Capital use case, have to cover others later
@@ -97,6 +102,7 @@ describe('AddMerchant', () => {
   const renderApp = ({
     isPartnershipForCapitalEnabled = true,
     isPartnershipsInviteFlowEnabled = false,
+    referralData = referralDataFixture as string | typeof referralDataFixture,
   } = {}) => {
     return render(
       <AddMerchant
@@ -122,7 +128,7 @@ describe('AddMerchant', () => {
     return render(
       <AddMerchant
         closeModal={mockCloseModal}
-        referralData={referralData}
+        referralData={referralDataFixture}
         addType={PRODUCT_TYPE.CAPITAL}
         org={orgDetails}
       />,
@@ -158,6 +164,31 @@ describe('AddMerchant', () => {
         'Razorpay account creation invite link will be sent via email and SMS(if contact number provided) to your affiliate',
       ),
     ).toBeInTheDocument();
+  });
+
+  test('should fetch referrals for reseller partner without initial referralData', async () => {
+    isPartner.mockImplementation((type) => type === 'reseller');
+    const state = { isApiCalled: false };
+    server.use(fetchReferralsHandler(state));
+    renderApp({
+      referralData: '',
+    });
+    // No loader present for this api call
+    await delay(1000);
+    expect(state.isApiCalled).toBe(true);
+    isPartner.mockReset();
+  });
+
+  test('should not fetch referrals for platform partner without initial referralData', async () => {
+    isPartner.mockImplementation((type) => type === 'pure_platform');
+    const state = { isApiCalled: false };
+    server.use(fetchReferralsHandler(state));
+
+    renderApp();
+    // No loader present for this api call
+    await delay(1000);
+    expect(state.isApiCalled).toBe(false);
+    isPartner.mockReset();
   });
 
   test('should send create invite call for partnerships invite flow', async () => {

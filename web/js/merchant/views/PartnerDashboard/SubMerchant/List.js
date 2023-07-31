@@ -170,18 +170,20 @@ export default class SubMerchantsList extends Component {
   };
 
   constructor(props) {
-    merchantFetch({
-      url: 'merchant/referral',
-      mode: 'live',
-      method: 'post',
-      data: {},
-    })
-      .then(({ data }) => {
-        this.setState({
-          referralData: data.referrals,
-        });
+    if (!props.user.isPartner('pure_platform')) {
+      merchantFetch({
+        url: 'merchant/referral',
+        mode: 'live',
+        method: 'post',
+        data: {},
       })
-      .catch(() => {});
+        .then(({ data }) => {
+          this.setState({
+            referralData: data.referrals,
+          });
+        })
+        .catch(() => {});
+    }
     super(props);
 
     this.showX =
