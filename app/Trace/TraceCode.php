@@ -2730,6 +2730,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                                       = 'MISC_TRACE_CODE';
+    const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                                         = 'REDIS_KEY_SET';

@@ -2309,6 +2309,7 @@ class Route
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
+        'toggle_dashboard_captcha'                 => ['post',     'dashboard/toggle-dashboard-captcha',             'UserController@postToggleDashboardCaptcha'                        ],
         'user_mobile_oauth_refresh_token'          => ['post',     'users/mobile_oauth/refresh_token',               'UserController@mobileOauthRefreshToken'                            ],
         'user_mobile_oauth_logout'                 => ['post',     'users/mobile_oauth/logout',                      'UserController@mobileOauthLogout'                                  ],
         'user_otp_login'                           => ['post',     'users/login/otp',                                'UserController@loginUserWithOtp'                                   ],
@@ -7213,6 +7214,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'toggle_dashboard_captcha',
         'merchant_fetch_rm_details',
         'merchant_put_rm_details',
         'merchant_patch_rm_details',
@@ -9863,6 +9865,7 @@ class Route
         'media_service_get_bucket'                            => Permission::MEDIA_SERVICE_GET_BUCKET,
         'media_service_upload_process'                        => Permission::MEDIA_SERVICE_UPLOAD_PROCESS,
 
+        'toggle_dashboard_captcha'                            => Permission::TOGGLE_DASHBOARD_CAPTCHA,
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
         'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
 
@@ -12370,6 +12373,7 @@ class Route
 
         'admin_dashboard' => [
             'bulk_auto_create_iir',
+            'toggle_dashboard_captcha',
             'dispute_ingestion',
             'dispute_dcs_config_add',
             'dispute_dcs_config_update',

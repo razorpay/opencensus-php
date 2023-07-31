@@ -21,6 +21,8 @@ class Constants
 
     const OrgDefaultIIR = 'default_iir_config';
 
+    const DisableCaptcha = 'disable_captcha';
+    const DashboardCaptchaEntityId = "ALL";
     const CustomUDFFlagConfig = "CustomUDFFlagConfig";
 
     /**
@@ -31,6 +33,7 @@ class Constants
         self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",
         self::CustomHardLimitConfigurations  => "rzp/pg/org/onboarding/banking_program/Config",
         self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
+        self::DisableCaptcha                 => "rzp/platform/dashboard/authentication/Captcha",
         self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
         self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig"
     ];

@@ -21,6 +21,7 @@ use Illuminate\Hashing\BcryptHasher;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
@@ -713,6 +714,12 @@ class Validator extends Base\Validator
         $verificationSuccessEventCode = null,
         $verificationFailedEventCode = null)
     {
+
+        $res =  $app['dcs_config_service'] -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $app['rzp.mode']);
+        if ($res != null && $res[DcsConstants::DisableCaptcha] === true) {
+            $app['trace']->info(TraceCode::CAPTCHA_DISABLE, ["captcha_disable"=> true]);
+            return;
+        }
 
         if ((in_array($app->environment(), Constants::WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION, true) === true) and
             (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false) and

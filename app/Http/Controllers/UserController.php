@@ -693,4 +693,10 @@ class UserController extends Controller
 
         return APIResponse::json($response);
     }
+
+    public function postToggleDashboardCaptcha(){
+        $input = Request::all();
+        $data = $this->service()->postToggleDashboardCaptcha($input);
+        return APIResponse::json($data);
+    }
 }

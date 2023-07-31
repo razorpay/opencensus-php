@@ -891,6 +891,7 @@ class Name
     const MEDIA_SERVICE_GET_BUCKET      = 'media_service_get_bucket';
     const MEDIA_SERVICE_UPLOAD_PROCESS  = 'media_service_upload_process';
 
+    const TOGGLE_DASHBOARD_CAPTCHA     = 'toggle_dashboard_captcha';
     // Templating Service
     const TEMPLATING_SERVICE_WRITE_NAMESPACES          = 'templating_service_write_namespaces';
     const TEMPLATING_SERVICE_READ_NAMESPACES           = 'templating_service_read_namespaces';

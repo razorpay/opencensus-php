@@ -46,6 +46,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Constants\Mode;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 
 use Razorpay\Trace\Logger as Trace;
 use function Clue\StreamFilter\append;
@@ -3131,5 +3132,16 @@ class Service extends Base\Service
         $response = $this->core->postUpdateUserName($input[Entity::NAME], $this->user);
 
         return $response;
+    }
+
+    public function postToggleDashboardCaptcha(array $input)
+    {
+        $fields = [
+             DcsConstants::DisableCaptcha => $input['value']
+        ];
+        $this->app['dcs_config_service'] -> editConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, $fields, $this->mode);
+
+        $res =  $this->app['dcs_config_service'] -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->mode);
+        return $res;
     }
 }
