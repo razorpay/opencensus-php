@@ -77,5 +77,15 @@ Razorpay';
     const GATEWAY_CODE_1065 = '1065';
     const DISPUTE_REASON_CODE_ACCOUNT_DEBITED_NO_TRANSACTION_CONFIRMATION = 'account_debited_but_transaction_confirmation_not_received_at_merchant_location';
 
+    const BULK_DISPUTE_ATTACHMENT_FILE_NAME = 'bulk_disputes_list';
 
+    const MERCHANT                      = 'merchant';
+    const GROUP_IDS                     = 'group_ids';
+    const CHARGEBACKS                   = 'chargebacks';
+    const EMAIL_CONFIG_IDS              = 'email_config_ids';
+    const DISPUTESDATATABLE             = 'disputesDataTable';
+
+    const DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY = 'app.dispute_merchant_emails_initiate_experiment_id';
+
+    const VARIANT_ENABLE = 'enable';
 }

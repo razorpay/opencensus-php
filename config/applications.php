@@ -467,7 +467,9 @@ return [
                 'byers_risk'    => env('FRESHDESK_IND_GROUP_BUYERS_RISK_ID'),
                 'chargeback'    => env('FRESHDESK_IND_GROUP_CHARGEBACK_ID'),
                 'merchant_risk_transaction' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_TRANSACTION_ID'),
-                'debit_note'    => env('FRESHDESK_IND_GROUP_DEBIT_NOTE_ID')
+                'debit_note'    => env('FRESHDESK_IND_GROUP_DEBIT_NOTE_ID'),
+                'dispute'       => env('FRESHDESK_IND_GROUP_DISPUTE_ID'),
+                'chargebacks'   => env('FRESHDESK_IND_GROUP_CHARGEBACKS_ID'),
             ],
             'cybercrime_helpdesk'   => [
                 'acknowledgement'   => env('FRESHDESK_GROUP_MERCHANT_CYBERCRIME_HELPDESK_ID'),
@@ -480,7 +482,9 @@ return [
             'rzpind' => [
                 'risk_notification'       => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
                 'foh_notification'        => env('FRESHDESK_IND_EMAIL_CONFIG_FOH_NOTIFICATION_ID'),
-                'debit_note_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_DEBIT_NOTE_NOTIFICATION_ID')
+                'debit_note_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_DEBIT_NOTE_NOTIFICATION_ID'),
+                'dispute'                 => env('FRESHDESK_IND_EMAIL_CONFIG_DISPUTE_ID'),
+                'chargebacks'             => env('FRESHDESK_IND_EMAIL_CONFIG_CHARGEBACKS_ID'),
             ],
             'cybercrime_helpdesk'   => [
                 'acknowledgement'   => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),

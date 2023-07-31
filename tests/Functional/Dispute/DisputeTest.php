@@ -111,6 +111,32 @@ class DisputeTest extends TestCase
             ->willReturn($returnValue);
     }
 
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
+    protected function mockFreshdesk(int $expectFdCallCount): void
+    {
+        $freshdeskClientMock = $this->getMockBuilder(FreshdeskTicketClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendOutboundEmail'])
+            ->getMock();
+
+        $freshdeskClientMock
+            ->expects($this->exactly($expectFdCallCount))
+            ->method('sendOutboundEmail')
+            ->willReturn(['id' => '123']);
+
+        $this->app->instance('freshdesk_client', $freshdeskClientMock);
+    }
+
     public function testDisputeCreate()
     {
         $testData = $this->updateCreateTestData();
@@ -2016,6 +2042,16 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->ba->cronAuth();
 
         $reason = $this->fixtures->create('dispute_reason', [
@@ -2123,9 +2159,219 @@ class DisputeTest extends TestCase
         $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
     }
 
+    public function testPhaseBasedBulkCreateMailsViaFdSamePhaseTickets()
+    {
+        Mail::fake();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->mockFreshdesk(1);
+
+        $this->ba->cronAuth();
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 1);
+
+        $attributes1 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute1 = $this->fixtures->create('dispute', $attributes1);
+
+        $attributes2 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute2 = $this->fixtures->create('dispute', $attributes2);
+
+        $attributesNotToBeEmailed = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+        ];
+        $this->fixtures->create('dispute', $attributesNotToBeEmailed);
+
+        $testData = &$this->testData['testPhaseBasedBulkCreateMailsViaFd'];
+
+        $this->startTest($testData);
+
+        $disputeByPaymentIdMap = [];
+
+        $totalPhasePayments = [];
+
+        foreach ([$dispute1, $dispute2] as $dispute)
+        {
+            $disputeByPaymentIdMap['pay_' . $dispute['payment_id']] = $dispute;
+
+            $phase = $dispute['phase'];
+
+            if (isset($totalPhasePayments[$phase]) === false)
+            {
+                $totalPhasePayments[$phase] = 0;
+            }
+
+            $totalPhasePayments[$phase]++;
+        }
+
+        $expectedData = [
+            'dispute_payment_map' => $disputeByPaymentIdMap,
+            'total_payments'      => $totalPhasePayments,
+        ];
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute2[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+    }
+
+    public function testPhaseBasedBulkCreateMailsViaFdDifferentPhaseTickets()
+    {
+        Mail::fake();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->mockFreshdesk(2);
+
+        $this->ba->cronAuth();
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 2);
+
+        $attributes1 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute1 = $this->fixtures->create('dispute', $attributes1);
+
+        $attributes2 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute2 = $this->fixtures->create('dispute', $attributes2);
+
+        $attributesNotToBeEmailed = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+        ];
+        $this->fixtures->create('dispute', $attributesNotToBeEmailed);
+
+        $testData = &$this->testData['testPhaseBasedBulkCreateMailsViaFd'];
+
+        $this->startTest($testData);
+
+        $disputeByPaymentIdMap = [];
+
+        $totalPhasePayments = [];
+
+        foreach ([$dispute1, $dispute2] as $dispute)
+        {
+            $disputeByPaymentIdMap['pay_' . $dispute['payment_id']] = $dispute;
+
+            $phase = $dispute['phase'];
+
+            if (isset($totalPhasePayments[$phase]) === false)
+            {
+                $totalPhasePayments[$phase] = 0;
+            }
+
+            $totalPhasePayments[$phase]++;
+        }
+
+        $expectedData = [
+            'dispute_payment_map' => $disputeByPaymentIdMap,
+            'total_payments'      => $totalPhasePayments,
+        ];
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute2[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+    }
+
     public function testBulkDisputeCreateMailAttachment()
     {
         Mail::fake();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->ba->cronAuth();
 
@@ -2923,6 +3169,16 @@ class DisputeTest extends TestCase
     public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [], $mobileSignupTest)
     {
         $this->fixtures->merchant->addFeatures($features);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData, $mobileSignupTest);
 

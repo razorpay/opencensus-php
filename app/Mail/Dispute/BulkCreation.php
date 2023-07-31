@@ -108,7 +108,7 @@ class BulkCreation extends Base
         return $finalString;
     }
 
-    private function getSubject()
+    public function getSubject()
     {
         $phase = $this->data['phase'];
 
@@ -138,7 +138,7 @@ class BulkCreation extends Base
         }
     }
 
-    protected function getViewName(): string
+    public function getViewName(): string
     {
         try
         {

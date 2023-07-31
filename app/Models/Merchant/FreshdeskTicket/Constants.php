@@ -30,6 +30,7 @@ class Constants
     const CF_REQUESTOR_ITEM                    = 'cf_requester_item';
     const CF_CATEGORY                          = 'cf_category';
     const CF_NEW_CATEGORY                      = 'cf_new_category';
+    const CF_NEW_SUBCATEGORY                   = 'cf_new_sub_category';
     const CF_NEW_REQUESTOR_CATEGORY            = 'cf_new_requester_category';
     const CF_NEW_REQUESTOR_SUBCATEGORY         = 'cf_new_requester_sub_category';
     const CF_NEW_REQUESTOR_ITEM                = 'cf_new_requester_item';
@@ -50,11 +51,18 @@ class Constants
     const CF_MERCHANT_ACTIVATION_STATUS        = 'cf_merchant_activation_status';
     const CF_WORKFLOW_ID                       = 'cf_workflow_id';
 
+    const EMAIL_SOURCE_DISPUTES_TAG            = 'email_source_Disputes';
+
+    const EMAIL_CONFIG_ID    = 'email_config_id';
+
     const AGENT              = 'agent';
     const AGENT_ID           = 'agent_id';
     const FRESHDESK_AGENT_ID = 'freshdesk_agent_id';
     const AGENT_NAME         = 'agent_name';
 
+
+    //Requestor category
+    const RAZORPAY           = 'Razorpay';
 
     //Flows
     const CUSTOMER = 'Customer';
@@ -210,6 +218,8 @@ class Constants
     const FD_SUB_CATEGORY_FRAUD_ALERTS              = 'Fraud alerts';
     const FD_SUB_CATEGORY_WEBSITE_MISMATCH          = 'Website Mismatch';
     const FD_SUB_CATEGORY_INTERNATIONAL_ENABLEMENT  = 'International Enablement';
+    const CHARGEBACKS_SUBCATEGORY                   = 'Chargebacks';
+
 
     // Categories
     const RISK_REPORT_CATEGORY = 'Risk Report_Merchant';

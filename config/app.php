@@ -679,4 +679,5 @@ return array(
 
     'partner_bank_account_param_removal_exp_id' => env('PARTNER_BANK_ACCOUNT_PARAM_REMOVAL_EXP_ID'),
 
+    'dispute_merchant_emails_initiate_experiment_id' => env('DISPUTE_MERCHANT_EMAILS_INITIATE_EXPERIMENT_ID'),
 );

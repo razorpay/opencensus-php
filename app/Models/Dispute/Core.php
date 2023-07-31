@@ -46,6 +46,7 @@ use RZP\Models\{
     Adjustment\Status as AdjustmentStatus
 };
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
@@ -1011,7 +1012,22 @@ class Core extends Base\Core
                 if (($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === true)
                     or $bulkMailData[Entity::PHASE] !== Phase::CHARGEBACK)
                 {
-                    Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+                    $experimentEnabled = $this->isSplitzExperimentEnable(
+                        $merchantId,
+                        DisputeConstants::DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY,
+                        DisputeConstants::VARIANT_ENABLE
+                    );
+
+                    if ($experimentEnabled === true)
+                    {
+                        $fdOutboundEmailRequest = $this->getFdRequestPayload($merchantId, $merchant, $bulkMailData);
+
+                        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+                    }
+                    else
+                    {
+                        Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+                    }
 
                     $this->trace->info(
                         TraceCode::DISPUTE_BULK_MAIL_QUEUED,
@@ -1064,7 +1080,110 @@ class Core extends Base\Core
                     'dispute_ids' => $disputeIds,
                 ]
             );
+
+            $this->pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase);
         }
+    }
+
+    private function pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ((($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK) and
+                (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === false) and
+                (isset($bulkMailData['isFraud']) === true)) or
+            ($bulkMailData[Entity::PHASE] !== Phase::CHARGEBACK))
+        {
+            $experimentEnabled = $this->isSplitzExperimentEnable(
+                $merchantId,
+                DisputeConstants::DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY,
+                DisputeConstants::VARIANT_ENABLE
+            );
+
+            if ($experimentEnabled === true)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::DISPUTE_BULK_MAIL_FD_PROCESSING_ERROR,
+                    [
+                        'merchant_id' => $merchantId,
+                        'phase'       => $disputePhase,
+                        'dispute_ids' => $disputeIds,
+                    ]
+                );
+
+                $this->trace->count(Metrics::DISPUTE_FD_MAIL_FAILURE);
+            }
+        }
+    }
+
+    private function getFdRequestPayload(string $merchantId, Merchant\Entity $merchant, array $merchantData): array
+    {
+        $mailInstance = new DisputeMailer\BulkCreation($merchantData);
+
+        $viewName = $mailInstance->getViewName();
+
+        $ticketSubject = $mailInstance->getSubject();
+
+        $tableData = $this->createDisputesDataTable($merchantData[Constants::DISPUTES]);
+
+        $ticketDescription = $this->renderHtmlBody($viewName, $tableData, $merchantData);
+
+        $groupId = (int) $this->app['config']->get('applications.freshdesk')[DisputeConstants::GROUP_IDS][FreshdeskConstants::RZPIND][DisputeConstants::CHARGEBACKS];
+
+        $emailConfigId = (int) $this->app['config']->get('applications.freshdesk')[DisputeConstants::EMAIL_CONFIG_IDS][FreshdeskConstants::RZPIND][DisputeConstants::CHARGEBACKS];
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s');
+
+        $fileName = sprintf('%s_%s_%s', DisputeConstants::BULK_DISPUTE_ATTACHMENT_FILE_NAME, $this->mode, $time);
+
+        $filePath = $this->createCsvFile($tableData, $fileName, null, 'files/batch');
+
+        $file = new UploadedFile($filePath, $fileName. '.csv', 'text/csv', null, true);
+
+        $fdOutboundEmailRequest = [
+            FreshdeskConstants::SUBJECT         => $ticketSubject,
+            FreshdeskConstants::DESCRIPTION     => $ticketDescription,
+            FreshdeskConstants::STATUS          => 6,
+            FreshdeskConstants::TYPE            => FreshdeskConstants::SERVICE_REQUEST_TICKET_TYPE,
+            FreshdeskConstants::PRIORITY        => 3,
+            FreshdeskConstants::EMAIL           => $merchantData[DisputeConstants::MERCHANT][FreshdeskConstants::EMAIL],
+            FreshdeskConstants::TICKET_TAGS     => [FreshdeskConstants::EMAIL_SOURCE_DISPUTES_TAG],
+            FreshdeskConstants::GROUP_ID        => $groupId,
+            FreshdeskConstants::EMAIL_CONFIG_ID => $emailConfigId,
+            FreshdeskConstants::ATTACHMENTS     => [
+                new UploadedFile($filePath, $fileName. '.csv', 'text/csv', null, true),
+            ],
+            FreshdeskConstants::CUSTOM_FIELDS   => [
+                FreshdeskConstants::CF_MERCHANT_ID                => $merchant->getId(),
+                FreshdeskConstants::CF_TICKET_QUEUE               => FreshdeskConstants::MERCHANT_TICKET_QUEUE,
+                FreshdeskConstants::CF_NEW_REQUESTOR_CATEGORY     => FreshdeskConstants::RAZORPAY,
+                FreshdeskConstants::CF_NEW_REQUESTOR_SUBCATEGORY  => FreshdeskConstants::CHARGEBACKS_SUBCATEGORY,
+                FreshdeskConstants::CF_NEW_CATEGORY               => FreshdeskConstants::CHARGEBACKS_CATEGORY,
+                FreshdeskConstants::CF_NEW_SUBCATEGORY            => FreshdeskConstants::SERVICE_CHARGEBACK_SUBCATEGORY,
+                FreshdeskConstants::CF_PRODUCT                    => FreshdeskConstants::PAYMENT_GATEWAY_CF_PRODUCT,
+            ],
+        ];
+
+        $salesPOCEmailId = (new Service())->getSalesPOCEmailId($merchantId);
+
+        if (empty($salesPOCEmailId) === false)
+        {
+            $fdOutboundEmailRequest[FreshdeskConstants::CC_EMAILS] = $salesPOCEmailId;
+        }
+
+        return $fdOutboundEmailRequest;
+    }
+
+    private function renderHtmlBody(string $viewName, array $tableData, array &$merchantData): string
+    {
+        if (empty($tableData) === false)
+        {
+            $merchantData[DisputeConstants::DISPUTESDATATABLE] = $tableData;
+        }
+
+        return \View::make($viewName)->with($merchantData)->render();
     }
 
     public function generatePDFAndSendWhatsapp($merchant, $bulkMailData)
@@ -2131,5 +2250,43 @@ class Core extends Base\Core
         return $input;
     }
 
+    private function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
+    {
+        $variant = $this->getSplitzResponse($merchantId, $experimentName);
 
+        if ($variant === $checkVariant)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName)
+    {
+        try
+        {
+            $experimentId = $this->config->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
 }

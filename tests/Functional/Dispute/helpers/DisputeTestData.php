@@ -2218,6 +2218,19 @@ return [
         ],
     ],
 
+    'testPhaseBasedBulkCreateMailsViaFd' => [
+        'request' => [
+            'url' => '/disputes/merchant_emails/initiate',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'success'        => true,
+                'total_disputes' => 2,
+            ],
+        ],
+    ],
+
     'testBulkDisputeCreateMailAttachment' => [
         'request' => [
             'url' => '/disputes/merchant_emails/initiate',
