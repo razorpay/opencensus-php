@@ -306,7 +306,7 @@ class Repository extends Base\Repository
         }
 
         return $query->get()
-            ->pluck(Entity::MERCHANT_ID)
+            ->pluck(Entity::ID)
             ->toArray();
     }
 }

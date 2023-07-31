@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -776,6 +777,22 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForIciciCa();
+
+        // Above fixture sets activated as true
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 0,
+            'activated_at' => null,
+            'live'         => 0
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balanceId,
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->cronAuth();
 

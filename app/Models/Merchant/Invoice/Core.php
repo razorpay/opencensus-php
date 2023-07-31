@@ -642,13 +642,15 @@ class Core extends Base\Core
         $allEligibleUniqueMerchantIds = array_unique($allEligibleMerchantIds);
 
         foreach($allEligibleUniqueMerchantIds as $index => $merchantId){
-            MerchantInvoiceJob::dispatch(
-                $merchantId,
-                $month,
-                $year,
-                $mode)
-                // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                ->delay($index % 901);
+            if(is_string($merchantId)) {
+                MerchantInvoiceJob::dispatch(
+                    $merchantId,
+                    $month,
+                    $year,
+                    $mode)
+                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                    ->delay($index % 901);
+            }
         }
     }
 
