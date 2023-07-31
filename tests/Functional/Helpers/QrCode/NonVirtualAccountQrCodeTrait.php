@@ -347,12 +347,18 @@ trait NonVirtualAccountQrCodeTrait
         ]);
     }
 
-    public function runQrPaymentAssertions(mixed $qrCodeId, string $rrn): void
+    public function runQrPaymentAssertions($qrCodeId, $request, $mode = 'test'): void
     {
-        $qrPayment        = $this->getDbLastEntity('qr_payment');
-        $payment          = $this->getDbLastEntity('payment');
-        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+        $qrPayment        = $this->getDbLastEntity('qr_payment', $mode);
+        $payment          = $this->getDbLastEntity('payment', $mode);
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request', $mode);
+        $upi              = $this->getDbLastEntity('upi', $mode);
 
+        $rrn            = $request['content']['BankRRN'];
+        $merchantTranId = $request['content']['merchantTranId'];
+
+        $this->assertEquals($rrn, $upi['npci_reference_id']);
+        $this->assertEquals($merchantTranId, $upi['merchant_reference']);
         $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
         $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
         $this->assertEquals('upi', $payment['method']);

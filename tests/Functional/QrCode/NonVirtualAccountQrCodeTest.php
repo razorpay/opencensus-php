@@ -3075,7 +3075,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->makeIciciQrPaymentViaUpiTransferRoute($request);
 
-        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+        $this->runQrPaymentAssertions($qrCodeId, $request);
     }
 
     public function testProcessIciciQrPaymentOnSharedTerminalForMultipleUseQrViaVPACallbackRoute()
@@ -3099,9 +3099,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->makeIciciQrPaymentViaUpiTransferRoute($request);
 
-        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+        $this->runQrPaymentAssertions($qrCodeId, $request);
     }
 
+    //This case should not happen but it is hypothetical case
     public function testProcessIciciQrPaymentOnSharedTerminalViaVPACallbackRouteWithoutRZPPrefix()
     {
         $qrCode = $this->createQrCode(
@@ -3123,6 +3124,202 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->makeIciciQrPaymentViaUpiTransferRoute($request);
 
-        $this->runQrPaymentAssertions($qrCodeId, $rrn);
+        $this->runQrPaymentAssertions($qrCodeId, $request);
+    }
+
+    //unexpected payment: Amount mismatch
+    public function testProcessUnexpectedIciciQrPaymentOnSharedTerminalViaVPACallbackRoute()
+    {
+        $qrCode = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'multiple_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 500,
+            ]
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->makeIciciQrPaymentViaUpiTransferRoute($request);
+
+        $qrPayment        = $this->getDbLastEntity('qr_payment');
+        $payment          = $this->getDbLastEntity('payment');
+        $upi              = $this->getDbLastEntity('upi');
+        $refund           = $this->getDbLastEntity('refund');
+
+        $merchantTranId = $request['content']['merchantTranId'];
+
+        $this->assertEquals($rrn, $upi['npci_reference_id']);
+        $this->assertEquals($merchantTranId, $upi['merchant_reference']);
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(false, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals($request['content']['PayerAmount'], sprintf('%.2f', $refund['amount'] / 100));
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals("Actual payment amount does not match expected payment amount", $qrPayment['unexpected_reason']);
+    }
+
+    public function testMultiuseQrPaymentWithoutRZPPrefix()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'multiple_use', 'type' => 'upi_qr',
+             'name' => 'Mitasha'], 'live','LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] =  $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment        = $this->getDbLastEntity('qr_payment','live');
+        $payment          = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+    }
+
+    public function testMultiuseQrPaymentWithRZPPrefix()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'multiple_use', 'type' => 'upi_qr',
+             'name' => 'Mitasha'], 'live','LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $this->runQrPaymentAssertions($qrCodeId, $request, 'live');
+
+    }
+
+    public function testMultiuseQrPaymentWithRZPPrefixReconWithART()
+    {
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'multiple_use', 'type' => 'upi_qr',
+             'name' => 'Mitasha'], 'live','LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment        = $this->getDbLastEntity('qr_payment','live');
+        $payment          = $this->getDbLastEntity('payment','live');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+
+        $requestInternal = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $requestInternal['content']['BankRRN'] = $rrn;
+        $requestInternal['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+        $response = $this->makeUpiIciciPaymentInternal($requestInternal);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $payment     = $this->getDbLastEntity('payment','live');
+
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+
+    }
+
+    public function testMultiUseQrPaymentInternalWithPrefix()
+    {
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'multiple_use', 'type' => 'upi_qr',
+             'name' => 'Mitasha'], 'live','LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $response = $this->makeUpiIciciPaymentInternal($request);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $payment     = $this->getDbLastEntity('payment','live');
+
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
     }
 }

@@ -283,17 +283,6 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
             $callbackData[$callbackField] = $row[$reconColumn];
         }
 
-        if (isset($row[self::MERCHANT_TRAN_ID]) === true)
-        {
-            $merchantTranId = trim($row[self::MERCHANT_TRAN_ID]);
-
-            if (str_starts_with($merchantTranId, QrCode\Constants::QR_CODE_V2_ICICI_PREFIX))
-            {
-                $callbackData[UpiIciciFields::MERCHANT_TRAN_ID] = substr($merchantTranId,
-                                                                         strlen(QrCode\Constants::QR_CODE_V2_ICICI_PREFIX));
-            }
-        }
-
         //
         // For the below fields, we are not getting the data in MIS directly, so
         // add the data accordingly

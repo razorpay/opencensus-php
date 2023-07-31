@@ -83,6 +83,10 @@ class Gateway extends Base\Gateway
      */
     const PARENT_GATEWAY_MERCHANT_ID = '116798';
 
+    protected $qrPaymentMerchantRefPrefix = QrCode\Constants::QR_CODE_V2_ICICI_PREFIX;
+
+    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
@@ -1649,7 +1653,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[Fields::MERCHANT_TRAN_ID], 0, Entity::ID_LENGTH),
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($input[Fields::MERCHANT_TRAN_ID]),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
@@ -2332,5 +2336,22 @@ class Gateway extends Base\Gateway
         {
             $content[Fields::RESPONSE_CODE] = $content[Fields::TXN_STATUS];
         }
+    }
+
+    public function getQrPaymentMerchantReference($merchantReference)
+    {
+        if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
+            (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
+        {
+            $merchantReference = substr($merchantReference, strlen($this->qrPaymentMerchantRefPrefix));
+        }
+
+        if ((empty($this->qrPaymentMerchantRefSuffix)) === false and
+            (str_ends_with($merchantReference, $this->qrPaymentMerchantRefSuffix)))
+        {
+            $merchantReference = substr($merchantReference, 0, -1 * strlen($this->qrPaymentMerchantRefSuffix));
+        }
+
+        return $merchantReference;
     }
 }

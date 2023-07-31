@@ -514,13 +514,23 @@ class GatewayController extends Controller
 
         $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
 
+        $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+
         $isQrV2Payment = false;
         // this checks will only be applicable for static QR code. For dynamic QR code,
         // bank will send the ref id generated during QR creation
         if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
             (str_ends_with($paymentId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
         {
-            $paymentId = substr($paymentId, 0, QrCode\Entity::ID_LENGTH);
+            if (method_exists($gatewayClass, 'getQrPaymentMerchantReference') === true)
+            {
+                $paymentId = $gatewayClass->getQrPaymentMerchantReference($paymentId);
+            }
+            else
+            {
+                $paymentId = substr($paymentId, 0, QrCode\Entity::ID_LENGTH);
+            }
+
             $isQrV2Payment = true;
         }
 

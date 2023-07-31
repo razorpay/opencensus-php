@@ -87,11 +87,6 @@ class Service extends Base\Service
         {
             $this->isQrCodePayment = true;
 
-            if (str_starts_with($gatewayResponse[Fields::MERCHANT_TRAN_ID], Constants::QR_CODE_V2_ICICI_PREFIX))
-            {
-                $gatewayResponse[Fields::MERCHANT_TRAN_ID] = substr($gatewayResponse[Fields::MERCHANT_TRAN_ID], strlen(Constants::QR_CODE_V2_ICICI_PREFIX));
-            }
-
             return [null, $gatewayResponse];
         }
 

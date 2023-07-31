@@ -339,9 +339,9 @@ class MerchantDocumentFIRSTest Extends TestCase
     {
         Queue::fake();
 
-        Carbon::setTestNow(Carbon::now(Timezone::IST));
+        Carbon::setTestNow(Carbon::createFromDate(2023,02,01,Timezone::IST));
 
-        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+        $previousMonth = Carbon::createFromDate(2023,02,01,Timezone::IST)->subMonth();
 
         $year  = $previousMonth->year;
         $month = $previousMonth->month;
@@ -430,9 +430,9 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        Carbon::setTestNow(Carbon::now(Timezone::IST));
+        Carbon::setTestNow(Carbon::createFromDate(2023,02,01,Timezone::IST));
 
-        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+        $previousMonth = Carbon::createFromDate(2023,02,01,Timezone::IST)->subMonth();
 
         $year  = $previousMonth->year;
         $month = $previousMonth->month;
@@ -452,7 +452,7 @@ class MerchantDocumentFIRSTest Extends TestCase
         ]);
 
 
-        $previousToPreviousMonth = Carbon::now(Timezone::IST)->subMonth()->subMonth();
+        $previousToPreviousMonth = Carbon::createFromDate(2023,02,01,Timezone::IST)->subMonth()->subMonth();
 
         $year  = $previousToPreviousMonth->year;
         $month = $previousToPreviousMonth->month;
