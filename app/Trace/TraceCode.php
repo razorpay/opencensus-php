@@ -5266,6 +5266,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
     const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
+    const TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE            = 'TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE';
 
     // Turbo Traces
     const TURBO_GATEWAY_REQUEST                                 = 'TURBO_GATEWAY_REQUEST';

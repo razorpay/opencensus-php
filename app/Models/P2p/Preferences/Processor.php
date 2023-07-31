@@ -103,24 +103,17 @@ class Processor extends Base\Processor
 
     private function getPopularBankListForSDK()
     {
-        $adminService = new AdminService;
+        $popularBankList = ConfigKey::get(ConfigKey::UPI_TURBO_POPULAR_BANK_LIST, []);
 
-        $popularBankList = null;
-
-        try {
-            // Code that can throw an exception
-            $popularBankList = $adminService->getConfigKey(['key' => ConfigKey::UPI_TURBO_POPULAR_BANK_LIST]);
-
-        } catch (\Exception $e) {
-            $this->trace()->error(TraceCode::BANKING_ERROR_CODE_MAPPING_NOT_FOUND);
-        } finally {
-            // only if popular bank list option is available we will return it
-            if(!empty($popularBankList) && count($popularBankList) > 0)
-            {
-                return  $popularBankList;
-            }
+        if (empty($popularBanksList) === true)
+        {
+            $this->trace()->info(TraceCode::TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE, [
+                'action' => 'turbo popular bank list is not found in cache'
+            ]);
             return Constants::getStaticPopularBanksList();
         }
+
+        return  $popularBankList;
     }
 
     private function getSDKVersionLimitations()
