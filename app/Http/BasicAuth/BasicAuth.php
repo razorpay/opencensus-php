@@ -498,7 +498,9 @@ class BasicAuth
         'merchant_activation_gst_details',
         'merchant_document_url_fetch',
         'merchant_nc_revamp_eligibility',
-        'merchant_edit_pre_signup_details'
+        'merchant_edit_pre_signup_details',
+        'merchant_bmc_response_save',
+        'merchant_bmc_response_fetch',
     ];
 
     public function __construct($app)
