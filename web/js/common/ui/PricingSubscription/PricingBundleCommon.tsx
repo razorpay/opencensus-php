@@ -50,11 +50,6 @@ import rzpLogo from 'assets/rzp_logo.jpg';
 import { loadCheckoutScript } from 'merchant/views/Capital/utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import TncMobile from './PricingTnCMobile';
-import lazy from 'merchant/routes/LazyLoader';
-
-const TncDesktop = lazy(
-  () => import(/* webpackChunkName: 'PricingTncModalDesktopComponent' */ './PricingTnC'),
-);
 
 const TogglePlanValue = {
   monthly: 'monthly',
@@ -265,17 +260,17 @@ const PricingTncInfo = ({ isMobile }: { isMobile: boolean }): JSX.Element => {
     <StyleInfo isMobile={isMobile}>
       <Text>Auto Renewal Plans. No Refunds</Text>
       <Text>*Prices mentioned are exclusive of GST </Text>
-      <Box width="fit-content" height="fit-content">
-        Full{'  '}
-        <Link onClick={toggleTncModal} variant="button">
-          Terms & Conditions
-        </Link>
-      </Box>
+      {isMobile ? (
+        <Box width="fit-content" height="fit-content">
+          Full{'  '}
+          <Link onClick={toggleTncModal} variant="button">
+            Terms & Conditions
+          </Link>
+        </Box>
+      ) : null}
       {isMobile ? (
         <TncMobile isOpenTncModal={isOpenTncModal} toggleTncModal={toggleTncModal} />
-      ) : (
-        <TncDesktop isOpenTncModal={isOpenTncModal} toggleTncModal={toggleTncModal} />
-      )}
+      ) : null}
     </StyleInfo>
   );
 };
