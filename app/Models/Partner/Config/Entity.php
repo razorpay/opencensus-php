@@ -318,11 +318,12 @@ class Entity extends PublicEntity
         $response = parent::toArrayPublic();
 
         // Don't return the whole entity if the request is not from admin for confidentiality
-        if ($app['basicauth']->isAdminAuth() === false and $app['basicauth']->isDashboardApp() === true)
+        if ($app['basicauth']->isAdminAuth() === false and
+            ($app['basicauth']->isDashboardApp() === true or $app['basicauth']->isAuthService() === true))
         {
             $response = array_only($response, Constants::PARTNER_CONFIG_PUBLIC);
 
-            $response[self::PARTNER_METADATA] = array_merge($this->getDefaultPartnerMetaData(), array_filter($response[self::PARTNER_METADATA]??[]));
+            $response[self::PARTNER_METADATA] = array_merge($this->getDefaultPartnerMetaData(), array_filter($response[self::PARTNER_METADATA] ?? []));
         }
 
         return $response;

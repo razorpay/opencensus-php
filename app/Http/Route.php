@@ -15543,6 +15543,7 @@ class Route
             'merchant_get_org_details',
             'merchant_banking_accounts_webhook',
             'user_details_unified',
+            'partner_config_fetch_guest'
         ],
 
         'reporting' => [

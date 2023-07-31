@@ -8,7 +8,6 @@ use RZP\Exception;
 use RZP\Models\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods;
 use Razorpay\OAuth\Application as OAuthApp;
 
@@ -61,7 +60,8 @@ class Validator extends Base\Validator
         Constants::BRAND_NAME              => 'sometimes|string|max:255',
         Constants::BRAND_COLOR             => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Constants::TEXT_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
-        Constants::LOGO_URL                => 'sometimes|max:2000'
+        Constants::LOGO_URL                => 'sometimes|max:2000',
+        Constants::POLICY_URL              => 'sometimes|url|max:255'
     ];
 
     protected static $createValidators = [
@@ -195,7 +195,7 @@ class Validator extends Base\Validator
 
             $this->validatePartnerInputForAggregatorPartner($merchant, $input);
 
-            $this->validatePartnerInputForPurePlatformPartner( $input);
+            $this->validatePartnerInputForPurePlatformPartner($input, true);
 
             if (empty($input) === false)
             {
@@ -213,8 +213,12 @@ class Validator extends Base\Validator
 
             if (isset($input[Constants::APPLICATION_ID]))
             {
-                $this->validatePartnerInputForPurePlatformPartner( $input);
+                $this->validatePartnerInputForPurePlatformPartner($input, true);
             }
+        }
+        else if ($app['request.ctx']->isAuthService() === true)
+        {
+            $this->validatePartnerInputForPurePlatformPartner($input);
         }
     }
 
@@ -226,6 +230,34 @@ class Validator extends Base\Validator
         }
 
         $this->validateInput('partner_metadata_settings', $value);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validatePolicyUrlInPartnerMetaData(Entity $config, Merchant\Entity $partner, ?array $partnerMetaData)
+    {
+        if (isset($partnerMetaData[Constants::POLICY_URL]) !== true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION);
+        }
+
+        (new Merchant\Validator())->validateIsPurePlatformPartner($partner);
+
+        // policy url can be only be added or updated at application level and not sub-merchant level
+        if ($config->getEntityType() !== Constants::APPLICATION)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE);
+        }
+
+        (new Partner\Validator())->validateIfRoutePartnershipsFeatureEnabled($partner, $config->getEntityId());
     }
 
     /**
@@ -253,7 +285,7 @@ class Validator extends Base\Validator
     /**
      * @throws Exception\BadRequestException
      */
-    private function validatePartnerInputForPurePlatformPartner(?array &$input)
+    private function validatePartnerInputForPurePlatformPartner(?array &$input, bool $checkPhantomExp = false)
     {
         if (!isset($input[Constants::APPLICATION_ID]))
         {
@@ -273,7 +305,10 @@ class Validator extends Base\Validator
 
         (new Merchant\Validator())->validateIsPurePlatformPartner($partner);
 
-        Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+        if ($checkPhantomExp === true)
+        {
+            Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+        }
 
         unset($input[Constants::APPLICATION_ID]);
     }

@@ -359,7 +359,12 @@ final class RequestContext
 
     public function isDashboardGuest(): bool
     {
-        return ($this->internalAppName === "dashboard_guest");
+        return ($this->internalAppName === 'dashboard_guest');
+    }
+
+    public function isAuthService(): bool
+    {
+        return ($this->internalAppName === 'auth_service');
     }
 
     /**

@@ -144,7 +144,7 @@ class Validator extends Base\Validator
 
     /**
      * @param Entity $partner
-     *
+     * @param string|null $oauthApplicationId
      * @throws BadRequestException
      */
     public function validateIfSubmerchantManualSettlementEnabled(Entity $partner, ?string $oauthApplicationId)
@@ -152,6 +152,23 @@ class Validator extends Base\Validator
         if ((new Service())->isFeatureEnabledForPartner(FeatureConstants::SUBM_MANUAL_SETTLEMENT, $partner, $oauthApplicationId) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED, $partner->getId());
+        }
+    }
+
+    /**
+     * @param Entity $partner
+     * @param string|null $oauthApplicationId
+     * @throws BadRequestException
+     */
+    public function validateIfRoutePartnershipsFeatureEnabled(Entity $partner, ?string $oauthApplicationId)
+    {
+        if ((new Service())->isFeatureEnabledForPartner(FeatureConstants::ROUTE_PARTNERSHIPS, $partner, $oauthApplicationId) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED,
+                $partner->getId(),
+                [MerchantApplicationsEntity::APPLICATION_ID => $oauthApplicationId]
+            );
         }
     }
 }

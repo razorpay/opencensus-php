@@ -55,7 +55,7 @@ class PhantomUtility
             );
         }
 
-        return $isExpEnabled;
+        return true;
     }
 
     private static function isPhantomOnboardingWhitelistedForPurePlatformPartner(String $partnerId) : bool

@@ -1082,6 +1082,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_LOGO_NOT_IMAGE                                    = 'The image type is not jpg, jpeg or png';
     const BAD_REQUEST_PARTNER_LOGO_TOO_SMALL                                    = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
     const BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED                             = 'Manual settlements not enabled on the partner account. Please reach out to Razorpay support to enable.';
+    const BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE                        = 'Invalid partner config entity type.';
+    const BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED                    = 'The route_partnerships feature is not enabled for the merchant.';
 
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';

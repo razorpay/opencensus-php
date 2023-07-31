@@ -649,6 +649,214 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testUpdatePartnerPolicyUrlByAdmin()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'entity_type' => 'merchant',
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPolicyUrlByAdminWithFeatureEnabledForOAuthApp()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePolicyUrlByAdminForInvalidPartnerType()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::RESELLER]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPolicyUrlByAdminForInvalidEntityType()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_type'           => 'merchant',
+                'origin_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'origin_type'           => 'application',
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPolicyUrlByAdminWithFeatureNotEnabled()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPolicyUrlByNonAdminAuth()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'entity_type' => 'merchant',
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_config/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID, $merchantUser['id']);
+
+        $this->startTest($testData);
+    }
+
     public function createNonPurePlatFormMerchantAndSubMerchant()
     {
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
@@ -1371,7 +1579,7 @@ class PartnerConfigTest extends OAuthTestCase
         $this->checkResponseFieldsForProxyOrInternalAuth($response);
     }
 
-    public function testFetchPartnerConfigWithApplicationIdByInternalAppAuth()
+    public function testFetchPartnerConfigWithApplicationIdByDashboardGuestAppAuth()
     {
         list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
 
@@ -1380,8 +1588,6 @@ class PartnerConfigTest extends OAuthTestCase
             'text_color'  => '000FFF',
             'brand_name'  => 'google'
         ];
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
 
         $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
 
@@ -1404,6 +1610,104 @@ class PartnerConfigTest extends OAuthTestCase
         $response = $this->startTest($testData);
 
         $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchPartnerConfigWithApplicationIdByAuthServiceAppAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+            'policy_url'    => 'https://www.xyz.com/terms'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->authServiceAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchPartnerConfigByAuthServiceAppAuthForInvalidPartnerType()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator']);
+
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->authServiceAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerConfigByAuthServiceAppAuthWithInvalidAppId()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator']);
+
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->authServiceAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $randomAppId = 'A0m8HLZLyVIDQ9';
+
+        $testData['request']['content']['application_id'] = $randomAppId;
+
+        $this->startTest($testData);
     }
 
     // allow partner config fetch for only pure platform partners

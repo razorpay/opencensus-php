@@ -672,6 +672,152 @@ return [
         ],
     ],
 
+    'testUpdatePartnerPolicyUrlByAdmin' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => true,
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdatePartnerPolicyUrlByAdminWithFeatureEnabledForOAuthApp' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => true,
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdatePolicyUrlByAdminForInvalidPartnerType' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testUpdatePartnerPolicyUrlByAdminForInvalidEntityType' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE,
+        ],
+    ],
+
+    'testUpdatePartnerPolicyUrlByAdminWithFeatureNotEnabled' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED,
+        ],
+    ],
+
+    'testUpdatePartnerPolicyUrlByNonAdminAuth' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
     'testGettingConfigsByPartner' => [
         'request'  => [
             'method'  => 'GET',
@@ -1237,12 +1383,12 @@ return [
         ],
     ],
 
-    'testFetchPartnerConfigWithApplicationIdByInternalAppAuth' => [
+    'testFetchPartnerConfigWithApplicationIdByDashboardGuestAppAuth' => [
         'request'  => [
             'url'     => '/partner_config_guest',
             'method'  => 'GET',
             'content' => [
-                'application'  => 'DefaultPartner',
+                'application_id'    => 'DefaultPartner',
             ],
         ],
         'response' => [
@@ -1253,6 +1399,72 @@ return [
                     'brand_name'  => 'google'
                 ],
             ],
+        ],
+    ],
+
+    'testFetchPartnerConfigWithApplicationIdByAuthServiceAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'    => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color'   => '0000FF',
+                    'text_color'    => '000FFF',
+                    'brand_name'    => 'google',
+                    'policy_url'    => 'https://www.xyz.com/terms'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerConfigByAuthServiceAppAuthForInvalidPartnerType' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'    => 'DefaultPartner',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testFetchPartnerConfigByAuthServiceAppAuthWithInvalidAppId' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'    => 'DefaultPartner',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_APPLICATION_ID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
         ],
     ],
 

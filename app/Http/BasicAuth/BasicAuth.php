@@ -2102,6 +2102,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'dashboard_guest');
     }
 
+    public function isAuthService(): bool
+    {
+        return ($this->getInternalApp() === 'auth_service');
+    }
+
     public function isCapitalLOSApp(): bool
     {
         return ($this->getInternalApp() === 'los');

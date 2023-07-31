@@ -157,9 +157,13 @@ class Core extends Base\Core
 
         $partner = (new Merchant\Core)->getPartnerFromApp($application);
 
-        (new Validator)->validateSettleToPartner($partner, $input, $submerchant);
+        $validator = (new Validator());
 
-        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
+        $validator->validatePolicyUrlInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
+
+        $validator->validateSettleToPartner($partner, $input, $submerchant);
+
+        $validator->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
 
@@ -168,7 +172,8 @@ class Core extends Base\Core
             [
                 'input' => $input,
                 'id'    => $config->getId(),
-            ]);
+            ]
+        );
 
         return $config;
     }
