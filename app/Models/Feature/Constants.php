@@ -1937,6 +1937,7 @@ class Constants
         self::SHOW_CUSTOM_DCC_DISCLOSURES,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
         self::PERSONALISATION_V3_DISABLED,
+        self::RAZORPAY_WALLET,
     ];
 
     const ONE_CC_FEATURES = [
