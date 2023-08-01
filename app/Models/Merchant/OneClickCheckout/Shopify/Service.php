@@ -30,6 +30,7 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantProvider;
 
+
 class Service extends Base\Service
 {
 
@@ -424,7 +425,7 @@ class Service extends Base\Service
         {
             unset($preferenceParams['send_preferences']);
             $preferenceParams['order_id'] = $order->getPublicId();
-            $preferences = (new MerchantService)->getCheckoutPreferences($preferenceParams);
+            $preferences = $this->getPreferences($preferenceParams);
             $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
         }
         (new RzpOrders)->updateUtmParameters( $order->getPublicId(),$utmParameters);
@@ -1715,6 +1716,33 @@ class Service extends Base\Service
         ]);
     }
 
+
+    public function getPreferences(array $input): array
+    {
+        $routeToCheckoutService = $this->canRouteToCheckoutService();
+        if ($routeToCheckoutService === true) {
+            return (new MerchantService)->getCheckoutPreferencesFromCheckoutService($input);
+        }
+
+        return (new MerchantService)->getCheckoutPreferences($input);
+    }
+
+    private function canRouteToCheckoutService(): bool
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.magic_preferences_routing_to_checkout_service_exp_id'),
+                'request_data' => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ]
+        );
+
+        return $expResult['variant'] === 'checkout_service';
+    }
+  
     private function segregateShopifyUpdateEmail5xxError(string $errorMessage): string
     {
         $isShopifyError = Str::contains($errorMessage, ['500', '501', '502', '503', '504',]);

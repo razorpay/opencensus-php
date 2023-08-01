@@ -3,7 +3,9 @@
 namespace Functional\OneClickCheckout;
 
 use Cache;
+use Illuminate\Http\Response;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Service;
+use RZP\Services\CheckoutService;
 use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -37,6 +39,23 @@ class ShopifyTest extends TestCase {
     public function testCreateOrderAndGetPreferences() {
         $response = $this->startTest();
         $order = $this->getDbLastOrder();
+        $preferencesResponse = [
+            'order' => [
+                'amount' => 40000,
+                'currency' => "INR",
+            ],
+            'features' => [
+                'one_click_checkout' => true,
+            ]
+        ];
+
+        $this->checkoutServiceMock = Mockery::mock(CheckoutService::class)->makePartial();
+
+        $this->app->instance('checkout_service', $this->checkoutServiceMock);
+
+        $this->checkoutServiceMock
+            ->shouldReceive('getCheckoutPreferencesFromCheckoutService')
+            ->andReturn(new Response($preferencesResponse, 200, []));
         $this->assertEquals($response['order_id'], $order->getPublicId());
     }
 

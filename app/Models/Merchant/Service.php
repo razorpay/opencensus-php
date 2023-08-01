@@ -12351,4 +12351,14 @@ class Service extends Base\Service
 
         return ['feature_enabled' => false];
     }
+
+    public function getCheckoutPreferencesFromCheckoutService($input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::PREFERENCES, $input);
+
+        $preferencesResponse = $this->app['checkout_service']->getCheckoutPreferencesFromCheckoutService($input);
+
+        return $preferencesResponse->getOriginalContent();
+    }
+
 }
