@@ -20,7 +20,6 @@ import {
   Box,
   Link,
 } from 'merchant_common/views/Reports/components';
-import { toTitleCase } from 'common/utils';
 import { Icon } from 'merchant_common/views/Reports/components/styled';
 
 const mapStateToProps = ({ session }) => {
@@ -36,7 +35,7 @@ export const OverviewCard = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(({ data, openModal, isSchedulesEnabled }: CardPropsType) => {
-  const { name, description, id, type, type_title } = data;
+  const { name, description, id, type } = data;
   const availableLinksArr = availableLinks({
     isSchedulesEnabled: type === NON_OWNED_CONFIG_TYPE ? false : isSchedulesEnabled,
   });
@@ -79,7 +78,6 @@ export const OverviewCard = connect(
       <Card elevation="midRaised">
         <CardHeader>
           <CardHeaderLeading
-            subtitle={`(${toTitleCase(`${type_title ?? type}`)})`}
             title={name}
             prefix={
               <CardHeaderIcon

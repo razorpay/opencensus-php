@@ -29,7 +29,7 @@ export const baseRunHistoryTableTemplate: TableTemplateType<
     {
       render: ({ generated_at }) =>
         generated_at ? (
-          <TableText>{`Delivered at ${moment.unix(generated_at).format('h:m A')}`}</TableText>
+          <TableText>{`Delivered at ${moment.unix(generated_at).format('h:mm A')}`}</TableText>
         ) : (
           <TableText>--</TableText>
         ),
