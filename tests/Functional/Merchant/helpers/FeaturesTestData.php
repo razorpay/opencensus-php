@@ -3334,7 +3334,8 @@ return [
     'testOnboardMerchantOnPGSuccess' => [
         'request'  => [
             'content' => [
-                    'merchant_ids'     => ['10000000000000']
+                    'ledger_mode'=> 'shadow',
+                    'merchant_ids'     => ['10000000000000'],
             ],
             'url'     => '/pg_ledger/merchant/onboard',
             'method'  => 'POST',
@@ -3358,6 +3359,7 @@ return [
     'testOnboardMerchantOnPGFailure' => [
         'request'  => [
             'content' => [
+                    'ledger_mode'=> 'shadow',
                     'merchant_ids'     => ['10000000000000',"Jz6THQeX9RAYWH"]
             ],
             'url'     => '/pg_ledger/merchant/onboard',
@@ -3369,7 +3371,7 @@ return [
                 'count'     => 2,
                 'items'     =>  [
                     [
-                        'merchant_id'       => '10000000000000',
+                        'merchant_id'        => '10000000000000',
                         'status'            => 'failure',
                         'feature'           => 'pg_ledger_journal_writes',
                         'message'           => 'merchant feature already enabled'
@@ -3960,5 +3962,220 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
         ],
-    ]
+    ],
+
+    'testOnboardMerchantOnPGReverseShadowSuccess' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => ['10000000000000']
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'merchant_id'               => '10000000000000',
+                        'status'                    => 'success',
+                        'message'                   =>'merchant onboarded',
+                        "balance_response"          => [
+                            "merchant_balance" => 12000
+                        ],
+                        "credits_response"          => [],
+                        "accounts_created_response" => true,
+                        "reserve_balance_response"  => [
+                            "merchant_reserve_balance" => 0
+                        ],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testOnboardMerchantOnPGReverseShadowWithJournalWritesSuccess' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => ['10000000000000']
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'merchant_id'               => '10000000000000',
+                        'status'                    => 'success',
+                        'message'                   =>'merchant onboarded',
+                        "balance_response"          => [
+                            "merchant_balance" => 1000
+                        ],
+                        "credits_response"          => [],
+                        "accounts_created_response" => true,
+                        "reserve_balance_response"  => [
+                            "merchant_reserve_balance" => 0
+                        ],
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOnboardMerchantOnPGReverseShadowFailure' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => ['10000000000000',"Jz6THQeX9RAYWH"]
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     =>  [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'failure',
+                        'message'           => 'merchant feature already enabled'
+                    ],
+                    [
+                        'merchant_id'       => 'Jz6THQeX9RAYWH',
+                        'status'            => 'failure',
+                        'message'           => 'The id provided does not exist'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOnboardMerchantOnPGReverseShadowInvalidRequestFailure' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => []
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+        ],
+    ],
+
+    'testOffboardMerchantOnPGReverseShadowSuccess' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => ['10000000000000',"Jz6THQeX9RAYWH"]
+            ],
+            'url'     => '/pg_ledger/merchant/offboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     =>  [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'success',
+                        'message'           => 'merchant offboarded'
+                    ],
+                    [
+                        'merchant_id'       => 'Jz6THQeX9RAYWH',
+                        'status'            => 'failure',
+                        'message'           => 'The id provided does not exist'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOffboardMerchantOnPGReverseShadowInvalidRequestFailure' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => []
+            ],
+            'url'     => '/pg_ledger/merchant/offboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+        ],
+    ],
+
+    'testOnboardMerchantOnPGInvalidMode' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> '',
+                'merchant_ids'     => ['10000000000000'],
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+        ],
+    ],
+
+    'testOffboardMerchantOnPGInvalidMode' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> '',
+                'merchant_ids'     => ['10000000000000'],
+            ],
+            'url'     => '/pg_ledger/merchant/offboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+        ],
+    ],
 ];

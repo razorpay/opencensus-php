@@ -53,7 +53,7 @@ class FeatureController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->onboardMerchantOnPG($input);
+        $data = $this->service()->onboardMerchantsOnPgLedger($input);
 
         return ApiResponse::json($data->toArrayWithItems());
     }
@@ -68,7 +68,7 @@ class FeatureController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->offboardMerchantOnPG($input);
+        $data = $this->service()->offboardMerchantsOnPgLedger($input);
 
         return ApiResponse::json($data->toArrayWithItems());
     }

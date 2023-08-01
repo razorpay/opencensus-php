@@ -452,11 +452,16 @@ class Activate extends Base\Core
             //fetches fee and amount credits from credits table
             $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
 
+            $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchant->getId(), BalanceType::RESERVE_PRIMARY);
+
+            $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
+
             $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
                 $balance->getBalance(),
-                $creditBalances
+                $creditBalances,
+                $reserveBalanceAmount
             );
 
             if ($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)

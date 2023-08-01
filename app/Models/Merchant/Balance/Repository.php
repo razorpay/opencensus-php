@@ -71,6 +71,15 @@ class Repository extends Base\Repository
                      ->firstOrFail();
     }
 
+    public function getBalanceLockForUpdateBasedOnType($id, $balanceType = Type::PRIMARY)
+    {
+        assertTrue($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->newQuery()
+            ->merchantIdAndType($id, $balanceType)
+            ->first();
+    }
+
     // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {

@@ -71,6 +71,8 @@ class Validator extends Base\Validator
     {
         $allFeatures = array_keys(Constants::$featureValueMap);
 
+        array_push($allFeatures,Constants::PG_LEDGER_REVERSE_SHADOW );
+
         if (in_array($value, $allFeatures) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -310,6 +312,8 @@ class Validator extends Base\Validator
     public function validateFeatureNames(array $featureNames)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);
+
+        array_push($allFeatures,Constants::PG_LEDGER_REVERSE_SHADOW );
 
         if(empty($featureNames) === false)
         {

@@ -256,11 +256,14 @@ class Constants
     const PG_GATEWAY_ONBOARD                = 'pg_gateway_onboard';
     const SUCCESS                           = 'success';
     const FAILURE                           = 'failure';
+    const MERCHANT_FEATURE_ENABLED          = 'merchant feature enabled';
     const MERCHANT_FEATURE_ALREADY_ENABLED  = 'merchant feature already enabled';
     const MERCHANT_FEATURE_ALREADY_DISABLED = 'merchant feature already disabled';
     const ACCOUNT_CREATION_FAILED           = 'account creation failed';
     const BALANCE_RESPONSE                  = 'balance_response';
     const CREDITS_RESPONSE                  = 'credits_response';
+    const ACCOUNTS_CREATED_RESPONSE         = 'accounts_created_response';
+    const RESERVE_BALANCE_RESPONSE          = 'reserve_balance_response';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -1713,8 +1716,9 @@ class Constants
     const STATUS_CODE                    = 'status_code';
     const BODY                           = 'body';
     const BAD_REQUEST_MERCHANT_ID_ABSENT = "BAD_REQUEST_MERCHANT_ID_ABSENT";
+    const INVALID_PG_LEDGER_MODE         = "INVALID_PG_LEDGER_MODE";
     const MERCHANT_OFFBOARDED            = 'merchant offboarded';
-    const ALL_MERCHANT_BALANCES_SYNCED      = 'ALL_MERCHANT_BALANCES_SYNCED';
+    const ALL_MERCHANT_BALANCES_SYNCED   = 'ALL_MERCHANT_BALANCES_SYNCED';
 
 
     const ORG_POOL_ACCOUNT_SETTLEMENT = 'org_pool_settlement';
@@ -2363,7 +2367,6 @@ class Constants
         self::LEDGER_JOURNAL_WRITES           => true,
         self::DA_LEDGER_JOURNAL_WRITES        => true,
         self::PG_LEDGER_JOURNAL_WRITES        => true,
-        self::PG_LEDGER_REVERSE_SHADOW        => true,
         self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
         self::ORG_AXIS_PAYPAL                 => true,

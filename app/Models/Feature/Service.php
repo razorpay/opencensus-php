@@ -437,40 +437,73 @@ class Service extends Base\Service
     //Auto Loads Credits and Balances from current
     private function ledgerPGAccountCreateRequest($merchant)
     {
+            $result = [];
+
             $merchantId = $merchant->getId();
 
             // Fetch Merchant balance. Required to generate request body for account creation on ledger
-            $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+            $primaryBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+
+            $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchantId, BalanceType::RESERVE_PRIMARY);
+
+            $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
 
             //fetches fee, amount and refund credits from credits table
             $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
 
-            $isAccountCreated = (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
+            $result[Constants::ACCOUNTS_CREATED_RESPONSE] = (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
-                $balance->getBalance(),
-                $creditBalances
+                $primaryBalance->getBalance(),
+                $creditBalances,
+                $reserveBalanceAmount
             );
-            return $isAccountCreated;
+
+            // sync merchant balance and credits on API and CLS
+            $result[Constants::BALANCE_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance(), $reserveBalanceAmount);
+
+            $result[Constants::CREDITS_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
+
+            $result[Constants::RESERVE_BALANCE_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
+
+            return $result;
 
     }
 
-    private function updatePGMerchantBalanceAccount($merchant): array
+    private function updatePGMerchantBalanceAccount($merchant, $reserveBalanceAmount): array
     {
         $merchantId = $merchant->getId();
 
         // Taking lock on balance table
         $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
-        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $balance->getBalance());
+        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $balance->getBalance(), $reserveBalanceAmount);
     }
 
-    private function updatePGMerchantCreditsAccounts($merchant): array
+    private function updatePGMerchantReserveBalanceAccount($merchant, $reserveBalanceAmount): array
+    {
+        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
+    }
+
+    private function updatePGMerchantCreditsAccounts($merchant, $syncBalances): array
     {
         $merchantId = $merchant->getId();
 
         //fetches fee, amount and refund credits from credits table
         $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
+
+        if ($syncBalances[\RZP\Models\Ledger\Constants::FEE_CREDITS] !== true)
+        {
+            unset($creditBalances[Merchant\Balance\Ledger\Core::FEE]);
+        }
+        if ($syncBalances[\RZP\Models\Ledger\Constants::AMOUNT_CREDITS] !== true)
+        {
+            unset($creditBalances[Merchant\Balance\Ledger\Core::AMOUNT]);
+        }
+        if ($syncBalances[\RZP\Models\Ledger\Constants::REFUND_CREDITS] !== true)
+        {
+            unset($creditBalances[Merchant\Balance\Ledger\Core::REFUND]);
+        }
 
         return (new Merchant\Balance\Ledger\Core)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
     }
@@ -1413,16 +1446,18 @@ class Service extends Base\Service
      *
      * @param array $input
      */
-    public function onboardMerchantOnPG(array $input)
+    public function onboardMerchantOnPGShadow(array $input)
     {
         $response = new Base\PublicCollection;
         $merchantIds = $input["merchant_ids"];
 
         if(empty($merchantIds))
         {
-            return [
-              Constants::MESSAGE => Constants::BAD_REQUEST_MERCHANT_ID_ABSENT
-            ];
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                "merchant_ids",
+                null
+            );
         }
 
         foreach ($merchantIds as $merchantId)
@@ -1443,12 +1478,31 @@ class Service extends Base\Service
                     throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
                 }
 
-                $this->repo->transaction(function () use ($merchant, $merchantId)
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_REVERSE_SHADOW);
+
+                //Remove PG_LEDGER_REVERSE_SHADOW feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER_REVERSE_SHADOW,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                        ]
+                    );
+                }
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
                 {
                     // Create PG account on ledger service
-                    $isAccountCreated = $this->ledgerPGAccountCreateRequest($merchant);
+                    $response = $this->ledgerPGAccountCreateRequest($merchant);
 
-                    if (!$isAccountCreated)
+                    if (!$response[Constants::ACCOUNTS_CREATED_RESPONSE])
                     {
                         throw new \Exception(Constants::ACCOUNT_CREATION_FAILED);
                     }
@@ -1468,9 +1522,14 @@ class Service extends Base\Service
                             CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
                         ]
                     );
-                });
+                    $result[Constants::MESSAGE]                   = CONSTANTS::MERCHANT_ONBOARDED;
+                    $result[Constants::FEATURE]                   = Constants::PG_LEDGER_JOURNAL_WRITES;
+                    $result[Constants::BALANCE_RESPONSE]          = $response[Constants::BALANCE_RESPONSE];
+                    $result[Constants::CREDITS_RESPONSE]          = $response[Constants::CREDITS_RESPONSE];
+                    $result[Constants::RESERVE_BALANCE_RESPONSE]  = $response[Constants::RESERVE_BALANCE_RESPONSE];
+                    $result[Constants::ACCOUNTS_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_CREATED_RESPONSE];
 
-                $result[Constants::MESSAGE] = CONSTANTS::MERCHANT_ONBOARDED;
+                });
 
             }
             catch (\Exception $e)
@@ -1499,19 +1558,9 @@ class Service extends Base\Service
      *
      * @param array $input
      */
-    public function offboardMerchantOnPG(array $input)
+    public function offboardMerchantFromPGShadow(array $input)
     {
         $response = new Base\PublicCollection;
-
-        if(!isset( $input['merchant_ids']))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
-                'merchant_ids',
-                null,
-                "merchant_ids key is missing"
-            );
-        }
 
         $merchantIds = $input["merchant_ids"];
 
@@ -1519,10 +1568,11 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
-                null,
+                "merchant_ids",
                 null
             );
         }
+
         foreach ($merchantIds as $merchantId)
         {
             $result = [
@@ -1593,6 +1643,7 @@ class Service extends Base\Service
     {
         $response = new Base\PublicCollection;
         $merchantIds = $input["merchant_ids"];
+        $syncBalances = $input["sync_balances"];
 
         if(empty($merchantIds))
         {
@@ -1613,15 +1664,26 @@ class Service extends Base\Service
             {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                $merchantId = $merchant->getId();
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $syncBalances)
                 {
-                   $result[Constants::BALANCE_RESPONSE] = $this->updatePGMerchantBalanceAccount($merchant);
+                   if ($syncBalances[Merchant\Balance\Ledger\Core::MERCHANT_BALANCE] === true)
+                   {
+                       // Taking lock on balance table
+                       $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchantId, BalanceType::RESERVE_PRIMARY);
+
+                       $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
+
+                       $result[Constants::BALANCE_RESPONSE] = $this->updatePGMerchantBalanceAccount($merchant, $reserveBalanceAmount);
+
+                       $result[Constants::RESERVE_BALANCE_RESPONSE] = $this->updatePGMerchantReserveBalanceAccount($merchant, $reserveBalanceAmount);
+
+                   }
+
+                    $result[Constants::CREDITS_RESPONSE] = $this->updatePGMerchantCreditsAccounts($merchant, $syncBalances);
                 });
 
-                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
-                {
-                    $result[Constants::CREDITS_RESPONSE] = $this->updatePGMerchantCreditsAccounts($merchant);
-                });
             }
             catch (\Exception $e)
             {
@@ -1637,7 +1699,298 @@ class Service extends Base\Service
                 $result[Constants::STATUS] = Constants::FAILURE;
                 $result[Constants::MESSAGE] = $e->getMessage();
             }
+
             $response->add($result);
+        }
+        return $response;
+    }
+
+     /**
+     * Onboards merchant to pg ledger reverse shadow mode
+     * Syncs api balances of merchant with ledger balance
+     *
+     * @param array $input
+     */
+    public function onboardMerchantOnPGReverseShadow(array $input)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        $this->trace->info(
+            TraceCode::ONBOARD_MERCHANT_TO_PG_LEDGER_REVERSE_SHADOW_REQUEST,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if($merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
+                }
+
+                if($merchant->isFeatureEnabled(Constants::ES_ON_DEMAND))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ENABLED . ": " . Constants::ES_ON_DEMAND );
+                }
+
+                if($merchant->isFeatureEnabled(Constants::MARKETPLACE))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ENABLED . ": " . Constants::MARKETPLACE);
+                }
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_JOURNAL_WRITES);
+
+                //Remove PG_LEDGER_JOURNAL_WRITES feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                        ]
+                    );
+                }
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                {
+                    // Create PG account on ledger service
+                    $response = $this->ledgerPGAccountCreateRequest($merchant);
+
+                    if (!$response[Constants::ACCOUNTS_CREATED_RESPONSE])
+                    {
+                        throw new \Exception(Constants::ACCOUNT_CREATION_FAILED);
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::ACCOUNT_CREATED,
+                            [
+                                Constants::MERCHANT_ID => $merchantId,
+                                CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                            ]
+                        );
+                    }
+
+                    // Add PG_LEDGER_REVERSE_SHADOW feature to merchant
+                    (new Core)->create(
+                        [
+                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Entity::ENTITY_ID => $merchant->getId(),
+                            Entity::NAME => Constants::PG_LEDGER_REVERSE_SHADOW,
+                        ]);
+
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER_REVERSE_SHADOW,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                        ]
+                    );
+
+                    $result[Constants::MESSAGE]                   = CONSTANTS::MERCHANT_ONBOARDED;
+                    $result[Constants::FEATURE]                   = CONSTANTS::PG_LEDGER_REVERSE_SHADOW;
+                    $result[Constants::BALANCE_RESPONSE]          = $response[Constants::BALANCE_RESPONSE];
+                    $result[Constants::CREDITS_RESPONSE]          = $response[Constants::CREDITS_RESPONSE];
+                    $result[Constants::RESERVE_BALANCE_RESPONSE]  = $response[Constants::RESERVE_BALANCE_RESPONSE];
+                    $result[Constants::ACCOUNTS_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_CREATED_RESPONSE];
+
+                });
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::ONBOARD_MERCHANT_TO_PG_LEDGER_REVERSE_SHADOW_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
+
+    /**
+     * Offboards merchant from pg ledger reverse shadow mode
+     * Removes the feature from merchant
+     *
+     * @param array $input
+     */
+    public function offboardMerchantFromPGReverseShadow(array $input)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        $this->trace->info(
+            TraceCode::OFFBOARD_MERCHANT_FROM_PG_LEDGER_REVERSE_SHADOW_REQUEST,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if(!$merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_DISABLED);
+                }
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_REVERSE_SHADOW);
+
+
+                //Remove PG_LEDGER_REVERSE_SHADOW feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+                }
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER_REVERSE_SHADOW,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                        CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                    ]
+                );
+
+                $result[Constants::MESSAGE] = CONSTANTS::MERCHANT_OFFBOARDED;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::OFFBOARD_MERCHANT_FROM_PG_LEDGER_REVERSE_SHADOW_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
+
+    /**
+     * manages merchant onboarding on pg ledger
+     * assigns merchant to shadow or reverse-shadow mode of pg_ledger
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    public function onboardMerchantsOnPgLedger(array $input)
+    {
+        $mode = $input["ledger_mode"];
+        $response = new Base\PublicCollection;
+
+        switch($mode) {
+            case 'shadow':
+                $response = $this->onboardMerchantOnPGShadow($input);
+                break;
+            case 'reverse-shadow':
+                $response = $this->onboardMerchantOnPGReverseShadow($input);
+                break;
+            default:
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    'mode',
+                    null,
+                    "mode is invalid"
+                );
+        }
+        return $response;
+    }
+
+    /**
+     * manages merchant off boarding on pg ledger
+     * removes merchant from shadow or reverse-shadow mode of pg_ledger
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    public function offboardMerchantsOnPgLedger(array $input)
+    {
+        $mode = $input["ledger_mode"];
+        $response = new Base\PublicCollection;
+
+        switch($mode) {
+            case 'shadow':
+                $response = $this->offboardMerchantFromPGShadow($input);
+                break;
+            case 'reverse-shadow':
+                $response = $this->offboardMerchantFromPGReverseShadow($input);
+                break;
+            default:
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    'mode',
+                    null,
+                    "mode is invalid"
+                );
         }
         return $response;
     }

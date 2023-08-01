@@ -57,10 +57,13 @@ class Core extends Base\Core
     const LEDGER_RESPONSE                   = 'LEDGER_RESPONSE';
     const NOT_UPDATED                       = "not updated";
 
-    const MERCHANT_BALANCE_OPENING_BALANCE  = 'merchant_balance_opening_balance';
-    const MERCHANT_REWARD_OPENING_BALANCE   = 'merchant_reward_opening_balance';
-    const MERCHANT_FEE_OPENING_BALANCE      = "merchant_fee_opening_balance";
-    const MERCHANT_REFUND_OPENING_BALANCE   = "merchant_refund_opening_balance";
+    const MERCHANT_BALANCE_OPENING_BALANCE   = 'merchant_balance_opening_balance';
+    const MERCHANT_REWARD_OPENING_BALANCE    = 'merchant_reward_opening_balance';
+    const MERCHANT_FEE_OPENING_BALANCE       = "merchant_fee_opening_balance";
+    const MERCHANT_REFUND_OPENING_BALANCE    = "merchant_refund_opening_balance";
+    const MERCHANT_RESERVE_OPENING_BALANCE   = "merchant_reserve_opening_balance";
+    const MERCHANT_BALANCE_MINIMUM_BALANCE   = "merchant_balance_minimum_balance";
+    const MERCHANT_OPENING_BALANCES          = "merchant_opening_balances";
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
@@ -85,6 +88,7 @@ class Core extends Base\Core
     const TIME_TAKEN       = 'time_taken';
     const REWARD_BALANCE   = 'reward_balance';
     const MERCHANT_BALANCE = 'merchant_balance';
+    const MERCHANT_RESERVE_BALANCE = 'merchant_reserve_balance';
 
     /** @var LedgerService $ledgerService */
     protected $ledgerService;
@@ -151,11 +155,13 @@ class Core extends Base\Core
      * @param int $balanceAmount
      * @param array $creditBalances
      */
-    public function createPGLedgerAccount(Merchant $merchant, string   $mode, int $balanceAmount, array $creditBalances)
+    public function createPGLedgerAccount(Merchant $merchant, string   $mode, int $primaryBalanceAmount, array $creditBalances, int $reserveBalanceAmount)
     {
         try
         {
-            $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::PG_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
+            $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::PG_MERCHANT_ONBOARDING,
+                $primaryBalanceAmount, $creditBalances, $reserveBalanceAmount);
+
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER    => self::PG,
                 LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
@@ -179,7 +185,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount)
+    public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount, $reserveBalanceAmount)
     {
         try
         {
@@ -189,7 +195,8 @@ class Core extends Base\Core
                     self::ACCOUNT_TYPE => [self::PAYABLE],
                     self::FUND_ACCOUNT_TYPE => [self::MERCHANT_BALANCE]
                 ],
-                self::BALANCE => strval($balanceAmount)
+                self::BALANCE => strval($balanceAmount),
+                self::MIN_BALANCE => strval($reserveBalanceAmount),
             ];
 
             $requestHeaders = [
@@ -222,6 +229,60 @@ class Core extends Base\Core
                 $ex,
                 500,
                 TraceCode::MERCHANT_BALANCE_SYNC_FAILED,
+                [
+                    "exception_message"     => $ex->getMessage(),
+                    "exception"             => $ex,
+                    "merchant_id"           => $merchant->getId()
+                ]);
+            return [
+                "exception" => $ex->getMessage()
+            ];
+        }
+    }
+
+    public function updatePGMerchantReserveBalance(Merchant $merchant, int $reserveBalanceAmount)
+    {
+        try
+        {
+            $payload = [
+                self::MERCHANT_ID => $merchant->getId(),
+                self::ENTITIES => [
+                    self::ACCOUNT_TYPE => [self::PAYABLE],
+                    self::FUND_ACCOUNT_TYPE => [self::MERCHANT_RESERVE_BALANCE]
+                ],
+                self::BALANCE => strval($reserveBalanceAmount)
+            ];
+
+            $requestHeaders = [
+                LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
+            ];
+
+            $ledgerService = $this->app['ledger'];
+            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+
+            if(isset($ledgerResponse["code"]) and $ledgerResponse["code"] == 200 and isset($ledgerResponse["body"]["balance"]))
+            {
+                $response[self::MERCHANT_RESERVE_BALANCE] = $ledgerResponse["body"]["balance"];
+            }
+            else
+            {
+                $response[self::MERCHANT_RESERVE_BALANCE] = self::NOT_UPDATED;
+
+                $this->trace->debug(TraceCode::MERCHANT_RESERVE_BALANCE_SYNC_FAILED, [
+                    self::MERCHANT_ID       => $merchant->getId(),
+                    self::PAYLOAD           => $payload,
+                    self::LEDGER_RESPONSE   => $ledgerResponse
+                ]);
+            }
+            return $response;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::MERCHANT_RESERVE_BALANCE_SYNC_FAILED,
                 [
                     "exception_message"     => $ex->getMessage(),
                     "exception"             => $ex,
@@ -474,7 +535,7 @@ class Core extends Base\Core
         return $payload;
     }
 
-    public function getPGLedgerAccountCreatePayload($mode, $merchant, $event, $balanceAmount, $creditBalances): array
+    public function getPGLedgerAccountCreatePayload($mode, $merchant, $event, $primaryBalanceAmount, $creditBalances, $reserveBalanceAmount): array
     {
         $eventObj = [
             self::EVENT_NAME            => $event,
@@ -491,25 +552,33 @@ class Core extends Base\Core
             ],
         ];
 
-        if ($balanceAmount !== 0)
+        $openingBalances = [];
+        if ($primaryBalanceAmount !== 0)
         {
-            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+            $openingBalances[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $primaryBalanceAmount;
         }
 
         if(isset($creditBalances[self::FEE]) === true)
         {
-            $payload[self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
+            $openingBalances[self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
         }
 
         if(isset($creditBalances[self::AMOUNT]) === true)
         {
-            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
+            $openingBalances[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
         }
 
         if(isset($creditBalances[self::REFUND]) === true)
         {
-            $payload[self::MERCHANT_REFUND_OPENING_BALANCE] = (string) $creditBalances[self::REFUND];
+            $openingBalances[self::MERCHANT_REFUND_OPENING_BALANCE] = (string) $creditBalances[self::REFUND];
         }
+
+        if ($reserveBalanceAmount !== 0)
+        {
+            $openingBalances[self::MERCHANT_RESERVE_OPENING_BALANCE] = (string) $reserveBalanceAmount;
+        }
+
+        $payload[self::MERCHANT_OPENING_BALANCES] = $openingBalances;
 
         $this->trace->info(
             TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,

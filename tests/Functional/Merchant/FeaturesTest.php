@@ -14,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingConfig;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
+use RZP\Services\Dcs\Features\Service;
 use RZP\Services\RazorXClient;
 use RZP\Models\NetbankingConfig;
 use RZP\Models\Feature\Constants;
@@ -3383,6 +3384,7 @@ Regards,
 
         $this->assertContains('pg_ledger_journal_writes', $featuresArray);
     }
+
     public function testOnboardMerchantOnPGFailure()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_journal_writes']);
@@ -3394,6 +3396,7 @@ Regards,
 
         $this->startTest($testData);
     }
+
     public function testHighTpsCompositePayoutFeatureAdditionWhenLedgerReverseShadowIsEnabled()
     {
         $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
@@ -3921,5 +3924,250 @@ Regards,
         $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
 
         $this->startTest();
+    }
+
+    public function testOnboardMerchantOnPGReverseShadowSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(2)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+            [
+                'body' => [
+                    "balance" => 0
+                ],
+                'code' => 200
+            ]);
+
+        $response = $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains('pg_ledger_reverse_shadow', $featuresArray);
+    }
+
+    public function testOnboardMerchantOnPGReverseShadowWithJournalWritesSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_journal_writes']);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+                ->times(2)
+                ->andReturn([
+                    'body' => [
+                        "balance" => 1000
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+
+        $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains('pg_ledger_reverse_shadow', $featuresArray);
+        $this->assertNotContains('pg_ledger_journal_writes', $featuresArray);
+    }
+
+    public function testOnboardMerchantOnPGReverseShadowFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    public function testOnboardMerchantOnPGReverseShadowInvalidRequestFailure()
+    {
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        try {
+            $this->startTest($testData);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+        }
+    }
+
+    public function mockDCS()
+    {
+        $dcsMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['editFeature'])
+            ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+
+        return $dcsMock;
+    }
+
+    public function testOffboardMerchantOnPGReverseShadowSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures(['dummy']);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->mockDCS();
+
+        $response = $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertNotContains('pg_ledger_reverse_shadow', $featuresArray);
+    }
+
+    public function testOffboardMerchantOnPGReverseShadowInvalidRequestFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        try {
+            $this->startTest($testData);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+        }
+    }
+
+    public function testOnboardMerchantOnPGInvalidMode()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        try {
+            $this->startTest($testData);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+            $this->assertEquals('mode is invalid', $e->getMessage());
+        }
+    }
+
+    public function testOffboardMerchantOnPGInvalidMode()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_journal_writes']);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        try {
+            $this->startTest($testData);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+            echo "helloo";
+            echo $e->getMessage();
+            s($e->getMessage());
+            $this->assertEquals('mode is invalid', $e->getMessage());
+        }
     }
 }
