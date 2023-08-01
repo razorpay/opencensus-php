@@ -5,6 +5,7 @@ namespace RZP\Services;
 
 use GuzzleHttp\Client;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -853,7 +854,6 @@ class TerminalsService
 
         try
         {
-
             $response = $this->makeRequest($url, $headers, $content, $method, $options);
 
             $parsedResponse = $this->parseAndReturnResponse($response);

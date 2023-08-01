@@ -2312,6 +2312,86 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $order;
     }
 
+    public function getTerminalAttribute()
+    {
+        $terminal = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminal = $this->getRelation('terminal');
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        if(!$this->canMerchantFetchTerminalsFromTS($this->getId()))
+        {
+
+            $terminal = $this->terminal()->first();
+
+            if (empty($terminal) === false)
+            {
+                (new Terminal\Service())->pushTerminalReadMetrics( "payment",false);
+
+                $this->terminal()->associate($terminal);
+
+                return $terminal;
+            }
+
+        }
+
+        if (empty($this->getTerminalId()))
+        {
+            return null;
+        }
+
+        $terminal = (new Terminal\Repository)->fetchTerminalsToAssociate("payment",$this->getTerminalId());
+
+        $this->terminal()->associate($terminal);
+
+        return $terminal;
+
+    }
+
+    private function canMerchantFetchTerminalsFromTS($paymentId): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $rampUpTerminalsTraffic = $app['config']->get('applications.terminals_service.associate_terminals_from_ts');
+
+        if($paymentId === null)
+        {
+            return false;
+        }
+
+        if($rampUpTerminalsTraffic == 0)
+        {
+            return false;
+        }
+        else if($rampUpTerminalsTraffic == 100)
+        {
+            return true;
+        }
+        else
+        {
+
+            $hash = abs(crc32($paymentId)) % 100;
+
+            if($hash < $rampUpTerminalsTraffic)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()

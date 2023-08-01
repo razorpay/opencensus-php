@@ -1738,6 +1738,22 @@ class Service extends Base\Service
         }
     }
 
+    public function pushTerminalReadMetrics(string $entityName, bool $fromTerminalsService)
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName =  $app['request.ctx']->getRoute();
+
+        $metricData = [
+            'route_name'=> $routeName,
+            'entity'=>$entityName,
+            'fetch_from_ts' => $fromTerminalsService,
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_RETRIEVED, $metricData);
+
+    }
+
     public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array
     {
         $start = millitime();

@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-
+use Mockery;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -3061,5 +3061,83 @@ class TerminalMigrationTest extends TestCase
             });
 
         $this->startTest();
+    }
+
+
+    //Test Terminal override for payments fetching from API
+    public function testTerminalServiceFetchApiOnPaymentOverride()
+    {
+        $this->mockTerminalsServiceProxyRequest(null,0);
+
+        $this->app['config']->set('applications.terminals_service.associate_terminals_from_ts', 0);
+
+        $this->fetchOrderPayments();
+    }
+
+    //Test Terminal override for payments fetching from Terminals Service
+    public function testTerminalServiceFetchTSOnPaymentOverride()
+    {
+        $this->mockTerminalsServiceProxyRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        },1);
+
+        $this->app['config']->set('applications.terminals_service.associate_terminals_from_ts',100);
+
+        $this->fetchOrderPayments();
+    }
+
+    private function fetchOrderPayments()
+    {
+        $orderCreateRequest = [
+            'url'     => '/orders',
+            'method'  => 'POST',
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => random_int(1000, 99999),
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $resp = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $order = $this->getLastEntity('order');
+
+        $this->enablePgRouterConfig();
+
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrderPayments')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function (string $orderId, string $merchantId)
+            {
+                return [];
+            });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockCardVaultWithCryptogram();
+
+        $this->doAuthPayment($payment);
+
+        $this->getLastEntity('payment');
+
+        $this->ba->privateAuth();
+
+        $this->mockCardVaultWithCryptogram();
+
+        $orderPaymentsRequest = [
+            'url'     => '/orders/'. $order['id'] . '/payments',
+            'method'  => 'GET',
+        ];
+
+        $payments = $this->makeRequestAndGetContent($orderPaymentsRequest);
+
+        $this->assertEquals(1, $payments['count']);
     }
 }

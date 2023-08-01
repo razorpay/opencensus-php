@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Base\Common;
 use RZP\Constants\Environment;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -2614,6 +2615,51 @@ class Repository extends Base\Repository
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchTerminalsToAssociate(string $entity,string $terminalId): Terminal\Entity
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['request.ctx']->getRoute();
+
+        try
+        {
+            $terminalId = Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
+
+            $start = millitime();
+
+            $terminal = $this->getById($terminalId);
+
+            $duration = millitime() - $start;
+
+            $this->trace->histogram(Terminal\Metric::TERMINAL_RETRIEVED_CALL_LATENCY_MILLISECONDS, $duration, [
+                'route_name'  => $routeName,
+            ]);
+
+            (new Terminal\Service())->pushTerminalReadMetrics($entity,true);
+
+            return $terminal;
+        }
+        catch (\Throwable $ex)
+        {
+
+            $app['trace']->traceException($ex, Trace::CRITICAL, TraceCode::TERMINALS_SERVICE_READ_OVERRIDES_ERROR, [
+                'route_name'=> $routeName,
+                'terminal_id'=>$terminalId,
+                'entity'=>$entity,
+            ]);
+
+            $app['trace']->count(Terminal\Metric::TERMINAL_RETRIEVED_ERROR, [
+                'route_name'=> $routeName,
+                'entity'=>$entity,
+            ]);
+
+            throw $ex;
         }
     }
 
