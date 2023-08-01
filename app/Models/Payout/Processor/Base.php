@@ -4037,19 +4037,35 @@ class Base extends BaseCore
                                                                            CreditType::REWARD_FEE,
                                                                            Product::BANKING);
 
-                [$fetchFundAccountInfoSuccess, $fundAccountInfo] = (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(), $input);
+                [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
+                    (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(),
+                                                                                       $input);
+
+                [$beneficiaryFundAccountMerchantId, $isBeneficiaryVpaFundAccountVirtualAccount] =
+                    $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
+                                                                     $fundAccount);
+
+                $extraInfo = [
+                    Payout\Entity::FUND_ACCOUNT_INFO => [
+                        Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
+                        Payout\Entity::FUND_ACCOUNT                    => $fundAccountInfo
+                    ],
+                    Payout\Entity::CREDITS_INFO      => [
+                        Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
+                        Payout\Entity::UNUSED_CREDITS               => $unusedCredits
+                    ],
+                    Payout\Entity::VA_TO_VA_INFO     => [
+                        Payout\Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            =>
+                            $beneficiaryFundAccountMerchantId,
+                        Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT =>
+                            $isBeneficiaryVpaFundAccountVirtualAccount
+                    ],
+                ];
 
                 $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
                                                                                           $this->merchant->getId(),
                                                                                           $this->isInternal,
-                                                                                          [
-                                                                                              Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
-                                                                                              Payout\Entity::UNUSED_CREDITS => $unusedCredits
-                                                                                          ],
-                                                                                          [
-                                                                                              Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
-                                                                                              Payout\Entity::FUND_ACCOUNT => $fundAccountInfo
-                                                                                          ]);
+                                                                                          $extraInfo);
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
@@ -4072,6 +4088,79 @@ class Base extends BaseCore
         }
 
         return null;
+    }
+
+    protected function fetchVaToVaInfoForPayoutServiceProcessing($fundAccountId, $fundAccount = null): array
+    {
+        try
+        {
+            // Check if razorx enabled
+            $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                                                                 Merchant\RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD,
+                                                                 RZPConstants\Mode::LIVE);
+
+            if ($razorxResponse !== 'on')
+            {
+                return [null, false];
+            }
+
+            if (empty($fundAccount) === true)
+            {
+                $fundAccount = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+            }
+
+            $fundAccountType = $fundAccount->getAccountType();
+
+            $destinationMerchantId = null;
+
+            $doesVpaBelongsToVa = false;
+
+            $sourceAccount = $fundAccount->account;
+
+            switch ($fundAccountType)
+            {
+                case FundAccount\Type::BANK_ACCOUNT:
+
+                    if ($fundAccount->isAccountVirtualBankAccount() === true)
+                    {
+                        $destinationVirtualAccount = $this->repo->virtual_account
+                            ->getActiveVirtualAccountFromAccountNumberAndIfsc(
+                                $sourceAccount->getAccountNumber(),
+                                $sourceAccount->getIfscCode()
+                            );
+
+                        if (empty($destinationVirtualAccount) === false)
+                        {
+                            $destinationMerchantId = $destinationVirtualAccount->getMerchantId();
+                        }
+                    }
+
+                    break;
+
+                case FundAccount\Type::VPA:
+
+                    $virtualAccountForVpa = $this->repo->vpa->checkIfVpaBelongsToVirtualAccount($sourceAccount);
+
+                    if (empty($virtualAccountForVpa) === false)
+                    {
+                        $doesVpaBelongsToVa = true;
+                    }
+
+                    break;
+            }
+
+            return [$destinationMerchantId, $doesVpaBelongsToVa];
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->error(
+                TraceCode::VA_TO_VA_INFO_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'error' => $throwable->getMessage()
+                ]);
+
+            return [null, false];
+        }
     }
 
     /**

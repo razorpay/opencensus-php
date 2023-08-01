@@ -1456,12 +1456,12 @@ class Core extends Base\Core
 
             if ($razorxResponse !== 'on')
             {
-                return [false, null];
+                return [false, null, null];
             }
 
             if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
             {
-                return [false, null];
+                return [false, null, null];
             }
 
             $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
@@ -1473,7 +1473,7 @@ class Core extends Base\Core
             $entity->setIsPSPayout(true);
             $entity->contact->setIsPSPayout(true);
 
-            return [true, $entity->toArrayPublic()];
+            return [true, $entity->toArrayPublic(), $entity];
 
         }
         catch (\Exception $ex)
@@ -1485,7 +1485,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        return [false, null];
+        return [false, null, null];
     }
 
     public function getBulkAppSpecificInformation(Base\PublicCollection $fundAccounts) : Base\PublicCollection

@@ -811,6 +811,9 @@ final class RazorxTreatment
     // Experiment to handle PS fund account optimisation
     const PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD = 'ps_fund_account_consume_from_payload';
 
+    // Experiment to handle PS va to va optimisation
+    const PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD = 'payout_service_va_to_va_consume_from_payload';
+
     /**
      * Razorx flag to enable timeout of upi collect payment with input expiry time
      */

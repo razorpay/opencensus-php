@@ -36,8 +36,7 @@ class Create extends Base
     public function createPayoutViaMicroservice(array $input,
                                                 string $merchantId,
                                                 bool $isInternal = false,
-                                                array $creditsInfo = [],
-                                                array $fundAccountInfo = [])
+                                                array $extraInfo = [])
     {
         $data = $input;
 
@@ -60,7 +59,7 @@ class Create extends Base
             $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
         }
 
-        $request = $this->createRequestBody($input, $merchantId, $creditsInfo, $fundAccountInfo);
+        $request = $this->createRequestBody($input, $merchantId, $extraInfo);
 
         $headers = $this->getHeadersWithJwt();
 
@@ -105,8 +104,7 @@ class Create extends Base
      */
     public function createRequestBody(array $input,
                                       string $merchantId,
-                                      array $creditsInfo = [],
-                                      array $fundAccountInfo = []): array
+                                      array $extraInfo = []): array
     {
         $fundAccountId = PublicEntity::stripDefaultSign($input[Payout\Entity::FUND_ACCOUNT_ID]);
 
@@ -152,6 +150,8 @@ class Create extends Base
             $requestBody[Payout\Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT] = filter_var($input[Payout\Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT], FILTER_VALIDATE_BOOLEAN);
         }
 
+        $creditsInfo =  array_pull($extraInfo, Payout\Entity::CREDITS_INFO);
+
         // Passing info like credits and fund_account for PS payouts to avoid back and forth calls to API.
         if ((isset($creditsInfo[Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS]) === true) and
             ($creditsInfo[Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS] === true))
@@ -163,7 +163,13 @@ class Create extends Base
             ];
         }
 
+        $fundAccountInfo = array_pull($extraInfo, Payout\Entity::FUND_ACCOUNT_INFO);
+
         $this->addFundAccountExtraInfoInRequestBody($requestBody, $fundAccountInfo);
+
+        $vaToVaInfo = array_pull($extraInfo, Payout\Entity::VA_TO_VA_INFO);
+
+        $this->addVaToVaExtraInfoInRequestBody($requestBody, $vaToVaInfo);
 
         if (empty($input[PayoutsDetails\Entity::ATTACHMENTS]) === false)
         {
@@ -274,6 +280,33 @@ class Create extends Base
         $request[Payout\Entity::EXTRA_INFO] += [
             Payout\Entity::FUND_ACCOUNT_INFO => [
                 Payout\Entity::FUND_ACCOUNT => $fundAccountExtraInfoRequestBody
+            ]
+        ];
+    }
+
+    /**
+     * @param array $request
+     * @param array $vaToVaInfo
+     *
+     * @return void
+     */
+    public function addVaToVaExtraInfoInRequestBody(array & $request, array $vaToVaInfo = [])
+    {
+        $beneficiaryFundAccountMerchantId = $vaToVaInfo[Payout\Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID];
+
+        $isBeneficiaryVpaFundAccountVirtualAccount = $vaToVaInfo[Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT];
+
+        if ((empty($beneficiaryFundAccountMerchantId) === true) and
+            (empty($isBeneficiaryVpaFundAccountVirtualAccount) === true))
+        {
+            return;
+        }
+
+        $request[Payout\Entity::EXTRA_INFO] += [
+            Payout\Entity::VA_TO_VA_INFO => [
+                Payout\Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID => $beneficiaryFundAccountMerchantId,
+                Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT =>
+                    $isBeneficiaryVpaFundAccountVirtualAccount,
             ]
         ];
     }

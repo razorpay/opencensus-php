@@ -104,7 +104,17 @@ class PayoutServiceTest extends TestCase
                 'source_id'    => '1000001contact',
                 'source_type'  => 'contact',
                 'account_type' => 'bank_account',
-                'account_id'   => '1000000lcustba'
+                'account_id'   => '1000001lcustba'
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'             => '1000001lcustba',
+                'type'           => 'contact',
+                'entity_id'      => '1000001contact',
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
             ]);
 
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
@@ -169,6 +179,13 @@ class PayoutServiceTest extends TestCase
                                                 $assertionBody = [
                                                     "fund_account_extra_info" => $arg['content']['extra_info']['fund_account_info'],
                                                 ];
+                                            }
+
+                                            if (empty($arg['content']['extra_info']['va_to_va_info']) === false)
+                                            {
+                                                $assertionBody = array_merge($assertionBody, [
+                                                    "va_to_va_info" => $arg['content']['extra_info']['va_to_va_info'],
+                                                ]);
                                             }
 
                                             return true;
@@ -2562,7 +2579,7 @@ class PayoutServiceTest extends TestCase
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000001lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         //$this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
@@ -2610,6 +2627,7 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
 
         $this->assertNull($assertionBody['fund_account_extra_info']);
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 
     public function testCreatePayoutWithAttachmentsViaDashboard()
@@ -2945,7 +2963,7 @@ class PayoutServiceTest extends TestCase
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000001lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         //$this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
@@ -2957,6 +2975,7 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($txn['posted_at']);
 
         $this->assertNull($assertionBody['fund_account_extra_info']);
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         return $payout;
     }
@@ -3013,6 +3032,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3098,6 +3119,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3186,6 +3209,239 @@ class PayoutServiceTest extends TestCase
             ],
         ];
 
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $fundAccountObject = $this->getDbEntities('fund_account',
+                                                  [
+                                                      'id' => '100000000000fa',
+                                                  ],
+                                                  'live')[0];
+
+        $contactObject = $this->getDbEntities('contact',
+                                              [
+                                                  'id' => $fundAccountObject->source->getId(),
+                                              ],
+                                              'live')[0];
+
+        $bankAccountObject = $this->getDbEntities('bank_account',
+                                                  [
+                                                      'id' => $fundAccountObject->account->getId(),
+                                                  ],
+                                                  'live')[0];
+
+        $bankAccountObject = $this->fixtures->on('live')->edit(
+            'bank_account',
+            $bankAccountObject['id'],
+            [
+                'ifsc_code' => 'RATN0VAAPIS',
+            ])->toArray();
+
+        $expectedFundAccountExtraInfo = [
+            'id'           => 'fa_' . $fundAccountObject['id'],
+            'entity'       => 'fund_account',
+            'contact_id'   => 'cont_' . $fundAccountObject['source_id'],
+            'account_type' => $fundAccountObject['account_type'],
+            'active'       => $fundAccountObject['active'],
+            'batch_id'     => $fundAccountObject['batch_id'],
+            'created_at'   => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'             => 'ba_' . $bankAccountObject['id'],
+                'name'           => $bankAccountObject['name'],
+                'ifsc'           => $bankAccountObject['ifsc'],
+                'account_number' => $bankAccountObject['account_number'],
+                'bank_name'      => $bankAccountObject['bank_name'],
+            ],
+            'contact'      => [
+                'id'           => 'cont_' . $contactObject['id'],
+                'entity'       => 'contact',
+                'name'         => $contactObject['name'],
+                'contact'      => $contactObject['contact'],
+                'email'        => $contactObject['email'],
+                'type'         => $contactObject['type'],
+                'reference_id' => $contactObject['reference_id'],
+                'batch_id'     => $contactObject['batch_id'],
+                'active'       => $contactObject['active'],
+                'created_at'   => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->fixtures->on('live')->create('merchant',
+                                            [
+                                                'id'               => '10000000000001',
+                                                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                                                'business_banking' => 1,
+                                                'activated'        => 1,
+                                            ]);
+
+        $vaBankAccount = $this->fixtures->on('live')->create('bank_account',
+                                                             [
+                                                                 'merchant_id'    => '10000000000001',
+                                                                 'entity_id'      => '100000000001va',
+                                                                 'type'           => 'virtual_account',
+                                                                 'account_number' => $bankAccountObject['account_number'],
+                                                                 'ifsc_code'      => $bankAccountObject['ifsc_code'],
+                                                             ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+                                            [
+                                                'id'              => '100000000001va',
+                                                'merchant_id'     => '10000000000001',
+                                                'status'          => 'active',
+                                                'bank_account_id' => $vaBankAccount->getId(),
+                                                'balance_id'      => '10000000000001',
+                                            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $this->assertTrue(isset($assertionBody['va_to_va_info']));
+
+        $expectedVaToVaInfo = [
+            Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT => false,
+            Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            => '10000000000001',
+        ];
+
+        $vaToVaInfo = $assertionBody['va_to_va_info'];
+
+        $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForVpaViaMicroserviceAndPassVaToVaInfo()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->on('live')->create('contact', [
+            'id'      => 'cont1000000000',
+            'name'    => 'Test Testing',
+            'email'   => 'test@razorpay.com',
+            'contact' => '987654321',
+            'type'    => 'self',
+            'active'  => 1,
+        ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id'          => 'vpa10000000000',
+            'entity_id'   => 'cont1000000000',
+            'entity_type' => 'contact',
+            'username'    => 'test',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->create('merchant',
+                                            [
+                                                'id'               => '10000000000001',
+                                                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                                                'business_banking' => 1,
+                                                'activated'        => 1,
+                                            ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id'          => 'vpa10000000001',
+            'entity_id'   => 'cont1000000001',
+            'entity_type' => 'virtual_account',
+            'username'    => 'test',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+                                          '100000000000fa',
+                                          [
+                                              'account_type' => 'vpa',
+                                              'account_id'   => 'vpa10000000000'
+                                          ]
+        );
+
+        $testData = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa', 'live');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id'], 'live');
+
+        $vpaObject = $this->getDbEntityById('vpa', 'vpa_' . $fundAccountObject->toArray()['account_id'], 'live');
+
+        $expectedFundAccountExtraInfo = [
+            'id'           => 'fa_' . $fundAccountObject['id'],
+            'entity'       => 'fund_account',
+            'contact_id'   => 'cont_' . $fundAccountObject['source_id'],
+            'account_type' => $fundAccountObject['account_type'],
+            'active'       => $fundAccountObject['active'],
+            'batch_id'     => $fundAccountObject['batch_id'],
+            'created_at'   => $fundAccountObject['created_at'],
+            'vpa'          => [
+                'id'       => 'vpa_' . $vpaObject['id'],
+                'username' => $vpaObject['username'],
+                'handle'   => $vpaObject['handle'],
+                'address'  => $vpaObject['address'],
+            ],
+            'contact'      => [
+                'id'           => 'cont_' . $contactObject['id'],
+                'entity'       => 'contact',
+                'name'         => $contactObject['name'],
+                'contact'      => $contactObject['contact'],
+                'email'        => $contactObject['email'],
+                'type'         => $contactObject['type'],
+                'reference_id' => $contactObject['reference_id'],
+                'batch_id'     => $contactObject['batch_id'],
+                'active'       => $contactObject['active'],
+                'created_at'   => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertTrue(isset($assertionBody['va_to_va_info']));
+
+        $expectedVaToVaInfo = [
+            Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT => true,
+            Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            => null,
+        ];
+
+        $vaToVaInfo = $assertionBody['va_to_va_info'];
+
+        $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
+
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
         $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
@@ -3244,6 +3500,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3326,6 +3584,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3411,6 +3671,8 @@ class PayoutServiceTest extends TestCase
             ],
         ];
 
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
+
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
         $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
@@ -3468,6 +3730,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3549,6 +3813,8 @@ class PayoutServiceTest extends TestCase
                 'created_at'    => $contactObject['created_at'],
             ],
         ];
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
@@ -3633,6 +3899,8 @@ class PayoutServiceTest extends TestCase
             ],
         ];
 
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));;
+
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
 
         $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
@@ -3671,6 +3939,7 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
 
         $this->assertNull($assertionBody['fund_account_extra_info']);
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 
     public function testCreateInternalPayoutViaMicroServiceWithUserIdInHeaders()
@@ -3731,7 +4000,7 @@ class PayoutServiceTest extends TestCase
         // Verify attempt entity
         $this->assertEquals('pout_Gg7sgBZgvYjlSB', $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000001lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], $payoutAttempt['channel']);
 
         // Verify transaction entity
