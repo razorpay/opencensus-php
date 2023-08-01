@@ -327,7 +327,7 @@ class Service extends Base\Service
      *
      * @return array tokens
      */
-    public function fetchTokensForGlobalCustomer(): array
+    public function fetchTokensForGlobalCustomerUsingAppToken(): array
     {
         $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
@@ -337,11 +337,24 @@ class Service extends Base\Service
         {
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            if ($app !== null && $app->customer !== null) {
-                $tokens = $this->core->fetchTokensByCustomerForCheckout($app->customer, $this->merchant);
-
-                $tokens = $this->core->filterTokensForCheckout($tokens);
+            if ($app !== null && $app->getCustomerId() !== null) {
+                return $this->fetchTokensForGlobalCustomer($app->getCustomerId());
             }
+        }
+
+        return $tokens->toArrayPublic();
+    }
+
+    public function fetchTokensForGlobalCustomer(string $customerId): array
+    {
+        $customer = $this->repo->customer->findByIdAndMerchantId($customerId, Merchant\Account::SHARED_ACCOUNT);
+
+        $tokens = new Base\PublicCollection;
+
+        if($customer !== null) {
+            $tokens = $this->core->fetchTokensByCustomerForCheckout($customer, $this->merchant);
+
+            $tokens = $this->core->filterTokensForCheckout($tokens);
         }
 
         return $tokens->toArrayPublic();
@@ -357,7 +370,11 @@ class Service extends Base\Service
     public function fetchLocalOrGlobalCustomerTokens(array $input): array
     {
         if (empty($input['customer_id'])) {
-            $tokens = $this->fetchTokensForGlobalCustomer();
+            if (!empty($input['global_customer_id'])) {
+                $tokens = $this->fetchTokensForGlobalCustomer($input['global_customer_id']);
+            } else {
+                $tokens = $this->fetchTokensForGlobalCustomerUsingAppToken();
+            }
         } else {
             $tokens = $this->fetchTokensForLocalCustomerForCheckout($input['customer_id']);
         }

@@ -231,7 +231,7 @@ class Service extends Base\Service
             'has_saved_addresses' => false,
         ];
 
-        if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input['customer_id'])) {
+        if (!Arr::hasAny($input, [Payment\Entity::APP_TOKEN, Payment\Entity::GLOBAL_CUSTOMER_ID, Payment\Entity::CUSTOMER_ID])) {
             if (!empty($input['contact']) && !empty($input['device_token'])) {
                 $contact = Customer\Validator::validateAndParseContact($input['contact']);
 

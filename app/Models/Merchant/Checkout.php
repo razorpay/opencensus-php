@@ -2055,7 +2055,7 @@ class Checkout
                             $token = null;
 
                             //put token instead of card id in response
-                            if ((isset($input[Payment\Entity::APP_TOKEN]) === true) and
+                            if ((!empty($input[Payment\Entity::APP_TOKEN]) || !empty($input[Payment\Entity::GLOBAL_CUSTOMER_ID])) &&
                                 (isset($card->global_card_id) === true)) {
                                 //token for emi payments is stored with method as card
                                 $token = (new Customer\Token\Repository())->fetchByMethodAndCardIdAndMerchant(
@@ -2084,7 +2084,8 @@ class Checkout
                     }
 
                     if ((isset($input[Payment\Entity::APP_TOKEN]) === false) and
-                        (isset($input[Payment\Entity::CUSTOMER_ID]) === false)) {
+                        (isset($input[Payment\Entity::CUSTOMER_ID]) === false) and
+                        (isset($input[Payment\Entity::GLOBAL_CUSTOMER_ID]) === false)) {
 
                         if ($preference['method'] === Payment\Method::NETBANKING) {
                             if (isset($preference['instrument']) === true) {
@@ -2251,6 +2252,16 @@ class Checkout
         if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
             $customer = (new Customer\Repository())->findByPublicIdAndMerchant($input[Payment\Entity::CUSTOMER_ID], $merchant);
+
+            return $customer->contact;
+        }
+
+        if (isset($input[Payment\Entity::GLOBAL_CUSTOMER_ID]) === true) {
+            $customer = (new Customer\Repository())->findByIdAndMerchantId(
+                $input[Payment\Entity::GLOBAL_CUSTOMER_ID],
+                Account::SHARED_ACCOUNT,
+                ConnectionType::SLAVE
+            );
 
             return $customer->contact;
         }
