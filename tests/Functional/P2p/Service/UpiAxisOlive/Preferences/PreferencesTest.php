@@ -2,16 +2,16 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxisOlive\Device;
 
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\P2p\Preferences\Constants;
 
 use RZP\Models\Admin;
-use RZP\Models\Admin\Service as AdminService;
-use  RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\P2p\Service\UpiAxisOlive\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
+use  RZP\Exception\BadRequestValidationFailureException;
 
 class PreferencesTest extends TestCase
 {
@@ -19,27 +19,6 @@ class PreferencesTest extends TestCase
     use MetricsTrait;
     use TransactionTrait;
     use TestsWebhookEvents;
-
-    public function testGetGatewayPreferences()
-    {
-        $helper = $this->getPreferencesHelper();
-
-        $helper->withSchemaValidated();
-
-        $banklist = $this->setPopularBankListInRedis();
-
-        $response = $helper->getGatewayPreferences($this->gateway, []);
-
-        $this->assertArrayHasKey('customer', $response);
-
-        $this->assertArrayHasKey('gateways', $response);
-
-        $this->assertArrayHasKey('popular_banks', $response);
-        
-        $this->assertEquals(4, count($response['popular_banks']));
-
-        $this->assertArraySelectiveEquals($banklist, $response['popular_banks']);
-    }
 
     public function testGetGatewayPreferencesWithoutPopularBankList()
     {
@@ -58,6 +37,33 @@ class PreferencesTest extends TestCase
         $this->assertEquals(8, count($response['popular_banks']));
 
         $this->assertArraySelectiveEquals(Constants::getStaticPopularBanksList(), $response['popular_banks']);
+    }
+
+    public function testGetGatewayPreferences()
+    {
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
+        $banklist = $this->setPopularBankListInRedis();
+
+        $response = $helper->getGatewayPreferences($this->gateway, []);
+
+        $this->assertArrayHasKey('customer', $response);
+
+        $this->assertArrayHasKey('gateways', $response);
+
+        $this->assertArrayHasKey('popular_banks', $response);
+
+        $this->assertEquals(4, count($response['popular_banks']));
+
+        $this->assertArraySelectiveEquals($banklist, $response['popular_banks']);
+
+        $merchant = $this->getDbMerchantById(Fixtures::TEST_MERCHANT);
+
+        $expectedMerchantName = $merchant->getDisplayNameElseName();
+
+        $this->assertEquals($expectedMerchantName, $response['merchant']['display_name']);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()

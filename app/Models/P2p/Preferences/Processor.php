@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Preferences;
 
+use Monolog\Logger;
 use RZP\Models\Order;
 use RZP\Models\P2p\Base;
 use RZP\Trace\TraceCode;
@@ -41,6 +42,7 @@ class Processor extends Base\Processor
                                    $this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
         }
 
+        $this->setMerchantInfoInResponse($preferencesResponse);
 
         // if order id and customer id are empty
         if(isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
@@ -103,7 +105,7 @@ class Processor extends Base\Processor
 
     private function getPopularBankListForSDK()
     {
-        $popularBankList = ConfigKey::get(ConfigKey::UPI_TURBO_POPULAR_BANK_LIST, []);
+        $popularBanksList = ConfigKey::get(ConfigKey::UPI_TURBO_POPULAR_BANK_LIST, []);
 
         if (empty($popularBanksList) === true)
         {
@@ -113,7 +115,7 @@ class Processor extends Base\Processor
             return Constants::getStaticPopularBanksList();
         }
 
-        return  $popularBankList;
+        return  $popularBanksList;
     }
 
     private function getSDKVersionLimitations()
@@ -202,5 +204,45 @@ class Processor extends Base\Processor
         }
 
         return $bank_account_contents;
+    }
+
+    private function setMerchantInfoInResponse(&$response)
+    {
+        try
+        {
+            /** @var \RZP\Models\Merchant\Entity $merchant */
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            if ($merchant === null)
+            {
+                return;
+            }
+
+            $merchantDisplayName = $merchant->getDisplayName();
+
+            if ($merchantDisplayName === null)
+            {
+                $this->trace()->warning(
+                    TraceCode::MERCHANT_DISPLAY_NAME_NULL,
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]
+                );
+
+                $merchantDisplayName = $merchant->getName();
+            }
+
+            $response[Constants::MERCHANT] = [
+                Constants::DISPLAY_NAME => $merchantDisplayName
+            ];
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace()->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::MERCHANT_INFO_SET_FAILED_IN_TURBO_PREFERENCES_RESPONSE
+            );
+        }
     }
 }

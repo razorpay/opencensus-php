@@ -4,6 +4,8 @@ namespace RZP\Models\P2p\Preferences;
 
 class Constants
 {
+    const MERCHANT = 'merchant';
+    const DISPLAY_NAME = 'display_name';
     private static array $popularBanksListInProd = [
         [
             "priority"     => "0",

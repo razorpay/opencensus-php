@@ -10119,6 +10119,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TRIMMING_PAYMENT_ID                               = 'TRIMMING_PAYMENT_ID';
 
+    const MERCHANT_INFO_SET_FAILED_IN_TURBO_PREFERENCES_RESPONSE = 'MERCHANT_INFO_SET_FAILED_IN_TURBO_PREFERENCES_RESPONSE';
+    const MERCHANT_DISPLAY_NAME_NULL                             = 'MERCHANT_DISPLAY_NAME_NULL';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
