@@ -119,6 +119,15 @@ class UpdateMerchantContext extends Job
      */
     protected function updateMerchantContext(): void
     {
+        /*
+        This value will be used while creating the workflows for different activation states of the merchant
+        activated, amp , needs clarification, KQU.
+        */
+
+        $triggerWorkflow = true;
+
+        $app = App::getFacadeRoot();
+
         $startTime = microtime(true);
 
         [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndSetBasicAuth($this->merchantId);
@@ -152,23 +161,16 @@ class UpdateMerchantContext extends Job
             {
                 $newActivationStatus = Status::UNDER_REVIEW;
             }
-
-            $app = App::getFacadeRoot();
-
+          
             // Experiment For Automation Activation For Website Merchant
 
-            $experimentName = 'merchant_automation_activation_exp_id';
+            $splitzResult = $this->isAutomationActivationExperimentEnabled($merchant);
 
-            $isWebsiteMerchant = $detailCore->hasBusinessWebsiteOrAppUrls($merchant);
-
-            if ($isWebsiteMerchant === false)
+            if (($newActivationStatus === Status::ACTIVATED) and
+                ($splitzResult === Merchant\Constants::SPLITZ_LIVE))
             {
-                // Experiment For Automation Activation For Website Merchant
-
-                $experimentName = 'no_website_merchant_automation_activation_exp_id';
+                $triggerWorkflow = false;
             }
-
-            $splitzResult = $detailCore->getSplitzResponse($this->merchantId, $experimentName);
 
             $businessDetailMetadata = optional($app['repo']->merchant_business_detail->getBusinessDetailsForMerchantId($this->merchantId))->getMetadata();
 
@@ -345,7 +347,7 @@ class UpdateMerchantContext extends Job
                 }
                 else
                 {
-                    $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+                    $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant, $triggerWorkflow);
 
                     $this->trace->info(TraceCode::UPDATE_ACTIVATION_STATUS_DURATION, [
                         'merchant_id'              => $merchant->getId(),
@@ -477,5 +479,25 @@ class UpdateMerchantContext extends Job
                     'bvs_validation_id' => $this->validationId,
                 ]);
         }
+    }
+
+    protected function isAutomationActivationExperimentEnabled(MerchantEntity $merchant)
+    {
+        // Experiment For Automation Activation For No Website Merchant
+
+        $experimentName = 'merchant_automation_activation_exp_id';
+
+        $isWebsiteMerchant = (new DetailCore())->hasBusinessWebsiteOrAppUrls($merchant);
+
+        if ($isWebsiteMerchant === false)
+        {
+            // Experiment For Automation Activation For Website Merchant
+
+            $experimentName = 'no_website_merchant_automation_activation_exp_id';
+        }
+
+        $splitzResult = (new DetailCore())->getSplitzResponse($this->merchantId, $experimentName);
+
+        return $splitzResult;
     }
 }

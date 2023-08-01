@@ -3346,7 +3346,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker): Entity
+    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true): Entity
     {
         $startTime = microtime(true);
 
@@ -3495,7 +3495,8 @@ class Core extends Base\Core
             $input,
             $rejectionReasons,
             $maker, $merchant,
-            $shouldSave
+            $shouldSave,
+            $triggerWorkflow
         ) {
 
             $dbUpdateStartTime = microtime(true);
@@ -3520,7 +3521,7 @@ class Core extends Base\Core
                     'shouldSave' => $shouldSave,
                 ]);
 
-                (new Merchant\Activate)->activate($merchant, true, $shouldSave);
+                (new Merchant\Activate)->activate($merchant, $triggerWorkflow, $shouldSave);
 
                 $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATE_LOG, [
                     'text'       => 'after activating merchant',
