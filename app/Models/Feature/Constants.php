@@ -1866,7 +1866,7 @@ class Constants
 
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
-
+    const ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION = 'disable_pre_magic_order_ingestion';
     /**
      * Feature flag is used to disable auto read and auto submit feature on checkout.
      */
@@ -1959,6 +1959,7 @@ class Constants
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_SHOPIFY_ACC_CREATE,
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING,
+        self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2596,6 +2597,7 @@ class Constants
         self::DIRECT_DEBIT_VIA_TOKEN_BATCH    => true,
         DcsConstants::PassCustomUdfFss         => true,
         self::SETTLEMENT_BY_CURRENCY          => true,
+        self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION =>true,
     ];
 
     // Entity type constants

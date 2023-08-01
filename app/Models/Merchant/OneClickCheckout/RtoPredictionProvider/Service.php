@@ -27,6 +27,8 @@ class Service
     const GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES    = "get_merchant_order_review_automation_rules";
     const UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES = "upsert_merchant_order_review_automation_rules";
 
+    const CREATE_JOB_EXECUTIONS = 'create_job_executions_api';
+
     const PARAMS = [
         self::COD_ELIGIBILITY_EVALUATE  =>   [
             self::PATH   => 'twirp/rzp.rto_prediction.cod_eligibility.v1.CODEligibilityAPI/Evaluate',
@@ -48,6 +50,9 @@ class Service
         ],
         self::UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES => [
             self::PATH => 'twirp/rzp.rto_prediction.merchant_order_review_automation.v1.MerchantOrderReviewAutomationAPI/UpsertRuleConfigs',
+        ],
+        self::CREATE_JOB_EXECUTIONS => [
+            self::PATH => '/twirp/rzp.rto_prediction.job_executions.v1.JobExecutionApi/Create',
         ]
     ];
 
@@ -257,6 +262,13 @@ class Service
     public function upsertMerchantOrderReviewAutomationRuleConfigs($input)
     {
         $params = self::PARAMS[self::UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function createJobExecutions($input)
+    {
+        $params = self::PARAMS[self::CREATE_JOB_EXECUTIONS];
 
         return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }

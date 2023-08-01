@@ -204,6 +204,7 @@ class Constants
     const OneCcCouponDisableCOD = 'one_cc_coupon_disable_cod';
     const OneCcInputEnglish = 'one_cc_input_english';
     const OneCcMandatoryLogin = 'one_cc_mandatory_login';
+    const DisablePreMagicOrderIngestion = 'disable_pre_magic_order_ingestion';
 
     //reporting service features
     const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
@@ -422,6 +423,7 @@ class Constants
         self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::WalletAutoDebitEnabled => 'rzp/pg/merchant/wallet/Features',
         self::EnableSettlementByCurrency => 'rzp/pg/merchant/settlements/SettlementModels',
+        self::DisablePreMagicOrderIngestion => 'rzp/pg/merchant/checkout/magic/Configuration',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -638,6 +640,7 @@ class Constants
         APIFeaturesConstants::DIRECT_DEBIT_VIA_TOKEN_BATCH                  => self::DirectDebitViaTokenBatch,
         APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
         APIFeaturesConstants::SETTLEMENT_BY_CURRENCY                        => self::EnableSettlementByCurrency,
+        APIFeaturesConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION      => self::DisablePreMagicOrderIngestion,
     ];
 
     /**

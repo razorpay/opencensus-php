@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Core;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
 use RZP\Models\Merchant;
@@ -24,6 +25,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingService;
 use RZP\Models\Key;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Service extends Base\Service
 {
@@ -43,6 +45,9 @@ class Service extends Base\Service
     const SECOND    = 1;
     const MINUTE    = 60 * self::SECOND;
     const CACHE_TTL = 30 * self::MINUTE;
+    const PRE_MAGIC_ORDER_FEATURE_ENABLED_MIDS = [
+        'IU6VCWMjJKkVHh'
+    ];
 
     public function __construct()
     {
@@ -84,6 +89,46 @@ class Service extends Base\Service
                 if ($merchantPlatformConfig !== null)
                 {
                     $merchantPlatform = $merchantPlatformConfig->getValue();
+                }
+                else
+                {
+                    $merchantId = $this->merchant->getId();
+
+                    if (in_array($merchantId, self::PRE_MAGIC_ORDER_FEATURE_ENABLED_MIDS) === true &&
+                        $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION) === false &&
+                        $updatePlatform === Constants::SHOPIFY)
+                    {
+                        try
+                        {
+                            $jobRequest = [
+                                'name' => 'pre-magic-order-ingestion',
+                                'status' => 'pending',
+                                'merchant_id' => $merchantId,
+                                'pre_magic_order_ingestion_message' => [
+                                    'platform' => $updatePlatform,
+                                    'store_name' => $input['shop_id']
+                                ],
+                            ];
+
+                             $this->app['rto_prediction_provider_service']->createJobExecutions($jobRequest);
+
+                        }
+                        catch (\Exception $ex)
+                        {
+                            $this->trace->count(
+                                Metric::PRE_MAGIC_ORDER_JOB_CREATE_ERROR_COUNT,
+                                ['code' => $ex->getCode()]
+                            );
+
+                            $this->trace->error(TraceCode::PRE_MAGIC_ORDER_JOB_CREATE_CALL_ERROR,
+                                [
+                                    'code' => $ex->getCode(),
+                                    'message' => $ex->getMessage(),
+                                    'merchant_id' => $this->merchant->getMerchantId()
+                                ]
+                            );
+                        }
+                    }
                 }
 
                 if ($updatePlatform !== $merchantPlatform)
