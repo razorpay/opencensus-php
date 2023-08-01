@@ -4127,29 +4127,9 @@ class Service extends Base\Service
             ]
         ];
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
-        {
-            // Sends Legal documents to BVS & creates merchant_consents
-            // Merchant_consents should be created in 'Pending' state. If BVS call succeeds, we update status of this record.
-            $this->storeConsents($merchant->getId(), $input);
-
-            /*
-             * This is for a temporary requirement to check for consent capture specifically for PGtoX merchants.
-             * Two reasons for this design:
-             * 1. Moving from merchant level consent to merchant_user level consent
-             *  Due to this reason, any major refactoring is not worth the investment
-             * 2. Frontend boot latency
-             *  If we create a new route to expose consent, it will add an extra call during app boot and slow it down.
-             *  We could add this to user_fetch, but it would incur high impact changes and tech debt
-             */
-            $params = [
-                Merchant\Attribute\Entity::GROUP   => Merchant\Attribute\Group::X_MERCHANT_PREFERENCES,
-                Merchant\Attribute\Entity::TYPE    => Merchant\Attribute\Type::X_TNC_ACCEPTED,
-                Merchant\Attribute\Entity::VALUE   => 'true',
-                Merchant\Attribute\Entity::PRODUCT => Product::BANKING,
-            ];
-            (new Merchant\Attribute\Core())->create($params,$merchant);
-        });
+        // Sends Legal documents to BVS & creates merchant_consents
+        // Merchant_consents should be created in 'Pending' state. If BVS call succeeds, we update status of this record.
+        $this->storeConsents($merchant->getId(), $input);
 
         // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
         try
