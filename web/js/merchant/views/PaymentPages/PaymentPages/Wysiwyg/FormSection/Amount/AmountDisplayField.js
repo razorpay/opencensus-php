@@ -8,7 +8,7 @@ import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getCurrency } from 'common/ui/Amount';
 import {
   BATCH_UPLOAD_MSG,
@@ -28,9 +28,10 @@ const displayField = ({
   setRef,
   isListSorting,
   isBatchPaymentPages,
+  countryCode,
 }) => {
   const placeHolder = isBatchPaymentPages ? BATCH_UPLOAD_MSG : FILLED_BY_CUSTOMER;
-  const fieldType = mapFieldToAmountFieldType(field);
+  const fieldType = mapFieldToAmountFieldType(field, countryCode);
   let addOnAfter;
 
   const amountDisplay =
@@ -45,6 +46,8 @@ const displayField = ({
   );
 
   let hasCheckBox = false;
+
+  const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
   switch (fieldType) {
     case FIELD_TYPES.fixed_price.key: {

@@ -1,16 +1,7 @@
 import fUnits from './field-units';
 
-/*
- * A. Type: text
- *    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
- *
- * B. Type: Select
- *     Validation: string
- *
- * */
-
-export function getFieldTypes(isPaymentButton) {
-  const FIELD_TYPES = [
+const FIELD_TYPES_MAP = {
+  IN: [
     fUnits.str,
     fUnits.alphabets,
     fUnits.alphanumeric,
@@ -22,7 +13,32 @@ export function getFieldTypes(isPaymentButton) {
     fUnits.pan,
     fUnits.pincode,
     fUnits.dropdown,
-  ];
+  ],
+  MY: [
+    fUnits.str,
+    fUnits.alphabets,
+    fUnits.alphanumeric,
+    fUnits.number,
+    fUnits.email,
+    fUnits.phone,
+    fUnits.url,
+    fUnits.textarea,
+    fUnits.postcode,
+    fUnits.dropdown,
+  ],
+};
+
+/*
+ * A. Type: text
+ *    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
+ *
+ * B. Type: Select
+ *     Validation: string
+ *
+ * */
+
+export function getFieldTypes(isPaymentButton, countryCode = 'IN') {
+  const FIELD_TYPES = [...FIELD_TYPES_MAP[countryCode]];
 
   if (!isPaymentButton) {
     FIELD_TYPES.push(fUnits.date);
@@ -31,9 +47,9 @@ export function getFieldTypes(isPaymentButton) {
   return FIELD_TYPES; // JSON.parse(JSON.stringify(FIELD_TYPES)) is best way. But need to check if it breaks the selection in powerselect dropdown bcoz it works on object reference basis
 }
 
-export function flattenFIELD_TYPES() {
+export function flattenFIELD_TYPES(countryCode = 'IN') {
   const flatten = [];
-  const FIELD_TYPES = getFieldTypes();
+  const FIELD_TYPES = getFieldTypes(false, countryCode);
 
   for (let i = 0; i < FIELD_TYPES.length; i++) {
     const FIELD = FIELD_TYPES[i];
@@ -53,14 +69,14 @@ export function flattenFIELD_TYPES() {
 }
 
 // Note: If schema for a given field is changed, then this fn. will break.
-export function mapFieldToIndex(field) {
+export function mapFieldToIndex(field, countryCode = 'IN') {
   let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
   const { title, name, required, description, settings, ...schemaFields } = field;
 
   const { options: optionsInFieldSchema, ...restInFieldSchema } = schemaFields;
-  const fieldTypes = flattenFIELD_TYPES();
+  const fieldTypes = flattenFIELD_TYPES(countryCode);
 
   for (let i = 0; i < fieldTypes.length; i++) {
     const { options: optionsInDefinedSchema, ...restInDefinedSchema } = fieldTypes[i].schema;
@@ -140,9 +156,9 @@ export function mapFieldToIndex(field) {
   return selectedIndexInOptions;
 }
 
-export function getFieldFromIndices(indicesString) {
+export function getFieldFromIndices(indicesString, countryCode = 'IN') {
   let FIELD;
-  const FIELD_TYPES = getFieldTypes();
+  const FIELD_TYPES = getFieldTypes(false, countryCode);
 
   if (indicesString === null || indicesString === undefined) {
     return false;
@@ -165,14 +181,14 @@ export function getFieldFromIndices(indicesString) {
   return FIELD && FIELD.schema;
 }
 
-export function constructFieldSchema(fieldData) {
+export function constructFieldSchema(fieldData, countryCode = 'IN') {
   const { title, required, description, field_type } = fieldData;
 
   if (field_type === null || field_type === undefined) {
     return false;
   }
 
-  const SCHEMA = getFieldFromIndices(String(field_type));
+  const SCHEMA = getFieldFromIndices(String(field_type), countryCode);
 
   if (!title || !SCHEMA) {
     return false;

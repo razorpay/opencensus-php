@@ -26,9 +26,8 @@ class AddUDFButton extends React.PureComponent {
   };
 
   getOptions = () => {
-    const { isBatchPaymentPages } = this.props;
-
-    let filteredOptions = getFieldTypes();
+    const { isBatchPaymentPages, countryCode } = this.props;
+    let filteredOptions = getFieldTypes(false, countryCode);
 
     if (isBatchPaymentPages) {
       // Remove dropdown from the options.

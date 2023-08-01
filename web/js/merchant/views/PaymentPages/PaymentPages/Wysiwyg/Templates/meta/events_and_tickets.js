@@ -1,10 +1,9 @@
-export default {
+const baseMeta = {
   key: 'event',
   label: 'Events and Tickets',
   card: {
     title: 'Events and Tickets',
-    description:
-      'Take your event live by adding venue details, event date/time and event images.',
+    description: 'Take your event live by adding venue details, event date/time and event images.',
     img: '/img/payment_pages/events_and_tickets.jpg',
   },
   quillPrefill: [
@@ -54,8 +53,7 @@ export default {
       insert: '\n',
     },
     {
-      insert:
-        '# Select and upload some images for your event\n\nOrganiser information ',
+      insert: '# Select and upload some images for your event\n\nOrganiser information ',
     },
     {
       attributes: {
@@ -77,4 +75,17 @@ export default {
       insert: '# Information about passes / packages, website details',
     },
   ],
+};
+
+export const i18nEventsTicketsMeta = {
+  ...baseMeta,
+  card: {
+    ...baseMeta.card,
+    img: '/img/payment_pages/i18n/event-and-ticket.svg',
+  },
+};
+
+export default {
+  IN: baseMeta,
+  MY: i18nEventsTicketsMeta,
 };

@@ -11,6 +11,7 @@ const renderApp = (isRazorx = true) =>
           isPaymentPageStorefrontEnabled: isRazorx,
           merchant: {
             currency: 'INR',
+            country_code: 'IN',
           },
         },
         org: {

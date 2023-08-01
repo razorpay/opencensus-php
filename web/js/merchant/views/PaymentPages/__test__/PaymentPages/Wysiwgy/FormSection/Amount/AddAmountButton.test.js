@@ -2,6 +2,7 @@ import { screen, render, userEvent } from 'test-utils';
 import {
   renderApp,
   hideDynamicPriceField,
+  userState,
 } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/AddAmountButton';
 import store from 'merchant/store';
 import AddAmountButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AddAmountButton';
@@ -9,6 +10,7 @@ import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 const defaultProps = {
   currency: 'INR',
+  countryCode: 'IN',
   isBatchPaymentPages: false,
 };
 const globalState = store.getState();
@@ -72,7 +74,7 @@ describe('Batch Payment Page - Add Amount', () => {
     track.wysiwyg.addPriceField = jest.fn();
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: true },
+        user: userState,
       },
     };
     const props = {
@@ -92,7 +94,10 @@ describe('Batch Payment Page - Add Amount', () => {
   test('should able to add "Price Field" after selecting "Item with Quantity" if org feature flag "file_upload_pp" is disabled', async () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: false },
+        user: {
+          ...userState,
+          isPaymentPageFileUploadEnabled: false,
+        },
       },
     };
 

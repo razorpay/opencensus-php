@@ -1,4 +1,4 @@
-export default {
+const baseMeta = {
   key: 'donation',
   label: 'Donation',
   card: {
@@ -18,8 +18,7 @@ export default {
       insert: '\n',
     },
     {
-      insert:
-        '# Provide information about your fundraising drive\n\nCampaign starts on ',
+      insert: '# Provide information about your fundraising drive\n\nCampaign starts on ',
     },
     {
       attributes: {
@@ -56,8 +55,7 @@ export default {
       insert: '\n',
     },
     {
-      insert:
-        '# Details of tax exemption eligibility for donors\n\nCampaign images',
+      insert: '# Details of tax exemption eligibility for donors\n\nCampaign images',
     },
     {
       attributes: {
@@ -69,4 +67,9 @@ export default {
       insert: '# Select and upload up to 4 images for fundraising drive\n',
     },
   ],
+};
+
+export default {
+  IN: baseMeta,
+  MY: baseMeta,
 };

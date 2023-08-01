@@ -1,7 +1,8 @@
-import FIELD_TYPES from './fieldTypes';
+import FIELD_TYPES_MAP from './fieldTypes';
 
 // Note: mapFieldToIndex is prone to error if the position of items is changed in FIELD_TYPES
-export function getAmountFieldTypes(hideDynamicPriceField = false) {
+export function getAmountFieldTypes(hideDynamicPriceField = false, countryCode = 'IN') {
+  const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
   const fieldTypes = [FIELD_TYPES.fixed_price, FIELD_TYPES.multiple_purchase];
   if (!hideDynamicPriceField) {
     // Add dynamic price at 1st index to make the other user expeiriance same as before.
@@ -11,26 +12,28 @@ export function getAmountFieldTypes(hideDynamicPriceField = false) {
 }
 
 // Note: If definition of amount types is changed, then this logic would break
-export function mapFieldToAmountFieldType(amountField) {
+export function mapFieldToAmountFieldType(amountField, countryCode = 'IN') {
   let amountFieldType = null;
 
   if (amountField && amountField.item) {
     if (!amountField.item.amount) {
-      amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
+      amountFieldType = getAmountFieldTypes(false, countryCode)[1]; // FIELD_TYPES.dynamic_price
     } else if (
       amountField.hasOwnProperty('min_purchase') &&
       amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
     ) {
-      amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
+      amountFieldType = getAmountFieldTypes(false, countryCode)[2]; // FIELD_TYPES.multiple_purchase
     } else {
-      amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
+      amountFieldType = getAmountFieldTypes(false, countryCode)[0]; // FIELD_TYPES.fixed_price,
     }
   }
 
   return amountFieldType && amountFieldType.key;
 }
 
-export function getBaseFieldForAmountFieldType(amountFieldType) {
+export function getBaseFieldForAmountFieldType(amountFieldType, countryCode = 'IN') {
+  const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
+
   switch (amountFieldType) {
     case FIELD_TYPES.fixed_price.key:
       return {

@@ -7,7 +7,7 @@ import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { classList, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import FieldOptionsDropdownWrapper, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
@@ -28,7 +28,7 @@ import {
   FILLED_BY_CUSTOMER,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
-@connect(null, {
+@connect((state) => ({ countryCode: state.session.user.merchant.country_code }), {
   openModal,
   closeModal,
 })
@@ -51,7 +51,9 @@ export default class BaseForm extends React.PureComponent {
   }
 
   componentDidMount() {
-    const { fieldType, field } = this.props;
+    const { fieldType, field, countryCode } = this.props;
+
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     // if name is present and fixed price field -> focus on amount. Else focus on name field
     if (field.item.hasOwnProperty('name') && fieldType === FIELD_TYPES.fixed_price.key) {
@@ -225,8 +227,10 @@ export default class BaseForm extends React.PureComponent {
 
   // eslint-disable-next-line getter-return, consistent-return
   get amountRepresentationForFieldType() {
-    const { field } = this.props;
+    const { field, countryCode } = this.props;
     const fieldType = this.props.fieldType;
+
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     switch (fieldType) {
       case FIELD_TYPES.fixed_price.key:

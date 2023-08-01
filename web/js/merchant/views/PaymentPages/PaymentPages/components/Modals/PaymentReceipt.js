@@ -376,8 +376,8 @@ export default class PaymentReceipt extends React.Component {
                         <Popover align="top" theme="dark" parentQuerySelector=".Modal-body">
                           <PopoverBody>
                             <div className="rzp-tooltip-title">For Donations</div>
-                            80G-registered organisations can add their details on receipts to help
-                            donors avail tax benefits
+                            {getI18nTaxExemptionName(org.custom_code)}-registered organisations can
+                            add their details on receipts to help donors avail tax benefits
                           </PopoverBody>
                         </Popover>
                       </span>

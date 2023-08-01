@@ -1,4 +1,4 @@
-const FIELD_TYPES = {
+const BASE_FIELD_TYPES = {
   fixed_price: {
     label: 'Fixed Amount',
     key: 'fixed_price',
@@ -6,8 +6,7 @@ const FIELD_TYPES = {
     info: {
       img: '/img/payment_pages/fixed_price.png',
       title: 'Fixed Amount',
-      description:
-        'Add a field which contains the price value which customer should pay.',
+      description: 'Add a field which contains the price value which customer should pay.',
     },
   },
 
@@ -18,8 +17,7 @@ const FIELD_TYPES = {
     info: {
       img: '/img/payment_pages/dynamic_price.png',
       title: 'Customers Decide Amount',
-      description:
-        'Add a free field which helps customer to fill a amount which they wish to pay.',
+      description: 'Add a free field which helps customer to fill a amount which they wish to pay.',
     },
   },
 
@@ -36,7 +34,38 @@ const FIELD_TYPES = {
   },
 };
 
-export default FIELD_TYPES;
+export const MY_FIELD_TYPES = {
+  fixed_price: {
+    ...BASE_FIELD_TYPES.fixed_price,
+    info: {
+      ...BASE_FIELD_TYPES.fixed_price.info,
+      img: '/img/payment_pages/i18n/fixed-price.png',
+    },
+  },
+
+  dynamic_price: {
+    ...BASE_FIELD_TYPES.dynamic_price,
+    info: {
+      ...BASE_FIELD_TYPES.dynamic_price.info,
+      img: '/img/payment_pages/dynamic-price.png',
+    },
+  },
+
+  multiple_purchase: {
+    ...BASE_FIELD_TYPES.multiple_purchase,
+    info: {
+      ...BASE_FIELD_TYPES.multiple_purchase.info,
+      img: '/img/payment_pages/multiple-purchase.png',
+    },
+  },
+};
+
+const FIELD_TYPES_MAP = {
+  IN: BASE_FIELD_TYPES,
+  MY: MY_FIELD_TYPES,
+};
+
+export default FIELD_TYPES_MAP;
 
 //////////////////////////////////////////////
 /*

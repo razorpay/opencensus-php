@@ -126,7 +126,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
   return HOC;
 }
 
-@connect(null, {
+@connect((state) => ({ user: state.session.user }), {
   setSettingsModal,
 })
 class BaseFormModal extends React.PureComponent {
@@ -161,6 +161,7 @@ class BaseFormModal extends React.PureComponent {
       isLabelDisabled,
       isBatchPaymentPages,
       isPrimaryField,
+      user,
     } = this.props;
 
     return (
@@ -177,6 +178,7 @@ class BaseFormModal extends React.PureComponent {
           isLabelDisabled={isLabelDisabled}
           isBatchPaymentPages={isBatchPaymentPages}
           isPrimaryField={isPrimaryField}
+          countryCode={user.merchant.country_code}
         />
         {!isFieldDeletable ? (
           isShiprocket ? (

@@ -4,6 +4,7 @@ import { App, onboarding } from 'merchant/views/PaymentPages/__test__/mocks/fixt
 import { render, screen, userEvent } from 'test-utils';
 import { LANDING_PAGE_DESC } from 'merchant/views/PaymentPages/OnBoarding';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { userState } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/AddAmountButton';
 
 describe('Payment pages Onboarding Screen', () => {
   /*
@@ -29,7 +30,7 @@ describe('Payment pages Onboarding Screen', () => {
     render(<App {...props} />, {
       initialState: initialState || {
         session: {
-          user: { isPaymentPagesEnabled: true },
+          user: userState,
           org: {
             custom_code: 'rzp',
             business_name: 'Razorpay',
@@ -101,7 +102,13 @@ describe('Payment pages Onboarding Screen', () => {
       {},
       {
         session: {
-          user: { isPaymentPagesEnabled: true },
+          user: {
+            isPaymentPagesEnabled: true,
+            merchant: {
+              currency: 'MYR',
+              country_code: 'MY',
+            },
+          },
           org: {
             custom_code: 'curlec',
             business_name: 'Curlec',
@@ -117,7 +124,13 @@ describe('Payment pages Onboarding Screen', () => {
   test('should load curlec onboarding initial screen', () => {
     renderApp(null, {
       session: {
-        user: { isPaymentPagesEnabled: true },
+        user: {
+          isPaymentPagesEnabled: true,
+          merchant: {
+            currency: 'MYR',
+            country_code: 'MY',
+          },
+        },
         org: {
           custom_code: 'curlec',
           business_name: 'Curlec',

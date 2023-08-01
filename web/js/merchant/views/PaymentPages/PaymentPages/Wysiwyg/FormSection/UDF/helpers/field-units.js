@@ -115,6 +115,18 @@ const pincode = {
   },
 };
 
+const postcode = {
+  label: 'Postcode',
+  icon: 'location',
+  schema: {
+    type: 'number',
+    minLength: 5,
+    maxLength: 5,
+    pattern: 'number',
+    options: {},
+  },
+};
+
 const date = {
   label: 'Date Picker',
   icon: 'date-range',
@@ -154,4 +166,5 @@ export default {
   pan,
   pincode,
   date,
+  postcode,
 };

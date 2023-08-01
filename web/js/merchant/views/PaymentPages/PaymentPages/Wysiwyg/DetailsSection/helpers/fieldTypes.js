@@ -24,4 +24,20 @@ const FIELD_TYPES = {
   },
 };
 
-export default FIELD_TYPES;
+const MY_FIELD_TYPES = {
+  ...FIELD_TYPES,
+  donation_amount_based: {
+    ...FIELD_TYPES.donation_amount_based,
+    info: {
+      ...FIELD_TYPES.donation_amount_based.info,
+      img: '/img/payment_pages/i18n/amount-based.svg',
+    },
+  },
+};
+
+const FIELD_TYPES_MAP = {
+  IN: FIELD_TYPES,
+  MY: MY_FIELD_TYPES,
+};
+
+export default FIELD_TYPES_MAP;

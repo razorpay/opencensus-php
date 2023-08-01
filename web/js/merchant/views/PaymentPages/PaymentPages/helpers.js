@@ -37,8 +37,9 @@ const TAX_EXEMPTION_NAME_MAP = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Tax Exemption',
 };
 
-export const getI18nTaxExemptionName = (orgCode) =>
-  TAX_EXEMPTION_NAME_MAP[orgCode] || TAX_EXEMPTION_NAME_MAP[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+export const getI18nTaxExemptionName = (orgCode) => {
+  return TAX_EXEMPTION_NAME_MAP[orgCode] || TAX_EXEMPTION_NAME_MAP[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+};
 
 export const getAlertMsg = ({ isBatchPaymentPages, field }) => {
   const config = [

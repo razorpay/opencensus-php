@@ -24,7 +24,8 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
-import HeroMain from 'assets/payment_pages/hero_main.svg';
+import CommonHeroMain from 'assets/payment_pages/hero_main.svg';
+import i18nHeroMain from 'assets/payment_pages/i18n_hero_main.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const LANDING_PAGE_DESC = {
@@ -32,6 +33,11 @@ export const LANDING_PAGE_DESC = {
     'Build a custom, branded payment page for your business in under 10 minutes and start accepting international and domestic payments with zero integration and tech efforts.',
   [ORG_CUSTOM_CODE_MAP.CURLEC]:
     'Build a custom, branded payment page for your business in under 10 minutes and start accepting payments with zero integration and tech efforts.',
+};
+
+export const HERO_IMAGE_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: CommonHeroMain,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: i18nHeroMain,
 };
 
 @withRouter
@@ -89,6 +95,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
 
     const description =
       LANDING_PAGE_DESC[org.custom_code] || LANDING_PAGE_DESC[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+    const heroMainImag =
+      HERO_IMAGE_MAP[org.custom_code] || HERO_IMAGE_MAP[ORG_CUSTOM_CODE_MAP.RAZORPAY];
     return (
       <OnBoardingWrapper class="PaymentPages">
         <Slider
@@ -103,8 +111,9 @@ export default class PaymentPagesOnBoarding extends React.Component {
             <Landing
               {...sliderProps}
               title="Payment Pages"
+              className={org.custom_code}
               feature={RZPFeatures.PP}
-              imageUrl={HeroMain}
+              imageUrl={heroMainImag}
               businessName={org.business_name}
               desc={description}
             />

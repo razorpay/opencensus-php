@@ -7,7 +7,7 @@ import Input from 'common/new-ui/Input';
 
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 @connect((state) => ({
   user: state.session.user,
@@ -144,6 +144,8 @@ export default class AdvancedForm extends React.PureComponent {
     if (stockVal === '' || Number(stockVal) <= 0) {
       return 'Stock must be at least 1';
     }
+
+    const FIELD_TYPES = FIELD_TYPES_MAP[this.props.countryCode];
 
     if (this.props.fieldType === FIELD_TYPES.multiple_purchase.key) {
       const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
@@ -308,6 +310,8 @@ export default class AdvancedForm extends React.PureComponent {
   // eslint-disable-next-line getter-return, consistent-return
   get fieldsForFieldType() {
     const fieldType = this.props.fieldType;
+
+    const FIELD_TYPES = FIELD_TYPES_MAP[this.props.countryCode];
 
     // eslint-disable-next-line default-case
     switch (fieldType) {

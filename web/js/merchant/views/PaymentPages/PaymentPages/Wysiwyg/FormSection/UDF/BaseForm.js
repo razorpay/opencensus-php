@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -15,6 +16,7 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { FIXED_FIELDS } from './helpers/preAddedFields';
 
+@connect((state) => ({ countryCode: state.session.user.merchant.country_code }))
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -31,7 +33,8 @@ export default class BaseForm extends React.PureComponent {
       isSecondaryRefId: fieldSchema?.name?.indexOf(SEC_REF_ID) > -1 ?? false,
     };
 
-    this.fieldIndexInOptions = props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
+    this.fieldIndexInOptions =
+      props.fieldIndexInOptions || mapFieldToIndex(fieldSchema, props.countryCode);
   }
 
   onChange = () => {

@@ -10,7 +10,7 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { getCurrencySymbol } from 'common/ui/Amount';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 class AddAmountButton extends React.PureComponent {
   onSelectFieldType = (fieldType) => {
@@ -25,8 +25,10 @@ class AddAmountButton extends React.PureComponent {
   };
 
   onClickPriceField = () => {
-    const { isBatchPaymentPages } = this.props;
+    const { isBatchPaymentPages, countryCode } = this.props;
     track.wysiwyg.addPriceField();
+
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
     // If "Batch Payment Pages flow then don't allow to select input fileds. By defalut dynamic price filed should be selected"
     if (isBatchPaymentPages) {
       const option = FIELD_TYPES.dynamic_price;
@@ -35,12 +37,12 @@ class AddAmountButton extends React.PureComponent {
   };
 
   render() {
-    const { hideDynamicPriceField, currency, isBatchPaymentPages } = this.props;
+    const { hideDynamicPriceField, currency, isBatchPaymentPages, countryCode } = this.props;
     if (isBatchPaymentPages) {
       return (
         <Button.Transparent className="btn-dotted" onClick={this.onClickPriceField}>
           <span className="enclose-circle">
-            <b>₹</b>
+            <b>{getCurrencySymbol(currency)}</b>
           </span>{' '}
           <span>
             <b>Price field</b>
@@ -53,6 +55,7 @@ class AddAmountButton extends React.PureComponent {
         onSelect={this.onSelectFieldType}
         beforeOptionsTxt="Select Amount Type"
         hideDynamicPriceField={hideDynamicPriceField}
+        countryCode={countryCode}
       >
         <Button.Transparent className="btn-dotted" onClick={this.onClickPriceField}>
           <span className="enclose-circle">
@@ -76,11 +79,12 @@ export const AmountDropdown = ({
   selectedOption,
   beforeOptionsTxt,
   hideDynamicPriceField,
+  countryCode,
 }) => (
   <FieldsDropdownWrapper
     beforeOptionsTxt={beforeOptionsTxt}
     type="amount"
-    options={getAmountFieldTypes(hideDynamicPriceField)}
+    options={getAmountFieldTypes(hideDynamicPriceField, countryCode)}
     trigger={children}
     onSelect={onSelect}
     selectedOption={selectedOption && selectedOption.label}

@@ -55,6 +55,7 @@ class SortableFormItemsList extends React.Component {
       isShiprocketSetting,
       showPayerNamePP,
       isBatchPaymentPages,
+      countryCode,
     } = this.props;
 
     // disable sorting in mobile view
@@ -70,6 +71,7 @@ class SortableFormItemsList extends React.Component {
                 index={idx}
                 indexInRenderOrder={idx}
                 field={fi}
+                countryCode={countryCode}
                 currency={currency}
                 isListSorting={isListSorting}
                 updateData={this.props.updateData}
@@ -97,6 +99,7 @@ class SortableFormItemsList extends React.Component {
                 isShiprocket={checkIsShiprocketField(isShiprocketSetting, fi.name)}
                 showPayerNamePP={showPayerNamePP}
                 isBatchPaymentPages={isBatchPaymentPages}
+                countryCode={countryCode}
               />
             );
           }
@@ -116,7 +119,7 @@ class SortableFormItemsList extends React.Component {
   updateMagicData,
 })
 @RTracking(() => window.rzpQ.component('wysiwyg_view'))
-export default class View extends React.PureComponent {
+export default class View extends React.Component {
   state = {
     isListSorting: false,
     totalAmountItems: null,
@@ -204,7 +207,7 @@ export default class View extends React.PureComponent {
 
   onSubmitUDFField = (formData, indexInFormItems, isCheckoutOption) => {
     const { user, isBatchPaymentPages, FORM_ITEMS, showNotification } = this.props;
-    const fieldSchema = constructFieldSchema(formData);
+    const fieldSchema = constructFieldSchema(formData, user.merchant.country_code);
 
     if (isBatchPaymentPages) {
       const formItem = FORM_ITEMS[indexInFormItems];
@@ -327,6 +330,7 @@ export default class View extends React.PureComponent {
       isBatchPaymentPages,
     } = this.props;
     let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
+
     if (!paymentPageEntity) {
       return null;
     }
@@ -367,6 +371,7 @@ export default class View extends React.PureComponent {
                 isPaymentPageEditMode={isPaymentPageEditMode}
                 hideDynamicPriceField={_hideDynamicPriceField}
                 isBatchPaymentPages={isBatchPaymentPages}
+                countryCode={user.merchant.country_code}
               />
             </div>
           </div>
@@ -383,6 +388,7 @@ export default class View extends React.PureComponent {
           onSortStart={this.onSortStart}
           isListSorting={this.state.isListSorting}
           currency={paymentPageEntity.currency}
+          countryCode={user.merchant.country_code}
           FORM_ITEMS={FORM_ITEMS}
           updateData={this.props.updateData}
           checkoutOptions={paymentPageEntity.settings.checkout_options}
@@ -413,6 +419,7 @@ export default class View extends React.PureComponent {
               isMagicCheckoutEnabled={magicCheckout?.enabled}
               updateMagicData={updateMagicData}
               isBatchPaymentPages={isBatchPaymentPages}
+              countryCode={user.merchant.country_code}
             />
             <AddAmountButton
               currency={paymentPageEntity.currency}
@@ -423,6 +430,7 @@ export default class View extends React.PureComponent {
               isPaymentPageEditMode={isPaymentPageEditMode}
               hideDynamicPriceField={_hideDynamicPriceField}
               isBatchPaymentPages={isBatchPaymentPages}
+              countryCode={user.merchant.country_code}
             />
           </div>
         </div>

@@ -21,5 +21,10 @@ const renderApp = ({ initialState = {} } = {}) => {
     initialState: { ...defaultState, ...initialState },
   });
 };
+const userState = {
+  isPaymentPageFileUploadEnabled: true,
+  isPaymentPagesEnabled: true,
+  merchant: { country_code: 'IN', currency: 'INR' },
+};
 
-export { renderApp, defaultState, hideDynamicPriceField };
+export { renderApp, defaultState, hideDynamicPriceField, userState };

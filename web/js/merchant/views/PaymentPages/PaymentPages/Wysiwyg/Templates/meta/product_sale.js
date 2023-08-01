@@ -1,4 +1,4 @@
-export default {
+const baseMeta = {
   key: 'product',
   label: 'Product Sale',
   card: {
@@ -18,8 +18,7 @@ export default {
       insert: '\n',
     },
     {
-      insert:
-        '# Select and upload some images of your product / service\n\nProduct Description ',
+      insert: '# Select and upload some images of your product / service\n\nProduct Description ',
     },
     {
       attributes: {
@@ -38,8 +37,7 @@ export default {
       insert: '\n',
     },
     {
-      insert:
-        '# Time required to prepare order for shipment in days\n\nAverage delivery time ',
+      insert: '# Time required to prepare order for shipment in days\n\nAverage delivery time ',
     },
     {
       attributes: {
@@ -51,4 +49,9 @@ export default {
       insert: '# Average time required for delivery after shipment\n',
     },
   ],
+};
+
+export default {
+  IN: baseMeta,
+  MY: baseMeta,
 };

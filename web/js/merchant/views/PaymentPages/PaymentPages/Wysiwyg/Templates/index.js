@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import META from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates/meta';
@@ -18,6 +19,7 @@ const createYourOwn = {
   },
 };
 
+@connect((state) => ({ user: state.session.user }))
 export default class extends React.PureComponent {
   selectTemplate = (templateKey, label, quillPrefill, title) => {
     return () => {
@@ -31,11 +33,13 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const { showCustomTemplate, isBatchPaymentPages } = this.props;
+    const { showCustomTemplate, isBatchPaymentPages, user } = this.props;
     if (isBatchPaymentPages) {
       this.selectTemplate('custom', null);
       return '';
     }
+
+    const countryCode = user.merchant.country_code;
     return (
       <ModalMask maskClosable={false} class="payment-pages-v2-templates view-1" isBlur={true}>
         <Link class="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
@@ -60,23 +64,25 @@ export default class extends React.PureComponent {
               </ShowWhen>
               {Object.keys(META).map((m, k) => {
                 if (META.hasOwnProperty(m)) {
+                  const item = META[m][countryCode];
                   return (
                     <TemplateCard
                       key={k}
-                      title={META[m].card.title}
-                      description={META[m].card.description}
-                      img={META[m].card.img}
+                      title={item.card.title}
+                      description={item.card.description}
+                      img={item.card.img}
                       selectTemplate={(...e) => {
                         return this.selectTemplate(
-                          META[m].key,
-                          META[m].label,
-                          META[m].quillPrefill,
-                          META[m].card.title,
+                          item.key,
+                          item.label,
+                          item.quillPrefill,
+                          item.card.title,
                         )(...e);
                       }}
                     />
                   );
                 }
+
                 return '';
               })}
             </div>

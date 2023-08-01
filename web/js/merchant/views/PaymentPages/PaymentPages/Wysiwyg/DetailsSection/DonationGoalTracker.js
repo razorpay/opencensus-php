@@ -19,7 +19,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { parseGoalTrackerAmountValues } from './helpers';
 import debounce from 'common/utils/debounce';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-import FIELD_TYPES from './helpers/fieldTypes';
+import FIELD_TYPES_MAP from './helpers/fieldTypes';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 const sampleData = {
@@ -53,6 +53,7 @@ const sampleData2 = {
 @connect(
   (state) => ({
     currency: state.wysiwyg.paymentPageEntity?.currency || 'INR',
+    user: state.session.user,
   }),
   {
     showNotification,
@@ -289,15 +290,9 @@ export default class DonationGoalTracker extends React.PureComponent {
   };
 
   render() {
-    const {
-      isEditable,
-      meta_data,
-      endDate,
-      is_active,
-      tracker_type,
-      isBottomSheetOpen,
-    } = this.state;
-    const { currency } = this.props;
+    const { isEditable, meta_data, endDate, is_active, tracker_type, isBottomSheetOpen } =
+      this.state;
+    const { currency, user } = this.props;
 
     const isMobile = isMobileDevice();
 
@@ -309,6 +304,7 @@ export default class DonationGoalTracker extends React.PureComponent {
         {!isEditable && is_active !== '1' ? (
           <GoalTrackerDropdown
             onSelect={this.onSelect}
+            countryCode={user.merchant.country_code}
             trigger={
               <>
                 <Button.Transparent
@@ -429,7 +425,8 @@ export default class DonationGoalTracker extends React.PureComponent {
   }
 }
 
-const GoalTrackerDropdown = ({ trigger, onSelect }) => {
+const GoalTrackerDropdown = ({ trigger, onSelect, countryCode }) => {
+  const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
   return (
     <FieldsDropdownWrapper
       beforeOptionsTxt="Which goal would you like to track?"

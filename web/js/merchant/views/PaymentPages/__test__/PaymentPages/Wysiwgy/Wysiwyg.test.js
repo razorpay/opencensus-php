@@ -1,6 +1,6 @@
 import { screen, userEvent } from 'test-utils';
 import { renderApp } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/Wysiwyg';
-
+import { userState } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/AddAmountButton';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 describe('Payment Page Creation', () => {
@@ -13,9 +13,7 @@ describe('Payment Page Creation', () => {
     const initialState = {
       session: {
         user: {
-          merchant: {
-            currency: 'INR',
-          },
+          ...userState,
           isPaymentPageFileUploadEnabled: false,
           showCustomTemplatePP: false,
         },
@@ -42,11 +40,9 @@ describe('Batch Payment Page Creation', () => {
     const initialState = {
       session: {
         user: {
+          ...userState,
           isPaymentPageFileUploadEnabled: false,
           showCustomTemplatePP: true,
-          merchant: {
-            currency: 'INR',
-          },
         },
       },
     };
@@ -58,11 +54,9 @@ describe('Batch Payment Page Creation', () => {
     const initialState = {
       session: {
         user: {
+          ...userState,
           isPaymentPageFileUploadEnabled: true,
           showCustomTemplatePP: true,
-          merchant: {
-            currency: 'INR',
-          },
         },
       },
     };

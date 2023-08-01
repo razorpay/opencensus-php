@@ -57,6 +57,15 @@ export const FIXED_FIELDS = {
     };
   },
 
+  get postcode() {
+    return {
+      name: 'postcode',
+      title: 'PostCode',
+      required: true,
+      ...fUnits.postcode.schema,
+    };
+  },
+
   get state() {
     return {
       name: 'state',

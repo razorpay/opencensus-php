@@ -1,9 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 import { ImageCropperModal } from './ImageCropper';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import {
   isMandatoryToBool,
   mapFieldToAmountFieldType,
@@ -20,7 +21,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isBaseFormOpened: false,
         isAdvancedFormOpened: false,
         isImageCropperOpened: false,
-        fieldType: mapFieldToAmountFieldType(this.props.field) || null,
+        fieldType: mapFieldToAmountFieldType(this.props.field, this.props.countryCode) || null,
         field: this.props.field,
         currency: this.props.currency,
       };
@@ -100,9 +101,11 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     onChangeIsMandatory = (mandatory) => {
       const isMandatory = isMandatoryToBool(mandatory);
       const { fieldType, currency, field } = this.state;
+      const { countryCode } = this.props;
 
       const newField = { ...field };
       newField.mandatory = isMandatory;
+      const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
       if (isMandatory) {
         // eslint-disable-next-line default-case
@@ -262,6 +265,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   return HOC;
 }
 
+@connect((state) => ({ user: state.session.user }))
 class BaseFormModal extends React.PureComponent {
   onSaveForm = (formData) => {
     this.props.onSaveForm(formData);
@@ -288,6 +292,7 @@ class BaseFormModal extends React.PureComponent {
       onChangeIsMandatory,
       isPaymentPageEditMode,
       isBatchPaymentPages,
+      user,
     } = this.props;
 
     return (
@@ -308,6 +313,7 @@ class BaseFormModal extends React.PureComponent {
           isPaymentPageEditMode={isPaymentPageEditMode}
           onChangeIsMandatory={onChangeIsMandatory}
           isBatchPaymentPages={isBatchPaymentPages}
+          countryCode={user.merchant.country_code}
         />
       </CreatorModal>
     );

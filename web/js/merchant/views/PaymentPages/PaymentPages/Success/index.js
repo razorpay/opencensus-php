@@ -451,13 +451,13 @@ class Success extends React.Component {
                     <div className="box--line box--space">
                       You can customise your receipt by adding{' '}
                       <b>
-                        customer’s information & {getI18nTaxExemptionName(org.custom_code)} details
+                        customer's information & {getI18nTaxExemptionName(org.custom_code)} details
                         <span className="rzp-tooltip-80g">
                           <i className="i i-info-outline" />
                           <Popover align="top" theme="dark">
                             <PopoverBody>
                               <div className="rzp-tooltip-title">For Donations</div>
-                              {getI18nTaxExemptionName(org.custom_code)}-registered organisations
+                              {getI18nTaxExemptionName(org.custom_code)}-registered organizations
                               can add their details on receipts to help donors avail tax benefits
                             </PopoverBody>
                           </Popover>
