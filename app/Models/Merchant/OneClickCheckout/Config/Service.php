@@ -46,7 +46,8 @@ class Service extends Base\Service
     const MINUTE    = 60 * self::SECOND;
     const CACHE_TTL = 30 * self::MINUTE;
     const PRE_MAGIC_ORDER_FEATURE_ENABLED_MIDS = [
-        'IU6VCWMjJKkVHh'
+        'IU6VCWMjJKkVHh',
+        'JOzEWx7wtc9fmf'
     ];
 
     public function __construct()
