@@ -15,9 +15,9 @@ import {
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { User } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
 import { trackLinkClick } from 'merchantLA/containers/TestModeBanner/ga';
-import Banner from 'common/ui/Banner';
 import { Link } from 'react-router-dom';
 import SectionShimmer from 'merchant/views/AccountAndSettings/PaymentMethods/components/Shimmer';
+import { Alert, Text } from '@razorpay/blade/components';
 
 type Props = {
   type: PaymentMethodsFields;
@@ -54,23 +54,45 @@ const PaymentMethodsSection = ({
   };
 
   const isActivatedUser = user.activation_status === 'activated';
+  const isLiveMerchant = user.live;
 
   return loading || showLoader ? (
     <SectionShimmer />
   ) : (
     <>
-      {!isActivatedUser && (
-        <Banner className="no-margin">
-          <span>
-            <i className="i i-info-outline" /> KYC verification is mandatory to request for new
-            payment methods. Please complete your
-            <Link to="/activation" onClick={() => trackLinkClick('Go To - Activation Form')}>
-              &nbsp; activation form
-            </Link>
-            , if not done already.
-          </span>
-        </Banner>
-      )}
+      {!isLiveMerchant ? (
+        <Alert
+          description={
+            <Text type="subdued">
+              Request for Payment methods is unavailable as your account is not enabled to accept
+              transactions.
+            </Text>
+          }
+          marginTop="spacing.4"
+          isDismissible={false}
+          intent="notice"
+          testID="non-live-banner"
+          isFullWidth
+        />
+      ) : null}
+
+      {!isActivatedUser ? (
+        <Alert
+          description={
+            <Text type="subdued">
+              KYC verification is mandatory to request for new payment methods. Please complete your
+              <Link to="/activation" onClick={() => trackLinkClick('Go To - Activation Form')}>
+                &nbsp; activation form
+              </Link>
+              , if not done already.
+            </Text>
+          }
+          marginTop="spacing.4"
+          isDismissible={false}
+          intent="notice"
+          isFullWidth
+        />
+      ) : null}
 
       <PaymentMethodsStyledTabContentContainer className="content" id="settings-payment-methods">
         <SectionHeader>

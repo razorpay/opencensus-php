@@ -402,7 +402,7 @@ class LeafListItem extends React.Component {
       isMissingInfo?.some((field) => field.name === 'merchant_details|gstin');
 
     const isInstrumentDisabled =
-      instrument.status === GREYED || DISABLED_INSTRUMENT.includes(instrument.name);
+      instrument.status === GREYED || DISABLED_INSTRUMENT.includes(instrument.name) || !user.live;
 
     return (
       <li className={getListClass({ status: instrument.status, path: instrument.path, user })}>

@@ -8,6 +8,7 @@ import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/Leaf
 const state = {
   session: {
     user: {
+      live: true,
       isInstrumentRequestHidden: false,
     },
   },
@@ -88,6 +89,25 @@ describe('LeafListItem', () => {
 
       const confDialog = screen.getByText('Confirmation');
       expect(confDialog).toBeInTheDocument();
+    });
+
+    test('should keep buttons disabled if merchant is non-live', () => {
+      const instrument = {
+        status: 'requestable',
+        name: 'Amex Cards',
+        path: 'pg.cards.domestic.amex',
+      };
+
+      const newInitialState = deepCopy(state);
+      newInitialState.session.user.live = false;
+
+      renderApp({
+        instrument,
+        initialState: newInitialState,
+      });
+
+      const requestCTA = screen.queryByTestId('pm-request-cta');
+      expect(requestCTA).toBeDisabled();
     });
   });
 

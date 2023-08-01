@@ -136,4 +136,23 @@ describe('PaymentMethodsSection', () => {
     });
     expect(screen.getByText(/Intermediate List: 2/)).toBeInTheDocument();
   });
+
+  test('should render correct banner if merchant is non-live', () => {
+    renderApp({
+      initialState: {
+        ...defaultInitialState,
+        session: {
+          user: {
+            live: false,
+          },
+        },
+      },
+      props: {
+        type: PaymentMethodsFields.CARDS,
+      },
+    });
+    expect(screen.getByTestId('non-live-banner')).toHaveTextContent(
+      'Request for Payment methods is unavailable as your account is not enabled to accept transactions',
+    );
+  });
 });
