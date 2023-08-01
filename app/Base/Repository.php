@@ -1257,7 +1257,28 @@ class Repository extends \Razorpay\Spine\Repository
             }
         }
 
+        //Adding trace for connections going on tidb clusters
+        try
+        {
+                $this->printTidbTrace($cluster, $connection);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::TIDB_LOGGING_ERROR, [
+                'error_message' => $ex->getMessage()
+            ]);
+        }
+
         return $connection;
+    }
+
+    protected function printTidbTrace($cluster, $connection) : void
+    {
+        $this->trace->info(TraceCode::TIDB_CONNECTION_REQUEST, [
+            'tidb_cluster'    => $cluster,
+            'tidb_connection' => $connection,
+            'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+        ]);
     }
 
     // Applied only on production env. As _record_source column is available only in the TiDB
@@ -1300,6 +1321,17 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $connection = ($badCluster === 'merchant') ?
                 Connection::PAYMENT_FETCH_REPLICA_LIVE : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
+        }
+
+        try
+        {
+            $this->printTidbTrace($cluster, $connection);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::TIDB_LOGGING_ERROR, [
+                'error_message' => $ex->getMessage()
+            ]);
         }
 
         return $connection;

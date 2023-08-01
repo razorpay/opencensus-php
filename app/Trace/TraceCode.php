@@ -9857,6 +9857,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DINERS_TOKENISED_PAYMENT_TRACE                 = 'DINERS_TOKENISED_PAYMENT_TRACE';
 
     //WDA errors
+    const TIDB_CONNECTION_REQUEST                        = 'TIDB_CONNECTION_REQUEST';
+    const TIDB_LOGGING_ERROR                             = 'TIDB_LOGGING_ERROR';
     const WDA_SERVICE_REQUEST                            = 'WDA_SERVICE_REQUEST';
     const WDA_SERVICE_RESPONSE                           = 'WDA_SERVICE_RESPONSE';
     const WDA_MIGRATION_ERROR                            = 'WDA_MIGRATION_ERROR';
