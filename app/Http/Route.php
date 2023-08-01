@@ -16706,6 +16706,8 @@ class Route
         'fund_account_create',
         'fund_account_list',
         'fund_account_get',
+        'fund_account_update',
+
         // FAV routes
         'fund_account_validate',
         'fund_account_validate_fetch',

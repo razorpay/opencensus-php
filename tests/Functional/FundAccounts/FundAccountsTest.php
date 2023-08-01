@@ -1036,6 +1036,35 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateFundAccountForInActiveMerchantButVAActivated()
+    {
+        $this->fixtures->on('live')->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        // Setting merchant activated as false for X merchant and activating VA
+        $this->fixtures->on('live')->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated' => false,
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'true'
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateFundAccount'];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testInternalContactUpdateFailsForProxyAuth()
     {
         $this->ba->proxyAuth();
