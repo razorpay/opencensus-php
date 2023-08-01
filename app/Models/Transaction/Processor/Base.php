@@ -27,7 +27,6 @@ use RZP\Mail\Merchant\AmountCreditsAlert;
 use RZP\Mail\Merchant\RefundCreditsAlert;
 use RZP\Models\Base\Entity as BaseEntity;
 use RZP\Mail\Merchant\BalanceThresholdAlert;
-use RZP\Models\Payment\Processor as PaymentProcessor;
 
 abstract class Base extends BaseCore
 {
@@ -181,6 +180,11 @@ abstract class Base extends BaseCore
         {
             $this->setCreditDebitDetails($this);
 
+            // For dynamic fee bearer and postpaid model, we need to update fee, tax,
+            // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
+            // to settle the right amount to mx, all of this is under a feature flag.
+            $this->setCustomerFeeAndTaxForPostPaidDfb();
+
             // updates entity specific attributes in transaction
             $this->updateTransaction();
 
@@ -254,25 +258,6 @@ abstract class Base extends BaseCore
     {
         if ($this->txn->isTypePayment() === true and $this->merchant !== null and
             $this->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($this->merchant) === true)
-        {
-            $payment = $this->source;
-
-            $values = $this->getValuesForCustomerFeeAndTaxInTransaction($payment);
-
-            $this->txn->fill($values);
-        }
-    }
-
-    public function setCustomerFeeAndTaxForDfb()
-    {
-        // What happens in this case is, we want to settle merchnat only merchant's amount and exclude customer part of fee from payment amount
-        // so in this case, we credit is already set to payment amount, we add debit of equal to customer fe + GST, hence settling the correct amount
-        // For example, say 1000 is order amount, and 50%/50% split between platform and customer and say total fees = 10 ( considering no gst here for ease)
-        // therefore payment amount done by customer = 1005 ( 5 is customer fee), hence via this in txn we set credit = 1005 and debit = 5,
-        // settling only 1000 to customer, and the rest 5 (platform part of fee) is collected like usual use case, where platform pays the fee.
-        // credit > 0 ensures it's not DS
-        if ($this->txn->isTypePayment() === true and $this->merchant !== null and
-            $this->merchant->isFeeBearerDynamic() === true and $this->credit > 0)
         {
             $payment = $this->source;
 
@@ -374,40 +359,11 @@ abstract class Base extends BaseCore
 
         // update credit and debit amounts, fees and taxes in transaction
         $processor->setOtherDetails();
-
-        // For dynamic fee bearer, we need to update fee, tax,
-        // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
-        // to settle the right amount to mx
-        $processor->setCustomerFeeAndTaxForDfb();
     }
 
     public function setMerchantFeeDefaults()
     {
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
-
-        if ($this->txn->isTypePayment() === true and $this->merchant !== null and
-            $this->merchant->isFeeBearerDynamic() === true)
-        {
-            $payment = $this->source;
-
-            $rzpFee = $this->fees - $this->tax;
-
-            if ($payment->hasOrder() === true and
-                $payment->order->getFeeConfigId() !== null)
-            {
-                $customerFee = (new PaymentProcessor\processor($this->merchant))->calculateCustomerFee($payment, $payment->order, $rzpFee);
-
-                $customerFeeGst = (new PaymentProcessor\processor($this->merchant))->calculateCustomerFeeGst($customerFee, $rzpFee, $this->tax);
-
-                $this->txn->setCustomerFee($customerFee);
-
-                $this->txn->setCustomerTax($customerFeeGst);
-
-                $this->fees = $this->fees - ($customerFee + $customerFeeGst);
-
-                $this->tax = $this->tax - $customerFeeGst;
-            }
-        }
     }
 
     protected function createNewTransaction($txnId = null)
