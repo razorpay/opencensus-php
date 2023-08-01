@@ -160,7 +160,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Accessor ----------------------
 
-    protected function getAddressAttribute()
+    public function getAddressAttribute()
     {
         return $this->getUsername() . self::AROBASE . $this->getHandle();
     }

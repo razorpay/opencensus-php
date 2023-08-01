@@ -110,4 +110,15 @@ class Repository extends Base\Repository
                     ->where($handle, '=', $vpa->getHandle())
                     ->first();
     }
+
+    public function findByBankingAccountId(string $bankingAccountId)
+    {
+        $type                 = $this->repo->vpa->dbColumn(Entity::ENTITY_TYPE);
+        $entityId             = $this->repo->vpa->dbColumn(Entity::ENTITY_ID);
+
+        return $this->newQuery()
+                    ->where($type, '=', 'banking_account')
+                    ->where($entityId, '=', $bankingAccountId)
+                    ->first();
+    }
 }
