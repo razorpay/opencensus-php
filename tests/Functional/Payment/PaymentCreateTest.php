@@ -11776,4 +11776,90 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($content['data']['pg_router'], 'true');
     }
 
+    /**
+     * This test ensures `x_customer_access_token` query param is stripped
+     * in the middleware & isn't sent to the controller.
+     */
+    public function testSendingXCustomerAccessTokenDoesntBreakPaymentValidations(): void
+    {
+        $this->mockCardVaultWithCryptogram();
+
+        $this->fixtures->card->create(
+            [
+                'id'           =>  '100000003lcard',
+                'merchant_id'  =>  '10000000000000',
+                'name'         =>  'test',
+                'iin'          =>  '411140',
+                'expiry_month' =>  '12',
+                'expiry_year'  =>  '2100',
+                'issuer'       =>  'HDFC',
+                'network'      =>  'Visa',
+                'last4'        =>  '1111',
+                'type'         =>  'debit',
+                'vault'        =>  'visa',
+                'vault_token'  =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => '100022custcard',
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'bank'            => 'HDFC',
+                'card_id'         => '100000003lcard',
+                'customer_id'     => '10000gcustomer',
+                'expired_at'      => '9999999999',
+                'merchant_id'     => '10000000000000',
+                'method'          => 'card',
+                'status'          => 'active',
+                'token'           => '10003cardToken',
+                'used_at'         => 10,
+            ]
+        );
+
+        $payment = [
+            'amount' => '40000',
+            'currency' => 'INR',
+            'email' => 'test@razorpay.com',
+            'contact' => '+919876543210',
+            'notes' => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'description' => 'random description',
+            'method' => 'card',
+            'card' => [
+                'cvv' => 123,
+            ],
+            'token' => '10003cardToken',
+            '_' => [
+                'library' => 'checkoutjs',
+            ],
+        ];
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax?x_customer_access_token=abcd1234',
+            'method'  => 'POST',
+        ];
+
+        $this->mockSession();
+        $this->ba->publicAuth();
+        $response = $this->makeRequestParent($request);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals($payment->getPublicId(), $response['payment_id']);
+    }
+
+    protected function mockSession(string $appToken = 'capp_1000000custapp'): void
+    {
+        $data = [
+            'test_app_token'   => $appToken,
+            'test_checkcookie' => '1'
+        ];
+
+        $this->session($data);
+    }
 }
