@@ -79,6 +79,7 @@ import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
 import { getFirstTimeRepaymentPreference, isMerchantNew, showSettings } from './utils';
 import RepaymentPreferenceBanner from './components/RepaymentPreferenceBanner';
 import StaticTenureSelector from './components/StaticTenureSelector';
+import { Badge, Box, InfoIcon } from '@razorpay/blade/components';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -502,9 +503,7 @@ export default class AmountWithdraw extends React.Component {
       );
     } else {
       const withdrawalConfigurationDetails = this.props?.withdrawalConfigurationDetails?.data;
-      internalBalance =
-        parseInt(withdrawalConfigurationDetails?.configuration?.internal_credit_limit || 0, 10) -
-        parseInt(withdrawalConfigurationDetails?.principal_outstanding_balance || 0, 10);
+      internalBalance = Number(withdrawalConfigurationDetails?.effective_balance || 0);
     }
     return internalBalance > 0 ? internalBalance : 0;
   };
@@ -1419,6 +1418,8 @@ export default class AmountWithdraw extends React.Component {
     const showEnableNowCTA =
       user.isAutomatedLOCEligible && !automated_loc && this.isRepaymentFrequencyCustomORDays90();
 
+    const lenderBalanceDiffReason =
+      this.props?.withdrawalConfigurationDetails?.data?.lender_balance_diff_reason;
     return (
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
@@ -1496,6 +1497,13 @@ export default class AmountWithdraw extends React.Component {
                 )}
               </div>
               <div className="full-width no-margin">
+                {lenderBalanceDiffReason ? (
+                  <Box width="100%" display="flex" marginBottom="spacing.4">
+                    <Badge variant="notice" icon={InfoIcon}>
+                      {lenderBalanceDiffReason}
+                    </Badge>
+                  </Box>
+                ) : null}
                 {this.getWithdrawalForm(withdrawalAmount, repayableAmount)}
               </div>
               {showRepaybleHelperText && (
