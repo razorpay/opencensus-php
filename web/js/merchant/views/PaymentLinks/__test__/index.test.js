@@ -1,4 +1,5 @@
 import React from 'react';
+import 'react-dates/initialize';
 import '@testing-library/jest-dom/extend-expect';
 import {
   onboarding,

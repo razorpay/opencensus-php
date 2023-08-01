@@ -1,12 +1,12 @@
-import ListFilter from 'merchant/components/ListFilter';
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
 import DateRangePicker from 'common/ui/DateRangePicker';
-import { Field } from 'redux-form';
-import { useState } from 'react';
+import ListFilter from 'merchant/components/ListFilter';
 import ProviderSelector from 'merchant/components/ProviderSelector';
-import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { useState } from 'react';
+import { Field } from 'redux-form';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -25,13 +25,20 @@ export default ({ showBatchIdFilter, ...props }) => {
       to: to.unix(),
     });
   };
-
   const [provider, setProvider] = useState({ name: 'All', value: '', gateway: '' });
-
   const [changeFormValue, setChangeFunction] = useState(() => {});
+
+  const resetNotesFieldValue = () => {
+    changeFormValue('notes', '');
+  };
+
+  const resetReceiverTypeValue = () => {
+    changeFormValue('txn_receiver_type', '');
+  };
 
   return (
     <ListFilter
+      filtersToHideInQueryParams={['txn_receiver_type']}
       date={date}
       provider={provider}
       setChangeFunction={(changeFunction) => {
@@ -119,8 +126,30 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field
+          name="notes"
+          onChange={resetReceiverTypeValue}
+          component="input"
+          class="form-control input-sm"
+        />
       </div>
+
+      <ShowWhen additionalCondition={() => props?.user?.isOmniChannelMerchant}>
+        <div className="form-group list-filter-item">
+          <label>Receiver Type</label>
+          <Field
+            name="txn_receiver_type"
+            component="select"
+            class="form-control input-sm"
+            onChange={resetNotesFieldValue}
+          >
+            <option value="" selected>
+              All
+            </option>
+            <option value="offline">Offline</option>
+          </Field>
+        </div>
+      </ShowWhen>
 
       <ShowWhen
         additionalCondition={(usr) =>

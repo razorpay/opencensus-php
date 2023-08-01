@@ -1,4 +1,5 @@
 import React from 'react';
+import 'react-dates/initialize';
 import { render, checkIfComponentIsEmpty, screen, userEvent } from 'test-utils';
 import {
   App,

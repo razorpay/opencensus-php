@@ -8,6 +8,17 @@ import {
   defaultProps,
   disputes,
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentRefund';
+import { REFUND_STATUSES } from 'merchant/views/Transactions/Payments/constants';
+import { useQuery } from 'react-query';
+
+jest.mock('react-query', () => ({
+  useQuery: jest.fn().mockReturnValue({
+    refetch: jest.fn(),
+    data: { appKey: 'test' },
+    isLoading: false,
+    error: {},
+  }),
+}));
 
 describe('PaymentRefund', () => {
   test('should not render payment refund details when there is no payment status', () => {
@@ -118,6 +129,22 @@ describe('PaymentRefund', () => {
       expect(screen.getByText('No refunds issued yet')).toBeInTheDocument();
     });
 
+    test('should render refund is in progress when refund is ongoing', () => {
+      render(
+        <App
+          payment={{
+            ...payment,
+            status: 'captured',
+            notes: {
+              refund_status: REFUND_STATUSES.PROCESSING,
+            },
+            refund_status: null,
+          }}
+        />,
+      );
+      expect(screen.getByText('Refund is in Progress')).toBeInTheDocument();
+    });
+
     test('should render non-partial payment refund details for optimizer', () => {
       render(
         <App
@@ -180,10 +207,49 @@ describe('PaymentRefund', () => {
           checkIssueRefundButton();
         });
 
-        test('should open refund modal when it is clicked', () => {
-          checkIssueRefundButton();
-          fireEvent.click(screen.getByText('Issue Refund'));
+        test('should trigger refund modal if the transaction is offline and keys are present', () => {
+          render(
+            <App
+              payment={{
+                ...payment,
+                gateway_refund_support: true,
+                refund_status: null,
+                method: 'card',
+                receiver_type: 'pos',
+                analyticsPayload: jest.fn(),
+              }}
+            />,
+          );
+
+          const RefundButton = screen.getByText('Issue Refund');
+          fireEvent.click(RefundButton);
           expect(defaultProps.openRefundModal).toHaveBeenCalled();
+        });
+
+        test('should trigger modal to collect ezetap keys if the transaction is offline and keys are not present', () => {
+          const collectEzetapKeys = jest.fn();
+          useQuery.mockReturnValueOnce({
+            refetch: jest.fn(),
+            data: {},
+            isLoading: false,
+            error: {},
+          });
+          render(
+            <App
+              payment={{
+                ...payment,
+                gateway_refund_support: true,
+                refund_status: null,
+                method: 'card',
+                receiver_type: 'pos',
+                analyticsPayload: jest.fn(),
+              }}
+              collectEzetapKeys={collectEzetapKeys}
+            />,
+          );
+          const RefundButton = screen.getByText('Issue Refund');
+          fireEvent.click(RefundButton);
+          expect(collectEzetapKeys).toHaveBeenCalled();
         });
 
         test('should call analytics track event when it is clicked with QR code as true', () => {

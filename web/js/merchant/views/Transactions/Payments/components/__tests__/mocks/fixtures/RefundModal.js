@@ -26,7 +26,20 @@ export const payment = {
           setTimeout(resolve, 150);
         }),
     ),
-
+    refundOfflinePayment: jest.fn(() =>
+      Promise.resolve({
+        data: {
+          success: true,
+        },
+      }),
+    ),
+    voidPayment: jest.fn(() =>
+      Promise.resolve({
+        data: {
+          success: true,
+        },
+      }),
+    ),
     gateway_refund_support: false,
     status: 'captured',
     amount_transferred: 10000,

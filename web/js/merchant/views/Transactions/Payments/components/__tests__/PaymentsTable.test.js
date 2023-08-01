@@ -2,7 +2,7 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import { render, screen, userEvent } from 'test-utils';
-import { paymentMethod, description } from 'common/ui/item/pair';
+import { paymentMethod, description, paymentReceiverType } from 'common/ui/item/pair';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 describe('PaymentsTable', () => {
@@ -45,6 +45,7 @@ describe('PaymentsTable', () => {
         order_id: null,
         notes: {
           some_order_id: 'order_id_4',
+          receiver_type: 'offline',
         },
       },
     ],
@@ -94,6 +95,17 @@ describe('PaymentsTable', () => {
     ['Payment Provider'].forEach((paymentColumn) =>
       expect(screen.getByRole('columnheader', { name: paymentColumn })).toBeInTheDocument(),
     );
+  });
+
+  test('should render Receiver Type columns', () => {
+    renderApp({
+      props: {
+        paymentColumns: [paymentReceiverType],
+      },
+    });
+
+    expect(screen.getByRole('columnheader', { name: 'Receiver Type' })).toBeInTheDocument();
+    expect(screen.getByText('Offline')).toBeInTheDocument();
   });
 
   test('should render custom payment columns', () => {

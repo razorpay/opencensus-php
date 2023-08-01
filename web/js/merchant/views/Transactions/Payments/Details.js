@@ -27,6 +27,7 @@ import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
+import CollectEzetapKeys from 'merchant/views/Transactions/Payments/components/CollectEzetapKeys';
 
 // eslint-disable-next-line react/no-unsafe
 class PaymentDetailsContainer extends Component {
@@ -402,6 +403,14 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  collectEzetapKeys = () => {
+    const { openModal } = this.props;
+    openModal({
+      component: <CollectEzetapKeys openRefundModal={this.openRefundModal} />,
+      size: 'regular',
+    });
+  };
+
   render() {
     const {
       loading,
@@ -464,6 +473,8 @@ class PaymentDetailsContainer extends Component {
             adminAsMerchant={adminAsMerchant}
             showCustomSettlDetails={showCustomSettlDetails}
             bankSettleStatus={bankSettleStatus}
+            collectEzetapKeys={this.collectEzetapKeys}
+            fetchEzetapKeys={this.props.fetchEzetapKeys}
           />
         </PrimaryView>
         <SecondaryView entityName="disputes">

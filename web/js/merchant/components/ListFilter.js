@@ -11,7 +11,7 @@ import {
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { withRouter } from 'react-router-dom';
 
-const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 9;
+const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 10;
 const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
 
 /*
@@ -81,7 +81,7 @@ class ListFilter extends Component {
 
   // update query params in url before search
   handleOnSubmit = (props) => {
-    const { date, provider } = this.props;
+    const { date, provider, filtersToHideInQueryParams } = this.props;
     props = encodeSensitiveFields(props);
     if (date) {
       props.from = date.from;
@@ -97,13 +97,23 @@ class ListFilter extends Component {
       }
     }
 
+    //remove these filters from query params
+    let queryParamsProps = Object.assign({}, props);
+    if (filtersToHideInQueryParams?.length) {
+      queryParamsProps = Object.keys(queryParamsProps).reduce((result, key) => {
+        if (!filtersToHideInQueryParams.includes(key)) {
+          result[key] = queryParamsProps[key];
+        }
+        return result;
+      }, {});
+    }
+
     this.props.history.push({
       pathname: this.props.location.pathname,
       hash: this.props.location.hash,
-      search: stringifyQueryParams(props),
+      search: stringifyQueryParams(queryParamsProps),
     });
-
-    this.props.onSearchAnalytics(props, stringifyQueryParams(props));
+    this.props.onSearchAnalytics(props, stringifyQueryParams(queryParamsProps));
 
     return this.props.onSubmit(props);
   };

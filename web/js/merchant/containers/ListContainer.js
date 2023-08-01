@@ -134,8 +134,13 @@ export default class ListContainer extends Component {
       // @ts-nocheck
       this.fetchList(params);
     } else if (this.props.fetchAll || this.fetchEntityList) {
-      const promise = this.fetchEntityList(params);
+      const adjustedParams = Object.assign({}, params);
+      if (adjustedParams?.txn_receiver_type) {
+        adjustedParams.notes = adjustedParams.txn_receiver_type;
+      }
+      delete adjustedParams.txn_receiver_type;
 
+      const promise = this.fetchEntityList(adjustedParams);
       if (promise?.then) {
         promise
           .then(() => {

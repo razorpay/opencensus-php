@@ -21,7 +21,6 @@ import {
   status,
   paymentReceiverType,
 } from 'common/ui/item/pair';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
@@ -174,12 +173,12 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   getColumns = () => {
-    const { selfServeActionsPage } = this.props;
+    const { selfServeActionsPage, user } = this.props;
+    const isOmniChannelMerchant = user?.isOmniChannelMerchant;
     const initiatePage = selfServeActionsPage ? selfServeActionsPage : 'Transactions.Payments';
     const cols = [_paymentId(initiatePage), amount, email, contact, createdAt, status];
-    const showReceiverType = isOrgFeatureExist('show_pmt_receiver_type');
     /* istanbul ignore else */
-    if (showReceiverType) cols.splice(4, 0, paymentReceiverType);
+    if (isOmniChannelMerchant) cols.splice(4, 0, paymentReceiverType);
     return cols;
   };
 

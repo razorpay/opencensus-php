@@ -303,7 +303,9 @@ export const storeProductId = {
 
 export const paymentReceiverType = {
   title: 'Receiver Type',
-  value: (item) => (item?.receiver_type === 'pos' ? 'Offline' : 'Online'),
+  value: (item) => {
+    return item?.notes?.receiver_type === 'offline' ? 'Offline' : 'Online';
+  },
 };
 
 export const arn = {

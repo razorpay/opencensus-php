@@ -7,8 +7,14 @@ import {
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
+import store from 'merchant/store';
+
+const stateSpy = jest.spyOn(store, 'getState');
 
 describe('PaymentDetails', () => {
+  beforeEach(() => {
+    stateSpy.mockClear();
+  });
   test('should call onCreateTransfer when clicked on Create Transfer', () => {
     ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
     render(<App />);
@@ -84,12 +90,71 @@ describe('PaymentDetails', () => {
         screen.getByText('The customer has paid the fees for this payment'),
       ).toBeInTheDocument();
     });
+
+    test('should render fee bearer when fee_bearer is not platform', () => {
+      render(<App />);
+      expect(
+        screen.getByText('The customer has paid the fees for this payment'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Total Fee', () => {
+    test('should render business name in fee label', () => {
+      render(
+        <App
+          payment={{
+            ...defaultProps.payment,
+            fee: 898989,
+          }}
+          org={{ business_name: 'Test Business Name' }}
+        />,
+      );
+      expect(screen.queryByText('Test Business Name Fee -')).toBeInTheDocument();
+    });
+
+    test("should hide Razorpay Text Link if feature flag doesn't exist", () => {
+      stateSpy.mockReturnValueOnce({
+        session: {
+          org: {
+            features: ['hide_razorpay_text_link'],
+          },
+        },
+      });
+
+      render(<App payment={{ ...defaultProps.payment, fee: 898989 }} />);
+      expect(screen.queryByText('Razorpay Fee -')).not.toBeInTheDocument();
+    });
+
+    test('should render fee when transaction is not platform and is indian', () => {
+      render(<App payment={{ ...defaultProps.payment, fee: 898989 }} />);
+      expect(screen.getByText('8,989')).toBeInTheDocument();
+    });
+
+    test('should render fee when transaction is not platform and is international', () => {
+      render(
+        <App
+          payment={{
+            ...defaultProps.payment,
+            fee_bearer: 'customer',
+            fee_currency_amount: 696969,
+            fee: 898989,
+          }}
+        />,
+      );
+      expect(screen.getByText('6,969')).toBeInTheDocument();
+    });
   });
 
   describe('Payment order id', () => {
     test('should render payment order id', () => {
       render(<App />);
       expect(screen.getByText(defaultProps.payment.order_id)).toBeInTheDocument();
+    });
+
+    test('should not render payment order id when not present', () => {
+      render(<App payment={{ ...defaultProps.payment, order_id: null }} />);
+      expect(screen.queryByText(defaultProps.payment.order_id)).not.toBeInTheDocument();
     });
 
     test('should not render payment order id when not present', () => {

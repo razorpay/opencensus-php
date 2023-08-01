@@ -1,6 +1,8 @@
+// eslint-disable-next-line import/no-cycle
 import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import moment from 'moment';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export default class Payment extends GenericEntity {
   // listRouteName = 'payment_fetch_multiple';
@@ -58,6 +60,30 @@ export default class Payment extends GenericEntity {
     return this.makeGenericAjaxCall({ method, data, url });
   }
 
+  refundOfflinePayment(data) {
+    return merchantFetch({
+      method: 'post',
+      absUrl: `/ezetap/refund`,
+      appendModeInURL: false,
+      data,
+    });
+  }
+
+  voidPayment(data) {
+    return merchantFetch({
+      method: 'post',
+      absUrl: `/ezetap/void`,
+      appendModeInURL: false,
+      data,
+    });
+  }
+
+  updateRefundStatusInNotes(data) {
+    const method = 'patch';
+    const url = `${this.resourceUrl}/${this.id}`;
+    return this.makeGenericAjaxCall({ method, data, url });
+  }
+
   transfer(data) {
     const method = 'post';
     const url = `${this.resourceUrl}/${this.id}/transfers`;
@@ -104,5 +130,13 @@ export default class Payment extends GenericEntity {
     };
 
     return this.makeGenericAjaxCall({ url, data, method });
+  }
+
+  fetchEzetapKeys() {
+    return merchantFetch({
+      method: 'get',
+      absUrl: `/fetch/app/key`,
+      appendModeInURL: false,
+    });
   }
 }

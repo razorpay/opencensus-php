@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import Payment from 'merchant/models/Payment';
 import { set, merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -16,6 +17,10 @@ const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
 const MERCHANT_MANUAL_PAYMENT_ACTION = 'MERCHANT_MANUAL_PAYMENT_ACTION';
 const FETCH_FAILURE_ANALYSIS = 'FETCH_FAILURE_ANALYSIS';
 const RESET_FAILURE_ANALYSIS = 'RESET_FAILURE_ANALYSIS';
+const PAYMENT_REFUND_OFFLINE = 'PAYMENT_REFUND_OFFLINE';
+const PAYMENT_VOID_OFFLINE = 'PAYMENT_VOID_OFFLINE';
+const UPDATE_REFUND_STATUS_IN_NOTES = 'UPDATE_REFUND_STATUS_IN_NOTES';
+const FETCH_EZETAP_KEYS = 'FETCH_EZETAP_KEYS';
 
 export const fetchItem = (id) => {
   const payment = new Payment();
@@ -79,6 +84,35 @@ export const refundPayment = (payment, data) => {
   return {
     type: PAYMENT_REFUND,
     payload: payment.refund(data),
+  };
+};
+
+export const refundOfflinePayment = (payment, data) => {
+  return {
+    type: PAYMENT_REFUND_OFFLINE,
+    payload: payment.refundOfflinePayment(data),
+  };
+};
+
+export const voidPayment = (payment, data) => {
+  return {
+    type: PAYMENT_VOID_OFFLINE,
+    payload: payment.voidPayment(data),
+  };
+};
+
+export const updateRefundStatusInNotes = (payment, data) => {
+  return {
+    type: UPDATE_REFUND_STATUS_IN_NOTES,
+    payload: payment.updateRefundStatusInNotes(data),
+  };
+};
+
+export const fetchEzetapKeys = () => {
+  const payment = new Payment();
+  return {
+    type: FETCH_EZETAP_KEYS,
+    payload: payment.fetchEzetapKeys(),
   };
 };
 

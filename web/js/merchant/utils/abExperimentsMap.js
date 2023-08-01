@@ -770,4 +770,11 @@ export default {
     //beta
     'MBCm7pcuzSKwfw',
   ],
+
+  omni_channel_merchants: [
+    //prod experiment
+    'MHMXkYtdAeHGmg',
+    // beta experiment
+    'MHJsO5gmOwUIVt',
+  ],
 };

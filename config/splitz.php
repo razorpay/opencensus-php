@@ -343,6 +343,8 @@ return [
         'RECURRING_DEBIT_PATTERN' => env('RECURRING_DEBIT_PATTERN', ''),
 
         'CHECKOUT_ANALYTICS' => env('CHECKOUT_ANALYTICS',''),
+         // For showing offline transactions and functionalities for omni channel merchants
+        'OMNI_CHANNEL_MERCHANTS' => env('OMNI_CHANNEL_MERCHANTS', ''),
 
     ]
 ];

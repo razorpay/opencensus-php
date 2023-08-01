@@ -1,15 +1,16 @@
 import { Component, Fragment } from 'react';
+import { useQuery } from 'react-query';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Amount, { AmountTooltip } from 'common/ui/Amount';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
-import moment from 'moment';
 import {
   rupeesToPaise,
   paiseToRupees,
@@ -18,15 +19,22 @@ import {
 } from 'common/utils/rzp-utils';
 import {
   refundPayment,
+  refundOfflinePayment,
+  updateRefundStatusInNotes,
+  voidPayment,
   fetchItem as fetchPayment,
   fetchRefunds,
   fetchTransfers,
+  fetchEzetapKeys,
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { compose, bindActionCreators } from 'redux';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import {
+  PAYMENT_STATUS,
+  FETCH_EZETAP_KEY_NAME,
+} from 'merchant/views/Transactions/Payments/constants';
 
 export const isPartialPayment = (props) => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded;
@@ -74,6 +82,16 @@ export const RefundType = ({ partial, isTitleCase = false }) => {
 
   return <span>{text}</span>;
 };
+
+function Query(props) {
+  return props.children(
+    useQuery(props.keyName, props.fn, {
+      enabled: false,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    }),
+  );
+}
 
 const selector = formValueSelector('refundModal');
 
@@ -181,18 +199,33 @@ class RefundModal extends Component {
     if (this.props.onUnmount) this.props.onUnmount(this.props.payment);
   }
 
-  refund(speedValue, props, partial) {
+  refund(speedValue, props, partial, ezetapKey) {
     // to access latest refundApiInProgress state
     this.setState({}, () => {
       if (!this.state.refundApiInProgress) {
         this.setState({ refundApiInProgress: true });
         const payment = this.props.payment;
-        const data = {
-          amount: rupeesToPaise(props.amount),
-          comment: props.comment,
-          reverse_all: props.reverse_all ? '1' : '0',
-          speed: speedValue,
-        };
+        const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
+        const voidPayment = payment.status === PAYMENT_STATUS.AUTHORIZED;
+
+        let data = {};
+        if (paymentByCardOffline) {
+          data = {
+            appKey: ezetapKey?.appKey,
+            username: ezetapKey?.username,
+            amount: props.amount / 100,
+            [voidPayment ? 'txnId' : 'externalRefNumber']: voidPayment
+              ? payment?.notes?.txn_id
+              : payment?.notes?.external_ref_id1,
+          };
+        } else {
+          data = {
+            amount: props.amount,
+            comment: props.comment,
+            reverse_all: props.reverse_all ? '1' : '0',
+            speed: speedValue,
+          };
+        }
 
         if (!partial) {
           data.amount = payment.amount - payment.amount_refunded;
@@ -209,68 +242,93 @@ class RefundModal extends Component {
           actionName: 'clicked',
           screen: 'transactions',
         });
-        this.props
-          .refundPayment(payment, data)
-          .then(() => {
-            const default_speed = this.props.default_refund_speed;
-            const is_normal = default_speed === 'normal';
-            const is_instant = default_speed !== 'normal';
-            const is_unchecked = this.analytics.check_box == false;
-            const label = `${partial ? 'Partial' : 'Full'} Refund${
-              this.analytics.hovered ? ' | Hover Tooltip' : ''
-            }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
-              this.analytics.comment ? ' | Add Comment' : ''
-            }${
-              this.analytics.check_box !== null
-                ? this.analytics.check_box == true
-                  ? ' | Checked Checkbox'
-                  : ' | Unchecked Checkbox'
-                : ''
-            }${
-              default_speed === 'normal' ? ' | Default Speed Normal' : ' | Default Speed Instant'
-            }`;
-            /* istanbul ignore next */
-            if (
-              (partial && this.analytics.comment && is_normal) ||
-              (partial && this.analytics.comment && is_instant) ||
-              (partial && this.analytics.check_box && is_normal) ||
-              (partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
-              (partial && is_unchecked && is_instant) ||
-              (partial && this.analytics.hover_breakup && is_unchecked && is_instant) ||
-              // now instant case
-              (!partial && this.analytics.comment && is_normal) ||
-              (!partial && this.analytics.comment && is_instant) ||
-              (!partial && this.analytics.check_box && is_normal) ||
-              (!partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
-              (!partial && is_unchecked && is_instant) ||
-              (!partial && this.analytics.hover_breakup && is_unchecked && is_instant)
-            ) {
-              window.rzpAnalytics?.({
-                eventCategory: 'Dashboard - Instant Refund',
-                eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
-                eventLabel: label,
+
+        const refundPayment = paymentByCardOffline
+          ? voidPayment
+            ? this.props.voidPayment
+            : this.props.refundOfflinePayment
+          : this.props.refundPayment;
+
+        refundPayment(payment, data)
+          .then((response) => {
+            if (paymentByCardOffline && !response?.data?.success) {
+              this.props.showNotification({
+                type: 'error',
+                message: response?.data?.errorMessage || 'Something Went Wrong',
+                closeTimeout: 5000,
               });
-            }
-            this.props.showNotification({
-              type: 'success',
-              message: 'Payment refunded',
-              closeTimeout: 5000,
-            });
-
-            /* istanbul ignore else */
-            if (typeof this.props.onRefund === 'function') {
-              this.props.onRefund();
-            }
-
-            /* istanbul ignore else */
-            if (this.props.afterRefund)
-              this.props.afterRefund({
-                amount: data.amount,
-                partial,
-                payment: this.props.payment,
+            } else {
+              const default_speed = this.props.default_refund_speed;
+              const is_normal = default_speed === 'normal';
+              const is_instant = default_speed !== 'normal';
+              const is_unchecked = this.analytics.check_box == false;
+              const label = `${partial ? 'Partial' : 'Full'} Refund${
+                this.analytics.hovered ? ' | Hover Tooltip' : ''
+              }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
+                this.analytics.comment ? ' | Add Comment' : ''
+              }${
+                this.analytics.check_box !== null
+                  ? this.analytics.check_box == true
+                    ? ' | Checked Checkbox'
+                    : ' | Unchecked Checkbox'
+                  : ''
+              }${
+                default_speed === 'normal' ? ' | Default Speed Normal' : ' | Default Speed Instant'
+              }`;
+              /* istanbul ignore next */
+              if (
+                (partial && this.analytics.comment && is_normal) ||
+                (partial && this.analytics.comment && is_instant) ||
+                (partial && this.analytics.check_box && is_normal) ||
+                (partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
+                (partial && is_unchecked && is_instant) ||
+                (partial && this.analytics.hover_breakup && is_unchecked && is_instant) ||
+                // now instant case
+                (!partial && this.analytics.comment && is_normal) ||
+                (!partial && this.analytics.comment && is_instant) ||
+                (!partial && this.analytics.check_box && is_normal) ||
+                (!partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
+                (!partial && is_unchecked && is_instant) ||
+                (!partial && this.analytics.hover_breakup && is_unchecked && is_instant)
+              ) {
+                window.rzpAnalytics?.({
+                  eventCategory: 'Dashboard - Instant Refund',
+                  eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
+                  eventLabel: label,
+                });
+              }
+              this.props.showNotification({
+                type: 'success',
+                message: 'Payment refunded',
+                closeTimeout: 5000,
               });
 
-            this.props.closeModal();
+              /* istanbul ignore else */
+              const { updateRefundStatusInNotes, onRefund } = this.props;
+              const isOnRefundFunction = typeof onRefund === 'function';
+              if (paymentByCardOffline) {
+                const promise = updateRefundStatusInNotes(payment, {
+                  notes: { ...payment.notes, refund_status: 'processing' },
+                });
+                Promise.resolve(promise).then(() => {
+                  if (isOnRefundFunction) {
+                    onRefund();
+                  }
+                });
+              } else if (isOnRefundFunction) {
+                onRefund();
+              }
+
+              /* istanbul ignore else */
+              if (this.props.afterRefund)
+                this.props.afterRefund({
+                  amount: data.amount,
+                  partial,
+                  payment: this.props.payment,
+                });
+
+              this.props.closeModal();
+            }
           })
           .catch(
             /* istanbul ignore next */ ({ errors }) => {
@@ -289,7 +347,7 @@ class RefundModal extends Component {
     });
   }
 
-  save = (props) => {
+  save = (props, ezetapKey) => {
     const partial = isPartialPayment(this.props);
     const hasAmountErrors = amountValidation(this.props);
 
@@ -386,7 +444,7 @@ class RefundModal extends Component {
               speed_requested: 'normal',
             });
 
-            this.refund('normal', props, partial);
+            this.refund('normal', props, partial, ezetapKey);
           },
         })
         .catch(
@@ -456,10 +514,7 @@ class RefundModal extends Component {
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
 
-    if (
-      !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds)
-    ) {
+    if (!showWhenUtil({ featureEnabled: 'disable_instant_refunds' })) {
       return (
         <div>
           <div
@@ -559,10 +614,7 @@ class RefundModal extends Component {
                 );
               }
               /* istanbul ignore else */
-              if (
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds) &&
-                !instant_refund_supported
-              ) {
+              if (!instant_refund_supported) {
                 return (
                   <div className="low-funds">
                     Currently, Instant Refunds are available on TPV, netbanking, UPI and select
@@ -738,179 +790,200 @@ class RefundModal extends Component {
     const isInstantDisabled = !this.hasEnoughFunds();
     const { highlightNote } = this.state;
 
+    const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
+    const onlyFullRefundAllowed = paymentByCardOffline && payment.method === 'card';
+
+    const fetchKeys = async () => {
+      if (paymentByCardOffline) {
+        const dataPromise = await this.props.fetchEzetapKeys();
+        return dataPromise?.data || {};
+      }
+      return null;
+    };
     return (
-      <div>
-        <ModalHeader title="Refund Payment" onCloseClick={this.props.closeModal} />
-        <div class="modal-body">
-          {nonFraudDisputeCount ? (
-            <div class="text-danger m-b">
-              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
-              {nonFraudDisputeCount > 1 && 's'} raised against this payment. Kindly check the
-              dispute details before initiating a refund.
-            </div>
-          ) : null}
-          <form
-            onSubmit={handleSubmit((props) => {
-              this.save(props);
-            })}
-          >
-            <div class="refunds-overflow-box">
-              {gateway_refund_support === false && (
-                <div
-                  class={`block-refunds-note ${highlightNote ? `highlight-block-refund-note` : ''}`}
-                >
-                  <i class="i i-triangle-alert" />{' '}
-                  {instant_refund_support ? (
-                    <p>
-                      This payment was made more than{' '}
-                      {this.getMonthsFromDays(payment_age_limit_for_gateway_refund)} months ago, you
-                      can only issue instant refund.
-                      <a
-                        href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </p>
-                  ) : (
-                    <p>
-                      This payment was made more than{' '}
-                      {this.getMonthsFromDays(payment_age_limit_for_gateway_refund)} months ago,
-                      refund not supported
-                      <a
-                        href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </p>
-                  )}
+      <Query
+        paymentByCardOffline={paymentByCardOffline}
+        keyName={FETCH_EZETAP_KEY_NAME}
+        fn={fetchKeys}
+      >
+        {({ data: ezetapData }) => (
+          <div>
+            <ModalHeader title="Refund Payment" onCloseClick={this.props.closeModal} />
+            <div class="modal-body">
+              {nonFraudDisputeCount ? (
+                <div class="text-danger m-b">
+                  There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
+                  {nonFraudDisputeCount > 1 && 's'} raised against this payment. Kindly check the
+                  dispute details before initiating a refund.
                 </div>
-              )}
-              <div class={`form-group ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
-                <label class="label-required">Refund Amount</label>
-                <div class="input-group">
-                  <AmountTooltip
-                    currency={payment.currency}
-                    parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
-                    customClass={`input-group-addon ${this.state.focussed ? 'focussed' : ''} ${
-                      amountError ? 'error' : ''
-                    }`}
-                  />
-                  <Field
-                    name="amount"
-                    component={InputField}
-                    onFocus={() => {
-                      const focussed = this.state.focussed;
-                      this.setState({ focussed: !focussed });
-                    }}
-                    onBlur={() => {
-                      const focussed = this.state.focussed;
-                      this.setState({ focussed: !focussed });
-                    }}
-                    class="form-control refund-amt-input"
-                    type="number"
-                    step="0.01"
-                    placeholder="Enter the refund amount"
-                  />
-                </div>
-                {!!amountError ? (
-                  <div class="InputField__ErrorText text-danger">{amountError}</div>
-                ) : (
-                  <small class="help-block">
-                    This will be a{' '}
-                    <b>
-                      <RefundType partial={partial} /> refund
-                    </b>
-                    .{!partial && <span>&nbsp; Change amount for a partial refund.</span>}
-                  </small>
-                )}
-              </div>
-              {transfers.items.length > 0 && (
-                <div class="row">
-                  <div class="col-xs-12">
+              ) : null}
+              <form
+                onSubmit={handleSubmit((props) => {
+                  this.save(props, ezetapData);
+                })}
+              >
+                <div class="refunds-overflow-box">
+                  {gateway_refund_support === false && (
                     <div
-                      class={`instant-refund-check ${this.state.reversal ? 'focussed' : ''}`}
-                      style={{ marginBottom: '0', marginTop: '0' }}
+                      className={`block-refunds-note ${
+                        highlightNote ? `highlight-block-refund-note` : ''
+                      }`}
                     >
-                      <div
-                        style={{ paddingLeft: '5px' }}
-                        class="instant-refund-check-container route-transfer-check-container"
-                      >
-                        <Field
-                          name="reverse_all"
-                          id="reverse_all"
-                          component="input"
-                          class="pointer route-transfer-check"
-                          type="checkbox"
-                          onChange={(e) => this.setState({ reversal: e.target.checked })}
-                        />
-                        <strong class="icon i-check" for="reverse_all">
-                          Reverse all{' '}
+                      <i class="i i-triangle-alert" />{' '}
+                      {instant_refund_support ? (
+                        <p>
+                          This payment was made more than{' '}
+                          {this.getMonthsFromDays(payment_age_limit_for_gateway_refund)} months ago,
+                          you can only issue instant refund.
                           <a
-                            href="https://razorpay.com/docs/route/operations/#reversals"
-                            target="_blank"
+                            href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
                             rel="noopener noreferrer"
+                            target="_blank"
                           >
-                            Route Transfers
-                          </a>{' '}
-                          as well
-                        </strong>
+                            Learn more
+                          </a>
+                        </p>
+                      ) : (
+                        <p>
+                          This payment was made more than{' '}
+                          {this.getMonthsFromDays(payment_age_limit_for_gateway_refund)} months ago,
+                          refund not supported
+                          <a
+                            href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            Learn more
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <div class={`form-group ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
+                    <label class="label-required">Refund Amount</label>
+                    <div class="input-group">
+                      <AmountTooltip
+                        currency={payment.currency}
+                        parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+                        customClass={`input-group-addon ${this.state.focussed ? 'focussed' : ''} ${
+                          amountError ? 'error' : ''
+                        }`}
+                      />
+                      <Field
+                        name="amount"
+                        component={InputField}
+                        onFocus={() => {
+                          const focussed = this.state.focussed;
+                          this.setState({ focussed: !focussed });
+                        }}
+                        onBlur={() => {
+                          const focussed = this.state.focussed;
+                          this.setState({ focussed: !focussed });
+                        }}
+                        class="form-control refund-amt-input"
+                        type="number"
+                        step="0.01"
+                        placeholder="Enter the refund amount"
+                        readOnly={onlyFullRefundAllowed}
+                      />
+                    </div>
+                    {!!amountError ? (
+                      <div class="InputField__ErrorText text-danger">{amountError}</div>
+                    ) : (
+                      <small class="help-block">
+                        This will be a{' '}
+                        <b>
+                          <RefundType partial={partial} /> refund
+                        </b>
+                        .{!partial && <span>&nbsp; Change amount for a partial refund.</span>}
+                      </small>
+                    )}
+                  </div>
+                  {transfers.items.length > 0 && (
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <div
+                          class={`instant-refund-check ${this.state.reversal ? 'focussed' : ''}`}
+                          style={{ marginBottom: '0', marginTop: '0' }}
+                        >
+                          <div
+                            style={{ paddingLeft: '5px' }}
+                            class="instant-refund-check-container route-transfer-check-container"
+                          >
+                            <Field
+                              name="reverse_all"
+                              id="reverse_all"
+                              component="input"
+                              class="pointer route-transfer-check"
+                              type="checkbox"
+                              onChange={(e) => this.setState({ reversal: e.target.checked })}
+                            />
+                            <strong class="icon i-check" for="reverse_all">
+                              Reverse all{' '}
+                              <a
+                                href="https://razorpay.com/docs/route/operations/#reversals"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Route Transfers
+                              </a>{' '}
+                              as well
+                            </strong>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
+                  {this.showInstantRefund(payment, isInstantDisabled, user)}
                 </div>
-              )}
-              {this.showInstantRefund(payment, isInstantDisabled, user)}
-            </div>
 
-            <div
-              class={`form-group add-comment-div ${
-                this.shouldFormBeOpaque() ? `make-opaque` : null
-              }`}
-            >
-              {this.state.showComments ? (
-                <div class="form-group mt20">
-                  <Field
-                    name="comment"
-                    placeholder="Comment Description"
-                    component={AutoResizeTextarea}
-                    class="form-control"
-                  />
-                </div>
-              ) : (
-                <a
-                  onClick={() => {
-                    this.analytics.comment = true;
-                    this.setState({ showComments: true });
-                  }}
-                  class="comment-link-optional"
+                <div
+                  class={`form-group add-comment-div ${
+                    this.shouldFormBeOpaque() ? `make-opaque` : null
+                  }`}
                 >
-                  + Add Comments(Optional)
-                </a>
-              )}
+                  {this.state.showComments ? (
+                    <div class="form-group mt20">
+                      <Field
+                        name="comment"
+                        placeholder="Comment Description"
+                        component={AutoResizeTextarea}
+                        class="form-control"
+                      />
+                    </div>
+                  ) : (
+                    <a
+                      onClick={() => {
+                        this.analytics.comment = true;
+                        this.setState({ showComments: true });
+                      }}
+                      class="comment-link-optional"
+                    >
+                      + Add Comments(Optional)
+                    </a>
+                  )}
+                </div>
+                <div
+                  class="Modal__actions"
+                  onMouseEnter={this.handleHoverIn}
+                  onMouseLeave={this.handleHoverOut}
+                >
+                  <button
+                    class="btn btn-primary btn-block"
+                    disabled={
+                      this.isRefundButtonDisabled() ||
+                      this.shouldDisableRefundIfUnchecked() ||
+                      this.state.refundApiInProgress
+                    }
+                  >
+                    Issue <RefundType partial={partial} isTitleCase={true} /> refund
+                  </button>
+                </div>
+              </form>
             </div>
-            <div
-              class="Modal__actions"
-              onMouseEnter={this.handleHoverIn}
-              onMouseLeave={this.handleHoverOut}
-            >
-              <button
-                class="btn btn-primary btn-block"
-                disabled={
-                  this.isRefundButtonDisabled() ||
-                  this.shouldDisableRefundIfUnchecked() ||
-                  this.state.refundApiInProgress
-                }
-              >
-                Issue <RefundType partial={partial} isTitleCase={true} /> refund
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+          </div>
+        )}
+      </Query>
     );
   }
 }
@@ -934,9 +1007,13 @@ const mapDispatchToProps = (dispatch) =>
     {
       closeModal,
       refundPayment,
+      refundOfflinePayment,
+      updateRefundStatusInNotes,
+      voidPayment,
       fetchPayment,
       fetchRefunds,
       fetchTransfers,
+      fetchEzetapKeys,
       ...NotificationsActions,
     },
     dispatch,

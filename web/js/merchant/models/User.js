@@ -2115,6 +2115,11 @@ export default class User {
   get isSrAdminEnabled() {
     return getSplitzExperimentVariant('success_rate_admin')?.variables?.result === 'on';
   }
+
+  get isOmniChannelMerchant() {
+    const variant = getSplitzExperimentVariant('omni_channel_merchants');
+    return variant?.name === 'show-ezetap-txn';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

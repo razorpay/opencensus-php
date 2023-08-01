@@ -1,23 +1,25 @@
 import React from 'react';
 import moment from 'moment';
+import { SelfServeActionPages } from 'common/constant/enums';
 import Amount from 'common/ui/Amount';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
-import DataTable from 'common/ui/Table/DataTable';
 import LoaderDots from 'common/ui/LoaderDots';
-import { isOrgFeatureExist } from 'merchant/models/User';
+import DataTable from 'common/ui/Table/DataTable';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import {
-  refundId,
   amount,
+  refundId,
   refundSpeed,
   refundStatus as refundStatusPair,
 } from 'common/ui/item/pair';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 import { makeIdLink } from 'merchant/views/Transactions/Refunds/Utils';
 import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
-import { SelfServeActionPages } from 'common/constant/enums';
-import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
+import { REFUND_STATUSES } from 'merchant/views/Transactions/Payments/constants';
+import IssueRefund from './IssueRefund';
 
 /*
  * Design:
@@ -110,6 +112,8 @@ const RefundDetails = ({ items = [] }) => {
 
 const RefundDefinition = ({ refundStatus, payment, refunds, gatewayRefundNotSupported }) => {
   const { amount_refunded: amountRefunded, currency } = payment;
+  const refundInProgress =
+    payment?.status !== 'refunded' && payment?.notes?.refund_status === REFUND_STATUSES.PROCESSING;
 
   if (refundStatus === 'partial') {
     return (
@@ -144,34 +148,8 @@ const RefundDefinition = ({ refundStatus, payment, refunds, gatewayRefundNotSupp
     );
   }
 
-  return <Definition>No refunds issued yet</Definition>;
-};
-
-const IssueRefund = ({ refundStatus, payment, onRefundStatusClick, gatewayRefundNotSupported }) => {
-  if (gatewayRefundNotSupported) return null;
-
-  const hasOpenNonFraudDisputes =
-    payment?.disputes?.items?.filter(
-      ({ status, phase }) => ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud',
-    )?.length ?? 0;
-
   return (
-    <>
-      <button
-        type="button"
-        className="btn btn-default"
-        onClick={onRefundStatusClick}
-        disabled={hasOpenNonFraudDisputes}
-      >
-        {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
-      </button>
-      {Boolean(hasOpenNonFraudDisputes) && (
-        <p className="text-danger">
-          Refunds are disabled as there {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open&nbsp;
-          {hasOpenNonFraudDisputes > 1 ? 'disputes' : 'dispute'} on this payment
-        </p>
-      )}
-    </>
+    <Definition>{refundInProgress ? 'Refund is in progress' : 'No refunds issued yet'}</Definition>
   );
 };
 
@@ -179,8 +157,10 @@ const PaymentRefund = ({
   payment,
   refunds,
   openRefundModal,
+  collectEzetapKeys,
   onToggleClick = () => {},
   isQrCode = false,
+  fetchEzetapKeys,
 }) => {
   const { status: paymentStatus, refund_status: refundStatus, error_reason: errorReason } = payment;
 
@@ -212,7 +192,12 @@ const PaymentRefund = ({
     return openRefundModal();
   };
 
-  if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
+  if (
+    paymentStatus !== 'refunded' &&
+    payment?.notes?.refund_status === REFUND_STATUSES.PROCESSING
+  ) {
+    return <Definition>Refund is in Progress</Definition>;
+  } else if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
       <Definition>
         <span>Not Applicable</span>
@@ -250,7 +235,9 @@ const PaymentRefund = ({
             refundStatus={refundStatus}
             payment={payment}
             onRefundStatusClick={onRefundStatusClick}
+            collectEzetapKeys={collectEzetapKeys}
             gatewayRefundNotSupported={gatewayRefundNotSupported}
+            fetchEzetapKeys={fetchEzetapKeys}
           />
         </ShowWhen>
         <ShowWhen

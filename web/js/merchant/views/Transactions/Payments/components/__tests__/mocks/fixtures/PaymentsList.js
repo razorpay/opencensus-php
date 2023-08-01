@@ -2,8 +2,6 @@ import React from 'react';
 import PaymentsList from 'merchant/views/Transactions/Payments/List';
 import { render } from 'test-utils';
 import 'jest-location-mock';
-import store from 'merchant/store';
-import cloneDeep from 'lodash/cloneDeep';
 
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentsTable',
@@ -63,17 +61,6 @@ export const defaultProps = {
     data: {},
   },
 };
-
-const storeData = store.getState();
-export const getStateSpy = jest.spyOn(store, 'getState');
-getStateSpy.mockImplementation(() => {
-  const clonedStore = cloneDeep(storeData);
-  clonedStore.session.org = {
-    ...clonedStore.session.org,
-    features: ['show_pmt_receiver_type'],
-  };
-  return clonedStore;
-});
 
 export const defaultStore = {
   session: {

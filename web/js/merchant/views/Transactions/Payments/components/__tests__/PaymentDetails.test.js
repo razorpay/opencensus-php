@@ -7,6 +7,16 @@ import {
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { useQuery } from 'react-query';
+
+jest.mock('react-query', () => ({
+  useQuery: jest.fn().mockReturnValue({
+    refetch: jest.fn(),
+    data: { appKey: 'test' },
+    isLoading: false,
+    error: {},
+  }),
+}));
 
 describe('PaymentDetails', () => {
   test('should render payment details', () => {
@@ -21,6 +31,22 @@ describe('PaymentDetails', () => {
     expect(screen.queryByText('Payment Id:')).not.toBeInTheDocument();
     expect(screen.queryByText('paymentID')).not.toBeInTheDocument();
     expect(screen.queryByText('PaymentPageDetails')).not.toBeInTheDocument();
+  });
+
+  test('should fetch ezetap app keys when payment is by card offline', async () => {
+    render(<App payment={{ ...defaultProps.payment, method: 'card', receiver_type: 'pos' }} />);
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalledWith(
+        'ezetap_appkey',
+        expect.any(Function),
+        expect.objectContaining({
+          enabled: false,
+          refetchOnWindowFocus: false,
+          staleTime: Infinity,
+        }),
+      );
+    });
+    expect(useQuery().refetch).toHaveBeenCalled();
   });
 
   describe('Payment error', () => {
@@ -99,6 +125,40 @@ describe('PaymentDetails', () => {
   test('should render payment gateway provider', () => {
     render(<App />);
     expect(screen.getByText(defaultProps.payment.gateway_provider)).toBeInTheDocument();
+  });
+
+  describe('Triggering Refund', () => {
+    test('should trigger refund modal if the transaction is offline and keys are present', () => {
+      const openRefundModal = jest.fn();
+      render(
+        <App
+          payment={{ ...defaultProps.payment, receiver_type: 'pos' }}
+          openRefundModal={openRefundModal}
+        />,
+      );
+      const RefundButton = screen.getByText('Refund Payment');
+      fireEvent.click(RefundButton);
+      expect(openRefundModal).toHaveBeenCalled();
+    });
+
+    test('should trigger modal to collect ezetap keys if the transaction is offline and keys are not present', () => {
+      useQuery.mockReturnValueOnce({
+        refetch: jest.fn(),
+        data: {}, // Set a mock appKey for testing
+        isLoading: false,
+        error: {},
+      });
+      const collectEzetapKeys = jest.fn();
+      render(
+        <App
+          payment={{ ...defaultProps.payment, receiver_type: 'pos' }}
+          collectEzetapKeys={collectEzetapKeys}
+        />,
+      );
+      const RefundButton = screen.getByText('Refund Payment');
+      fireEvent.click(RefundButton);
+      expect(collectEzetapKeys).toHaveBeenCalled();
+    });
   });
 
   describe('Track payment details unmount', () => {

@@ -12,7 +12,7 @@ getStateSpy.mockImplementation(() => {
     ...clonedStore.session.user,
     isRefundAllowed: true,
     isPaymentsExtraRefundDetailsEnabled: true,
-    isOrgAllowedFunctionality: jest.fn(),
+    isOrgAllowedFunctionality: jest.fn(() => true),
   };
   return clonedStore;
 });

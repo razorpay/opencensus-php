@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, withRouter } from 'react-router-dom';
+import { useQuery } from 'react-query';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -30,11 +32,14 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { isPlatformTransaction } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
 import lazy from 'merchant/routes/LazyLoader';
+import {
+  REFUND_STATUSES,
+  FETCH_EZETAP_KEY_NAME,
+} from 'merchant/views/Transactions/Payments/constants';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 // styles
 import './Payments.styl';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const INIT_POINT = 'payment-details';
 
@@ -48,6 +53,7 @@ function PaymentDetails(props) {
     transfers,
     isLoading,
     openRefundModal,
+    collectEzetapKeys,
     statusMsg = {},
     onRefundDetailsToggleClick = () => {},
     onUpdateReferenceId = () => {},
@@ -62,6 +68,7 @@ function PaymentDetails(props) {
     adminAsMerchant,
     showCustomSettlDetails,
     bankSettleStatus,
+    fetchEzetapKeys,
   } = props;
 
   const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
@@ -92,6 +99,26 @@ function PaymentDetails(props) {
   const PlatformFeeDetails = showPlatformFee
     ? lazy(() => import('merchant/views/Transactions/Payments/components/PlatformFeeDetails'))
     : null;
+
+  const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
+  const { refetch: refetchEzetapAppKey, data: ezetapData } = useQuery(
+    FETCH_EZETAP_KEY_NAME,
+    async () => {
+      const dataPromise = await fetchEzetapKeys();
+      return dataPromise?.data;
+    },
+    {
+      enabled: false,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    },
+  );
+
+  useEffect(() => {
+    if (paymentByCardOffline) {
+      refetchEzetapAppKey();
+    }
+  }, [paymentByCardOffline]);
 
   const getProductType = useCallback(() => {
     const isQrCode = () => {
@@ -204,15 +231,32 @@ function PaymentDetails(props) {
 
     selfServeTrackInitiate(selfServeInitiateData);
   };
+
   const chargedFeeLabelText = () => {
     const orgName = org?.business_name || 'Razorpay';
+
     if (hideRazorpayTextLink) {
       return '';
     }
     return orgName;
   };
 
+  const triggerRefund = () => {
+    const paymentByCardOffline = payment.receiver_type === 'pos';
+    if (paymentByCardOffline && !ezetapData?.appKey) {
+      collectEzetapKeys();
+    } else {
+      openRefundModal();
+    }
+  };
+
+  const isCardOfflineTransaction = payment.receiver_type === 'pos' && payment.method === 'card';
+  const disableRefund =
+    payment?.status !== 'refunded' &&
+    payment?.notes?.refund_status === REFUND_STATUSES.PROCESSING &&
+    isCardOfflineTransaction;
   const isStorefront = location.hash === '#storefront';
+
   return (
     <div
       className="content-wrapper content-sm txn-details"
@@ -263,6 +307,7 @@ function PaymentDetails(props) {
                       }}
                       type="button"
                       className="btn btn-primary"
+                      disabled={isCardOfflineTransaction}
                     >
                       Capture Payment
                     </button>
@@ -274,7 +319,8 @@ function PaymentDetails(props) {
                     >
                       <button
                         type="button"
-                        onClick={openRefundModal}
+                        onClick={triggerRefund}
+                        disabled={disableRefund}
                         className="btn btn-primary btn-refund-payment"
                       >
                         Refund Payment
@@ -368,6 +414,8 @@ function PaymentDetails(props) {
                         refunds={refunds}
                         openRefundModal={openRefundModal}
                         onToggleClick={onRefundDetailsToggleClick}
+                        collectEzetapKeys={collectEzetapKeys}
+                        fetchEzetapKeys={fetchEzetapKeys}
                       />
                     </EntityDetailRow>
                   )}
