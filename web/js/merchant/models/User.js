@@ -520,8 +520,20 @@ export default class User {
     return getSplitzExperimentVariant('magic_order_analytics_cr')?.variables?.result === 'on';
   }
 
+  // These roles are added here to restrcit that the coupon editing can be done by the below mentioned roles and not all
   get isMagicShopifyOrderEditEnabled() {
-    return getSplitzExperimentVariant('magic_shopify_order_edit')?.variables?.result === 'on';
+    const accessRoles = [
+      rolesList.OWNER,
+      rolesList.ADMIN,
+      rolesList.MANAGER,
+      rolesList.OPERATIONS,
+      rolesList.FINANCE,
+    ];
+
+    return (
+      getSplitzExperimentVariant('magic_shopify_order_edit')?.variables?.result === 'on' &&
+      accessRoles.indexOf(this.userRole) > -1
+    );
   }
 
   get isMagicCODOrderAutomationEnabled() {

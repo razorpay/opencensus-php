@@ -143,7 +143,7 @@ const AddItems: React.FC<AddItemsProps> = ({ showNotification }) => {
     if (searchTerm === '') return;
     const debounceTimer = setTimeout(() => {
       fetchData();
-    }, 500);
+    }, 1000);
 
     // eslint-disable-next-line consistent-return
     return () => {

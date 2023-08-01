@@ -68,9 +68,13 @@ export const paymentStatus = {
 export const actions = (openOrderEditingModal: { (id: string, display_id: string): void }) => ({
   title: 'Action',
   value: (order: any) => {
+    const enabledStatuses = [
+      ORDER_STATUS.UNFULFILLED,
+      ORDER_STATUS.ON_HOLD,
+      ORDER_STATUS.PARTIALLY_FULFILLED,
+    ];
     const hasDisabledStatus =
-      (order.fulfillment_status !== ORDER_STATUS.UNFULFILLED &&
-        order.fulfillment_status !== ORDER_STATUS.ON_HOLD) ||
+      !enabledStatuses.includes(order.fulfillment_status) ||
       order.payment_status === 'VOIDED' ||
       order.closed;
     return (

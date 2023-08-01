@@ -18,6 +18,26 @@ export const RESPONSE_WITH_FULLFILLED_ORDER = {
   },
 };
 
+export const RESPONSE_WITH_PARTIALLY_ORDER = {
+  success: true,
+  status_code: 200,
+  data: {
+    orders: [
+      {
+        id: 'order_MCnpyKC1BO0bzf',
+        display_name: '#6740',
+        fulfillment_status: 'PARTIALLY_FULFILLED',
+        platform_order_id: 'gid://shopify/Order/5075741868199',
+        currency: 'INR',
+        created_at: '2023-07-12T07:12:29Z',
+        payment_status: 'PAID',
+        price: 7500,
+        customer: 'John',
+      },
+    ],
+  },
+};
+
 export const RESPONSE_WITH_NO_ORDER = {
   success: true,
   status_code: 200,
