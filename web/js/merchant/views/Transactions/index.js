@@ -285,7 +285,7 @@ class TransactionsContainer extends Component {
             <ShowWhen
               additionalCondition={(currentUser) =>
                 mode === 'live' &&
-                currentUser.findTag('success_rate') &&
+                currentUser.isSuccessRateEnabled &&
                 currentUser.isAllowedView('success_rate')
               }
             >
@@ -474,7 +474,7 @@ class TransactionsContainer extends Component {
                   component={SuccessRate}
                   additionalCondition={(currentUser) =>
                     mode === 'live' &&
-                    currentUser.findTag('success_rate') &&
+                    currentUser.isSuccessRateEnabled &&
                     currentUser.isAllowedView('success_rate')
                   }
                 />

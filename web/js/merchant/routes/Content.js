@@ -434,7 +434,7 @@ export default class Content extends Component {
             isTagDependent={true}
             additionalCondition={(currentUser) =>
               mode === 'live' &&
-              currentUser.findTag('success_rate') &&
+              currentUser.isSuccessRateEnabled &&
               currentUser.isAllowedView('success_rate')
             }
           />
