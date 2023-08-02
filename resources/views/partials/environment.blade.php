@@ -24,4 +24,7 @@
     window.APP_ENV = "{!! env('APP_ENV') !!}";
     window.INSTANCE_TYPE = "{!! env('INSTANCE_TYPE') !!}";
     window.SENTRY_DSN = "{!! env('SENTRY_DSN') !!}";
+
+    // Batch Payments
+    window.API_URL = "{{ env('API_URL') }}";
 </script>

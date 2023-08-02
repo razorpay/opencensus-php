@@ -12,15 +12,7 @@ import { createPaymentsBatch as createBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators } from 'redux';
 
-const hostToIframeHost = {
-  'dashboard.razorpay.in': 'http://api.razorpay.in',
-  'dashboard.razorpay.com': 'https://api.razorpay.com',
-  'admin-dashboard.razorpay.com': 'https://api.razorpay.com',
-  'beta-dashboard.stage.razorpay.in': 'https://beta-api.razorpay.in',
-};
-
-const iframeHost = hostToIframeHost[location.hostname];
-
+const iframeHost = window.API_URL;
 class BatchUploadContainer extends Component {
   state = {
     fileUploadProgress: 0,
@@ -28,9 +20,6 @@ class BatchUploadContainer extends Component {
   };
 
   onWindowEvent = ({ data: message }) => {
-    // eslint-disable-next-line no-restricted-globals
-    if (event.origin !== iframeHost) return;
-
     switch (message.event) {
       case 'load':
         this.setState({ iFrameLoaded: true });
@@ -124,10 +113,10 @@ class BatchUploadContainer extends Component {
 
       case 'upload':
         return (
-          <div class="batch-upload-modal">
+          <div class="batch-upload-modal" data-testid="batch-upload-modal">
             {this.state.iFrameLoaded && <Header title="Batch Upload" />}
             <iframe
-              src={`${iframeHost}/v1/batches/upload?token=${this.state.ott}`}
+              src={`${iframeHost}batches/upload?token=${this.state.ott}`}
               class={`
                 batch-payments-iframe
                 ${this.state.status === 'process' ? 'disabled' : ''}
