@@ -6055,7 +6055,9 @@ class Service extends Base\Service
 
         $paymentRecon->setPayment($payment);
 
-        $isSuccess = $paymentRecon->handleVerifyAuthorized();// this function  is creating transaction entity
+        $isSuccess = $this->repo->transactionOnLiveAndTest(function () use ($paymentRecon) {
+             return $paymentRecon->handleVerifyAuthorized(); // this function  is creating transaction entity
+                    });
 
         $this->trace->info(
                     TraceCode::ART_PAYMENT_CREATE_TRANSACTION_RESPONSE,
@@ -6155,7 +6157,12 @@ class Service extends Base\Service
         }
         else
         {
-           $verifySuccess = $paymentRecon->handleVerifyPayment();
+
+
+          $verifySuccess = $this->repo->transactionOnLiveAndTest(function () use ($paymentRecon) {
+             return $paymentRecon->handleVerifyPayment();
+                    });
+
            $payment->reload();
            return  [
             'success'               => $verifySuccess  and  (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
