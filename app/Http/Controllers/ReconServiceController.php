@@ -58,6 +58,12 @@ class ReconServiceController extends Controller
             '^file_types\/[[:alnum:]]{14}\/source_configs$',
             '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
             '^file_details$',
+            '^event$',
+            '^event\/[[:alnum:]]{14}$',
+            '^webhook_action$',
+            '^webhook_action\/[[:alnum:]]{14}$',
+            '^event_log$',
+            '^event_log\/[[:alnum:]]{14}$',
         ],
         self::POST => [
             '^output_email$',
@@ -78,6 +84,13 @@ class ReconServiceController extends Controller
             '^json_logic_validation$',
             '^money_loss_job_config$',
             '^file_types\/[[:alnum:]]{14}\/source_configs$',
+            '^metro_consumer$',
+            '^event$',
+            '^event\/[[:alnum:]]{14}$',
+            '^webhook_action$',
+            '^webhook_action\/[[:alnum:]]{14}$',
+            '^event_log$',
+            '^event_log\/[[:alnum:]]{14}$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -91,6 +104,10 @@ class ReconServiceController extends Controller
             '^money_loss_job_config\/[[:alnum:]]{14}$',
             '^money_loss_job_runs\/[[:alnum:]]{14}$',
             '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
+            '^event$',
+            '^event\/[[:alnum:]]{14}$',
+            '^webhook_action$',
+            '^webhook_action\/[[:alnum:]]{14}$',
         ],
         self::DELETE => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -104,6 +121,12 @@ class ReconServiceController extends Controller
             '^money_loss_job_config\/[[:alnum:]]{14}$',
             '^money_loss_job_runs\/[[:alnum:]]{14}$',
             '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
+            '^event$',
+            '^event\/[[:alnum:]]{14}$',
+            '^webhook_action$',
+            '^webhook_action\/[[:alnum:]]{14}$',
+            '^event_log$',
+            '^event_log\/[[:alnum:]]{14}$',
         ]
     ];
 
@@ -165,4 +188,5 @@ class ReconServiceController extends Controller
 
         return new ReconService($app);
     }
+
 }

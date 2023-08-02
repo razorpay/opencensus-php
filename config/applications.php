@@ -1588,6 +1588,9 @@ return [
         'api_key'               => env('RECON_SERVICE_API_AUTH_KEY'),
         'api_secret'            => env('RECON_SERVICE_API_AUTH_SECRET'),
         'url'               => env('RECON_SERVICE_URL'),
+        'prs_url'           => env('RECON_PRS_SERVICE_URL'),
+        'prs_key'       => env('RECON_SERVICE_PRS_AUTH_KEY'),
+        'prs_secret'    => env('RECON_SERVICE_PRS_AUTH_SECRET'),
         'matcher_key'       => env('RECON_SERVICE_MATCHER_AUTH_KEY'),
         'matcher_secret'    => env('RECON_SERVICE_MATCHER_AUTH_SECRET'),
         // recon call to api secret

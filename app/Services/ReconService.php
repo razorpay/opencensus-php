@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ReconService
 {
     protected $baseUrl;
+    protected $basePrsUrl;
 
     const REQUEST_TIMEOUT = 60;
 
@@ -62,6 +63,7 @@ class ReconService
 
     const MATCHER = 'matcher';
 
+    const PRS = 'prs';
 
     public function __construct($app)
     {
@@ -75,6 +77,8 @@ class ReconService
 
         $this->baseUrl = $this->config['url'];
 
+        $this->basePrsUrl = $this->config['prs_url'];
+
         $this->key = $this->config['api_key'];
 
         $this->auth = $app['basicauth'];
@@ -84,6 +88,10 @@ class ReconService
         $this->matcher_key = $this->config['matcher_key'];
 
         $this->matcher_secret = $this->config['matcher_secret'];
+
+        $this->prs_key = $this->config['prs_key'];
+
+        $this->prs_secret = $this->config['prs_secret'];
 
         $this->ufh = (new UfhService($app));
 
@@ -267,10 +275,17 @@ class ReconService
 
         $requestPayload = $this->getPayload($data ?? [], $method);
 
-        $url = $this->baseUrl . $url;
+        if ($auth_type == self::PRS){
+            $url = $this->basePrsUrl . $url;
+        } else{
+            $url = $this->baseUrl . $url;
+        }
 
         if ($auth_type == self::MATCHER) {
             $auth = [$this->matcher_key, $this->matcher_secret];
+        }
+        elseif ($auth_type == self::PRS){
+            $auth = [$this->prs_key, $this->prs_secret];
         }
         else {
             $auth = [$this->key, $this->secret];
