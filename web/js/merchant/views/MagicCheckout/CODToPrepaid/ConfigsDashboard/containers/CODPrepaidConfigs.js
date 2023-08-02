@@ -31,6 +31,7 @@ import {
   SAVE_CONFIGS_CONFIRMATION_TEXTS,
   MAX_MINS,
   MAX_HOURS,
+  MIN_TIME,
   DISCOUNT_TYPE,
   CREDENTIALS_MODAL_DESC,
 } from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard/constants';
@@ -279,7 +280,7 @@ const CODPrepaidConfigs = (props) => {
     const mins = parseInt(m, 10);
 
     switch (true) {
-      case hours == 0 && mins < 15:
+      case hours == 0 && mins < MIN_TIME:
         setDurationVal((prevState) => ({
           ...prevState,
           error: {

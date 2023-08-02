@@ -3,6 +3,7 @@ import {
   MAX_MINS,
   VALIDATION_MSGS,
   DISCOUNT_TYPE,
+  MIN_TIME,
 } from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard/constants';
 
 import {
@@ -140,7 +141,7 @@ export const isDurationInvalid = (validity, durationVal) => {
   if (
     validity === 'custom' &&
     ((durationVal.hours === 0 && durationVal.mins === 0) ||
-      (durationVal.hours === 0 && durationVal.mins < 15))
+      (durationVal.hours === 0 && durationVal.mins < MIN_TIME))
   ) {
     return true;
   }
