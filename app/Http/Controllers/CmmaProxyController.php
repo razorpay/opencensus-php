@@ -79,7 +79,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_PROCESS_INSTANCE_RESOURCES => Name::CMMA_PROCESS_VIEW,
         self::UPDATE_USER_TASK_LIST          => Name::CMMA_PROCESS_EDIT,
         self::UPDATE_PROCESS_ASSIGNED_TO     => Name::CMMA_PROCESS_EDIT,
-//        self::CLOSE_CASE                     => Name::CMMA_LEADS_SOP, // product has asked to change same
+        self::CLOSE_CASE                     => Name::CMMA_PROCESS_VIEW, // product has asked to change same
         self::GET_AUDIT_DETAILS              => Name::CMMA_PROCESS_VIEW,
     ];
 
@@ -87,7 +87,8 @@ class CmmaProxyController extends BaseProxyController
     * timeout in seconds
     */
     const PATH_TIMEOUT_MAP  = [
-        self::CREATE_DISPUTE_CASE_CRON                  => 1800, // half hour
+        self::CREATE_DISPUTE_CASE_CRON                         => 1800, // half hour
+        self::CRON_UPDATE_PROCESS_ASSIGNED_TO                  => 600,  // 10 mins
     ];
 
 
