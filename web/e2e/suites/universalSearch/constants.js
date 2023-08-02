@@ -1,4 +1,4 @@
-import { getDefaultDateRangeForPayments } from '../../utils';
+import { getDefaultDateRangeForPayments } from 'merchant/components/HeaderNav/UniversalSearch/utils/EntitySearch';
 
 export const SEARCH_TERMS_WITH_EXPECTED_RESULTS = [
   {
@@ -79,7 +79,23 @@ export const COPY_TEXTS = {
   POPULAR_SEARCHES: 'Popular searches',
 };
 
-export const SEARCHABLE_ENTITIES = ['Payments', 'Refunds', 'Orders', 'Settlements', 'Disputes'];
+export const SEARCHABLE_ENTITIES = [
+  'Payments',
+  'Refunds',
+  'Orders',
+  'Settlements',
+  'Disputes',
+  'Invoices',
+  'PaymentLinks',
+  'PaymentPages',
+  'PaymentButtons',
+  'Transfers',
+  'Reversals',
+  'Accounts',
+  // 'Subscriptions',
+  // 'Plans',
+  // 'QRcode',
+];
 
 export const ENTITY_SEARCH_KEYS = {
   REFUND_PAYMENT_ID: 'REFUND_PAYMENT_ID',
@@ -90,6 +106,9 @@ export const ENTITY_SEARCH_KEYS = {
   SETTLEMENTS_UTR_NUMBER: 'SETTLEMENTS_UTR_NUMBER',
   PAYMENT_PAGES_TITLE: 'PAYMENT_PAGES_TITLE',
   PAYMENT_LINKS_URL: 'PAYMENT_LINKS_URL',
+  // QRCODE_STATUS: 'QRCODE_STATUS',
+  ACCOUNTS_EMAIL: 'ACCOUNTS_EMAIL',
+  REVERSALS_TRANSFER_ID: 'REVERSALS_TRANSFER_ID',
 };
 
 export const getEntitySearchResultsRoutes = (searchQuery, key) => {
@@ -104,6 +123,9 @@ export const getEntitySearchResultsRoutes = (searchQuery, key) => {
     SETTLEMENTS_UTR_NUMBER: `/app/settlements?utr=${searchQuery}`,
     PAYMENT_LINKS_URL: `/app/paymentlinks?short_url=${searchQuery}`,
     PAYMENT_PAGES_TITLE: `/app/paymentpages?title=${searchQuery}`,
+    // QRCODE_STATUS: `/app/qr_codes?status=${searchQuery}`,
+    ACCOUNTS_EMAIL: `/app/route/accounts?email_id=${searchQuery}`,
+    REVERSALS_TRANSFER_ID: `/app/route/reversals?transfer_id=${searchQuery}`,
   };
 
   return routesBasedOnSearch[key];

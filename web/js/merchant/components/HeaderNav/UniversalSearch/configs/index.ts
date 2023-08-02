@@ -2,9 +2,11 @@ import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
 import {
   SearchableEntitiesType,
   entityAttributesTypes,
+  defaultEntityParamTypes,
   statusKeywordsStoreType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
-const { transactions, settlements, payment_links, payment_pages, payment_button } = PRODUCTS_DATA;
+const { transactions, settlements, payment_links, payment_pages, payment_button, route } =
+  PRODUCTS_DATA;
 
 export const searchableEntities: SearchableEntitiesType = {
   Payments: {
@@ -96,6 +98,62 @@ export const searchableEntities: SearchableEntitiesType = {
       PaymentButtonStatus: 'status',
     },
   },
+  Transfers: {
+    id: 'Transfers',
+    route: '/route/transfers',
+    icon: route.icon,
+    attributes: {
+      TransferId: 'id',
+      TransferStatus: 'status',
+      TransferSettlementStatus: 'settlement_status',
+    },
+  },
+  Reversals: {
+    id: 'Reversals',
+    route: '/route/reversals',
+    icon: route.icon,
+    attributes: {
+      ReversalId: 'id',
+      TransferId: 'transfer_id',
+    },
+  },
+  Accounts: {
+    id: 'Accounts',
+    route: '/route/accounts',
+    icon: route.icon,
+    attributes: {
+      AccountId: 'id',
+      Email: 'email_id',
+    },
+  },
+  // UPDATE: these entities will be taken up in the next phase
+  // Subscriptions: {
+  //   id: 'Subscriptions',
+  //   route: '/subscriptions',
+  //   icon: subscriptions.icon,
+  //   attributes: {
+  //     SubscriptionId: 'id',
+  //     PlanId: 'plan_id',
+  //     CustomerId: 'customer_id',
+  //   },
+  // },
+  // Plans: {
+  //   id: 'Plans',
+  //   route: '/plans',
+  //   icon: subscriptions.icon,
+  //   attributes: {
+  //     PlanId: 'id',
+  //   },
+  // },
+  // QRcodes: {
+  //   id: 'QRcodes',
+  //   route: '/qr_codes',
+  //   icon: qr_codes.icon,
+  //   attributes: {
+  //     QRCodeId: 'id',
+  //     QRCodeStatus: 'status',
+  //   },
+  // },
 };
 
 export const entityAttributes: entityAttributesTypes = {
@@ -153,6 +211,24 @@ export const entityAttributes: entityAttributesTypes = {
     matchWith: /^batch_[a-zA-Z0-9]{14}$/,
     entities: ['PaymentLinks'],
   },
+  // SubscriptionId: {
+  //   attributeId: 'SubscriptionId',
+  //   attributeType: 'entity_id',
+  //   matchWith: /^sub_[a-zA-Z0-9]{14}$/,
+  //   entities: ['Subscriptions'],
+  // },
+  // PlanId: {
+  //   attributeId: 'PlanId',
+  //   attributeType: 'entity_id',
+  //   matchWith: /^plan_[a-zA-Z0-9]{14}$/,
+  //   entities: ['Subscriptions', 'Plans'],
+  // },
+  // CustomerId: {
+  //   attributeId: 'CustomerId',
+  //   attributeType: 'entity_id',
+  //   matchWith: /^cust_[a-zA-Z0-9]{14}$/,
+  //   entities: ['Subscriptions'],
+  // },
   PaymentPageUrl: {
     attributeId: 'PaymentPageUrl',
     attributeType: 'entity_url',
@@ -163,13 +239,49 @@ export const entityAttributes: entityAttributesTypes = {
     attributeId: 'Email',
     attributeType: 'entity_email',
     matchWith: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/,
-    entities: ['Payments', 'PaymentLinks'],
+    entities: ['Payments', 'PaymentLinks', 'Accounts'],
   },
   PhoneNumber: {
     attributeId: 'PhoneNumber',
     attributeType: 'entity_contact_number',
     matchWith: /^(?:\+91|0)?[6-9]\d{9}$/,
     entities: ['Payments', 'PaymentLinks'],
+  },
+  TransferId: {
+    attributeId: 'TransferId',
+    attributeType: 'entity_id',
+    matchWith: /^trf_[a-zA-Z0-9]{0,14}/,
+    entities: ['Transfers', 'Reversals'],
+  },
+  ReversalId: {
+    attributeId: 'ReversalId',
+    attributeType: 'entity_id',
+    matchWith: /^rvrsl_[a-zA-Z0-9]{0,14}/,
+    entities: ['Reversals'],
+  },
+  AccountId: {
+    attributeId: 'AccountId',
+    attributeType: 'entity_id',
+    matchWith: /^acc_[a-zA-Z0-9]{0,14}/,
+    entities: ['Accounts'],
+  },
+  // QRCodeId: {
+  //   attributeId: 'QRCodeId',
+  //   attributeType: 'entity_id',
+  //   matchWith: /^qr_[a-zA-Z0-9]{0,14}/,
+  //   entities: ['QRcodes'],
+  // },
+  TransferStatus: {
+    attributeId: 'TransferStatus',
+    attributeType: 'entity_state',
+    matchWith: ['created', 'pending', 'processed', 'failed', 'reversed', 'partially_reversed'],
+    entities: ['Transfers'],
+  },
+  TransferSettlementStatus: {
+    attributeId: 'TransferSettlementStatus',
+    attributeType: 'entity_state',
+    matchWith: ['pending', 'on hold', 'hold', 'settled'],
+    entities: ['Transfers'],
   },
   PaymentStatus: {
     attributeId: 'PaymentStatus',
@@ -232,6 +344,30 @@ export const entityAttributes: entityAttributesTypes = {
     matchWith: ['active', 'inactive', 'in active'],
     entities: ['PaymentButtons'],
   },
+  // QRCodeStatus: {
+  //   attributeId: 'QRCodeStatus',
+  //   attributeType: 'entity_state',
+  //   matchWith: ['active', 'closed'],
+  //   entities: ['QRcodes'],
+  // },
+};
+
+export const defaultQueryParamsPerEntity: defaultEntityParamTypes = {
+  Payments: 'q',
+  Settlements: 'utr',
+  Invoices: 'q',
+  Orders: 'q',
+  PaymentButtons: 'title',
+  PaymentLinks: 'q',
+  Refunds: 'q',
+  PaymentPages: 'title',
+  Disputes: 'q',
+  Transfers: 'q',
+  Reversals: 'q',
+  Accounts: 'q',
+  // Subscriptions: 'q',
+  // Plans: 'q',
+  // QRcodes: 'q',
 };
 
 export const statusKeywordsStore: statusKeywordsStoreType = {
@@ -288,4 +424,19 @@ export const statusKeywordsStore: statusKeywordsStoreType = {
     inactive: 'inactive',
     'in active': 'inactive',
   },
+  Transfers: {
+    created: 'created',
+    pending: 'pending',
+    failed: 'failed',
+    processed: 'processed',
+    reversed: 'reversed',
+    'partially reversed': 'partially_reversed',
+    settled: 'settled',
+    hold: 'on_hold',
+    'on hold': 'on_hold',
+  },
+  // QRcodes: {
+  //   active: 'active',
+  //   closed: 'closed',
+  // },
 };

@@ -97,22 +97,35 @@ export type SearchableEntities =
   | 'Invoices'
   | 'PaymentLinks'
   | 'PaymentPages'
-  | 'PaymentButtons';
+  | 'PaymentButtons'
+  | 'Transfers'
+  | 'Reversals'
+  | 'Accounts';
+// | 'Subscriptions'
+// | 'Plans'
+// | 'QRcodes';
 
 type PaymentEntityAttributeTypes = 'PaymentId' | 'PaymentStatus';
 type RefundEntityAttributeTypes = 'RefundId' | 'RefundStatus';
 type DisputeEntityAttributeTypes = 'DisputeId' | 'DisputeType' | 'DisputeState';
 type SettlementEntityAttributeTypes = 'SettlementId' | 'SettlementStatus';
 type OrderEntityAttributeTypes = 'OrderId' | 'OrderStatus';
+type PaymentPageEntityAttributeTypes = 'PaymentPageUrl' | 'PaymentPageStatus';
+type PaymentButtonsEntityAttributeTypes = 'PaymentButtonStatus';
+type InvoiceEntityAttributeTypes = 'InvoiceId';
+type GeneralAttributeTypes = 'Email' | 'PhoneNumber';
 type PaymentLinkEntityAttributeTypes =
   | 'PaymentLinkId'
   | 'PaymentLinkBatchId'
   | 'PaymentLinkUrl'
   | 'PaymentLinkStatus';
-type PaymentPageEntityAttributeTypes = 'PaymentPageUrl' | 'PaymentPageStatus';
-type PaymentButtonsEntityAttributeTypes = 'PaymentButtonStatus';
-type InvoiceEntityAttributeTypes = 'InvoiceId';
-type GeneralAttributeTypes = 'Email' | 'PhoneNumber';
+type TransfersEntityAttributeTypes = 'TransferId' | 'TransferStatus' | 'TransferSettlementStatus';
+type AccountsEntityAttributeTypes = 'AccountId';
+type ReversalsEntityAttributeTypes = 'ReversalId';
+// type QRCodeEntityAttributeTypes = 'QRCodeId' | 'QRCodeStatus';
+// type SubscriptionsEntityAttributeTypes = 'SubscriptionId';
+// type PlanEntityAttributeTypes = 'PlanId';
+// type CustomerEntityAttributeTypes = 'CustomerId';
 
 export type EntityAttributeTypes =
   | PaymentEntityAttributeTypes
@@ -124,7 +137,14 @@ export type EntityAttributeTypes =
   | PaymentLinkEntityAttributeTypes
   | PaymentPageEntityAttributeTypes
   | PaymentButtonsEntityAttributeTypes
-  | GeneralAttributeTypes;
+  | GeneralAttributeTypes
+  | TransfersEntityAttributeTypes
+  | ReversalsEntityAttributeTypes
+  | AccountsEntityAttributeTypes;
+// | SubscriptionsEntityAttributeTypes
+// | QRCodeEntityAttributeTypes
+// | PlanEntityAttributeTypes
+// | CustomerEntityAttributeTypes;
 
 export interface SearchableEntityType {
   id: SearchableEntities;
@@ -157,6 +177,6 @@ export type entityAttributesTypes = Record<EntityAttributeTypes, attributeType>;
 export type defaultEntityParamTypes = Record<SearchableEntities, string>;
 
 export type statusKeywordsStoreType = Record<
-  Exclude<SearchableEntities, 'Invoices'>,
+  Exclude<SearchableEntities, 'Invoices' | 'Reversals' | 'Accounts'>,
   Record<string, string>
 >;

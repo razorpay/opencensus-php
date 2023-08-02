@@ -1,6 +1,7 @@
 import {
   entityAttributes,
   searchableEntities,
+  defaultQueryParamsPerEntity,
   statusKeywordsStore,
 } from 'merchant/components/HeaderNav/UniversalSearch/configs';
 import {
@@ -8,7 +9,6 @@ import {
   SearchableEntities,
   SearchableEntityType,
   ProductType,
-  defaultEntityParamTypes,
   EntityAttributeTypes,
   AttributeType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
@@ -19,18 +19,6 @@ const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 const DEFAULT_COUNTRY_CODE = '+91';
 const COMMON_ENTITY_ATTRIBUT_TYPES: AttributeType[] = ['entity_state', 'entity_url'];
 // *****
-
-const defaultQueryParamsPerEntity: defaultEntityParamTypes = {
-  Payments: 'q',
-  Settlements: 'utr',
-  Invoices: 'q',
-  Orders: 'q',
-  PaymentButtons: 'title',
-  PaymentLinks: 'q',
-  Refunds: 'q',
-  PaymentPages: 'title',
-  Disputes: 'q',
-};
 
 // **** Main search util for entities
 export function entitySearch(searchQuery: string): {

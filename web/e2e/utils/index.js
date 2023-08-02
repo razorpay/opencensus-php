@@ -1,18 +1,18 @@
-const moment = require('moment');
+import moment from 'moment';
 const { expect } = require('@playwright/test');
 const { COMMON_SELECTORS } = require('./selectors');
 const { routes } = require('./constants');
 
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 
-const generateRandomText = (length) => {
+export function generateRandomText(length) {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
-};
+}
 
 const generateRandomPhoneNumber = () => {
   return Math.floor(Math.random() * 9000000000) + 1000000000;

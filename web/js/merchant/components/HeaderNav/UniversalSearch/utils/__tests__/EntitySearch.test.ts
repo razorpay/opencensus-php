@@ -25,7 +25,7 @@ describe('Entity search util', () => {
 
   test('Valid email as search query', () => {
     const searchResults = entitySearch('akash.raina@razorpay.com');
-    const validSearchResults: SearchableEntities[] = ['Payments', 'PaymentLinks'];
+    const validSearchResults: SearchableEntities[] = ['Payments', 'PaymentLinks', 'Accounts'];
 
     expect(searchResults.success).toBe(true);
     searchResults.results.forEach((result) => {
@@ -37,7 +37,12 @@ describe('Entity search util', () => {
 
   test('Valid entity status as search query', () => {
     const searchResults = entitySearch('created');
-    const validSearchResults: SearchableEntities[] = ['Orders', 'Settlements', 'PaymentLinks'];
+    const validSearchResults: SearchableEntities[] = [
+      'Orders',
+      'Settlements',
+      'PaymentLinks',
+      'Transfers',
+    ];
 
     expect(searchResults.success).toBe(true);
     searchResults.results.forEach((result) => {
@@ -59,6 +64,9 @@ describe('Entity search util', () => {
       'PaymentLinks',
       'PaymentPages',
       'PaymentButtons',
+      'Transfers',
+      'Reversals',
+      'Accounts',
     ];
 
     expect(searchResults.success).toBe(false);
@@ -114,6 +122,9 @@ describe('Transform search results util', () => {
       'PaymentLinks',
       'PaymentPages',
       'Invoices',
+      'Transfers',
+      'Accounts',
+      'Reversals',
     ];
 
     expect(transformedSearchResults).toHaveLength(Object.keys(searchableEntities).length);

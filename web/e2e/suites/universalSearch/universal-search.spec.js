@@ -302,6 +302,94 @@ test.describe.parallel('Test universal search @flow=universal-entity-search', ()
     );
   });
 
+  // test('should show entity search results for QRCode status search @priority=normal', async ({
+  //   page,
+  // }) => {
+  //   await page.goto(routes.DASHBOARD);
+  //   const searchBox = await page.locator("input[name='search']");
+  //   await expect(searchBox).toBeVisible();
+  //   await searchBox.focus();
+  //   const searchQuery = 'active';
+
+  //   const searchResults = await getSearchResultsEl({
+  //     page,
+  //     searchBox,
+  //     searchTerm: searchQuery,
+  //   });
+
+  //   await expect(searchResults).toBeVisible();
+  //   const paymentPagesSearchResult = searchResults.getByText('in: PaymentPages');
+  //   const paymentButtonsSearchResult = searchResults.getByText('in: PaymentButtons');
+  //   const qrCodesSearchResult = searchResults.getByText('in: QRcodes');
+
+  //   await expect(paymentPagesSearchResult).toBeVisible();
+  //   await expect(paymentButtonsSearchResult).toBeVisible();
+  //   await expect(qrCodesSearchResult).toBeVisible();
+
+  //   await qrCodesSearchResult.click();
+  //   await expect(page).toHaveURL(
+  //     getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.QRCODE_STATUS),
+  //   );
+  // });
+
+  test('should show entity search results for Accounts email search @priority=normal', async ({
+    page,
+  }) => {
+    await page.goto(routes.DASHBOARD);
+    const searchBox = await page.locator("input[name='search']");
+    await expect(searchBox).toBeVisible();
+    await searchBox.focus();
+    const searchQuery = 'test@gm.om';
+
+    const searchResults = await getSearchResultsEl({
+      page,
+      searchBox,
+      searchTerm: searchQuery,
+    });
+
+    await expect(searchResults).toBeVisible();
+    const paymentsSearchResult = searchResults.getByText('in: Payments');
+    const paymentLinksSearchResult = searchResults.getByText('in: PaymentLinks');
+    const accountsSearchResult = searchResults.getByText('in: Accounts');
+
+    await expect(paymentsSearchResult).toBeVisible();
+    await expect(paymentLinksSearchResult).toBeVisible();
+    await expect(accountsSearchResult).toBeVisible();
+
+    await accountsSearchResult.click();
+    await expect(page).toHaveURL(
+      getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.ACCOUNTS_EMAIL),
+    );
+  });
+
+  test('should show entity search results for Reversals transferId search @priority=normal', async ({
+    page,
+  }) => {
+    await page.goto(routes.DASHBOARD);
+    const searchBox = await page.locator("input[name='search']");
+    await expect(searchBox).toBeVisible();
+    await searchBox.focus();
+    const searchQuery = 'trf_12345678912345';
+
+    const searchResults = await getSearchResultsEl({
+      page,
+      searchBox,
+      searchTerm: searchQuery,
+    });
+
+    await expect(searchResults).toBeVisible();
+    const transfersSearchResult = searchResults.getByText('in: Transfers');
+    const reversalsSearchResult = searchResults.getByText('in: Reversals');
+
+    await expect(transfersSearchResult).toBeVisible();
+    await expect(reversalsSearchResult).toBeVisible();
+
+    await reversalsSearchResult.click();
+    await expect(page).toHaveURL(
+      getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.REVERSALS_TRANSFER_ID),
+    );
+  });
+
   test('should list all entities for no search query match @priority=normal', async ({ page }) => {
     await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
