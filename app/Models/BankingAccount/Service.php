@@ -958,7 +958,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function processGatewayBalanceUpdate(string $channel)
+    public function processGatewayBalanceUpdate(string $channel, array $input)
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_PROCESS_GATEWAY_BALANCE_UPDATE_REQUEST,
@@ -966,7 +966,7 @@ class Service extends Base\Service
                'channel' => $channel,
             ]);
 
-        $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($channel);
+        $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($channel, $input);
 
         return $response;
     }
@@ -2229,9 +2229,9 @@ class Service extends Base\Service
         $ba->build($input);
 
         $ba->setBasCaStatus($bankingAccount[Entity::STATUS]);
-        
+
         $ba->setFtsFundAccountId($bankingAccount[Entity::FTS_FUND_ACCOUNT_ID]);
-        
+
         $id = $this->repo->banking_account->verifyIdAndStripSign($bankingAccount[Entity::ID]);
 
         $ba->setId($id);

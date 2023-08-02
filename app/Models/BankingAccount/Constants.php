@@ -86,4 +86,5 @@ class Constants
 
     const SKIP  = 'skip';
     const COUNT = 'count';
+    const MERCHANT_IDS = 'merchant_ids';
 }

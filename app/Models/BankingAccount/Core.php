@@ -2272,8 +2272,33 @@ class Core extends Base\Core
      *
      * @return mixed
      */
-    public function dispatchGatewayBalanceUpdateForMerchants(string $channel)
+    public function dispatchGatewayBalanceUpdateForMerchants(string $channel, array $input)
     {
+        if(isset($input[Constants::MERCHANT_IDS]) === true)
+        {
+            $response = [];
+
+            $merchantIds = $input[Constants::MERCHANT_IDS];
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_MERCHANT_SPECIFIC_UPDATE,
+                [
+                    'merchant_ids' => $merchantIds
+                ]);
+
+            unset($input[Constants::MERCHANT_IDS]);
+
+            foreach ($merchantIds as $merchantId)
+            {
+                $input[Entity::CHANNEL] = $channel;
+                $input[Entity::MERCHANT_ID] = $merchantId;
+
+                $response[] = $this->fetchAndUpdateGatewayBalanceWrapper($input);
+            }
+
+            return $response;
+        }
+
         $validator = new Validator();
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);

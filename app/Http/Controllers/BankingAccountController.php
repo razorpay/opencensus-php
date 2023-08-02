@@ -222,7 +222,9 @@ class BankingAccountController extends Controller
 
     public function processGatewayBalanceUpdate($channel)
     {
-        $response = $this->service()->processGatewayBalanceUpdate($channel);
+        $input = Request::all();
+
+        $response = $this->service()->processGatewayBalanceUpdate($channel, $input);
 
         return ApiResponse::json($response);
     }

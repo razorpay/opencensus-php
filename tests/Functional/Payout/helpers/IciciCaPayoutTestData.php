@@ -92,6 +92,19 @@ return [
         ],
     ],
 
+    'testIciciDispatchGatewayBalanceUpdateMerchantSpecific' => [
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/icici/balance',
+            'content' => [
+                'merchant_ids' => ['10000000000000']
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testPayoutToAmexCardWithSupportedIssuerSupportedMode' => [
         'request'  => [
             'method'  => 'POST',

@@ -1034,6 +1034,32 @@ class IciciCaPayoutTest extends TestCase
         return $response;
     }
 
+
+    public function testIciciDispatchGatewayBalanceUpdateMerchantSpecific()
+    {
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+
+        $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
     public function testDispatchGatewayBalanceUpdateJob()
     {
         Queue::fake();
