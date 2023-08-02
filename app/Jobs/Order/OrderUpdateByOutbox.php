@@ -71,9 +71,7 @@ class OrderUpdateByOutbox extends Job
                     'order_outbox__id'  => $this->orderOutboxId,
                 ]);
 
-            $this->trace->count(Metric::ORDER_OUTBOX_SYNC_UPDATE_FAILURE, [
-                OrderOutbox\Entity::ID        => $this->orderOutboxId,
-            ]);
+            $this->trace->count(Metric::ORDER_OUTBOX_SYNC_UPDATE_FAILURE);
         }
     }
 }
