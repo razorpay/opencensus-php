@@ -12,14 +12,14 @@ jobs:
         id: cancel
         with:
           all_but_latest: true
-          workflow_id: "UT_Anonymous_Test_Suite.yml"
+          workflow_id: "UT_NBplus_suite.yml"
           access_token: ${{ github.token }}
       - if: github.ref == 'refs/heads/master'
         name: Don't cancel old workflows
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
-  UT_Anonymous-1_Test_Suite:
+  UT_NBplus_suite-1:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -29,7 +29,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: UT_Anonymous-1_Test_Suite
+    name: UT_NBplus_suite-1
     steps:
       - name: checkout
         id: checkout
@@ -43,8 +43,8 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: UT_Anonymous-1_Test_Suite
-        run: ci-assets/UT_Anonymous-1_Test_Suite.sh
+      - name: UT_NBplus_suite-1
+        run: ci-assets/UT_NBplus_suite-1.sh
         env:
           DB_LIVE_HOST: mysql
           DB_TEST_HOST: mysql
@@ -69,7 +69,7 @@ jobs:
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          API_DOCS_FILE_NAME: UT_Anonymous-1_Test_Suite.json
+          API_DOCS_FILE_NAME: UT_NBplus_suite-1.json
           GIT_COMMIT_HASH: ${{ github.sha }}
           API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
       - name: Push UT Metrics
@@ -98,7 +98,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
         with:
-          args: s3 cp _docs/UT_Anonymous-1_Test_Suite.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_Anonymous-1_Test_Suite.json
+          args: s3 cp _docs/UT_NBplus_suite-1.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_NBplus_suite-1.json
       - name: Combine all temporary files and generate final file
         run: |
           php artisan AutoGenerateApiDocs:CombineApiDetailsFile
@@ -154,7 +154,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  UT_Anonymous-2_Test_Suite:
+  UT_NBplus_suite-2:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -164,7 +164,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: UT_Anonymous-2_Test_Suite
+    name: UT_NBplus_suite-2
     steps:
       - name: checkout
         id: checkout
@@ -178,8 +178,8 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: UT_Anonymous-2_Test_Suite
-        run: ci-assets/UT_Anonymous-2_Test_Suite.sh
+      - name: UT_NBplus_suite-2
+        run: ci-assets/UT_NBplus_suite-2.sh
         env:
           DB_LIVE_HOST: mysql
           DB_TEST_HOST: mysql
@@ -204,7 +204,7 @@ jobs:
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          API_DOCS_FILE_NAME: UT_Anonymous-2_Test_Suite.json
+          API_DOCS_FILE_NAME: UT_NBplus_suite-2.json
           GIT_COMMIT_HASH: ${{ github.sha }}
           API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
       - name: Push UT Metrics
@@ -233,7 +233,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
         with:
-          args: s3 cp _docs/UT_Anonymous-2_Test_Suite.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_Anonymous-2_Test_Suite.json
+          args: s3 cp _docs/UT_NBplus_suite-2.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_NBplus_suite-2.json
       - name: Combine all temporary files and generate final file
         run: |
           php artisan AutoGenerateApiDocs:CombineApiDetailsFile
@@ -289,7 +289,7 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-  UT_Anonymous-3_Test_Suite:
+  UT_NBplus_suite-3:
     runs-on: [api-public]
     needs: [cancel]
     container:
@@ -299,7 +299,7 @@ jobs:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
-    name: UT_Anonymous-3_Test_Suite
+    name: UT_NBplus_suite-3
     steps:
       - name: checkout
         id: checkout
@@ -313,8 +313,8 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: UT_Anonymous-3_Test_Suite
-        run: ci-assets/UT_Anonymous-3_Test_Suite.sh
+      - name: UT_NBplus_suite-3
+        run: ci-assets/UT_NBplus_suite-3.sh
         env:
           DB_LIVE_HOST: mysql
           DB_TEST_HOST: mysql
@@ -339,7 +339,7 @@ jobs:
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          API_DOCS_FILE_NAME: UT_Anonymous-3_Test_Suite.json
+          API_DOCS_FILE_NAME: UT_NBplus_suite-3.json
           GIT_COMMIT_HASH: ${{ github.sha }}
           API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
       - name: Push UT Metrics
@@ -368,7 +368,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
         with:
-          args: s3 cp _docs/UT_Anonymous-3_Test_Suite.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_Anonymous-3_Test_Suite.json
+          args: s3 cp _docs/UT_NBplus_suite-3.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/UT_NBplus_suite-3.json
       - name: Combine all temporary files and generate final file
         run: |
           php artisan AutoGenerateApiDocs:CombineApiDetailsFile

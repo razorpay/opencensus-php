@@ -447,29 +447,36 @@
             <directory>./tests/Functional/Gateway/Hdfc/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-1_Test_Suite">
-            <directory>./tests/Functional/Gateway/Billdesk/</directory>
             <directory>./tests/Functional/Gateway/Enach/</directory>
             <directory>./tests/Functional/Gateway/Esigner/</directory>
-            <directory>./tests/Functional/Gateway/Netbanking/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-2_Test_Suite">
             <directory>./tests/Functional/Gateway/File/</directory>
-            <directory>./tests/Functional/Gateway/Paytm/</directory>
-            <directory>./tests/Functional/Gateway/Reconciliation/</directory>
-            <directory>./tests/Functional/Gateway/Sharp/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-3_Test_Suite">
             <directory>./tests/Functional/Gateway/Upi/</directory>
-            <directory>./tests/Functional/Gateway/CardlessEmi</directory>
             <directory>./tests/Functional/Gateway/Mozart/</directory>
-            <directory>./tests/Functional/Gateway/PayLater</directory>
         </testsuite>
-        <testsuite name="UT_Anonymous-4_Test_Suite">
-            <directory>./tests/Functional/Gateway/Wallet/</directory>
-            <directory>./tests/Functional/Gateway/Ebs/</directory>
-        </testsuite>
-        <testsuite name="UT_Anonymous-5_Test_Suite">
+        <testsuite name="UT_NBplus_suite-1">
             <directory>./tests/Functional/Gateway/Mobikwik/</directory>
+            <directory>./tests/Functional/Gateway/Ebs/</directory>
+            <directory>./tests/Functional/Gateway/Wallet/</directory>
+            <directory>./tests/Functional/Gateway/PayLater</directory>
+            <directory>./tests/Functional/Gateway/CardlessEmi</directory>
+        </testsuite>
+        <testsuite name="UT_NBplus_suite-2">
+            <directory>./tests/Functional/Gateway/Sharp/</directory>
+            <directory>./tests/Functional/Gateway/Reconciliation/</directory>
+            <directory>./tests/Functional/Gateway/Paytm/</directory>
+        </testsuite>
+        <testsuite name="UT_NBplus_suite-3">
+            <directory>./tests/Functional/Gateway/File/</directory>
+            <exclude>./tests/Functional/Gateway/File/FirstDataGatewayFileTest.php</exclude>
+            <exclude>./tests/Functional/Gateway/File/UpiFailedRefundFileTest.php</exclude>
+            <exclude>./tests/Functional/Gateway/File/UpiMindgateFailedRefundFileTest.php</exclude>
+            <exclude>./tests/Functional/Gateway/File/IsgRefundFileTest.php</exclude>
+            <directory>./tests/Functional/Gateway/Netbanking/</directory>
+            <directory>./tests/Functional/Gateway/Billdesk/</directory>
         </testsuite>
         <testsuite name="UT_UPI_Suite_Test_Suite">
             <directory>./tests/Functional/PaymentsUpi</directory>
