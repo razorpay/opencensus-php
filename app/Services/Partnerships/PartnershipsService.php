@@ -411,20 +411,20 @@ class PartnershipsService extends Base\Service
      * Dispatch commission invoice event to partnership service
      *
      * @param CommissionInvoice\Entity $invoice
-     * @param string                                        $month
-     * @param string                                        $year
+     * @param int                                        $month
+     * @param int                                        $year
      * @param bool                                          $regenerateInvoice
      *
      * @return void
      */
-    public function createInvoiceShadowPhase(CommissionInvoice\Entity $invoice, string $month, string $year, bool $regenerateInvoice)
+    public function createInvoiceShadowPhase(CommissionInvoice\Entity $invoice, int $month, int $year, bool $regenerateInvoice)
     {
         try
         {
-             if (!$this->isPrtsInvoiceSyncEnabled($invoice->getMerchantId()))
-             {
-                 return;
-             }
+            if (!$this->isPrtsInvoiceSyncEnabled($invoice->getMerchantId()))
+            {
+                return;
+            }
             $invoicePayload = [
                 'partner_id'       => $invoice->getMerchantId(),
                 'month'            => $month,
@@ -432,21 +432,35 @@ class PartnershipsService extends Base\Service
                 'invoice_id'       => $invoice->getId(),
                 'force_regenerate' => $regenerateInvoice,
             ];
-
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($invoicePayload) {
-                // Job will be dispatched only after the transaction commits.
-                $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING,
-                                   [
-                                       'mode' => $this->mode,
-                                       'id'   => $invoicePayload['invoice_id'],
-                                   ]
-                );
-                $messageId = $this->app->partnerships->pushRawJob($invoicePayload, 'prts_common');
-                $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHED, [
-                    'id'        => $invoicePayload['invoice_id'],
-                    'messageId' => $messageId
-                ]);
-                $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH_SUCCESS);
+            $jobPayload = [
+                'payload'     => json_encode($invoicePayload),
+                'event_name'  => 'GENERATE_INVOICE',
+            ];
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+                try
+                {
+                    // Job will be dispatched only after the transaction commits.
+                    $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING,
+                                       [
+                                           'mode'     => $this->mode,
+                                           'payload'  => $jobPayload,
+                                       ]
+                    );
+                    $messageId = $this->pushRawJob($jobPayload, 'prts_common');
+                    $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHED, [
+                        'payload'        => $jobPayload,
+                        'messageId' => $messageId
+                    ]);
+                    $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH,['success'=> true]);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->error(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING_ERROR, [
+                        'error'      => $ex->getMessage(),
+                        'job_payload' => $jobPayload,
+                    ]);
+                    $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH,['success'=> false]);
+                }
             }));
         }
         catch (\Exception $ex)
@@ -455,6 +469,7 @@ class PartnershipsService extends Base\Service
                'error'      => $ex->getMessage(),
                'invoice_id' => $invoice->getId(),
             ]);
+            $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH,['success'=> false]);
         }
     }
 

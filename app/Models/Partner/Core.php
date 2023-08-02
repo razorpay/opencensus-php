@@ -1634,6 +1634,11 @@ class Core extends Detail\Core
                 $relations[] = Str::camel($entity);
             }
         }
+        $this->trace->info(TraceCode::PRTS_MERCHANT_ENTITIES_FETCH, [
+            'merchantIds'=> $merchantIds,
+            'entities'   => $requiredEntities,
+            'relations'  => $relations
+        ]);
         $merchants =  $this->repo->merchant->findManyWithRelations($merchantIds, $relations);
         foreach ($merchants as $merchant) {
             if (empty($merchant) == false and $merchant->isPartner())

@@ -93,17 +93,17 @@ class Constants
         TaxName::CGST  => [
             'tax_id'   => GstTaxIdMap::CGST_90000,
             'name'     => 'CGST 9%',
-            'rate'     => '90000',
+            'rate'     => 90000,
         ],
         TaxName::SGST  => [
             'tax_id'   => GstTaxIdMap::SGST_90000,
             'name'     => 'SGST 9%',
-            'rate'     => '90000',
+            'rate'     => 90000,
         ],
         TaxName::IGST  => [
             'tax_id'   => GstTaxIdMap::IGST_180000,
             'name'     => 'IGST 18%',
-            'rate'     => '180000',
+            'rate'     => 180000,
         ]
     ];
 }
