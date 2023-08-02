@@ -6,11 +6,12 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 
 class Repository extends Base\Repository
 {
@@ -153,7 +154,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($input), $params, $query);
 
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
@@ -217,7 +218,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($input), $params, $query);
 
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
@@ -422,7 +423,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($params),  $params, $query);
 
         return $query->whereNull(Entity::END)
             ->get();
@@ -432,7 +433,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+        $this->buildQuery(self::getKeyOperatorMap($params),  $params, $query);
 
         return $query->whereNotNull(Entity::END)
             ->where(Entity::BEGIN, '>=', $params[Entity::BEGIN])
@@ -465,6 +466,25 @@ class Repository extends Base\Repository
         }
 
         return false;
+    }
+
+    /**
+     * KEY_OPERATOR_MAP is an array of keys (query params used in duplication check) and the corresponding
+     * operator to be used in the where clause. For example, 'gateway' => '=' means to apply
+     * $query->where('gateway', '=', {gateway_value_in_input}. Check buildQuery method for more clarity.
+     * For turbo downtimes, the main identifier is `card_type` apart from `method`. Since card_type is not a part
+     * of the keys used for dedupe check by default, adding the same in case of turbo downtimes.
+     */
+    private static function getKeyOperatorMap(array $input)
+    {
+        $keyOperatorMap = self::KEY_OPERATOR_MAP;
+
+        if (isset($input[Entity::CARD_TYPE]) and $input[Entity::CARD_TYPE] === MethodsEntity::IN_APP)
+        {
+            $keyOperatorMap[Entity::CARD_TYPE] = '=';
+        }
+
+        return $keyOperatorMap;
     }
 
 }

@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Exception\LogicException;
+use RZP\Models\Payment\Downtime\Entity;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use \WpOrg\Requests\Response;
 
@@ -14,7 +16,9 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DowntimeTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\Downtime\DowntimeNotification as DowntimeNotification;
 use Razorpay\IFSC\Bank;
 
@@ -24,6 +28,7 @@ class PaymentDowntimeTest extends TestCase
     use DowntimeTrait;
     use TestsWebhookEvents;
     use WebhookTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -584,6 +589,92 @@ class PaymentDowntimeTest extends TestCase
         $paymentDowntime = $this->fetchOngoingDowntimes();
         $this->assertEquals(4, sizeof($paymentDowntime));
 
+    }
+
+    public function testFetchOngoingDowntimesIfTurboDowntimeExists()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $begin = Carbon::now(Timezone::IST)->subMinutes(15)->timestamp;
+
+        $downtimeCreationRequest = $this->getDowntimeCreationRequest($begin, 'PLTF');
+        $this->ba->downtimeServiceAuth();
+        $this->makeRequestAndGetContent($downtimeCreationRequest);
+
+        $paymentDowntimes = $this->fetchOngoingDowntime();
+
+        /* Since merchant does not have in_app payment method enabled as of now, no downtime will be returned */
+        $this->assertCount(0, $paymentDowntimes['items']);
+
+        /* We now create a upi downtime based on vpa handle = oksbi */
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
+
+        $paymentDowntimes = $this->fetchOngoingDowntime();
+
+        /* This downtime should be returned to the merchant as there is no logic to filter out the same */
+        $this->assertCount(1, $paymentDowntimes['items']);
+
+        $expectedPaymentDowntime = [
+            'method'     => 'upi',
+            'instrument' => [
+                'vpa_handle' => 'oksbi'
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPaymentDowntime, $paymentDowntimes['items'][0]);
+
+        /* We now enable in_app payment method on the merchant */
+        $this->fixtures->edit('methods', 10000000000000, [
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1
+                ]
+            ]
+        ]);
+
+        $paymentDowntimes = $this->fetchOngoingDowntime();
+
+        $expectedPaymentDowntime = [
+            [
+                'method'     => 'upi',
+                'instrument' => [
+                    'flow' => 'in_app'
+                ],
+            ],
+            [
+                'method'     => 'upi',
+                'instrument' => [
+                    'vpa_handle' => 'oksbi'
+                ]
+            ]
+        ];
+        /*
+         * Now since in_app payment method is enabled on merchant,
+         * both regular and turbo downtimes will be returned
+         */
+        $this->assertCount(2, $paymentDowntimes['items']);
+        $this->assertArraySelectiveEquals($expectedPaymentDowntime, $paymentDowntimes['items']);
+
+        // We now disable in_app payment method on the merchant
+        $this->fixtures->edit('methods', 10000000000000,
+                              [
+                                  'addon_methods' => [
+                                  ]
+                              ]);
+
+        // However, if we fetch downtime by id, turbo downtime should be returned to non-turbo merchants as well
+        $request = [
+            'url'     => '/payments/downtimes/' . $paymentDowntimes['items'][0]['id'],
+            'method'  => 'GET',
+            'content' => [],
+        ];
+        $this->ba->privateAuth();
+
+        $turboDowntime = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($turboDowntime);
+        $this->assertEquals($paymentDowntimes['items'][0]['id'], $turboDowntime['id']);
+        $this->assertArraySelectiveEquals(['instrument' => ['flow'=> 'in_app']], $turboDowntime);
     }
 
     public function testFetchOngoingPayments_ResolveAndCheckCount()
@@ -2081,6 +2172,400 @@ class PaymentDowntimeTest extends TestCase
         $this->assertNull($paymentDowntime['merchant_id']);
     }
 
+    public function testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService()
+    {
+        Mail::fake();
+
+        $this->enableGatewayDowntimeService();
+
+        $startTime = strval(Carbon::now()->subMinutes(2)->timestamp);
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'flow'        => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLTF',
+                'eventTime'   => $startTime,
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals(null, $response['merchant_id']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('in_app', $paymentDowntime['type']);
+        $this->assertEquals(null, $response['merchant_id']);
+        $this->assertEquals('started', $paymentDowntime['status']);
+        $this->assertEquals($startTime, $paymentDowntime['begin']);
+        $this->assertNull($paymentDowntime['end']);
+
+        // Assert that emails were not sent from API
+        Mail::assertNotSent(DowntimeNotification::class);
+
+        return $paymentDowntime;
+    }
+
+    public function testUpiTurboPaymentDowntimeCreatedDuringExistingUpiDowntimes()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $startTime = strval(Carbon::now()->subMinutes(5)->timestamp);
+
+        //First create a upi downtime where issuer = ybl
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLTF',
+                'eventTime'   => $startTime,
+                'ruleId'      => 'rule1',
+                'issuer'      => 'ybl',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $turboPaymentDowntime = $this->testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService();
+
+        $this->assertNotNull($turboPaymentDowntime);
+    }
+
+    public function testUpiTurboDowntimeResolvedDuringExistingUpiDowntimes()
+    {
+        $this->testUpiTurboPaymentDowntimeCreatedDuringExistingUpiDowntimes();
+
+        $startTime = strval(Carbon::now()->subMinutes(2)->timestamp);
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'flow'        => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'RESOLVE',
+                'type'        => 'PLTF',
+                'eventTime'   => $startTime,
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        //Assert that gateway downtime has ended, i.e., end is not null
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertNotNull($response['end']);
+
+        $existingUpiDowntimes = $this->getDbEntities('payment.downtime')
+                                     ->where('method', '=', 'upi')
+                                     ->where('end', '=', null);
+
+        // Assert that ybl downtime is still ongoing
+        $this->assertCount(1, $existingUpiDowntimes);
+        $this->assertEquals('ybl', $existingUpiDowntimes->first()->getVpaHandle());
+    }
+
+    public function testDuplicateUpiTurboPaymentDowntimeForPlatformByDowntimeService()
+    {
+        $this->testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService();
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'psp'         => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLTF',
+                'eventTime'   => strval(Carbon::now()->subMinutes(1)->timestamp),
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $this->makeRequestAndCatchException(function() use($downtimeCreateRequest)
+        {
+            $this->makeRequestAndGetContent($downtimeCreateRequest);
+        },
+        LogicException::class,
+        "Duplicate Ongoing Downtime Found by Downtime Service");
+    }
+
+    public function testCreateMerchantLevelTurboDowntimeDuringExistingPlatformLevelUpiDowntime()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $startTime = strval(Carbon::now()->subMinutes(5)->timestamp);
+
+        //First create a platform level upi downtime where issuer = ybl
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLTF',
+                'eventTime'   => $startTime,
+                'ruleId'      => 'rule1',
+                'issuer'      => 'ybl',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+        $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        //Now try to create a merchant level turbo downtime
+        $startTime = strval(Carbon::now()->subMinutes(3)->timestamp);
+        $request = $this->getDowntimeCreationRequest($startTime, 'MERCHANT', 'CREATE', 'HIGH', 'merchant3');
+
+        $this->ba->downtimeServiceAuth();
+        $response = $this->makeRequestAndGetContent($request);
+
+        //We assert that merchant level downtime for upi turbo indeed got created
+        $this->assertEquals('merchant3', $response['merchant_id']);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals($startTime, $response['begin']);
+
+        /** @var Entity $turboPaymentDowntime */
+        $turboPaymentDowntime = $this->getDbLastEntity('payment.downtime');
+
+        $this->assertEquals('started', $turboPaymentDowntime->getStatusByTime());
+        $this->assertEquals('merchant3', $turboPaymentDowntime->getMerchantId());
+        $this->assertEquals('upi', $turboPaymentDowntime->getMethod());
+        $this->assertEquals('in_app', $turboPaymentDowntime->getType());
+        $this->assertEquals($startTime, $turboPaymentDowntime->getBegin());
+    }
+
+    public function testUpiTurboPaymentDowntimeResolvedForPlatformByDowntimeService()
+    {
+        $paymentDowntime = $this->testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService();
+
+        $endTime = strval(Carbon::now()->subMinutes(1)->timestamp);
+
+        $beginTime = $paymentDowntime['begin'];
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'flow'        => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'RESOLVE',
+                'type'        => 'PLTF',
+                'eventTime'   => $endTime,
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals(null, $response['merchant_id']);
+        $this->assertEquals($beginTime, $response['begin']);
+        $this->assertNotNull($response['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('in_app', $paymentDowntime['type']);
+        $this->assertEquals(null, $response['merchant_id']);
+        $this->assertEquals('resolved', $paymentDowntime['status']);
+        $this->assertEquals($paymentDowntime['begin'], $beginTime);
+        $this->assertNotNull($paymentDowntime['end']);
+    }
+
+    public function testUpiTurboPaymentDowntimeUpdatedForPlatformByDowntimeService()
+    {
+        $paymentDowntime = $this->testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService();
+
+        $eventUpdateTime = strval(Carbon::now()->subMinutes(1)->timestamp);
+
+        $beginTime = $paymentDowntime['begin'];
+
+        $downtimeCreateRequest = $this->getDowntimeCreationRequest($eventUpdateTime, 'PLTF', 'CREATE','MEDIUM');
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals(null, $response['merchant_id']);
+        $this->assertEquals($beginTime, $response['begin']);
+        $this->assertNull($response['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('in_app', $paymentDowntime['type']);
+        $this->assertEquals(null, $response['merchant_id']);
+        $this->assertEquals('started', $paymentDowntime['status']);
+        $this->assertEquals($paymentDowntime['begin'], $beginTime);
+        $this->assertNull($paymentDowntime['end']);
+        $this->assertEquals('medium', $paymentDowntime['severity']);
+    }
+
+    public function testUpiTurboPaymentDowntimeCreatedForMerchantByDowntimeService()
+    {
+        $this->enableGatewayDowntimeService();
+
+        Carbon::setTestNow();
+
+        $startTime = Carbon::now(Timezone::IST)->subMinutes(10)->getTimestamp();
+
+        $downtimeCreateRequest = $this->getDowntimeCreationRequest($startTime, 'MERCHANT', 'CREATE', 'HIGH','merchant1');
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals('merchant1', $response['merchant_id']);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals($startTime, $response['begin']);
+
+        /** @var Entity $turboPaymentDowntime */
+        $turboPaymentDowntime = $this->getDbLastEntity('payment.downtime');
+
+        $this->assertEquals('started', $turboPaymentDowntime->getStatusByTime());
+        $this->assertEquals('merchant1', $turboPaymentDowntime->getMerchantId());
+        $this->assertEquals('upi', $turboPaymentDowntime->getMethod());
+        $this->assertEquals('in_app', $turboPaymentDowntime->getType());
+        $this->assertEquals($startTime, $turboPaymentDowntime->getBegin());
+
+        //Create another merchant level downtime
+        $beginTime2 = Carbon::now(Timezone::IST)->subMinutes(5)->timestamp;
+        $downtimeCreateRequest['content']['merchantId'] = 'merchant2';
+        $downtimeCreateRequest['content']['eventTime'] = $beginTime2;
+
+        $response2 = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals('merchant2', $response2['merchant_id']);
+        $this->assertEquals('upi', $response2['method']);
+        $this->assertEquals('in_app', $response2['card_type']);
+        $this->assertEquals($beginTime2, $response2['begin']);
+
+        $turboPaymentDowntime2 = $this->getDbLastEntity('payment.downtime');
+        $this->assertEquals('started', $turboPaymentDowntime2->getStatusByTime());
+        $this->assertEquals('merchant2', $turboPaymentDowntime2->getMerchantId());
+        $this->assertEquals('upi', $turboPaymentDowntime2->getMethod());
+        $this->assertEquals('in_app', $turboPaymentDowntime2->getType());
+        $this->assertEquals($beginTime2, $turboPaymentDowntime2->getBegin());
+    }
+
+    public function testTurboPaymentDowntimeCreatedAndResolvedForMerchantAndPlatformByDowntimeManagerService()
+    {
+        // Create 2 merchant level downtimes
+        $this->testUpiTurboPaymentDowntimeCreatedForMerchantByDowntimeService();
+
+        //Create one platform level downtime
+        $this->testUpiTurboPaymentDowntimeCreatedForPlatformByDowntimeService();
+
+        //Now we resolve the platform level downtime
+        $eventTime = Carbon::now(Timezone::IST)->timestamp;
+        $request = $this->getDowntimeCreationRequest($eventTime, 'PLTF', 'RESOLVE');
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('gateway_downtime', $response['entity']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertNotNull($response['end']);
+
+        // Fetch platform and merchant level payment downtimes from DB
+        $platformPaymentDowntime = $this->getDbEntities('payment.downtime')->where('merchant_id', '=', null);
+        $merchantPaymentDowntimes = $this->getDbEntities('payment.downtime')->where('merchant_id', '!=', null);
+
+        //Assert that platform downtime has ended
+        $this->assertCount(1, $platformPaymentDowntime);
+        $this->assertNotNull($platformPaymentDowntime->first()->getEnd());
+
+        //Assert that both the merchant downtimes are still active
+        $resolvedMerchantDowntimes = $merchantPaymentDowntimes->where('status', '=', 'resolved');
+        $this->assertCount(0, $resolvedMerchantDowntimes);
+        $expectedMerchantDowntimes = [
+            ['merchant_id' => 'merchant1', 'status' => 'started', 'end' => null],
+            ['merchant_id' => 'merchant2', 'status' => 'started', 'end' => null]
+        ];
+        $this->assertArraySelectiveEquals($expectedMerchantDowntimes, $merchantPaymentDowntimes->toArray());
+
+        //Now we resolve the merchant downtime where mechantId = 2
+        $request = $this->getDowntimeCreationRequest($eventTime, 'MERCHANT', 'RESOLVE', 'HIGH', 'merchant2');
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['end']);
+        $this->assertEquals('merchant2', $response['merchant_id']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals('upi', $response['method']);
+
+        //Assert that merchant downtime has ended where merchant_id = merchant2
+        $merchantPaymentDowntimes = $this->getDbEntities('payment.downtime')->where('merchant_id', '!=', null);
+        $expectedMerchantDowntimes = [
+            ['merchant_id' => 'merchant1', 'status' => 'started', 'end' => null],
+            ['merchant_id' => 'merchant2', 'status' => 'resolved']
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMerchantDowntimes, $merchantPaymentDowntimes->toArray());
+
+        //Now we resolve the merchant level downtime where merchant_id = merchant1
+        $request = $this->getDowntimeCreationRequest($eventTime, 'MERCHANT', 'RESOLVE', 'HIGH', 'merchant1');
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['end']);
+        $this->assertEquals('merchant1', $response['merchant_id']);
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals('upi', $response['method']);
+
+        $merchantPaymentDowntimes = $this->getDbEntities('payment.downtime')->where('merchant_id', '!=', null);
+
+        // Assert that there are no active merchant level downtime
+        $ongoingMerchantPaymentDowntimes = $merchantPaymentDowntimes->where('status', '=', 'started');
+        $this->assertCount(0, $ongoingMerchantPaymentDowntimes);
+
+        // Assert that all merchant level downtimes are resolved
+        $expectedMerchantDowntimes = [
+            ['merchant_id' => 'merchant1', 'status' => 'resolved'],
+            ['merchant_id' => 'merchant2', 'status' => 'resolved']
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMerchantDowntimes, $merchantPaymentDowntimes->toArray());
+    }
+
     public function testCreatePaymentDowntimeMerchantByDowntimeService()
     {
         $this->enableGatewayDowntimeService();
@@ -2522,5 +3007,24 @@ class PaymentDowntimeTest extends TestCase
         ];
         $this->ba->adminAuth();
         $this->makeRequestAndGetContent($resolveDowntimeRequest);
+    }
+
+    protected function getDowntimeCreationRequest($eventTime, $type, $action = 'CREATE', $severity = 'HIGH', $merchantId = null)
+    {
+        return [
+            'content' => [
+                'severity'    => $severity,
+                'method'      => 'upi',
+                'flow'        => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => $action,
+                'type'        => $type,
+                'merchantId'  => $merchantId,
+                'eventTime'   => $eventTime,
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
     }
 }

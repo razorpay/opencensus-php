@@ -67,6 +67,8 @@ class Core extends Base\Core
                     $downtime->toArrayPublic());
             }
 
+            $this->trace->info(TraceCode::CONFLICTING_GATEWAY_DOWNTIME_FOUND, ['downtime' => $downtime]);
+
             $downtime->edit($input, 'edit_duplicate');
         }
         else

@@ -38,6 +38,8 @@ class Constants
 
     const INTENT = 'intent';
 
+    const IN_APP = 'in_app';
+
     // Looker dashboard constants
     const LOOKER_NOTIFICATIONS_RAZORX_KEY = 'LOOKER_NOTIFICATIONS_RAZORX_KEY';
 
@@ -98,6 +100,7 @@ class Constants
         Constants::COLLECT           => Constants::UPI_COLLECT_FILTER,
         Constants::INTENT            => Constants::UPI_INTENT_FILTER,
         Constants::UPI              => Constants::UPI_COLLECT_FILTER . "," . Constants::UPI_INTENT_FILTER,
+        Constants::IN_APP           => "",
     ];
 
     protected static $allJobTypes = [

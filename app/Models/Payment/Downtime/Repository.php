@@ -4,10 +4,10 @@ namespace RZP\Models\Payment\Downtime;
 
 use Carbon\Carbon;
 
+use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Downtime\Constants;
-use RZP\Models\Payment\Method;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -35,6 +35,8 @@ class Repository extends Base\Repository
         $query->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
 
         $query->whereNull(Entity::MERCHANT_ID);
+
+        $this->excludeTurboDowntimesIfApplicable($query);
 
         return $query->get();
     }
@@ -69,6 +71,8 @@ class Repository extends Base\Repository
             $query->where(Entity::MERCHANT_ID, '=', $mid)
                 ->orWhereNull(Entity::MERCHANT_ID);
         });
+
+        $this->excludeTurboDowntimesIfApplicable($query);
 
         return $query->get();
     }
@@ -172,7 +176,14 @@ class Repository extends Base\Repository
     {
         $method = $input[Entity::METHOD];
 
-        $attributes = Constants::getMethodQueryInstrument($method);
+        if ($input[Entity::TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
+        {
+            $attributes = Constants::getTurboQueryInstrument();
+        }
+        else
+        {
+            $attributes = Constants::getMethodQueryInstrument($method);
+        }
 
         if (count($attributes) === 1)
         {
@@ -237,5 +248,66 @@ class Repository extends Base\Repository
     private function dateToEpoch($date)
     {
         return strtotime($date.' Asia/Kolkata');
+    }
+
+    /**
+     * @param $query
+     * This function modifies the query to exclude downtimes where psp = in_app (turbo downtimes) if
+     *  1. The current route is payments_downtime with method = GET
+     *  2. The merchant making the request does not have in_app payment method enabled
+     *
+     * @return void
+     */
+    private function excludeTurboDowntimesIfApplicable(\RZP\Base\BuilderEx &$query)
+    {
+        if ($this->merchant !== null)
+        {
+            $routeName   = null;
+            $routeMethod = null;
+
+            try
+            {
+                /*
+                 * If the code is running inside workers, it must be due to some flow apart from fetch multiple s2s call
+                 * In such cases, we will simply return as we do not want to filter out turbo downtimes
+                 */
+                if ($this->app->runningInQueue() === true)
+                {
+                    return;
+                }
+
+                $routeName   = $this->route->getCurrentRouteName();
+                $routeMethod = $this->route->getCurrentRouteMethod();
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::FAILED_TO_FETCH_ROUTE_NAME_OR_METHOD
+                );
+            }
+
+            /*
+             * This will be the case when the code is executed via SQS workers
+             */
+            if (($routeName === null) or ($routeMethod === null))
+            {
+                return;
+            }
+
+            $isInAppPaymentMethodEnabled = $this->repo->methods->getMethodsForMerchant($this->merchant)->isInAppEnabled();
+
+            if (($routeName === Entity::PAYMENTS_DOWNTIME) and
+                ($routeMethod === Requests::GET) and
+                ($isInAppPaymentMethodEnabled !== true))
+            {
+                $query->where(function ($query)
+                {
+                    $query->whereNull(Entity::TYPE)
+                          ->orWhere(Entity::TYPE, '!=', \RZP\Models\Merchant\Methods\Entity::IN_APP);
+                });
+            }
+        }
     }
 }

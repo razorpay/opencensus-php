@@ -3684,6 +3684,78 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(true, $prefData['methods']['card']);
     }
 
+    public function testTurboPaymentDowntimeInCheckoutPreferences()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent([
+                                            'method'  => 'PUT',
+                                            'url'     => '/config/keys',
+                                            'content' => [
+                                                'config:enable_downtime_service' => '1',
+                                                'config:enable_downtime_service_card' => '1',
+                                                'config:enable_downtime_service_upi' => '1',
+                                                'config:enable_payment_downtimes' => '1',
+                                            ],
+                                        ]);
+
+        $startTime = strval(Carbon::now()->subMinutes(2)->timestamp);
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'upi',
+                'flow'        => 'in_app',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLTF',
+                'eventTime'   => $startTime,
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->downtimeServiceAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $paymentDowntime = $this->getDbLastEntity('payment.downtime');
+        $this->assertEquals('upi', $paymentDowntime->getMethod());
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('payment_downtime', $response);
+
+        // We expect turbo payment downtime in the checkout response. Moreover, the instrument should have
+        // psp as the key and not upi_mode as the latter is only true for merchant s2s call
+        $expectedPaymentDowntimes = [
+            'count' => 1,
+            'items' => [
+                [
+                    'method'     => 'upi',
+                    'status'     => 'started',
+                    'end'        => null,
+                    'instrument' => [
+                        'flow' => 'in_app'
+                    ],
+                ]
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPaymentDowntimes, $response['payment_downtime']);
+    }
+
     protected function mockCheckoutBulkExperiment($experimentIdsWithExpectedResult)
     {
         $output = [];
