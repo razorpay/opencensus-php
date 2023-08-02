@@ -50,6 +50,7 @@ export const SECTION_TAB_MAPPING = {
   gross_settlements: ['payment', 'reversal', 'adjustment'],
   deductions: [
     'ondemand settlement',
+    'reversal',
     'adjustment',
     'transfer',
     'refund',

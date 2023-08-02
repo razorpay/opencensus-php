@@ -2,10 +2,10 @@ import { Badge, Text } from '@razorpay/blade/components';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { titleCase } from 'common/utils/rzp-utils';
 import { removeUnreconciledEntity, sanitizeTabName } from 'merchant/views/Settlements/v2/util';
+import { SECTION_TAB_MAPPING } from 'merchant/views/Settlements/v3/components/EntityList/constants';
 import React from 'react';
 import { connect } from 'react-redux';
 import { StyledDivTabText, Tab, TabsContainer } from './styled';
-import { SECTION_TAB_MAPPING } from 'merchant/views/Settlements/v3/components/EntityList/constants';
 
 const RenderTabs = ({
   tabsData,
@@ -63,7 +63,7 @@ type TabsData = Record<string, number>;
 
 const Tabs = (props): JSX.Element => {
   let { items } = props.breakupDetails;
-  const { activeTab, sectionType, settlement } = props;
+  const { activeTab, sectionType, settlement, entityType } = props;
 
   const getTabData = () => {
     items = removeUnreconciledEntity(items);
@@ -72,7 +72,7 @@ const Tabs = (props): JSX.Element => {
 
       const tabName = sanitizeTabName(tab.component);
       if (sectionType) {
-        if (!SECTION_TAB_MAPPING[sectionType].includes(tabName)) {
+        if (!SECTION_TAB_MAPPING[sectionType].includes(tabName) || tab?.type !== entityType) {
           return acc;
         }
       }
