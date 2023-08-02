@@ -121,6 +121,8 @@ class Constants
     const EnableS2S = 'enable_s2s';
     const EnableP2P = 'enable_p2p';
     const EnableOTM = 'enable_otm';
+    const OneCCEnablePluginDiscount = 'one_cc_enable_plugin_discount';
+    const OneCCShopifyDraftOrder    = 'one_cc_shopify_draft_order';
     const AdminPasswordResetEnabled = 'admin_password_reset_enabled';
     const ESScheduledEnabled = 'scheduled_enabled';
     const ESScheduledEnabledWithLimitations = 'scheduled_enabled_with_limitations';
@@ -424,6 +426,8 @@ class Constants
         self::WalletAutoDebitEnabled => 'rzp/pg/merchant/wallet/Features',
         self::EnableSettlementByCurrency => 'rzp/pg/merchant/settlements/SettlementModels',
         self::DisablePreMagicOrderIngestion => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::OneCCEnablePluginDiscount => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::OneCCShopifyDraftOrder => 'rzp/pg/merchant/checkout/magic/Configuration',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -641,6 +645,8 @@ class Constants
         APIFeaturesConstants::WALLET_AUTO_DEBIT                             => self::WalletAutoDebitEnabled,
         APIFeaturesConstants::SETTLEMENT_BY_CURRENCY                        => self::EnableSettlementByCurrency,
         APIFeaturesConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION      => self::DisablePreMagicOrderIngestion,
+        APIFeaturesConstants::ONE_CC_ENABLE_PLUGIN_DISCOUNT                 => self::OneCCEnablePluginDiscount,
+        APIFeaturesConstants::ONE_CC_SHOPIFY_DRAFT_ORDER                    => self::OneCCShopifyDraftOrder,
     ];
 
     /**

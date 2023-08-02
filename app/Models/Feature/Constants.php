@@ -1885,6 +1885,10 @@ class Constants
 
     const SETTLEMENT_BY_CURRENCY = 'settlement_by_currency';
 
+    const ONE_CC_ENABLE_PLUGIN_DISCOUNT = 'one_cc_plugin_discount';
+
+    const ONE_CC_SHOPIFY_DRAFT_ORDER = 'one_cc_draft_order';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1942,6 +1946,7 @@ class Constants
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
         self::PERSONALISATION_V3_DISABLED,
         self::RAZORPAY_WALLET,
+        self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
     ];
 
     const ONE_CC_FEATURES = [
@@ -1964,6 +1969,8 @@ class Constants
         self::ONE_CC_SHOPIFY_ACC_CREATE,
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING,
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION,
+        self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
+        self::ONE_CC_SHOPIFY_DRAFT_ORDER,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2601,6 +2608,8 @@ class Constants
         DcsConstants::PassCustomUdfFss         => true,
         self::SETTLEMENT_BY_CURRENCY          => true,
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION =>true,
+        self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
+        self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
     ];
 
     // Entity type constants

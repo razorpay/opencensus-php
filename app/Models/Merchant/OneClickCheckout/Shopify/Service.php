@@ -25,6 +25,7 @@ use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluato
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order\OrderMeta;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerAppClient;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
@@ -373,6 +374,8 @@ class Service extends Base\Service
         // Construct map from sku to product_type to support new product category based shipping config
         $productTypeMap = $this->getProductTypesFromCart($cart);
 
+        $is3rdPartyPluginDiscountEnabled = $this->is3rdPartyPluginDiscountEnabled($cart);
+
         if ($isAutoDiscountApplied)
         {
             $cartPrice = (int)(floatval($cart['total_price']));
@@ -384,6 +387,18 @@ class Service extends Base\Service
             $lineItemsData = $scriptData['lineItemsData'];
 
             $orderNotes = $scriptData['orderNotes'];
+        }
+        else if ($is3rdPartyPluginDiscountEnabled)
+        {
+            $cartLineItemsData = $this->fetch3rdPartyPluginCartLineItems($cartId, $cart, $checkout, $productTypeMap);
+
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
+
+            $amount = $cartLineItemsData['amount'];
+
+            $orderNotes = $cartLineItemsData['order_notes'];
         }
         else
         {
@@ -438,6 +453,14 @@ class Service extends Base\Service
     public function isScriptDiscountApplied(array $cart)
     {
         $isScriptApplied = false;
+
+        $is3rdPartyPluginDiscountEnabled = $this->is3rdPartyPluginDiscountEnabled($cart);
+
+        if ($is3rdPartyPluginDiscountEnabled)
+        {
+            return false;
+        }
+
 
         foreach ($cart['items'] as $key => $item)
         {
@@ -823,7 +846,9 @@ class Service extends Base\Service
 
         $start = millitime();
 
-        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters);
+        $orderMeta = $this->getOrderMeta($order);
+
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
@@ -1753,4 +1778,185 @@ class Service extends Base\Service
         return 'shopify_1cc_apply_coupon_error';
     }
 
+
+    protected function getOrderMeta($order)
+    {
+        foreach ($order->orderMetas as $orderMeta)
+        {
+            if ($orderMeta->getType() === OrderMetaType::ONE_CLICK_CHECKOUT)
+            {
+                return $orderMeta->getValue();
+            }
+        }
+        return [];
+    }
+
+    // Add a condition to check data is received from monk/similar 3rd party plugin or not.
+    // If received from them, cart will be considered as the source of truth
+    protected function is3rdPartyPluginDiscountEnabled(array $cart): bool
+    {
+        $cartSourceArray = ['MonkCommerce'];
+        return (isset($cart['cart_source']) === true) &&
+               (in_array($cart['cart_source'], $cartSourceArray, true) === true);
+    }
+
+    /*
+     * fetch3rdPartyPluginCartLineItems is used to fetch cart data when 3rd party plugin discounts are being used
+     * For 3rd party plugin discounts cart object can be considered as source of truth and be used to fetch the required data
+    */
+    protected function fetch3rdPartyPluginCartLineItems(string $cartId, array $cart, array $checkout, array $productTypeMap)
+    {
+        $amount = $cart['total_price'];
+
+        //Cart line items for the modal
+        $cartLineItems = $cart['items'];
+        $isCartDiscountApplied = false;
+        $cartLineItemsData = array();
+        $checkoutLineItems = $checkout['lineItems']['edges'];
+
+        foreach ($cartLineItems as $key => $item)
+        {
+            $discountTitle = '';
+            $totalDiscount = floatval($item['line_level_total_discount'])/100.0 ?? 0.0;
+            if (empty($item['line_level_discount_allocations']) === false)
+            {
+                foreach ($item['discount_application'] as $itemDiscount)
+                {
+                    if (empty($discountTitle) === true)
+                    {
+                        $discountTitle = $itemDiscount['title'];
+                    }
+                    else
+                    {
+                        $discountTitle .= ' + ' . $itemDiscount['title'];
+                    }
+                }
+            }
+            // notes will be storing the total discount applied on the line item
+            // discount stored is in rupees
+            // we store the line item level discount in line item notes, since currently we don't have a way
+            // to know what discount has been applied per line item
+            // this is further used while placing order through draft order flow
+            $notes = [];
+            if ($totalDiscount > 0)
+            {
+                $discountTitle = $discountTitle === '' ? 'SPECIAL OFFER' : $discountTitle;
+                $notes['promotions'] = ['type' => 'line_item_discount', 'value' => $totalDiscount, 'code' => $discountTitle, 'description' => $discountTitle];
+            }
+            if (empty($notes) === true){
+                $notes = null;
+            }
+            $lineItem = [
+                'variant_id'        => mb_substr(strval($item['variant_id']), 0, 128, 'UTF-8'),
+                'product_id'        => mb_substr(strval($item['product_id']), 0, 128, 'UTF-8'),
+                'tax_amount'        => 0,
+                'sku'               => mb_substr(strval($item['sku']), 0, 128, 'UTF-8'),
+                'price'             => $item['original_price'],
+                'offer_price'       => $item['final_price'],
+                'quantity'          => (int)floatval($item['quantity']),
+                'name'              => '',
+                'variant_name'      => '',
+                'description'       => mb_substr($item['product_description'], 0, 256, 'UTF-8'),
+                'weight'            => (int)floatval($item['grams'] / 1000),
+                'type'              => mb_substr($productTypeMap[$item['sku']] ?? '', 0, 128, 'UTF-8'),
+                'notes'             => $notes,
+            ];
+            if (!empty($item['image']))
+            {
+                $lineItem['image_url'] = $item['image'];
+            }
+
+            // cart object doesn't contain the name and variant name individually
+            // the name present in cart object is collated thus making it harder to distinguish between the name and variant name
+            // Thus to fetch the name and variant name we are looping through checkout object using variant id
+            // variant name is used in analytics dashboard as well
+            foreach ($checkoutLineItems as $checkoutLineItem)
+            {
+                $node = $checkoutLineItem['node'];
+                $variantIdFromCheckout = $node['variant']['id'];
+                if ($variantIdFromCheckout === $lineItem['variant_id'])
+                {
+                    $lineItem['name'] = mb_substr($node['variant']['product']['title'], 0, 128, 'UTF-8');
+                    $lineItem['variant_name'] =  $node['variant']['title'] !== '' ? mb_substr($node['variant']['title'], 0, 128, 'UTF-8') : $lineItem['name'];
+                }
+            }
+            $cartLineItemsData[] = $lineItem;
+        }
+        $orderNotes = $this->getOrderNotesFor3rdPartyPluginCart($checkout, $cartId, $cart);
+        if ( array_key_exists('Script_Discount_Amount', $orderNotes) && $orderNotes['Script_Discount_Amount'] > 0)
+        {
+            $isCartDiscountApplied = true;
+        }
+        return [
+            'is_cart_discount_applied' => $isCartDiscountApplied,
+            'amount'        => $amount,
+            'cart_line_items' => $cartLineItemsData,
+            'order_notes'    => $orderNotes
+        ];
+    }
+
+
+    // getOrderNotesFor3rdPartyPluginCart returns notes for Rzp order using Shopify storefront id and line items for 3rd party plugin discounts flow
+    protected function getOrderNotesFor3rdPartyPluginCart(array $checkout, string $cartId, array $cartObj = []): array
+    {
+        $notes = [
+            'storefront_id' => $checkout['id'],
+            'cart_id'       => $cartId
+        ];
+
+        $discountFromScript = 0;
+        $discountTitle = '';
+        $cartLineItem = $cartObj['items'];
+
+        //By default amount will be in Paisa. So need to convert it to Rupees.
+        $denominator = 100;
+
+        foreach ($cartLineItem as $key => $item)
+        {
+            $discountFromScript += $item['line_level_total_discount'] / $denominator ?? 0;
+            if (empty($item['line_level_discount_allocations']) === false)
+            {
+                foreach ($item['discount_application'] as $itemDiscount)
+                {
+                    if (empty($discountTitle) === true)
+                    {
+                        $discountTitle = $itemDiscount['title'];
+                    }
+                    else
+                    {
+                        $discountTitle .=  '+ ' . $itemDiscount['title'];
+                    }
+                }
+            }
+        }
+
+        // for cases when cart level discount is applied
+        if (array_key_exists('cart_level_discount_applications', $cartObj) === true)
+        {
+            $cartDiscounts = $cartObj['cart_level_discount_applications'];
+            foreach ($cartDiscounts as $cartDiscount)
+            {
+                $discountFromScript += $cartDiscount['total_allocated_amount'] / $denominator;
+                if (empty($discountTitle) === true)
+                {
+                    $discountTitle = $cartDiscount['title'];
+                }
+                else
+                {
+                    $discountTitle .= ' + ' . $cartDiscount['title'];
+                }
+            }
+        }
+
+        // Note: The script discount stored here contains both line item discount and cart level discounts
+        // Thus the discounts stored in line item notes and the discounts stored in order notes should never be counted separately
+        // Storing all the collated discounts in order notes will help us to maintain compatibility with the existing order workflow where
+        // discounts are fetched only from order notes
+        if ($discountFromScript > 0)
+        {
+            $notes['Script_Discount_Amount'] = $discountFromScript;
+            $notes['Script_Discount_Title']  = $discountTitle === '' ? 'SPECIAL OFFER' : $discountTitle;
+        }
+        return $notes;
+    }
 }

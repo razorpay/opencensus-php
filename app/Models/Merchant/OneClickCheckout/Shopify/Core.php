@@ -57,6 +57,8 @@ class Core extends Base\Core
 
     const CUSTOMER_ACCOUNTS                          = 'customer_accounts';
 
+    const MAGIC_CHECKOUT_SERVICE_DRAFT_ORDER_PATH = 'v1/draftorder';
+
     protected $monitoring;
 
     public function __construct()
@@ -668,7 +670,7 @@ class Core extends Base\Core
         }
     }
 
-    public function exceptionPlaceShopifyOrderAPI($client, $e, array $rzpOrder, array $rzpPayment, array $body): array
+    public function exceptionPlaceShopifyOrderAPI($client, $e, array $rzpOrder, array $rzpPayment, array $body, array $orderMeta = []): array
     {
         $start = millitime();
 
@@ -748,7 +750,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $order = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, true);
+            $order = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, true, $orderMeta);
 
             return $order;
         }
@@ -756,7 +758,7 @@ class Core extends Base\Core
         return [];
     }
 
-    public function exceptionPlaceShopifyOrderSQS($client, $e, array $rzpOrder, array $rzpPayment, array $body): array
+    public function exceptionPlaceShopifyOrderSQS($client, $e, array $rzpOrder, array $rzpPayment, array $body, array $orderMeta = []): array
     {
         $orderId = $rzpOrder['id'];
 
@@ -805,7 +807,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $retryOrderResponse = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, false);
+            $retryOrderResponse = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, false, $orderMeta);
 
             if (is_array($retryOrderResponse) === true)
             {
@@ -897,19 +899,36 @@ class Core extends Base\Core
         return [];
     }
 
-    protected function retryPlaceShopifyOrder($client, array $rzpOrder, array $body, $rzpPayment, bool $fromShopifyApi)
+    protected function retryPlaceShopifyOrder($client, array $rzpOrder, array $body, $rzpPayment, bool $fromShopifyApi, array $orderMeta = [])
     {
         try
         {
             $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_REQUEST_COUNT, []);
 
+            $draftOrderFlowEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER);
+
             $placeOrderStart = millitime();
 
-            $order = $client->sendRestApiRequest(
-                json_encode(['order' => $body]),
-                Client::POST,
-                '/orders.json'
-            );
+            if ($draftOrderFlowEnabled === true)
+            {
+                $this->trace->info(
+                    TraceCode::SHOPIFY_RETRY_DRAFT_ORDER_FLOW_STARTED,
+                    [
+                        'type'     => 'shopify_retry_draft_order_flow_started',
+                        'rzp_order' => $rzpOrder['id'],
+                    ]
+                );
+
+                $order = $this->createDraftOrder($rzpOrder, $body, $orderMeta, $rzpPayment);
+            }
+            else
+            {
+                $order = $client->sendRestApiRequest(
+                    json_encode(['order' => $body]),
+                    Client::POST,
+                    '/orders.json'
+                );
+            }
 
             $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
 
@@ -998,7 +1017,7 @@ class Core extends Base\Core
         return 80770236719; //Mumbai Location used for international orders.
     }
 
-    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[]): array
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = []): array
     {
         $start = millitime();
 
@@ -1020,11 +1039,28 @@ class Core extends Base\Core
 
             $placeOrderStart = millitime();
 
-            $order = $client->sendRestApiRequest(
-                json_encode(['order' => $body]),
-                Client::POST,
-                '/orders.json'
-            );
+            $draftOrderFlowEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER);
+
+            if ($draftOrderFlowEnabled === true)
+            {
+                $this->trace->info(
+                    TraceCode::SHOPIFY_DRAFT_ORDER_FLOW_STARTED,
+                    [
+                        'type'     => 'shopify_draft_order_flow_started',
+                        'rzp_order' => $rzpOrder['id'],
+                    ]
+                );
+
+                $order = $this->createDraftOrder($rzpOrder, $body, $orderMeta, $rzpPayment);
+            }
+            else
+            {
+                $order = $client->sendRestApiRequest(
+                    json_encode(['order' => $body]),
+                    Client::POST,
+                    '/orders.json'
+                );
+            }
 
             $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
         }
@@ -1036,7 +1072,7 @@ class Core extends Base\Core
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'DELEGATED_TO_SQS']);
 
-                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($client, $e, $rzpOrder, $rzpPayment, $body);
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($client, $e, $rzpOrder, $rzpPayment, $body, $orderMeta);
 
                 $finalErrorCode = "DELEGATED_TO_SQS";
             }
@@ -1044,7 +1080,7 @@ class Core extends Base\Core
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'SQS_TOO_FAILED']);
 
-                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($client, $e, $rzpOrder, $rzpPayment, $body);
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($client, $e, $rzpOrder, $rzpPayment, $body, $orderMeta);
 
                 $finalErrorCode = "SQS_TOO_FAILED";
             }
@@ -2673,5 +2709,43 @@ class Core extends Base\Core
             ]);
             return [];
         }
+    }
+
+    protected function createDraftOrder(array $rzpOrder, array $shopifyOrder, array $rzpOrderMeta, array $rzpPayment)
+    {
+        // Merchant Config will be passed in request body to magic checkout service which will use the
+        // merchant configs to call shopify
+        $merchantConfig = $this->getShopifyAuthByMerchant();
+
+        $merchantId = $this->merchant->getId();
+
+        $merchantConfig = array_merge(['merchant_id' => $merchantId], $merchantConfig);
+
+        $input = array(
+            'rzp_order'         => $rzpOrder,
+            'shopify_order'     => $shopifyOrder,
+            'merchant_config'   => $merchantConfig,
+            'rzp_order_meta'    => $rzpOrderMeta,
+            'rzp_payment'       => $rzpPayment,
+        );
+
+        $requestUri = self::MAGIC_CHECKOUT_SERVICE_DRAFT_ORDER_PATH;
+
+        $this->trace->info(TraceCode::SHOPIFY_DRAFT_ORDER_MAGIC_CHECKOUT_SERVICE_REQUEST_SENT,[
+            'rzp_order_id'         =>   $rzpOrder['id'],
+            'rzp_payment_id'       =>   $rzpPayment['id'],
+        ]);
+
+        $order =  $this->app['magic_checkout_service_client']->sendRequest($requestUri, $input, Requests::POST);
+
+        $this->trace->info(TraceCode::SHOPIFY_DRAFT_ORDER_MAGIC_CHECKOUT_SERVICE_RESPONSE_RECEIVED,[
+            'rzp_order_id'         =>   $rzpOrder['id'],
+            'rzp_payment_id'       =>   $rzpPayment['id'],
+            'shopify_order_id'     =>   $order['order']['id'],
+        ]);
+
+        // This is required because further down the code, json_decode function is being used to decode the string to json
+        // In order to minimise the number of changes done to complete checkout API we are json_encoding the order response which will be json_decoded later
+        return json_encode($order);
     }
 }
