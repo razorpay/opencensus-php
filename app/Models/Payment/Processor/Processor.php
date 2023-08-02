@@ -3,8 +3,11 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Illuminate\Support\Arr;
 use Request;
 
+use RZP\Http\Edge\PassportUtil;
+use RZP\Http\RequestContextV2;
 use RZP\Services\Shield;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
@@ -835,9 +838,9 @@ class Processor
                 return false;
             }
 
-            if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
-                ($input[Payment\Entity::PROVIDER] == self::SODEXO))
-            {
+            if ((Arr::get($input, Payment\Entity::METHOD) === Payment\METHOD::CARD) &&
+                (Arr::get($input, Payment\Entity::PROVIDER) === self::SODEXO)
+            ) {
                 return true;
             }
 
@@ -890,6 +893,12 @@ class Processor
                 {
                     try {
                         // First fetch the relevant customer (global or local)
+                        /** @var RequestContextV2 $requestContext */
+                        $requestContext = $this->app['request.ctx.v2'];
+                        $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+
+                        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+
                         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                             $input, $merchant, false);
                         if ($customer !== null)
@@ -1996,6 +2005,12 @@ class Processor
         {
             $this->checkAndFillSavedAppToken($input);
         }
+
+        /** @var RequestContextV2 $requestContext */
+        $requestContext = $this->app['request.ctx.v2'];
+        $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+
+        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
 
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
             $input, $this->merchant, false);

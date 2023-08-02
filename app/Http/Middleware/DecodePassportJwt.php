@@ -105,6 +105,7 @@ class DecodePassportJwt
         }
         else {
             $passportUtil = new PassportUtil($this->reqCtx->passport);
+            $this->reqCtx->passportUtil = $passportUtil;
             $this->reqCtx->shouldAuthenticateUsingPassport = $passportUtil->shouldAuthenticateUsingPassport($request);
         }
 

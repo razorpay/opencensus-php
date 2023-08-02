@@ -27,6 +27,7 @@ class PassportUtil
     const PUBLIC_PREFIX = 'public_';
     const AUTH_SUFFIX   = '_auth';
 
+    const CUSTOMER      = 'customer';
     const MERCHANT_ID   = 'merchant_id';
     const ACCOUNT_ID    = 'account_id';
     const ROUTE         = 'route';
@@ -415,6 +416,17 @@ class PassportUtil
 
         $authType = $prefix . $authType . $suffix;
         return $authType;
+    }
+
+    /**
+     * Returns global customer id from additional identities claims registered on passport.
+     * @return string|null
+     */
+    public function getGlobalCustomerId(): string
+    {
+        return !empty($this->passport->additionalIdentities[self::CUSTOMER][0]->id) ?
+            $this->passport->additionalIdentities[self::CUSTOMER][0]->id :
+            '';
     }
 
     //putting this check as there are several mismatches reported for consumer id.

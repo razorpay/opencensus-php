@@ -11,6 +11,8 @@ use Route;
 use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Http\Edge\PassportUtil;
+use RZP\Http\RequestContextV2;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
@@ -5005,6 +5007,12 @@ trait Authorize
         }
 
         // First fetch the relevant customer (global or local)
+        /** @var RequestContextV2 $requestContext */
+        $requestContext = $this->app['request.ctx.v2'];
+        $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+
+        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $merchant, $followGlobal);
 
@@ -6013,24 +6021,9 @@ trait Authorize
                                                           array & $input,
                                                           array & $gatewayInput)
     {
-        //
-        // Only in the case of privilege auth, it's okay to not
-        // have an app_token. In all other cases, we should have
-        // an app_token when we are processing 2FA.
-        //
-        if (($this->ba->isProxyOrPrivilegeAuth() === false) and
-            ($customerApp === null))
-        {
-            throw new Exception\LogicException(
-                'Not privilege/proxy auth and no app_token. Should not have reached here at all.',
-                ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
-                [
-                    'customer_id' => $customer->getId(),
-                    'payment_id' => $payment->getId(),
-                ]);
+        if ($customerApp !== null) {
+            $this->payment->app()->associate($customerApp);
         }
-
-        $this->payment->app()->associate($customerApp);
 
         $this->payment->globalCustomer()->associate($customer);
 

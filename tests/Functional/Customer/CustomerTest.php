@@ -3,7 +3,12 @@
 namespace RZP\Tests\Functional\Customer;
 
 use Carbon\Carbon;
-use JetBrains\PhpStorm\NoReturn;
+use DateTimeZone;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Token\Builder;
+use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Address\AddressConsent1cc\Entity as AddressConsent1ccEntity;
@@ -30,6 +35,7 @@ class CustomerTest extends TestCase
     use AttemptTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
+    use GeneratesTestPassportJwts;
 
     protected function setUp(): void
     {
@@ -1689,6 +1695,40 @@ class CustomerTest extends TestCase
     public function testGetGlobalCustomerDetailsForCheckoutService(): void
     {
         $this->mockSession();
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetGlobalCustomerDetailsForCheckoutServiceUsingPassportJWT(): void
+    {
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates()))
+            // Reserved/standard claims follows.
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P2D')))
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', true)
+            ->withClaim('authenticated', true)
+            ->withClaim('mode', 'test')
+            ->withClaim('domain', 'razorpay')
+            ->withClaim('consumer', ['id' => '10000000000000', 'type' => 'merchant'])
+            ->withClaim('additional_identities', [
+                'customer' => [
+                        [
+                            'id' => '10000gcustomer',
+                            'type' => 'customer',
+                        ],
+                    ],
+                ]);
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Passport-JWT-V1'] = $this->samplePassportJwt($tokenBuilder);
 
         $this->ba->checkoutServiceProxyAuth();
 

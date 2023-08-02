@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Http\RequestContextV2;
 use Str;
 use http\Url;
 use Lib\PhoneBook;
@@ -38,6 +39,16 @@ class Core extends Base\Core
 {
     // In seconds (Multiplying by 60 since put() takes an argument in secs)
     const TEMPORARY_SESSION_TIME = 10 * 60;
+
+    protected RequestContextV2 $reqCtx;
+
+    /**
+     * @inheritDoc
+     */
+    protected function init(): void
+    {
+        $this->reqCtx = $this->app->make('request.ctx.v2');
+    }
 
     /**
      * @param array           $input
@@ -716,8 +727,10 @@ class Core extends Base\Core
 
         $appToken = Session()->get($this->mode . '_app_token');
 
+        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
         list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
+            ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
             $this->merchant,
             true);
 
@@ -798,12 +811,14 @@ class Core extends Base\Core
 
             $appToken = Session()->get($this->mode . '_app_token');
 
+            $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
             Customer\Validator::validateCreateGlobalAddress($input);
 
             $input = Customer\Validator::validateAndParseContactInInput($input);
 
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-                ['app_token' => $appToken],
+                ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
                 $this->merchant,
                 true);
 
@@ -893,9 +908,12 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
             }
             $appToken = Session()->get($this->mode . '_app_token');
+
+            $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
             Customer\Validator::validateEditGlobalAddress($input);
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-                ['app_token' => $appToken],
+                ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
                 $this->merchant,
                 true);
 
@@ -904,7 +922,7 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
             }
-            
+
             // 1cc Demo: Reject address saving for +911234567890
             if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
             {
@@ -1155,6 +1173,12 @@ class Core extends Base\Core
 
                 $merchant = $this->repo->merchant->getSharedAccount();
             }
+        }
+        else if (!empty($input[Payment\Entity::GLOBAL_CUSTOMER_ID]))
+        {
+            $customerId = $input[Payment\Entity::GLOBAL_CUSTOMER_ID];
+
+            $merchant = $this->repo->merchant->getSharedAccount();
         }
 
         if ($customerId !== null)
@@ -1592,8 +1616,10 @@ class Core extends Base\Core
 
         $appToken = Session()->get($this->mode . '_app_token');
 
+        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
         list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
+            ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
             $this->merchant,
             true);
 

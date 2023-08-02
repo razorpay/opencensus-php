@@ -9,6 +9,8 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\Country;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
+use RZP\Http\Edge\PassportUtil;
+use RZP\Http\RequestContextV2;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\Truecaller\AuthRequest\Metric;
 use RZP\Models\Locale\Core as Locale;
@@ -962,11 +964,12 @@ class Checkout
 
         try
         {
-            //
-            // For the second 2FA in global flow also, we will have the
-            // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
-            // we don't need to have the global_customer_id in the input.
-            //
+            /** @var RequestContextV2 $requestContext */
+            $requestContext = $this->app['request.ctx.v2'];
+            $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+
+            $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $data['global']);
 
             if ($customer === null)

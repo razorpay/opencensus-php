@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use RZP\Http\Edge\PassportUtil;
+
 /**
  * Class RequestContextV2
  *
@@ -13,6 +15,14 @@ final class RequestContextV2
      * @var \Razorpay\Edge\Passport\Passport|null
      */
     public $passport;
+
+    /**
+     * Helper class to validate passport & extract info. from it.
+     * Only set/present if a valid $passport is found in the request.
+     *
+     * @var PassportUtil|null
+     */
+    public ?PassportUtil $passportUtil = null;
 
     /**
      * The $passport will always exists, whether request came directly or via edge(hence carrying passport jwt).

@@ -3,11 +3,14 @@
 namespace RZP\Models\Customer;
 
 use Illuminate\Support\Arr;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Request;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Edge\PassportUtil;
+use RZP\Http\RequestContextV2;
 use RZP\Models\Base;
 use RZP\Models\Customer\Account\Metrics\Metric;
 use RZP\Models\Feature\Constants;
@@ -26,6 +29,8 @@ use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
+    protected RequestContextV2 $reqCtx;
+
     public function __construct()
     {
         parent::__construct();
@@ -33,6 +38,8 @@ class Service extends Base\Service
         $this->device = $this->app['basicauth']->getDevice();
 
         $this->core = new Customer\Core;
+
+        $this->reqCtx = $this->app['request.ctx.v2'];
     }
 
     /**
@@ -222,6 +229,7 @@ class Service extends Base\Service
 
         /** @var Entity $customer */
         $customer = null;
+        $contact = null;
 
         $customerData = [
             'email' => '',
@@ -231,12 +239,22 @@ class Service extends Base\Service
             'has_saved_addresses' => false,
         ];
 
+        if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input['customer_id'])) {
+            $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+            if ($globalCustomerId !== '') {
+                $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+            }
+        }
+
         if (!Arr::hasAny($input, [Payment\Entity::APP_TOKEN, Payment\Entity::GLOBAL_CUSTOMER_ID, Payment\Entity::CUSTOMER_ID])) {
             if (!empty($input['contact']) && !empty($input['device_token'])) {
                 $contact = Customer\Validator::validateAndParseContact($input['contact']);
-
-                $customer = $this->repo->customer->findByContactAndMerchant($contact, $this->merchant);
             }
+        }
+
+        if (!empty($contact)) {
+            $customer = $this->repo->customer->findByContactAndMerchant($contact, $this->merchant);
         } else {
             [$customer, $appToken] = $this->core->getCustomerAndApp($input, $this->merchant, $isGlobalCustomer);
         }
@@ -1260,6 +1278,16 @@ class Service extends Base\Service
     protected function getCustomerFromSession() : ?Entity
     {
         $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+        if ($globalCustomerId !== '') {
+            return $this->repo->customer->findByIdAndMerchantId(
+                $globalCustomerId,
+                Account::SHARED_ACCOUNT,
+                ConnectionType::SLAVE,
+            );
+        }
 
         if ($appTokenId === null)
         {

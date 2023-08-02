@@ -2,13 +2,18 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use DateTimeZone;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Token\Builder;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factory;
-
+use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 use RZP\Constants\Mode;
 use RZP\Services\EsClient;
 use RZP\Models\Card\Network;
@@ -18,12 +23,11 @@ use RZP\Models\NetbankingConfig;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Functional\Helpers\PaymentsUpiTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
-
-
 use RZP\Error\PublicErrorCode;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
@@ -70,6 +74,9 @@ class PaymentCreateTest extends TestCase
     use InvoiceTestTrait;
     use TerminalTrait;
     use HeimdallTrait;
+    use GeneratesTestPassportJwts;
+    use PaymentsUpiTrait;
+
 
     protected function setUp(): void
     {
@@ -11829,6 +11836,7 @@ class PaymentCreateTest extends TestCase
         ];
 
         $this->mockSession();
+
         $this->ba->publicAuth();
         $response = $this->makeRequestParent($request);
 
@@ -11837,6 +11845,207 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDbLastPayment();
 
         $this->assertEquals($payment->getPublicId(), $response['payment_id']);
+    }
+
+    public function testSavedCardPaymentUsingPaymentCreateAjaxWhenGlobalCustomerIsSentInPassport(): void
+    {
+        $this->mockCardVaultWithCryptogram();
+
+        $this->fixtures->card->create(
+            [
+                'id'           =>  '100000003lcard',
+                'merchant_id'  =>  '10000000000000',
+                'name'         =>  'test',
+                'iin'          =>  '411140',
+                'expiry_month' =>  '12',
+                'expiry_year'  =>  '2100',
+                'issuer'       =>  'HDFC',
+                'network'      =>  'Visa',
+                'last4'        =>  '1111',
+                'type'         =>  'debit',
+                'vault'        =>  'visa',
+                'vault_token'  =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => '100022custcard',
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'bank'            => 'HDFC',
+                'card_id'         => '100000003lcard',
+                'customer_id'     => '10000gcustomer',
+                'expired_at'      => '9999999999',
+                'merchant_id'     => '10000000000000',
+                'method'          => 'card',
+                'status'          => 'active',
+                'token'           => '10003cardToken',
+                'used_at'         => 10,
+            ]
+        );
+
+        $payment = [
+            'amount' => '40000',
+            'currency' => 'INR',
+            'email' => 'test@razorpay.com',
+            'contact' => '+919876543210',
+            'notes' => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'description' => 'random description',
+            'method' => 'card',
+            'card' => [
+                'cvv' => 123,
+            ],
+            'token' => '10003cardToken',
+            '_' => [
+                'library' => 'checkoutjs',
+            ],
+        ];
+
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates()))
+            // Reserved/standard claims follows.
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P2D')))
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', true)
+            ->withClaim('authenticated', true)
+            ->withClaim('mode', 'test')
+            ->withClaim('domain', 'razorpay')
+            ->withClaim('consumer', ['id' => '10000000000000', 'type' => 'merchant'])
+            ->withClaim('additional_identities', [
+                'customer' => [
+                    [
+                        'id' => '10000gcustomer',
+                        'type' => 'customer',
+                    ],
+                ],
+            ]);
+
+        $request = [
+            'content' => $payment,
+            'headers' => [
+                'X-Passport-JWT-V1' => $this->samplePassportJwt($tokenBuilder),
+            ],
+            'url'     => '/payments/create/ajax',
+            'method'  => 'POST'
+        ];
+
+        $this->ba->publicAuth();
+        $response = $this->makeRequestParent($request);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals($payment->getPublicId(), $response['payment_id']);
+
+        $token = $payment->localToken;
+        $tokenCard = $token->card;
+        $tokenCustomer = $token->customer;
+
+        $this->assertEquals('created', $payment->getStatus());
+        $this->assertEquals('10000gcustomer', $payment->getGlobalCustomerId());
+
+        $this->assertEquals('10000gcustomer', $tokenCustomer->getId());
+        $this->assertEquals('100000Razorpay', $tokenCustomer->getMerchantId());
+
+        $this->assertEquals('10000000000000', $token->getMerchantId());
+        $this->assertEquals('HDFC', $token->getBank());
+
+        $this->assertEquals('HDFC', $tokenCard->getIssuer());
+        $this->assertEquals('Visa', $tokenCard->getNetwork());
+        $this->assertEquals('visa', $tokenCard->getVault());
+        $this->assertEquals('1111', $tokenCard->getLast4());
+    }
+
+    public function testSavedVpaPaymentUsingPaymentCreateAjaxWhenGlobalCustomerIsSentInPassport(): void
+    {
+        $this->fixtures->merchant->enableUpi();
+        $this->fixtures->merchant->enableUpiCollect();
+        $this->fixtures->merchant->addFeatures(['save_vpa']);
+
+        $this->createUpiPaymentsGlobalCustomerVpa();
+        $globalUpiToken = $this->fixtures->create('customer:upi_payments_global_customer_token');
+
+        $payment = [
+            'amount' => '40000',
+            'currency' => 'INR',
+            'email' => 'test@razorpay.com',
+            'contact' => '+919876543210',
+            'notes' => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'description' => 'random description',
+            'method' => 'upi',
+            'token' => $globalUpiToken->getToken(),
+            '_' => [
+                'library' => 'checkoutjs',
+                'flow' => 'directpay',
+            ],
+        ];
+
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates()))
+            // Reserved/standard claims follows.
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P2D')))
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', true)
+            ->withClaim('authenticated', true)
+            ->withClaim('mode', 'test')
+            ->withClaim('domain', 'razorpay')
+            ->withClaim('consumer', ['id' => '10000000000000', 'type' => 'merchant'])
+            ->withClaim('additional_identities', [
+                'customer' => [
+                    [
+                        'id' => '10000gcustomer',
+                        'type' => 'customer',
+                    ],
+                ],
+            ]);
+
+        $request = [
+            'content' => $payment,
+            'headers' => [
+                'X-Passport-JWT-V1' => $this->samplePassportJwt($tokenBuilder),
+            ],
+            'url'     => '/payments/create/ajax',
+            'method'  => 'POST'
+        ];
+
+        $this->ba->publicAuth();
+        $response = $this->makeRequestParent($request);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals($payment->getPublicId(), $response['payment_id']);
+
+        $token = $payment->globalToken;
+        $tokenVpa = $token->vpa;
+        $tokenCustomer = $token->customer;
+
+        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals('10000gcustomer', $payment->getGlobalCustomerId());
+
+        $this->assertEquals('10000gcustomer', $tokenCustomer->getId());
+        $this->assertEquals('100000Razorpay', $tokenCustomer->getMerchantId());
+
+        $this->assertEquals('100000custgupi', $token->getId());
+        $this->assertEquals('100000Razorpay', $token->getMerchantId());
     }
 
     protected function mockSession(string $appToken = 'capp_1000000custapp'): void

@@ -1674,6 +1674,25 @@ return [
         ],
     ],
 
+    'testGetGlobalCustomerDetailsForCheckoutServiceUsingPassportJWT' => [
+        'request' => [
+            'url' => '/internal/customers/checkout',
+            'method' => 'GET',
+            'headers' => [
+                'X-Passport-JWT-V1' => '', // Filled by the test
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'test@razorpay.com',
+                'contact' => '+919988776655',
+                'is_global_customer' => true,
+                'has_saved_card_tokens' => false,
+                'has_saved_addresses' => false,
+            ],
+        ],
+    ],
+
     'testGetLocalCustomerDetailsForCheckoutService' => [
         'request' => [
             'url' => '/internal/customers/checkout',
