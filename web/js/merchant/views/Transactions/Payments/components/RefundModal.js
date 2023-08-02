@@ -84,13 +84,7 @@ export const RefundType = ({ partial, isTitleCase = false }) => {
 };
 
 function Query(props) {
-  return props.children(
-    useQuery(props.keyName, props.fn, {
-      enabled: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    }),
-  );
+  return props.children(useQuery(props.keyName, props.fn, props.options));
 }
 
 const selector = formValueSelector('refundModal');
@@ -802,9 +796,13 @@ class RefundModal extends Component {
     };
     return (
       <Query
-        paymentByCardOffline={paymentByCardOffline}
         keyName={FETCH_EZETAP_KEY_NAME}
         fn={fetchKeys}
+        options={{
+          enabled: false,
+          refetchOnWindowFocus: false,
+          staleTime: Infinity,
+        }}
       >
         {({ data: ezetapData }) => (
           <div>
