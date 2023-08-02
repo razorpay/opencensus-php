@@ -176,19 +176,11 @@ class ApiTraceProcessor
 
         $this->addTraceAttributesForWorkers($record);
 
-        $this->addRouteName($record);
-
-//        $this->dropRecurringLogFields($record);
+        $this->dropRecurringLogFields($record);
 
         $this->isFirstLog = false;
 
         return $record;
-    }
-
-    // adds route name instead of url
-    protected function addRouteName(& $record): void
-    {
-        $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
     }
 
     protected function addHighTierLogEntry(& $record): void
@@ -563,23 +555,14 @@ class ApiTraceProcessor
             // unset product it remains same throughout request
             unset($record['request']['product']);
 
-            // client ip doesn't changes during request
-            unset($record['request']['client_ip']);
-
             // user_email is either not available or gets scrubbed
             unset($record['request']['user_email']);
 
             // mode remains constant for request
             unset($record['mode']);
 
-            // method(GET,POST etc) remains constant for request
-            unset($record['request']['method']);
-
             // tlsVersion not required
             unset($record['request']['x-amzn-tls-version']);
-
-            // remove url
-            unset($record['request']['url']);
 
             // remove channel constant values
             unset($record['channel']);
