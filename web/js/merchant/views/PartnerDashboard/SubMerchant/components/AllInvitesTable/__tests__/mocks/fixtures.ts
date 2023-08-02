@@ -1,3 +1,4 @@
+// Note: these fixtures are reused in an AccountsList test as well.
 export const allInvitesData = {
   status_code: 200,
   success: true,
@@ -29,6 +30,7 @@ export const allInvitesData = {
     ],
   },
 };
+
 export const allInvitesDataEmpty = {
   status_code: 200,
   success: true,

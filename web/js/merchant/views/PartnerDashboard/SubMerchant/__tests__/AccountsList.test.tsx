@@ -15,6 +15,12 @@ import {
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as downloadSubmerchantsActions from 'merchant/reducers/submerchant';
 
+import { getInitialUserOrgState } from 'common/tests/utils';
+import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
+import {
+  allInvitesData,
+  allInvitesDataEmpty,
+} from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';
 // TODO : covered only Capital use case, have to cover others later
 
 const ComponentsProductMapping = {
@@ -48,23 +54,45 @@ const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
 const instantActivation = { isWhitelistFlow: false };
 
-const state = {
-  session: {
-    user: {
-      isOrgRZP: true,
+const getLocation = (path) => ({
+  search: '',
+  pathname: `/partners/submerchants/${path}`,
+});
+
+const renderApp = (
+  product = PRODUCT_TYPE.PG,
+  path = '',
+  { userExtra = {}, orgExtra = {} } = {},
+) => {
+  const Component = ComponentsProductMapping[product];
+  const session = getInitialUserOrgState({
+    isRzpOrg: true,
+    userExtra: {
       isPartner,
       isPartnerIntent,
       isFeatureEnabled,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
+      ...userExtra,
     },
-  },
+    orgExtra,
+  });
+
+  return render(
+    <Component
+      location={getLocation(path)}
+      referralData={referralData}
+      product={product}
+      org={orgDetails}
+    />,
+    {
+      showModal: true,
+      initialState: { session },
+    },
+  );
 };
-const getLocation = (path) => ({
-  search: '',
-  pathname: `/partners/submerchants/${path}`,
-});
+
 let downloadSubMerchant;
 describe('AccountsList', () => {
   beforeAll(() => {
@@ -86,23 +114,6 @@ describe('AccountsList', () => {
 
     window.rzpQ.component = jest.fn();
   });
-  const renderApp = (product = PRODUCT_TYPE.PG, path = '') => {
-    const Component = ComponentsProductMapping[product];
-    return render(
-      <Component
-        location={getLocation(path)}
-        referralData={referralData}
-        product={product}
-        org={orgDetails}
-      />,
-      {
-        showModal: true,
-        initialState: {
-          ...state,
-        },
-      },
-    );
-  };
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -113,6 +124,80 @@ describe('AccountsList', () => {
     const spinner = screen.getByTestId('spinner');
     expect(spinner).toBeInTheDocument();
   });
+
+  describe('partnerships invite flow', () => {
+    const renderAppForPGInviteFlow = ({ userExtra = {}, ...sessionArgs } = {}) =>
+      renderApp(PRODUCT_TYPE.PG, '', {
+        ...sessionArgs,
+        userExtra: {
+          isPartnershipsInviteFlowEnabled: true,
+          isPartnershipForCapitalEnabled: false,
+          isPartnershipFUX: false,
+          ...userExtra,
+        },
+      });
+
+    test(`should render accepted invites table when accepted invites is non empty and all invites is empty`, async () => {
+      server.use(allInvitesListSuccess(allInvitesDataEmpty));
+      renderAppForPGInviteFlow();
+
+      await waitFor(() => {
+        expect(screen.getByText('Invite Accepted On')).toBeInTheDocument();
+      });
+      expect(screen.queryAllByText('Welcome to Partner Dashboard')).toHaveLength(0);
+    });
+    test(`should render welcome screen correctly for partnerships invite flow when both invites data is empty`, async () => {
+      server.use(
+        rest.get('*/merchant/api/test/submerchants', (req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              status_code: 200,
+              success: true,
+              data: emptyAccountsListResponse,
+            }),
+            ctx.delay(50),
+          );
+        }),
+      );
+      server.use(allInvitesListSuccess(allInvitesDataEmpty));
+      renderAppForPGInviteFlow();
+      await waitFor(() => {
+        expect(screen.getByText('Welcome to Partner Dashboard')).toBeInTheDocument();
+      });
+      // No table column render
+      expect(screen.queryByText('Invite Accepted On')).not.toBeInTheDocument();
+      // No empty table
+      expect(screen.queryByText('All Accepted Invites')).not.toBeInTheDocument();
+    });
+
+    test(`should render empty table when accepted invites is empty and all invites is non empty`, async () => {
+      server.use(
+        rest.get('*/merchant/api/test/submerchants', (req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              status_code: 200,
+              success: true,
+              data: emptyAccountsListResponse,
+            }),
+            ctx.delay(50),
+          );
+        }),
+      );
+      server.use(allInvitesListSuccess(allInvitesData));
+      renderAppForPGInviteFlow();
+
+      await waitFor(() => {
+        expect(screen.getByText('All Accepted Invites')).toBeInTheDocument();
+      });
+      // table column should render
+      expect(screen.queryByText('Invite Accepted On')).toBeInTheDocument();
+      // Common welcome screen should not render
+      expect(screen.queryByText('Welcome to Partner Dashboard')).not.toBeInTheDocument();
+    });
+  });
+
   describe.each([
     { product: PRODUCT_TYPE.PG, path: '' },
     { product: PRODUCT_TYPE.X, path: 'x' },
@@ -140,6 +225,8 @@ describe('AccountsList', () => {
       expect(screen.getByText('Get started by adding merchants to Razorpay')).toBeInTheDocument();
       expect(screen.getByText('Add New Merchant')).toBeInTheDocument();
       expect(screen.getByText('Copy Link')).toBeInTheDocument();
+      // No table column render
+      expect(screen.queryByText('Account ID')).not.toBeInTheDocument();
     });
     test(`should render the list once the data is fetched and is not empty for ${product}`, async () => {
       renderApp(product, path);

@@ -855,7 +855,7 @@ class ProductSubMerchantsList extends ListContainer {
                 </button>
               </div>
             ) : null}
-            {isPGProductWithInviteFlow ? (
+            {isPGProductWithInviteFlow && !shouldShowWelcomeScreen ? (
               <DataTable
                 title="Sub Merchants"
                 count={this.state.count}
