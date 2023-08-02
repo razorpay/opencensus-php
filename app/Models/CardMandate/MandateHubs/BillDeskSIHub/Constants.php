@@ -12,7 +12,6 @@ class Constants
     const TOKEN                   = 'token';
     const GATEWAY                 = 'gateway';
     const ID                      = 'id';
-    const MANDATE_ID              = 'mandateid';
     const CARD_NUMBER             = 'number';
     const CARD                    = 'card';
     const CARD_ID                 = 'id';

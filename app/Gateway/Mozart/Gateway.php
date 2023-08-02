@@ -3195,9 +3195,6 @@ class Gateway extends Base\Gateway
 
         if (($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB) && $this->getAction() === 'auth_verify') {
             unset($input['gateway']);
-            $mozartPayload = array('entities' => $input);
-            $input = $mozartPayload;
-            // structure should be wrapped inside the entities key
         }
 
         $this->trace->info(
