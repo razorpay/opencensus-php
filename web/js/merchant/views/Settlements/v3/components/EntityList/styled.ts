@@ -19,3 +19,8 @@ export const StyledSpinner = styled.div`
     margin-bottom: ${({ theme }) => `${theme.spacing[4]}px`};
   }
 `;
+
+export const ColumnHeader = styled.th`
+  background-color: #f8f9fb;
+  border: none;
+`;

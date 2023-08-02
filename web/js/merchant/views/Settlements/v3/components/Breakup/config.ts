@@ -114,16 +114,28 @@ export const getBreakUpDetails = ({
   return items.reduce(
     (accumulator, each, index) => {
       const entryItem: BreakupComponentInterface = getBreakupComponentWise({ item: each });
-      if (each.type === 'credit') {
-        netSettlements = netSettlements + each.amount;
-        accumulator.grossSettlements.amount = accumulator.grossSettlements.amount + each.amount;
-        accumulator.grossSettlements.entries.push(entryItem);
+      if (each.type === 'credit' || each.type === 'debit') {
+        if (each.type === 'credit') {
+          netSettlements = netSettlements + each.amount;
+          accumulator.grossSettlements.amount += each.amount;
+        }
+        if (each.type === 'debit') {
+          netSettlements = netSettlements - each.amount;
+          accumulator.deductions.amount += each.amount;
+        }
+        const { components, entries } =
+          each.type === 'credit' ? accumulator.grossSettlements : accumulator.deductions;
+        if (components.includes(entryItem.name)) {
+          const componentPosition = entries.findIndex((each) => each.name === entryItem.name);
+          if (componentPosition > -1) {
+            entries[componentPosition].amount += entryItem.amount;
+          }
+        } else {
+          components.push(entryItem.name);
+          entries.push({ ...entryItem });
+        }
       }
-      if (each.type === 'debit') {
-        netSettlements = netSettlements - each.amount;
-        accumulator.deductions.amount = accumulator.deductions.amount + each.amount;
-        accumulator.deductions.entries.push(entryItem);
-      }
+
       if (isBreakupNew) {
         netSettlements = netSettlements - each.tax - each.fee;
         accumulator.deductions.amount += each.tax + each.fee;
@@ -146,10 +158,12 @@ export const getBreakUpDetails = ({
       grossSettlements: {
         amount: 0,
         entries: [],
+        components: [],
       },
       deductions: {
         amount: 0,
         entries: [],
+        components: [],
       },
       netSettlements: {
         amount: 0,

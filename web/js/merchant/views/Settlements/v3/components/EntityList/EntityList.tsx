@@ -1,48 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
-import { connect } from 'react-redux';
 import {
-  getSelfServeDetailForSettlementDetails,
-  sanitizeTabName,
-} from 'merchant/views/Settlements/v2/util';
-import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
-import TableBody from 'common/ui/TableBody';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
+  Box,
+  ChevronRightIcon,
+  CopyIcon,
+  InfoIcon,
+  Link,
+  Spinner,
+  Text,
+} from '@razorpay/blade/components';
 import Amount from 'common/ui/Amount';
+import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { titleCase } from 'common/utils/rzp-utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { merchantFetch } from 'merchant/utils/ajax';
 import {
   handleAnalytics,
   propertiesPayload,
 } from 'merchant/views/Settlements/Settlements/analytics';
+import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
+import {
+  getSelfServeDetailForSettlementDetails,
+  sanitizeTabName,
+} from 'merchant/views/Settlements/v2/util';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { Text, Spinner, Link, ChevronRightIcon, CopyIcon } from '@razorpay/blade/components';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { StyledTd, StyledSpinner } from './styled';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { BreakupDetailsInterface } from 'merchant/views/Settlements/v3/typings';
+import { ColumnHeader, StyledSpinner, StyledTd } from './styled';
+import { getEntityColumns, getNetValue } from './utils';
+import { keys, tooltipConfig } from './constants';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
-
-const ENTITY_COLUMNS = {
-  payment: ['Date', 'Payment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  reversal: ['Date', 'Reversal ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  refund: ['Date', 'Refund ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  transfer: ['Date', 'Transfer ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  adjustment: ['Date', 'Adjustment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  dispute: ['Date', 'Dispute ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  'settlement.ondemand': ['Date', 'Settlement ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  fund: ['Date', 'Fund ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  credit: ['Date', 'Credit repayment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  default: ['Date', 'ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-};
-
-const keys = ['date', 'entity_id', 'gross_amount', 'deductions', 'net_amount', 'id'];
 
 const ListItem = ({
   item,
@@ -53,6 +49,8 @@ const ListItem = ({
   isMobileResolution,
   onIdCopied,
   onItemClick,
+  sectionType,
+  activeTab,
 }) => {
   const { selfServeActionName, page, INIT_POINT, INIT_PAGE } =
     getSelfServeDetailForSettlementDetails(source);
@@ -202,12 +200,14 @@ const ListItem = ({
   const { id, amount, fee, created_at, optimizer_provider, settled_by } = item;
   const currency = user.merchant.currency;
   const deductions = fee;
-  const netAmount = amount - fee;
+  // getting new value (amount or deduction) based on section type
+  const netValue = getNetValue({ fee, amount, sectionType, activeTab });
+
   let columnKeys: Array<string>;
 
   if (isMobileResolution) {
     columnKeys = keys.filter((key) => {
-      if (key === 'date' || key === 'net_amount' || key === 'id') return true;
+      if (key === 'date' || key === 'net_value' || key === 'id') return true;
       else return false;
     });
   } else {
@@ -250,11 +250,11 @@ const ListItem = ({
               </td>
             );
             break;
-          case 'net_amount':
+          case 'net_value':
             row = (
               <td key={idx}>
                 <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
-                  <Amount value={netAmount} currency={currency} />
+                  <Amount value={netValue} currency={currency} />
                 </Text>
               </td>
             );
@@ -305,6 +305,7 @@ type Props = {
   breakupDetails: BreakupDetailsInterface;
   activeTab: string;
   settlementId: string;
+  sectionType: string;
 } & RouteComponentProps;
 
 const EntityList = (props) => {
@@ -313,7 +314,7 @@ const EntityList = (props) => {
   const [skip, setskip] = useState(DEFAULT_SKIP);
   const [count, setcount] = useState(DEFAULT_COUNT);
 
-  const { settlementId, showNotification, activeTab, user, terminalProviders } = props;
+  const { settlementId, showNotification, activeTab, user, terminalProviders, sectionType } = props;
 
   const fetchData = (skipVal, countVal, type) => {
     const tab = sanitizeTabName(type);
@@ -371,28 +372,37 @@ const EntityList = (props) => {
     if (list.length === 0) return null;
 
     const tab = sanitizeTabName(activeTab);
-    let entityColumns: any = [];
 
-    if (ENTITY_COLUMNS[tab]) {
-      entityColumns = ENTITY_COLUMNS[tab];
-    } else {
-      entityColumns = ENTITY_COLUMNS.default;
-    }
-
-    if (props.isMobileResolution) {
-      entityColumns = entityColumns.filter((col) => {
-        if (col === 'Date' || col === 'Net amount' || col === '') return true;
-        else return false;
-      });
-    }
+    const entityColumns: any = getEntityColumns({
+      tab,
+      sectionType,
+      isMobile: props.isMobileResolution,
+    });
 
     return entityColumns.map((key, idx) => {
       return (
-        <th key={idx} style={{ backgroundColor: '#F8F9FB', border: 'none' }}>
-          <Text variant="body" size="medium" color="surface.text.subtle.lowContrast" weight="bold">
-            {titleCase(key)}
-          </Text>
-        </th>
+        <ColumnHeader key={idx}>
+          <Box display="flex" gap={{ base: 'spacing.2', m: '5px' }} alignItems="center">
+            <Text
+              variant="body"
+              size="medium"
+              color="surface.text.subtle.lowContrast"
+              weight="bold"
+            >
+              {titleCase(key)}
+            </Text>
+            {key === 'Net amount' || key === 'Net deduction' ? (
+              <div>
+                <InfoIcon size="small" color="surface.text.subtle.lowContrast" />
+                <Popover theme="dark" align="top">
+                  <PopoverBody>
+                    <div>{tooltipConfig[key]}</div>
+                  </PopoverBody>
+                </Popover>
+              </div>
+            ) : null}
+          </Box>
+        </ColumnHeader>
       );
     });
   };
@@ -461,6 +471,8 @@ const EntityList = (props) => {
                       isMobileResolution={props.isMobileResolution}
                       onIdCopied={onIdCopied}
                       onItemClick={onItemClick}
+                      sectionType={sectionType}
+                      activeTab={activeTab}
                     />
                   ))}
               </TableBody>

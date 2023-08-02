@@ -49,6 +49,7 @@ const DeductionsEntities = (props) => {
         />
         <EntityListNew
           entityType="debit"
+          sectionType="deductions"
           breakupDetails={props.breakupDetails}
           activeTab={activeTab}
           settlementId={props.settlementId}

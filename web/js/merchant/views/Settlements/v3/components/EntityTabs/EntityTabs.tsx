@@ -1,23 +1,11 @@
-import React from 'react';
-import { sanitizeTabName, removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
-import { titleCase } from 'common/utils/rzp-utils';
-import { connect } from 'react-redux';
-import { TabsContainer, Tab, StyledDivTabText } from './styled';
-import { Text, Badge } from '@razorpay/blade/components';
+import { Badge, Text } from '@razorpay/blade/components';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-
-const SECTION_TAB_MAPPING = {
-  gross_settlements: ['payment', 'reversal', 'adjustment'],
-  deductions: [
-    'adjustment',
-    'transfer',
-    'refund',
-    'dispute',
-    'fund',
-    'settlement.ondemand',
-    'credit',
-  ],
-};
+import { titleCase } from 'common/utils/rzp-utils';
+import { removeUnreconciledEntity, sanitizeTabName } from 'merchant/views/Settlements/v2/util';
+import React from 'react';
+import { connect } from 'react-redux';
+import { StyledDivTabText, Tab, TabsContainer } from './styled';
+import { SECTION_TAB_MAPPING } from 'merchant/views/Settlements/v3/components/EntityList/constants';
 
 const RenderTabs = ({
   tabsData,
@@ -79,7 +67,6 @@ const Tabs = (props): JSX.Element => {
 
   const getTabData = () => {
     items = removeUnreconciledEntity(items);
-
     return items.reduce((acc, tab) => {
       if (!tab.count) return acc;
 

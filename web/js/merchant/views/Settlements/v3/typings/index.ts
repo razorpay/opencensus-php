@@ -132,10 +132,12 @@ export interface BreakUpDetailsResponse {
   grossSettlements: {
     amount: number;
     entries: BreakupComponentInterface[];
+    components: string[];
   };
   deductions: {
     amount: number;
     entries: BreakupComponentInterface[];
+    components: string[];
   };
   netSettlements: {
     amount: number;

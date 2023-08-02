@@ -49,6 +49,7 @@ const GrossSettlementsEntities = (props) => {
         />
         <EntityListNew
           entityType="credit"
+          sectionType="gross_settlements"
           breakupDetails={props.breakupDetails}
           activeTab={activeTab}
           settlementId={props.settlementId}
