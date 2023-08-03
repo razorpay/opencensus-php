@@ -7,18 +7,23 @@ use Carbon\Carbon;
 use Exception;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
+use RZP\Diag\EventCode;
+use RZP\Models\Adjustment\Status;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Capture as CaptureTrait;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
@@ -108,20 +113,24 @@ class Core extends Base\Core
             $isBulkJournal = true;
         }
 
-        if($isBulkJournal)
+        if($isBulkJournal === true)
         {
             $bulkJournals = $response[LedgerConstants::JOURNALS];
+
             $singleJournal = $bulkJournals[0];
+
             $transactorId = $singleJournal[LedgerConstants::TRANSACTOR_ID];
 
             $transactorEvent = $singleJournal[LedgerConstants::TRANSACTOR_EVENT];
 
             $this->handleBulkJournalFlow($bulkJournals, $transactorId, $transactorEvent);
+
             return;
         }
 
         // Assigning value again as request object is not populated in the kafka response for success cases
         $transactorId = $journal[LedgerConstants::TRANSACTOR_ID];
+
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
         try
@@ -303,6 +312,9 @@ class Core extends Base\Core
                 return $res;
             case "credits":
                 $res[Constants::TYPE] = Constants::CREDIT_LOADING;
+                return $res;
+            case "adj":
+                $res[Constants::TYPE] = Constants::RESERVE_BALANCE_LOADING;
                 return $res;
             default:
                 $res[Constants::TYPE] = "";
@@ -518,9 +530,10 @@ class Core extends Base\Core
         $ledgerEntries = [];
         $journalId = "";
 
-        if($isBulkJournal)
+        if($isBulkJournal === true)
         {
             $singleJournal = $journal[0];
+
             $transactorPublicId = $singleJournal[LedgerConstants::TRANSACTOR_ID];
 
             $journalId = $singleJournal['id'];
@@ -531,8 +544,8 @@ class Core extends Base\Core
         }
         else
         {
-
             $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
             $journalId = $journal['id'];
 
             $ledgerEntries = $journal["ledger_entry"];
@@ -675,8 +688,94 @@ class Core extends Base\Core
 
             return null;
         }
+        else if($transactionType === Constants::RESERVE_BALANCE_LOADING)
+        {
+            [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_reserve_balance" );
 
-        //Note: Transaction is not created for gateway_captured event and credit loading event.
+            if((empty($creditJournalId)) or
+                (empty($debitJournalId)))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_EXPECTED_FUND_ACCOUNT_TYPE_NOT_PRESENT,
+                    null,
+                    [
+                        LedgerConstants::ADJUSTMENT_ID      => $transactorPublicId,
+                    ]);
+            }
+
+            $this->trace->info(TraceCode::PG_LEDGER_ACK_WORKER_RESERVE_BALANCE_LOADING_EVENT, [
+                LedgerConstants::JOURNALS   => $journal,
+                LedgerConstants::SOURCE     => $source
+            ]);
+
+            try
+            {
+                $adjustment = $this->repo->adjustment->findByPublicId($transactorPublicId);
+            }
+            catch (\Exception $e)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID,
+                    null,
+                    [
+                        LedgerConstants::ADJUSTMENT_ID      => $transactorPublicId,
+                    ]);
+            }
+
+            $txn = $this->repo->transaction(function() use ($adjustment, $creditJournalId)
+            {
+                $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($adjustment);
+
+                if (isset($txn) === true)
+                {
+                    return $txn;
+                }
+
+                [$balance, $sendReserveBalanceMail] = (new Balance\Core())->createOrFetchReserveBalance($this->merchant,
+                    Type::RESERVE_PRIMARY, $this->mode);
+
+                if ($sendReserveBalanceMail === true)
+                {
+                    (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($this->merchant, $balance);
+                }
+
+                $adjustment->balance()->associate($balance);
+
+                $txn = (new Transaction\Core)->createFromAdjustment($adjustment, $creditJournalId);
+
+                $adjustment->setStatus(Status::PROCESSED);
+
+                $this->repo->saveOrFail($txn);
+
+                $this->repo->saveOrFail($adjustment);
+
+                return $txn;
+            });
+
+            (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+
+            $merchantCore = new Merchant\Core();
+
+            $input = [
+                "amount" => $adjustment->getAmount(),
+                "type" => "reserve_primary",
+                "currency" => "INR",
+                "description" => $adjustment->getDescription()
+            ];
+
+            $merchantCore->sendFundAdditionSuccessEvent($input, $merchantId, $adjustment, EventCode::RESERVE_BALANCE_ADDITION_SUCCESS);
+
+            $merchantCore->sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $adjustment->getAmount(), Type::RESERVE_BALANCE);
+
+            $this->trace->info(TraceCode::ADJUSTMENT_TRANSACTION_CREATED,
+                [
+                    LedgerConstants::ADJUSTMENT_ID      => $transactorPublicId,
+                    LedgerConstants::JOURNAL_ID         => $journalId,
+                    LedgerConstants::API_TRANSACTION_ID => $txn->getId(),
+                ]);
+
+            return $txn;
+        }
+
+        //Note: Transaction is not created for credit loading event.
 
         return $txn;
     }
@@ -1055,5 +1154,48 @@ class Core extends Base\Core
         }
 
         return ['success' => true];
+    }
+
+    private function determineJournalIdForAPITransaction($journal, $debitJournalFundAccountType, $creditJournalFuncAccountType)
+    {
+        $debitJournals = array_filter($journal, function($item) use ($debitJournalFundAccountType) {
+            return $this->filterByFundAccountType($item, $debitJournalFundAccountType);
+        });
+
+        $creditJournals = array_filter($journal, function($item) use ($creditJournalFuncAccountType) {
+            return $this->filterByFundAccountType($item, $creditJournalFuncAccountType);
+        });
+
+        $creditJournalId = '';
+        $debitJournalId = '';
+
+        foreach ($debitJournals as $debitJournal) {
+            $debitJournalId = $debitJournal['id'];
+        }
+
+        foreach ($creditJournals as $creditJournal) {
+            $creditJournalId = $creditJournal['id'];
+        }
+
+        return [$creditJournalId, $debitJournalId];
+    }
+
+    private function filterByFundAccountType($item, $fundAccountType)
+    {
+        $searchResults = [];
+
+        if (isset($item['ledger_entry']))
+        {
+            foreach ($item['ledger_entry'] as $ledgerEntry)
+            {
+                if (isset($ledgerEntry['account_entities']['fund_account_type']) and
+                    in_array($fundAccountType, $ledgerEntry['account_entities']['fund_account_type']))
+                {
+                    $searchResults[] = $item;
+                    break;
+                }
+            }
+        }
+        return $searchResults;
     }
 }

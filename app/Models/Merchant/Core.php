@@ -128,6 +128,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 use RZP\Models\Merchant\Consent\Constants as MerchantConsentConstants;
 use RZP\Trace\Tracer;
+use RZP\Models\Ledger\ReverseShadow\ReserveBalanceLoading;
 use RZP\Models\Typeform\Core as TypeformCore;
 use RZP\Models\Typeform\Constants as TypeformConstant;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
@@ -1178,6 +1179,7 @@ class Core extends Base\Core
         }
 
         (new Merchant\Validator())->validateIfReserveBalanceAlreadyAdded($description, $merchantId);
+
         $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
 
         $payment =  $this->repo->payment->findByPublicId($paymentInput['id']);
@@ -1225,9 +1227,18 @@ class Core extends Base\Core
             "response" => $response
         ]);
 
-        $this->sendFundAdditionSuccessEvent($input, $merchantId, $response, EventCode::RESERVE_BALANCE_ADDITION_SUCCESS);
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $ledgerReserveBalanceCore = new ReserveBalanceLoading\Core();
 
-        $this->sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amountAfterFee, Type::RESERVE_BALANCE );
+            $ledgerReserveBalanceCore->createReserveBalanceLoadingReverseShadowLedgerEntries($response, $payment);
+        }
+        else
+        {
+            $this->sendFundAdditionSuccessEvent($input, $merchantId, $response, EventCode::RESERVE_BALANCE_ADDITION_SUCCESS);
+
+            $this->sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amountAfterFee, Type::RESERVE_BALANCE );
+        }
 
         return $response;
     }
@@ -1247,7 +1258,7 @@ class Core extends Base\Core
         Mail::queue($createAlertMail);
     }
 
-    private function sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amount, $accountType)
+    public function sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amount, $accountType)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 

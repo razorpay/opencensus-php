@@ -371,7 +371,8 @@ class Core extends Base\Core
     {
         try
         {
-            if ($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
+            if ($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
                 return;
             }
 

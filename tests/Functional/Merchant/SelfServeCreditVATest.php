@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use RZP\Mail\Merchant\CreditsAdditionSuccess;
 use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -424,4 +425,295 @@ class SelfServeCreditVATest extends TestCase
         $this->startTest();
     }
 
+    public function testFundAdditionViaWebhookForReserveBalanceCentralLedger()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.reserve_balance.merchant_id', '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '10000000000001');
+
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event)
+            {
+                $this->assertEquals('reserve_balance', $event['payload']['virtual_account']['entity']['notes']['type'] );
+                $this->assertEquals('10000000000001', $event['payload']['virtual_account']['entity']['notes']['merchant_id'] );
+                $this->assertEquals($event['payload']['bank_transfer']['entity']['payment_id'], $event['payload']['payment']['entity']['id'] );
+                $this->assertEquals($event['payload']['bank_transfer']['entity']['virtual_account_id'], $event['payload']['virtual_account']['entity']['id'] );
+                $this->testData['addFundsViaWebhook']['request']['content'] = $event;
+            }
+        );
+
+        $this->fundAdditionToVirtualAccount('reserve_balance');
+
+        $this->startTest($this->testData['addFundsViaWebhook']);
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        $expectedLedgerOutboxEntry = [
+            "transactor_event"=> "merchant_reserve_balance_loading",
+            "currency"=> "INR",
+            "journals"=> [
+                [
+                    "merchant_id"=> "10000000000000",
+                    "currency"=> "INR",
+                    "money_params"=> [
+                        "amount"=> $adjustment->getAmount(),
+                        "base_amount"=> $adjustment->getAmount(),
+                        "merchant_balance_amount"=> $adjustment->getAmount(),
+                        "credit_control_amount"=> $adjustment->getAmount()
+                    ],
+                    "additional_params"=> [
+                        "entry_type"=> "debit"
+                    ]
+                ],
+                [
+                    "merchant_id"=> "10000000000001",
+                    "currency"=> "INR",
+                    "money_params"=> [
+                        "amount"=> $adjustment->getAmount(),
+                        "base_amount"=> $adjustment->getAmount(),
+                        "reserve_balance_amount"=> $adjustment->getAmount(),
+                        "credit_control_amount"=> $adjustment->getAmount()
+                    ],
+                    "additional_params"=> [
+                        "entry_type"=> "credit"
+                    ]
+                ]
+            ],
+            "ledger_integration_mode"=> "reverse-shadow",
+            "tenant"=> "PG"
+        ];
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $this->assertEquals('10000000000001', $adjustment->getMerchantId());
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+
+        Mail::assertNotQueued(ReserveBalanceAdditionSuccess::class, function ($mail)
+        {
+            $this->assertEquals("10000000000001", $mail->viewData['merchant_id']);
+            $this->assertEquals("Reserve Balance",  $mail->viewData['account_type']);
+            return true;
+        });
+    }
+
+    public function testKafkaSuccessForReserveBalanceLoadingEvent()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.reserve_balance.merchant_id', '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '10000000000001');
+
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event)
+            {
+                $this->assertEquals('reserve_balance', $event['payload']['virtual_account']['entity']['notes']['type'] );
+                $this->assertEquals('10000000000001', $event['payload']['virtual_account']['entity']['notes']['merchant_id'] );
+                $this->assertEquals($event['payload']['bank_transfer']['entity']['payment_id'], $event['payload']['payment']['entity']['id'] );
+                $this->assertEquals($event['payload']['bank_transfer']['entity']['virtual_account_id'], $event['payload']['virtual_account']['entity']['id'] );
+                $this->testData['addFundsViaWebhook']['request']['content'] = $event;
+            }
+        );
+
+        $this->fundAdditionToVirtualAccount('reserve_balance');
+
+        $this->startTest($this->testData['addFundsViaWebhook']);
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        $journal = $this->getReserveBalanceLoadingJournalResponse($adjustment->getPublicId());
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $payloadName = $adjustment->getPublicId().'-merchant_reserve_balance_loading';
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $payloadName]);
+
+        $this->assertEquals(1, $ledgerOutboxEntity['is_deleted'], 'outbox entry soft deleted');
+
+        $apiTransaction = $this->getDbEntity('transaction', ['entity_id' => $adjustment->getId()]);
+
+        $this->assertEquals($adjustment->getId(),$apiTransaction->getEntityId());
+
+        $this->assertEquals('adjustment',$apiTransaction->getType());
+
+        $reserveBalance = $this->getDbLastEntity('balance');
+
+        $updatedAdjustment = $this->getDbEntityById('adjustment', $adjustment->getId());
+
+        $this->assertEquals("processed",$updatedAdjustment->getStatus() , 'adjustment status should be processed');
+
+        $this->assertEquals('10000000000001', $adjustment->getMerchantId());
+
+        $this->assertEquals($adjustment->getAmount(), $reserveBalance->getBalance());
+
+        Mail::assertQueued(ReserveBalanceAdditionSuccess::class, function ($mail)
+        {
+            $this->assertEquals("10000000000001", $mail->viewData['merchant_id']);
+            $this->assertEquals("Reserve Balance",  $mail->viewData['account_type']);
+            return true;
+        });
+    }
+
+    private function getReserveBalanceLoadingJournalResponse($transactorId)
+    {
+        return [
+            "journals" => [
+                [
+                    "id" => "MKKW8I8D8ITig2",
+                    "created_at" => 1690789363,
+                    "updated_at" => 1690789363,
+                    "merchant_id" => "10000000000001",
+                    "amount" => 1000000,
+                    "base_amount" => 1000000,
+                    "currency" => "INR",
+                    "tenant" => "PG",
+                    "transactor_id" => $transactorId,
+                    "transactor_event" => "merchant_reserve_balance_loading",
+                    "transaction_date" => 1690787246,
+                    "ledger_entry" => [
+                        [
+                            "id" => "MKKW8IEa9unbWt",
+                            "created_at" => 1690789363,
+                            "updated_at" => 1690789363,
+                            "merchant_id" => "10000000000001",
+                            "journal_id" => "MKKW8I8D8ITig2",
+                            "account_id" => "KNIZVBBFrYHYbq",
+                            "amount" => 1000000,
+                            "base_amount" => 1000000,
+                            "type" => "debit",
+                            "currency" => "INR",
+                            "balance" => "",
+                            "balance_updated" => false,
+                            "account_entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["reserve_balance_control"]
+                            ]
+                        ],
+                        [
+                            "id" => "MKKW8IEbW5soLt",
+                            "created_at" => 1690789363,
+                            "updated_at" => 1690789363,
+                            "merchant_id" => "10000000000001",
+                            "journal_id" => "MKKW8I8D8ITig2",
+                            "account_id" => "KkBoZrmdIrqy5o",
+                            "amount" => 1000000,
+                            "base_amount" => 1000000,
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => 2000000.000000,
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["merchant_reserve_balance"]
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    "id" => "MKKW8IvhnsRe5g",
+                    "created_at" => 1690789363,
+                    "updated_at" => 1690789363,
+                    "merchant_id" => "10000000000000",
+                    "amount" => 1000000,
+                    "base_amount" => 1000000,
+                    "currency" => "INR",
+                    "tenant" => "PG",
+                    "transactor_id" => $transactorId,
+                    "transactor_event" => "merchant_reserve_balance_loading",
+                    "transaction_date" => 1690787246,
+                    "ledger_entry" => [
+                        [
+                            "id" => "MKKW8J1YYTru3s",
+                            "created_at" => 1690789363,
+                            "updated_at" => 1690789363,
+                            "merchant_id" => "EWmgrWCkBAJYML",
+                            "journal_id" => "MKKW8IvhnsRe5g",
+                            "account_id" => "KNIZVBBFrYHYbq",
+                            "amount" => 1000000,
+                            "base_amount" => 1000000,
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "",
+                            "balance_updated" => false,
+                            "account_entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["reserve_balance_control"]
+                            ]
+                        ],
+                        [
+                            "id" => "MKKW8J1ZkqtckO",
+                            "created_at" => 1690789363,
+                            "updated_at" => 1690789363,
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "MKKW8IvhnsRe5g",
+                            "account_id" => "KSLxYJrZUawFHi",
+                            "amount" => 1000000,
+                            "base_amount" => 1000000,
+                            "type" => "debit",
+                            "currency" => "INR",
+                            "balance" => 3907266490.000000,
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["merchant_balance"]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    private function getKafkaEventPayload($journal, $request = null, $msg = "")
+    {
+        $kafkaPayload = [
+            "request" => $request,
+            "response" => $journal,
+            "error_response" => [
+                "msg" => $msg
+            ]
+        ];
+
+        $serializedPayload = base64_encode(json_encode($kafkaPayload));
+
+        return [
+            "before" => null,
+            "after" => [
+                "id" => "LLJMDzemcsroDp",
+                "payload_serialized" => $serializedPayload,
+                "created_at" => 1677466532,
+                "updated_at" => 1677466532
+            ],
+            "source" => [
+                "version" => "2.1.1.Final",
+                "connector" => "postgresql",
+                "name" => "internal_db_stage_ledger_payments_test_outbox",
+                "ts_ms" => 1677466532793,
+                "snapshot" => "false",
+                "db" => "stage_ledger_pg_test",
+                "sequence" => "[\"60869735408\",\"60869737336\"]",
+                "schema" => "public",
+                "table" => "outbox_jobs_api_default",
+                "txId" => 242246764,
+                "lsn" => 60869737336,
+                "xmin" => null
+            ],
+            "op" => "c",
+            "ts_ms" => 1677466533213,
+            "transaction" => null,
+            "_record_source" => "debezium_postgres"
+        ];
+    }
 }

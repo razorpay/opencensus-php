@@ -98,9 +98,11 @@ class Core extends Base\Core
         else if (($balanceType === Balance\Type::RESERVE_BANKING) or
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
-            [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,
-                                                                        $balanceType, $this->mode);
-
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,
+                    $balanceType, $this->mode);
+            }
         }
         else
         {
@@ -109,7 +111,10 @@ class Core extends Base\Core
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
-        $adj->balance()->associate($balance);
+        if ($balance !== null)
+        {
+            $adj->balance()->associate($balance);
+        }
 
         $adj->setStatus(Status::CREATED);
 
@@ -162,7 +167,8 @@ class Core extends Base\Core
             (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($merchant, $balance);
         }
 
-        if ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        if (($adj->isBalanceTypeBanking() === true) and
+            ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false))
         {
             $this->processLedgerAdjustment($adjustment);
         } else {
@@ -180,11 +186,13 @@ class Core extends Base\Core
 
         return $adjustment;
     }
+
     private function createLedgerEntriesForMerchantReserveBalanceLoading(Adjustment\Entity $adj, Merchant\Entity $merchant, $payment)
     {
         try
         {
-            if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+                or ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
             {
                 return;
             }
