@@ -35,6 +35,7 @@ import {
   PAYMENT_STATUS,
   FETCH_EZETAP_KEY_NAME,
 } from 'merchant/views/Transactions/Payments/constants';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 export const isPartialPayment = (props) => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded;
@@ -508,7 +509,10 @@ class RefundModal extends Component {
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
 
-    if (!showWhenUtil({ featureEnabled: 'disable_instant_refunds' })) {
+    if (
+      !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds)
+    ) {
       return (
         <div>
           <div
@@ -608,7 +612,10 @@ class RefundModal extends Component {
                 );
               }
               /* istanbul ignore else */
-              if (!instant_refund_supported) {
+              if (
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds) &&
+                !instant_refund_supported
+              ) {
                 return (
                   <div className="low-funds">
                     Currently, Instant Refunds are available on TPV, netbanking, UPI and select
