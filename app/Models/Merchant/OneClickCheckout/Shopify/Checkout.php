@@ -177,7 +177,7 @@ class Checkout extends Base\Core
 
 
     // returns notes for Rzp order using Shopify storefront id and line items
-    public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = []): array
+    public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = [], bool $isAutoDiscountApplied = false): array
     {
         $notes = [
             'storefront_id' => $checkout['id'],
@@ -185,7 +185,8 @@ class Checkout extends Base\Core
         ];
 
         // Store the script discount details in RZP notes
-        if (empty($cartObj) === false)
+        // Condition verify whether cart obj is empty or not and is ther any sort of auto discount applied on cart.
+        if (empty($cartObj) === false && $isAutoDiscountApplied === true)
         {
             $discountFromScript = 0;
             $discountTitle = null;

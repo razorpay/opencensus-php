@@ -429,7 +429,7 @@ class Service extends Base\Service
 
             $amount = $checkoutAmount;
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied);
         }
 
         $order = (new RzpOrders)->createOrder(
@@ -604,7 +604,7 @@ class Service extends Base\Service
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache, true);
         }
 
         return [
