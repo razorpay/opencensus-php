@@ -11,7 +11,6 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Admin;
 use RZP\Models\FeeRecovery;
-use RZP\Models\Vpa;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Attribute;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -55,7 +54,6 @@ class Entity extends Base\PublicEntity
     const BALANCE_LAST_FETCHED_AT           = 'balance_last_fetched_at';
 
     const ACCOUNT_STATEMENT_LAST_UPDATED_AT = 'account_statement_last_updated_at';
-    const UPI_ID                            = 'upi_id';
     const STATUS_LAST_UPDATED_AT            = 'status_last_updated_at';
 
     // For tracking Last statement fetch attempt for merchant
@@ -358,7 +356,6 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::USING_NEW_STATES,
         self::FASTER_DOC_COLLECTION_ENABLED,
-        self::UPI_ID,
         self::MASTER_BANKING_ACCOUNT,
     ];
 
@@ -377,7 +374,6 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::USING_NEW_STATES,
         self::FASTER_DOC_COLLECTION_ENABLED,
-        self::UPI_ID,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -907,37 +903,6 @@ class Entity extends Base\PublicEntity
             {
                 $array[self::ACCOUNT_STATEMENT_LAST_UPDATED_AT] = $balance->getLastFetchedAtAttribute();
             }
-        }
-    }
-
-    static public function getUpiHandleFromVpa($id)
-    {
-        $bankingAccountRepo = new Repository;
-
-        if (str_starts_with($id, self::$sign) === true)
-        {
-            $id = $bankingAccountRepo->verifyIdAndStripSign($id);
-        }
-
-        $vpaRepo = new Vpa\Repository;
-
-        /** @var Vpa\Entity $vpa */
-        $vpa = $vpaRepo->findByBankingAccountId($id);
-
-        if ($vpa)
-        {
-            return $vpa->getAddressAttribute();
-        }
-    }
-
-    public function setPublicUpiIdAttribute(array &$array)
-    {
-        // only for merchant dashboard
-        if (app('basicauth')->isProxyAuth() === true && app('basicauth')->isBankLms() === false)
-        {
-            $id = $array[self::ID];
-
-            $array[self::UPI_ID] = self::getUpiHandleFromVpa($id);
         }
     }
 

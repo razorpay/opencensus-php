@@ -5,7 +5,6 @@ use RZP\Diag\EventCode;
 use RZP\Jobs\BankingAccount\BankingAccountNotifyMob;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
-use RZP\Models\BankingAccount\Repository;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -5201,17 +5200,6 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
 
-        $bankingAccountRepo = new BankingAccount\Repository;
-
-        $this->fixtures->create('vpa', [
-            'id'             => 'hgqastyuiosdfg',
-            'merchant_id'    => '10000000000000',
-            'entity_type'    => 'banking_account',
-            'entity_id'      =>  $bankingAccountRepo->verifyIdAndStripSign($bankingAccount['id']),
-            'username'       => 'dummyusername',
-            'handle'         => 'handle'
-        ]);
-
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts/' . $bankingAccount['id'],
@@ -5219,12 +5207,11 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
-        $response = $this->startTest($dataToReplace);
+        $this->startTest($dataToReplace);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals('560030', $bankingAccount->getPincode());
-        $this->assertEquals('dummyusername@handle', $response['upi_id']);
     }
 
     public function testGetBankingAccountByAccountTypeFromMOB()
@@ -13376,7 +13363,7 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($request);
-
+        
         // Test with new admin API
 
         $request = [
@@ -13613,29 +13600,6 @@ class BankingAccountTest extends TestCase
         return $xsegmentMock;
     }
 
-    public function testFetchRblApplicationFromAdminLms()
-    {
-        $bankingAccount = $this->createBankingAccount();
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/admin_lms/banking_accounts/' . $bankingAccount['id'],
-                'method'  => 'GET',
-            ],
-            'response' => [
-                'content' => [
-                    'id' => $bankingAccount['id'],
-                ],
-            ]
-        ];
-
-        $this->ba->adminAuth();
-
-        $response = $this->startTest($dataToReplace);
-
-        $this->assertArrayNotHasKey('upi_id', $response);
-    }
-
 
     // =========== RBL on BAS Tests ========== //
 
@@ -13687,32 +13651,6 @@ class BankingAccountTest extends TestCase
         $this->testGetRblApplicationFromMob($merchant);
     }
 
-    public function testGetRblApplicationFromMobOnProxyAuth()
-    {
-        $merchant = $this->getDbEntity('merchant', [
-            'id' => self::DefaultMerchantId,
-        ]);
-
-        $this->ba->proxyAuth();
-
-        $this->ba->addXOriginHeader();
-
-        $this->ba->setMerchant($merchant);
-
-        $this->fixtures->create('vpa', [
-            'id'             => 'hgqastyuiosdfg',
-            'merchant_id'    => '10000000000000',
-            'entity_type'    => 'banking_account',
-            'entity_id'      =>  'JuLWj2OnFAcg72',
-            'username'       => 'dummyusername',
-            'handle'         => 'handle'
-        ]);
-
-        $response = $this->startTest();
-
-        $this->assertEquals('dummyusername@handle', $response['upi_id']);
-    }
-
     public function testGetRblApplicationFromAdminLms()
     {
         $this->ba->adminAuth();
@@ -13724,9 +13662,7 @@ class BankingAccountTest extends TestCase
     {
         $this->setupBankLMSTest();
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey('upi_id', $response);
+        $this->startTest();
     }
 
     // Test Fetch Multiple Applications

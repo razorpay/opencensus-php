@@ -7,7 +7,6 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetailEntity;
 use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetailsEntity;
-use RZP\Models\Vpa;
 use RZP\Tests\Functional\Fixtures\Entity\Admin;
 
 class BasDtoAdapter
@@ -752,9 +751,6 @@ class BasDtoAdapter
 
         $apiResponseDto[BankingAccountEntity::FASTER_DOC_COLLECTION_ENABLED] = true;
 
-        $this->setUpiIdFromVpaIfApplicable($apiResponseDto);
-
-
         // Handle - banking_account_details, after credentials change
         $bankingAccountDetails = $this->getBankingAccountDetailsFromBasResponse($basResponseDto);
 
@@ -778,8 +774,6 @@ class BasDtoAdapter
             $apiResponseDto[BankingAccountEntity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetailEntity::ADDITIONAL_DETAILS] =
                 json_encode($apiResponseDto[BankingAccountEntity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetailEntity::ADDITIONAL_DETAILS]);
         }
-
-
 
         // TODO: need to check if balance is required
         /**
@@ -1046,15 +1040,5 @@ class BasDtoAdapter
         ];
     }
 
-    public function setUpiIdFromVpaIfApplicable(array &$apiResponseDto)
-    {
-        // only for merchant dashboard
-        if (app('basicauth')->isProxyAuth() === true && app('basicauth')->isBankLms() === false)
-        {
-            $bankingAccountId = $apiResponseDto['id'];
-
-            $apiResponseDto[BankingAccount\Entity::UPI_ID] = BankingAccount\Entity::getUpiHandleFromVpa($bankingAccountId);
-        }
-    }
 
 }

@@ -5723,21 +5723,6 @@ return [
         ]
     ],
 
-    'testGetRblApplicationFromMobOnProxyAuth' => [
-        'request' => [
-            'url'    => '/banking_accounts/bacc_JuLWj2OnFAcg72',
-            'method' => 'GET',
-            'server' => [
-                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'id' => 'bacc_JuLWj2OnFAcg72',
-            ]
-        ]
-    ],
-
     'testGetRblApplicationFromAdminLms' => [
         'request' => [
             'url'    => '/admin_lms/banking_accounts/bacc_JuLWj2OnFAcg72',
@@ -5910,9 +5895,9 @@ return [
             'method' => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
-                    'Header' => [
-                        'TranID' => '220128134659',
-                        'Corp_ID' => 'RZPAY'
+                    'Header' => [ 
+                        'TranID' => '220128134659', 
+                        'Corp_ID' => 'RZPAY' 
                     ],
                     'Body' => [
                         'Account No.' => '4099834512998',
