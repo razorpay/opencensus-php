@@ -196,7 +196,7 @@ class Processor extends Base\Processor
 
             $bank_account_content[BankAccount\Entity::IFSC] = $bankaccount[BankAccount\Entity::IFSC];
 
-            $bank_account_content[BankAccount\Entity::ACCOUNT_NUMBER] = (new Order\Core)->getMaskedAccountNumber($bankaccount[BankAccount\Entity::ACCOUNT_NUMBER]);
+            $bank_account_content[BankAccount\Entity::ACCOUNT_NUMBER] = $this->getMaskedAccountNumber($bankaccount[BankAccount\Entity::ACCOUNT_NUMBER]);
 
             $bank_account_content[BankAccount\Entity::BANK_NAME] = $bankaccount[BankAccount\Entity::BANK_NAME];
 
@@ -206,6 +206,23 @@ class Processor extends Base\Processor
         return $bank_account_contents;
     }
 
+    /**
+     * This is the method to mask last 4 characters for account number
+     * @param $accountNumber
+     *
+     * @return string
+     */
+    public function getMaskedAccountNumber($accountNumber)
+    {
+        $accountNumberLength = strlen($accountNumber);
+
+        $last4Digits = substr($accountNumber, -4);
+
+        $formattedNumber = str_repeat('X', $accountNumberLength - 4) . $last4Digits;
+
+        return $formattedNumber;
+    }
+        
     private function setMerchantInfoInResponse(&$response)
     {
         try

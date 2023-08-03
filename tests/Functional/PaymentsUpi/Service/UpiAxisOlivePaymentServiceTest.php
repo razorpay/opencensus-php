@@ -49,6 +49,7 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertArrayHasKey('account_number', $preferences["tpv"]["bank_accounts"][0]);
 
+        $this->assertEquals('XXXXXXXXXX0304', $preferences["tpv"]["bank_accounts"][0]['account_number']);
     }
 
     // merchant is tpv enabled and order id is not passed
