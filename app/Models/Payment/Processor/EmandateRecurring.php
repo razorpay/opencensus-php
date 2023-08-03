@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -304,16 +305,15 @@ trait EmandateRecurring
     
     public function updateEmandateToken(Entity $payment, $nrErrorCode)
     {
-        // dcs config fetch
         $this->trace->info(
             TraceCode::EMANDATE_PAYMENT_UPDATE_TOKEN,
             [
                 'payment_id'      => $payment->getId(),
                 'token_id'        => $payment->getTokenId(),
-                'global_token_id' => $payment->getGlobalTokenId(),
                 'nr_error_code'   => $nrErrorCode,
                 "merchant_id"     => $payment->getMerchantId()
             ]);
+    
         
         $paymentCreatedMonth = $this->getCurrentMonthIST($payment->getCreatedAt());
         
@@ -328,6 +328,7 @@ trait EmandateRecurring
                     "current_month"         => $currentMonth,
                     "payment_created_at"    => $payment->getCreatedAt(),
                     'token_id'              => $payment->getTokenId(),
+                    'payment_id'            => $payment->getId(),
                     "merchant_id"           => $payment->getMerchantId()
                 ]);
     
@@ -336,7 +337,12 @@ trait EmandateRecurring
         
         $merchantConfig = $this->fetchEmandateDcsConfigs($payment->getMerchantId());
     
-        $this->trace->info(TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG, [ "merchant_config" => $merchantConfig ]);
+        $this->trace->info(TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG, [
+            "merchant_config"       => $merchantConfig,
+            'token_id'              => $payment->getTokenId(),
+            'payment_id'            => $payment->getId(),
+            "merchant_id"           => $payment->getMerchantId()
+        ]);
         
         $token = $payment->getGlobalOrLocalTokenEntity();
         
@@ -351,6 +357,7 @@ trait EmandateRecurring
             "emandate_new_configs"      => $emandateConfig,
             "emandate_previous_configs" => $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [],
             "token_id"                  => $token->getId(),
+            'payment_id'                => $payment->getId(),
             "merchant_id"               => $payment->getMerchantId()
         ];
     
@@ -379,45 +386,56 @@ trait EmandateRecurring
     public function fetchConfigsForToken($token, $merchantConfig, $nrErrorCode)
     {
         // merchant configs
-        $retriesAllowed = $merchantConfig[Token\Constants::RETRY_ATTEMPTS] ?? null;
+        $retriesAllowed = $merchantConfig[Token\Constants::RETRY_ATTEMPTS] ?? 0;
         
-        $coolDownPeriod = $merchantConfig[Token\Constants::COOLDOWN_PERIOD] ?? null;
+        $coolDownPeriod = $merchantConfig[Token\Constants::COOLDOWN_PERIOD] ?? 0;
     
         $tempErrorEnableFlag = $merchantConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
         
-    
         // token configs
         $emandateConfig = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
-        
-        if($tempErrorEnableFlag === false or $emandateConfig === null)
-        {
-            return null;
-        }
     
         $retriesAttempted = (int) $emandateConfig[Token\Constants::RETRY_ATTEMPTS] ?? 0;
     
         $emandateTokenStatus = $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] ?? null;
     
+        $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
     
-        // Case 1: already token blocked, no need to block again
-        if($emandateTokenStatus !== null)
+        // Case 1: already token blocked or temp config is not enabled, no need to go to flow
+        if($tempErrorEnableFlag === false or $emandateTokenStatus !== null)
         {
             return null;
         }
     
+        //Incase if error is not temporary and config exists, we are removing emandate configs
+        if($temporaryErrorCode === null)
+        {
+            if($emandateConfig !== null or empty($emandateConfig) === false)
+            {
+                $this->trace->info(
+                    TraceCode::EMANDATE_TOKEN_CONFIG_RESET,
+                    [
+                        'token_id'        => $token->getId(),
+                        'nr_error_code'   => $nrErrorCode
+                    ]);
+    
+                return [];
+            }
+        
+            return null;
+        }
+    
+    
         // cases for temporarily blocking token
-        if($tempErrorEnableFlag === true and
-            (isset($nrErrorCode["temporary_error_code"]) === true and $nrErrorCode["temporary_error_code"] !== null) and
-            ($retriesAllowed !== null and $retriesAllowed > 0) and
-            ($coolDownPeriod !== null and $coolDownPeriod > 0))
+        if($tempErrorEnableFlag === true and $retriesAllowed > 0 and $coolDownPeriod > 0)
         {
             $lastUpdatedMonth = $emandateConfig[Token\Constants::LAST_UPDATED_MONTH] ?? '';
+            
+            $lastUpdatedDate =  Carbon::now(Timezone::IST)->toDateTimeString();
     
             $currentMonth = $this->getCurrentMonthIST();
             
             $previousError = $emandateConfig[Token\Constants::GATEWAY_ERROR] ?? null;
-            
-            $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
             
             // Case 2: Previous error doesn't match with present error, reset with new error
             // Case 3: Previously no error present, start new retry
@@ -429,10 +447,13 @@ trait EmandateRecurring
                 return [
                     Token\Constants::RETRY_ATTEMPTS                 => 1,
                     Token\Constants::LAST_UPDATED_MONTH             => $currentMonth,
-                    Token\Constants::GATEWAY_ERROR                  => $nrErrorCode["temporary_error_code"]
+                    Token\Constants::LAST_UPDATED_ON                => $lastUpdatedDate,
+                    Token\Constants::GATEWAY_ERROR                  => $temporaryErrorCode
                 ];
                 
-            } else {
+            }
+            else
+            {
                 // Case 4: Already max retries attempted, will block token
                 // Case 5: If not reached, will increase retry count
                 if ($retriesAttempted + 1 >= $retriesAllowed)
@@ -442,14 +463,17 @@ trait EmandateRecurring
                         Token\Constants::COOLDOWN_PERIOD            => $this->calculateBlockPeriod($coolDownPeriod),
                         Token\Constants::EMANDATE_TOKEN_STATUS      => Token\Constants::BLOCKED_TEMPORARILY,
                         Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
-                        Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
+                        Token\Constants::LAST_UPDATED_ON            => $lastUpdatedDate,
+                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode
                     ];
                 }
-                else {
+                else
+                {
                     return [
                         Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
                         Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
-                        Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
+                        Token\Constants::LAST_UPDATED_ON            => $lastUpdatedDate,
+                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode
                     ];
                 }
             }
@@ -470,7 +494,8 @@ trait EmandateRecurring
         {
             return $blockDate->getTimestamp();
         }
-        else {
+        else
+        {
             return $endOfMonthDate->getTimestamp();
         }
     }

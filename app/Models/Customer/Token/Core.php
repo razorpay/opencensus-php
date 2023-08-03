@@ -885,13 +885,16 @@ class Core extends Base\Core
         return $tokens;
     }
 
-    public function updateTokenForEmandateRecurringDetails(Entity $token, array $configs)
+    public function updateTokenForEmandateRecurringDetails(Entity $token, array $configs = [])
     {
-        $emandateConfig = [
-            "emandate_configs" => $configs
-        ];
+        $emandateConfigs = [];
+        
+        if(empty($configs) === false)
+        {
+            $emandateConfigs["emandate_configs"] = $configs;
+        }
 
-        $token->setNotes($emandateConfig);
+        $token->setNotes($emandateConfigs);
     }
 
     public function updateTokenFromEmandateGatewayData(Entity $token, array $gatewayData)

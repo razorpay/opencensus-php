@@ -3921,27 +3921,12 @@ class Processor
             }
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
-
+    
             if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
             {
-                try
-                {
-                    $variant = $this->app->razorx->getTreatment(
-                        $merchant->getId(),
-                        Merchant\RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
-                        $this->mode);
-                }
-                catch (\Throwable $ex)
-                {
-                    $variant = 'off';
-                }
-
-                if($variant === 'on')
-                {
-                    $this->validateEmandateTokenStatus($token, $merchant);
-                }
+                $this->validateEmandateTokenStatus($token, $merchant);
             }
-
+            
             if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();

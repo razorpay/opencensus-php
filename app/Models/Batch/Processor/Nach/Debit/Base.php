@@ -168,24 +168,9 @@ class Base extends BaseProcessor
 
         if($payment->isFailed() !== true)
         {
-            try
-            {
-                $variant = $this->app->razorx->getTreatment(
-                    $payment->getMerchantId(),
-                    RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
-                    $this->mode);
-
-            } catch (\Throwable $ex)
-            {
-                $variant = "off";
-            }
-
-            if($variant === "on")
-            {
-                $nrErrorCode = $this->getNRErrorCode($content);
-
-                $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
-            }
+            $nrErrorCode = $this->getNRErrorCode($content);
+    
+            $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
         }
 
         $e = new Exception\GatewayErrorException(

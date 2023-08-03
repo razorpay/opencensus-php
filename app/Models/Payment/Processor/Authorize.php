@@ -7471,11 +7471,7 @@ trait Authorize
     {
         try
         {
-            if((isset($nrErrorCode["temporary_error_code"]) === true and $nrErrorCode["temporary_error_code"] !== null)
-                or (isset($nrErrorCode["permanent_error_code"]) === true and $nrErrorCode["permanent_error_code"] !== null))
-            {
-                $this->updateEmandateToken($payment, $nrErrorCode);
-            }
+            $this->updateEmandateToken($payment, $nrErrorCode);
         }
         catch(\Throwable $ex)
         {
