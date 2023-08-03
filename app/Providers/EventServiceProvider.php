@@ -120,10 +120,10 @@ class EventServiceProvider extends ServiceProvider
             Listeners\AccessMapListener::class . '@onDeleted',
         ],
         MerchantApplications\EventSaved::class => [
-            Listeners\AccessMapListener::class . '@onSaved',
+            Listeners\MerchantApplicationListener::class . '@onSaved',
         ],
         MerchantApplications\EventDeleted::class => [
-            Listeners\AccessMapListener::class . '@onDeleted',
+            Listeners\MerchantApplicationListener::class . '@onDeleted',
         ],
         Partner\Config\EventSaved::class => [
             Listeners\PartnerConfigListener::class . '@onSaved',
