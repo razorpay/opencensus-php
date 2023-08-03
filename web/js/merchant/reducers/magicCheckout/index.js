@@ -76,6 +76,7 @@ export default function magicCheckoutReducer(state = initialState, action) {
         cod_intelligence: action.payload?.data?.cod_intelligence,
         cod_order_control: action.payload?.data?.manual_control_cod_order,
         one_cc_prepay_cod_conversion: action.payload?.data?.one_cc_prepay_cod_conversion,
+        platform: action.payload?.data?.platform,
       });
     case `${FETCH_INTELLIGENCE_CONFIG}::PENDING`:
       return set(state, 'loading', true);
