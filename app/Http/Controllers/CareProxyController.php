@@ -126,6 +126,11 @@ class CareProxyController extends Controller
     const FRESHDESK_MERCHANT_OTP_SENT= 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PostOtp';
     const FRESHDESK_MERCHANT_UPDATE_TICKET_INTERNAL= 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PatchTicketInternal';
 
+    // Single Agent View
+    const SAV_FETCH_MERCHANT_WORKFLOWS = 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows';
+
+    const SAV_FETCH_PROBABLE_REASONS = 'twirp/rzp.care.sav.v1.SavService/FetchProbableReasons';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -166,6 +171,9 @@ class CareProxyController extends Controller
         self::CHAT_GET_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
         self::CHAT_PUT_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
         self::CREATE_QUICKLINKS                       => Name::QUICKLINK_CREATE,
+        self::SAV_FETCH_MERCHANT_WORKFLOWS            => Name::VIEW_WORKFLOW_REQUESTS,
+        self::SAV_FETCH_PROBABLE_REASONS              => Name::VIEW_ALL_ENTITY,
+        self::FRESHDESK_MERCHANT_GET_TICKETS          => Name::VIEW_ALL_ENTITY,
     ];
 
     /**
@@ -259,6 +267,9 @@ class CareProxyController extends Controller
         self::CHAT_GET_TIMINGS_CONFIG,
         self::CHAT_PUT_TIMINGS_CONFIG,
         self::CREATE_QUICKLINKS,
+        self::SAV_FETCH_MERCHANT_WORKFLOWS,
+        self::SAV_FETCH_PROBABLE_REASONS,
+        self::FRESHDESK_MERCHANT_GET_TICKETS,
     ];
 
     const CHAT_ROUTES = [
