@@ -8,8 +8,10 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
+use RZP\Models\Base\UniqueIdEntity;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 
 /**
  * handles all communication with shopify for 1cc
@@ -36,6 +38,7 @@ class Client
     protected $apiSecret;
     protected $oaAuthToken;
     protected $storefrontAccessToken;
+    protected $delegateAccessToken;
 
     protected $endpoint;
     protected $headers;
@@ -51,6 +54,8 @@ class Client
         $this->apiSecret             = $config[OneClickCheckout\Constants::API_SECRET];
         $this->oauthToken            = $config[OneClickCheckout\Constants::OAUTH_TOKEN];
         $this->storefrontAccessToken = $config[OneClickCheckout\Constants::STOREFRONT_ACCESS_TOKEN];
+        // Only the merchants onboarded through backend automation will have delegate access tokens.
+        $this->delegateAccessToken   = $config[OneClickCheckout\Constants::DELEGATE_ACCESS_TOKEN] ?? '';
     }
 
     public function getOAuthToken(){
@@ -124,7 +129,9 @@ class Client
 
     protected function sendRequest($body = null, string $apiType, string $method, string $resource = '')
     {
-        $this->setHeaders($apiType);
+        $clientIpAddress = $this->app['request']->ip();
+
+        $this->setHeaders($apiType, $clientIpAddress);
 
         $this->setUrl($apiType, $resource);
 
@@ -221,7 +228,7 @@ class Client
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_THROTTLED);
     }
 
-    protected function setHeaders(string $apiType)
+    protected function setHeaders(string $apiType, string $clientIpAddress = '')
     {
         $headers = [
           'Content-type' => 'application/json',
@@ -229,7 +236,26 @@ class Client
 
         if ($apiType === OneClickCheckout\Constants::STOREFRONT)
         {
-            $headers['X-Shopify-Storefront-Access-Token'] = $this->storefrontAccessToken;
+            if (!empty($clientIpAddress))
+            {
+                $headers['Shopify-Storefront-Buyer-IP'] = $clientIpAddress;
+            }
+            $useDelegateAccessToken = $this->useDelegateAccessToken();
+
+            $tokenUsed = 'delegate_access_token';
+            if ($useDelegateAccessToken && !empty($this->delegateAccessToken))
+            {
+                $headers['Shopify-Storefront-Private-Token'] = $this->delegateAccessToken;
+            }
+            else
+            {
+                $tokenUsed = 'storefront_access_token';
+                $headers['X-Shopify-Storefront-Access-Token'] = $this->storefrontAccessToken;
+            }
+            $this->monitoring->addTraceCount(
+                Metric::SHOPIFY_1CC_API_TOKEN_USED,
+                ['access_token_used'  => $tokenUsed]
+            );
         }
         else
         {
@@ -364,5 +390,20 @@ class Client
         // TODO: Trim the trace log once issue is identified.
         $estimatedCostPending = $cost['requestedQueryCost'] - $cost['throttleStatus']['currentlyAvailable'];
         return strval(abs($estimatedCostPending));
+    }
+
+    protected function useDelegateAccessToken(): bool
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.magic_use_delegate_access_token_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $this->shopId,
+                    ]),
+            ]
+        );
+        return $expResult['variant'] === 'true';
     }
 }

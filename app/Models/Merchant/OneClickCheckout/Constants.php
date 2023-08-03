@@ -132,6 +132,7 @@ class Constants
         self::API_SECRET,
         self::STOREFRONT_ACCESS_TOKEN,
         self::OAUTH_TOKEN,
+        self::DELEGATE_ACCESS_TOKEN,
         self::USERNAME,
         self::PASSWORD,
     ];

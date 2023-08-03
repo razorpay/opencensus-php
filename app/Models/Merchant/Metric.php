@@ -197,6 +197,7 @@ final class Metric
     const SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT             = 'shopify_1cc_pg_router_error_count';
     const SHOPIFY_1CC_ORDER_AMOUNT_EXCEEDS_ERROR_COUNT  = 'shopify_1cc_order_amount_exceeds_error_count';
     const SHOPIFY_1CC_API_RATE_LIMIT                    = 'shopify_1cc_api_rate_limit';
+    const SHOPIFY_1CC_API_TOKEN_USED                    = 'shopify_1cc_api_token_used';
 
     const UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT      = 'update_shopify_transaction_request_count';
     const UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT        = 'update_shopify_transaction_error_count';
