@@ -695,7 +695,7 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   get ContentView() {
-    const { payment_button, org } = this.props;
+    const { payment_button, org, user } = this.props;
     const {
       activeTabIndex,
       isSuccessViewOpened,
@@ -745,6 +745,7 @@ export default class PaymentButtonCreate extends React.Component {
                     submitPaymentButtonForm={this.handleSavePaymentButton}
                     onChangeButtonTemplate={this.onChangeButtonTemplate}
                     isEditExistingId={isEditExistingId}
+                    user={user}
                   />
                   <Preview {...payment_button} activeTabIndex={activeTabIndex} />
                 </React.Fragment>

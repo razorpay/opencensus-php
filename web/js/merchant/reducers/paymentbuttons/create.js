@@ -6,7 +6,7 @@ import { fetchPaymentPageEntity as getPaymentButtonDetails } from 'merchant/view
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 
 const FETCH_PAYMENT_BUTTON_ENTITY = 'FETCH_PAYMENT_BUTTON_ENTITY';
@@ -38,6 +38,7 @@ export const updateTemplateType = (data, templateKey) => {
   let paymentButtonText = 'Pay Now';
   const amountFields = [];
   const udfFields = [FIXED_FIELDS.email, FIXED_FIELDS.phone]; // Email and Phone are added by default to display in UI and will NOW be sent in
+  const FIELD_TYPES = FIELD_TYPES_MAP.IN;
 
   if (templateKey === templateTypes.donation.key) {
     // 1.

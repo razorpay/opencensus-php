@@ -16,17 +16,22 @@ import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldType
 
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { validateAmount } from 'common/utils/validators';
 
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-@connect(null, {
-  openModal,
-  closeModal,
-})
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    openModal,
+    closeModal,
+  },
+)
 export default class BaseForm extends React.Component {
   constructor(props) {
     super(props);
@@ -122,8 +127,10 @@ export default class BaseForm extends React.Component {
 
   // To keep BaseForm and AdvancedForm in sync. Helps in adding default value and validators on min_purchase / min_amount.
   onChangeIsMandatory = (mandatory) => {
-    const { fieldType } = this.props;
+    const { fieldType, user } = this.props;
     const { field, currency } = this.state;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     const isMandatory = isMandatoryToBool(this.state.isMandatory);
 
@@ -349,8 +356,10 @@ export default class BaseForm extends React.Component {
   }
 
   get amountFieldForFieldType() {
-    const { fieldType } = this.props;
+    const { fieldType, user } = this.props;
     const { field } = this.state;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     switch (fieldType) {
       case FIELD_TYPES.fixed_price.key:
@@ -453,6 +462,7 @@ export default class BaseForm extends React.Component {
             currency={currency}
             onSubmit={this.onSubmitAdvancedForm}
             handleClose={() => this.handleToggleAdvancedOptionsForm(false)}
+            user={this.props.user}
           />
         )}
       </React.Fragment>

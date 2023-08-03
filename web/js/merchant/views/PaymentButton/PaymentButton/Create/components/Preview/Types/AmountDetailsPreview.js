@@ -8,7 +8,7 @@ import {
 } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/AmountDetails/FieldTypesRepresentations';
 
 import { getCurrency } from 'common/ui/Amount';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import { getCurrencyConfig } from 'common/utils/rzp-utils';
@@ -48,9 +48,11 @@ export default class AmountDetailsPreview extends React.Component {
   }
 
   getAmountField(field) {
-    const { paymentButtonEntity } = this.props;
+    const { paymentButtonEntity, user } = this.props;
     const currency = paymentButtonEntity.currency;
     const fieldType = mapFieldToAmountFieldType(field);
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     switch (fieldType) {
       case FIELD_TYPES.fixed_price.key:

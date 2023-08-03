@@ -7,7 +7,7 @@ import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldType
 
 import { classList } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import {
   updateAmountField,
@@ -16,14 +16,19 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-@connect(null, {
-  updateAmountField,
-  deleteAmountField,
-  updatePaymentButtonData,
-  updateStepReviewProgress,
-})
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updateAmountField,
+    deleteAmountField,
+    updatePaymentButtonData,
+    updateStepReviewProgress,
+  },
+)
 export default class EditableDisplayField extends React.Component {
   state = {
     isEditModeOpened: this.props.isEditModeOpened || false,
@@ -64,7 +69,9 @@ export default class EditableDisplayField extends React.Component {
   }
 
   get amountFieldForFieldType() {
-    const { field, currency } = this.props;
+    const { field, currency, user } = this.props;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     switch (this.fieldType) {
       case FIELD_TYPES.fixed_price.key:

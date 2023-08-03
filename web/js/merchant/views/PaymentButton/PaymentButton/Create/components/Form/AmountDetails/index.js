@@ -8,20 +8,27 @@ import FieldsDropdown from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/For
 
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
 
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-@connect(null, { updateStepReviewProgress })
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  { updateStepReviewProgress },
+)
 export default class AmountDetails extends React.Component {
   constructor(props) {
     super(props);
 
     this.maxItemsLimit = 5;
 
-    const { paymentButtonEntity } = props;
+    const { paymentButtonEntity, user } = props;
     const templateType = paymentButtonEntity.settings.payment_button_template_type;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
     let allowedAmountTypesList;
 
     if (templateType === templateTypes.buyNow.key) {

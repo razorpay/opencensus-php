@@ -10,7 +10,7 @@ import InputDropdown from './components/InputDropdown';
 
 import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import META, {
   templateTypes,
 } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
@@ -104,7 +104,9 @@ export default class ButtonDetails extends React.Component {
   }
 
   get amountFieldForQuickPayTemplate() {
-    const { amountFields } = this.props;
+    const { amountFields, user } = this.props;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
     let amountField;
 
     if (amountFields && amountFields.length) {

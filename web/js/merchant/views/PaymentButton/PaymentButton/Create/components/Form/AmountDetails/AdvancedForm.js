@@ -6,7 +6,7 @@ import EditorModal from 'merchant/views/PaymentButton/PaymentButton/Create/compo
 
 import { getCurrency } from 'common/ui/Amount';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 export default class AdvancedForm extends React.PureComponent {
   state = {
@@ -46,24 +46,26 @@ export default class AdvancedForm extends React.PureComponent {
   }
 
   get fieldsForFieldType() {
-    const { field, fieldType, currency } = this.props;
+    const { field, fieldType, currency, user } = this.props;
+    const countryCode = user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     switch (fieldType) {
       // Same Advanced Form for both fixed_price
       case FIELD_TYPES.fixed_price.key:
-        return <FieldWithStockLimit field={field} currency={currency} />;
+        return <FieldWithStockLimit field={field} currency={currency} countryCode={countryCode} />;
 
       case FIELD_TYPES.dynamic_price.key:
         return (
           <React.Fragment>
-            <FieldWithStockLimit field={field} currency={currency} />
+            <FieldWithStockLimit field={field} currency={currency} countryCode={countryCode} />
             <FieldWithAmountLimits field={field} currency={currency} />
           </React.Fragment>
         );
       case FIELD_TYPES.multiple_purchase.key:
         return (
           <React.Fragment>
-            <FieldWithStockLimit field={field} currency={currency} />
+            <FieldWithStockLimit field={field} currency={currency} countryCode={countryCode} />
             <FieldWithPurchaseLimits field={field} currency={currency} />
           </React.Fragment>
         );
@@ -373,6 +375,8 @@ class FieldWithStockLimit extends React.Component {
   };
 
   validateStockLimit = (stockVal) => {
+    const FIELD_TYPES = FIELD_TYPES_MAP[this.props.countryCode];
+
     if (stockVal === '' || Number(stockVal) <= 0) {
       return 'Stock must be at least 1';
     }

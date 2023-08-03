@@ -10,7 +10,7 @@ import PresetAmountField from './Fields/PresetAmountField';
 import { getCurrency } from 'common/ui/Amount';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
-import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import {
   updateAmountField,
@@ -20,11 +20,16 @@ import {
 
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-@connect(null, {
-  updateAmountField,
-  deleteAmountField,
-  updateStepReviewProgress,
-})
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updateAmountField,
+    deleteAmountField,
+    updateStepReviewProgress,
+  },
+)
 export default class AmountDetails extends React.Component {
   maxItemsLimit = 5;
   state = {
@@ -68,6 +73,8 @@ export default class AmountDetails extends React.Component {
       const totalPresets = this.props.amountFields.length - 1;
       presetIndexInOrder = totalPresets + 1;
     }
+    const countryCode = this.props.user.merchant.country_code;
+    const FIELD_TYPES = FIELD_TYPES_MAP[countryCode];
 
     const newAmountField = getBaseFieldForAmountFieldType(FIELD_TYPES.fixed_price.key);
     newAmountField.mandatory = false; // Optional
