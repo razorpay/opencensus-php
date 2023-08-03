@@ -4,14 +4,15 @@ namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
-use RZP\Models\Merchant;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Reversal as ReversalModel;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 /**
@@ -93,6 +94,71 @@ class Reversal extends Base
         return [$this->txn, $this->feesSplit];
     }
 
+    // dispatchForSettlementBucketing doesn't happen in this method since txn creation on API is removed
+    public function updateBalanceForLedger($newBalance)
+    {
+        // define fee split entity
+        $this->setFeeDefaults();
+
+        // update fee split entity
+        $this->updateFeesSplitForLedgerReverseShadow();
+
+        $merchantBalance = $this->source->balance ?? $this->source->merchant->primaryBalance;
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $merchantBalance->setAttribute(Merchant\Balance\Entity::BALANCE, $newBalance);
+
+        $this->repo->balance->updateBalance($merchantBalance);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'merchant_id' => $this->source->merchant->getMerchantId(),
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => __METHOD__,
+            ]);
+
+        return $this->feesSplit;
+    }
+
+    public function updateBalanceForLedgerReverseShadow($reversal, $ledgerResponse)
+    {
+        $this->trace->info(
+            TraceCode::BALANCE_UPDATE_FOR_LEDGER_REVERSE_SHADOW_BEGINS,
+            [
+                'entity_id' => $reversal->getPublicId(),
+            ]
+        );
+
+        $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $feeSplit = $this->updateBalanceForLedger($newBalance);
+
+        // if fee split is null, it may mean that a txn is already created.
+        if ($feeSplit !== null)
+        {
+            (new Transaction\Core)->saveFeeDetailsWithoutTransactionAssociation($ledgerResponse[ReversalEntity::ID], $reversal->getPublicId(), $feeSplit);
+
+            // TODO: This dispatch has to be moved to some other location once ledger becomes primary
+            // As we will stop the dual write to the transactions table
+            // If fee split is null, it means that duplicate txn was found
+            // so no dispatch necessary again.
+//            if (($reversal->getEntityType() === E::PAYOUT) && ($isPayoutServiceReversal === false))
+//            {
+//                $this->app->events->dispatch('api.transaction.created', $reversal->transaction);
+//            }
+        }
+
+        $this->trace->info(
+            TraceCode::BALANCE_FOR_LEDGER_REVERSE_SHADOW_UPDATED,
+            [
+                'entity_id' => $reversal->getPublicId(),
+            ]
+        );
+    }
+
     /**
      * {@inheritdoc}
      *
@@ -168,6 +234,29 @@ class Reversal extends Base
             }
         }
 
+        if ($this->source->getFee() > 0)
+        {
+            $feeParams = [
+                Transaction\FeeBreakup\Entity::NAME       => Feature::REFUND,
+                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * ($this->source->getFee() - $this->source->getTax()),
+            ];
+
+            $taxParams = [
+                Transaction\FeeBreakup\Entity::NAME       => FeeBreakupName::TAX,
+                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * $this->source->getTax(),
+            ];
+
+            $fee = (new Transaction\FeeBreakup\Entity)->build($feeParams);
+            $tax = (new Transaction\FeeBreakup\Entity)->build($taxParams);
+
+            $this->feesSplit->push($fee);
+            $this->feesSplit->push($tax);
+        }
+    }
+
+    // similar to calculateFees but transaction is not being updated
+    public function updateFeesSplitForLedgerReverseShadow()
+    {
         if ($this->source->getFee() > 0)
         {
             $feeParams = [

@@ -28,6 +28,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Exception\GatewayTimeoutException;
@@ -1602,6 +1603,67 @@ class Core extends Base\Core
         return [
             'entity' => $reversal->getPublicId(),
             'txn'    => $txn->getPublicId(),
+        ];
+    }
+
+    // here we'll perform the following tasks - update the balance entity with the latest balance received from CLS,
+    // update the reversal's txn_id from CLS response. Reversal's txn_id need not be updated for the reversals created via payout microservice
+    // create fee breakup entity
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $isPayoutServiceReversal = false;
+
+        $reversal = $this->repo->reversal->find($entityId);
+
+        if (empty($reversal) === true)
+        {
+            $reversal = $this->getAPIModelReversalFromPayoutService($entityId);
+
+            if ((empty($reversal) === false) and
+                (empty($reversal->getId()) === false))
+            {
+                $isPayoutServiceReversal = true;
+            }
+        }
+
+        $featureChecks = (($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
+            ($reversal->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
+
+        if ($featureChecks === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $reversal->getMerchantId()]);
+        }
+
+        list($entityId, $txnId) = $this->app['api.mutex']->acquireAndRelease(
+            'rvrsl_'.$entityId,
+            function () use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
+            {
+                // No need to make a call to payout service again if reversal belongs there.
+                if ($isPayoutServiceReversal === false)
+                {
+                    $reversal->reload();
+                }
+
+                return $this->repo->transaction(function() use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
+                {
+                    (new Transaction\Processor\Reversal($reversal))->updateBalanceForLedgerReverseShadow($reversal, $ledgerResponse);
+
+                    $reversal->setTransactionId($ledgerResponse[Entity::ID]);
+
+                    $this->repo->saveOrFail($reversal);
+
+                    return [$reversal->getPublicId(), $ledgerResponse[Entity::ID]];
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId,
         ];
     }
 

@@ -182,6 +182,9 @@ final class RazorxTreatment
     // Fetch balance from ledger TiDB
     const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';
 
+    // Disable ledger transaction dual write
+    const LEDGER_DISABLE_TRANSACTION_DUAL_WRITE = 'ledger_disable_transaction_dual_write';
+
     // Fund transfer request from payout to fts in sync mode
     const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
 

@@ -96,6 +96,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Setters ---------------------------------------------
 
+    public function setTransactionId($id)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $id);
+    }
+
     public function setName($name)
     {
         $this->setAttribute(self::NAME, $name);

@@ -2,9 +2,12 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use Razorpay\Trace\Logger;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
@@ -30,6 +33,8 @@ class LedgerJournalBase extends Job
 
     protected $ledgerResponse;
 
+    protected $razorx;
+
     // ledger transactor id prefix
     const PAYOUT_PREFIX          = "pout_";
     const REVERSAL_PREFIX        = "rvrsl_";
@@ -38,14 +43,21 @@ class LedgerJournalBase extends Job
     const ADJUSTMENT_PREFIX      = "adj_";
     const CREDIT_TRANSFER_PREFIX = "ct_";
 
+    const ID                     = "id";
+    const LEDGER_ENTRY           = "ledger_entry";
+    const MERCHANT_ID            = "merchant_id";
+    const JOURNAL_ID             = "journal_id";
     const TRANSACTOR_ID          = "transactor_id";
     const TRANSACTOR_EVENT       = "transactor_event";
 
     public function __construct(string $mode, array $payload)
     {
+        $app = App::getFacadeRoot();
+
         parent::__construct($mode);
         $this->mode = $mode;
         $this->ledgerResponse = $payload;
+        $this->razorx = $app['razorx'];
     }
 
     public function handle()
@@ -53,11 +65,22 @@ class LedgerJournalBase extends Job
         $entityId = null;
         $entityName = null;
         $response = null;
+        $skipTransactionCreation = false;
 
         try
         {
             parent::handle();
             $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_INIT, $this->ledgerResponse);
+
+            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE) === true)
+            {
+                $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_TRANSACTION_DUAL_WRITE_SKIPPED, [
+                    self::MERCHANT_ID => $this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID],
+                    self::JOURNAL_ID  => $this->ledgerResponse[self::ID]
+                ]);
+
+                $skipTransactionCreation = true;
+            }
 
             // dual writes API Transaction
             $transactorId = $this->ledgerResponse[self::TRANSACTOR_ID];
@@ -124,14 +147,29 @@ class LedgerJournalBase extends Job
                     // process only for payout initiated cases, and skip payout failed
                     if (strpos($transactorEvent, Ledger\Payout::PAYOUT_INITIATED) !== false)
                     {
-                        $response = (new PayoutCore)
-                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                        if ($skipTransactionCreation === true)
+                        {
+                            $response = (new PayoutCore)->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                        }
+                        else
+                        {
+                            $response = (new PayoutCore)
+                                ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                        }
                     }
                     break;
 
                 case Entity::REVERSAL :
-                    $response = (new ReversalCore)
-                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    if ($skipTransactionCreation === true)
+                    {
+                        $response = (new ReversalCore)
+                            ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
+                    else
+                    {
+                        $response = (new ReversalCore)
+                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
 
                     break;
 
@@ -196,6 +234,20 @@ class LedgerJournalBase extends Job
         }
     }
 
+    protected function isExperimentEnabled($experiment)
+    {
+        if ((empty($this->ledgerResponse[self::LEDGER_ENTRY]) === false) and
+            (empty($this->ledgerResponse[self::LEDGER_ENTRY][0]) === false) and
+            (empty($this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID]) === false))
+        {
+            $variant = $this->razorx->getTreatment($this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID],
+                $experiment, $this->mode);
+
+            return ($variant === 'on');
+        }
+
+        return false;
+    }
 
     protected function checkRetry($entityId, $entityName)
     {

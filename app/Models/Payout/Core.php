@@ -65,6 +65,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
 use RZP\Jobs\PayoutServiceDualWrite;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
@@ -7815,6 +7816,76 @@ class Core extends Base\Core
         return [
             'entity' => $payout->getPublicId(),
             'txn'    => $txn->getPublicId(),
+        ];
+    }
+
+    // here we'll perform the following tasks - update the balance entity with the latest balance received from CLS,
+    // update the payout's txn_id from CLS response. Payout's txn_id need not be updated for the payouts created via payout microservice
+    // create fee breakup entity
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $isPayoutServicePayout = false;
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->find($entityId);
+
+        if (empty($payout) === true)
+        {
+            $payout = $this->getAPIModelPayoutFromPayoutService($entityId);
+
+            $isPayoutServicePayout = true;
+        }
+
+        if (self::isPayoutTransactionDualWriteEnabled($payout) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $payout->getMerchantId()]);
+        }
+
+        // Fixing fund account payout here for now
+        // Since we are only exploring X balance based payouts
+        // Customer wallet payouts and Merchant payouts are usually on PG balance
+        // TODO: fix this when PG moves to ledger
+        $payoutType = 'fund_account_payout';
+
+        $downstreamProcessor = new DownstreamProcessor($payoutType,
+            $payout,
+            $this->mode,
+            $payout->fundAccount->account);
+
+        $subProcessor = $downstreamProcessor->getSubProcessorClass();
+
+        list($entityId, $txnId) = $this->mutex->acquireAndRelease('pout_' . $entityId,
+            function() use ($payout, $ledgerResponse, $subProcessor, $isPayoutServicePayout) {
+
+                $payout->reload();
+
+                return $this->repo->transaction(function() use ($ledgerResponse, $payout, $subProcessor, $isPayoutServicePayout) {
+                    $subProcessor->updateBalanceForLedgerReverseShadow($payout, $ledgerResponse);
+
+                    // No need to update payout if it doesn't exists in api db. PS dual write will take care of it.
+                    if ($isPayoutServicePayout === true)
+                    {
+                        return [$payout->getPublicId(), $ledgerResponse[Entity::ID]];
+                    }
+
+                    $payout->setTransactionId($ledgerResponse[Entity::ID]);
+                    // TODO: check if transaction type is being populated with correct value transaction/customer_transaction
+
+                    $this->repo->saveOrFail($payout);
+
+                    return [$payout->getPublicId(), $ledgerResponse[Entity::ID]];
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId
         ];
     }
 

@@ -116,6 +116,35 @@ class Payout extends Base
         return [$this->txn, $this->feesSplit];
     }
 
+    // dispatchForSettlementBucketing doesn't happen in this method since txn creation on API is removed
+    public function updateBalanceForLedger($newBalance)
+    {
+        // define fee split entity
+        $this->setFeeDefaults();
+
+        // update fee split entity
+        $this->updateFeesSplitForLedgerReverseShadow();
+
+        $merchantBalance = $this->source->balance ?? $this->source->merchant->primaryBalance;
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $merchantBalance->setAttribute(Balance\Entity::BALANCE, $newBalance);
+
+        $this->repo->balance->updateBalance($merchantBalance);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'merchant_id' => $this->source->merchant->getMerchantId(),
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => __METHOD__,
+            ]);
+
+        return $this->feesSplit;
+    }
+
     /**
      * We are overriding this because base function was written very badly. (`hasTransaction`)
      */
@@ -266,6 +295,25 @@ class Payout extends Base
         }
 
         $this->txn->setAmount($payoutAmount);
+    }
+
+    // similar to calculateFees but transaction is not being updated
+    public function updateFeesSplitForLedgerReverseShadow()
+    {
+        if (($this->source->balance->isAccountTypeDirect() === false) and
+            ($this->source->getFeeType() === CreditType::REWARD_FEE)) {
+            // not updating the transaction any more,
+            // since tax is 0 for reward_fee payouts, we are
+            // just ensuring no row gets created for tax in
+            // feesplit for transaction of this payout
+            foreach ($this->feesSplit as $key => $feeSplit)
+            {
+                if ($feeSplit->getName() === RzpConstants\Entity::TAX)
+                {
+                    $this->feesSplit->forget($key);
+                }
+            }
+        }
     }
 
     public function setOtherDetails()

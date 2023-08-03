@@ -2039,6 +2039,68 @@ class Core extends Base\Core
         }
     }
 
+    // used to save fee details. Present use-case in the transaction dual write worker when transaction is not created,
+    // only fee details entity is created
+    public function saveFeeDetailsWithoutTransactionAssociation(string $txnId, string $entityId, PublicCollection $feesSplit)
+    {
+        if ($feesSplit->isEmpty() === true)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txnId,
+                'source_id'         => $entityId,
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
+        // Not having a transaction block while saving multiple feeSplit cause the caller already has a transaction open
+        try
+        {
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->setTransactionId($txnId);
+
+                $this->repo->saveOrFail($feeSplit);
+
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_DETAILS,
+                    [
+                        'id'             => $feeSplit->getId(),
+                        'source_id'      => $entityId,
+                        'transaction_id' => $txnId,
+                    ]);
+            }
+
+            $this->trace->info(TraceCode::FEES_BREAKUP_CREATED,
+                [
+                    'transaction_id' => $txnId,
+                    'source_id'      => $entityId,
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL,
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id' => $txnId,
+                    'source_id'      => $entityId
+                ]);
+
+            throw new Exception\LogicException(
+                'Error while recording fee breakup',
+                ErrorCode::SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txnId,
+                    'reversal_id'       => $entityId,
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
+        }
+    }
+
     //Async Update Merchant Balance
     public function asyncUpdateMerchantBalance($payment, $txn)
     {
