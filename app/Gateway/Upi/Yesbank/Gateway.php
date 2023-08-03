@@ -11,6 +11,7 @@ use RZP\Gateway\Utility;
 use RZP\Models\BharatQr;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
@@ -46,6 +47,10 @@ class Gateway extends Mindgate\Gateway
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
     const QR_CODE_MAXIMUM_EXPIRY_TIME = 64800;
+
+    protected $qrPaymentMerchantRefPrefix = QrCode\Constants::QR_CODE_V2_YESBANK_PREFIX;
+
+    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
 
     protected $map = [
         Entity::VPA                     => Entity::VPA,
@@ -123,7 +128,9 @@ class Gateway extends Mindgate\Gateway
 
     public function getPaymentIdFromServerCallback(array $response): string
     {
-        return $this->upiPaymentIdFromServerCallback($response);
+        $merchantReference = $this->upiPaymentIdFromServerCallback($response);
+
+        return $this->removeGatewayPrefixIfPresent($merchantReference);
     }
 
     /** Check if its duplicate unexpected payment
@@ -252,6 +259,22 @@ class Gateway extends Mindgate\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * @param $merchantReference
+     *
+     * @return string
+     */
+    public function removeGatewayPrefixIfPresent($merchantReference)
+    {
+        if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
+            (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
+        {
+            $merchantReference = substr($merchantReference, strlen($this->qrPaymentMerchantRefPrefix));
+        }
+
+        return $merchantReference;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -1130,7 +1153,7 @@ class Gateway extends Mindgate\Gateway
             BharatQr\GatewayResponseParams::AMOUNT                => $inputFields['payment'][Fields::AMOUNT_AUTHORIZED],
             BharatQr\GatewayResponseParams::VPA                   => $inputFields['upi']['vpa'],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($inputFields['upi'][Fields::MERCHANT_REFERENCE], 0, UniqueIdEntity::ID_LENGTH),
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][Fields::MERCHANT_REFERENCE]),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][Fields::NPCI_REFERENCE_ID],
             BharatQr\GatewayResponseParams::PAYEE_VPA             => $inputFields['terminal']['vpa'],
         ];
@@ -1182,7 +1205,15 @@ class Gateway extends Mindgate\Gateway
     {
         $expTime = $this->getExpiryTime($input);
 
-        $input[CoreEntity::QR_CODE]['id']                .= Constants::QR_CODE_V2_TR_SUFFIX;
+        if ((new QrCode\NonVirtualAccountQrCode\Generator())->ifPrefixAdditionExperimentInTREnabled($input['merchant']['id']) === true)
+        {
+            $input[CoreEntity::QR_CODE]['id'] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE]['id'] . Constants::QR_CODE_V2_TR_SUFFIX;
+        }
+        else
+        {
+            $input[CoreEntity::QR_CODE]['id'] .= Constants::QR_CODE_V2_TR_SUFFIX;
+        }
+
         $input[CoreEntity::QR_CODE][Entity::EXPIRY_TIME] = $expTime;
 
         $request = [
@@ -1236,5 +1267,18 @@ class Gateway extends Mindgate\Gateway
         }
 
         return throw new Exception\RuntimeException('Invalid Response from Mozart');
+    }
+
+    public function getQrPaymentMerchantReference($merchantReference)
+    {
+        $merchantReference = $this->removeGatewayPrefixIfPresent($merchantReference);
+
+        if ((empty($this->qrPaymentMerchantRefSuffix)) === false and
+            (str_ends_with($merchantReference, $this->qrPaymentMerchantRefSuffix)))
+        {
+            $merchantReference = substr($merchantReference, 0, -1 * strlen($this->qrPaymentMerchantRefSuffix));
+        }
+
+        return $merchantReference;
     }
 }

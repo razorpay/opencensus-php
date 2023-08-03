@@ -8,7 +8,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\RuntimeException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
@@ -54,6 +53,8 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal');
 
+        $this->setMockRazorxTreatment([RazorxTreatment::PREFIX_IN_TR_FIELD_FOR_YESBANK_QR => RazorxTreatment::RAZORX_VARIANT_ON]);
+
         $this->getDedicatedTerminalSplitzResponseForVariantON();
     }
 
@@ -82,12 +83,12 @@ class UpiYesBankQRCodeTest extends TestCase
             ],
         );
 
-        $this->runEntityAssertions();
+        $this->runQrCodeEntityAssertions();
     }
 
     public function testCreateStaticQrWithAmount() :void
     {
-        $response = $this->createQrCode(
+        $this->createQrCode(
             [
                 'usage' => 'multiple_use',
                 'payment_amount' => '300',
@@ -96,12 +97,10 @@ class UpiYesBankQRCodeTest extends TestCase
             ],
         );
 
-        $this->assertEquals(true, $response['fixed_amount']);
-        $this->assertEquals(300, $response['payment_amount']);
-        $this->runEntityAssertions();
+        $this->runQrCodeEntityAssertions();
     }
 
-    public function testPaymentForStaticQrCode()
+    public function testPaymentForStaticQrCode(): void
     {
         $this->createQrCode(
             [
@@ -114,15 +113,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
-        $qrPayment = $this->getLastEntity('qr_payment', true);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(300, $payment['amount']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals(1, $qrPayment['expected']);
+        $this->runQrPaymentEntityAssertions();
     }
 
     public function testPaymentOnDynamicQrCode() :void
@@ -140,23 +131,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
-        $qrPayment = $this->getLastEntity('qr_payment', true);
-        $payment = $this->getLastEntity('payment', true);
-        $qrCodeUpdatedEntity = $this->getLastEntity('qr_code', true);
-
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(300, $payment['amount']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals(1, $qrPayment['expected']);
-        $this->assertEquals('closed', $qrCodeUpdatedEntity['status']);
-        $this->assertEquals('107611570997', $payment['reference16']);
-        $upi = $this->getLastEntity('upi', true);
-        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
-        $this->assertEquals($upi['merchant_reference'], $trValue);
+        $this->runQrPaymentEntityAssertions();
     }
 
-    public function testPaymentForClosedQrCode()
+    public function testPaymentForClosedQrCode(): void
     {
         $this->createQrCode(
             [
@@ -177,18 +155,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
-        $qrPayment = $this->getDbLastEntity('qr_payment');
-        $payment = $this->getLastEntity('payment', true);
+        $this->runQrPaymentEntityAssertions(false);
 
         $refund = $this->getDbLastEntity('refund');
         $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE, $refund['notes']['refund_reason']);
-
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('refunded', $payment['status']);
-        $this->assertEquals(300, $payment['amount']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
-        $this->assertEquals(0, $qrPayment['expected']);
     }
 
     public function testPaymentForInvalidQrCode()
@@ -213,7 +183,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
     }
 
-    public function testPaymentWithDisabledUpiMethod()
+    public function testPaymentWithDisabledUpiMethod(): void
     {
         $this->expectException(BadRequestException::class);
 
@@ -229,7 +199,7 @@ class UpiYesBankQRCodeTest extends TestCase
         );
     }
 
-    public function testPaymentForUnsuccessfulStatusCallback()
+    public function testPaymentForUnsuccessfulStatusCallback(): void
     {
         //Note: Callbacks with failed status are not processed but qr_payment_request entity is saved in DB
 
@@ -248,7 +218,7 @@ class UpiYesBankQRCodeTest extends TestCase
             'vpa'             => 'testvpa@yesb',
         ];
 
-        $this->makeUpiYesBankPayment($qrCodeEntity,$payment);
+        $this->makeUpiYesBankPayment($qrCodeEntity, $payment);
 
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $payment = $this->getLastEntity('payment', true);
@@ -259,7 +229,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals(null, $payment);
     }
 
-    public function testMultiplePaymentsForStaticQR()
+    public function testMultiplePaymentsForStaticQR(): void
     {
         $this->createQrCode(
             [
@@ -272,16 +242,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
-        $qrPayment = $this->getLastEntity('qr_payment', true);
-        $payment = $this->getLastEntity('payment', true);
-        $qrCodeEntityPostPayment = $this->getEntityById('qr_code', $qrCodeEntity['id'], true);
-
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals(1, $qrPayment['expected']);
-        $this->assertEquals(300, $qrCodeEntityPostPayment['payments_amount_received']);
-        $this->assertEquals('active', $qrCodeEntityPostPayment['status']);
+        $this->runQrPaymentEntityAssertions();
     }
 
     public function testCreateDynamicQrCode() :void
@@ -295,7 +256,7 @@ class UpiYesBankQRCodeTest extends TestCase
             ],
         );
 
-        $this->runEntityAssertions();
+        $this->runQrCodeEntityAssertions();
     }
 
     public function testCreateDynamicQrWithoutTerminal() :void
@@ -354,7 +315,7 @@ class UpiYesBankQRCodeTest extends TestCase
     }
 
     //It tests Qr payment fetch flow done via internal flow for Yes bank qr codes whose payment is not received by razorpay
-    public function testProcessYesBankQrReconInternalWithoutPayment()
+    public function testProcessYesBankQrReconInternalWithoutPayment(): void
     {
         $this->createQrCode(
             [
@@ -368,7 +329,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
         $request = $this->testData['testProcessYesBankQrPaymentInternal'];
-        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['merchant_reference'] = 'RZPY' . $qrCodeEntity['reference'] . 'qrv2';
         $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
 
         $response = $this->makeUpiPaymentInternal($request);
@@ -384,7 +345,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('captured', $response['payment']['status']);
     }
 
-    public function testProcessYesBankQrReconInternal()
+    public function testProcessYesBankQrReconInternal(): void
     {
         $this->createQrCode(
             [
@@ -400,7 +361,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $request = $this->testData['testProcessYesBankQrPaymentInternal'];
-        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['merchant_reference'] = 'RZPY' . $qrCodeEntity['reference'] . 'qrv2';
         $request['content']['data']['upi']['npci_reference_id'] = $payment['reference16'];
 
         $response = $this->makeUpiPaymentInternal($request);
@@ -416,7 +377,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('captured', $response['payment']['status']);
     }
 
-    private function runEntityAssertions(): void
+    private function runQrCodeEntityAssertions(): void
     {
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
@@ -425,8 +386,7 @@ class UpiYesBankQRCodeTest extends TestCase
         if ($qrCodeEntity['provider'] === 'upi_qr')
         {
             $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
-            $this->assertEquals(18, strlen($trValue));
-            $this->assertTrue(str_ends_with($trValue, 'qrv2'));
+            $this->assertEquals('RZPY' . $qrCodeEntity['reference'] . 'qrv2', $trValue);
         }
 
         if($qrCodeEntity['usage'] === 'single_use')
@@ -435,16 +395,57 @@ class UpiYesBankQRCodeTest extends TestCase
             $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
         }
         else
-        {
             if ($qrCodeEntity['fixed_amount'] === true)
             {
                 $amount = $qrCodeEntity['amount'] / 100;
                 $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
             }
+    }
+
+    public function runQrPaymentEntityAssertions($expected = true): void
+    {
+        $qrPayment        = $this->getLastEntity('qr_payment', true);
+        $payment          = $this->getLastEntity('payment', true);
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
+        $qrCodeEntity     = $this->getLastEntity('qr_code', true);
+        $upi              = $this->getLastEntity('upi', true);
+        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('107611570997', $payment['reference16']);
+
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        $this->assertEquals($upi['merchant_reference'], $trValue);
+        $this->assertEquals('107611570997', $upi['npci_reference_id']);
+
+        if ($qrCodeEntity['usage'] === 'single_use')
+        {
+            $this->assertEquals('closed', $qrCodeEntity['status']);
+        }
+        else
+        {
+            $this->assertEquals('active', $qrCodeEntity['status']);
+        }
+
+        if ($expected === true)
+        {
+            $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
+            $this->assertEquals(true, $qrPaymentRequest['expected']);
+            $this->assertEquals('captured', $payment['status']);
+            $this->assertEquals(true, $qrPayment['expected']);
+        }
+        else
+        {
+            $this->assertEquals(false, $qrPaymentRequest['expected']);
+            $this->assertEquals('refunded', $payment['status']);
+            $this->assertEquals(false, $qrPayment['expected']);
         }
     }
 
-    public function testCreateQrWithCloseOnDemandEnabled()
+    public function testCreateQrWithCloseOnDemandEnabled(): void
     {
         $this->setMockRazorxTreatment(
             [
@@ -462,7 +463,7 @@ class UpiYesBankQRCodeTest extends TestCase
         );
     }
 
-    public function testCreateBharatQrCodeWithDedicatedTerminal()
+    public function testCreateBharatQrCodeWithDedicatedTerminal(): void
     {
         $response = $this->createQrCode();
 
@@ -470,10 +471,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $this->runEntityAssertions();
+        $this->runQrCodeEntityAssertions();
     }
 
-    public function testCreateBharatQrCodeWithNoDedicatedTerminal()
+    public function testCreateBharatQrCodeWithNoDedicatedTerminal(): void
     {
         $this->expectException(LogicException::class);
 
@@ -489,6 +490,132 @@ class UpiYesBankQRCodeTest extends TestCase
             'live',
             'LiveAccountMer'
         );
+    }
+
+    //once prefix check is enabled for every merchant from bank's end, we can remove this test case
+    public function testPaymentOnStaticQrWithoutPrefixInMerchantReference() :void
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $upiEntity = [
+            'merchant_reference' => $qrCodeEntity['reference'] . 'qrv2',
+        ];
+
+        $this->makeUpiYesBankPayment($qrCodeEntity, [], $upiEntity);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+    }
+
+    //once prefix check is enabled for every merchant from bank's end, we can remove this test case
+    public function testPaymentOnDynamicQrWithoutPrefixInMerchantReference() :void
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $upiEntity = [
+            'merchant_reference' => $qrCodeEntity['reference'] . 'qrv2',
+        ];
+
+        $this->makeUpiYesBankPayment($qrCodeEntity, [], $upiEntity);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment = $this->getLastEntity('payment', true);
+        $qrCodeUpdatedEntity = $this->getLastEntity('qr_code', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('closed', $qrCodeUpdatedEntity['status']);
+        $this->assertEquals('107611570997', $payment['reference16']);
+    }
+
+    //It tests Qr payment fetch flow done via internal flow for Yes bank qr codes whose payment is not received by razorpay
+    //once prefix check is enabled for every merchant from bank's end, we can remove this test case
+    public function testProcessYesBankQrReconInternalWithoutPaymentCallBackWithoutPrefixInMerchantReference(): void
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $request                                                 = $this->testData['testProcessYesBankQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    //once prefix check is enabled for every merchant from bank's end, we can remove this test case
+    public function testProcessYesBankQrReconInternalWithoutPrefixInMerchantReference(): void
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+        $payment = $this->getDbLastEntity('payment');
+
+        $request                                                 = $this->testData['testProcessYesBankQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id']  = $payment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
     }
 
 }

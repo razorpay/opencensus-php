@@ -83,4 +83,6 @@ class Constants
     const REQUEST_SOURCE              = 'X-Razorpay-Request-Source';
 
     const QR_CODE_V2_ICICI_PREFIX = 'RZP';
+
+    const QR_CODE_V2_YESBANK_PREFIX = 'RZPY';
 }

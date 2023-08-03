@@ -239,25 +239,25 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    private function makeUpiYesBankPayment($qrCodeEntity ,$payment = [] ,$upiEntity = [])
+    private function makeUpiYesBankPayment($qrCodeEntity, $payment = [], $upiEntity = [])
     {
         $this->ba->directAuth();
 
         $defaultPaymentData = [
-        'amount'      => '300',
-        'description' => '',
-        'vpa'         => 'abcba@yesbank',
+            'amount'      => '300',
+            'description' => '',
+            'vpa'         => 'abcba@yesbank',
         ];
 
-        $payment = array_merge($defaultPaymentData,$payment);
+        $payment = array_merge($defaultPaymentData, $payment);
 
         $defaultUPIData = [
             'gateway_payment_id' => '13570',
             'vpa'                => 'testvpa@yesb',
-            'merchant_reference' => $qrCodeEntity['reference'].'qrv2',
+            'merchant_reference' => 'RZPY' . $qrCodeEntity['reference'] . 'qrv2',
         ];
 
-        $upiEntity = array_merge($defaultUPIData,$upiEntity);
+        $upiEntity = array_merge($defaultUPIData, $upiEntity);
 
         $request = $this->getMockServer('upi_yesbank')->getCallback($upiEntity, $payment);
 

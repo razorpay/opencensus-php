@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Constants\Entity as BaseConstants;
 use RZP\Gateway\Upi\icici\Fields as ICICIFields;
+use RZP\Gateway\Upi\Yesbank\Gateway as YesbankGateway;
 
 class Service extends Base\Service
 {
@@ -69,7 +70,7 @@ class Service extends Base\Service
             switch ($gateway)
             {
                 case BaseConstants::UPI_YESBANK:
-                    $request[Entity::QR_CODE_ID]            = substr($input['data']['upi'][Fields::MERCHANT_REFERENCE], 0, UniqueIdEntity::ID_LENGTH);
+                    $request[Entity::QR_CODE_ID]            = (new YesbankGateway())->getQrPaymentMerchantReference($input['data']['upi'][Fields::MERCHANT_REFERENCE]);
                     $request[Entity::TRANSACTION_REFERENCE] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID];
                     break;
 
@@ -150,7 +151,7 @@ class Service extends Base\Service
         switch ($type)
         {
             case Type::BHARAT_QR:
-                $input[Entity::QR_CODE_ID]            = $qrData['merchant_reference'];
+                $input[Entity::QR_CODE_ID] = $qrData['merchant_reference'];
                 $input[Entity::TRANSACTION_REFERENCE] = $qrData['provider_reference_id'];
                 break;
 

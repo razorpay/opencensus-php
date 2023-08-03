@@ -439,7 +439,7 @@ return [
                         ],
                     'upi'      =>
                         [
-                            'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                            'merchant_reference' => 'RZPYLnYZWjQcVbWZ4aqrv2',
                             'npci_reference_id'  => '306133002290',
                             'vpa'                => 'kushagra@oksbi',
                         ],
