@@ -679,6 +679,7 @@ return array(
 
     'partner_bank_account_param_removal_exp_id' => env('PARTNER_BANK_ACCOUNT_PARAM_REMOVAL_EXP_ID'),
 
+    'one_cc_shopify_coupon_bufgix_exp_id' => env('ONE_CC_SHOPIFY_COUPON_BUGFIX_EXP_ID'),
     'magic_preferences_routing_to_checkout_service_exp_id' => env('MAGIC_PREFERENCES_ROUTING_TO_CHECKOUT_SERVICE_EXP_ID'),
 
     'dispute_merchant_emails_initiate_experiment_id' => env('DISPUTE_MERCHANT_EMAILS_INITIATE_EXPERIMENT_ID'),
