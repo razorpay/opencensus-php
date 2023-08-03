@@ -740,6 +740,8 @@ class Service extends Base\Service
 
         $paymentId = $input['razorpay_payment_id'];
 
+        $source = isset($input['abandoned_cart']) && $input['abandoned_cart'] === true ? 'abandoned_cart': 'default';
+
         $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
@@ -757,7 +759,8 @@ class Service extends Base\Service
                     [
                         'type'             => 'duplicate_order_received',
                         'order_id'         => $order->getPublicId(),
-                        'from_shopify_api' => $fromShopifyApi,
+                        'method'           => 'api',
+                        'source'           => $source,
                     ]);
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
             }
@@ -768,7 +771,7 @@ class Service extends Base\Service
 
         $orderArray = $order->toArrayPublic();
 
-        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
+        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi, $source);
 
         if($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE))
         {
@@ -885,7 +888,7 @@ class Service extends Base\Service
     }
 
     // places final order and gateway transaction to Shopify
-    public function placeShopifyOrder($order, $payment, $fromShopifyApi): array
+    public function placeShopifyOrder($order, $payment, $fromShopifyApi, $source): array
     {
 
         $utmParameters =[];
@@ -908,6 +911,8 @@ class Service extends Base\Service
 
         $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta);
 
+        $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT, ['source' => $source, 'method' => $fromShopifyApi?'api':'sqs']);
+
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
             [
@@ -915,7 +920,8 @@ class Service extends Base\Service
                 'order_id'         => $order->getId(),
                 'payment_id'       => $payment->getId(),
                 'time'             => millitime() - $start,
-                'from_shopify_api' => $fromShopifyApi,
+                'method'           => $fromShopifyApi?'api':'sqs',
+                'source'           => $source,
             ]
         );
 

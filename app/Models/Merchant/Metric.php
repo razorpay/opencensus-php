@@ -194,6 +194,7 @@ final class Metric
     const PLACE_SHOPIFY_ORDER_REQUEST_COUNT             = 'place_shopify_order_request_count';
     const PLACE_SHOPIFY_ORDER_ERROR_COUNT               = 'place_shopify_order_error_count';
     const PLACE_SHOPIFY_ORDER_CALL_TIME                 = 'place_shopify_order_call_time';
+    const PLACE_SHOPIFY_ORDER_SUCCESS_COUNT             = 'place_shopify_order_success_count';
     const SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT             = 'shopify_1cc_pg_router_error_count';
     const SHOPIFY_1CC_ORDER_AMOUNT_EXCEEDS_ERROR_COUNT  = 'shopify_1cc_order_amount_exceeds_error_count';
     const SHOPIFY_1CC_API_RATE_LIMIT                    = 'shopify_1cc_api_rate_limit';
