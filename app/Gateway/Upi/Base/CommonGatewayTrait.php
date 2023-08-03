@@ -458,6 +458,16 @@ trait CommonGatewayTrait
 
         if ($response->isV2() === true)
         {
+            if ($upi['vpa'] === null)
+            {
+                return [
+                    'acquirer' => [
+                        Payment\Entity::REFERENCE16 => $upi['npci_reference_id'] ?? null,
+                    ],
+                    'amount_authorized' => $payment['amount_authorized'],
+                    'currency'          => $payment['currency'],
+                ];
+            }
             return [
                 'acquirer' => [
                     Payment\Entity::VPA         => $upi['vpa'] ?? null,
