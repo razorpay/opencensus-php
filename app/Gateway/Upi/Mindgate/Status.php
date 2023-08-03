@@ -30,4 +30,21 @@ class Status
     const VPA_NOT_AVAILABLE = 'VN';
 
     const FAILED = 'F';
+
+    // Recurring Status
+    const UPDATE        = 'UPDATE';
+
+    const REVOKE        = 'REVOKE';
+
+    const REVOKED       = 'REVOKED';
+
+    const PAUSE         = 'PAUSE';
+
+    const UNPAUSE       = 'UNPAUSE';
+
+    const REJECTED      = 'REJECTED';
+
+    const ACTIVE        = 'ACTIVE';
+
+    const COMPLETED     = 'COMPLETED';
 }

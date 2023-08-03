@@ -160,14 +160,14 @@ trait UpiRecurringCallbacks
                     'custRefNo'            => '987654321',
                     'requestDate'          => '25 Jul 2019 03:20 PM',
                     'referenceNumber'      => $payment['id'],
-                    'txnId'                => '',
+                    'txnId'                => 'HDFC00001124',
                     'remarks'              => '',
                     'name'                 => '',
                     'mandateType'          => 'CREATE',
                     'amount'               => '20.00',
                     'startDate'            => '25 July 2019',
                     'endDate'              => '26 July 2019',
-                    'UMN'                  => '',
+                    'UMN'                  => '12121jjberbnvejrgufwebjw@icici',
                     'payerVpa'             => $payment['vpa'],
                     'payerName'            => '',
                     'payeeVpa'             => '',
@@ -187,7 +187,8 @@ trait UpiRecurringCallbacks
                     'show_QR'              => 'Y',
                     'callback_type'        => 'MANDATE_STATUS',
                     'purpose_code'         => '00',
-                    'message'              => 'Mandate created successfully'
+                    'message'              => 'APPROVED OR COMPLETED SUCCESSFULLY',
+                    'respCode'             => '00'
                 ]
             ],
         ];
@@ -270,7 +271,7 @@ trait UpiRecurringCallbacks
                     'show_QR'              => 'Y',
                     'callback_type'        => 'MANDATE_STATUS',
                     'purpose_code'         => '00',
-                    'message'              => 'Mandate created successfully'
+                    'message'              => 'Initial debit successful'
                 ]
             ],
         ];
@@ -375,6 +376,189 @@ trait UpiRecurringCallbacks
         ];
 
         return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseRevokeForMindgate($mandate)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  '1211121212',
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => '1211121212',
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'REVOKE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => $mandate['umn'],
+                    'payerVpa'             => '',
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'REVOKE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate revoked successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $iv = strtoupper(bin2hex(random_bytes(16)));
+
+        $content = $this->encryptForMandate($jsonResponse, $iv);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'ivToken'      => $iv,
+            'keyId'        => 1
+        ];
+
+        return $response;
+    }
+
+    protected function getAsyncCallbackResponsePauseForMindgate($mandate)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  '12112121',
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => '111112121',
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'UPDATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => $mandate['umn'],
+                    'payerVpa'             => '',
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'PAUSE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate paused successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $iv = strtoupper(bin2hex(random_bytes(16)));
+
+        $content = $this->encryptForMandate($jsonResponse, $iv);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'ivToken'      => $iv,
+            'keyId'        => 1
+        ];
+
+        return $response;
+    }
+
+    protected function getAsyncCallbackResponseResumeForMindgate($mandate)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  '12112121',
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => '111112121',
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'UPDATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => $mandate['umn'],
+                    'payerVpa'             => '',
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'UNPAUSE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate resumed successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $iv = strtoupper(bin2hex(random_bytes(16)));
+
+        $content = $this->encryptForMandate($jsonResponse, $iv);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'ivToken'      => $iv,
+            'keyId'        => 1
+        ];
+
+        return $response;
     }
 
     protected function getAsyncCallbackResponseMandateUpdate($payment)

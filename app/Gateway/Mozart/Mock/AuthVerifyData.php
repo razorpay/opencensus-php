@@ -41,10 +41,22 @@ class AuthVerifyData extends Base\Mock\Server
                 'paymentId'       => $entities['payment']['id'],
                 'bank_payment_id' => '999999',
                 'mandate_amount'  => $entities['upi_mandate']['max_amount'],
-                'status'          => 'callback_successful',
+                'status'          => $entities['gateway']['redirect']['mandateDtls']['0']['status'],
                 'umn'             => $entities['payment']['id'] . '@hdfcbank',
                 'rrn'             => '012345678912',
                 'npci_txn_id'     => 'HDFC00001124',
+                'status_code'     => $entities['gateway']['redirect']['mandateDtls']['0']['respCode'],
+                'status_desc'     => $entities['gateway']['redirect']['mandateDtls']['0']['message'],
+                'gateway_data'    => [
+                    'id'                    => $entities['gateway']['redirect']['requestInfo']['pspRefNo'],
+                ],
+                'upi'             => [
+                    'vpa'                   => $entities['gateway']['redirect']['mandateDtls']['0']['payerVpa'],
+                    'npci_txn_id'           => $entities['gateway']['redirect']['mandateDtls']['0']['txnId'],
+                    'npci_reference_id'     => $entities['gateway']['redirect']['mandateDtls']['0']['custRefNo'],
+                    'gateway_payment_id'    => $entities['gateway']['redirect']['mandateDtls']['0']['custRefNo']
+                ]
+
             ],
         ];
 

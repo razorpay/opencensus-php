@@ -8,7 +8,10 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\UpiMandate;
+use RZP\Models\PaymentsUpi;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Mozart\Gateway;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
@@ -222,9 +225,56 @@ trait RecurringTrait
         return $response;
     }
 
+    protected function getVpaDetails(gateway $gateway, array $input)
+    {
+        try
+        {
+            $vpaCore = new PaymentsUpi\Vpa\Core;
+
+            $vpa = $vpaCore->firstByAddress($input['payment']['vpa']);
+
+            if (($vpa !== null) and ($vpa['name'] === null))
+            {
+                $validate_vpa = $gateway->validateVpa($input);
+                $vpa['name'] = $validate_vpa['data']['payer_name'];
+
+                $vpaCore->updateOrCreate([
+                    'vpa' => $input['payment']['vpa'],
+                    'name' => $validate_vpa['data']['payer_name'],
+                    'received_at' => Carbon::now()->getTimestamp()
+                ]);
+            }
+
+            return $vpa;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::VALIDATE_VPA_STATUS_FAILED,
+                [
+                    'payment' => $input['payment']['id'],
+                    'vpa' => $input['payment']['vpa']
+                ]);
+
+            throw $e;
+        }
+    }
+
     protected function sendMandateCreateRequest(array $input, Entity $upi)
     {
         $gateway = $this->getMozartGatewayWithModeSet();
+
+        if ($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE)
+        {
+            if ($input['upi']['flow'] === Constants::COLLECT)
+            {
+                $vpa = $this->getVpaDetails($gateway, $input);
+
+                $input['vpa'] = $vpa;
+            }
+        }
 
         $response = $gateway->mandateCreate($input);
 
@@ -317,6 +367,18 @@ trait RecurringTrait
                 null,
                 null,
                 $this->action);
+
+            if((isset($response['data']['status_desc'])) and
+                ($response['data']['status_desc'] !== null) and
+                ($response['data']['terminal']['gateway'] === 'upi_mindgate') and
+                ($response['error']['gateway_error_description']) !== null)
+            {
+                $response['data']['status_desc'] = $response['error']['gateway_error_description'] . "|" . $response['data']['status_desc'];
+                $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
+                    'status_desc'       => $response['data']['status_desc'],
+                    'error'             => $response['error']
+                ]);
+            }
 
             $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
 

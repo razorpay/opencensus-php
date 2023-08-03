@@ -119,6 +119,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function validateVpa($input)
+    {
+        $validateVpaInput = new ValidateVpaData();
+
+        return $this->processMockResponse($input, $validateVpaInput, Action::VALIDATE_VPA);
+    }
+
     public function authVerify($input)
     {
         $authVerifyObj = new AuthVerifyData();

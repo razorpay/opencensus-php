@@ -20,4 +20,5 @@ class Constants
     const QR_PAYMENT            = 'qrp';
     const PROMO_INTENT          = 'pri';
     const LAST_SUCCESSFUL_DEBIT = 'lsd';
+    const COLLECT               = 'collect';
 }

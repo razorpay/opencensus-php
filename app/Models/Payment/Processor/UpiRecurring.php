@@ -825,7 +825,16 @@ trait UpiRecurring
 
             return true;
         }
+
         // For Initial Recurring
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $upiMandate = $token->upiMandate;
+
+        if ($upiMandate === null)
+        {
+            $upiMandate = $this->findUpiMandateUsingOrderIdAndUpdateToken($payment, $token);
+        }
 
         // If gateway suggests that the payment is authorized, we do not need to skip the authorization
         if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
@@ -1342,6 +1351,34 @@ trait UpiRecurring
      * @param Entity $payment
      * @param array $data
      */
+
+    protected function findUpiMandateUsingOrderIdAndUpdateToken(Entity $payment, $token)
+    {
+        $upiMandate = $this->repo->upi_mandate->findByOrderId($payment->order->getId());
+
+        $upiMandateLinkedToken = $this->repo->token->findByIdAndMerchantId($upiMandate->getTokenId(), $token->getMerchantId());
+
+        if($upiMandateLinkedToken->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+        {
+            $upiMandate->setTokenId($payment->localToken->getId());
+
+            $token->upiMandate()->save($upiMandate);
+
+            $token->refresh();
+
+            $this->repo->saveOrFail($upiMandate);
+
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_RELINK_UPIMANDATE_TOKEN,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'token_id'      => $token->getId(),
+                ]
+            );
+            return $upiMandate;
+        }
+    }
+
     protected function updateRecurringEntitiesForUpiIfApplicable(Entity $payment, array $data, bool $wasFailed = false)
     {
         if ($payment->isUpiRecurring() === false)
@@ -1360,6 +1397,12 @@ trait UpiRecurring
 
         // As this is made sure that the payment will be created only for local token
         $upiMandate = $token->upiMandate;
+
+        if ($upiMandate === null)
+        {
+            $upiMandate = $this->findUpiMandateUsingOrderIdAndUpdateToken($payment, $token);
+        }
+
         $prevStatus = $upiMandate->getStatus();
         $confirmed  = false;
         $tokenRejected   = false;

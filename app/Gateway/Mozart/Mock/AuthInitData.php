@@ -62,36 +62,97 @@ class AuthInitData extends Base\Mock\Server
         assertTrue(isset($entities['upi']['remark']));
         assertTrue($entities['upi']['remark'] === 'Test Merchant random description');
 
-        $response = [
-            'data' =>
-                [
-                    'terminal'  => [
-                        'vpa'   => 'merchant@hdfcbank',
+        if ($entities['upi']['flow'] === 'intent')
+        {
+            $response = [
+                'data' =>  [
+                    '_raw' =>  '[\'upi\' => [\'gateway_data\' => [\'id\' => \'I08Uh70fcsENn60create1\']],\'status_desc\' => \'Transaction initiated successfully.\',\'\' => \'NA\']',
+                    'intent_url' =>  'upi => //mandate?am=2500&amrule=MAX&block=N&cu=INR&mc=5399&mode=13&orgid=&pa=razorpaypg@hdfcbank&pn=TestMerchant&purpose=14&recur=AS_PRESENTED&rev=Y&sign=&tid=I08Uh70fcsENn60create1&tn=TestMerchant&tr=I08Uh70fcsENn60create1&txnType=CREATE&validityend=08072020&validitystart=27062020',
+                    'mandate' =>  [
+                        'gateway_data' =>  [
+                            'id' =>  'I08Uh70fcsENn60create1'
+                        ]
                     ],
-                    'referenceNumber' => 'IFPO039F3940343',
-                    'pgMerchantId' => 'HDFC000006002278',
-                    'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',
-                    'amount' => 200,
-                    'custRefNo' => '920515212270',
-                    'mandateStatus' => 'PENDING',
-                    'reqStatus' => 'S',
-                    'message' => 'Mandate Request Initiated to NPCI',
-                    'payerVPA' => 'testvpa@yesb',
-                    'credAcc' => '01601200021634',
-                    'endDate' => '26 Jul 2019',
-                    'txnId' => 'HDF542de25ds56ad9896ac96cef89475623',
-                    'creditIFSC' => 'HDFC0000160',
-                    'mcc' => '4121',
-                    'startDate' => '24 Jul 2019',
-                    'isVerified' => false,
-                    'errorCode' => 'MD200',
-                    '_raw' => '',
-                    ''
+                    'meta' =>  [
+                        'request' =>  [
+                            'plain' =>  '435202|I08Uh70fcsENn60create1|5399|P2M|CREATE|test|razorpaypg@hdfcbank|TestMerchant|2500|NA|NA|NA|NA|NA|NA|NA|NA|NA'
+                        ],
+                        'response' =>  [
+                            'content' =>  '[\n    \'pgMerchantId\' =>  \'HDFC000000000054\',\n    \'payload\' =>  \'08c8fda6be3a90976f8be49cb8812fed2b957ee2a7f16db9e91a9770fcd5dd4d8491fc3de0add1718e8e11545dc56190f36a4b8c78475f5288aef362a5bf2885c57833fb3ad6a17c2297680c07d687ce38c20fcffff73e52180760c646f04a58ba801f335c2bbfc5f39f6c7743f4e83a6e2987f6e11970ee5b3b05a031ecc91c\'\n]',
+                            'plain' =>  [
+                                '' =>  'NA',
+                                'status' =>  'SUCCESS',
+                                'status_desc' =>  'Transaction initiated successfully.',
+                                'upi' =>  [
+                                    'gateway_data' =>  [
+                                        'id' =>  'I08Uh70fcsENn60create1'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'payment' =>  [
+                        'currency' =>  'INR'
+                    ],
+                    'status' =>  'SUCCESS',
+                    'status_code' =>  'SUCCESS',
+                    'status_desc' =>  'Transaction initiated successfully.',
+                    'terminal' =>  [
+                        'gateway' =>  'upi_mindgate',
+                        'gateway_merchant_id' =>  '435202'
+                    ],
+                    'upi' =>  [
+                        'gateway_data' =>  [
+                            'id' =>  'I08Uh70fcsENn60create1'
+                        ],
+                        'status_code' =>  null
+                    ],
+                    'version' =>  'v2'
                 ],
-            'error' => null,
-            'success' => true,
-            'mozart_id' => '',
-            'external_trace_id' => '',
+                'error' =>  null,
+                'external_trace_id' =>  'DUMMY_REQUEST_ID',
+                'success' =>  true
+            ];
+
+            return $response;
+        }
+
+        $response = [
+            'data' => [
+                'status' => 'S',
+                '_raw' => '[\'requestInfo\' => [\'pgMerchantId\' => \'MYBANK000000002927\',\'pspRefNo\' => \'MYBANK3PL564Z48DD796K4RUL7AIK3UGYK617\'],\'statusDesc\' => \'Mandate request initiated successfully\',\'errCode\' => \'MD200\',\'mandateDtls\' => [\'0\' => [\'custRefNo\' => \'023722057186\',\'requestDate\' => \'24 Aug 2020 10 => 55 PM\',\'referenceNumber\' => \'MYBANKEEY6W7LIA24RF6O2S59HUF0RPJFPWXJ\',\'txnId\' => \'MYBANKH48S0PSUK7S4UDAUKRKYE3GTY31AIR2\',\'remarks\' => \'CREATE Mandate test\',\'name\' => \'CREATE Mandate test\',\'mandateType\' => \'CREATE\',\'frequency\' => \'MONTHLY\',\'amount\' => \'78.00\',\'startDate\' => \'24 Aug 2020\',\'endDate\' => \'24 Aug 2021\',\'isRevokeable\' => \'Y\',\'payerVPA\' => \'samreen@mybank\',\'payerName\' => \'sam1996\',\'payeeVPA\' => \'sonysuper@mybank\',\'payeeName\' => \'Sony Super\',\'status\' => \'PENDING\',\'creditIfsc\' => \'MYBANK0002201\',\'crediAccount\' => \'00993564615950\',\'noOfDebit\' => \'13\',\'onBehalf_Of\' => \'PAYEE\',\'amt_rule\' => \'EXACT\',\'ruleType\' => \'ON\',\'ruleValue\' => \'24\',\'create_date_time\' => \'24 Aug 2020 10 => 55 PM\',\'ref_url\' => \'https => //www.mybank.co.in\',\'errCode\' => \'MD200\',\'payType\' => \'P2M\',\'show_QR\' => \'N\',\'purpose_code\' => \'14\',\'expire_time\' => \'100\',\'mcc\' => \'6211\',\'expiry_date_time\' => \'25 Aug 2020 12 => 35 AM\',\'message\' => \'MD200\',\'is_verified\' => \'true\',\'blockFund\' => \'N\',\'initiatedBy\' => \'PAYEE\',\'nextRecurDate\' => \'Aug 24, 2020\',\'remRecuCount\' => \'13\',\'prdMobile\' => \'919930465134\']]]',
+                'errCode' => 'MD200',
+                'mandate' => [
+                    'gateway_data' => [
+                        'id' => 'MYBANK3PL564Z48DD796K4RUL7AIK3UGYK617'
+                    ],
+                    'rrn' => '023722057186'
+                ],
+                'payment' =>  [
+                    'currency' =>  'INR'
+                ],
+                'status_code' =>  'MD200',
+                'status_desc' =>  'Mandate request initiated successfully',
+                'terminal' =>  [
+                    'gateway' =>  'upi_mindgate',
+                    'gateway_merchant_id' =>  'MYBANK000000002927'
+                ],
+                'upi' =>  [
+                    'gateway_data' =>  [
+                        'id' =>  'MYBANK3PL564Z48DD796K4RUL7AIK3UGYK617'
+                    ],
+                    'gateway_payment_id' =>  '023722057186',
+                    'merchant_reference' =>  'MYBANK3PL564Z48DD796K4RUL7AIK3UGYK617',
+                    'npci_reference_id' =>  '023722057186',
+                    'npci_txn_id' =>  'MYBANKH48S0PSUK7S4UDAUKRKYE3GTY31AIR2',
+                    'status_code' =>  'MD200'
+                ],
+                'version' =>  'v2'
+            ],
+            'error' =>  null,
+            'external_trace_id' =>  'DUMMY_REQUEST_ID',
+            'next' =>  [],
+            'success' =>  true
         ];
 
         return $response;

@@ -1237,6 +1237,32 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedUpiMindgateIntentRecurringTerminal(array $attributes = [])
+    {
+        $termId = Shared::UPI_MINDGATE_RECURRING_INTENT_TERMINAL_DEDICATED;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi',
+            'gateway_terminal_id'       => 'nodal account upi mindgate',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDedicatedUpiIciciTpvTerminal(array $attributes = [])
     {
         $attributes = [

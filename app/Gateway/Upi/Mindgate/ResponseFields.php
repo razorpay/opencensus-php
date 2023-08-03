@@ -39,6 +39,12 @@ class ResponseFields
     const REFERENCE_9               = 'reference_9';
     const PAYER_ACCOUNT_TYPE        = 'payer_account_type';
 
+    // Recurring fields
+    const MANDATE_TYPE              = 'mandateType';
+    const ERR_CODE                  = 'errCode';
+    const UMN                       = 'UMN';
+
+
     /**
      * These are the expected field orders
      * for the response we get from the API

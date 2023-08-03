@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Mozart;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -15,6 +16,7 @@ use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Gateway\Upi\Base\Type;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\UpiMandate\Frequency;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\MandateTrait;
@@ -377,6 +379,18 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
         return $this->getOtpSubmitRequest($input);
+    }
+
+    public function validateVpa($input)
+    {
+        parent::action($input, Action::VALIDATE_VPA);
+
+        $traceReq = TraceCode::GATEWAY_VALIDATE_VPA_REQUEST;
+        $traceRes = TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE;
+
+        list($response) = $this->sendMozartRequestAndGetResponse($input, $traceReq, $traceRes, true);
+
+        return $response;
     }
 
     public function mandateCreate($input)
@@ -1874,6 +1888,23 @@ class Gateway extends Base\Gateway
             $url = $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
 
+        if($gateway === Payment\Gateway::UPI_MINDGATE)
+        {
+            if($this->isUpiRecurringPayment($input['payment']) === true)
+            {
+                $version = 'v2';
+
+                if ($input['terminal']['gateway_access_code'] !== null)
+                {
+                    $version = $input['terminal']['gateway_access_code'];
+                }
+
+                $url = $baseUrl . $prefix . '/' . $gateway . '/' . $version . '/' . $this->action;
+
+                return $url;
+            }
+        }
+
         return $url;
     }
 
@@ -2104,6 +2135,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY        => null,
                 Action::CAPTURE           => Action::PAY_INIT,
                 Action::VERIFY            => null,
+                Action::NOTIFY            => null,
             ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
@@ -2291,6 +2323,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY      => null,
                 Action::CAPTURE         => Action::AUTHORIZE,
                 Action::VERIFY          => null,
+                Action::NOTIFY          => null,
             ],
             Payment\Gateway::UPI_SBI => [
                 Action::PAY_INIT        => null,
@@ -3049,7 +3082,12 @@ class Gateway extends Base\Gateway
     {
         if ((isset($input['keyId']) === true) and ($input['keyId'] == 1))
         {
-            $payload =  $this->getCipherInstance(Crypto::MODE_CBC)
+            if($input['key'] === null)
+            {
+                $input['key'] = config('gateway.upi_mindgate.gateway_encryption_key');
+            }
+
+            $payload =  $this->getCipherInstanceMindgate(Crypto::MODE_CBC, $input['key'])
                              ->setIV($input['ivToken'])
                              ->enablePadding()
                              ->decrypt($input['payload']);
@@ -3071,6 +3109,16 @@ class Gateway extends Base\Gateway
     {
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
+        if ($mode === null)
+        {
+            return new Crypto($key);
+        }
+
+        return new Crypto($key, $mode);
+    }
+
+    protected function getCipherInstanceMindgate($mode = null, $key)
+    {
         if ($mode === null)
         {
             return new Crypto($key);

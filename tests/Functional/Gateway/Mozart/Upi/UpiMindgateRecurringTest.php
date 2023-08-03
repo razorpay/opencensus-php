@@ -30,7 +30,21 @@ class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
 
     public function testRevokeMandate()
     {
-        $this->markTestSkipped();
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals('revoked', $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
     }
 
     public function testPauseMandate()

@@ -64,4 +64,6 @@ class Action
     const UPDATE_TOKEN          = 'update_token';
 
     const CHECK_BIN             = 'check_bin';
+
+    const VALIDATE_VPA          = 'validate_vpa';
 }

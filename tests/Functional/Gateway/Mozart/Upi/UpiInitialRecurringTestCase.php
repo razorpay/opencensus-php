@@ -1565,6 +1565,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['fave_pinelabs_allow']           = ['razorpay@pinelabs', $throwables['whitelisted']];
         $cases['gpay_oksbi_allow']              = ['razorpay@oksbi', $throwables['whitelisted']];
         $cases['zomato_zoicici_allow']          = ['razorpay@zoicici', $throwables['whitelisted']];
+        $cases['hdfc_hdfcbank_allow']          = ['razorpay@hdfcbank', $throwables['whitelisted']];
         $cases['bajajfinserve_abfspay_allow']   = ['razorpay@abfspay', $throwables['whitelisted']];
         $cases['goniyo_niyoicici_allow']        = ['razorpay@niyoicici', $throwables['whitelisted']];
         $cases['equitassmallfinancebankltd_equitas_allow']  = ['razorpay@equitas', $throwables['whitelisted']];

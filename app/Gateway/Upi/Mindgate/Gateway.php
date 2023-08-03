@@ -515,8 +515,61 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
-        // TODO: Find a better way of identifying the callback for Mandate.
-        if (isset($input['payload']) === true)
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($routeName === 'gateway_payment_callback_recurring') {
+
+            $decodeData = json_decode($input, true);
+
+            if ((isset($decodeData['payload']) === true) and (isset($decodeData['ivToken']) === true)) {
+
+                $terminal = $this->app['repo']->terminal->findByGatewayMerchantId($decodeData['pgMerchantId'], Payment\Gateway::UPI_MINDGATE);
+
+                $decodeData['key'] = $terminal->toArrayWithPassword()['gateway_secure_secret'];
+
+                $response = $this->preProcessMandateCallback($decodeData, Payment\Gateway::UPI_MINDGATE);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_GATEWAY_CALLBACK_RESPONSE,
+                    [
+                        'gateway' => $this->gateway,
+                        'recurring' => true,
+                        'data' => $response
+                    ]);
+
+                $traceHeaders = $this->app['request']->header();
+                unset($traceHeaders['authorization'], $traceHeaders['x-passport-jwt-v1']);
+
+                // update umn and mandate status in case revoke, pause or unpause
+                $mandateResponse = $this->getMandateCallbackResponseIfApplicable($response);
+
+                if (empty($mandateResponse) === false) {
+                    $this->trace->info(
+                        TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                        [
+                            'body' => $input,
+                            'headers' => $traceHeaders,
+                            'gateway' => $this->gateway,
+                            'data' => $response,
+                            'mandateResponse' => $mandateResponse
+                        ]);
+                    return $mandateResponse;
+                }
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                    [
+                        'body' => $input,
+                        'headers' => $traceHeaders,
+                        'gateway' => $this->gateway,
+                        'data' => $response
+                    ]);
+
+                return $response;
+            }
+        }
+
+        if ((isset($input['payload']) === true))
         {
             return $this->preProcessMandateCallback($input, Payment\Gateway::UPI_MINDGATE);
         }
@@ -577,7 +630,79 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    public function postProcessServerCallback($input): array
+
+    protected function getMandateCallbackResponseIfApplicable($response){
+
+        $mandateData = $response['mandateDtls'][0];
+
+        if (($this->isMandatePauseCallback($mandateData) === true))
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[ResponseFields::UMN],
+                    'status'  => 'pause',
+                ]
+            ];
+        }
+        else if ($this->isMandateResumeCallback($mandateData) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[ResponseFields::UMN],
+                    'status'  => 'resume',
+                ]
+            ];
+        }
+        else if ($this->isMandateRevokeCallback($mandateData) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[ResponseFields::UMN],
+                    'status'  => 'revoke',
+                ]
+            ];
+        }
+        return [];
+    }
+
+    protected function isMandatePauseCallback($input)
+    {
+        if ((isset($input[ResponseFields::MANDATE_TYPE]))
+            and ($input[ResponseFields::MANDATE_TYPE] === Status::PAUSE)
+            and ($input[ResponseFields::STATUS] === Status::PAUSE))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateResumeCallback($input)
+    {
+        if ((isset($input[ResponseFields::MANDATE_TYPE]))
+            and ($input[ResponseFields::MANDATE_TYPE] === Status::UNPAUSE)
+            and ($input[ResponseFields::STATUS] === Status::UNPAUSE))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateRevokeCallback($input)
+    {
+        if ((isset($input[ResponseFields::MANDATE_TYPE]))
+            and ($input[ResponseFields::MANDATE_TYPE] === Status::REVOKE)
+            and ($input[ResponseFields::STATUS] === Status::REVOKED))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public function postProcessServerCallback($input, $exception = null): array
     {
         return ['success' => true];
     }
@@ -1197,6 +1322,15 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    public function mandateCancel(array $input)
+    {
+        parent::action($input, Action::MANDATE_CANCEL);
+
+        $this->setGatewayDataBlockForUpiRecurring($input);
+
+        return $this->recurringMandateRevoke($input);
     }
 
     // Verify payment from barricade

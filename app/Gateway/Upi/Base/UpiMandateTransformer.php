@@ -77,7 +77,6 @@ class UpiMandateTransformer extends UpiTransformer
                 //TODO:  We need to send the status initiated in this case
                 //$this->item->setStatus(Status::INITIATED);
             }
-
             $this->updateMetadataFromResponse();
         }
         else if ($this->context->getAction() === Action::CALLBACK)
