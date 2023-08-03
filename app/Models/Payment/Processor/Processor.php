@@ -5123,7 +5123,9 @@ class Processor
 
                 $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
 
-                (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs);
+                $category = $this->merchant->getCategory();
+
+                (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs, $category);
 
                 return $transfersProcessed->merge($failedTransfersToRetry);
             }

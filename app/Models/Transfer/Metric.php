@@ -28,6 +28,7 @@ class Metric extends Base\Core
     const SEMAPHORE_ACQUIRE_SUCCESS                = 'semaphore_acquire_success';
     const SEMAPHORE_ACQUIRE_TIME_TAKEN             = 'semaphore_acquire_time_taken';
     const SEMAPHORE_ACQUIRE_FAILURE                = 'semaphore_acquire_failure';
+    const MERCHANT_CATEGORY                        = 'merchant_category';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -67,11 +68,12 @@ class Metric extends Base\Core
         $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
     }
 
-    public function pushTransferProcessingTimeMetrics($sourceType, $processingTime)
+    public function pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category)
     {
         $dimensions = [
-            self::TRANSFER_ROUTE  => $this->getRouteName(),
-            self::TRANSFER_SOURCE => $sourceType,
+            self::TRANSFER_ROUTE     => $this->getRouteName(),
+            self::TRANSFER_SOURCE    => $sourceType,
+            self::MERCHANT_CATEGORY  => $category,
         ];
 
         $this->trace->histogram(self::TRANSFER_PROCESSING_TIME, $processingTime, $dimensions);
@@ -116,9 +118,13 @@ class Metric extends Base\Core
         $this->trace->histogram(self::SOURCE_ID_PROCESSING_TIME_IN_WORKER, $processingTime, $dimensions);
     }
 
-    public function pushTransfersProcessingTimeInSyncMetrics($processingTime)
+    public function pushTransfersProcessingTimeInSyncMetrics($processingTime, $category)
     {
-        $this->trace->histogram(self::TRANSFERS_PROCESSING_TIME_IN_SYNC, $processingTime);
+        $dimensions = [
+            self::MERCHANT_CATEGORY  => $category,
+        ];
+
+        $this->trace->histogram(self::TRANSFERS_PROCESSING_TIME_IN_SYNC, $processingTime, $dimensions);
     }
 
     public function pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs)

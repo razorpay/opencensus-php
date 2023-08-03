@@ -1247,6 +1247,8 @@ class Core extends Base\Core
 
             $merchant = $transfer->merchant;
 
+            $category = $merchant->getCategory();
+
             $isCapitalFloatOrSliceRouteMerchant = (($merchant->isCapitalFloatRouteMerchant() === true) or
                                                    ($merchant->isSliceRouteMerchant() === true));
 
@@ -1261,7 +1263,7 @@ class Core extends Base\Core
             }
             else
             {
-                (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime);
+                (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category);
             }
         }
     }
