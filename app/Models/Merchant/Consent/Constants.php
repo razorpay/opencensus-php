@@ -63,6 +63,7 @@ class Constants
         'Oauth_App Policies_Terms & Conditions',
         'Oauth_RazorpayX Policies_Terms & Conditions',
         'Oauth_Terms & Conditions',
+        'Oauth_Custom Policy_Terms & Conditions'
     ];
 
     //TODO:: Change it back to 30 after data fix
@@ -93,6 +94,7 @@ class Constants
                                  'X_Terms of Use' . ',' .
                                  'Oauth_App Policies' . '_' . MeConstants::TERMS . ',' .
                                  'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_Custom Policy' . '_' . MeConstants::TERMS . ',' .
                                  self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
@@ -148,14 +150,6 @@ class Constants
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
-        'Oauth_App Policies' . '_' . MeConstants::TERMS             => [
-            self::MANDATORY => true,
-            self::PLATFORM  => self::PG
-        ],
-        'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS             => [
-            self::MANDATORY => true,
-            self::PLATFORM  => self::PG
-        ],
         'X_Privacy Policy'                             => [
             self::MANDATORY => true,
             self::PLATFORM  => self::RX
@@ -165,6 +159,18 @@ class Constants
             self::PLATFORM  => self::RX
         ],
         self::PARTNER_AUTH_TERMS                       => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_App Policies' . '_' . MeConstants::TERMS             => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS             => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_Custom Policy' . '_' . MeConstants::TERMS             => [
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],

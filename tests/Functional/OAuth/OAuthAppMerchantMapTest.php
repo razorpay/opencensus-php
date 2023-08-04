@@ -102,6 +102,47 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals($expectedTerms, $termsDetail2->getURL());
     }
 
+    public function testCreateLegalDocsConsentForOAuthAuthorizeWithCustomPolicy()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id'       => '10000000000000']);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
+        $this->mockBvsService();
+
+        $testData = $this->testData['testOAuthAppMerchantMap'];
+
+        $testData['request']['content']['application_id'] = $application->getId();
+        $testData['request']['content']['env']            = "prod";
+        $testData['request']['content']['ip']             = "120.121.35";
+        $testData['request']['content']['scope_policies'] = [
+            'App Policies'  => 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/',
+            'Custom Policy' => 'https://www.razorpay.com/xyz/terms'
+        ];
+
+        $testData['response']['content']['entity_id']     = $application->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policies_Terms & Conditions']);
+        $termsDetail1 = (new MerchantConsentDetailsRepo())->getById($merchantConsent1->getDetailsId());
+
+        $this->assertEquals('10000000000000', $merchantConsent1->getMerchantId());
+        $this->assertEquals('initiated', $merchantConsent1->getStatus());
+        $expectedTerms = 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/';
+        $this->assertEquals($expectedTerms, $termsDetail1->getURL());
+
+        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_Custom Policy_Terms & Conditions']);
+        $termsDetail2 = (new MerchantConsentDetailsRepo())->getById($merchantConsent2->getDetailsId());
+
+        $this->assertEquals('10000000000000', $merchantConsent2->getMerchantId());
+        $this->assertEquals('initiated', $merchantConsent2->getStatus());
+        $expectedTerms = 'https://www.razorpay.com/xyz/terms';
+        $this->assertEquals($expectedTerms, $termsDetail2->getURL());
+    }
+
     protected function mockBvsService()
     {
         $mock = $this->mockCreateLegalDocument();
