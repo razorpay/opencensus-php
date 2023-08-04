@@ -1755,4 +1755,42 @@ class RblPayoutTest extends TestCase
         $testDataDowntime['payload']['status'] = 'uptime';
         $this->setDowntimeInformationForOnHold($testDataDowntime);
     }
+
+    public function testPartnerBankOnHoldPayoutForDirectAccountWithIncorrectState()
+    {
+
+        $this->ba->privateAuth();
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN"    => [
+                        "status" => "started",
+                    ],
+                    "RZPB"    => [
+                        "status" => "started",
+                    ],
+                    "default" => "started",
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
+
+        // Incorrect state pushed
+        (new Payout\Core)->processPartnerBankDowntimeHoldPayouts($payout['id']);
+
+        // asserting the orignal state of the payout
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
+
+    }
 }
