@@ -1,29 +1,29 @@
-import React from 'react';
-import DetailRow from 'merchant/components/DetailRow';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
-import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 import Button from 'common/new-ui/Button';
-import { isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
-import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
-import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
+import { Store } from 'common/typings';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties, isPresent } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import DetailRow from 'merchant/components/DetailRow';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
+import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
+import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
+import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import {
   ACTION_QUERY_PARAM_KEY,
   UPDATE_WEBSITE_DETAILS,
 } from 'merchant/views/Account/Profile/deeplink-constants';
-import { analyticsTrack } from 'common/utils/analytics';
-import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
-import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { BusinessWebsiteDetailsProps } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/typings';
-import { ATTR_DETAILS } from 'merchant/views/Account/constants';
-import { Store } from 'common/typings';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 const isWorkflowChangeAllowed = (workflow) => {
   return (
@@ -137,10 +137,10 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
 
   const handleEditWebsite = (flowType) => {
-    const hasWebsite = user.has_key_access;
+    const { has_key_access: hasWebsite, business_website, isActivated } = user;
 
     // If true => edit website flow; otherwise add flow
-    if (hasWebsite) {
+    if (hasWebsite || (business_website && isActivated)) {
       openModal({
         size: 'small',
         component: (
@@ -176,7 +176,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     let analyticsObject;
 
     // Edit flow
-    if (user.has_key_access) {
+    if (hasWebsite || (business_website && isActivated)) {
       analyticsObject = {
         objectName: `Website edit`,
         actionName: 'Edit clicked',
