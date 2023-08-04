@@ -211,7 +211,7 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            (new Metric)->pushCreateFailedMetrics($e);
+            (new Metric)->pushCreateFailedMetrics($e, $input);
 
             throw $e;
         }

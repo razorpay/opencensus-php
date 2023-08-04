@@ -84,11 +84,18 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws \Throwable
      */
-    public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
+    public function createForMerchant(array &$input, Merchant\Entity $merchant) : Entity
     {
         $this->trace->info(TraceCode::TRANSFER_CREATE_REQUEST, ['input' => $input]);
 
         $parentMerchant = $this->fetchAccountParentMerchant($merchant);
+
+        $platformTransfer = false;
+
+        if($this->isValidPlatformTransfer() === true && $merchant->getId() !== $parentMerchant->getId())
+        {
+             $platformTransfer = true;
+        }
 
         if (isset($input[ToType::ACCOUNT]) === true)
         {
@@ -134,6 +141,8 @@ class Core extends Base\Core
             {
                 $this->trace->traceException($ex, null, TraceCode::DIRECT_TRANSFER_CREATE_EXPECTION,[]);
 
+                $input[Transfer\Entity::PLATFORM_TRANSFER] = $platformTransfer;
+
                 throw $ex;
             }
         }
@@ -142,6 +151,8 @@ class Core extends Base\Core
         {
             $this->eventTransferProcessed($transfer);
         }
+
+        $input[Transfer\Entity::PLATFORM_TRANSFER] = $platformTransfer;
 
         return $transfer;
     }
@@ -353,8 +364,6 @@ class Core extends Base\Core
     public function isValidPlatformTransfer() : bool
     {
         $partner = $this->partner;
-
-        $partnerService = (new PartnerService());
 
         if (empty($partner) === true or
             in_array($partner->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or

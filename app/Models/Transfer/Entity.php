@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const PARENT_PAYMENT_ID = 'parent_payment_id';
 
     const PARTNER_DETAILS = 'partner_details';
+    const PLATFORM_TRANSFER = 'platform_transfer';
 
     protected static $sign = 'trf';
 

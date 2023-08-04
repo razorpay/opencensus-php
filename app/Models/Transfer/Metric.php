@@ -37,9 +37,9 @@ class Metric extends Base\Core
         $this->trace->count(self::TRANSFER_CREATE_SUCCESS, $dimensions);
     }
 
-    public function pushCreateFailedMetrics(\Throwable $e)
+    public function pushCreateFailedMetrics(\Throwable $e, $input = [])
     {
-        $this->pushExceptionMetrics($e, self::TRANSFER_CREATE_FAILED, $this->getCreateDefaultDimensions());
+        $this->pushExceptionMetrics($e, self::TRANSFER_CREATE_FAILED, $this->getCreateDefaultDimensions($input));
     }
 
     public function pushReversalSuccessMetrics()
@@ -143,7 +143,8 @@ class Metric extends Base\Core
     {
         return $dimensions = [
             self::TRANSFER_ROUTE   => $this->getRouteName(),
-            self::TRANSFER_TO_TYPE => isset($input[ToType::ACCOUNT]) ? ToType::ACCOUNT : ToType::CUSTOMER
+            self::TRANSFER_TO_TYPE => isset($input[ToType::ACCOUNT]) ? ToType::ACCOUNT : ToType::CUSTOMER,
+            Entity::PLATFORM_TRANSFER => $input[Entity::PLATFORM_TRANSFER] ?? false
         ];
     }
 
