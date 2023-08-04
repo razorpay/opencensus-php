@@ -1,6 +1,29 @@
 import React from 'react';
 import Select from './Select';
 export default class ProviderRow extends React.Component {
+  handleLoadChange = (e) => {
+    const load = e.target.value;
+    const regx = /^[0-9]+$/;
+    // Validate the input to allow only numbers between 0 and 100
+    const isWithinRange = regx.test(load) && load >= 0 && load <= 100;
+
+    if (load === '' || isWithinRange) {
+      const { rule = {}, update } = this.props;
+      const { additional_attribute = [] } = rule;
+
+      update({
+        ...rule,
+        additional_attribute: [
+          additional_attribute[0],
+          {
+            name: 'load',
+            value: load,
+          },
+        ],
+      });
+    }
+  };
+
   render() {
     const additional_attribute = this.props.rule.additional_attribute;
     return (
@@ -47,19 +70,7 @@ export default class ProviderRow extends React.Component {
                   type="text"
                   value={additional_attribute[1] && additional_attribute[1].value}
                   class="form-control"
-                  onChange={(e) => {
-                    const load = e.target.value;
-                    this.props.update({
-                      ...this.props.rule,
-                      additional_attribute: [
-                        additional_attribute[0],
-                        {
-                          name: 'load',
-                          value: load,
-                        },
-                      ],
-                    });
-                  }}
+                  onChange={this.handleLoadChange}
                 />
                 <span class="input-group-addon">%</span>
               </div>
@@ -71,6 +82,7 @@ export default class ProviderRow extends React.Component {
               <Select
                 placeholder="Select Provider"
                 options={this.props.providers}
+                searchable
                 selected={this.props.rule.expression.operands[0].operands[1].value
                   .split(',')
                   .map((v) => this.props.providers.find((p) => p.value == v))

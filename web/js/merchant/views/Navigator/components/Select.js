@@ -103,7 +103,7 @@ const Select = (props) => {
                     >
                       <div>
                         <div className="row">
-                          <div className="col-xs-10">
+                          <div className="col-xs-10 p-0">
                             {option?.id != SMART_ROUTER && gateway && (
                               <div className="recommended-provider-img-block">
                                 <img src={gatewayLogos[gateway]} alt={gateway} />
