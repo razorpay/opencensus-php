@@ -220,6 +220,11 @@ class GovernorController extends Controller
             $this->routeToWorkflowIfApplicable($method, $path, $input);
         }
 
+        if($method == 'PUT' && str_contains($path, '/index')){
+            unset($input['governor_method']);
+            unset($input['governor_path']);
+        }
+
         $response = $this->app['governor']->sendRequestV1($method, $path, $input);
 
         return ApiResponse::json($response);
