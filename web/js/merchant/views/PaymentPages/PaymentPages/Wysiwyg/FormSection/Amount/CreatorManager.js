@@ -199,6 +199,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         onDeleteFormItem,
         isPaymentPageEditMode,
         isBatchPaymentPages,
+        countryCode,
         ...restProps
       } = this.props;
 
@@ -218,6 +219,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             openBaseForm={this.openBaseForm}
             currency={currency}
             isBatchPaymentPages={isBatchPaymentPages}
+            countryCode={countryCode}
             {...restProps}
           />
           {isBaseFormOpened && (
@@ -247,6 +249,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               currency={currency}
               onSaveForm={this.onSaveAdvancedForm}
               closeFormModal={(_) => this.toggleAdvancedForm(false)}
+              countryCode={countryCode}
             />
           )}
 
@@ -327,7 +330,7 @@ class AdvancedFormModal extends React.PureComponent {
   };
 
   render() {
-    const { field, fieldType, currency, closeFormModal } = this.props;
+    const { field, fieldType, currency, closeFormModal, countryCode } = this.props;
 
     // TODO: Handle currency
     return (
@@ -338,6 +341,7 @@ class AdvancedFormModal extends React.PureComponent {
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
           currency={currency}
+          countryCode={countryCode}
         />
       </CreatorModal>
     );
