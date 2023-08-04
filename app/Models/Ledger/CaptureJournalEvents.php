@@ -120,7 +120,7 @@ class CaptureJournalEvents
         }
         else if($transaction->isGratis() === true)
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
         }
         else if ($transaction->getAmount() === 0)
         {
@@ -140,7 +140,11 @@ class CaptureJournalEvents
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
 
-        if($transaction->isFeeCredits() === true)
+        if($transaction->isGratis() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+        }
+        else if($transaction->isFeeCredits() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
         }
@@ -177,6 +181,8 @@ class CaptureJournalEvents
 
         $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
 
+        $transactionProcessor = (new Transaction\Processor\payment($transaction));
+
         if($creditLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
@@ -191,7 +197,7 @@ class CaptureJournalEvents
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
         }
         else if($transaction->isTypePayment() === true and $transaction->merchant !== null  and
-                (new Transaction\Processor\payment($transaction))->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($transaction->merchant))
+            $transactionProcessor->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($transaction->merchant))
         {
             $customerFee = $transaction->getCustomerFee();
             $customerGst = $transaction->getCustomerTax();
@@ -214,6 +220,8 @@ class CaptureJournalEvents
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
+            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
         }
         // Normal merchant captured scenario (commissions considered)
         else
@@ -254,7 +262,12 @@ class CaptureJournalEvents
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
-        if($transaction->isFeeCredits() === true)
+        if($transaction->isGratis() === true)
+        {
+            $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($payment->getAmount());
+            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
+        }
+        else if($transaction->isFeeCredits() === true)
         {
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));

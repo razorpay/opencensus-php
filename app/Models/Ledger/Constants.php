@@ -19,6 +19,7 @@ class Constants
     const TRANSFER_REVERSAL_PROCESSED                       = "transfer_reversal_processed";
     const CREDIT_ACCOUNTING                                 = 'credit_accounting';
     const AMOUNT_CREDITS                                    = 'amount_credits';
+    const AMOUNT_CREDITS_REDEMPTION                         = 'amount_credits_redemption';
     const FEE_CREDITS                                       = 'fee_credits';
     const POSTPAID                                          = 'postpaid';
     const DIRECT_SETTLEMENT_ACCOUNTING                      = 'direct_settlement_accounting';
@@ -32,6 +33,8 @@ class Constants
     const BALANCE_DEDUCT                                    = 'balance_deduct';
     const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
     const RAZORPAY_REWARD                                   = 'razorpay_reward';
+    const RAZORPAY_REWARDS                                  = 'razorpay_rewards';
+    const DFB_AMOUNT_CREDITS                                = 'dfb_amount_credits';
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";

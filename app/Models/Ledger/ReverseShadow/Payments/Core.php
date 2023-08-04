@@ -4,6 +4,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Payments;
 
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -114,12 +115,10 @@ class Core extends Base\Core
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
         }
-        //Todo: Amount Credits is still not solutionised
-        else if ($this->isGratis($amountCredits, $fee) === true)
+        else if (($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
-            $moneyParams[Constants::TAX]                        = strval(0);
-            $moneyParams[Constants::COMMISSION]                 = strval(0);
+            $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($payment->getAmount());
+            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
         }
         else if($this->isFeeCredits($feeCredits, $fee) === true)
         {
@@ -144,6 +143,8 @@ class Core extends Base\Core
     {
         $feeCredits = $merchantAccountBalances[Constants::MERCHANT_FEE_CREDITS];
 
+        $amountCredits = $merchantAccountBalances[Constants::MERCHANT_AMOUNT_CREDITS];
+
         $rule = null;
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
@@ -152,10 +153,15 @@ class Core extends Base\Core
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
+        else if(($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+        }
         else if($this->isFeeCredits($feeCredits, $fee))
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
         }
+
 
         return $rule;
     }
@@ -215,13 +221,16 @@ class Core extends Base\Core
         }
         else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
         {
-            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment,$fee, $tax);
+            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment, $fee, $tax);
+
+            $customerFee = $customerFeeAndGstArray[0];
+            $customerTax = $customerFeeAndGstArray[1];
 
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $customerFeeAndGstArray[0] - $customerFeeAndGstArray[1]);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - ($customerFee + $customerTax));
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee - $customerFeeAndGstArray[0] - $customerFeeAndGstArray[1]);
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee - ($customerFee + $customerTax));
         }
         else if($this->isPostpaid($payment) === true)
         {
@@ -231,10 +240,12 @@ class Core extends Base\Core
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
         }
-        else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment))
+        else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
+            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
         }
         else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $fee, $payment) === true)
         {
@@ -294,7 +305,7 @@ class Core extends Base\Core
         }
         else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
         }
         else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $fee, $payment))
         {
@@ -460,5 +471,47 @@ class Core extends Base\Core
         }
 
         return $rule;
+    }
+
+    public function shouldDisableAmountCredits(Payment\Entity $payment):bool
+    {
+        $merchant = $payment->merchant;
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        if (isset($merchantDetail) === false)
+        {
+            return false;
+        }
+
+        if (($merchantDetail->isUnregisteredBusiness() === true)
+            and (new Merchant\Core())->isDisableFreeCreditsFeatureEnabled($merchant, Feature\Constants::DISABLE_FREE_CREDIT_UNREG) === true)
+        {
+            return $this->isMethodCreditCard($payment);
+        }
+        else if (($merchantDetail->isUnregisteredBusiness() === false)
+            and (new Merchant\Core())->isDisableFreeCreditsFeatureEnabled($merchant, Feature\Constants::DISABLE_FREE_CREDIT_REG) === true)
+        {
+            return $this->isMethodCreditCard($payment);
+        }
+
+        return false;
+    }
+
+    public function isMethodCreditCard(Payment\Entity $payment) : bool
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
+        $card = $payment->card;
+
+        if (isset($card) === true and $card->isCredit() === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

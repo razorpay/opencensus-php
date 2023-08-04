@@ -29,7 +29,7 @@ trait ReverseShadowTrait
         {
             $transactionDate = $entity->getUpdatedAt();
         }
-        
+
         $currency = "INR";
         if( $entity->merchant !== null)
         {
@@ -71,7 +71,13 @@ trait ReverseShadowTrait
     protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant)
     {
         return ($this->isPostpaid($payment) === true and ($merchant->isFeeBearerDynamic() === true)
-                and $merchant->isFeatureEnabled(Feature\Constants::CUSTOMER_FEE_DONT_SETTLE) === true);
+            and $merchant->isFeatureEnabled(Feature\Constants::CUSTOMER_FEE_DONT_SETTLE) === true);
+    }
+
+    protected function isPrepaidDynamicFeeBearerFlag(PaymentEntity $payment): bool
+    {
+        $merchant = $payment->merchant;
+        return ($this->isPostpaid($payment) === false) and ($merchant->isFeeBearerDynamic() === true);
     }
 
     protected function isFeeCredits($feeCredits ,$fee): bool
@@ -81,12 +87,12 @@ trait ReverseShadowTrait
 
     protected function isGratisWithoutCustomerFeeBearer($amountCredits ,$amount, PaymentEntity $payment)
     {
-        return (($amountCredits > 0) and ($amount !== 0) and ($payment->isFeeBearerCustomer() === false));
+        return (($amountCredits > 0) and ($amount !== 0) and ($payment->isFeeBearerCustomer() === false) and ($amountCredits >= $amount));
     }
 
     protected function isGratis($amountCredits ,$amount): bool
     {
-        return (($amountCredits > 0) and ($amount !== 0));
+        return (($amountCredits > 0) and ($amount !== 0) and ($amountCredits >= $amount));
     }
 
     protected function isRefundCredits($merchant): bool

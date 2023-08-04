@@ -273,6 +273,16 @@ abstract class Base extends BaseCore
                 $merchant->isFeatureEnabled(Feature\Constants::CUSTOMER_FEE_DONT_SETTLE) === true);
     }
 
+    public function isMerchantPostpaidDFB(Merchant\Entity $merchant): bool
+    {
+        return ($merchant->isPostpaid() === true) and ($merchant->isFeeBearerDynamic() === true);
+    }
+
+    public function isMerchantPrepaidDFB(Merchant\Entity $merchant): bool
+    {
+        return ($merchant->isPostpaid() === false) and ($merchant->isFeeBearerCustomerOrDynamic() === true);
+    }
+
     public function setOtherDetails()
     {
         $this->txn->setCredit(0);
