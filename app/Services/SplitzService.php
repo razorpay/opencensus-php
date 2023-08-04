@@ -249,7 +249,7 @@ class SplitzService extends Base\Service
 
         if (empty($parameters) === false)
         {
-            $chunkExperimentArray = array_chunk($parameters, 10);
+            $chunkExperimentArray = array_chunk($parameters, 30);
 
             foreach ($chunkExperimentArray as $batchExperimentArray)
             {
