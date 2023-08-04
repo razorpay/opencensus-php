@@ -303,12 +303,59 @@ class Core extends Base\Core
                     'Mandatory field Primary reference ID missing.');
             }
 
-            $udfSchema  = json_decode($settings[Entity::UDF_SCHEMA], true);
+            $udfSchemaNew  = json_decode($settings[Entity::UDF_SCHEMA], true);
 
-            $this->checkForMandatoryPrimaryAndSecondaryRefIds($udfSchema);
+            if (isset($paymentLink) === true)
+            {
+                $udfSchemaOld = $paymentLink->getSettings(Entity::UDF_SCHEMA);
+
+                $udfSchemaOld = json_decode($udfSchemaOld,true);
+
+                //Check if payment page records exist for this pl id , if not let the mx edit
+
+                $result = $this->repo->payment_page_record->getBatchesByPaymentPageId($paymentLink->getId(), 0, 1);
+
+                if($result['totalCount'] !== 0)
+                {
+                    $this->validateUpdatePrimaryOrSecRefIds($udfSchemaOld,$udfSchemaNew);
+                }
+
+            }
+            $this->checkForMandatoryPrimaryAndSecondaryRefIds($udfSchemaNew);
 
         }
 
+    }
+
+    public function validateUpdatePrimaryOrSecRefIds(array $udfSchemaOld, array $udfSchemaNew)
+    {
+        $primaryRefJsonNew = array_first($udfSchemaNew, function($json) {
+            return $json['name'] === Entity::PRI_REF_ID;
+        });
+
+        $primaryRefJsonOld = array_first($udfSchemaOld, function($json) {
+            return $json['name'] === Entity::PRI_REF_ID;
+        });
+
+        if ($primaryRefJsonOld !== $primaryRefJsonNew)
+        {
+            throw new BadRequestValidationFailureException(
+                'Primary Reference Id cannot be edited');
+        }
+
+        $secRefJsonNew = array_first($udfSchemaNew, function($json) {
+            return $json['name'] === PaymentPageRecord\Entity::SECONDARY_1;
+        });
+
+        $secRefJsonOld = array_first($udfSchemaOld, function($json) {
+            return $json['name'] === PaymentPageRecord\Entity::SECONDARY_1;
+        });
+
+        if ($secRefJsonNew !== $secRefJsonOld)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary Reference Id 1 cannot be edited');
+        }
     }
 
     public function checkForMandatoryPrimaryAndSecondaryRefIds(array $udfSchema)

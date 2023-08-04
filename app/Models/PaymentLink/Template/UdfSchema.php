@@ -117,7 +117,7 @@ class UdfSchema
      *
      * @throws BadRequestValidationFailureException
      */
-    public function validate(array $input = [])
+    public function validate(array $input = [], $isPaymentPageRecordCreateFlow = false)
     {
         $data = (object) $input;
 
@@ -132,6 +132,11 @@ class UdfSchema
             $data,
             $this->getSchemaInRfcFormatForValidation(),
             JsonSchemaConstraint::CHECK_MODE_COERCE_TYPES);
+
+        if($isPaymentPageRecordCreateFlow === true and $validator->isValid() === false)
+        {
+            return $validator->getErrors();
+        }
 
         if ($validator->isValid() === false)
         {

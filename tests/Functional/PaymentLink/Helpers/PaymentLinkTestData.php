@@ -1045,13 +1045,38 @@ return [
         ],
     ],
 
-    'testUpdatePaymentLinkFileUpload' => [
+    'testUpdatePaymentLinkFileUploadSecondaryRefIdException' => [
         'request' => [
             'method'  => 'patch',
             'content' => [
                 "support_email"=> "nikhilesh.tripathi@razorpay.com",
                 "settings" => [
                     "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"contact2\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Secondary Reference Id 1 cannot be edited',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentLinkFileUploadHappyFlow' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                "support_email"=> "nikhilesh.tripathi@razorpay.com",
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_2\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_3\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_4\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_5\",\"required\":true,\"title\":\"BOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
                 ],
             ],
         ],
@@ -1075,7 +1100,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Mandatory field Primary reference ID missing.',
+                    'description' => 'Primary Reference Id cannot be edited',
                 ],
             ],
             'status_code' => 400,
@@ -1101,7 +1126,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Mandatory field Secondary reference ID 1 missing.',
+                    'description' => 'Secondary Reference Id 1 cannot be edited',
                 ],
             ],
             'status_code' => 400,
@@ -1237,7 +1262,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Either email or contact should be present',
+                    'description' => 'The selected notify_on.0 is invalid.',
                 ],
             ],
             'status_code' => 400,
@@ -1281,18 +1306,15 @@ return [
         'response'=> [
             'status_code' => 200,
             'content' => [
-                'data' => [
+                'udf_data' => [
                     'pri__ref__id' => '1234567890',
                     'sec__ref__id_1' =>"0987654321",
-                    'phone' => '0987654321',
                     'email' => "paridhi.jain@rzp.com",
                 ],
-                'other_details' =>[
-                    'amount' => 101,
-                    'contact' => "0987654321",
-                    'sec__ref__id_1' =>"0987654321",
-                    'status' =>"unpaid",
+                'price_fields' => [
+                    'amount' => '101',
                 ],
+                'payment_status' => 'unpaid'
             ]
         ],
     ],
@@ -6047,7 +6069,7 @@ return [
             'content' => [
                 'title'         => 'Sample title 2',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"string\",\"pattern\":\"alphanumeric\",\"minLength\":\"3\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'payment_page_items' => [
@@ -6548,7 +6570,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
@@ -6623,7 +6645,8 @@ return [
                 'amount'         => '101',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
-                'DOB'            => '0987654321'
+                'DOB'            => '0987654321',
+                'Phone2'         => '0987654321'
 
             ],
         ],

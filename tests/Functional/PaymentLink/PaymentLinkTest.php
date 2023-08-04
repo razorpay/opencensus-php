@@ -354,13 +354,17 @@ class PaymentLinkTest extends TestCase
     }
 
 
-    public function testUpdatePaymentLinkFileUpload()
+    public function testUpdatePaymentLinkFileUploadSecondaryRefIdException()
     {
         $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
 
         $request = $this->testData['testPaymentPageCreateForFileUpload'];
 
         $response = $this->runRequestResponseFlow($request);
+
+        $res = $this->createPaymentPageRecords(substr($response['id'],-14));
+
+        $this->ba->proxyAuth();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -374,6 +378,27 @@ class PaymentLinkTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
 
         $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $response = $this->runRequestResponseFlow($request);
+
+        $res = $this->createPaymentPageRecords(substr($response['id'],-14));
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payment_pages/'.$response['id'].'/';
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePaymentLinkFileUploadHappyFlow()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $request["request"]["content"]["settings"]["udf_schema"] = "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_2\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_3\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_4\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_5\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]";
 
         $response = $this->runRequestResponseFlow($request);
 
@@ -391,6 +416,10 @@ class PaymentLinkTest extends TestCase
         $request = $this->testData['testPaymentPageCreateForFileUpload'];
 
         $response = $this->runRequestResponseFlow($request);
+
+        $res = $this->createPaymentPageRecords(substr($response['id'],-14));
+
+        $this->ba->proxyAuth();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -693,7 +722,7 @@ class PaymentLinkTest extends TestCase
         $resp = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
-        $this->assertEquals($resp["error_description"], "The email field is invalid. Does not match the regex pattern ^(?i)(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$");
+        $this->assertEquals($resp["error_description"], "The validation failed for email");
     }
 
 
@@ -727,7 +756,7 @@ class PaymentLinkTest extends TestCase
         $resp = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
-        $this->assertEquals($resp["error_description"], "The phone field is invalid. Does not match the regex pattern ^([0-9]){8,}$");
+        $this->assertEquals($resp["error_description"], "The validation failed for phone");
     }
 
 
@@ -761,7 +790,7 @@ class PaymentLinkTest extends TestCase
         $resp = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
-        $this->assertEquals($resp["error_description"], "The dob field is invalid. Does not match the regex pattern ^(([0]?[1-9])?|([1-2][0-9])?|([3][0,1])?) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(, | )(1[6-8][0-9]{2}|19[0-8][0-9]|199[0-9]|[2-9][0-9]{3})$");
+        $this->assertEquals($resp["error_description"], "The validation failed for dob");
     }
 
     // invalid pan
@@ -794,7 +823,7 @@ class PaymentLinkTest extends TestCase
         $resp = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
-        $this->assertEquals($resp["error_description"], "The pan field is invalid. Does not match the regex pattern ^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$");
+        $this->assertEquals($resp["error_description"], "The validation failed for pan");
     }
 
     public function testCreatePaymentPageRecordSecurityValidations()

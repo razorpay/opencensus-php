@@ -69,6 +69,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
             ->where(Entity::BATCH_ID, $batch_id)
+            ->where(Entity::STATUS,STATUS::UNPAID)
             ->get()
             ->toArray();
     }
@@ -81,11 +82,12 @@ class Repository extends Base\Repository
     )
     {
         $records =  $this->newQuery()
-            ->select(Entity::BATCH_ID)
+            ->select(Entity::BATCH_ID, Entity::CREATED_AT) // Add created_at to the select list
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
             ->distinct()
             ->skip($skip)
             ->limit($count)
+            ->orderBy(Entity::CREATED_AT, 'desc')
             ->get()
             ->toArray();
 

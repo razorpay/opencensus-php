@@ -186,6 +186,22 @@ class Service extends Base\Service
 
         $records = $this->repo->payment_page_record->findByPaymentPageIdAndBatchIdorFail($id, $batchId);
 
+        $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, [substr($batchId,-14)]);
+
+        $batchSettings = $batchResponse[0]['settings'];
+
+        if((isset($batchSettings['sms_notify']) === true and $batchSettings['sms_notify'] === 1) or
+            (isset($batchSettings['email_notify']) === true and $batchSettings['email_notify'] === 1))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY,
+                PaymentPageRecord\Entity::BATCH_ID,
+                [
+                    PaymentPageRecord\Entity::BATCH_ID      => $batchId,
+                    'input'                                 => $input,
+                ]);
+        }
+
         if(in_array('sms',$input['notify_on']) === true)
         {
             $notifyInput['contacts'] = array_unique(array_column($records, PaymentPageRecord\Entity::CONTACT));
@@ -196,13 +212,26 @@ class Service extends Base\Service
             $notifyInput['emails'] = array_unique(array_column($records, PaymentPageRecord\Entity::EMAIL));
         }
 
-        if((isset($notifyInput['contacts']) === false)
-            and isset($notifyInput['emails']) === false)
+        (new Validator)->validateInput('sendNotificationToAllRecords', $notifyInput);
+
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new Notifier)->notifyByEmailAndSms($paymentLink, $notifyInput);
+
+        $batch = $this->repo->payment_page_record->getBatchesByPaymentPageId($batchId);
+
+        $batchSettings = $batch['records'][0]['settings'];
+
+        if(in_array('sms',$input['notify_on']) === true)
         {
-            throw  new BadRequestValidationFailureException('Either email or contact should be present');
+            $batchSettings['sms_notify'] = 1;
+        }
+        if(in_array('email',$input['notify_on']) === true)
+        {
+            $batchSettings['email_notify'] = 1;
         }
 
-        $this->sendNotification($id,$notifyInput);
+        $this->app->batchService->forwardNotify($batchId, $batchSettings, $this->merchant);
     }
 
     public function expirePaymentLinks(): array
@@ -424,18 +453,7 @@ class Service extends Base\Service
                 'Secondary Reference Id\'s Mismatch.');
         }
 
-        $value = $udfSchema;
-
-        $nameToTitle = [];
-
-        foreach ($value as $val)
-        {
-            $nameToTitle[$val['name']] = $val['title'];
-        }
-
-        $names = array_column($value, 'name');
-
-        $response = $this->buildResponse($paymentPageRecord, $names, $value, $nameToTitle, $input);
+        $response = $this->buildResponse($paymentPageRecord, $udfSchema);
 
         return $response;
 
@@ -540,48 +558,52 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function buildResponse($paymentPageRecord, $keys, $udfSchema, $nameToTitle, $input)
+    protected function buildResponse($paymentPageRecord, $udfSchema)
     {
         $response = [];
 
-        $data = [];
-
-        $fields = [
-            PaymentPageRecord\Entity::EMAIL,
-            PaymentPageRecord\Entity::PHONE,
-            PaymentPageRecord\Entity::PRIMARY_REF_ID
-        ];
-
-        $intersection = array_values(array_uintersect($keys,$fields,'strcasecmp'));
-
-        foreach ($intersection as $key)
-        {
-            $responseKey = $nameToTitle[$key];
-
-            $value = $key;
-
-            if($key === 'pri__ref__id')
-                $value = 'primary_reference_id';
-
-            if((isset($paymentPageRecord[strtolower($key)]) === true) and
-                ($paymentPageRecord[strtolower($key)] !== null))
-                $data[$value] = $paymentPageRecord[strtolower($key)];
-        }
+        $paymentPageRecord = $paymentPageRecord->toArray();
 
         $otherDetails = json_decode($paymentPageRecord['other_details'],true);
 
-        $otherDetails = array_diff_key($otherDetails,$response);
+        $udfData = [];
 
-        $response['data'] = $data;
+        foreach ($udfSchema as $udf)
+        {
+            $nameKey = $udf[Entity::NAME];
 
-        $response['data'][PaymentPageRecord\Entity::PRIMARY_REF_ID] = $paymentPageRecord[PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID];
-        $response['data'][PaymentPageRecord\Entity::SECONDARY_1] = $input[PaymentPageRecord\Entity::SECONDARY_1];
-        $response['data'][PaymentPageRecord\Entity::PHONE] = $paymentPageRecord[PaymentPageRecord\Entity::CONTACT];
+            // get udf['name'] from ppr
+            if($udf[Entity::NAME] === PaymentPageRecord\Entity::PRIMARY_REF_ID)
+            {
+                $nameKey = PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID;
+            }
 
-        $response['other_details'] = $otherDetails;
+            if($udf[Entity::NAME] === PaymentPageRecord\Entity::PHONE)
+            {
+                $nameKey = PaymentPageRecord\Entity::CONTACT;
+            }
 
-        $response['other_details']['status'] = $paymentPageRecord[PaymentPageRecord\Entity::STATUS];
-        $response['other_details'][PaymentPageRecord\Entity::AMOUNT] = $paymentPageRecord[PaymentPageRecord\Entity::AMOUNT];
+            $value = $otherDetails[$udf[Entity::TITLE]] ?? $paymentPageRecord[$nameKey];
+
+            $udfData[$udf[Entity::NAME]] = $value;
+
+            if(isset($otherDetails[$nameKey]) === true)
+            {
+                unset($otherDetails[$nameKey]);
+            }
+
+            if(isset($otherDetails[$udf[Entity::TITLE]]) === true)
+            {
+                unset($otherDetails[$udf[Entity::TITLE]]);
+            }
+
+        }
+
+        $response['udf_data'] = $udfData;
+
+        $response['price_fields'] = $otherDetails;
+
+        $response['payment_status'] = $paymentPageRecord[PaymentPageRecord\Entity::STATUS];
 
         return $response;
     }
@@ -733,6 +755,8 @@ class Service extends Base\Service
                 $batch[Batch\Entity::ID] = 'batch_'.$batch[Batch\Entity::ID];
 
                 $batch['entity'] = 'batch';
+
+                $batch['type'] = 'payment_page';
 
                 $batch['config'] = $batch['settings'];
 

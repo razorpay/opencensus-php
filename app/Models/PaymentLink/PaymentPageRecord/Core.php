@@ -45,6 +45,10 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
+
+            //TODO:Create dummy payment page record id for the payment page in question
+
+
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
@@ -120,6 +124,10 @@ class Core extends Base\Core
         return $input;
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
     public function modifyInputForPaymentPageRecord(Base\Entity $paymentPage, string $batch_id, array $input)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
@@ -146,6 +154,9 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     */
     public function validateUDFWithRegex(Base\Entity $paymentPage, array $input)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
@@ -171,7 +182,15 @@ class Core extends Base\Core
 
         $udfSchemaEntity = new UdfSchema($paymentPage);
 
-        $udfSchemaEntity->validate($allUdfEntries);
+        $errors = $udfSchemaEntity->validate($allUdfEntries, true);
+
+        if($errors !== null)
+        {
+            $data = array_unique(array_column($errors, 'property'));
+
+            throw new BadRequestValidationFailureException("The validation failed for ".implode(',',$data));
+        }
+
     }
 
     public function setUdfParameters(string $id, array $input)

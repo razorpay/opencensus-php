@@ -199,7 +199,15 @@ class Validator extends Base\Validator
 
     protected static $validateSendNotificationToAllRecordsRules = [
         'notify_on' => 'required|array|min:1|max:2',
-        'batch_id'  => 'required|public_id'
+        'batch_id'  => 'required|public_id',
+        'notify_on.*' => 'required|string|in:sms,email'
+    ];
+
+    protected static $sendNotificationToAllRecordsRules = [
+        'emails'     => 'required_without:contacts|filled|array',
+        'emails.*'   => 'required|email|max:255',
+        'contacts'   => 'required_without:emails|filled|array',
+        'contacts.*' => 'required|contact_syntax|digits_between:8,11',
     ];
 
     protected static $createValidators = [

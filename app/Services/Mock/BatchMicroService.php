@@ -459,4 +459,9 @@ class BatchMicroService extends BaseBatchMicroService
             'processed_amount' => 0
         ];
     }
+
+    public function forwardNotify(string $batchId, array $input,Merchant\Entity $merchant): array
+    {
+        return [];
+    }
 }
