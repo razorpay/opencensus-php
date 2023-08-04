@@ -10,7 +10,6 @@ web/js/common/ui/DashboardBanner                  @shivamrazorpay @Rozamo @Anshu
 web/js/common/ui/GrowthServiceModal               @shivamrazorpay @Rozamo @AnshulNautiyal
 web/js/common/ui/ExclusiveOffer                   @shivamrazorpay @Rozamo @AnshulNautiyal
 web/js/common/ui/MultiSlider                      @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/merchant/views/PaymentLinks                @bmlifez @rv15hwakarthik @rahul-rzp
 web/js/merchant/Reports                           @joel-jaimon @TanroopSing @asp48
 web/js/merchant/ReportsAsync                      @joel-jaimon @TanroopSing @asp48
 web/js/merchant/reducers/reports                  @joel-jaimon @TanroopSing @asp48
