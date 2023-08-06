@@ -88,4 +88,6 @@ Razorpay';
     const DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY = 'app.dispute_merchant_emails_initiate_experiment_id';
 
     const VARIANT_ENABLE = 'enable';
+
+    const TYPE_STRING    = 'string';
 }

@@ -49,7 +49,7 @@ use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
-use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
+use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity, FreshdeskTicket\Service as FreshDeskService};
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class Core extends Base\Core
@@ -942,7 +942,7 @@ class Core extends Base\Core
 
                 $disputeIds = [];
 
-                if ($disputePhase === 'chargeback')
+                if ($disputePhase === Phase::CHARGEBACK)
                 {
                     $bulkMailDataFraud = $bulkMailData;
                     $bulkMailDataNonFraud = $bulkMailData;
@@ -952,8 +952,8 @@ class Core extends Base\Core
                     $bulkMailDataNonFraud['mobileSignup'] = false;
                 }
 
-                foreach ($publicDisputeIds as $publicDisputeId) {
-
+                foreach ($publicDisputeIds as $publicDisputeId)
+                {
                     $dispute = $disputeData[$publicDisputeId];
 
                     if ((isset($dispute[Entity::DEDUCT_AT_ONSET]) === true) and
@@ -978,10 +978,14 @@ class Core extends Base\Core
                 {
                     $bulkMailDataFraud['totalPayments'] = count($bulkMailDataFraud[Constants::DISPUTES]);
                     $bulkMailDataNonFraud['totalPayments'] = count($bulkMailDataNonFraud[Constants::DISPUTES]);
-                    if ($bulkMailDataFraud['totalPayments'] > 0) {
-                        $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase); }
-                    if ($bulkMailDataNonFraud['totalPayments'] > 0) {
-                        $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase); }
+                    if ($bulkMailDataFraud['totalPayments'] > 0)
+                    {
+                        $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase);
+                    }
+                    if ($bulkMailDataNonFraud['totalPayments'] > 0)
+                    {
+                        $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase);
+                    }
                 }
 
 
@@ -1023,22 +1027,17 @@ class Core extends Base\Core
                         $fdOutboundEmailRequest = $this->getFdRequestPayload($merchantId, $merchant, $bulkMailData);
 
                         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+
+                        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
                     }
                     else
                     {
                         Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
                     }
 
-                    $this->trace->info(
-                        TraceCode::DISPUTE_BULK_MAIL_QUEUED,
-                        [
-                            'dispute_ids' => $disputeIds,
-                            'merchant_id' => $merchantId,
-                            'phase' => $disputePhase,
-                        ]);
-
-                    $this->trace->count(Metrics::DISPUTE_MAIL_SUCCESS);
+                    $this->traceAndPushMetricsForDisputeFdMailSuccess($merchantId, $disputeIds, $disputePhase);
                 }
+
                 if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === false)
                 {
                     $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
@@ -1083,6 +1082,19 @@ class Core extends Base\Core
 
             $this->pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase);
         }
+    }
+
+    private function traceAndPushMetricsForDisputeFdMailSuccess($merchantId, $disputeIds, $disputePhase)
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_BULK_MAIL_QUEUED,
+            [
+                'dispute_ids' => $disputeIds,
+                'merchant_id' => $merchantId,
+                'phase' => $disputePhase,
+            ]);
+
+        $this->trace->count(Metrics::DISPUTE_MAIL_SUCCESS);
     }
 
     private function pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase)
@@ -1142,13 +1154,22 @@ class Core extends Base\Core
 
         $file = new UploadedFile($filePath, $fileName. '.csv', 'text/csv', null, true);
 
+        $emailIds = $merchantData[DisputeConstants::MERCHANT][FreshdeskConstants::EMAIL];
+
+        if (gettype($emailIds) === DisputeConstants::TYPE_STRING)
+        {
+            $emailIds = array($emailIds);
+        }
+
+        $primaryEmail = array_shift($emailIds);
+
         $fdOutboundEmailRequest = [
             FreshdeskConstants::SUBJECT         => $ticketSubject,
             FreshdeskConstants::DESCRIPTION     => $ticketDescription,
             FreshdeskConstants::STATUS          => 6,
             FreshdeskConstants::TYPE            => FreshdeskConstants::SERVICE_REQUEST_TICKET_TYPE,
             FreshdeskConstants::PRIORITY        => 3,
-            FreshdeskConstants::EMAIL           => $merchantData[DisputeConstants::MERCHANT][FreshdeskConstants::EMAIL],
+            FreshdeskConstants::EMAIL           => $primaryEmail,
             FreshdeskConstants::TICKET_TAGS     => [FreshdeskConstants::EMAIL_SOURCE_DISPUTES_TAG],
             FreshdeskConstants::GROUP_ID        => $groupId,
             FreshdeskConstants::EMAIL_CONFIG_ID => $emailConfigId,
@@ -1168,9 +1189,16 @@ class Core extends Base\Core
 
         $salesPOCEmailId = (new Service())->getSalesPOCEmailId($merchantId);
 
-        if (empty($salesPOCEmailId) === false)
+        if ((empty($emailIds) === false) or
+            (empty($salesPOCEmailId) === false))
         {
-            $fdOutboundEmailRequest[FreshdeskConstants::CC_EMAILS] = $salesPOCEmailId;
+            if ((empty($salesPOCEmailId) === false) and
+                (gettype($salesPOCEmailId) === DisputeConstants::TYPE_STRING))
+            {
+                $salesPOCEmailId = array($salesPOCEmailId);
+            }
+
+            $fdOutboundEmailRequest[FreshdeskConstants::CC_EMAILS] = array_merge($emailIds, $salesPOCEmailId);
         }
 
         return $fdOutboundEmailRequest;

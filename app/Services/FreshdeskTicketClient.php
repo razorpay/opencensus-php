@@ -575,7 +575,7 @@ class FreshdeskTicketClient
                            ]
         );
 
-        if (isset($responseBody['errors']) === true)
+        if (isset($responseBody['errors']) === true || $statusCode > 400)
         {
             $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
                                [
