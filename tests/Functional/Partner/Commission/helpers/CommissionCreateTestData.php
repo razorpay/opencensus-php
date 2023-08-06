@@ -98,6 +98,162 @@ return [
     ],
 
 
+    'testImplicitVariableCommissionCalculate' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedCommissionCalculate' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testExplicitCommissionCalculate' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedCommissionCalculateAPI' => [
+        'request'  => [
+            'url'     => '/internal/calculate_commission',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'data'    => [
+                    [
+                        'partner_id'           => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                        'source_type'          => 'payment',
+                        'type'                 => 'implicit',
+                        'currency'             => 'INR',
+                        'debit'                => 0,
+                        'credit'               => 944,
+                        'tax'                  => 144,
+                        'fee'                  => 944,
+                        'commission_component' => [
+                            'pricing_type'    => 'fixed',
+                            'pricing_feature' => 'payment',
+                            'merchant_pricing_plan_rule_id' => '1ABp2Xd3t5aRPX',
+                            'merchant_pricing_percentage' => 200,
+                            'merchant_pricing_fixed' => 0,
+                            'merchant_pricing_amount' =>  8000,
+                            'commission_pricing_plan_rule_id' => 'C6rNP4gZXcnZWM',
+                            'commission_pricing_percentage' => 20,
+                            'commission_pricing_fixed' =>  0,
+                            'commission_pricing_amount' =>  800,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+
+    ],
+
+
+    'testImplicitVariableCommissionCalculateAPI' => [
+        'request'  => [
+            'url'     => '/internal/calculate_commission',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'data'    => [
+                    [
+                        'partner_id'           => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                        'source_type'          => 'payment',
+                        'type'                 => 'implicit',
+                        'currency'             => 'INR',
+                        'debit'                => 0,
+                        'credit'               => 944,
+                        'tax'                  => 144,
+                        'fee'                  => 944,
+                        'commission_component' => [
+                            'pricing_type'    => 'fixed',
+                            'pricing_feature' => 'payment',
+                            'merchant_pricing_plan_rule_id' => '1ABp2Xd3t5aRPX',
+                            'merchant_pricing_percentage' => 200,
+                            'merchant_pricing_fixed' => 0,
+                            'merchant_pricing_amount' =>  8000,
+                            'commission_pricing_plan_rule_id' => 'C6rNP4gZXcnZWM',
+                            'commission_pricing_percentage' => 20,
+                            'commission_pricing_fixed' =>  0,
+                            'commission_pricing_amount' =>  800,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+
+    ],
+
+    'testExplicitCommissionCalculateAPI' => [
+        'request'  => [
+            'url'     => '/internal/calculate_commission',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'data'    => [
+                    [
+                        'partner_id'           => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                        'source_type'          => 'payment',
+                        'type'                 => 'explicit',
+                        'currency'             => 'INR',
+                        'debit'                => 0,
+                        'credit'               => 944,
+                        'tax'                  => 144,
+                        'fee'                  => 944,
+                        'source_id'            => 'MLZBpXJVMuWbqM',
+                        'commission_component' => [
+                            'pricing_type'    => 'fixed',
+                            'pricing_feature' => 'payment',
+                            'merchant_pricing_plan_rule_id' => '1ABp2Xd3t5aRPX',
+                            'merchant_pricing_percentage' => 200,
+                            'merchant_pricing_fixed' => 0,
+                            'merchant_pricing_amount' =>  8000,
+                            'commission_pricing_plan_rule_id' => 'C6rNP4gZXcnZWM',
+                            'commission_pricing_percentage' => 20,
+                            'commission_pricing_fixed' =>  0,
+                            'commission_pricing_amount' =>  800,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+
+    ],
+
+
     'testImplicitVariableOnNONINRPaymentCapture' => [
         'request' => [
             'method' => 'POST',

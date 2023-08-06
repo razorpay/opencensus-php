@@ -150,4 +150,38 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function calculateCommissionFromPricingDetails(array $input): array
+    {
+        (new Validator())->validateInput('calculate_commission', $input);
+
+        $response =  $this->core()->calculateCommission($input);
+
+        return $this->applyResponseTransformation($response);
+
+    }
+
+    private function applyResponseTransformation(array $response): array
+    {
+
+        if($response['success'])
+        {
+            $commissionData = $response['data'];
+            $transformedResponse  = [];
+            $commissions          = $commissionData['commissions'];
+            $commissionComponents = $commissionData['commission_components'];
+            for ($i = 0; $i < sizeof($commissions); $i++)
+            {
+                $commissionArray                         = $commissions[$i]->attributesToArray();
+                $commissionComponentsArray               = $commissionComponents[$i]->attributesToArray();
+                $commissionArray['commission_component'] = $commissionComponentsArray;
+                $transformedResponse[]                   = $commissionArray;
+            }
+
+            $response['data'] = $transformedResponse;
+        }
+
+        return $response;
+
+    }
 }

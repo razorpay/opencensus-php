@@ -98,6 +98,12 @@ class Constants
 
     const INVOICE_ID  = 'invoice_id';
 
+    const MERCHANT_ID    = 'merchant_id';
+    const PARTNER_CONFIGS = 'partner_configs';
+    const PARTNER_DETAILS = 'partner_details';
+    const SHOULD_CREDIT_GST   = 'should_credit_gst';
+    const TAX_COMPONENTS = 'tax_components';
+
     /**
      * List of entities for which the commission can be rolled out.
      * The entities defined here must implement the CommissionSourceInterface.

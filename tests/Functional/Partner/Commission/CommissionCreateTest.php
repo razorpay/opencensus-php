@@ -261,6 +261,75 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
 
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
+
+        return [$payment, $commission, $commissionComponent];
+
+    }
+
+
+    /***
+     * This function validates the following
+     * 1. Create subM payment and capture the payment
+     * 2. Validate commission is created for implicit type (variable)
+     * 3. Invoke commission calculator and re-calculate commission
+     * 4. Validate both the flows yield same commissions by comparing debit, credit, fee, tax
+     */
+    public function testImplicitVariableCommissionCalculate()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $input = $this->getPayloadForCommissionCalculatorAPI($payment['id']);
+        $response = (new Commission\Service())->calculateCommissionFromPricingDetails($input);
+
+        $this->assertEquals($response['data'][0]['credit'], $commission['credit']);
+        $this->assertEquals($response['data'][0]['fee'], $commission['fee']);
+        $this->assertEquals($response['data'][0]['tax'], $commission['tax']);
+        $this->assertEquals($response['data'][0]['debit'], $commission['debit']);
+
+    }
+
+    private function getPayloadForCommissionCalculatorAPI($paymentId,
+                                                          $partnerId = Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                                          $implicitPlanId = Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+                                                          $merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                                          $explicitPlanId = null): array
+    {
+        $input = [
+            'payment'        => [
+                'id'          => $paymentId,
+                'merchant_id' => $merchantId,
+            ],
+            'partner_configs' => [
+                'implicit_plan_id' => $implicitPlanId,
+                'explicit_plan_id' => $explicitPlanId,
+                'commission_model' => Config\CommissionModel::COMMISSION,
+                'should_credit_gst'       => true,
+            ],
+            'partner_details' => [
+                'id' => $partnerId,
+                'tax_components' => [
+                    'igst' => 1800
+                ]
+            ],
+        ];
+
+        return $input;
     }
 
 
@@ -1922,6 +1991,11 @@ class CommissionCreateTest extends TestCase
                 'implicit_plan_id'    => Pricing::DEFAULT_COMMISSION_PLAN_ID,
             ]);
 
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
         $this->startTest($testData);
 
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
@@ -1931,6 +2005,112 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
 
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getCommissionPricingAmount());
+
+        return [$payment, $commission, $commissionComponent];
+    }
+
+
+    /***
+     * This function validates the following
+     * 1. Create subM payment and capture the payment
+     * 2. Validate commission is created for implicit type (fixed)
+     * 3. Invoke commission calculator and re-calculate commission
+     * 4. Validate both the flows yield same commissions by comparing debit, credit, fee, tax
+     */
+    public function testImplicitFixedCommissionCalculate()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'implicit_plan_id'    => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $input = $this->getPayloadForCommissionCalculatorAPI($payment['id'],
+                                                             Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                                             Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                                                             Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+        );
+        $response = (new Commission\Service())->calculateCommissionFromPricingDetails($input);
+
+        $this->assertEquals($response['data'][0]['credit'], $commission['credit']);
+        $this->assertEquals($response['data'][0]['fee'], $commission['fee']);
+        $this->assertEquals($response['data'][0]['tax'], $commission['tax']);
+        $this->assertEquals($response['data'][0]['debit'], $commission['debit']);
+
+    }
+
+
+    public function testImplicitFixedCommissionCalculateAPI()
+    {
+        list($payment, $commission, $commissionComponent) = $this->testImplicitFixedOnPaymentCapture();
+        $this->ba->partnershipServiceAuth();
+        $testData            = $this->testData['testImplicitFixedCommissionCalculateAPI'];
+        $testData['request']['content'] = $this->getPayloadForCommissionCalculatorAPI($payment['id'],
+                                                                           Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                                                           Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                                                                           Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+        );
+
+        $this->updateExpectedResponse($testData, $commission, $commissionComponent, $payment);
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testImplicitVariableCommissionCalculateAPI()
+    {
+        list($payment, $commission, $commissionComponent) = $this->testImplicitVariableOnPaymentCapture();
+
+        $this->ba->partnershipServiceAuth();
+        $testData            = $this->testData['testImplicitVariableCommissionCalculateAPI'];
+        $testData['request']['content'] = $this->getPayloadForCommissionCalculatorAPI($payment['id']);
+
+        $this->updateExpectedResponse($testData, $commission, $commissionComponent, $payment);
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testExplicitCommissionCalculateAPI()
+    {
+        list($payment, $commission, $commissionComponent) = $this->testExplicitOnPaymentCapture();
+        $this->ba->partnershipServiceAuth();
+        $testData                       = $this->testData['testExplicitCommissionCalculateAPI'];
+        $testData['request']['content'] = $this->getPayloadForCommissionCalculatorAPI($payment['id'],
+                                                                                      Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                                                                      null,
+                                                                                      Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                                                                      Pricing::DEFAULT_COMMISSION_PLAN_ID);
+
+        $this->updateExpectedResponse($testData, $commission, $commissionComponent, $payment);
+        $this->runRequestResponseFlow($testData);
+    }
+
+    private function updateExpectedResponse(& $testData, $commission, $commissionComponent, $payment)
+    {
+        $testData['response']['content']['data'][0]['credit']    = $commission['credit'];
+        $testData['response']['content']['data'][0]['debit']     = $commission['debit'];
+        $testData['response']['content']['data'][0]['fee']       = $commission['fee'];
+        $testData['response']['content']['data'][0]['tax']       = $commission['tax'];
+        $testData['response']['content']['data'][0]['source_id'] = $commission['source_id'];
+
+        $testResponseCommissionComponent = $testData['response']['content']['data'][0]['commission_component'];
+        $testResponseCommissionComponent['merchant_pricing_plan_rule_id']   = $commissionComponent['merchant_pricing_plan_rule_id'];
+        $testResponseCommissionComponent['merchant_pricing_percentage']     = $commissionComponent['merchant_pricing_percentage'];
+        $testResponseCommissionComponent['merchant_pricing_fixed']          = $commissionComponent['merchant_pricing_fixed'];
+        $testResponseCommissionComponent['merchant_pricing_amount']         = $commissionComponent['merchant_pricing_amount'];
+        $testResponseCommissionComponent['commission_pricing_plan_rule_id'] = $commissionComponent['commission_pricing_plan_rule_id'];
+        $testResponseCommissionComponent['commission_pricing_percentage']   = $commissionComponent['commission_pricing_percentage'];
+        $testResponseCommissionComponent['commission_pricing_fixed']        = $commissionComponent['commission_pricing_fixed'];
+        $testResponseCommissionComponent['commission_pricing_amount']       = $commissionComponent['commission_pricing_amount'];
     }
 
     /**
@@ -1948,6 +2128,11 @@ class CommissionCreateTest extends TestCase
                 'explicit_should_charge' => 1,
             ]);
 
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
         $this->startTest($testData);
 
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
@@ -1959,6 +2144,53 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
 
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getCommissionPricingAmount());
+
+        return [$payment, $commission, $commissionComponent];
+    }
+
+    /***
+     * This function validates the following
+     * 1. Create subM payment and capture the payment
+     * 2. Validate commission is created for explicit type
+     * 3. Invoke commission calculator and re-calculate commission
+     * 4. Validate both the flows yield same commissions by comparing debit, credit, fee, tax
+     *
+     */
+    public function testExplicitCommissionCalculate()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
+
+        $input = $this->getPayloadForCommissionCalculatorAPI($payment['id'],
+                                                             Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                                             null,
+                                                             Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                                             Pricing::DEFAULT_COMMISSION_PLAN_ID
+
+        );
+        $response = (new Commission\Service())->calculateCommissionFromPricingDetails($input);
+
+        $this->assertEquals($response['data'][0]['credit'], $commission['credit']);
+        $this->assertEquals($response['data'][0]['fee'], $commission['fee']);
+        $this->assertEquals($response['data'][0]['tax'], $commission['tax']);
+        $this->assertEquals($response['data'][0]['debit'], $commission['debit']);
+
     }
 
     /**

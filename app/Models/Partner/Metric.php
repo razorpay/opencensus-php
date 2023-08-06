@@ -74,10 +74,9 @@ final class Metric
     const PRTS_COMMISSION_INVOICE_PUSH                = 'prts_commission_invoice_push';
     // PRTS service metrics and dimensions
     const PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH = 'prts_commissions_shadow_phase_event_dispatch';
-    //const COMMISSION_DUAL_WRITE = 'commission_dual_write';
-    //const COMMISSION_CREATE = 'commission_create';
-    //const COMMISSION_CAPTURE = 'commission_capture';
 
+
+    const PARTNERSHIP_COMMISSION_CALCULATION   = 'partnership_commission_calculation';
 
 
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE = 'partner_bulk_update_onboarding_source_failure';

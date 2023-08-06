@@ -3175,6 +3175,7 @@ class Route
         'fetch_partner_commission_invoice_feature' => ['get',     'partner/commission_invoice_feature',       'CommissionInvoiceController@fetchPartnersWithCommissionInvoiceFeature'    ],
         'partnerships_service_proxy'               => ['post',    'partnerships/{path?}',                     'EdgeProxyController@proxy'                                                ],
         'prts_fetch_merchant_entities'             => ['get',     'internal/partnerships/merchant',             'PartnerController@fetchPartnerRelatedEntitiesForPRTS'                     ],
+        'calculate_commission'                     => ['post',    'internal/calculate_commission',                       'CommissionController@calculateCommission'                                  ],
 
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -6022,6 +6023,7 @@ class Route
         'fetch_commission_configs',
         'prts_fetch_merchant_entities',
         'fetch_partner_commission_invoice_feature',
+        'calculate_commission',
         'internal_entity_origin_fetch',
 
         'create_ledger_journal_batch',
@@ -15714,7 +15716,8 @@ class Route
             'fetch_commission_configs',
             'fetch_partner_commission_invoice_feature',
             'prts_fetch_merchant_entities',
-            'internal_entity_origin_fetch'
+            'internal_entity_origin_fetch',
+            'calculate_commission',
         ],
 
         'terminals_service' => [

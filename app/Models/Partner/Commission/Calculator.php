@@ -164,6 +164,7 @@ class Calculator extends Base\Core
         $this->partnerConfigCore = new PartnerConfig\Core;
 
         $this->setBaseContext($sourceEntity);
+
     }
 
     // ==================================== GETTERS ====================================
@@ -459,6 +460,7 @@ class Calculator extends Base\Core
         // configuration's explicit pricing plan
         $this->setExplicitPricingPlanContext();
     }
+
 
     /**
      * @return bool
@@ -959,6 +961,7 @@ class Calculator extends Base\Core
 
     protected function getCommissionComponents(int $commissionFee, int $commissionTax): array
     {
+
         if ($this->shouldCreditGst() === false)
         {
             $commissionFee -= $commissionTax;

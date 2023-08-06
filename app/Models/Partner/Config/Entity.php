@@ -268,6 +268,16 @@ class Entity extends PublicEntity
         return $this->setAttribute(self::SUB_MERCHANT_CONFIG, $subMerchantConfig);
     }
 
+    public function setCommissionModel(string $commissionModel)
+    {
+        $this->setAttribute(self::COMMISSION_MODEL, $commissionModel);
+    }
+
+    public function setHasGSTCertificateAttribute($value)
+    {
+        $this->attributes[self::HAS_GST_CERTIFICATE] = $value;
+    }
+
     // --------------------- GENERATORS ---------------------
     public function generateRevisitAt(array $input)
     {

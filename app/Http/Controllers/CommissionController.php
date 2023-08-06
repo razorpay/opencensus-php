@@ -96,4 +96,14 @@ class CommissionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function calculateCommission()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->calculateCommissionFromPricingDetails($input);
+
+        return ApiResponse::json($response);
+
+    }
 }

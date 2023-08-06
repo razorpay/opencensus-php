@@ -21,6 +21,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\CommissionTdsSettlement;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -105,6 +106,58 @@ class Core extends Base\Core
         $calculator->calculateAndSaveCommission();
 
         return $calculator->getCommissions();
+    }
+
+
+    public function calculateCommission(array $input): array
+    {
+        try
+        {
+            $paymentInput  = $input['payment'];
+            $partnerConfig = $input['partner_configs'];
+            $partnerDetails = $input['partner_details'];
+
+            $partner = $this->repo->merchant->findOrFail($partnerDetails['id']);
+
+            $merchant = $this->repo->merchant->findOrFail($paymentInput['merchant_id']);
+            $payment  = $this->getPaymentEntity($paymentInput, $merchant);
+
+            $commissionCalculator = new CalculatorV2($payment, $partnerConfig, $merchant, $partner, $partnerDetails);
+
+            $commissions = $commissionCalculator->calculateAndGetCommission();
+            $response    = ['success' => true, 'data' => $commissions];
+
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CALCULATION, ['success' => true]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PRTS_COMMISSION_CALCULATION_FAILED,
+                [$input]
+            );
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CALCULATION, ['success' => false]);
+            $response = ['success' => false, 'data' => []];
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param array           $paymentInput
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicEntity
+     * @throws \Throwable
+     */
+    private function getPaymentEntity(array $paymentInput, Merchant\Entity $merchant): Base\PublicEntity
+    {
+        $paymentId = $paymentInput['id'];
+        $payment   = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $merchant);
+        $payment->merchant()->associate($merchant);
+
+        return $payment;
     }
 
     /**
@@ -544,4 +597,5 @@ class Core extends Base\Core
             throw new LogicException('Default partner config not found for partner');
         }
     }
+
 }
