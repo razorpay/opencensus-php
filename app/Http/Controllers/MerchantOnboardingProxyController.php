@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use App;
 use Request;
-use RZP\Constants\Country;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
@@ -26,13 +25,59 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_MERCHANT_BMC_RESPONSE      = 'get_merchant_bmc_response';
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
-    const MERCHANT_RM_FETCH = 'merchant_rm_details_fetch';
-    const MERCHANT_RM_CREATE = 'merchant_rm_details_create';
-    const MERCHANT_RM_UPDATE = 'merchant_rm_details_update';
+    const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
+    const MERCHANT_RM_FETCH              = 'merchant_rm_details_fetch';
+    const MERCHANT_RM_CREATE             = 'merchant_rm_details_create';
+    const MERCHANT_RM_UPDATE             = 'merchant_rm_details_update';
+    const SEND_OTP                       = 'send_otp';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
+    const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
+    const PGOS_OWNED_FIELDS = [
+        'activation_form_milestone',
+        'contact_name',
+        'email',
+        'contact_mobile',
+        'promoter_pan',
+        'promoter_pan_name',
+        'company_pan',
+        'business_name',
+        'business_type',
+        'business_parent_category',
+        'business_category',
+        'business_subcategory',
+        'business_model',
+        'string business_website',
+        'business_dba',
+        'blacklisted_products_cate',
+        'physical_store',
+        'social_media',
+        'others',
+        'others_present',
+        'website_present',
+        'android_app_present',
+        'ios_app_present',
+        'playstore_url',
+        'appstore_url',
+        'company_pan_name',
+        'merchant_id',
+        'business_registered_address',
+        'business_registered_state',
+        'business_registered_city',
+        'business_registered_pin',
+        'business_operation_addres',
+        'business_operation_state',
+        'business_operation_city',
+        'business_operation_pin',
+        'gstin',
+        'company_cin',
+        'shop_establishment_number',
+        'bank_account_number',
+        'bank_account_name',
+        'bank_branch_ifsc'
+    ];
 
     const MERCHANT_ROUTES = [
         self::MERCHANT_ACTIVATION_SAVE,
@@ -60,17 +105,20 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_CREATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/CreateRMDetails',
         self::MERCHANT_RM_FETCH                => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/GetRMDetails',
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
+        self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
+        self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch'
     ];
 
     // timeout in seconds
     const PATH_TIMEOUT_MAP = [
-        self::MERCHANT_ACTIVATION_SAVE      => .2,
-        self::MERCHANT_SIGN_UP              => .2,
-        self::MERCHANT_DOCUMENT_UPLOAD      => .2,
-        self::MERCHANT_DOCUMENT_DELETE      => .2,
+        self::MERCHANT_ACTIVATION_SAVE      => 10,
+        self::MERCHANT_SIGN_UP              => 10,
+        self::MERCHANT_DOCUMENT_UPLOAD      => 10,
+        self::MERCHANT_DOCUMENT_DELETE      => 10,
         self::GET_MERCHANT_BMC_RESPONSE     => 10,
         self::SAVE_MERCHANT_BMC_RESPONSE    => 10,
-        self::GET_CLEARBIT_DOMAIN_INFO      => 10
+        self::GET_CLEARBIT_DOMAIN_INFO      => 10,
+        self::MERCHANT_DETAILS_PATCH        => 10
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -88,15 +136,15 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
+        $this->setDefaultTimeout(10);
 
-        $this->setDefaultTimeout(.2);
+        $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
 
         $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
 
     }
 
-    public function handlePGOSProxyRequests($routeKey, $payload, $merchant)
+    public function handlePGOSProxyRequests($routeKey, $payload, $merchant, $ignoreRoutingConditions = false)
     {
         $merchantId = $merchant->getMerchantId();
 
@@ -117,10 +165,14 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         // check if for the merchant the experiment is enabled or not
         // check if merchant is a regular merchant or not
-        if (($this->isPGOSMigrationExperimentEnabled($merchantId, self::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                                                    self::ENABLE) or
-             in_array($routeKey, self::ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE)) and
-            (new Core)->isRegularMerchant($merchant) === true and Country::matches($merchant->getCountry(), Country::IN) )
+
+        if (in_array($routeKey, self::ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE) and
+            (new Core)->isRegularMerchant($merchant) === true)
+        {
+            $ignoreRoutingConditions = true;
+        }
+
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId))
         {
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];
@@ -137,23 +189,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $payload, $headers);
         }
 
-    }
-
-    public function shouldMerchantOnboardViaPGOS(string $merchantId): bool
-    {
-        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
-
-        if (empty($userDeviceDetail) === false)
-        {
-            $pgosOnboardedMerchant = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::PGOS_ONBOARDED_MERCHANT);
-
-            if (empty($pgosOnboardedMerchant) === false)
-            {
-                return $pgosOnboardedMerchant;
-            }
-        }
-
-        return false;
     }
 
     //We are not passing $path here as done in BaseProxyController since we are getting path from request itself.
@@ -213,8 +248,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
      */
     protected function validatePathForRequest($routes, $path)
     {
-        if (in_array($path, $routes) === false)
-        {
+        if (in_array($path, $routes) === false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
@@ -224,7 +258,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return 'Basic ' . base64_encode($this->serviceConfig['user'] . ':' . $this->serviceConfig['password']);
     }
 
-    public function isPGOSMigrationExperimentEnabled($merchantId, $experimentId, $mode): bool
+    public function isPGOSExperimentEnabledForMerchant($merchantId, $experimentId, $mode): bool
     {
         $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
             'splitz_input_experiment_id' => $experimentId,
@@ -247,9 +281,41 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $variant === $mode;
     }
 
+    public function shouldMerchantOnboardViaPGOS($merchantId): bool
+    {
+        // Doing this check again to fall back
+        if ($this->isPGOSExperimentEnabledForMerchant($merchantId, self::PGOS_LIVE_MODE_EXPERIMENT_ID,
+                self::ENABLE) === true)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+                'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
+            ]);
+
+            $merchantOnboardedViaService = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+            if (empty($userDeviceDetail) === false)
+            {
+                $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::SERVICE);
+
+                if (empty($merchantOnboardedViaService) === false)
+                {
+                    return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function isFieldsOwnedByPGOS($inputFields): bool
+    {
+        return (bool)count(array_intersect($inputFields, self::PGOS_OWNED_FIELDS));
+    }
+
     /**
      * @param string $routeKey
-     * @param array  $body
+     * @param array $body
+     * @throws ServerErrorException
      */
     private function routeSpecificPostProcessor(string $routeKey, array $body)
     {
@@ -258,6 +324,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             case self::SAVE_MERCHANT_BMC_RESPONSE:
                 (new WebsiteService())->updateCommonWebsiteQuestions($body, true);
         }
+
     }
 
 }

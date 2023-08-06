@@ -8,6 +8,7 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Models\User;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger;
 use RZP\Base\ConnectionType;
@@ -508,6 +509,92 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    public function sendOtpViaEmailPGOSInternal($merchantId, $input)
+    {
+
+        $email = $input[User\Entity::EMAIL];
+
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $user =  $this->repo->user->find($input['user_id']);
+
+        try
+        {
+            $emailUser = $this->repo->user->findByEmail($email);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $emailUser = null;
+        }
+
+        if(empty($emailUser) === true)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+                $user->setEmail($input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($user);
+            });
+
+        }
+
+        $inputData = ["isRequestFromXVerifyEmail" => false];
+
+        return (new User\Service())->sendOtpEmailVerification($merchant, $user, $input, $inputData);
+
+    }
+
+    public function updateActivationProgressPGOSInternal($merchantId, $input)
+    {
+        // this also sends the lumberjack events
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        return $this->updateActivationProgress($merchant);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function updateActivationMilestonePGOSInternal($merchantId, $input)
+    {
+
+        $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
+
+        (new Validator)->validateActivationFormMilestone($input, $activationFormMilestone);
+
+        // add more database operations if required for L1 milestone updation.
+        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+
+        $merchantDetails->setActivationFormMilestone($activationFormMilestone);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return ['msg' => 'activation form milestone successfully updated.'];
+
+    }
+
+    public function updateLegalEntityPGOSInternal($merchantId, $input)
+    {
+        // unset certain parameters
+        $shouldResetMethods = $input['reset_methods'] ?? false;
+
+        unset($input['reset_methods']);
+        unset($input['merchant_id']);
+        unset($input['action']);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->edit($input, 'patchMerchantDetails');
+
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant, $shouldResetMethods);
+
+        $this->updateLegalEntity($input, $merchant);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+
     }
 
     private function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant)
@@ -2350,6 +2437,38 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Merchant\Entity $merchant, array $input): Entity
     {
+        // check if merchant has onboarded via PGOS
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getMerchantId());
+
+        if ($shouldMerchantOnboardViaPGOS === true)
+        {
+            try
+            {
+                $input['merchant_id'] = $merchant->getMerchantId();
+
+                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $pgosResponse
+                ]);
+
+                return $pgosResponse['data'];
+            }
+            catch (\Throwable $exception)
+            {
+                // this should not introduce error counts as it is running in shadow mode
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchant->getMerchantId(),
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                    'error description' => 'submitted data could not be processed'
+                ]);
+
+            }
+        }
+
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);

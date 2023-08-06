@@ -45,6 +45,8 @@ class Service extends Base\Service
 
     protected $ufh;
 
+    protected MerchantOnboardingProxyController $pgosProxyController;
+
 
     public function __construct()
     {
@@ -57,6 +59,8 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->merchant_document;
 
         $this->ufh = (new UfhService($this->app));
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
 
     }
 
@@ -172,59 +176,57 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * @throws Exception\ServerErrorException
+     */
     public function delete(string $id)
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $response = $this->core->delete($entity);
-
         $merchantId =  $this->merchant->getMerchantId();
 
-        // route request to PGOS for deletion
-        try
-        {
+        // check if merchant is to be onboarded via PGOS
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            $payload = [
-                "merchant_id" => $merchantId,
-                "id"          => $id,
-            ];
+        if ($shouldMerchantOnboardViaPGOS === true) {
+            // route request to PGOS for deletion
+            try
+            {
 
-            $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_REQUEST, [
-                '$payload' => $payload,
-            ]);
+                $payload = [
+                    "merchant_id" => $merchantId,
+                    "id"          => $id,
+                ];
 
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests('merchant_document_delete', $payload, $this->merchant);
-
-            $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_RESPONSE, [
-                'merchant_id' => $merchantId,
-                'response'    => $pgosResponse,
-            ]);
-        }
-        catch (RequestsException $e) {
-
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_REQUEST, [
+                    '$payload' => $payload,
                 ]);
-            } else {
-                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+
+                $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_delete',
+                    $payload, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_RESPONSE, [
                     'merchant_id' => $merchantId,
-                    'error_message' => $e->getMessage()
+                    'response'    => $pgosResponse,
+                ]);
+
+                return $pgosResponse;
+            }
+            catch (\Throwable $exception) {
+                // this should not introduce error counts as it is running in shadow mode
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                    'error_message' => 'submitted data could not be processed'
                 ]);
             }
-
-        }
-        catch (\Throwable $exception) {
-            // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
-                'error_message' => $exception->getMessage()
-            ]);
         }
 
-        return $response;
+        return $this->core->delete($entity);
+
     }
 
     public function getDocuments(string $accountId, string $entityType, string $entityId)
@@ -256,7 +258,7 @@ class Service extends Base\Service
         $validator = (new Validator);
 
         $validator->validateDocumentTypeAndFileType('uploadDocument', $input);
-        
+
         $validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
 
         $validator->validateFileSize($input[Entity::FILE]);

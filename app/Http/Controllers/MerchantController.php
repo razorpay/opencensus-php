@@ -1430,7 +1430,9 @@ class MerchantController extends Controller
         $input = Request::all();
 
         // this is temporary logging: to get all admins who uses this route
-        $this->trace->info(TraceCode::MERCHANT_DETAILS_EDIT_REQUEST, []);
+        $this->trace->info(TraceCode::MERCHANT_DETAILS_EDIT_REQUEST, [
+            '$input' => $input,
+        ]);
 
         $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetails($id, $input);
 

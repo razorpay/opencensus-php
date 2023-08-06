@@ -28,11 +28,15 @@ class Core extends Base\Core
 {
     private $merchantCore;
 
+    protected MerchantOnboardingProxyController $pgosProxyController;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->merchantCore = new Merchant\Core();
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
     }
 
     public function setMerchantCore($merchantCore)
@@ -160,45 +164,42 @@ class Core extends Base\Core
         // route request to PGOS
         try {
 
-            $payload = [
-                "document_type" => $documentType,
-                "file_store_id" => $fileAttributes[$documentType]['file_id'],
-                "merchant_id" => $merchantId,
-                "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
-            ];
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
-                '$payload' => $payload,
-            ]);
+            if ($shouldMerchantOnboardViaPGOS === true)
+            {
+                $payload = [
+                    "document_type"      => $documentType,
+                    "file_store_id"      => $fileAttributes[$documentType]['file_id'],
+                    "merchant_id"        => $merchantId,
+                    "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
+                ];
 
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_document_upload', $payload, $merchant);
-
-            $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_RESPONSE, [
-                'merchant_id' => $merchantId,
-                'response' => $response,
-            ]);
-        }
-        catch (RequestsException $e) {
-
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
+                    '$payload' => $payload,
                 ]);
-            } else {
-                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_upload',
+                    $payload, $merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_RESPONSE, [
                     'merchant_id' => $merchantId,
-                    'error_message' => $e->getMessage()
+                    'response'    => $response,
                 ]);
+
+                return $response['activation_response'];
             }
 
         }
         catch (\Throwable $exception) {
             // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'merchant_id' => $merchantId,
                 'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                'error description' => 'submitted data could not be processed'
             ]);
         }
 

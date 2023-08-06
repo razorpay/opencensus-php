@@ -66,7 +66,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
 
     }
 
-    public function handlePGOSProxyRequests($routeKey, $payload, $merchant)
+    public function handlePGOSProxyRequests($routeKey, $payload, $merchant, $ignoreRoutingConditions = false)
     {
         $merchantId = $merchant->getMerchantId();
 

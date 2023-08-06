@@ -136,9 +136,9 @@ class Service extends Base\Service
 
     protected $ba;
 
-    protected $config;
+    protected MerchantOnboardingProxyController $pgosProxyController;
 
-    protected $pgosProxyController;
+    protected $config;
 
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
@@ -361,6 +361,7 @@ class Service extends Base\Service
         $user = $this->user;
 
         $merchant = $this->app['basicauth']->getMerchant();
+
         $merchantId = $merchant->getId();
 
         try
@@ -379,36 +380,38 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
         }
 
-        // route requests when email validation is done.
         try {
-            $body = [
-                'merchant_id' => $merchantId,
-                User\Entity::EMAIL => $email
-            ];
+            // check if merchant has onboarded via PGOS and route request accordingly.
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            $pgosProxyController = new MerchantOnboardingProxyController();
+            if ($shouldMerchantOnboardViaPGOS === true) {
+                $body = [
+                    DEConstants::MERCHANT_ID => $merchantId,
+                    User\Entity::EMAIL       => $email,
+                    DEConstants::USER_ID     => $user->getId(),
+                ];
 
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $body, $merchant);
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('send_otp', $body, $merchant);
 
-            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                'merchant_id' => $merchantId,
-                'response' => $response,
-            ]);
-        }
-        catch (RequestsException $e) {
-
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                     'merchant_id' => $merchantId,
+                    'response' => $response,
                 ]);
+
+                return $response;
             }
 
         }
         catch (\Throwable $exception) {
             // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
             ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                'error description' => 'submitted data could not be processed'
+            ]);
+
         }
 
         if(empty($emailUser) === true)
@@ -463,6 +466,11 @@ class Service extends Base\Service
         return $isExpEnabled;
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
     public function saveMerchantDetailsForActivation(array $input)
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
@@ -482,6 +490,38 @@ class Service extends Base\Service
         $partnerId = $this->getPartnerInfoFromInput($input);
 
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::validatePhantomOnBoarding($partnerId);
+
+        // check if merchant is to be onboarded via PGOS
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+        if ($shouldMerchantOnboardViaPGOS === true and $activationFormMilestone != DEConstants::L2_SUBMISSION)
+        {
+            try
+            {
+                $input['merchantId'] = $merchantId;
+
+                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $pgosResponse
+                ]);
+
+                return $pgosResponse['activation_response'];
+            }
+            catch (\Throwable $exception)
+            {
+                // this should not introduce error counts as it is running in shadow mode
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchantId,
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                    'error description' => 'submitted data could not be processed'
+                ]);
+
+            }
+        }
 
         if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
         {
@@ -587,44 +627,6 @@ class Service extends Base\Service
         {
             $productInput = [Merchant\Product\Util\Constants::PRODUCT_NAME => Merchant\Product\Name::PAYMENT_GATEWAY];
             (new Merchant\Product\Core())->createMerchantProduct($merchant, $productInput);
-        }
-
-        // send the request to merchant onboarding service, once processing is done at API end
-        // this should not affect the current flow, hence wrapped in try catch
-        try
-        {
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $input['merchantId'] = $merchantId;
-
-            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant);
-
-            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                'response' => $pgosResponse
-            ]);
-        }
-        catch (RequestsException $e) {
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
-                ]);
-            } else {
-                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                    'merchant_id' => $merchantId,
-                    'error_message' => $e->getMessage()
-                ]);
-            }
-
-        }
-        catch (\Throwable $exception) {
-            // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
-                'error_message' => $exception->getMessage()
-            ]);
-        }
-        finally {
-            unset($input['merchantId']);
         }
 
         return $response;
@@ -1377,6 +1379,19 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        // if merchant is PGOS onboarded and editing fields which are owned by PGOS throw an exception
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id);
+
+        $inputKeys = array_keys($input);
+
+        if ($shouldMerchantOnboardViaPGOS === true and $this->pgosProxyController->isFieldsOwnedByPGOS($inputKeys) === true)
+        {
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                'error description' => 'submitted data could not be processed'
+            ]);
+        }
+
+
         $this->allowEditingOfMIQForCompliance($merchant, $input);
 
         $merchantDetailCore = $this->core;
@@ -1987,45 +2002,6 @@ class Service extends Base\Service
         (new Validator)->validateSignupViaChannel($input, $merchant);
         (new Validator)->validateUniqueContactMobile($input, $merchantId);
 
-        // route request to PGOS
-        // required for regular dashboard onboarding, to be removed later
-        try {
-            $input['merchant_id'] = $merchantId;
-
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $merchant);
-
-            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                'merchant_id' => $merchantId,
-                'response' => $response,
-            ]);
-        }
-        catch (RequestsException $e) {
-
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
-                ]);
-            } else {
-                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                    'merchant_id' => $merchantId,
-                    'error_message' => $e->getMessage()
-                ]);
-            }
-
-        }
-        catch (\Throwable $exception) {
-            // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
-                'error_message' => $exception->getMessage()
-            ]);
-        }
-        finally {
-           unset($input['merchant_id']);
-        }
-
         $refCode = null;
 
         if ((isset($input[Entity::REFERRAL_CODE]) === true) and (empty($input[Entity::REFERRAL_CODE]) === false))
@@ -2077,7 +2053,7 @@ class Service extends Base\Service
             {
                 (new Merchant\Core)->editPreSignupFields($this->merchant, $input);
 
-                // Save User Information of contact name nad contact Email.
+                // Save User Information of contact name and contact Email.
 
                 $originProduct = $this->auth->getRequestOriginProduct();
 
@@ -2090,6 +2066,7 @@ class Service extends Base\Service
                 $userEditData = array_filter($userEditData);
 
                 (new User\Validator)->validateInput('pre_signup', $userEditData);
+
 
                 /**
                  * If a user signs up on PG as unregistered business
@@ -2123,6 +2100,36 @@ class Service extends Base\Service
                 }
             }
         });
+
+        // contact name is being sent via this field
+        try
+        {
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+            if ($shouldMerchantOnboardViaPGOS === true)
+            {
+                $body = [
+                    'contact_name' => $input['contact_name'],
+                    'merchantId' => $merchantId,
+                ];
+
+                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $body, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $pgosResponse
+                ]);
+
+                return $pgosResponse;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                'error description' => 'submitted data could not be processed'
+            ]);
+        }
 
         $this->createLegalDocumentsForBanking($merchant);
 
@@ -4441,11 +4448,28 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function submitMerchantInternal($merchantId, $input)
     {
-        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+        $postAction = $input['action'] ?? 'SUBMIT';
 
-        return $this->core->submitMerchantInternal($input, $merchantDetails);
+        switch ($postAction)
+        {
+            case 'SEND_OTP':
+                return $this->core->sendOtpViaEmailPGOSInternal($merchantId, $input);
+            case 'UPDATE_ACTIVATION_PROGRESS':
+                return $this->core->updateActivationProgressPGOSInternal($merchantId, $input);
+            case 'UPDATE_ACTIVATION_MILESTONE':
+                return $this->core->updateActivationMilestonePGOSInternal($merchantId, $input);
+            case 'UPDATE_LEGAL_ENTITY':
+                return $this->core->updateLegalEntityPGOSInternal($merchantId, $input);
+            default:
+                $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+                return $this->core->submitMerchantInternal($input, $merchantDetails);
+        }
+
     }
 
     private function unsetServiceAgreementConsent(array &$input)

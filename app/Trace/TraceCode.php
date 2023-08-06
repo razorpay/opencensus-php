@@ -3526,6 +3526,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PGOS_PROXY_ERROR                          = "PGOS_PROXY_ERROR";
     const PGOS_PROXY_TIMEOUT                        = "PGOS_PROXY_TIMEOUT";
     const PGOS_DASHBOARD_PROXY_REQUEST              = "PGOS_DASHBOARD_PROXY_REQUEST";
+    const GET_MERCHANT_ACTIVATION_DETAILS           = "GET_MERCHANT_ACTIVATION_DETAILS";
     const ERROR_IN_FETCHING_MERCHANT_ENTITIES_INFO  = "ERROR_IN_FETCHING_MERCHANT_ENTITIES_INFO";
 
     //Trace codes for 2fa features
