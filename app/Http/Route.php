@@ -185,6 +185,7 @@ class Route
         'payment_redirect_3ds_get'                 => ['get',      'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_refund_internal'                  => ['post',     'payments/{id}/refund/internal',                  'PaymentController@postRefund'                                      ],
+        'payment_refund_pos_internal'              => ['post',     'payments/{id}/refund/pos',                       'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
@@ -231,6 +232,7 @@ class Route
         'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
+        'payment_capture_pos'                      => ['post',     'payments/{id}/capture/pos',                      'PaymentController@postCapture'                                     ],
         'release_submerchant_payment'              => ['post',     'payments/{id}/settle',                           'PaymentController@releaseSubmerchantPayment'                       ],
         'payment_fetch_transfers'                  => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
@@ -6242,6 +6244,8 @@ class Route
         'switch_merchant_token',
         'mob_get_workflow',
         'payment_create_pos',
+        'payment_refund_pos_internal',
+        'payment_capture_pos',
         //FTS holiday Details
         'payout_get_holiday_details',
         'fund_addition_tpv',
@@ -14896,6 +14900,8 @@ class Route
             'payment_fetch_by_id_internal',
             'order_fetch_by_id_internal',
             'internal_payment_authorize_refund',
+            'payment_refund_pos_internal',
+            'payment_capture_pos',
         ],
 
         'cron' => [

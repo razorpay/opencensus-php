@@ -7817,6 +7817,10 @@ class Core extends Base\Core
     {
         if ($merchant->isRazorpayOrgId() === true )
         {
+            if(($merchant->isFeatureEnabled(Feature\Constants::SHOW_PAYMENT_RECEIVER_TYPE)) === true)
+            {
+                return true;
+            }
             return false;
         }
 
