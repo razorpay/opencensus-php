@@ -52,12 +52,10 @@ class LedgerJournalBase extends Job
 
     public function __construct(string $mode, array $payload)
     {
-        $app = App::getFacadeRoot();
-
         parent::__construct($mode);
+
         $this->mode = $mode;
         $this->ledgerResponse = $payload;
-        $this->razorx = $app['razorx'];
     }
 
     public function handle()
@@ -70,6 +68,10 @@ class LedgerJournalBase extends Job
         try
         {
             parent::handle();
+
+            $app = App::getFacadeRoot();
+            $this->razorx = $app['razorx'];
+
             $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_INIT, $this->ledgerResponse);
 
             if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE) === true)
@@ -243,7 +245,7 @@ class LedgerJournalBase extends Job
             $variant = $this->razorx->getTreatment($this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID],
                 $experiment, $this->mode);
 
-            return ($variant === 'on');
+            return (strtolower($variant) === 'on');
         }
 
         return false;
