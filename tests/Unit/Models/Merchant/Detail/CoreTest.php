@@ -6280,6 +6280,65 @@ class CoreTest extends TestCase
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
     }
 
+    public function testUpdateActivationStatusFromKQUToActivatedOthersCategory()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'others',
+            'business_subcategory'      => 'others',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantDetails->getMerchantId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('"Others" is not allowed in Category or Sub-category.');
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+    }
+
     public function testHasKeyAccess()
     {
         $merchant = Mockery::mock('RZP\Models\Merchant\Entity');

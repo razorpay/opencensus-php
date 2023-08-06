@@ -131,7 +131,7 @@ class PreActivationMerchantReleaseFundsDataCollector extends DbDataCollector
         {
             if (empty($balance) === false)
             {
-                if ($balance > 0)
+                if ($balance >= 100)
                 {
                     $result[] = stringify($merchantId);
                 }

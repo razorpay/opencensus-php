@@ -842,6 +842,8 @@ class Service extends Base\Service
     {
         try
         {
+
+            $this->validateMerchantCategorySubCategoryForActivation($merchantDetails);
             // Merchants who provide website can later on opt for KLA - and hence their url will be present and
             // has key access will be false , but on admin dashboard the Keyless Auth - will be green tick i.e true
 
@@ -974,6 +976,22 @@ class Service extends Base\Service
     //under_review - details are under verification
     //needs_clarification - action required
     //activated - verified
+
+    protected function validateMerchantCategorySubCategoryForActivation(MerchantDetailEntity $merchantDetails)
+    {
+        $merchantCategory = $merchantDetails->getBusinessCategory();
+
+        $merchantSubCategory = $merchantDetails->getBusinessSubcategory();
+
+        if ((new Merchantcore())->isRegularMerchant($merchantDetails->merchant))
+        {
+            if ($merchantCategory === BusinessCategory::OTHERS or $merchantSubCategory === BusinessCategory::OTHERS)
+            {
+                throw new BadRequestValidationFailureException(
+                    '"Others" is not allowed in Category or Sub-category.');
+            }
+        }
+    }
     private function getWebsiteStatus($merchantDetails, $merchantWebsite)
     {
         $status = optional($merchantWebsite)->getStatus();
