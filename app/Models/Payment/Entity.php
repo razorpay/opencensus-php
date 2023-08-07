@@ -3171,13 +3171,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
     }
 
-    // mcc is supported only for card and wallet paypal payments.
+    // mcc is supported only for lrs merchants, card and wallet paypal payments.
     public function isMccSupported()
     {
         return (($this->getAttribute(self::METHOD) === Method::CARD) or
                 ($this->isCoD() === true) or
                (($this->getAttribute(self::METHOD) === Method::WALLET) and
-                   ($this->getWallet() === Wallet::PAYPAL)));
+                   ($this->getWallet() === Wallet::PAYPAL)) or
+               ($this->merchant->isLRSEducationFlowEnabled() === true));
     }
 
     public function isFeeBearerCustomer()

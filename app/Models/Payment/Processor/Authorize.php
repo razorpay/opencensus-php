@@ -2012,6 +2012,8 @@ trait Authorize
 
             $this->validateOpgspImportDataIfApplicable($payment);
 
+            $this->validateLRSDataIfApplicable($payment);
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -3797,6 +3799,65 @@ trait Authorize
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment already exist with same invoice number.', 'notes');
             }
+        }
+    }
+
+    protected function validateLRSDataIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->merchant->isLRSEducationFlowEnabled() === false)
+        {
+            return;
+        }
+
+        // TPV feature flag is required for all LRS merchants
+        if ($payment->merchant->isTPVRequired() === false)
+        {
+            $this->trace->error(
+                TraceCode::LRS_ORDER_WITHOUT_TPV, [
+                    'merchant_id' => $payment->merchant->getId()
+                ]
+            );
+            throw new Exception\ServerErrorException(
+                "Failed to complete request", ErrorCode::SERVER_ERROR);
+        }
+
+        // Validate supported libraries.
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
+        if(Analytics\Metadata::isLRSSupportedLibrary($library) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY, [
+                    'merchant_id' => $payment->merchant->getId(),
+                ]
+            );
+        }
+
+        // Validate supported payment methods
+        if (Method::isLRSSupportedMethod($payment->getMethod()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD, [
+                    'merchant_id' => $payment->merchant->getId(),
+                ]
+            );
+        }
+
+        // Validate supported currencies
+        if (Currency\Currency::isLRSSupportedCurrency($payment->getCurrency()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        // Validate if payment has order
+        if ($payment->hasOrder() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
+                    'merchant_id' => $payment->merchant->getId(),
+                ]
+            );
         }
     }
 

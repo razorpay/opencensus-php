@@ -171,6 +171,10 @@ class Metadata
         self::S2S,
     ];
 
+    const LRS_SUPPORTED_LIBRARIES = [
+        self::CHECKOUTJS,
+    ];
+
     const ADDRESS_COLLECTION_VIA_REDIRECT_LIBS = [
         self::RAZORPAYJS,
         self::CUSTOM,
@@ -352,6 +356,11 @@ class Metadata
     public static function isValidRiskEngine($engine)
     {
         return isset(self::RISK_ENGINE_VALUES[$engine]);
+    }
+
+    public static function isLRSSupportedLibrary($library)
+    {
+        return in_array($library, self::LRS_SUPPORTED_LIBRARIES);
     }
 
     public static function getValueForRiskEngine($engine)

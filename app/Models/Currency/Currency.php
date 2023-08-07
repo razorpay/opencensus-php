@@ -209,6 +209,20 @@ class Currency
         self::OMR,
     ];
 
+    const LRS_SUPPORTED_CURRENCIES = [
+        self::AED,
+        self::AUD,
+        self::CAD,
+        self::CHF,
+        self::DKK,
+        self::EUR,
+        self::GBP,
+        self::NZD,
+        self::SEK,
+        self::SGD,
+        self::USD,
+    ];
+
     const ISO_NUMERIC_CODES = [
         self::AED => '784',
         self::ALL => '008',
@@ -1109,6 +1123,11 @@ class Currency
         }
 
         return false;
+    }
+
+    public static function isLRSSupportedCurrency($currency)
+    {
+        return in_array($currency, self::LRS_SUPPORTED_CURRENCIES);
     }
 
     public static function getCurrencyForCountry(string $countryCode)

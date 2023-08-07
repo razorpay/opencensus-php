@@ -110,6 +110,11 @@ class Method
         self::NETBANKING,
     ];
 
+    const LRS_SUPPORTED_METHODS = [
+        self::UPI,
+        self::NETBANKING,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];
@@ -172,6 +177,11 @@ class Method
     public static function supportsAsync($method)
     {
         return in_array($method, self::$asynchronous, true);
+    }
+
+    public static function isLRSSupportedMethod($method)
+    {
+        return in_array($method, self::LRS_SUPPORTED_METHODS);
     }
 
     public static function getMethodsNamesMap()

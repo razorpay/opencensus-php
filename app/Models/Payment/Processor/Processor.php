@@ -653,6 +653,11 @@ class Processor
         return $this->merchant->isOpgspImportEnabled();
     }
 
+    private function isLRSEducationMerchant(): bool
+    {
+        return $this->merchant->isLRSEducationFlowEnabled();
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -2268,7 +2273,8 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
-            if (($this->isOpgspImportMerchant() === false) and
+            if (($this->isLRSEducationMerchant() === false) and
+                ($this->isOpgspImportMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or

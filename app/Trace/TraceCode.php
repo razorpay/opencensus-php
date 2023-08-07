@@ -4255,6 +4255,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_PAYMENT_DOCUMENT_FOR_PAYMENTS_FAILED            = 'FETCH_PAYMENT_DOCUMENT_FOR_PAYMENTS_FAILED';
     const PAYER_ACCOUNT_TYPE_SAVE_FAILED                        = 'PAYER_ACCOUNT_TYPE_SAVE_FAILED';
 
+    const LRS_ORDER_WITHOUT_TPV                                 = 'LRS_ORDER_WITHOUT_TPV';
+
     const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
     const SLAVE_ROUTES_FETCH_FAILED                             = 'SLAVE_ROUTES_FETCH_FAILED';
     const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
