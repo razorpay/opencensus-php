@@ -233,7 +233,7 @@ class Service extends Base\Service
         unset($input['ga_id']);
         $start = millitime();
         (new Checkout)->validateCreateCheckout($input);
-        $autoDiscountApplied = false;
+        $isAutoDiscountApplied = false;
         $cart = $input['cart'];
 
         $checkout = (new Checkout)->placeShopifyCheckout(['cart' => $cart]);
@@ -369,37 +369,18 @@ class Service extends Base\Service
 
         $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
 
-        $shopifyDiscountCodeExp = (new SplitzExperimentEvaluator())->evaluateExperiment(
-            [
-                'id'            => $cartId,
-                'experiment_id' => $this->app['config']->get('app.one_cc_shopify_coupon_bufgix_exp_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                    ]
-                ),
-            ]
-        );
-
-        if ($shopifyDiscountCodeExp['variant'] == 'test')
-        {
-            $autoDiscountApplied = $this->isAutoDiscountApplied($cart);
-        }
-        else
-        {
-            $autoDiscountApplied = $this->isScriptDiscountApplied($cart);
-        }
+        $isAutoDiscountApplied = $this->isScriptDiscountApplied($cart);
 
         // Construct map from sku to product_type to support new product category based shipping config
         $productTypeMap = $this->getProductTypesFromCart($cart);
 
         $is3rdPartyPluginDiscountEnabled = $this->is3rdPartyPluginDiscountEnabled($cart);
 
-        if ($autoDiscountApplied === true)
+        if ($isAutoDiscountApplied)
         {
             $cartPrice = (int)(floatval($cart['total_price']));
 
-            $scriptData = $this->getAutoDiscountData($cart, $cartPrice, $checkout, $productTypeMap);
+            $scriptData = $this->getScriptData($cart, $cartPrice, $checkout, $productTypeMap);
 
             $amount = $scriptData['amount'];
 
@@ -411,7 +392,7 @@ class Service extends Base\Service
         {
             $cartLineItemsData = $this->fetch3rdPartyPluginCartLineItems($cartId, $cart, $checkout, $productTypeMap);
 
-            $autoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
@@ -423,13 +404,13 @@ class Service extends Base\Service
         {
             $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
 
-            $autoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
             $amount = $checkoutAmount;
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied);
         }
 
         $order = (new RzpOrders)->createOrder(
@@ -450,7 +431,7 @@ class Service extends Base\Service
             'name'                  => $this->merchant->getBillingLabel(),
             'one_click_checkout'    => true,
             'customer_cart'         => (new Pixels)->getDataForFbPixels($checkout),
-            'script_coupon_applied' => $autoDiscountApplied,
+            'script_coupon_applied' => $isAutoDiscountApplied,
         ];
 
         $this->updateTaxDetails($order, $checkout);
@@ -500,45 +481,6 @@ class Service extends Base\Service
         return $isScriptApplied;
     }
 
-    public function isAutoDiscountApplied(array $cart)
-    {
-        $is3rdPartyPluginDiscountEnabled = $this->is3rdPartyPluginDiscountEnabled($cart);
-
-        if ($is3rdPartyPluginDiscountEnabled)
-        {
-            return false;
-        }
-
-        foreach ($cart['items'] as $key => $item)
-        {
-            if (empty($item['line_level_discount_allocations']) === false)
-            {
-                foreach ($item['line_level_discount_allocations'] as $lineLevelDiscount)
-                {
-                    if ($lineLevelDiscount['discount_application']['type'] === 'script' ||
-                        $lineLevelDiscount['discount_application']['type'] === 'discount_code' ||
-                        (isset($lineLevelDiscount['discount_application']['type']) && $lineLevelDiscount['discount_application']['type'] === ''))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (empty($cart['cart_level_discount_applications']) === false)
-        {
-            foreach ($cart['cart_level_discount_applications'] as $cartDiscount)
-            {
-                if ($cartDiscount['type'] === 'discount_code')
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Ensures preferences function receives same parametres as in normal API call
      * @param array input - Post body and URL params received
@@ -554,7 +496,7 @@ class Service extends Base\Service
     /**
      * Get the final checkout
      */
-    protected function getAutoDiscountData($cart, $cartPrice, $checkout, array $productTypeMap)
+    protected function getScriptData($cart, $cartPrice, $checkout, array $productTypeMap)
     {
         $cartId = $cart['token'];
 
@@ -604,7 +546,7 @@ class Service extends Base\Service
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache, true);
         }
 
         return [
@@ -631,7 +573,7 @@ class Service extends Base\Service
 
     public function getCheckoutOptions(array $input): array
     {
-        $autoDiscountApplied = false;
+        $isAutoDiscountApplied = false;
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_RETARGETING_URL_HIT,
@@ -649,7 +591,7 @@ class Service extends Base\Service
 
         if ($scriptDiscountAmount > 0)
         {
-            $autoDiscountApplied = true;
+            $isAutoDiscountApplied = true;
         }
 
         $checkoutParams = [
@@ -662,7 +604,7 @@ class Service extends Base\Service
                 'email'   => $checkout['email'] ?? '',
                 'contact' => $checkout['phone'] ?? '',
             ],
-            'script_coupon_applied' => $autoDiscountApplied,
+            'script_coupon_applied' => $isAutoDiscountApplied,
         ];
 
         return $checkoutParams;
@@ -1194,7 +1136,7 @@ class Service extends Base\Service
           }
 
           $shippingResponse = [
-              'id'           => $address['id'],
+              'id'			 => $address['id'],
               'zipcode'      => $address['zipcode'],
               'state_code'   => $address['state_code'],
               'country'      => $address['country'],
@@ -1262,10 +1204,10 @@ class Service extends Base\Service
         }
 
         $response = [
-            'id'          => $address['id'],
-            'zipcode'     => $address['zipcode'],
-            'state_code'  => $address['state_code'],
-            'country'     => $address['country'],
+            'id'	       => $address['id'],
+            'zipcode'    => $address['zipcode'],
+            'state_code' => $address['state_code'],
+            'country'    => $address['country'],
             'tax_details' =>  $taxDetails,
         ];
 
@@ -1831,7 +1773,7 @@ class Service extends Base\Service
 
         return $expResult['variant'] === 'checkout_service';
     }
-
+  
     private function segregateShopifyUpdateEmail5xxError(string $errorMessage): string
     {
         $isShopifyError = Str::contains($errorMessage, ['500', '501', '502', '503', '504',]);
