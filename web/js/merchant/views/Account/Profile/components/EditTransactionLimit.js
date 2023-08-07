@@ -134,7 +134,7 @@ const EditTransactionLimit = (props) => {
         value={() =>
           !user?.international && !isTypeDomestic ? (
             <span>
-              <Link to="/payment-methods" onClick={linkHandler}>
+              <Link to="/payment-methods?instrument=international" onClick={linkHandler}>
                 Apply for international
               </Link>
             </span>
