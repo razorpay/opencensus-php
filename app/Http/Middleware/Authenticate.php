@@ -34,6 +34,7 @@ class Authenticate
 {
     // Lists of metrics
     const METRIC_AUTH_HANDLE_MILLISECONDS = 'authenticate_handle_milliseconds.histogram';
+    const METRIC_AUTH_HANDLE_USING_PASSPORT_MILLISECONDS = 'authenticate_handle_using_passport_milliseconds.histogram';
 
     const PARTNER       = 'partner';
     const OAUTH         = 'oauth';
@@ -42,9 +43,12 @@ class Authenticate
     const MERCHANT_ID   = 'merchant_id';
     const ACCOUNT_ID    = 'account_id';
     const ROUTE         = 'route';
+    const HOST          = 'host';
     const PASSPORT_AUTH = 'passport_auth';
 
-    const PASSPORT_AUTH_TYPE = 'passport_auth_type';
+    const PASSPORT_AUTH_TYPE   = 'passport_auth_type';
+    const APP_MERCHANT_ID      = 'app_merchant_id';
+    const PASSPORT_CONSUMER_ID = 'passport_consumer_id';
 
 
     /**
@@ -158,6 +162,12 @@ class Authenticate
 
             // few business logic still use ba passport to fetch roles etc, hence set it
             $this->ba->setPassport($this->passport);
+
+            // add histogram only for requests authenticated with passport
+            app()->trace->histogram(
+                self::METRIC_AUTH_HANDLE_USING_PASSPORT_MILLISECONDS,
+                millitime() - $startAt,
+                $this->ba->getRequestMetricDimensions());
         }
         else
         {
@@ -205,7 +215,8 @@ class Authenticate
             $this->trace->count(Metric::AUTHENTICATED_USING_PASSPORT_TOTAL, [
                 self::ROUTE              => $route,
                 self::PASSPORT_AUTH      => $this->requestContext->shouldAuthenticateUsingPassport,
-                self::PASSPORT_AUTH_TYPE => $passportAuthType
+                self::PASSPORT_AUTH_TYPE => $passportAuthType,
+                self::HOST               => $request->getHttpHost()
             ]);
         }
 
@@ -522,8 +533,19 @@ class Authenticate
         $tokenScopes = $this->passportUtil->fetchOauthScopes();
         $this->ba->setTokenScopes($tokenScopes);
 
+        // TODO: remove this db op if no requests need this and trace log
         $application = (new Repository())->findOrFail($this->passport->oauth->appId);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
+        if ($this->passport->consumer->id !== $application->getMerchantId()) {
+            $this->trace->info(TraceCode::OAUTH_PARTNER_MERCHANT_MISMATCH,
+                [
+                    self::APP_MERCHANT_ID      => $application->getMerchantId(),
+                    self::PASSPORT_CONSUMER_ID => $this->passport->consumer->id,
+                    self::ROUTE                => $this->router->currentRouteName()
+                ]
+            );
+        }
+
         return null;
     }
 }

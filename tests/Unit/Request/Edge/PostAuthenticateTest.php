@@ -68,7 +68,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->any())->method('getMode')->willReturn($expectedMode);
         $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedMerchantId);
         $ba->expects($this->any())->method('getPublicKey')->willReturn('rzp_live_10000000000000');
-        $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
         $ba->expects($this->once())->method('setPassportDomain')->with($this->equalTo('razorpay'));
 
@@ -257,7 +257,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
         $ba->expects($this->any())->method('getAccountId')->willReturn("10000000000000");
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
-        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
 
         // overwrite passport type attributes
@@ -379,7 +379,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->any())->method('getMerchantId')->willReturn('10000000000000');
         $ba->expects($this->any())->method('getAccountId')->willReturn("");
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn('');
-        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
 
         // overwrite passport attributes
@@ -499,7 +499,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->once())->method('getAccountId')->willReturn("10000000000000");
         $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
-        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
 
         // overwrite passport type attributes
@@ -890,7 +890,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->once())->method('getMode')->willReturn("test");
         $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn("");
         $ba->expects($this->any())->method('getPartnerMerchantId')->willReturn(null);
-        $ba->expects($this->once())->method('getAuthType')->willReturn($authType);
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn($authType);
         if ($authType === 'public')
         {
             $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn(false);
@@ -958,7 +958,7 @@ class PostAuthenticateTest extends TestCase
         $ba->authCreds = $authCredsMock;
         $authCredsMock->shouldReceive('getKeyEntity')->andReturn(null);
         $ba->expects($this->any())->method('getMode')->willReturn('live');
-        $ba->expects($this->once())->method('getAuthType')->willReturn($authType);
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn($authType);
         if ($authType === 'public')
         {
             $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn(false);
@@ -1046,7 +1046,7 @@ class PostAuthenticateTest extends TestCase
 
         $ba = $this->mockBasicAuth();
         $ba->expects($this->any())->method('getMode')->willReturn('live');
-        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
         $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn($isKeylessAuth);
         $ba->expects($this->any())->method('isPublicAuth')->willReturn($isPublicAuth);
