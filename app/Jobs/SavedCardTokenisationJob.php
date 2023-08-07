@@ -155,7 +155,7 @@ class SavedCardTokenisationJob extends Job
                 'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
             ]);
 
-            if ($this->asyncTokenisationJobId === "paymentmigrate") {
+            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
 
                 $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
 
@@ -182,14 +182,7 @@ class SavedCardTokenisationJob extends Job
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
             $this->delete();
-            $this->trace->info(TraceCode::DEBUG_LOGGING, [
-                'checking if we are going till the function or failing before that in try'
-            ]);
             (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
-            $this->trace->info(TraceCode::DEBUG_LOGGING, [
-                'checking if after the function call it is failing or it is going beyond this call as well in try'
-            ]);
-
             return;
         }
         catch (Throwable $e)
