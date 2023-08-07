@@ -11935,4 +11935,57 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testQaGetPasswordResetTokenForRoast()
+    {
+        $token = str_random(50);
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
+
+        $this->fixtures->create('user', $resetAttributes);
+
+        $this->ba->adminAuth();
+
+        $testDataToReplace = [
+            'response' => [
+                'content' => [
+                    'password_reset_token' => $token,
+                ]
+            ]
+        ];
+
+        $this->startTest($testDataToReplace);
+    }
+
+    public function testQaGetInvitationTokenForRoast()
+    {
+        $token = str_random(20);
+
+        $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->fixtures->create('invitation', [
+            'merchant_id' => '10000000000002',
+            'token' => $token,
+            'email' => 'userinvite@razorpay.com',
+            'product' => 'banking',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testDataToReplace = [
+            'response' => [
+                'content' => [
+                    'invitation_token' => $token,
+                ]
+            ]
+        ];
+
+        $this->startTest($testDataToReplace);
+    }
 }

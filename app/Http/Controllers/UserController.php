@@ -694,9 +694,26 @@ class UserController extends Controller
         return APIResponse::json($response);
     }
 
+    /**
+     * Returns the requested token.
+     * Warning: This is a QA only API.
+     *
+     * @return 
+    */
+    public function qaGetTokenForRoast(string $type)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->qaGetTokenForRoast($type, $input);
+
+        return APIResponse::json($response);
+    }
+
     public function postToggleDashboardCaptcha(){
         $input = Request::all();
+
         $data = $this->service()->postToggleDashboardCaptcha($input);
+
         return APIResponse::json($data);
     }
 }

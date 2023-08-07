@@ -55,6 +55,8 @@ use RZP\Constants\Mode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Environment;
+
 use function Clue\StreamFilter\append;
 
 class Service extends Base\Service
@@ -3226,6 +3228,68 @@ class Service extends Base\Service
         $response = $this->core->postUpdateUserName($input[Entity::NAME], $this->user);
 
         return $response;
+    }
+
+    /**
+     * Get the requested token for roast flow
+     * This is applicable only for lower environments, mainly in roast flow
+     * 
+     * In Prod env, we return 400
+     * 
+     * @param array $input The input data containing the new name.
+     * @return array mixed The response from the name update operation.
+     * @throws Exception\BadRequestException If the input is invalid or the username is empty or not different from the current name.
+     */
+    public function qaGetTokenForRoast(string $type, array $input) 
+    {
+        if (app()->isEnvironmentProduction() === true) {
+            throw new BadRequestException('This endpoint is not available in production');
+        }
+
+        switch ($type) {
+            case 'password_reset_token':
+
+                if(isset($input['email']))
+                {
+                    $email = $input['email'];
+
+                    $user = $this->repo->user->getUserFromEmail(mb_strtolower($email));
+                }
+                else
+                {
+                    $contact_mobile = $input['contact_mobile'];
+
+                    $user = $this->core->getUserFromMobile($contact_mobile);
+                }
+
+                $token = $user->getPasswordResetToken();
+
+                return [
+                    'password_reset_token' => $token,
+                ];
+
+            case 'invitation_token':
+
+                $product = $input['product'] ?? 'banking';
+                $merchantId = $input['merchant_id'];
+                $userEmail = $input['email'];
+
+                # code...
+                $invitationToken = $this->repo->invitation->getInvitationToken($product, $merchantId, $userEmail);
+
+                return [
+                    'invitation_token' => $invitationToken['token'],
+                ];
+
+                throw new BadRequestException('Token not found for the given input', null, [
+                    'product' => $product,
+                    'merchant_id' => $merchantId,
+                    'email' => $userEmail,
+                ]);
+
+            default:
+                throw new BadRequestException('Invalid type');
+        }
     }
 
     public function postToggleDashboardCaptcha(array $input)

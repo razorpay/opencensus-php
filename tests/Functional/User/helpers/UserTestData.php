@@ -7012,4 +7012,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testQaGetPasswordResetTokenForRoast' => [
+        'request' => [
+            'url' => '/users/qa/roast/token/password_reset_token',
+            'method'  => 'GET',
+            'content' => [
+                'email' => 'resetpass@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'password_reset_token' => '',
+            ]
+        ],
+    ],
+
+    'testQaGetInvitationTokenForRoast' => [
+        'request' => [
+            'url' => '/users/qa/roast/token/invitation_token',
+            'method'  => 'GET',
+            'content' => [
+                'email' => 'userinvite@razorpay.com',
+                'merchant_id' => '10000000000002',
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'invitation_token' => '',
+            ]
+        ],
+    ],
 ];

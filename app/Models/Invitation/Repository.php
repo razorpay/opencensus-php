@@ -43,6 +43,15 @@ class Repository extends Base\Repository
             ->get()->callOnEveryItem('toArrayPublic');
     }
 
+    public function getInvitationToken(string $product, string $merchantId, string $email): Entity
+    {
+        return $this->newQuery()
+            ->where(Entity::PRODUCT, $product)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::EMAIL, $email)
+            ->firstOrFailPublic();
+    }
+
     public function listDraftInvitations(string $product, string $merchantId): array
     {
         return $this->newQuery()
