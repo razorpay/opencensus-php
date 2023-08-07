@@ -254,19 +254,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'whatsapp.merchant.dashboard.bank_account_update_soh_rejected',
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'whatsapp.merchant.dashboard.bank_account_update_needs_clarification',
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'whatsapp.merchant.dashboard.bank_account_update_soh_needs_clarification',
-        self::IE_SUCCESSFUL                                             => 'whatsapp.merchant.dashboard.ie_successful_v2',
-        self::IE_UNDER_REVIEW                                           => 'whatsapp.merchant.dashboard.ie_under_review_v2',
-        self::IE_SUCCESSFUL_PPLI                                        => 'whatsapp.merchant.dashboard.ie_successful_ppli_v2',
-        self::IE_SUCCESSFUL_PG                                          => 'whatsapp.merchant.dashboard.ie_successful_pg_v2',
-        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'whatsapp.merchant.dashboard.ie_rejected_clarification_not_provided_v2',
-        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'whatsapp.merchant.dashboard.ie_rejected_website_details_incomplete_v2',
-        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'whatsapp.merchant.dashboard.ie_rejected_business_model_mismatch_v2',
-        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'whatsapp.merchant.dashboard.ie_rejected_invalid_documents_v2',
-        self::IE_REJECTED_RISK_REJECTION                                => 'whatsapp.merchant.dashboard.ie_rejected_risk_rejection_v2',
-        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'whatsapp.merchant.dashboard.ie_rejected_merchant_high_chargebacks_fraud_v2',
-        self::IE_REJECTED_DORMANT_MERCHANT                              => 'whatsapp.merchant.dashboard.ie_rejected_dormant_merchant_v2',
-        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'whatsapp.merchant.dashboard.ie_rejected_restricted_business_v2',
-        self::IE_NEEDS_CLARIFICATION                                    => 'whatsapp.merchant.dashboard.ie_needs_clarification_v2',
+        self::IE_SUCCESSFUL                                             => 'whatsapp.merchant.dashboard.ie_successful_v3',
+        self::IE_UNDER_REVIEW                                           => 'whatsapp.merchant.dashboard.ie_under_review_v3',
+        self::IE_SUCCESSFUL_PPLI                                        => 'whatsapp.merchant.dashboard.ie_successful_ppli_v3',
+        self::IE_SUCCESSFUL_PG                                          => 'whatsapp.merchant.dashboard.ie_successful_pg_v3',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'whatsapp.merchant.dashboard.ie_rejected_clarification_not_provided_v3',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'whatsapp.merchant.dashboard.ie_rejected_website_details_incomplete_v3',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'whatsapp.merchant.dashboard.ie_rejected_business_model_mismatch_v3',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'whatsapp.merchant.dashboard.ie_rejected_invalid_documents_v3',
+        self::IE_REJECTED_RISK_REJECTION                                => 'whatsapp.merchant.dashboard.ie_rejected_risk_rejection_v3',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'whatsapp.merchant.dashboard.ie_rejected_merchant_high_chargebacks_fraud_v3',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'whatsapp.merchant.dashboard.ie_rejected_dormant_merchant_v3',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'whatsapp.merchant.dashboard.ie_rejected_restricted_business_v3',
+        self::IE_NEEDS_CLARIFICATION                                    => 'whatsapp.merchant.dashboard.ie_needs_clarification_v3',
     ];
 
     /**
@@ -320,6 +320,26 @@ class Events
         self::IE_REJECTED_DORMANT_MERCHANT                              => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE, Constants::DASHBOARD_URL, Constants::PAYPAL_URL],
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE, Constants::DASHBOARD_URL, Constants::PAYPAL_URL],
         self::IE_NEEDS_CLARIFICATION                                    => [Constants::MERCHANT_NAME, Constants::DASHBOARD_URL],
+    ];
+
+    /**
+     * WhatsApp notification image paths for different dashboard events.
+     * Public Url Path will be sent to stork if event and media path mapping is present in this array
+     */
+    const WHATSAPP_TEMPLATE_MEDIA_URL_PATH = [
+        self::IE_SUCCESSFUL                                             => 'applications.cross_border.ie_successful',
+        self::IE_UNDER_REVIEW                                           => 'applications.cross_border.ie_under_review',
+        self::IE_SUCCESSFUL_PPLI                                        => 'applications.cross_border.ie_successful',
+        self::IE_SUCCESSFUL_PG                                          => 'applications.cross_border.ie_successful',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_RISK_REJECTION                                => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'applications.cross_border.ie_rejected',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'applications.cross_border.ie_rejected',
+        self::IE_NEEDS_CLARIFICATION                                    => 'applications.cross_border.ie_needs_clarification',
     ];
 
     // Event vs email templates mapping

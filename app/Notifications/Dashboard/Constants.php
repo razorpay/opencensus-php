@@ -48,6 +48,14 @@ class Constants
 
     const BUTTON_URL_PARAM                         = 'button_url_param';
 
+    const PUBLIC_FILE_URL                          = 'public_file_url';
+
+    const DISPLAY_NAME                             = 'display_name';
+
+    const EXTENSION                                = 'extension';
+
+    const MSG_TYPE                                 = 'msg_type';
+
     const PREVIOUS_BUSINESS_WEBSITE                = 'previous_business_website';
 
     const UPDATED_BUSINESS_WEBSITE                 = 'updated_business_website';

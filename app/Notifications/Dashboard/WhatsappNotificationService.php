@@ -96,6 +96,16 @@ class WhatsappNotificationService extends BaseNotificationService
             $payload[Constants::BUTTON_URL_PARAM] = $this->args[Constants::BUTTON_URL_PARAM];
         }
 
+        if (isset(Events::WHATSAPP_TEMPLATE_MEDIA_URL_PATH[$this->event]) === true)
+        {
+            $publicFileUrlConfigPath = Events::WHATSAPP_TEMPLATE_MEDIA_URL_PATH[$this->event];
+            $payload[Constants::PUBLIC_FILE_URL] = app('config')->get($publicFileUrlConfigPath);
+            $payload[Constants::MSG_TYPE] = 'IMAGE';
+            $payload[Constants::DISPLAY_NAME] = $this->event;
+            $payload[Constants::EXTENSION] = 'png';
+            $payload[Constants::IS_CTA_TEMPLATE] = isset($payload[Constants::IS_CTA_TEMPLATE]) ? $payload[Constants::IS_CTA_TEMPLATE] : false;
+        }
+
         return $payload;
     }
 

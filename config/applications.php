@@ -1774,4 +1774,11 @@ return [
     'international_payment_methods_dashboard_url' => env('INTERNATIONAL_PAYMENT_METHODS_DASHBOARD_URL'),
 
     'international_payment_methods_paypal_url' => env('INTERNATIONAL_PAYMENT_METHODS_PAYPAL_URL'),
+
+    'cross_border' => [
+        'ie_under_review'               => env('INTERNATIONAL_PAYMENT_IE_UNDER_REVIEW_URL'),
+        'ie_successful'                 => env('INTERNATIONAL_PAYMENT_IE_SUCCESSFUL_URL'),
+        'ie_rejected'                   => env('INTERNATIONAL_PAYMENT_IE_REJECTED_URL'),
+        'ie_needs_clarification'        => env('INTERNATIONAL_PAYMENT_IE_NEEDS_CLARIFICATION_URL'),
+    ],
 ];
