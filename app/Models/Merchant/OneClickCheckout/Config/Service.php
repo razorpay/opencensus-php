@@ -45,10 +45,6 @@ class Service extends Base\Service
     const SECOND    = 1;
     const MINUTE    = 60 * self::SECOND;
     const CACHE_TTL = 30 * self::MINUTE;
-    const PRE_MAGIC_ORDER_FEATURE_ENABLED_MIDS = [
-        'IU6VCWMjJKkVHh',
-        'JOzEWx7wtc9fmf'
-    ];
 
     public function __construct()
     {
@@ -95,8 +91,7 @@ class Service extends Base\Service
                 {
                     $merchantId = $this->merchant->getId();
 
-                    if (in_array($merchantId, self::PRE_MAGIC_ORDER_FEATURE_ENABLED_MIDS) === true &&
-                        $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION) === false &&
+                    if ($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION) === false &&
                         $updatePlatform === Constants::SHOPIFY)
                     {
                         try
