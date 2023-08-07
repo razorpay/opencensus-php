@@ -2254,6 +2254,11 @@ class Service extends Base\Service
 
         $entity = $payment->toArrayPublicWithExpand();
 
+        $entity = array_merge($entity,[
+            Entity::AUTHORIZED_AT => $payment->getAuthorizeTimestamp(),
+            Entity::CAPTURED_AT => $payment->getCapturedAt(),
+        ]);
+
         if ($entity['order_id'] != null)
         {
             $order = $this->repo

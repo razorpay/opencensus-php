@@ -15908,6 +15908,7 @@ class Route
             'merchant_activation_change_log_internal',
             'merchant_nc_revamp_eligibility_internal',
             'merchant_document_upload_internal',
+            'payment_fetch_by_id_internal',
         ],
 
         'cmma' => [
