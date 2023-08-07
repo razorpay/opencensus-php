@@ -1715,7 +1715,7 @@ class Processor
     private function performCustomChecksToRouteViaUpsRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array
     {
         $routeViaReArch = true;
-        $dimensions = array_fill(0, 35, 0);
+        $dimensions = array_fill(0, 36, 0);
 
         $response = [
             'route_via_ups' => $routeViaReArch
@@ -1943,9 +1943,17 @@ class Processor
             $dimensions[32] = 1;
         }
 
-        $dimensions[33] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        if ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW]) === true) &&
+            ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW] === UpiMetadata\Flow::COLLECT) &&
+            (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::VPA]) === false))
+        {
+            $routeViaReArch = false;
+            $dimensions[33] = 1;
+        }
 
-        $dimensions[34] = (string) $currentRouteName;
+        $dimensions[34] = (string) strtolower($input['_']['library'] ?? 'unknown');
+
+        $dimensions[35] = (string) $currentRouteName;
 
         $dimensionsString = implode(', ', $dimensions);
 
@@ -3928,12 +3936,12 @@ class Processor
             }
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
-    
+
             if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
             {
                 $this->validateEmandateTokenStatus($token, $merchant);
             }
-            
+
             if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
