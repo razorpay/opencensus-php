@@ -40,6 +40,7 @@ export const payment = {
         },
       }),
     ),
+    notes: { txn_id: 'test_txn_id_123', external_ref_id1: 'test_external_ref_id1_123' },
     gateway_refund_support: false,
     status: 'captured',
     amount_transferred: 10000,

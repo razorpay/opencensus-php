@@ -208,14 +208,14 @@ class RefundModal extends Component {
           data = {
             appKey: ezetapKey?.appKey,
             username: ezetapKey?.username,
-            amount: props.amount / 100,
+            amount: payment.amount - payment.amount_refunded, // full refund as partial refunds are disabled for offline card transactions
             [voidPayment ? 'txnId' : 'externalRefNumber']: voidPayment
               ? payment?.notes?.txn_id
               : payment?.notes?.external_ref_id1,
           };
         } else {
           data = {
-            amount: props.amount,
+            amount: rupeesToPaise(props.amount),
             comment: props.comment,
             reverse_all: props.reverse_all ? '1' : '0',
             speed: speedValue,

@@ -9,6 +9,12 @@ import {
 import User from 'merchant/models/User';
 import { PAYMENT_STATUS } from 'merchant/views/Transactions/Payments/constants';
 
+jest.mock('react-query', () => ({
+  useQuery: jest.fn().mockReturnValue({
+    data: { appKey: 'testAppKey', username: 'testUsername' },
+  }),
+}));
+
 describe('RefundModal', () => {
   describe('Instant refund', () => {
     beforeEach(() => {
@@ -184,6 +190,7 @@ describe('RefundModal', () => {
             ...payment,
             payment: {
               ...payment.payment,
+              gateway_refund_support: true,
               receiver_type: 'pos',
               method: 'card',
               ...props,
@@ -199,15 +206,24 @@ describe('RefundModal', () => {
       expect(refundInput).toHaveAttribute('readOnly', '');
     });
 
-    test('should make call to refund pos transaction', async () => {
+    test('should fully refund offline(pos) transaction with the exact amount', async () => {
       renderAppWithDefautProps();
-      const issueRefund = screen.getByRole('button', {
+      const issueRefund = await screen.getByRole('button', {
         name: /Issue Full refund/,
       });
       await userEvent.click(issueRefund);
-      const proceedToRefundButton = screen.getByRole('button', { name: 'Yes, Refund' });
-      await userEvent.click(proceedToRefundButton);
-      expect(payment.payment.refundOfflinePayment).toHaveBeenCalledTimes(1);
+      expect(
+        screen.getByRole('heading', {
+          name: 'Are you sure you want to refund this payment?',
+        }),
+      ).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
+      expect(payment.payment.refundOfflinePayment).toHaveBeenCalledWith({
+        appKey: 'testAppKey',
+        username: 'testUsername',
+        amount: payment.payment.amount - payment.payment?.amount_refunded, // full refund as partial refunds are disabled for offline card transactions
+        externalRefNumber: payment.payment.notes.external_ref_id1,
+      });
     });
 
     test('should make call to void transaction if the status is authorized and done by pos device', async () => {
@@ -219,6 +235,26 @@ describe('RefundModal', () => {
       const proceedToRefundButton = screen.getByRole('button', { name: 'Yes, Refund' });
       await userEvent.click(proceedToRefundButton);
       expect(payment.payment.voidPayment).toHaveBeenCalledTimes(1);
+    });
+
+    test('should void the transaction if the status is authorized and done by pos device with exact payload', async () => {
+      renderAppWithDefautProps({ status: PAYMENT_STATUS.AUTHORIZED });
+      const issueRefund = await screen.getByRole('button', {
+        name: /Issue Full refund/,
+      });
+      await userEvent.click(issueRefund);
+      expect(
+        screen.getByRole('heading', {
+          name: 'Are you sure you want to refund this payment?',
+        }),
+      ).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
+      expect(payment.payment.voidPayment).toHaveBeenCalledWith({
+        appKey: 'testAppKey',
+        username: 'testUsername',
+        amount: payment.payment.amount - payment.payment?.amount_refunded, // full refund as partial refunds are disabled for offline card transactions
+        txnId: payment.payment.notes.txn_id,
+      });
     });
   });
 });

@@ -6,6 +6,7 @@ import {
   session,
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/RefundModal';
 import User from 'merchant/models/User';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -281,7 +282,7 @@ describe('RefundModal', () => {
   });
 
   describe('Partial refund', () => {
-    test('should allow to issue partial refund', async () => {
+    test('should allow to issue partial refund with exact amount', async () => {
       renderApp({
         initialState: {
           session: {
@@ -309,6 +310,12 @@ describe('RefundModal', () => {
         }),
       ).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
+      expect(payment.payment.refund).toHaveBeenCalledWith({
+        amount: rupeesToPaise(100),
+        comment: '',
+        reverse_all: '0',
+        speed: 'optimum',
+      });
       expect(issueRefund).toBeDisabled();
       await waitFor(() => {
         expect(screen.getByText('Payment refunded')).toBeInTheDocument();
