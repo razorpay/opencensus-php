@@ -48,6 +48,7 @@ class CareServiceClient
         self::MERCHANT_POPULAR_PRODUCTS_CRON => 300,   // 5mins
         self::MERCHANT_NOTIFY_CSM_CHANGED_CRON => 300,
         self::FETCH_WORKFLOWS => 300,
+        CareProxyController::SAV_FETCH_MERCHANT_STATS => 300,
     ];
 
     public function __construct($app = null)

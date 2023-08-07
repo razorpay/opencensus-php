@@ -131,6 +131,9 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_PROBABLE_REASONS = 'twirp/rzp.care.sav.v1.SavService/FetchProbableReasons';
 
+    // SAV
+    const SAV_FETCH_MERCHANT_STATS = 'twirp/rzp.care.sav.v1.SavService/FetchMerchantStats';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -174,6 +177,7 @@ class CareProxyController extends Controller
         self::SAV_FETCH_MERCHANT_WORKFLOWS            => Name::VIEW_WORKFLOW_REQUESTS,
         self::SAV_FETCH_PROBABLE_REASONS              => Name::VIEW_ALL_ENTITY,
         self::FRESHDESK_MERCHANT_GET_TICKETS          => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_MERCHANT_STATS                => Name::VIEW_ALL_ENTITY,
     ];
 
     /**
@@ -269,6 +273,7 @@ class CareProxyController extends Controller
         self::CREATE_QUICKLINKS,
         self::SAV_FETCH_MERCHANT_WORKFLOWS,
         self::SAV_FETCH_PROBABLE_REASONS,
+        self::SAV_FETCH_MERCHANT_STATS,
         self::FRESHDESK_MERCHANT_GET_TICKETS,
     ];
 
