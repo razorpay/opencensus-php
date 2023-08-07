@@ -1134,4 +1134,21 @@ class Currency
     {
         return self::COUNTRY_CURRENCY_CODES[$countryCode] ?? null;
     }
+
+    public static function shouldRoundUpCurrencies($currency = '')
+    {
+        if (empty($currency) === true)
+        {
+            return false;
+        }
+
+        $supportedList = array_merge([], self::THREE_DECIMAL_CURRENCIES);
+
+        if (in_array($currency, $supportedList, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

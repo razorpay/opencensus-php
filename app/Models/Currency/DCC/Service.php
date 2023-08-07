@@ -111,6 +111,21 @@ class Service extends Base\Service
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
     }
 
+    // Round up gateway amount for specific currencies
+    // due to network requirement
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1690199516379309?thread_ts=1690199140.980699&cid=C01LK94TC69,
+    // https://razorpay.slack.com/archives/C3Y0UA0CB/p1690359032652129?thread_ts=1690186433.334379&cid=C3Y0UA0CB
+    public function roundOffGatewayAmountIfApplicable($amount, $currency)
+    {
+        if (Currency\Currency::shouldRoundUpCurrencies($currency) === true)
+        {
+            // round up to nearest 10
+            return (int) ceil($amount * 0.1)/0.1;
+        }
+
+        return $amount;
+    }
+
     /*
      * - Capture current time, round it off to nearest interval
      * - Store currencyRequestId and round off time in redis
@@ -141,7 +156,8 @@ class Service extends Base\Service
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
-                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
+                $gatewayAmount = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
+                $supportedCurrencies[$currency]['amount'] = $this->roundOffGatewayAmountIfApplicable($gatewayAmount, $currency);
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
                     (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
@@ -182,7 +198,8 @@ class Service extends Base\Service
 
                 $requestedCurrencyData['forex_rate'] = $forexRate;
 
-                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$forexRate, $markUpPercent, $denominationFactor);
+                $gatewayAmount = $this->getConvertedAmount($baseAmount, $forexRate, $markUpPercent, $denominationFactor);
+                $requestedCurrencyData['amount'] = (string)$this->roundOffGatewayAmountIfApplicable($gatewayAmount, $requestedCurrency);
 
                 $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }

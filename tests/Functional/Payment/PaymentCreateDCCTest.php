@@ -350,9 +350,13 @@ class PaymentCreateDCCTest extends TestCase
         return $iin;
     }
 
-    protected function getFlowsData($iin){
+    protected function getFlowsData($iin, $amount = 0, $currency = '')
+    {
+        $amount = $amount > 100 ? $amount : 5000;
+        $currency = (empty($currency) === false) ? $currency : 'INR';
+
         $flowsData = [
-            'content' => ['amount' => 50000, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'content' => ['amount' => $amount, 'currency' => $currency, 'iin' => $iin->getIin()],
             'method'  => 'POST',
             'url'     => '/payment/flows',
         ];
@@ -2030,5 +2034,216 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
         $this->fixtures->merchant->removeFeatures([Constants::RAAS]);
         $this->fixtures->merchant->disableInternational();
+    }
+
+    // Round up gateway amount for specific currencies
+    // due to network requirement
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1690199516379309?thread_ts=1690199140.980699&cid=C01LK94TC69,
+    // https://razorpay.slack.com/archives/C3Y0UA0CB/p1690359032652129?thread_ts=1690186433.334379&cid=C3Y0UA0CB
+    public function testKWDInStandardCheckoutWithRoundUpGatewayAmount()
+    {
+        $amount = 99991;
+
+        $iin = $this->createIIN('542859','KW');
+        $responseContent = json_decode($this->getFlowsData($iin, $amount)->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+        $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
+
+        $this->assertEquals("KWD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+        $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
+
+        $payment = $this->payment;
+        $payment['amount'] = $amount;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['card']['number'] = '5428590000004146';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentAuth['razorpay_payment_id'], true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals($amount, $paymentEntity['amount']);
+
+        $this->assertTrue($paymentEntity['dcc']);
+        $this->assertEquals($convertedAmount, $paymentEntity['gateway_amount']);
+        $this->assertEquals(0, $paymentEntity['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        // PARTIAL REFUND FIRST
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id'], 45545);
+        $refundEntity1 = $this->getEntityById('refund', $refund['id'], true);
+
+
+        // PARTIAL REFUND SECOND
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id']);
+        $refundEntity2 = $this->getEntityById('refund', $refund['id'], true);
+
+        // Total gateway refund amount should match payment gateway amount upto 20 units
+        $totalRefund = $refundEntity1['gateway_amount'] + $refundEntity2['gateway_amount'];
+        $amountDiff = $paymentEntity['gateway_amount'] - $totalRefund;
+
+        // add some logs in GH, might help later
+        echo "\n******TEST FOR: testKWDInStandardCheckoutWithRoundUpGatewayAmount\n";
+        echo "refundEntity1: " . $refundEntity1['gateway_amount'];
+        echo "\n";
+        echo "refundEntity2: " . $refundEntity2['gateway_amount'];
+        echo "\n";
+        echo "totalRefunds : " . $totalRefund;
+        echo "\n";
+        echo "paymentEntity: " . $paymentEntity['gateway_amount'];
+        echo "\n******END TEST\n";
+
+        $this->assertTrue($amountDiff >= 0);
+        $this->assertTrue($amountDiff <= 20);
+    }
+
+    // Round up gateway amount for specific currencies
+    // due to network requirement
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1690199516379309?thread_ts=1690199140.980699&cid=C01LK94TC69,
+    // https://razorpay.slack.com/archives/C3Y0UA0CB/p1690359032652129?thread_ts=1690186433.334379&cid=C3Y0UA0CB
+    public function testKWDInStandardCheckoutWithRoundUpGatewayAmountOrder()
+    {
+        $amount = 99991;
+
+        $order = $this->fixtures->create('order', [ 'amount' => $amount, 'currency' => 'INR']);
+
+        $iin = $this->createIIN('542859','KW');
+        $responseContent = json_decode($this->getFlowsData($iin, $amount)->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+        $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
+
+        $this->assertEquals("KWD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+        $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
+
+        $payment = $this->payment;
+        $payment['amount'] = $order->getAmount();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['card']['number'] = '5428590000004146';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentAuth['razorpay_payment_id'], true);
+
+        $this->assertEquals($order->getPublicId(), $paymentEntity['order_id']);
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals($order->getAmount(), $paymentEntity['amount']);
+
+        $this->assertTrue($paymentEntity['dcc']);
+        $this->assertEquals($convertedAmount, $paymentEntity['gateway_amount']);
+        $this->assertEquals(0, $paymentEntity['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        // FULL REFUND
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['amount'], $refund['amount']);
+        $refundEntity1 = $this->getEntityById('refund', $refund['id'], true);
+
+        // Total gateway refund amount should match payment gateway amount upto 20 units
+        $amountDiff = $paymentEntity['gateway_amount'] - $refundEntity1['gateway_amount'];
+
+        // add some logs in GH, might help later
+        echo "\n******TEST FOR: testKWDInStandardCheckoutWithRoundUpGatewayAmountOrder\n";
+        echo "refundEntity1: " . $refundEntity1['gateway_amount'];
+        echo "\n";
+        echo "totalRefunds : " . $refundEntity1['gateway_amount'];
+        echo "\n";
+        echo "paymentEntity: " . $paymentEntity['gateway_amount'];
+        echo "\n******END TEST\n";
+
+        $this->assertTrue($amountDiff >= 0);
+        $this->assertTrue($amountDiff <= 20);
+    }
+
+    // Round up gateway amount for specific currencies
+    // due to network requirement
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1690199516379309?thread_ts=1690199140.980699&cid=C01LK94TC69,
+    // https://razorpay.slack.com/archives/C3Y0UA0CB/p1690359032652129?thread_ts=1690186433.334379&cid=C3Y0UA0CB
+    public function testKWDInStandardCheckoutWithRoundUpGatewayAmountDCCOverMCC()
+    {
+        $amount = 99991;
+
+        $iin = $this->createIIN('542859','KW');
+        $responseContent = json_decode($this->getFlowsData($iin, $amount, 'USD')->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+        $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
+
+        $this->assertEquals("KWD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+        $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
+
+        $payment = $this->payment;
+        $payment['amount'] = $amount;
+        $payment['currency'] = 'USD';
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['card']['number'] = '5428590000004146';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentAuth['razorpay_payment_id'], true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        // $this->assertEquals($amount, $paymentEntity['base_amount']);
+        $this->assertEquals($amount, $paymentEntity['amount']);
+
+        $this->assertTrue($paymentEntity['dcc']);
+        $this->assertEquals($convertedAmount, $paymentEntity['gateway_amount']);
+        $this->assertEquals(0, $paymentEntity['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        // PARTIAL REFUND FIRST
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id'], 45545);
+        $refundEntity1 = $this->getEntityById('refund', $refund['id'], true);
+
+        // PARTIAL REFUND SECOND
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id'], 5432);
+        $refundEntity2 = $this->getEntityById('refund', $refund['id'], true);
+
+        // PARTIAL REFUND THIRD
+        $refund = $this->refundPayment($paymentAuth['razorpay_payment_id']);
+        $refundEntity3 = $this->getEntityById('refund', $refund['id'], true);
+
+        // Total gateway refund amount should match payment gateway amount upto 20 units
+        $totalRefund = $refundEntity1['gateway_amount'] + $refundEntity2['gateway_amount'] + $refundEntity3['gateway_amount'];
+        $amountDiff = $paymentEntity['gateway_amount'] - $totalRefund;
+
+        // add some logs in GH, might help later
+        echo "\n******TEST FOR: testKWDInStandardCheckoutWithRoundUpGatewayAmountDCCOverMCC\n";
+        echo "refundEntity1: " . $refundEntity1['gateway_amount'];
+        echo "\n";
+        echo "refundEntity2: " . $refundEntity2['gateway_amount'];
+        echo "\n";
+        echo "refundEntity3: " . $refundEntity3['gateway_amount'];
+        echo "\n";
+        echo "totalRefunds : " . $totalRefund;
+        echo "\n";
+        echo "paymentEntity: " . $paymentEntity['gateway_amount'];
+        echo "\n******END TEST\n";
+
+        $this->assertTrue($amountDiff >= 0);
+        $this->assertTrue($amountDiff <= 20);
     }
 }

@@ -968,6 +968,22 @@ class Entity extends Base\PublicEntity
             $convertedAmount = $this->getAmount() * $forexRate * $denominationFactor;
 
             $gatewayAmount = (int) floor($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
+
+            // Round down gateway amount to nearest 0 for three decimal currencies
+            // due to network requirement.
+            // Since we cant send a non-zero digit in the last unit to networks
+            // neither we can round up, due to money leak concerns
+            // during partial refunds,
+            // here gateway amount is rounded down. End customers
+            // will bear loss upto 0.020 KWD/OMR/BHD, etc.
+            // Such is life !!!
+            // Reason for name of func: https://github.com/razorpay/api/pull/39469#discussion_r1284400907
+            // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1690199516379309?thread_ts=1690199140.980699&cid=C01LK94TC69,
+            // https://razorpay.slack.com/archives/C3Y0UA0CB/p1690359032652129?thread_ts=1690186433.334379&cid=C3Y0UA0CB
+            if ((Currency\Currency::shouldRoundUpCurrencies($paymentMeta->getGatewayCurrency()) === true))
+            {
+                $gatewayAmount = (int) floor($gatewayAmount * 0.1)/0.1;
+            }
         }
 
         if ($this->payment->isUpiAndAmountMismatched() === true)
