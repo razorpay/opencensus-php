@@ -110,6 +110,7 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 class Processor
 {
@@ -9773,5 +9774,13 @@ class Processor
         );
 
         return $variant === 'on';
+    }
+
+    protected function associateMerchantToOptimizerLinkAndPayWalletTokens(Customer\Token\Entity &$token,Payment\Entity $payment){
+        if($payment->isOptimizerWalletLinkAndPaySupported()){
+            $merchantId= $payment->getmerchantId();
+            $merchant=$this->repo->merchant->findorFail($merchantId);
+            $token->merchant()->associate($merchant);
+        }
     }
 }

@@ -1946,6 +1946,7 @@ class Constants
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
         self::PERSONALISATION_V3_DISABLED,
         self::RAZORPAY_WALLET,
+        self::WALLET_PAYTM_AUTO_DEBIT,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
     ];
 

@@ -66,6 +66,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 /**
  * @property Subscription\Entity    $subscription
@@ -6721,6 +6722,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isSodexoPayment(): bool
     {
         return $this->isCard() && $this->getProvider() === self::SODEXO;
+    }
+
+    public function isOptimizerWalletLinkAndPaySupported($gatewayInput=null): bool
+    {
+        if($gatewayInput!=null)
+        {
+            if((isset($gatewayInput['gateway'][PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET]) === true and $gatewayInput['gateway'][PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET] === true))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        if($this->hasTerminal() === true && $this->isWallet() && in_array($this->getGateway(),Wallet::$optimizerWalletAutoDebitGateways) && $this->merchant->isFeatureEnabled(Features::RAAS) === true && $this->merchant->isFeatureEnabled(Features::WALLET_PAYTM_AUTO_DEBIT) === true)
+        {
+            $terminalTypeArray = $this->terminal->getType();
+
+            if(($terminalTypeArray !== null) && (in_array(\RZP\Models\Terminal\Type::ENABLE_AUTO_DEBIT, $terminalTypeArray) === true) && (in_array(\RZP\Models\Terminal\Type::OPTIMIZER, $terminalTypeArray) === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** This checks if the flow is collect and updates the

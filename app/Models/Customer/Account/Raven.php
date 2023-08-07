@@ -225,6 +225,7 @@ class Raven extends Base\Core
             'support_page_login',
             'mweb_save_card',
             'mweb_access_card',
+            'access_saved_wallets',
         ]);
     }
 }

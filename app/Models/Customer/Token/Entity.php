@@ -1462,4 +1462,10 @@ class Entity extends Base\PublicEntity
             }
         return $trid;
     }
+
+
+    public function isWallet()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
+    }
 }

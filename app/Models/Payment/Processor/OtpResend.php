@@ -5,9 +5,11 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 trait OtpResend
 {
@@ -164,6 +166,12 @@ trait OtpResend
         if ($payment->isEmi() === true)
         {
             $gatewayInput['emi_plan'] = $payment->emi;
+        }
+
+        if($payment->isOptimizerWalletLinkAndPaySupported()){
+            $gatewayInput['gateway']=[
+                PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET => true
+            ];
         }
     }
 }

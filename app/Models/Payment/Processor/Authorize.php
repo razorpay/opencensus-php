@@ -1045,9 +1045,8 @@ trait Authorize
         // power wallet flow. Run otp flow if appToken and walletToken are set
         // but the wallet is not a power wallet.
         //
-        if ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) and
-            ($payment->getGlobalTokenId() !== null) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::WALLET_AUTO_DEBIT) === true))
+
+        if ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true and $this->merchant->isFeatureEnabled(Feature\Constants::WALLET_AUTO_DEBIT) === true) and $payment->getGlobalTokenId() !== null)
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
@@ -3118,6 +3117,15 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        if($payment->isOptimizerWalletLinkAndPaySupported())
+        {
+            $payment->enableNbPlusService();
+            $gatewayInput['gateway']=[
+                PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET => true,
+                "type" => "otp"
+            ];
+        }
+
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
@@ -3128,7 +3136,7 @@ trait Authorize
 
         // We are doing it in post processing because terminal id is required for
         // fetching the wallet token as they are terminal specific
-        $this->associateWalletTokenIfApplicable($payment);
+        $this->associateWalletTokenIfApplicable($payment,$gatewayInput);
 
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
@@ -3286,10 +3294,10 @@ trait Authorize
         }
     }
 
-    protected function associateWalletTokenIfApplicable(Payment\Entity $payment)
+    protected function associateWalletTokenIfApplicable(Payment\Entity $payment ,array & $gatewayInput )
     {
         if (($payment->getGlobalCustomerId() !== null) and
-            (Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true))
+            ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) or $payment->isOptimizerWalletLinkAndPaySupported($gatewayInput)))
         {
             $terminalId = $payment->getTerminalId();
             $wallet = $payment->getWallet();
@@ -8954,6 +8962,11 @@ trait Authorize
         //When cps is 3 and nbplus can run OTP flow then we run OTP flow on nbplus with action name authorize.
         if(Payment\Gateway::canRunOtpFlowViaNbPlus($payment))
         {
+           if ($payment->isOptimizerWalletLinkAndPaySupported($gatewayInput))
+           {
+               return true;
+           }
+
             return false;
         }
 

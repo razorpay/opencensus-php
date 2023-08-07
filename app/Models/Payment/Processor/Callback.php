@@ -36,6 +36,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 trait Callback
 {
@@ -838,6 +839,43 @@ trait Callback
             $input['card']['number'] = $this->getCardNumber($card, $payment->getGateway());
             $input['emi_plan'] = $payment->emi;
         }
+
+        if($payment->isOptimizerWalletLinkAndPaySupported())
+        {
+            $input['gateway'][PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET] = true;
+
+            $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+
+            $input['payment_analytics'] = $pa ? $pa->toArray() : null;
+
+            $input['payment']['otp_count'] = $input['payment']['otp_count']==null ? 0 : $payment->getOtpCount();
+
+            if($input['customer']==null)
+            {
+                $contact = $this->parseContact($input['payment']['contact'])->format();
+
+                $customer = $this->repo->customer->findByContactAndMerchant(
+                    $contact,$this->repo->merchant->getSharedAccount());
+
+                if ($customer === null)
+                {
+                    $customerAttributes = array(
+                        'contact' => $contact,
+                        'email'   => $input['payment']['email']
+                    );
+
+                    $customer = (new Customer\Core)
+                        ->createGlobalCustomer($customerAttributes);
+                }
+                $input['payment']['global_customer_id']= $customer->getId();
+            }
+            else
+            {
+                $customer= $input['customer'];
+
+                $input['payment']['global_customer_id']= $customer->getId();
+            }
+        }
     }
 
     protected function postPaymentOtpCallbackProcessing(array &$input, $data)
@@ -872,6 +910,8 @@ trait Callback
         if (isset($data['token']) === true)
         {
             $token = $this->createOrUpdateToken($input, $data);
+
+            $this->associateMerchantToOptimizerLinkAndPayWalletTokens($token,$payment);
 
             $payment->globalToken()->associate($token);
 

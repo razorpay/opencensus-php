@@ -5592,4 +5592,27 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createPaytmAutoDebitTerminal()
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'paytm',
+            'card'                   => 0,
+            'netbanking'             => 0,
+            'enabled_wallets'        => ['paytm'],
+            'gateway_merchant_id'    => 'abcd',
+            'gateway_access_code'    => 'test_access_code',
+            'gateway_secure_secret'  => 'secret',
+            'gateway_merchant_id2'   => 'abcdefg',
+            'gateway_access_code'    => 'test_access_code',
+            'gateway_secure_secret2' => 'secret2',
+            'gateway_access_code'    => 'dummy',
+            'type'                      => [
+                Type::OPTIMIZER          => '1',
+                Type::ENABLE_AUTO_DEBIT  => '1',
+            ],
+        ];
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

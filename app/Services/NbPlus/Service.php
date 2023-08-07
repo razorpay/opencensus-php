@@ -260,7 +260,10 @@ class Service
             'gateway.callback_url'          => 'content.input.callbackUrl',
             'gateway.static_callback_data'  => 'content.input.gateway_data',
             'callback_type.s2s'             => 'content.input.s2s',
-            'verification_id'               => 'content.input.verification_id'
+            'verification_id'               => 'content.input.verification_id',
+            'gateway.optimizer_auto_debit_wallet'  => 'content.input.gateway.optimizer_auto_debit_wallet',
+            'payment.otp_count'                    => 'content.input.payment.otp_count',
+            'payment.customer_id'                  => 'content.input.payment.customer_id'
         ];
 
         $requestTrace = [];

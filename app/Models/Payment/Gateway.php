@@ -4871,6 +4871,7 @@ class Gateway
         $gateways = [
             self::WALLET_FREECHARGE,
             self::WALLET_BAJAJ,
+            Wallet::PAYTM,
         ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];
@@ -4895,6 +4896,7 @@ class Gateway
     {
         $gateways = [
             Gateway::WALLET_BAJAJ,
+            Gateway::PAYTM,
         ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];

@@ -791,7 +791,12 @@ class Service extends Base\Service
             // Check tokens count only when the device token is not present or not valid.
             if ($sendOtp === true || ($sendOtp === false && $strict === true))
             {
-                $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
+                if($input['otp_reason']== AccountConstants::OTP_REASON_ACCESS_SAVED_WALLETS){
+                    $customerTokensCount=$this->getWalletTokensCountByCustomer($customer, $this->merchant);
+                }
+                else{
+                    $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
+                }
 
                 if ($customerTokensCount === 0)
                 {
@@ -1391,5 +1396,24 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    /**
+     * Calculates count of all merchant saved wallet tokens associated to the customer
+     *
+     * @param Customer\Entity $customer
+     * @param MerchantEntity $merchant
+     * @return integer
+     */
+    public function getWalletTokensCountByCustomer(Customer\Entity $customer, MerchantEntity $merchant): int
+    {
+        $tokenCore = (new Token\Core());
+
+        $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $merchant);
+
+        $tokens = $tokenCore->removeNonWalletTokens($tokens);
+        $tokens = $tokenCore->removeExpiredTokens($tokens);
+
+        return count($tokens);
     }
 }

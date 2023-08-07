@@ -112,6 +112,10 @@ class Wallet
         self::PHONEPE_SWITCH,
     );
 
+    public static $optimizerWalletAutoDebitGateways = array(
+        self::PAYTM,
+    );
+
     public static function exists($wallet)
     {
         return (isset(self::$fullName[$wallet]) === true);

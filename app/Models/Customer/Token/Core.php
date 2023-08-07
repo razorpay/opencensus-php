@@ -3637,4 +3637,43 @@ class Core extends Base\Core
 
         return $this->addConsentFieldInTokens($tokens);
     }
+
+    /**
+     * This method takes in the current token collection,
+     * removes non-wallet tokens
+     *
+     * @param Base\PublicCollection|array $tokens
+     *
+     * @return Base\PublicCollection|array
+     */
+    public function removeNonWalletTokens(Base\PublicCollection|array $tokens): Base\PublicCollection|array
+    {
+        return $tokens->filter(static function (Entity $token) {
+            if ($token->isWallet()) {
+                return true;
+            }
+
+            return false;
+        })->values();
+    }
+
+    /**
+     * This method takes in the current token collection,
+     * removes expired tokens
+     *
+     * @param Base\PublicCollection|array $tokens
+     *
+     * @return Base\PublicCollection|array
+     */
+    public function removeExpiredTokens(Base\PublicCollection|array $tokens): Base\PublicCollection|array
+    {
+        return $tokens->filter(static function (Entity $token) {
+            $currentTime = Carbon::now()->getTimestamp();
+            if ($token->getExpiredAt() ==null || ($token->getExpiredAt() > $currentTime)) {
+                return true;
+            }
+
+            return false;
+        })->values();
+    }
 }
