@@ -226,6 +226,8 @@ class Type
 
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
 
+    const ALT_ID_TERMINAL_ONBOARD     = 'alt_id_terminal_onboard';
+
     const ENACH_NPCI_NETBANKING       = 'enach_npci_netbanking';
 
     const EMANDATE_DEBIT_ENACH_RBL    = 'emandate_debit_enach_rbl';
@@ -344,6 +346,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::ALT_ID_TERMINAL_ONBOARD,
         self::WEBSITE_CHECKER,
         self::HITACHI_CBK_MASTERCARD,
         self::HITACHI_CBK_VISA,
@@ -455,6 +458,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::ALT_ID_TERMINAL_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
         self::TOKEN_HQ_CHARGE,
@@ -583,6 +587,7 @@ class Type
         self::TOKEN_HQ_CHARGE,
         self::MERCHANT_UPLOAD_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::ALT_ID_TERMINAL_ONBOARD,
         self::PAYMENT_PAGE,
         self::CREATE_WALLET_ACCOUNTS,
         self::CREATE_WALLET_LOADS,
@@ -677,6 +682,7 @@ class Type
         self::MERCHANT_UPLOAD_MIQ,
         self::TOKEN_HQ_CHARGE,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::ALT_ID_TERMINAL_ONBOARD,
         self::PAYMENT_PAGE,
         self::CREATE_WALLET_ACCOUNTS,
         self::CREATE_WALLET_LOADS,
@@ -708,6 +714,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_ONBOARDED_TERMINAL_EDIT        => Name::EDIT_TERMINAL,
         self::HITACHI_FULCRUM_ONBOARD            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::ALT_ID_TERMINAL_ONBOARD            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::INTERNAL_INSTRUMENT_REQUEST        => Name::INTERNAL_INSTRUMENT_CREATE_BULK,
         self::PAYOUT_LINK_BULK                   => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
         self::TALLY_PAYOUT                       => Name::TALLY_PAYOUT_BULK_CREATE,
