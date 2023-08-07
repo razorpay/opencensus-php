@@ -28,6 +28,11 @@ class Client
     const PUT                         = 'PUT';
     const MAX_ATTEMPTS                = 4;
 
+    // List of access tokens used for authenticating with Shopify.delegate_access_token
+    const ACCESS_TOKEN_TYPE_ADMIN      = 'admin_access_token';
+    const ACCESS_TOKEN_TYPE_STOREFRONT = 'storefront_access_token';
+    const ACCESS_TOKEN_TYPE_DELEGATE   = 'delegate_access_token';
+
     protected $app;
     protected $trace;
     protected $monitoring;
@@ -39,6 +44,7 @@ class Client
     protected $oaAuthToken;
     protected $storefrontAccessToken;
     protected $delegateAccessToken;
+    protected $tokenUsed;
 
     protected $endpoint;
     protected $headers;
@@ -167,6 +173,7 @@ class Client
                 $response = (new HttpClient)->request($method, $this->endpoint, $data);
 
                 $responseArr = $this->parseResponse($response);
+                $this->captureResponseMetrics($responseArr, $body, $apiType);
                 $lastStatusCode = $responseArr['status_code'];
                 $delay = $this->getBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
                 if ($delay === -1)
@@ -181,6 +188,7 @@ class Client
                 $errResponse = $e->getResponse();
                 $responseArr = $this->parseResponse($errResponse);
                 $lastStatusCode = $responseArr['status_code'];
+                $this->captureResponseMetrics($responseArr, $body, $apiType);
                 // In case of auth failures, Shopify does not return a body.
                 if ($responseArr['status_code'] === 401 || $responseArr['status_code'] === 403)
                 {
@@ -242,23 +250,20 @@ class Client
             }
             $useDelegateAccessToken = $this->useDelegateAccessToken();
 
-            $tokenUsed = 'delegate_access_token';
+            $this->tokenUsed = self::ACCESS_TOKEN_TYPE_DELEGATE;
             if ($useDelegateAccessToken && !empty($this->delegateAccessToken))
             {
                 $headers['Shopify-Storefront-Private-Token'] = $this->delegateAccessToken;
             }
             else
             {
-                $tokenUsed = 'storefront_access_token';
+                $this->tokenUsed = self::ACCESS_TOKEN_TYPE_STOREFRONT;
                 $headers['X-Shopify-Storefront-Access-Token'] = $this->storefrontAccessToken;
             }
-            $this->monitoring->addTraceCount(
-                Metric::SHOPIFY_1CC_API_TOKEN_USED,
-                ['access_token_used'  => $tokenUsed]
-            );
         }
         else
         {
+            $this->tokenUsed = self::ACCESS_TOKEN_TYPE_ADMIN;
             $headers['X-Shopify-Access-Token'] = $this->oauthToken;
         }
 
@@ -405,5 +410,40 @@ class Client
             ]
         );
         return $expResult['variant'] === 'true';
+    }
+
+    // Log the relevant information required to raise Shopify support tickets.
+    // Shopify sends unique req IDs in the headers along with other internal routing information.
+    // NOTE: $input can be null or string, we are not setting a type!
+    protected function captureResponseMetrics(
+        array $response,
+        $input,
+        string $apiType,
+    ): void
+    {
+        $statusCode = $response['status_code'];
+        $this->monitoring->addTraceCount(
+            Metric::SHOPIFY_1CC_API_RESPONSE_COUNT,
+            [
+                'access_token_used' => $this->tokenUsed,
+                'api_type'          => $apiType,
+                'status_code'       => $statusCode,
+            ]
+        );
+        if ($statusCode < 400)
+        {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::SHOPIFY_1CC_API_ERROR_RESPONSE,
+            [
+               'status_code'       => $response['status_code'],
+               'api_type'          => $apiType,
+               'response'          => $response['body'],
+               'headers'           => $response['headers'],
+               'input'             => $input,
+               'access_token_used' => $this->tokenUsed,
+            ]
+        );
     }
 }

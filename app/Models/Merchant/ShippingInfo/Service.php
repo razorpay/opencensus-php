@@ -534,7 +534,7 @@ class Service extends Base\Service
                         [
                             'response' => $decodedResponse,
                             'internal_error_code' => $internalErrorCode,
-                            'exception' => $ex->getTrace(),
+                            'exception' => $ex->getMessage(),
                         ])
                 );
             }
