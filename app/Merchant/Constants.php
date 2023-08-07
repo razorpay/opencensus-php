@@ -283,4 +283,16 @@ class Constants
 
     const OAUTH_SOURCE = 'oauth';
     const SOURCE       = 'source';
+
+    const AMOUNT              = 'amount';
+    const ACTION              = 'action';
+    const SUCCESS             = 'success';
+    const TXN_ID              = 'txnId';
+    const APP_KEY             = 'appKey';
+    const USERNAME            = 'username';
+    const EXTERNAL_REF_NUMBER = 'externalRefNumber';
+
+    const HEADERS = [
+        'Content-Type' => 'application/json'
+    ];
 }

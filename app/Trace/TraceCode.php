@@ -16,6 +16,11 @@ class TraceCode
     const USER_REGISTER_LOGIN_ATTEMPT               = 'USER_REGISTER_LOGIN_ATTEMPT';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+    const EZETAP_VOID_ACTION                        = 'EZETAP_VOID_ACTION';
+    const EZETAP_SET_APP_KEY                        = 'EZETAP_SET_APP_KEY';
+    const EZETAP_API_RESPONSE                       = 'EZETAP_API_RESPONSE';
+    const EZETAP_REFUND_ACTION                      = 'EZETAP_REFUND_ACTION';
+    const EZETAP_FETCH_APP_KEY                      = 'EZETAP_FETCH_APP_KEY';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
     const USER_REGISTER_OAUTH_PROVIDER_ERROR        = 'USER_REGISTER_OAUTH_PROVIDER_ERROR';
     const CAPTCHA_DISABLE_INVALID_PAYLOAD_ERROR     = 'CAPTCHA_DISABLE_INVALID_PAYLOAD_ERROR';
@@ -46,7 +51,7 @@ class TraceCode
     const API_GRACEFUL_SHUTDOWN_HAPPENING           = 'API_GRACEFUL_SHUTDOWN_HAPPENING';
     const ADMIN_LOGIN_DEBUG                         = 'ADMIN_LOGIN_DEBUG';
     const ADMIN_ROUTE_DEBUG                         = 'ADMIN_ROUTE_DEBUG';
-    
+
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_DURATION                       = 'USER_LOGIN_DURATION';
     const SEND_LOGIN_OTP_DURATION                   = 'SEND_LOGIN_OTP_DURATION';
@@ -247,7 +252,7 @@ class TraceCode
 
     const FETCH_OAUTH_ACTION_FOR_MERCHANT           = 'FETCH_OAUTH_ACTION_FOR_MERCHANT';
     const OAUTH_MERCHANT_ACTIVATION_DETAILS         = 'OAUTH_MERCHANT_ACTIVATION_DETAILS';
-    
+
     const USER_RENDER_DATA                          = 'USER_RENDER_DATA';
 
     protected static $messages = array(

@@ -25,4 +25,18 @@ class Validator extends Base\Validator
         'category'                                  => '',
         'gateway_acquirer'                          => 'sometimes|string',
     );
+
+    protected static array $ezetapVoidRules   = [
+        'appKey'   => 'required',
+        'username' => 'required',
+        'amount'   => 'required|numeric',
+        'txnId'    => 'required',
+    ];
+
+    protected static array $ezetapRefundRules = [
+        'appKey'            => 'required',
+        'username'          => 'required',
+        'amount'            => 'required|numeric',
+        'externalRefNumber' => 'required',
+    ];
 }

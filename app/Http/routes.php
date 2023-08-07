@@ -182,6 +182,13 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create'); // ePOS
 
         Route::post('/keys/csv', 'MerchantController@getCsv')->name('keys_csv');
+
+        Route::post('/store/app/key', 'MerchantController@storeAppKeys')->name('store_app_keys');
+        Route::get('/fetch/app/key', 'MerchantController@fetchAppKeys')->name('fetch_app_keys');
+
+        Route::post('/ezetap/void', 'MerchantController@ezetapVoidApi')->name('ezetap_void_api');
+        Route::post('/ezetap/refund', 'MerchantController@ezetapRefundApi')->name('ezetap_refund_api');
+
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');

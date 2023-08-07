@@ -43,6 +43,44 @@ class MerchantController extends Controller
         fputcsv($output, array($input['id'], $input['secret']));
     }
 
+    public function ezetapVoidApi()
+    {
+        $input = Input::all();
+
+        list($error, $keys) = (new Merchant\Service)->ezetapVoidApi($input);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
+    public function ezetapRefundApi()
+    {
+        $input = Input::all();
+
+        list($error, $keys) = (new Merchant\Service)->ezetapRefundApi($input);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
+    public function storeAppKeys()
+    {
+        $input = Input::all();
+
+        $merchant = Auth::user()->currentMerchant();
+
+        list($error, $keys) = (new Merchant\Service)->storeAppKeys($merchant->id, $input);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
+    public function fetchAppKeys()
+    {
+        $merchant = Auth::user()->currentMerchant();
+
+        list($error, $keys) = (new Merchant\Service)->fetchAppKeys($merchant->id);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
     public function getKeys($mode)
     {
         $merchant = Auth::user()->currentMerchant();

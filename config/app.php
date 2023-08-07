@@ -272,6 +272,8 @@ return array(
 
     'passport_public_key'        => str_replace('\n', PHP_EOL, env('PASSPORT_PUBLIC_KEY')),
 
+    'ezetap_base_url'     => env('EZETAP_BASE_URL'),
+
     'rzp_website_url'     => env('RZP_WEBSITE_URL'),
     'next_rzp_url'        => env('NEXT_WEBSITE_URL'),
     'static_web_url'      => env('STATIC_WEBSITE_URL'),

@@ -9,6 +9,7 @@ use Session;
 use Request;
 use Carbon\Carbon;
 use App\Http\ApiUrl;
+use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors\ServerError;
 use App\Admin\Service as AdminService;
@@ -22,6 +23,7 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
 use App\Session\Entity as AppSession;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Service extends Base\Service
 {
@@ -163,6 +165,91 @@ class Service extends Base\Service
         }
 
         return [$error, $response];
+    }
+    /*
+     * This calls the ezetap void API and based on success response authorized_refund is created in rzp via webhook
+     * */
+    public function ezetapVoidApi($input): array
+    {
+        $error = (new Merchant\Validator)->validateInput('ezetap_void', $input)->messages();
+
+        $this->trace->info(TraceCode::EZETAP_VOID_ACTION, [
+            Constants::TXN_ID => $input[Constants::TXN_ID],
+            Constants::AMOUNT => $input[Constants::AMOUNT]
+        ]);
+
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $base_url = $this->getRazorpayPosBaseUrl();
+
+        return $this->requestRazorpayPos($base_url . '/api/3.0/payment/void', $input);
+    }
+
+    /*
+     * This calls the ezetap refund API and based on success response refund is called in rzp API via dashboard
+     * */
+    public function ezetapRefundApi($input): array
+    {
+        $error = (new Merchant\Validator)->validateInput('ezetap_refund', $input)->messages();
+
+        $this->trace->info(TraceCode::EZETAP_REFUND_ACTION, [
+            Constants::EXTERNAL_REF_NUMBER => $input[Constants::EXTERNAL_REF_NUMBER],
+            Constants::AMOUNT              => $input[Constants::AMOUNT]
+        ]);
+
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $base_url = $this->getRazorpayPosBaseUrl();
+
+        return $this->requestRazorpayPos($base_url . '/api/2.0/payment/refund', $input);
+    }
+
+    public function storeAppKeys($merchantId, $input)
+    {
+        $CacheIdForStoringKeys = 'ezetap_username_and_appkey_' . $merchantId;
+
+        $dataToCache = [
+            Constants::USERNAME => $input[Constants::USERNAME] ?? null,
+            Constants::APP_KEY  => $input[Constants::APP_KEY] ?? null
+        ];
+
+        $this->app['cache']->put($CacheIdForStoringKeys, $dataToCache);
+
+        $this->trace->info(TraceCode::EZETAP_SET_APP_KEY, [
+            Constants::USERNAME => $dataToCache[Constants::USERNAME]
+        ]);
+
+        $errors = null;
+
+        $data = $this->app['cache']->get($CacheIdForStoringKeys);
+
+        return [$errors, $data];
+    }
+
+    public function fetchAppKeys($merchantId)
+    {
+        $CacheIdForFetchingKeys = 'ezetap_username_and_appkey_' . $merchantId;
+
+        $errors = null;
+
+        $dataFromCache = $this->app['cache']->get($CacheIdForFetchingKeys);
+
+        $data = [
+            Constants::USERNAME => $dataFromCache[Constants::USERNAME] ?? null,
+            Constants::APP_KEY  => $dataFromCache[Constants::APP_KEY] ?? null
+        ];
+
+        $this->trace->info(TraceCode::EZETAP_FETCH_APP_KEY, [
+            Constants::USERNAME => $data[Constants::USERNAME]
+        ]);
+
+        return [$errors, $data];
     }
 
     public function fetchKeysFromApi($merchantId, $mode)
@@ -971,5 +1058,62 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    protected function getRazorpayPosBaseUrl()
+    {
+        return $this->app['config']->get('app.ezetap_base_url');
+    }
+
+    /**
+     * @param array $options
+     * @param       $input
+     *
+     * @return array
+     */
+    protected function requestRazorpayPos($endPoint, $input): array
+    {
+        //convert the razorpay paise amount to rupees in ezetap for consistency
+        if (isset($input[Constants::AMOUNT]) === true)
+        {
+            $input[Constants::AMOUNT] = (double) $input[Constants::AMOUNT] / 100.0;
+        }
+
+        try
+        {
+            $client = new Guzzle();
+
+            $response   = $client->post($endPoint, [
+                'headers' => Constants::HEADERS,
+                'json'    => $input,
+                'timeout' => 20,
+            ]);
+            $statusCode = $response->getStatusCode();
+
+            $body = json_decode($response->getBody(), true);
+
+            // Process the response based on the HTTP status code
+            if (($statusCode === 200)
+                and ($body[Constants::SUCCESS] === true))
+            {
+                // Successful response
+                return [null, [Constants::SUCCESS => true]];
+            }
+
+            $this->trace->info(TraceCode::EZETAP_API_RESPONSE, [
+                'response'        => $body
+            ]);
+
+            return [['Internal error occurred'], null];
+        }
+        catch (\Exception $e)
+        {
+            // Handle any exceptions that occurred during the request
+            return [[$e->getMessage()], null];
+        }
+        catch (GuzzleException $e)
+        {
+            return [[$e->getMessage()], null];
+        }
     }
 }
