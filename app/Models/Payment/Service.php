@@ -2994,8 +2994,17 @@ class Service extends Base\Service
             $limit = $input['limit'];
         }
 
-        // Fetch all the authorized payments whose refund_at is on or before current time.
-        $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts, $limit);
+        if (isset($input['refund_source']) and $input['refund_source'] == 'ups')
+        {
+            // Fetch all the authorized UPS payments whose refund_at is on or before current time.
+            $payments = $this->repo->payment->getAuthorizedUpiServicePaymentsToBeRefundedUsingRefundAt($ts, $limit);
+        }
+        else
+        {
+            // Fetch all the authorized API payments whose refund_at is on or before current time.
+            $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts, $limit);
+        }
+
 
         // Re fetch by payment id to reload entity if fetched from warm storage
         $reloadedPayments = New Base\PublicCollection();

@@ -169,6 +169,25 @@ EOT;
         return $query;
     }
 
+
+    protected function newQueryWithConnectionForUpiServicePayments($connection)
+    {
+        // DATA_WAREHOUSE_SOURCE_API_CONNECTIONS contains dummy connections. Mapping to right connection here.
+        if (in_array($connection, array_keys(Connection::DATA_WAREHOUSE_SOURCE_API_CONNECTIONS)) === true)
+        {
+            $query = parent::newQueryWithConnection(Connection::DATA_WAREHOUSE_SOURCE_API_CONNECTIONS[$connection]);
+
+            $query = $query->where($this->dbColumn(Base\Entity::RECORD_SOURCE), '=', Base\Constants::RECORD_SOURCE_UPS);
+        }
+        else
+        {
+            $query = parent::newQueryWithConnection($connection);
+        }
+
+        return $query;
+    }
+
+
     protected function validateCustomerId($attribute, $value)
     {
         $merchant = $this->merchant;
@@ -1381,6 +1400,38 @@ EOT;
                         ->orderBy($refundAt, 'DESC')
                         ->limit($limit)
                         ->get();
+        });
+
+        return $results;
+    }
+
+    /**
+     * This function will fetch all the upi service payments using the refund_at
+     * column and the timestamp provided.
+     * @param int $timestamp*
+     * @return Base\PublicCollection
+     */
+    public function getAuthorizedUpiServicePaymentsToBeRefundedUsingRefundAt(
+        int $timestamp, $limit
+    ): Base\PublicCollection
+    {
+        $refundAt = $this->repo->payment->dbColumn(Payment\Entity::REFUND_AT);
+        $status = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $results = $this->repo->useSlave(function () use ($refundAt, $status, $timestamp, $limit)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnectionForUpiServicePayments($connectionType);
+
+            return $query
+                ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                ->select($this->dbColumn('*'))
+                ->where($refundAt, '<=', $timestamp)
+                ->where($status, Payment\Status::AUTHORIZED)
+                ->orderBy($refundAt, 'DESC')
+                ->limit($limit)
+                ->get();
         });
 
         return $results;
