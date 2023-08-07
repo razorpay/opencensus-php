@@ -2282,6 +2282,8 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
+            $isUpiReArchPayment = false;
+
             if (($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
@@ -2291,6 +2293,8 @@ class Processor
                 ($this->canRouteFpxThroughRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
+
+                $isUpiReArchPayment = true;
 
                 $paymentData = $this->processPaymentViaPGRouter($input, $startTime);
 
@@ -2358,6 +2362,8 @@ class Processor
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
+            $this->addUpiDimensions($dimensions, $input, $payment, $isUpiReArchPayment);
+
             if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
@@ -2420,6 +2426,30 @@ class Processor
         $logData[Metric::LABEL_TRACE_EXCEPTION_CLASS]   = get_class($e);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_INITIATE_FAILURE_LOG, $logData);
+    }
+
+    /**
+     * Add UPI method dimensions to failure metric
+     *
+     * @param  $dimensions
+     * @param  $input
+     * @return void
+     */
+    private function addUpiDimensions(&$dimensions, $input, $payment, $isUpiReArchPayment)
+    {
+        if ((isset($input['method']) === true) &&
+            ($input['method'] !== Payment\Method::UPI))
+        {
+            return;
+        }
+
+        $dimensions['input_method'] = Payment\Method::UPI;
+        $dimensions['is_rearch']    = $isUpiReArchPayment ?? false;
+
+        if ($payment instanceof Payment\Entity === true)
+        {
+            $dimensions[Payment\Entity::CPS_ROUTE] = $payment->getCpsRoute();
+        }
     }
 
     protected function validateAndDecryptEncryptedCardInput(& $input)
