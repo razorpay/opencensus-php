@@ -7,10 +7,12 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Transaction\Entity;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 class Core extends Base\Core
@@ -18,6 +20,11 @@ class Core extends Base\Core
     protected $merchant;
 
     use ReverseShadowTrait;
+
+    const NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS = [
+        Payment\Method::EMANDATE,
+        Payment\Method::NACH,
+    ];
 
     public function __construct()
     {
@@ -192,6 +199,8 @@ class Core extends Base\Core
             }
         }
 
+        $maxNegativeLimit = $this->getMaxNegativeLimitForPaymentMerchantCapture($payment);
+
         $creditOrReserveBalanceLoadingPaymentInfo = $this->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
 
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
@@ -279,6 +288,11 @@ class Core extends Base\Core
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+
+            if ($maxNegativeLimit !== null)
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_LIMIT] = strval($maxNegativeLimit);
+            }
         }
 
         return $moneyParams;
@@ -471,6 +485,24 @@ class Core extends Base\Core
         }
 
         return $rule;
+    }
+
+    private function getMaxNegativeLimitForPaymentMerchantCapture(Payment\Entity $payment)
+    {
+        if ((in_array($payment->getMethod(), self::NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS) === false) or
+            ($payment->isRecurringTypeInitial() === false)) {
+            return null;
+        }
+
+        $balance = $payment->merchant->getBalanceByTypeOrFail(Type::PRIMARY);
+
+        $maxNegative = (new BalanceConfig\Core())->getMaxNegativeAmountAutoForBalanceId($balance->getId());
+
+        if ($maxNegative === 0) {
+            $maxNegative = BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE;
+        }
+        return $maxNegative;
+
     }
 
     public function shouldDisableAmountCredits(Payment\Entity $payment):bool

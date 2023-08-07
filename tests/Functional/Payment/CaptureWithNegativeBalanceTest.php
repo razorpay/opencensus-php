@@ -1259,4 +1259,100 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
         return $reminderMock;
     }
-}
+
+    public function testEmandateCaptureWithZeroBalanceWithPGLedger()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $paymentId = $this->setUpEmandateFixtures(0, 0);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts" => [
+                            [
+                                "id" => "sampleAccountID",
+                                "name" => "test name",
+                                "status" => "ACTIVATED",
+                                "balance" => "10000.000000",
+                                "min_balance" => "0.000000",
+                                "merchant_id" => "sampleMerchant",
+                                "created_at" => "1634027277",
+                                "updated_at" => "1634027277",
+                                "entities" => [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id" => "sampleAccountID",
+                                "name" => "test name",
+                                "status" => "ACTIVATED",
+                                "balance" => "0.000000",
+                                "min_balance" => "0.000000",
+                                "merchant_id" => "sampleMerchant",
+                                "created_at" => "1634027277",
+                                "updated_at" => "1634027277",
+                                "entities" => [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id" => "sampleAccountID",
+                                "name" => "test name",
+                                "status" => "ACTIVATED",
+                                "balance" => "0.000000",
+                                "min_balance" => "0.000000",
+                                "merchant_id" => "sampleMerchant",
+                                "created_at" => "1634027277",
+                                "updated_at" => "1634027277",
+                                "entities" => [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $this->startTest();
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "0",
+                "gmv_amount" => "0",
+                "merchant_balance_amount" => "1180",
+                "tax" => "180",
+                "commission" => "1000",
+                "merchant_balance_limit" => "500000"
+            ],
+            'additional_params' => [
+            'merchant_balance_accounting' => "balance_deduct",
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+    }
+
+    }

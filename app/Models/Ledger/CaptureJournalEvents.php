@@ -3,13 +3,20 @@
 namespace RZP\Models\Ledger;
 
 use App;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
 class CaptureJournalEvents
 {
+    const NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS = [
+        Payment\Method::EMANDATE,
+        Payment\Method::NACH,
+    ];
+
     public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction, $discount): array
     {
         if ($payment->isDirectSettlement() === true)
@@ -177,9 +184,13 @@ class CaptureJournalEvents
             }
         }
 
+        $captureJournalEvents = new CaptureJournalEvents();
+
+        $maxNegativeLimit = $captureJournalEvents->getMaxNegativeLimitForPaymentMerchantCapture($payment);
+
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
-        $creditLoadingPaymentInfo = (new CaptureJournalEvents())->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
+        $creditLoadingPaymentInfo = $captureJournalEvents->extractCreditOrReserveBalanceLoadingPaymentInfo($payment);
 
         $transactionProcessor = (new Transaction\Processor\payment($transaction));
 
@@ -247,6 +258,11 @@ class CaptureJournalEvents
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+
+            if ($maxNegativeLimit !== null)
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_LIMIT] = strval($maxNegativeLimit);
+            }
         }
 
         return $moneyParams;
@@ -364,5 +380,24 @@ class CaptureJournalEvents
         return [
             Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT    => false
         ];
+    }
+
+    private function getMaxNegativeLimitForPaymentMerchantCapture(Payment\Entity $payment)
+    {
+        if ((in_array($payment->getMethod() , self::NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS) === false) or
+            ($payment->isRecurringTypeInitial() === false))
+        {
+            return null;
+        }
+
+        $balance = $payment->merchant->getBalanceByTypeOrFail(Type::PRIMARY);
+
+        $maxNegative = (new BalanceConfig\Core())->getMaxNegativeAmountAutoForBalanceId($balance->getId());
+
+        if($maxNegative === 0)
+        {
+            $maxNegative = BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE;
+        }
+        return $maxNegative;
     }
 }

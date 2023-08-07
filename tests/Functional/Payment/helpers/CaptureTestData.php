@@ -677,6 +677,15 @@ return [
         ],
     ],
 
+    'testEmandateCaptureWithZeroBalanceWithPGLedger' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
     'testEmandateCaptureWithZeroBalanceWithAutoRecurringType' => [
         'response' => [
             'content' => [
