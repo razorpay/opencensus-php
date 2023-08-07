@@ -146,7 +146,7 @@ jobs:
           SONAR_PROJECT_ID: API_QR_PAYMENT_UT
           TEST_SUITE_NAME: "QR Payment Test Suite"
           SOURCE_DIR: /__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/QrPayment,/__w/api/api/app/Models/BharatQr,/__w/api/api/app/Models/QrPaymentRequest
-          EXCLUDE_FILES: app/Models/QrCode/Upi/Core/**
+          EXCLUDE_FILES: app/Models/QrCode/Upi/**
     services:
       redis:
         credentials:
