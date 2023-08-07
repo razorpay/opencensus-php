@@ -151,6 +151,32 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateCreateTerminalV3()
+    {
+        $this->ba->terminalsAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals/validateV3';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTerminalV3()
+    {
+        $this->ba->terminalsAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals/V3';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreatePaysecureTerminalNonRzpOrg()
     {
         $org = $this->fixtures->org->createHdfcOrg();

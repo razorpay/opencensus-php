@@ -57,6 +57,15 @@ class Service extends Base\Service
         return $terminal;
     }
 
+
+    public function createTerminalV3($id, $input, $path)
+    {
+
+        $terminal = (new Terminal\Core)->createV3($input, $path);
+
+        return $terminal;
+    }
+
     public function createTerminalWithId($merchantId, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -303,9 +312,8 @@ class Service extends Base\Service
                 'terminal_id'       => $tid,
             ]);
 
-        printf($tid);
 
-        $path = "v3/terminals/".$tid;
+        $path = "v3/terminals/".$tid."/validate_delete";
         $this->app['terminals_service']->proxyTerminalService('', "POST", $path);
 
     }

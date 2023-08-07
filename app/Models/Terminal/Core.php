@@ -80,6 +80,13 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function createV3($input, $path)
+    {
+        $path = str_replace("v1","v3", $path);
+
+        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+    }
+
     public function createWithId($input, $merchant)
     {
         $this->trace->info(
