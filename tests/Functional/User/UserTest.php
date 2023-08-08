@@ -2500,6 +2500,89 @@ class UserTest extends TestCase
         $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
     }
 
+    public function testVerifyCapitalReferralFromCapitalLocPageDuringMobileLogin()
+    {
+        $testData = & $this->testData['testVerifyCapitalReferralDuringMobileLogin'];
+
+        $testData['request']['cookies'] = [
+            'rzp_utm' => json_encode([
+                'first_page' => 'razorpay.com/',
+                'final_page' => 'razorpay.com/x/line-of-credit/',
+                'website'    => 'razorpay.com/x/line-of-credit/'
+            ])
+        ];
+
+        $this->enableRazorXTreatmentForRazorX();
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'contact_mobile' => '9012345678',
+            'contact_mobile_verified'  => true
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+        $this->fixtures->create('referrals', ["product" => 'capital']);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant->getId(),
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => '10000000000000',
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => '10000000000000',
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId()
+            ], 'test')
+            ->toArray();
+
+        $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
+
+        $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
+    }
+
     public function testNonCapitalReferralDuringMobileLogin()
     {
         $testData = & $this->testData['testVerifyCapitalReferralDuringMobileLogin'];

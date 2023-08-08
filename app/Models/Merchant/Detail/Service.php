@@ -2300,6 +2300,8 @@ class Service extends Base\Service
 
         $isCapitalLocSignupPageVisited = false;
 
+        $actualReferralProduct = null;
+
         if ($referralProduct == Product::CAPITAL)
         {
             $actualReferralProduct = $referralProduct;
@@ -2327,12 +2329,11 @@ class Service extends Base\Service
             $utmParams = [];
             (new User\Service)->addUtmParameters($utmParams);
 
-            $isCapitalLocSignupPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE))
-                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE))
-                or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)));
+            $isCapitalLocSignupPageVisited = ((($utmParams['final_page'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)
+                or (($utmParams['website'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE));
         }
 
-        if ($referralProduct === $requestProduct or ( $referralProduct == Product::CAPITAL and $isCapitalLocSignupPageVisited ))
+        if ($referralProduct === $requestProduct or ($actualReferralProduct === Product::CAPITAL and $isCapitalLocSignupPageVisited === true))
         {
             $mappingInput = [
                 'partner_id'     => $partnerId,
