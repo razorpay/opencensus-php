@@ -16,6 +16,7 @@ use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Gateway;
+use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -254,7 +255,7 @@ class Repository extends Base\Repository
     }
 
 
-    public function getById($id, $withTrashed = true, $fromTerminalsService = true)
+    public function getById($id, $withTrashed = true, $fromTerminalsService = true, $timeout = 0.1)
     {
         $metricData = [
             'route' => $this->fetchRouteName(),
@@ -271,9 +272,14 @@ class Repository extends Base\Repository
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
+                $options = [
+                    TerminalsService::TIMEOUT => $timeout,
+                    TerminalsService::CONNECT_TIMEOUT => $timeout,
+                ];
+
                 $path = "v1/terminals/" . $id ."?with_trashed=". ($withTrashed ? 'true' : 'false') ;
 
-                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,$options);
 
                 $terminalFromTs = Terminal\Service::getEntityFromTerminalServiceResponse($response);
 
@@ -2633,7 +2639,7 @@ class Repository extends Base\Repository
 
             $start = millitime();
 
-            $terminal = $this->getById($terminalId);
+            $terminal = $this->getById($terminalId, true, true, 0.25);
 
             $duration = millitime() - $start;
 
