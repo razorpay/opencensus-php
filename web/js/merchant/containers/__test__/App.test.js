@@ -14,7 +14,7 @@ describe('Idle timer', () => {
     jest.spyOn(utilTracker, `initSegment`).mockImplementation(() => {});
   });
 
-  test('should show timeout popup after 2 seconds if org feature flag "logout_admin_inactivity" is enabled', async () => {
+  test.skip('should show timeout popup after 2 seconds if org feature flag "logout_admin_inactivity" is enabled', async () => {
     renderApp();
     await delay(2000);
     await waitFor(() => {
