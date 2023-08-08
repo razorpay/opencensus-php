@@ -102,6 +102,8 @@ class PartnershipsService extends Base\Service
     const ADMIN_EMAIL_PARAM_NAME = 'admin_email';
     const ADMIN_EMAIL_PARAM_HEADER = 'X-Admin-Email';
 
+    const MAX_RETRY_COUNT = 2;
+
     /**
      * @var string
      */
@@ -262,32 +264,32 @@ class PartnershipsService extends Base\Service
 
     public function upsertPartnerConfig($parameters)
     {
-        return $this->sendRequest($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST);
     }
 
     public function deletePartnerConfig($parameters)
     {
-        return $this->sendRequest($parameters, self::DELETE_PARTNER_CONFIG, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_PARTNER_CONFIG, Requests::POST);
     }
 
     public function upsertMerchantApplication($parameters)
     {
-        return $this->sendRequest($parameters, self::UPDATE_MERCHANT_APPLICATION, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_APPLICATION, Requests::POST);
     }
 
     public function deleteMerchantApplication($parameters)
     {
-        return $this->sendRequest($parameters, self::DELETE_MERCHANT_APPLICATION, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_APPLICATION, Requests::POST);
     }
 
     public function upsertMerchantAccessMap($parameters)
     {
-        return $this->sendRequest($parameters, self::UPDATE_MERCHANT_ACCESS_MAP, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_ACCESS_MAP, Requests::POST);
     }
 
     public function deleteMerchantAccessMap($parameters)
     {
-        return $this->sendRequest($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST);
     }
 
     /**
@@ -575,8 +577,45 @@ class PartnershipsService extends Base\Service
 
             return $this->parseAndReturnResponse($response);
         } catch (Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e);
+            $this->trace->error(TraceCode::PARTNERSHIPS_REQUEST_ERROR, [
+                'error'      => $e->getMessage(),
+                'parameters' => $parameters,
+                'path'       => $path,
+                '$response'  => $e->getData()
+            ]);
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, $e->getData(), $e);
         }
+    }
+
+    /**
+     * calls send request with retry logic
+     * @param $parameters
+     * @param $path
+     * @param $method
+     * @param $mode
+     *
+     * @return array|null
+     */
+    public function sendRequestWithRetry($parameters, $path, $method, $mode = null)
+    {
+        $attempts = 0;
+        $response = null;
+        do {
+            try
+            {
+                $response = $this->sendRequest($parameters, $path, $method, $mode);
+                break;
+            } catch (Throwable $e) {
+                $responseData =  $e->getData();
+                if(empty($responseData['status_code']) === false && $responseData['status_code'] < 500)
+                {
+                    break;
+                }
+                $attempts++;
+            }
+        } while($attempts < self::MAX_RETRY_COUNT);
+
+        return $response;
     }
 
     public function getRequestParams($parameters, $path, $method, $mode = null)
@@ -640,13 +679,13 @@ class PartnershipsService extends Base\Service
     {
         $code = $res->status_code;
 
-        $res = json_decode($res->body, true);
+        $resBody = json_decode($res->body, true);
+
+        $partnershipsServiceResponse = ['status_code' => $code, 'response' => $resBody!=null? $resBody: $res->body ];
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception\RuntimeException('Malformed json response');
+            throw new Exception\RuntimeException('Malformed json response', $partnershipsServiceResponse);
         }
-
-        $partnershipsServiceResponse = ['status_code' => $code, 'response' => $res];
 
         $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, $partnershipsServiceResponse);
 

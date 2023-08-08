@@ -29,6 +29,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class,
+        'deleted' => EventDeleted::class,
+    ];
+
     protected $fillable = [
         /**
          * Application id and type are fillable due to

@@ -4053,6 +4053,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GROWTH_REQUEST_FAILED                                 = 'GROWTH_REQUEST_FAILED';
     const GROWTH_ADMIN_REQUEST                                  = 'GROWTH_ADMIN_REQUEST';
     const PARTNERSHIPS_REQUEST                                  = 'PARTNERSHIPS_REQUEST';
+    const PARTNERSHIPS_REQUEST_ERROR                            = 'PARTNERSHIPS_REQUEST_ERROR';
     const PRTS_PARTNER_MIGRATION_REQUEST_ERROR                  = 'PRTS_PARTNER_MIGRATION_REQUEST_ERROR';
     const PRTS_PARTNER_MIGRATION_REQUEST_SUCCESS                = 'PRTS_PARTNER_MIGRATION_REQUEST_SUCCESS';
     const PRTS_MERCHANT_ENTITIES_FETCH                          = 'PRTS_MERCHANT_ENTITIES_FETCH';
