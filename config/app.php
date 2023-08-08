@@ -269,8 +269,7 @@ return array(
     'campaignhq_url'               => env('CAMPAIGNHQ_URL'),
     'docs_url'                     => env('DOCS_URL'),
     'banking_demo_user_password'   => env('BANKING_DEMO_USER_PASSWORD'),
-
-    'passport_public_key'        => str_replace('\n', PHP_EOL, env('PASSPORT_PUBLIC_KEY')),
+    'passport_jwks_url'            => env('PASSPORT_JWKS_URL'),
 
     'ezetap_base_url'     => env('EZETAP_BASE_URL'),
 

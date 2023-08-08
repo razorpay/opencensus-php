@@ -45,9 +45,9 @@ class AuthenticateOauth
 
         if (empty($passportHeader) === false)
         {
-            $publicKey = app('config')['app.passport_public_key'];
+            $passportJwksUrl = app('config')['app.passport_jwks_url'];
 
-            Passport::init(new Kid("edgev1", $publicKey));
+            Passport::init($passportJwksUrl, \storage_path('dashboardPassport'));
 
             $passport = Passport::fromToken($passportHeader);
 
