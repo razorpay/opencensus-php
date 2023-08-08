@@ -1327,12 +1327,15 @@ class Service
 
         if($this->gateway === Payment\Gateway::UPI_AXISOLIVE)
         {
-            if(isset($input[Entity::TERMINAL][TerminalEntity::NOTES]) === true)
+            if(isset($input[Entity::TERMINAL][TerminalEntity::NOTES]) === true && isJson($input[Entity::TERMINAL][TerminalEntity::NOTES]) === true)
             {
-                if(isset($input[Entity::TERMINAL][TerminalEntity::NOTES][TerminalEntity::MERCHANT_MOBILE_CONTACT]) === true)
+                $notesContent = json_decode($input[Entity::TERMINAL][TerminalEntity::NOTES], true);
+
+                if($notesContent != null && isset($notesContent[TerminalEntity::MERCHANT_MOBILE_CONTACT]) === true)
                 {
-                    $input[Entity::TERMINAL][TerminalEntity::MERCHANT_MOBILE_CONTACT] = $input[Entity::TERMINAL][TerminalEntity::NOTES][TerminalEntity::MERCHANT_MOBILE_CONTACT];
+                    $input[Entity::TERMINAL][TerminalEntity::MERCHANT_MOBILE_CONTACT] = $notesContent[TerminalEntity::MERCHANT_MOBILE_CONTACT];
                 }
+
             }
         }
 
