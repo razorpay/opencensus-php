@@ -826,6 +826,23 @@ class Service extends Base\Service
             $this->monitoring->addTraceCount(Metric::SHOPIFY_PARTIALLY_PAID_ORDER_COUNT, ['error_type' => ShopifyConstants::PARTIALLY_PAID_ORDER]);
         }
 
+        if($payment['method'] === 'cod')
+        {
+             $this->trace->count(
+                Metric::SHOPIFY_1CC_PAYMENT_METHOD_COUNT,
+                [
+                    'payment_method' => 'cod'
+                ]);
+        }
+        else
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_PAYMENT_METHOD_COUNT,
+                [
+                    'payment_method' => 'prepaid'
+                ]);
+        }
+
         return $response;
     }
 

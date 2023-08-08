@@ -165,6 +165,7 @@ final class Metric
     const SHOPIFY_PARTIALLY_PAID_ORDER_COUNT         = 'shopify_partially_paid_order_count';
     const SHOPIFY_ORDER_CANCEL_REQUEST_COUNT         = 'shopify_order_cancel_request_count';
     const SHOPIFY_ADD_TAG_REQUEST_COUNT              = 'shopify_add_tag_request_count';
+    const SHOPIFY_1CC_PAYMENT_METHOD_COUNT           = 'shopify_1cc_payment_method_count';
 
     const CREATE_API_CHECKOUT_ERROR_COUNT             = 'create_api_checkout_error_count';
     const CART_FETCH_API_ERROR_COUNT                  = 'cart_fetch_api_error_count';
