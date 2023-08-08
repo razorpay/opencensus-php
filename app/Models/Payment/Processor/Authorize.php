@@ -7078,6 +7078,11 @@ trait Authorize
             ]
         ];
 
+        if ($payment->isInAppUPI() === true)
+        {
+            $response['type'] = Methods\Entity::IN_APP;
+        }
+
         return $response;
     }
 

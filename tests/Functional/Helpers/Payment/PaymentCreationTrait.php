@@ -309,6 +309,10 @@ trait PaymentCreationTrait
                         {
                             return $response;
                         }
+                        else if ($content['type'] === 'in_app')
+                        {
+                            return $response;
+                        }
                         else if($content['type'] === 'redirect'){
                             $content = $this->getJsonContentFromResponse($response);
                             return $this->makeRedirectToAuthorize($content['request']['url']);

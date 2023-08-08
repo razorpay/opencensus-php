@@ -4827,7 +4827,9 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultUpiBlockIntentPaymentArray();
         $payment['upi']['flow'] = 'in_app';
 
-        $this->doAuthPaymentViaAjaxRoute($payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('in_app', $response['type']);
 
         $lastPayment = $this->getLastEntity('payment');
 
