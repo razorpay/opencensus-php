@@ -796,6 +796,9 @@ final class RazorxTreatment
     // Experiment to increase debit retries for merchants
     const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
 
+    //Experiment to change debit retries time gap for merchant
+    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP = 'upi_autopay_increase_debit_retries_time_gap';
+
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.

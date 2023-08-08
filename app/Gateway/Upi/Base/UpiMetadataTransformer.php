@@ -252,10 +252,25 @@ class UpiMetadataTransformer extends UpiTransformer
                 return null;
             }
 
+            $app = \App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($this->input[Entity::PAYMENT]['merchant_id'],
+                Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP,
+                $app['rzp.mode'],
+                3
+            );
+
+            $variant = strtolower($variant);
+
             // Remind after 5 hours if experiment is on.
             if ($canRetry === true)
             {
                 $remindAfter = 300;
+            }
+            else if ($variant === 'on')
+            {
+                //Retry after 60 and 120 minutes.
+                $remindAfter = 60;
             }
             else
             {
