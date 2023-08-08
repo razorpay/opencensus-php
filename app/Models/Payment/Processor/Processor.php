@@ -98,6 +98,7 @@ use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use CodeOrange\RedisCountingSemaphore\Semaphore;
 use RZP\Models\Transfer\Metric as TransferMetric;
+use RZP\Models\Transfer\ToType as TransferToType;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
@@ -5087,15 +5088,21 @@ class Processor
             $txnAndBalanceUpdated = false;
         }
 
+        $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
+
         $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
             [
-                'merchant'             => $this->merchant->getId(),
-                'isExperimentEnabled'  => $isExperimentEnabled,
-                'transfersCount'       => $transfersCount,
-                'txnAndBalanceUpdated' => $txnAndBalanceUpdated,
+                'merchant'               => $this->merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+                'transfersCount'         => $transfersCount,
+                'txnAndBalanceUpdated'   => $txnAndBalanceUpdated,
+                'customerWalletTransfer' => $isCustomerWalletTransfer,
             ]);
 
-        if ($transfersCount <= 3 and ($isExperimentEnabled === true) and ($txnAndBalanceUpdated === true))
+        if (($transfersCount <= 3)
+            and ($isExperimentEnabled === true)
+            and ($txnAndBalanceUpdated === true)
+            and ($isCustomerWalletTransfer === false))
         {
             return true;
         }
