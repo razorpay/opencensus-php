@@ -4204,12 +4204,9 @@ trait Authorize
 
     protected function runAuthorizeFailedTransaction(Payment\Entity $payment)
     {
-        $this->repo->transaction(function() use ($payment)
-        {
-            $response = $this->runAuthorizeFailedOnGateway($payment);
+        $response = $this->runAuthorizeFailedOnGateway($payment);
 
-            $this->authorizeFailedPaymentOnApi($payment, $response);
-        });
+        $this->authorizeFailedPaymentOnApi($payment, $response);
     }
 
     protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
@@ -4232,16 +4229,6 @@ trait Authorize
         }
 
         $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
-
-        if ($payment->isAppCred() === true)
-        {
-            $this->addDiscountToCred($payment, $response);
-        }
-
-        if ($payment->isCardlessEmiWalnut369() === true)
-        {
-            $this->addDiscountToWalnut369($payment, $response);
-        }
 
         return $response;
     }
@@ -4345,7 +4332,7 @@ trait Authorize
 
         try
         {
-            $this->postPaymentAuthorizeOfferProcessing($payment);
+            $this->postPaymentAuthorizeOfferProcessing($payment, $response);
 
             $this->autoCapturePaymentIfApplicable($payment);
         }
@@ -7949,8 +7936,19 @@ trait Authorize
         return $returnData;
     }
 
-    protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment)
+    protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment, $response = []): void
     {
+
+        if ($payment->isAppCred() === true)
+        {
+            $this->addDiscountToCred($payment, $response);
+        }
+
+        if ($payment->isCardlessEmiWalnut369() === true)
+        {
+            $this->addDiscountToWalnut369($payment, $response);
+        }
+
         if ($payment->hasOrder() === false)
         {
             return;

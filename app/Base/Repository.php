@@ -658,7 +658,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $env = $this->app->environment();
 
-        if ($env === 'testing')
+        if (in_array($env, ['testing', 'testing_docker'], true) === true)
         {
             return ($this->db->transactionLevel() > 1);
         }

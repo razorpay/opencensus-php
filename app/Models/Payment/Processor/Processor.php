@@ -8594,8 +8594,6 @@ class Processor
     {
         $invoice = $payment->invoice;
 
-        $this->repo->invoice->lockForUpdateAndReload($invoice);
-
         try
         {
             $invoice->getValidator()->validateInvoicePayableForPayment($payment);
