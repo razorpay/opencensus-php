@@ -104,6 +104,7 @@ final class Metric
     const MERCHANT_COUPON_VALIDITY_INVALID_REQUEST_COUNT  = 'merchant_coupon_validity_invalid_request_count';
     const MERCHANT_COUPON_VALIDITY_ERROR_COUNT  = 'merchant_coupon_validity_error_count';
     const MERCHANT_COUPON_VALIDITY_SHOPIFY_REQUEST_COUNT              = 'merchant_coupon_validity_shopify_request_count';
+    const MAGIC_COD_PAYMENT_NOT_ALLOWED                               = 'magic_cod_payment_not_allowed';
 
     // New settlements events cron
     const NSS_CRON_LAST_RUN_AT_SAME_VALUE                             = 'nss_cron_last_run_at_same_value';

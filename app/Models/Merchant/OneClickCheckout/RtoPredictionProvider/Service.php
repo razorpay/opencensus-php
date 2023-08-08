@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider;
 
+use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
 use RZP\Http\Request\Requests;
 use RZP\Models\Order;
@@ -26,8 +27,11 @@ class Service
 
     const GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES    = "get_merchant_order_review_automation_rules";
     const UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES = "upsert_merchant_order_review_automation_rules";
-
     const CREATE_JOB_EXECUTIONS = 'create_job_executions_api';
+
+    const COD_ELIGIBILITY_CACHE_KEY_PREFIX = 'TW_ADDRESS_COD_ELIGIBILITY:';
+    const COD_ELIGIBILITY_CACHE_VALIDITY   = 1800; // 30 minutes
+
 
     const PARAMS = [
         self::COD_ELIGIBILITY_EVALUATE  =>   [
@@ -70,9 +74,21 @@ class Service
     {
         $input = $this->addOrderDetails($input);
 
+        $cacheResponse = $this->getCodEligibilityFromCache($input);
+
+        if (empty($cacheResponse) === false)
+        {
+            $this->app['trace']->info(TraceCode::COD_ELIGIBILITY_VALIDITY_CACHE_RESPONSE, ['cached_response' => $cacheResponse]);
+            return $cacheResponse;
+        }
+
         $params = self::PARAMS[self::COD_ELIGIBILITY_EVALUATE];
 
-        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+        $response = $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+
+        $this->cacheCodEligibility($input, $response);
+
+        return $response;
     }
 
     private function addOrderDetails(array $input) : array
@@ -271,6 +287,83 @@ class Service
         $params = self::PARAMS[self::CREATE_JOB_EXECUTIONS];
 
         return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    private function cacheCodEligibility($input, $response)
+    {
+        try
+        {
+            $this->app['cache']->put(
+                $this->getCodEligibilityCacheKey($input),
+                $response,
+                self::COD_ELIGIBILITY_CACHE_VALIDITY);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->error(TraceCode::COD_ELIGIBILTY_RTO_SERVICE_RESPONSE_CACHE_CREATE_FAILED,
+                [
+                    'type'    => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'trace'   => $e->getTraceAsString(),
+                ]
+            );
+        }
+    }
+
+    private function getCodEligibilityFromCache($input)
+    {
+        try
+        {
+            $cachedKey = $this->getCodEligibilityCacheKey($input);
+            return $this->app['cache']->get($cachedKey);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->error(TraceCode::COD_ELIGIBILTY_RTO_SERVICE_RESPONSE_CACHE_FETCH_FAILED,
+                [
+                    'type'    => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'trace'   => $e->getTraceAsString(),
+                ]
+            );
+        }
+    }
+
+    private function getCodEligibilityCacheKey($data): string
+    {
+        $cachedParams = [];
+
+        if (isset($data['input']) === true && isset($data['input']['order']) === true) {
+
+            $order = $data['input']['order'];
+
+            $cachedParams['order_id'] = $order['id'];
+
+            if (isset($order['shipping_address']['id']) === true) {
+                unset($order['shipping_address']['id']);
+                $cachedParams['shipping_address'] = $order['shipping_address'];
+            }
+
+            if (isset($order['device']) === true) {
+                if (isset($order['device']['pathname']) === true) {
+                    unset($order['device']['pathname']);
+                }
+
+                if (isset($order['device']['search']) === true) {
+                    unset($order['device']['search']);
+                }
+
+                $cachedParams['device'] = $order['device'];
+            }
+
+            if (isset($order['customer']) === true) {
+                $cachedParams['customer'] = $order['customer'];
+            }
+        }
+
+        return self::COD_ELIGIBILITY_CACHE_KEY_PREFIX . (md5(json_encode($cachedParams)));
     }
 
 }

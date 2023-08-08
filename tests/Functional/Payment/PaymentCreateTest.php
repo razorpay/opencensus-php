@@ -63,6 +63,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService as RtoPredictionService;
+use Illuminate\Http\Response;
 
 class PaymentCreateTest extends TestCase
 {
@@ -8446,8 +8448,8 @@ class PaymentCreateTest extends TestCase
     {
         $app = App::getFacadeRoot();
         $shipping_address = [
-            'line1'         => 'some line one',
-            'line2'         => 'some line two',
+            'line1'         => 'line_one',
+            'line2'         => 'line_two',
             'city'          => 'Bangalore',
             'state'         => 'Karnataka',
             'zipcode'       => '560001',
@@ -8456,8 +8458,8 @@ class PaymentCreateTest extends TestCase
             'primary'       => true
         ];
         $billing_address = [
-            'line1'         => 'some line one',
-            'line2'         => 'some line two',
+            'line1'         => 'line_one',
+            'line2'         => 'line_two',
             'city'          => 'Bangalore',
             'state'         => 'Karnataka',
             'zipcode'       => '560001',
@@ -8528,6 +8530,127 @@ class PaymentCreateTest extends TestCase
 
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Something went wrong, please try again after sometime.');
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function test1CCOrderPaymentsCodAsPaymentMethodRTOCheck()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $this->fixtures->merchant->enableCoD();
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+
+        $this->fixtures->create(
+            'merchant_1cc_configs',
+            [
+                'merchant_id' => '10000000000000',
+                'config'      => 'cod_intelligence',
+                'value'       => true,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['card']);
+        unset($payment['bank']);
+        $cod_fee = 100000;
+        $orderId = 'order_'.$order->getId();
+        $payment["order_id"] = $orderId;
+        $payment["amount"] = $order->getAmount() + $cod_fee;
+        $payment["method"] = "cod";
+        $payment['_']['device_id'] = "1.8c5616f7c16d08c5a89b27066ae2aa7961fc3eba.1674133206455.87700776";
+        $payment["key_id"] = "rzp_test_aTRE5ODB250f56";
+        $testData['request']['content'] = $payment;
+
+        $rtoServiceResponse = [
+            "result"    => [
+                "action" => "allow",
+            ],
+            "meta_data" => [
+                "risk_tier" => "low",
+            ],
+        ];
+
+        $this->rtoServiceMock = Mockery::mock(RtoPredictionService::class)->makePartial();
+
+        $this->app->instance('rto_prediction_service_client', $this->rtoServiceMock);
+
+        $this->rtoServiceMock
+            ->shouldReceive('sendRequest')
+            ->andReturn($rtoServiceResponse);
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function test1CCOrderPaymentsCodAsPaymentMethodRTOReturningFalse()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $this->fixtures->merchant->enableCoD();
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+
+        $this->fixtures->create(
+            'merchant_1cc_configs',
+            [
+                'merchant_id' => '10000000000000',
+                'config'      => 'cod_intelligence',
+                'value'       => true,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['card']);
+        unset($payment['bank']);
+        $cod_fee = 100000;
+        $orderId = 'order_'.$order->getId();
+        $payment["order_id"] = $orderId;
+        $payment["amount"] = $order->getAmount() + $cod_fee;
+        $payment["method"] = "cod";
+        $payment['_']['device_id'] = "1.8c5616f7c16d08c5a89b27066ae2aa7961fc3eba.1674133206455.87700776";
+        $payment["key_id"] = "rzp_test_aTRE5ODB250f56";
+        $testData['request']['content'] = $payment;
+
+        $this->rtoServiceMock = Mockery::mock(RtoPredictionService::class)->makePartial();
+
+        $this->app->instance('rto_prediction_service_client', $this->rtoServiceMock);
+
+        $rtoBody = [
+                "result" => [
+                    "action" => "disallow",
+                ],
+                "meta_data" => [
+                    "risk_tier" => "high",
+                    "rto_reasons" => ["IsZipcodeBlacklisted"],
+                    "rto_category" => "blocklist",
+                ],
+        ];
+
+        $this->rtoServiceMock
+            ->shouldReceive('sendRequest')
+            ->andReturn($rtoBody);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('cod not allowed for this request');
 
         $response = $this->makeRequestParent($testData['request']);
 

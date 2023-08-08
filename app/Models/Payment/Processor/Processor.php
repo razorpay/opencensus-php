@@ -111,7 +111,9 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
+use RZP\Services\ThirdWatchService;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
+
 
 class Processor
 {
@@ -9629,8 +9631,6 @@ class Processor
                     null);
             }
 
-            $this->adjustCodFromGiftCardsIfApplicable($input, $orderMeta);
-
             $promotions = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
 
             $couponData = null;
@@ -9656,6 +9656,48 @@ class Processor
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DISABLED_FOR_COUPON);
                 }
             }
+
+            if ($input['method'] === Payment\Method::COD)
+            {
+                try
+                {
+                    $thirdWatchPayload = [
+                        'address'  => $customerDetails[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS],
+                        'order_id' => $this->order->getPublicId(),
+                        'device'   => [
+                            'id'         => (isset($input['_']) === true && isset($input['_']['device_id']) === true) ? $input['_']['device_id'] : '',
+                            'user_agent' => $this->request->header('X-User-Agent') ?? $this->request->header('User-Agent') ?? null,
+                        ],
+                    ];
+
+                    $thirdWatchResponse = (new ThirdWatchService)->checkCodEligibility($thirdWatchPayload);
+
+                    if (empty($thirdWatchResponse) === false && $thirdWatchResponse['cod'] === false)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_ERROR,
+                            null,
+                            null,
+                            "cod not allowed for this request");
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    if ( ($e instanceof Exception\BaseException === true) && $e->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_ERROR)
+                    {
+                        $this->trace->count(Merchant\Metric::MAGIC_COD_PAYMENT_NOT_ALLOWED, ['order_id' => $this->order->getPublicId()]);
+                        throw $e;
+                    }
+
+                    //If anything fails while checking cod serviceability, we will not block the call
+                    $this->trace->error(TraceCode::RTO_PREDICTION_SERVICE_ERROR, [
+                        'order_id' => $this->order->getPublicId(),
+                        'trace'    => $e->getTrace(),
+                    ]);
+                }
+            }
+
+            $this->adjustCodFromGiftCardsIfApplicable($input, $orderMeta);
         }
     }
 

@@ -1158,5 +1158,38 @@ return [
             ]
         ],
     ],
+
+    'test1CCOrderPaymentsCodAsPaymentMethodRTOCheck' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'test1CCOrderPaymentsCodAsPaymentMethodRTOReturningFalse' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'cod not allowed for this request',
+                ],
+            ],
+            'status_code' => 400,
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
+            ],
+        ]
+    ],
 ];
 
