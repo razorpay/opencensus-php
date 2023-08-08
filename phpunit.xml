@@ -53,7 +53,6 @@
             <directory>./tests/Functional/UpiTransfer/</directory>
             <directory>./tests/Functional/MasterOnboardingService/</directory>
             <directory>./tests/Functional/TerminalOnboardingDetail/</directory>
-            <directory>./tests/Functional/OneClickCheckout/</directory>
             <directory>./tests/Functional/PayoutOutbox/</directory>
             <directory>./tests/Functional/Location/</directory>
             <file>./tests/Functional/Merchant/PartnerTest.php</file>
@@ -154,18 +153,14 @@
             <file>./tests/Functional/Merchant/MerchantEmailTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEsCreateTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEsFetchTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantPromotionsTest.php</file>
         </testsuite>
         <testsuite name="Features-2-3 Test Suite">
             <file>./tests/Functional/Merchant/MerchantInvoiceTest.php</file>
             <file>./tests/Functional/Merchant/MerchantNotificationConfigTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantOneCcConfigTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantPromotionsTest.php</file>
             <file>./tests/Functional/Merchant/MerchantRequestTest.php</file>
             <file>./tests/Functional/Merchant/MerchantRiskNoteTest.php</file>
             <file>./tests/Functional/Merchant/MethodsTest.php</file>
             <file>./tests/Functional/Merchant/NeedsClarificationRespondedTest.php</file>
-            <file>./tests/Functional/Merchant/OneClickCheckoutAuthConfigTest.php</file>
             <file>./tests/Functional/Merchant/PartnerAccountTest.php</file>
             <file>./tests/Functional/Merchant/PartnerConfigTest.php</file>
         </testsuite>
@@ -178,7 +173,6 @@
             <file>./tests/Functional/Merchant/ScrubBankingSensitiveDetailsTest.php</file>
             <file>./tests/Functional/Merchant/SelfServeCreditVATest.php</file>
             <file>./tests/Functional/Merchant/SelfServeCreditsTest.php</file>
-            <file>./tests/Functional/Merchant/ShippingInfoTest.php</file>
             <file>./tests/Functional/Merchant/StakeholderTest.php</file>
             <file>./tests/Functional/Merchant/SubBalanceTest.php</file>
             <file>./tests/Functional/Merchant/TerminalMigrationTest.php</file>
@@ -354,6 +348,8 @@
             <exclude>/tests/Functional/Payment/RecurringPaymentTest.php</exclude>
             <exclude>/tests/Functional/Payment/RetrieveTest.php</exclude>
             <exclude>/tests/Functional/Payment/ReturnTest.php</exclude>
+            <exclude>/tests/Functional/Payment/OneCcPaymentsTest.php</exclude>
+
         </testsuite>
         <testsuite name="Gateway-1 Test Suite">
             <directory>./tests/Functional/Gateway/Aeps/</directory>
@@ -547,6 +543,15 @@
             <directory>./tests/Functional/Merchant/BvsVerification/</directory>
             <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/Modules/Acs/Wrapper/</directory>
+        </testsuite>
+        <testsuite name="Magic_Test_Suite">
+            <directory>./tests/Functional/OneClickCheckout/</directory>
+            <file>./tests/Functional/Merchant/OneClickCheckoutAuthConfigTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantOneCcConfigTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantPromotionsTest.php</file>
+            <file>./tests/Functional/Merchant/ShippingInfoTest.php</file>
+            <file>./tests/Functional/Payment/OneCcPaymentsTest.php</file>
+            <file>./tests/Functional/Payment/OneCCShopifyCreateOrderTest.php</file>
         </testsuite>
     </testsuites>
     <listeners>
