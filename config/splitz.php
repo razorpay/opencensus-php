@@ -322,6 +322,9 @@ return [
         // Chunked Based Streaming - View Page
         'CHUNKED_BASED_STREAMING' => env('CHUNKED_BASED_STREAMING', ''),
 
+        // Dashboard User Concurrent API call
+        'DASHBOARD_USER_CONCURRENT_API_CALL' => env('DASHBOARD_USER_CONCURRENT_API_CALL', ''),
+        
         // Ecosystem Downtimes UI - Availability and Downtime
         'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES',''),
         'SUCCESS_RATE_ADMIN' => env('SUCCESS_RATE_ADMIN', ''),

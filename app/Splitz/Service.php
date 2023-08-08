@@ -7,6 +7,7 @@ use App\Trace\TraceCode;
 use App\User\Constants;
 use App\Admin\ApiRequestAny;
 use Illuminate\Foundation\Application;
+use GuzzleHttp\Promise\PromiseInterface;
 
 class Service extends Base\Service
 {
@@ -29,6 +30,77 @@ class Service extends Base\Service
     public function getSplitzVariantBulk($merchantId): array
     {
         return $this->getVariantBulk($merchantId, config('splitz.experiments'));
+    }
+
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function getSplitzVariantBulkAsyncPromise($merchantId): ?PromiseInterface
+    {
+        return $this->getVariantBulkAsyncPromise($merchantId, config('splitz.experiments'));
+    }
+
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function getVariantBulkAsyncPromise($merchantId, $experimentIds, $clientType = ['client_type' => 'merchant'], $url = 'splitz/bulkEvaluateProxy', $optionalRequestData = []): ?PromiseInterface
+    {
+        if (empty($experimentIds) === true)
+        {
+            return null;
+        }
+
+        $request = new ApiRequestAny($clientType);
+
+        $requestData = ['mid' => $merchantId];
+
+        $requestData = array_merge($requestData, $optionalRequestData);
+
+        $input = [];
+
+        foreach ($experimentIds as $experimentId)
+        {
+            $experimentInput = [
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode($requestData, true)
+            ];
+
+            array_push($input, $experimentInput);
+        }
+
+        return $request->processInput($input)->sendAsyncPromise($url, 'POST');
+    }
+
+    public function processVariantBulkAsyncPromiseResponse($apiSplitzPromise)
+    {
+        list($error, $data) = $apiSplitzPromise->processAsyncPromiseResponse();
+        
+        if (empty($error) === false)
+        {
+            $this->trace->info(TraceCode::SPLITZ_BULK_EVALUATE_FAILED, ["error" => $error]);
+        
+            return [];
+        }
+        
+        $responseData = [];
+        
+        foreach ($data as $output)
+        {
+            if (isset($output['experiment']['id']) === true)
+            {
+                $experimentFeatureFlag = $output['experiment']['id'];
+                $responseData[$experimentFeatureFlag] = [];
+            
+                if (isset($output['variant']) === true)
+                {
+                    $responseData[$experimentFeatureFlag] = $this->transformVariablesFromVariantIfExist($output['variant']);
+                }
+            }
+        }
+        
+        return $responseData;
+        
     }
 
     public function getVariantBulk($merchantId, $experimentIds, $clientType = ['client_type' => 'merchant'], $url = 'splitz/bulkEvaluateProxy', $optionalRequestData = [])

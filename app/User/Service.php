@@ -42,6 +42,7 @@ use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use Illuminate\Auth\Access\AuthorizationException;
 use hisorange\BrowserDetect\Parser as BrowserDetect;
+use App\Admin\ApiPromiseAny as ApiPromiseAny;
 
 const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
@@ -75,7 +76,22 @@ class Service extends Base\Service
     const SOURCE              = 'source';
 
     const OAUTH_ACTION        = 'oauth_action';
-
+    
+    const EXPERIMENT_PROMISE = 'experiments';
+    const SPLITZ_EXPERIMENT_PROMISE = 'splitz_experiments';
+    const PARTNER_INTENT_PROMISE = 'partner_intent';
+    const CONFIG_PROMISE = 'configs';
+    const PARTNER_ACTIVATION_STATUS_PROMISE = 'partner_activation_status';
+    const SALES_FORCE_LEADS_PROMISE = 'create_lead_sales_force';
+    
+    const PROMISES_PARALLEL_API_CALL = [
+        self::EXPERIMENT_PROMISE,
+        self::SPLITZ_EXPERIMENT_PROMISE,
+        self::PARTNER_INTENT_PROMISE,
+        self::CONFIG_PROMISE,
+        self::PARTNER_ACTIVATION_STATUS_PROMISE,
+    ];
+    
     /**
      * @var Application
      */
@@ -1290,7 +1306,337 @@ class Service extends Base\Service
         return [[], ['details' => $data, 'currentMerchant' => $currentMerchant, 'genericUser' => $genericUser]];
     }
 
-    public function getSecondChunkUserDetails(array $chunkData = [], array $params = [],)
+    
+    private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny): array
+    {
+        if (empty($apiPromiseAny))
+        {
+            return $data;
+        }
+        
+        $allPromises =  $this->getAllApiPromises($apiPromiseAny);
+    
+        $this->setStartTimeForAllApiPromises($apiPromiseAny);
+    
+        // fire and wait for all the promises to complete
+        $allApiResponses = \GuzzleHttp\Promise\Utils::settle($allPromises)->wait();
+    
+        $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses, );
+    
+        $merchantService = new Merchant\Service;
+        
+        if (isset($allApiResponses[self::EXPERIMENT_PROMISE]))
+        {
+            $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
+        
+            $data['experiments'] = $experiments;
+        
+            $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
+        
+            $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
+        }
+    
+        if (isset($allApiResponses[self::SPLITZ_EXPERIMENT_PROMISE]))
+        {
+            $splitzExperiments = (new SplitzService())->processVariantBulkAsyncPromiseResponse($apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]);
+        
+            $data[Constants::SPLITZ_EXPERIMENTS] = $splitzExperiments;
+        }
+    
+        if (isset($allApiResponses[self::PARTNER_INTENT_PROMISE]))
+        {
+            $partnerIntent = $merchantService->processPartnerIntentPromiseResponse($apiPromiseAny[self::PARTNER_INTENT_PROMISE]);
+        
+            $data['partner_intent'] = $partnerIntent;
+        }
+    
+        if (isset($allApiResponses[self::CONFIG_PROMISE]))
+        {
+            $configs = $merchantService->processPartnerConfigPromiseResponse($apiPromiseAny[self::CONFIG_PROMISE]);
+        
+            if (empty($configs) === false)
+            {
+                foreach ($configs as $config)
+                {
+                    if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
+                    {
+                        $data['merchants'][$globalMerchant['id']]['partner']['has_commission_configs'] = true;
+                    }
+                    else if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::SUBVENTION)
+                    {
+                        $data['merchants'][$globalMerchant['id']]['partner']['has_subvention_configs'] = true;
+                    }
+                }
+            }
+        }
+    
+        if (isset($allApiResponses[self::PARTNER_ACTIVATION_STATUS_PROMISE]))
+        {
+            $partnerActivationStatus  = $merchantService->processPartnerActivationStatusPromiseResponse($apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE]);
+        
+            $data['merchants'][$globalMerchant['id']]['partner']['activation_status'] = $partnerActivationStatus;
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * @throws BadRequestError
+     */
+    private function getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data): array
+    {
+        $apiPromiseAny = [];
+        
+        $currentRouteName = \Route::currentRouteName();
+    
+        $serverName = \Request::server('SERVER_NAME');
+    
+        $splitzExperiments = $params[Constants::SPLITZ_EXPERIMENTS] ?? "1";
+        $experiments = $params[Constants::EXPERIMENTS] ?? "1";
+    
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+        
+        $merchantService = new Merchant\Service;
+    
+        $currentMerchantId = $currentMerchant->id;
+        
+        // API 1.1
+        if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+            ($experiments === "1"))
+        {
+            $promise = $merchantService->getExperimentPromise();
+            $apiPromiseAny[self::EXPERIMENT_PROMISE] = new ApiPromiseAny('razorx/bulkevaluate','GET');
+            $apiPromiseAny[self::EXPERIMENT_PROMISE]->setPromise($promise);
+        }
+    
+        // API 1.2
+        if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
+            ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
+            ($splitzExperiments === "1"))
+        {
+            $promise = (new SplitzService())->getSplitzVariantBulkAsyncPromise($currentMerchantId);
+        
+            if (!empty($promise))
+            {
+                $apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE] =  new ApiPromiseAny('splitz/bulkEvaluateProxy','POST');
+                $apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]->setPromise($promise);
+            }
+        }
+    
+        // API 1.3
+        if (($isBankingRequest === false) and
+            (new Helper)->isOwner($currentMerchant))
+        {
+            $promise = $merchantService->getPartnerIntentAsyncPromise();
+        
+            $apiPromiseAny[self::PARTNER_INTENT_PROMISE] =  new ApiPromiseAny('merchant/partner-intent','GET');
+            $apiPromiseAny[self::PARTNER_INTENT_PROMISE]->setPromise($promise);
+        }
+    
+        // API 1.4
+        if (($isBankingRequest === false) and
+            (empty($data['merchants'][$merchant['id']]['partner_type']) === false))
+        {
+            // if the merchant is a partner
+            $data['merchants'][$merchant['id']]['partner'] = [];
+        
+            // API 1.4.1
+            $promise = $merchantService->fetchPartnerConfigsAsyncPromise();
+            $apiPromiseAny[self::CONFIG_PROMISE] =  new ApiPromiseAny('merchants/me/partner/configs','GET');
+            $apiPromiseAny[self::CONFIG_PROMISE]->setPromise($promise);
+        
+            // API 1.4.2
+            if (in_array($data['merchants'][$merchant['id']]['partner_type'], Constants::PARTNER_ACTIVATION_APPLICABLE_TYPES))
+            {
+                $promise = $merchantService->fetchPartnerActivationStatusAsyncPromise();
+                $apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE] =  new ApiPromiseAny('partner/activation','GET');
+                $apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE]->setPromise($promise);
+            }
+        }
+        
+        return $apiPromiseAny;
+    }
+    
+    public function getSecondChunkUserDetailsConcurrent(array $chunkData = [], array $params = [])
+    {
+        $currentRouteName = \Route::currentRouteName();
+
+        $serverName = \Request::server('SERVER_NAME');
+
+        $tags = $params[Constants::TAGS] ?? "1";
+        $features = $params[Constants::FEATURES] ?? "1";
+        $payouts = $params[Constants::PAYOUTS] ?? "1";
+        $fetchMerchantDetails = $params[Constants::MERCHANT_DETAILS] ?? "1";
+
+        $user = Auth::user();
+
+        $data = $chunkData['details'];
+
+        $merchants = $chunkData['details']['user']['merchants'];
+
+        $genericUser = $chunkData['genericUser'];
+
+        $currentMerchant =  $chunkData['currentMerchant'];
+
+        $activated = false;
+
+        $currentMerchantId = $currentMerchant->id;
+        
+        $merchantService = new Merchant\Service;
+
+        // If the user is logged in as someone
+        if ($currentMerchantId)
+        {
+            //
+            // This is temporary code to get merchant waitlist
+            // This code will be removed, in few weeks
+            //
+            $data['current_account_waitlist_number'] = Merchant\Constants::MERCHANT_WAITLIST[$currentMerchantId] ?? null;
+
+            /**
+             * Currently we are assigning $activated = true, even if one merchant associated to the user is activated.
+             * The same $activated flag is being used to fill pre_signup_complete. (UI uses this flag to render pre signup page)
+             * Propagating the same to updateMerchantDetails() function so that it will not impact the existing functionality*
+             * Slack thread: https://razorpay.slack.com/archives/C2CP46QBW/p1639979762325500
+             */
+            foreach ($merchants as $merchant)
+            {
+                if (((bool)$merchant['activated']) === true)
+                {
+                    $activated = true;
+                }
+            }
+
+            // Fetch merchant details for current merchant
+            if ($fetchMerchantDetails === "1")
+            {
+                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $activated, $currentMerchant, $genericUser);
+            }
+
+            $this->traceMerchantActivatedTruthyValue($data, __LINE__);
+
+            foreach ($merchants as $merchant)
+            {
+                $data['merchants'][$merchant['id']] = $merchant;
+
+                if ($merchant['id'] === $currentMerchantId)
+                {
+                    $globalMerchant = $merchant;
+
+                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+                    if ($payouts === "1")
+                    {
+                        $data = $this->appendBankingDetails($data);
+                    }
+
+                    $data['current'] = $currentMerchantId;
+
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
+                        ($tags === "1"))
+                    {
+                        $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                    }
+
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
+                        ($features === "1"))
+                    {
+                        $data['features'] = $merchantService->getMerchantFeatures();
+                    }
+
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::CAMPAIGNS) === false)) and
+                        ($isBankingRequest === false))
+                    {
+                        // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
+                        // which is causing validation failure
+                        // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
+                        $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+                    }
+
+                    // Make switch product call only if
+                    // 1. Request is banking request and banking_role is null
+                    // 2. Request is pg request and role is null
+                    //
+                    if ((($isBankingRequest === true) and ($data['banking_role'] === null)) or
+                        (($isBankingRequest === false) and ($data['role'] === null)))
+                    {
+                        $data = $this->switchProduct($data, $user);
+                    }
+    
+                    $apiPromiseAny = $this->getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data);
+    
+                    $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny);
+                }
+            }
+        }
+    
+        // This is to stop leads assigning to sales poc on salesforce
+        if ($data['pre_signup_complete'] === false and array_key_exists('rx_ca_self_serve_flow_neo', $data['experiments']) === true)
+        {
+            if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
+            {
+                $payload = [
+                  'merchant_id' => $currentMerchantId,
+                  'x_onboarding_category'   => 'self_serve'
+                ];
+            
+                $this->createLeadToSalesforce($payload, $currentMerchantId);
+            }
+        }
+        
+        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
+
+        if (isset($data['activated']) === true) {
+            $data['activated'] = (int) $data['activated'];
+        }
+
+        return [[], ['details' => $data]];
+    }
+    
+    public function setResponseForEachApiPromises(array $apiPromiseAny, array $allApiResponses): void
+    {
+        foreach ($allApiResponses as $key => $apiResponse)
+        {
+            if (in_array($key,self::PROMISES_PARALLEL_API_CALL,true))
+            {
+                $apiPromiseAny[$key]->setApiResponse(array_get($apiResponse,'value'), array_get($apiResponse,'reason'));
+            }
+        }
+    }
+
+    public function setStartTimeForAllApiPromises(array $apiPromiseAny): void
+    {
+        $startTime = round(microtime(true) * 1000);
+        
+        foreach ($apiPromiseAny as $key => $apiPromise)
+        {
+            if (in_array($key,self::PROMISES_PARALLEL_API_CALL,true))
+            {
+                $apiPromise->setStartTime($startTime);
+            }
+        }
+    }
+    
+    public function getAllApiPromises(array $apiPromiseAny): array
+    {
+        $allPromise = [];
+        
+        foreach ($apiPromiseAny as $key => $apiPromise)
+        {
+            if (in_array($key,self::PROMISES_PARALLEL_API_CALL,true))
+            {
+                $allPromise[$key] = $apiPromise->getPromise();
+            }
+        }
+        
+        return $allPromise;
+    }
+    
+    public function getSecondChunkUserDetails(array $chunkData = [], array $params = [])
     {
         $currentRouteName = \Route::currentRouteName();
 
@@ -1762,10 +2108,10 @@ class Service extends Base\Service
             if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
             {
                 $payload = [
-                    'merchant_id' => $currentMerchantId,
-                    'x_onboarding_category'   => 'self_serve'
+                  'merchant_id' => $currentMerchantId,
+                  'x_onboarding_category'   => 'self_serve'
                 ];
-
+            
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
             }
         }

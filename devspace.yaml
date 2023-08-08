@@ -34,7 +34,7 @@ dev:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
   - name: DEVSTACK_LABEL
-    value: 'your-devstack-label'
+    value: 'shubham-sdk'
   - name: NAMESPACE
     value: 'dashboard'
   - name: APP_NAME

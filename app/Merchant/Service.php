@@ -23,7 +23,9 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
 use App\Session\Entity as AppSession;
+use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Promise\PromiseInterface;
 
 class Service extends Base\Service
 {
@@ -530,6 +532,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function fetchPartnerConfigsAsyncPromise(): PromiseInterface
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        return $request->sendAsyncPromise('merchants/me/partner/configs', 'GET');
+    }
+
     public function fetchPartnerConfigs()
     {
         $startTime = microtime(true) * 1000;
@@ -563,6 +575,16 @@ class Service extends Base\Service
         ]);
 
         return $data['items'] ?? [];
+    }
+
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function fetchPartnerActivationStatusAsyncPromise(): PromiseInterface
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        return $request->sendAsyncPromise('partner/activation', 'GET');
     }
 
     public function fetchPartnerActivationStatus()
@@ -665,6 +687,16 @@ class Service extends Base\Service
         ]);
 
         return $data;
+    }
+
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function getPartnerIntentAsyncPromise(): PromiseInterface
+    {
+        $request = new ApiRequestAny(['client_type'    => 'merchant']);
+
+        return $request->sendAsyncPromise('merchant/partner-intent', 'GET');
     }
 
     public function getPartnerIntent()
@@ -1022,6 +1054,82 @@ class Service extends Base\Service
         $experiments = $response['experiments'] ?? [];
 
         return $experiments;
+    }
+    
+    public function processPartnerIntentPromiseResponse($apiPartnerIntentPromise)
+    {
+        list($error, $data) = $apiPartnerIntentPromise->processAsyncPromiseResponse();
+        
+        if(empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+        
+        return $data['partner_intent'] ?? null;
+    }
+    
+    public function processPartnerConfigPromiseResponse($apiPartnerConfigPromise)
+    {
+        list($error, $data)  = $apiPartnerConfigPromise->processAsyncPromiseResponse();
+    
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+    
+        return $data['items'] ?? [];
+        
+    }
+    
+    public function processPartnerActivationStatusPromiseResponse($apiPartnerActivationPromise)
+    {
+        list($error, $data)  = $apiPartnerActivationPromise->processAsyncPromiseResponse();
+    
+        if (empty($error) === false)
+        {
+            $this->trace->error(
+                TraceCode::GET_PARTNER_ACTIVATION_ROUTE_ERROR,
+                [
+                    "exception" => $error
+                ]
+            );
+            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1, [ "exception" => $error[0] ]);
+        }
+
+        return ($data && $data['partner_activation']) ? $data ['partner_activation']['activation_status'] : '';
+    }
+    
+    public function processExperimentPromiseResponse($apiExperimentPromise)
+    {
+        $razorxService = (new Razorx\Service());
+        
+        $experimentsResults =  $razorxService->processBulkTreatmentPromiseResponse($apiExperimentPromise);
+    
+        foreach ($experimentsResults as $result => $val)
+        {
+            $data['experiments'][$result] = $val;
+        }
+    
+        return  $data['experiments'] ?? [];
+        
+    }
+
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function getExperimentPromise(): PromiseInterface
+    {
+        $razorxService = (new Razorx\Service());
+
+        return $razorxService->getBulkTreatmentPromise(Razorx\Service::FEATURE_FLAGS);
     }
 
     public function getBusinessTypes(){

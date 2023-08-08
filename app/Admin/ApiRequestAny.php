@@ -16,6 +16,7 @@ use GuzzleHttp\Psr7\Utils;
 use App\Metrics\Constants;
 use Lcobucci\JWT\Token\Parser;
 use GuzzleHttp\Client as Guzzle;
+use GuzzleHttp\Promise\Promise;
 use Razorpay\Api\Errors as RZPErrors;
 use App\Admin\Service as AdminService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -543,6 +544,34 @@ class ApiRequestAny
         return $this;
     }
 
+    /**
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function sendAsyncPromise($path, $method = null): \GuzzleHttp\Promise\PromiseInterface
+    {
+        $method = $method ?? Request::method();
+    
+        $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
+    
+        $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($path, $method, $currentRouteName);
+    
+        $apiRouteCircuitBreaker->validateRouteCircuitIsOpen($path, $method);
+    
+        $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
+        
+        $path = str_replace('://', '', $path);
+    
+        return (new ApiRequestSpan($this->client))->wrapAsyncRequest(
+            $method,
+            $path,
+            [
+                'options' => $this->options,
+                'headers' => $this->options['headers'] ?? [],
+            ],
+            $spanOptions,
+        );
+    }
+    
     static function millitime(): int
     {
         return round(microtime(true) * 1000);
@@ -1006,7 +1035,7 @@ class ApiRequestAny
         }
     }
 
-    private function getApiErrorDescription($exceptionData)
+    public function getApiErrorDescription($exceptionData)
     {
         $errorDescription = 'Something went wrong';
 

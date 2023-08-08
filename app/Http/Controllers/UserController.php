@@ -44,6 +44,8 @@ class UserController extends Controller
 
     protected $trace;
 
+    protected $concurrentApiCallExperimentName = 'DASHBOARD_USER_CONCURRENT_API_CALL';
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -81,7 +83,7 @@ class UserController extends Controller
         return $data;
     }
 
-    public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isChunkedBasedEnable = false)
+    public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
 
@@ -215,14 +217,6 @@ class UserController extends Controller
                 $data['isMobileConfirmed'] = false;
             }
 
-            if ($isChunkedBasedEnable === false)
-            {
-                $timeTaken = self::millitime() - $startTime;
-                $this->pushUserRenderDataToMetrics($timeTaken, false);
-                
-                return view('merchant.index', $data);
-            }
-
             // Chunk based straming: get the flag to check streaming
             $isMerchantLogin = Session::get('is_merchant_login');
 
@@ -240,7 +234,7 @@ class UserController extends Controller
                 }
                 
                 $timeTaken = self::millitime() - $startTime;
-                $this->pushUserRenderDataToMetrics($timeTaken, true);
+                $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
                 
                 return view('merchant.index', $data);
             }
@@ -253,7 +247,7 @@ class UserController extends Controller
                 ]);
                 
                 $timeTaken = self::millitime() - $startTime;
-                $this->pushUserRenderDataToMetrics($timeTaken, true);
+                $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
                 
                 echo($view);
                 ob_flush();
@@ -262,33 +256,44 @@ class UserController extends Controller
         }
     }
 
-    // Chunk based straming: get the flag status from splitz
-    private function isChunkedBasedStreamingEnabled(): bool
+    private function isConcurrentApiCallEnabledForDashboardUser(): bool
     {
         $currentMerchantId = Session::get('current_merchant_id');
-
+    
         if (app('request.ctx')->isOauthRequest() === true)
         {
             $currentMerchantId = app('request.ctx')->getMerchantId();
         }
-
+    
         $currentRouteName = \Route::currentRouteName();
-
+    
         $serverName = \Request::server('SERVER_NAME');
-
+    
         $isPgRenderCall = (new User\Service)->isPgRenderCall($currentRouteName, $serverName);
-
+    
         if (($currentMerchantId === null) or
             ($isPgRenderCall === false))
         {
             return false;
         }
-
-        $experimentId = config('splitz.experiments')['CHUNKED_BASED_STREAMING'];
-
+    
+        $experimentName = $this->concurrentApiCallExperimentName;
+        
+        $experimentId = config('splitz.experiments')[$experimentName];
+    
         $data = (new SplitzService())->getVariantBulk($currentMerchantId, [$experimentId], [], "splitz/bulkEvaluate");
-
+    
         return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+    }
+    
+    private function getSecondChunkedData(array $firstChunkData, bool $isConcurrentApiCallEnabled): array
+    {
+        if ($isConcurrentApiCallEnabled)
+        {
+            return (new User\Service)->getSecondChunkUserDetailsConcurrent($firstChunkData);
+        }
+
+        return (new User\Service)->getSecondChunkUserDetails($firstChunkData);
     }
     
     static function millitime(): int
@@ -296,17 +301,18 @@ class UserController extends Controller
         return round(microtime(true) * 1000);
     }
     
-    public function pushUserRenderDataToMetrics($timeTaken, $cbsFlow)
+    public function pushUserRenderDataToMetrics($timeTaken, $cbsFlow, $concurrentApICall = false)
     {
         $domain = \Request::server('SERVER_NAME') ?? 'unknown_domain';
         
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
         
         $dimensions = [
-            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN   => ApiUrl::getRequestOrigin(),
-            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN   => $domain,
-            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE    => $currentRouteName,
-            MetricConstants::LABEL_DASHBOARD_CBS          => $cbsFlow,
+            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN             => ApiUrl::getRequestOrigin(),
+            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN             => $domain,
+            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE              => $currentRouteName,
+            MetricConstants::LABEL_DASHBOARD_CBS                    => $cbsFlow,
+            MetricConstants::LABEL_DASHBOARD_CONCURRENT_API_CALL    => $concurrentApICall
         ];
         
         $this->trace->info(TraceCode::USER_RENDER_DATA, $dimensions + ['time_taken' => $timeTaken]);
@@ -349,30 +355,7 @@ class UserController extends Controller
 //                400
 //            );
         }
-
-        // Chunk based straming: On the basis of experiment we are revamping the Chunked Based streaming, so this part of
-        // code will go through old flow by calling getUserDetails function
-        // This flow will be similar to older flow without chunk based streaming
-
-        if ($this->isChunkedBasedStreamingEnabled() === false)
-        {
-            list($userError, $details) = (new User\Service)->getUserDetails();
-
-            if (empty($userError) == false)
-            {
-                $this->trace->info(TraceCode::FETCH_USER_DETAILS_ERROR, [
-                    'error' => $userError
-                ]);
-//            throw new BadRequestError(
-//                'Error in fetching user details',
-//                ErrorCode::BAD_REQUEST_ERROR,
-//                400
-//            );
-            }
-
-            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, false);
-        }
-
+        
         // From here logic for chunked Based Streaming has started.
 
         // Overall scenario for Chunked Based Streaming
@@ -403,23 +386,25 @@ class UserController extends Controller
             'shouldRenderCBS' => $isMerchantLogin,
         ]);
 
+        $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
+
         if (is_null($isMerchantLogin) === true)
         {
             if (empty($userError) and empty($orgError))
             {
-                list($userError2, $secondChunkData) = (new User\Service)->getSecondChunkUserDetails($firstChunkData);
+                list($userError2, $secondChunkData) = $this->getSecondChunkedData($firstChunkData, $isConcurrentApiCallEnabled);
             }
 
             $details = $secondChunkData['details'] ?? [];
 
-            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, true);
+            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCallEnabled);
         }
         else
         {
             // Chunk based straming: start streaming the response
             $response = new StreamedResponse();
 
-            $response->setCallback(function () use ($firstChunkData, $org, $userError, $orgError, $startTime){
+            $response->setCallback(function () use ($firstChunkData, $org, $userError, $orgError, $startTime, $isConcurrentApiCallEnabled){
 
                 $firstDetails = $firstChunkData['details'] ?? [];
 
@@ -438,20 +423,19 @@ class UserController extends Controller
                 echo $view;
                 ob_flush();
                 flush();
-
+                
                 if (empty($userError) and empty($orgError))
                 {
-                    list($secondUserError, $secondChunkData) = (new User\Service)->getSecondChunkUserDetails($firstChunkData);
+                    list($secondUserError, $secondChunkData) = $this->getSecondChunkedData($firstChunkData, $isConcurrentApiCallEnabled);
                 }
 
                 $secondDetails = $secondChunkData['details'] ?? [];
 
-                $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, $startTime, true);
+                $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, $startTime, $isConcurrentApiCallEnabled);
             });
 
             return $response;
         }
-
     }
 
     public function getDummyIFrameForEasyDashboard(){

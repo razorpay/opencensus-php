@@ -109,6 +109,7 @@ class Constants
   const LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT          = 'graphql_client';
   
   const LABEL_DASHBOARD_CBS                         = 'chunked_based_streaming';
+  const LABEL_DASHBOARD_CONCURRENT_API_CALL         = 'concurrent_api_call';
   
   const LABEL_RZP_TEAM                              = 'rzp_team';
 
