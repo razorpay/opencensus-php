@@ -152,6 +152,88 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($response1['id'], $response2['id']);
     }
 
+    public function testUpdateKycAccessWithApprovedStatusWithNoRecord()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+
+        $response = $this->startTest();
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $this->assertEquals($kycAccess->getState(), 'approved');
+
+        $this->assertEquals($accessMap->hasKycAccess(), true);
+    }
+
+    public function testUpdateKycAccessWithApprovedStatusWithRecord()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval'] );
+
+        $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+
+        $this->runRequestResponseFlow($this->testData['testUpdateKycAccessWithApprovedStatusWithNoRecord']);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $this->assertEquals($kycAccess->getState(), 'approved');
+
+        $this->assertEquals($accessMap->hasKycAccess(), true);
+    }
+
+    public function testUpdateKycAccessWithRejectedStatusWithNoRecord()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval'] );
+
+        $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+
+        $this->runRequestResponseFlow($this->testData['testUpdateKycAccessWithRejectedStatusWithRecord']);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+
+        $this->assertEquals($kycAccess->getState(), 'rejected');
+    }
+
+    public function testUpdateKycAccessWithRejectedStatusWithRecord()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval'] );
+
+        $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+
+        $this->startTest();
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+
+        $this->assertEquals($kycAccess->getState(), 'rejected');
+    }
+
     public function testConfirmKycAccessRequest()
     {
         $this->createResellerPartnerSubmerchant();
@@ -263,13 +345,19 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval']);
 
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
         $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
 
         $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
 
-        $this->startTest();
+        $testData = $this->testData['testGetKycAccessStatusPending'];
+
+        $testData['response']['content']['partner_name'] = $merchant->getName();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testGetKycAccessStatusNonPending()
@@ -278,13 +366,19 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->fixtures->create('partner_kyc_access_state', ['state' => 'approved'] );
 
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
         $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
 
         $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
 
-        $this->startTest();
+        $testData = $this->testData['testGetKycAccessStatusNonPending'];
+
+        $testData['response']['content']['partner_name'] = $merchant->getName();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testGetKycAccessStatusNoRecord()
@@ -293,11 +387,17 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID]);
 
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
         $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
 
-        $this->runRequestResponseFlow($this->testData['testGetKycAccessStatusPending']);
+        $testData = $this->testData['testGetKycAccessStatusPending'];
+
+        $testData['response']['content']['partner_name'] = $merchant->getName();
+
+        $this->runRequestResponseFlow($testData);
     }
 
 

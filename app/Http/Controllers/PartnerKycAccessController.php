@@ -46,6 +46,15 @@ class PartnerKycAccessController extends Controller
         return $response;
     }
 
+    public function CreateAndUpdateKycAccess()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->CreateAndUpdateKycAccess($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function revokeKycAccess()
     {
         $input = Request::all();

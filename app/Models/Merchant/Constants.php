@@ -240,6 +240,10 @@ final class Constants
 
     const RAZORPAY_PARTNER_AUTH_TERMS            = 'https://razorpay.com/terms/razorpayx/partnership/';
 
+    const RAZORPAY_GENERAL_TERMS                 = 'https://razorpay.com/terms/';
+
+    const SUBM_EASY_SIGNUP                       = 'SUBM_EASY_SIGNUP';
+
     const RAZORPAY_LINE_OF_CREDIT_SIGN_UP        = 'https://razorpay.com/x/line-of-credit';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';

@@ -147,6 +147,39 @@ return [
             ],
         ],
     ],
+
+    'testUpdateKycAccessWithApprovedStatusWithNoRecord' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access',
+            'method'  => 'POST',
+            'content' => [
+                'ref_code'      => 'teslacomikejzc',
+                'status'        => 'approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testUpdateKycAccessWithRejectedStatusWithRecord' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access',
+            'method'  => 'POST',
+            'content' => [
+                'ref_code'      => 'teslacomikejzc',
+                'status'        => 'rejected',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testConfirmKycAccessRequestAgain' => [
         'request'  => [
             'url'     => '/partner/kyc_approve_reject',

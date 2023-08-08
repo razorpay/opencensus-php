@@ -5,17 +5,21 @@ namespace RZP\Models\Partner\KycAccessState;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
+use RZP\Http\RequestHeader;
+use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\Partner as PartnerEmail;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -328,6 +332,86 @@ class Core extends Base\Core
         return $subMerchantKycAccess;
     }
 
+    public function createRequestKycAndConfirmKycAccess(array $input)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $subMerchantKycAccess = $this->createOrGetKycRequestForEasySubMerchantKyc($input);
+
+        $eventData = [
+            'partner_id'      => $input[Entity::PARTNER_ID],
+            'submerchant_id'  => $input[Entity::ENTITY_ID],
+        ];
+
+        if ($input['status'] === State::APPROVED && $subMerchantKycAccess->getState() !== State::APPROVED )
+        {
+            $subMerchantKycAccess = $this->approveKycRequestForEasySubMerchantKyc($subMerchantKycAccess, $input);
+            $eventData['status'] = State::APPROVED;
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
+            $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, true);
+        }
+        elseif ($input['status'] === State::REJECTED)
+        {
+            $subMerchantKycAccess->setState(State::REJECTED);
+            $subMerchantKycAccess->incrementRejectionCount();
+
+            $this->repo->saveOrFail($subMerchantKycAccess);
+
+            $eventData['status'] = State::REJECTED;
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_REJECT, null, null, $eventData);
+            $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, false);
+        }
+
+        $this->trace->info(TraceCode::PARTNER_KYC_ACCESS__REQUEST, ['events_data' => $eventData]);
+
+        return $subMerchantKycAccess;
+    }
+
+    protected function createOrGetKycRequestForEasySubMerchantKyc(array $input)
+    {
+        $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID]);
+
+        $subMerchantKycAccess = new Entity;
+
+        if ($accessRequest->isEmpty() === true)
+        {
+            $data = [Entity::ENTITY_ID => $input[Entity::ENTITY_ID]];
+            $subMerchantKycAccess->build($data);
+            $subMerchantKycAccess->generateId();
+            $expiryTime = $this->generateExpiryTime();
+            $subMerchantKycAccess->setExpiryTime($expiryTime);
+            $subMerchantKycAccess->setPartnerId($input[Entity::PARTNER_ID]);
+
+            $this->repo->saveOrFail($subMerchantKycAccess);
+        }
+
+        else
+        {
+            $subMerchantKycAccess = $accessRequest->first();
+        }
+
+        return $subMerchantKycAccess;
+    }
+
+    protected function approveKycRequestForEasySubMerchantKyc(Entity $subMerchantKycAccess, array $input)
+    {
+        $subMerchantKycAccess->setRejectTokenNull();
+        $subMerchantKycAccess->setState(State::APPROVED);
+        $subMerchantKycAccess->setApproveTokenNull();
+
+        $accessMap     = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($input[Entity::ENTITY_ID], $input[Entity::PARTNER_ID]);
+        $accessMapping = (new AccessMap\Repository)->findMerchantAccessMapOnEntityId($input[Entity::ENTITY_ID], $accessMap['application_id'], 'application');
+
+        $accessMapping->setHasKycAccess();
+
+        $this->repo->transactionOnLiveAndTest(function() use ($accessMapping, $subMerchantKycAccess) {
+            $this->repo->saveOrFail($subMerchantKycAccess);
+            $this->repo->saveOrFail($accessMapping);
+        });
+
+        return $subMerchantKycAccess;
+    }
+
     /**
      * This function does the following things:
      * 1. Deletes the access state entity if available
@@ -361,6 +445,8 @@ class Core extends Base\Core
 
     public function getKycAccessStatus(string $partnerId, string $subMerchantId)
     {
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+
         $accessMap = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partnerId, $this->merchant->getId())->first();
 
         $status =  'pending';
@@ -370,7 +456,10 @@ class Core extends Base\Core
             $status = $accessMap->getState();
         }
 
-        return [ 'status' => $status ];
+        return [
+            'partner_name'  => $partner->getName(),
+            'status'        => $status,
+        ];
     }
 
     public function generateExpiryTime()

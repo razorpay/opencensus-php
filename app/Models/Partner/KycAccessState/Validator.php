@@ -33,6 +33,11 @@ class Validator extends Base\Validator
         'token'
     ];
 
+    protected static $consentRules = [
+        'ref_code'        => 'required|string',
+        'status'          => 'required|string|in:approved,rejected',
+    ];
+
     public function validateMerchantReferredByPartner($partnerId, $submerchantId)
     {
         if ((new MerchantCore)->isMerchantReferredByPartner($submerchantId, $partnerId) === false)

@@ -87,4 +87,19 @@ class Service extends Base\Service
         return $partner;
     }
 
+    public function CreateAndUpdateKycAccess($input)
+    {
+        (new Entity)->getValidator()->validateInput('consent', $input);
+
+        $input[Entity::PARTNER_ID] = $this->fetchPartnerFromReferralCode($input['ref_code']);
+
+        $input[Entity::ENTITY_ID] = $this->merchant->getId();
+
+        (new Validator)->validateMerchantReferredByPartner($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID]);
+
+        $this->core->createRequestKycAndConfirmKycAccess($input);
+
+        return ['success' => true];
+    }
+
 }

@@ -3170,8 +3170,8 @@ class Route
         'partner_kyc_approve_reject'              => ['post',     'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKyc'                    ],
         'partner_kyc_approve_reject_cors'         => ['options',  'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKycCors'                ],
         'partner_kyc_revoke_access'               => ['post',     'partner/kyc_revoke_access',                      'PartnerKycAccessController@revokeKycAccess'                         ],
+        'partner_kyc_access_consent'              => ['post',     'partner/kyc_access',                             'PartnerKycAccessController@CreateAndUpdateKycAccess'                ],
         'get_partner_kyc_access_status'           => ['get',      'partner/kyc_access',                             'PartnerKycAccessController@getKycAccessStatus'                      ],
-
 
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
@@ -7079,6 +7079,7 @@ class Route
         // Partner KYC access routes
         'partner_kyc_access_request',
         'partner_kyc_revoke_access',
+        'partner_kyc_access_consent',
 
         'merchant_authorize_partner_save',
         'merchant_authorize_partner_status',
@@ -11207,6 +11208,7 @@ class Route
             'partner_request_migration',
             'partner_activation_save',
             'partner_kyc_access_request',
+            'partner_kyc_access_consent',
             'partner_kyc_revoke_access',
             'merchant_authorize_partner_save',
             'merchant_authorize_partner_status',
