@@ -43,6 +43,8 @@ class Handler extends ExceptionHandler
         'Accept'        =>  'text/html'
     ];
 
+    const NO_RECORDS_FOUND = 'No db records found.';
+
     protected $errorPageData = [
         'error_message'    => self::SERVER_ERROR,
         'http_status_code' => 500,
@@ -198,8 +200,8 @@ class Handler extends ExceptionHandler
                 'success'          => false,
                 'errors'           => [$e->getMessage()]]
             );
-
-            $this->setErrorPageData(self::ERROR, $e->getHttpStatusCode(), $requestId);
+            $errorMessage = ($e->getMessage() === self::NO_RECORDS_FOUND) ? self::NO_RECORDS_FOUND : self::ERROR;
+            $this->setErrorPageData($errorMessage, $e->getHttpStatusCode(), $requestId);
         }
         else
         {

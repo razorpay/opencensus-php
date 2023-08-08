@@ -38,6 +38,8 @@ class UserController extends Controller
 
     const ROOT_PATH = '/';
 
+    const ORG_ERRORS = ['No db records found.'];
+
     protected $guard = 'users';
 
     protected $app;
@@ -349,11 +351,13 @@ class UserController extends Controller
             $this->trace->info(TraceCode::FETCH_ORG_DETAILS_ERROR, [
                 'error' => $orgError
             ]);
-//            throw new BadRequestError(
-//                'Error in fetching org details',
-//                ErrorCode::BAD_REQUEST_ERROR,
-//                400
-//            );
+            if(in_array( $orgError[0], self::ORG_ERRORS)){
+                throw new BadRequestError(
+                    $orgError[0],
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
         }
         
         // From here logic for chunked Based Streaming has started.
