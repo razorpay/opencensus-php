@@ -20,7 +20,7 @@ class CareServiceClient
     const AUTHORIZATION                    = 'Authorization';
     const X_REQUEST_ID                     = 'X-Request-Id';
     const TIMEOUT                          = 'timeout';
-    const DEFAULT_TIMEOUT_DURATION_SECONDS = 20;
+    const DEFAULT_TIMEOUT_DURATION_SECONDS = 200;   // As we have 180 timeout while requeting from care to FD
 
 
     //Click to Call inputs fields
