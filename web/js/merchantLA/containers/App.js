@@ -23,6 +23,7 @@ import LogoutDialog from '../../merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { initSentry } from 'common/utils/observability';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
+import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 
 initSentry('MerchantLA');
 
@@ -303,7 +304,9 @@ export default class App extends Component {
           showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar user={user} logoURL={org.main_logo_url} />
-        <Content user={user} modeFormatted={modeFormatted} />
+        <SplitzRoutesBasedService>
+          <Content user={user} modeFormatted={modeFormatted} />
+        </SplitzRoutesBasedService>
         <Footer user={user} />
 
         {/* Creates Portal for the comp */}

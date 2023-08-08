@@ -17,6 +17,7 @@ import '../../css/merchant.styl';
 import '../../dashboard.font';
 import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
+import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -36,9 +37,11 @@ render(
   <Provider store={store}>
     <ConfirmModalProvider>
       <Router basename="/app">
-        <ErrorBoundary>
-          <App />
-        </ErrorBoundary>
+        <SpiltzServiceProvider dashboardType="merchant">
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+        </SpiltzServiceProvider>
       </Router>
     </ConfirmModalProvider>
   </Provider>,

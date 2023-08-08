@@ -8,6 +8,7 @@ import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
+import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
 
 import 'common/utils/polyfills';
 import store from 'merchantLA/store';
@@ -32,9 +33,11 @@ render(
     <BladeProvider themeTokens={paymentTheme}>
       <ConfirmModalProvider>
         <Router basename="/app">
-          <ErrorBoundary>
-            <App />
-          </ErrorBoundary>
+          <SpiltzServiceProvider dashboardType="linkedAccount">
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
+          </SpiltzServiceProvider>
         </Router>
       </ConfirmModalProvider>
     </BladeProvider>

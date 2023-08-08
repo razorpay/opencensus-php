@@ -19,7 +19,7 @@
     window.APP_NAME = "{{ env('APP_NAME') }}";
     window.LUMBERJACK_METRICS_API_URL = "{{ env('LUMBERJACK_METRICS_API_URL') }}";
     window.RAZORPAY_WEBSITE = "{{ config('app.rzp_website_url') }}";
-    
+
     // Sentry related configs
     window.APP_ENV = "{!! env('APP_ENV') !!}";
     window.INSTANCE_TYPE = "{!! env('INSTANCE_TYPE') !!}";
@@ -27,4 +27,7 @@
 
     // Batch Payments
     window.API_URL = "{{ env('API_URL') }}";
+
+    // Public API URL
+    window.PUBLIC_API_URL = "{{ config('api.public_api_url') }}";
 </script>

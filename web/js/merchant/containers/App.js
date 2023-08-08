@@ -50,7 +50,6 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
-
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LogoutDialog from 'merchant/components/LogoutDialog';
@@ -73,6 +72,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
 import lazy from 'merchant/routes/LazyLoader';
+import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -1186,14 +1186,14 @@ class App extends Component {
             )} */}
 
             {this.getSurveyForm()}
-
-            <Content
-              user={user}
-              modeFormatted={currentModeFormatted}
-              fullPageView={this.renderFullPageView}
-              isWebView={this.state.isWebView}
-            />
-
+            <SplitzRoutesBasedService>
+              <Content
+                user={user}
+                modeFormatted={currentModeFormatted}
+                fullPageView={this.renderFullPageView}
+                isWebView={this.state.isWebView}
+              />
+            </SplitzRoutesBasedService>
             {!this.renderFullPageView && !this.state.isWebView && (
               <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
             )}

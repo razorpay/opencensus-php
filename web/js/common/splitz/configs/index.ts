@@ -1,0 +1,1 @@
+export { splitzConfig } from './splitzConfigs';

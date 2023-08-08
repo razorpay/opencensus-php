@@ -1,4 +1,4 @@
-__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
+import './public-paths';
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
 import 'core-js/es/set';
@@ -10,10 +10,11 @@ import { connect, Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { MemoryRouter as Router } from 'react-router-dom';
 import store from 'merchant/store';
-
+import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
+import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import 'common/utils/polyfills';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
-
+import { FullPageLoader } from 'common/components/Loader';
 import * as SessionActions from 'merchant/reducers/session';
 import User, { setFeatures } from 'merchant/models/User';
 import { pokeConfig } from 'merchant/reducers/pokedex';
@@ -167,9 +168,13 @@ render(
   <ThemeProvider theme={theme}>
     <Provider store={store}>
       <Router>
-        <App />
+        <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
+          <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
+            <App />
+          </SplitzRoutesBasedService>
+        </SpiltzServiceProvider>
       </Router>
     </Provider>
   </ThemeProvider>,
-  document.getElementById('react-root')
+  document.getElementById('react-root'),
 );
