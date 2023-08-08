@@ -89,6 +89,24 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($response);
     }
 
+    public function testDownloadBharatQr()
+    {
+        $response = $response = $this->createQrCode();
+
+        $qrCodeId = $response['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertContentTypeForResponse('image/png', $response);
+    }
+
     public function testCreateBharatQrCodeWithEntityOrigin()
     {
         $this->markTestSkipped("Entity Origin for merchant auth is deprecated and will not be stores");
@@ -413,6 +431,27 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->runEntityAssertions($response);
+    }
+
+    public function testDownloadUpiQr()
+    {
+        $response = $response = $this->createQrCode([
+                                                        'type'  => 'upi_qr',
+                                                        'usage' => 'multiple_use'
+                                                    ]);
+
+        $qrCodeId = $response['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertContentTypeForResponse('image/png', $response);
     }
 
     public function testCreateUpiQrCodeWithoutTransactionName()
@@ -942,6 +981,17 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->merchant->disableMethod('LiveAccountMer', 'upi');
 
         $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+    }
+
+    public function testCreateBharatQrCodeWithUpiDisabled()
+    {
+        $this->expectException(LogicException::class);
+
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+
+        $this->fixtures->merchant->disableMethod('LiveAccountMer', 'upi');
+
+        $this->createQrCode(['usage'=>'single_use', 'type'=>'bharat_qr'], 'live', 'LiveAccountMer');
     }
 
     protected function processIciciQrPaymentWithDifferentAmountUtil($amount)
