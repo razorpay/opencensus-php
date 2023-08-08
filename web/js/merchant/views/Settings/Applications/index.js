@@ -13,6 +13,7 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
+import { trackApplicationActions } from './applicationAnalytics';
 
 class ApplicationContainer extends Component {
   static contextTypes = {
@@ -27,6 +28,7 @@ class ApplicationContainer extends Component {
   }
 
   deleteApp = (application) => {
+    trackApplicationActions(application);
     this.context.confirm({
       message: () => (
         <span>
@@ -38,7 +40,9 @@ class ApplicationContainer extends Component {
       ),
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting...',
-      action: () =>
+      abort: () => trackApplicationActions(application),
+      action: () => {
+        trackApplicationActions(application);
         this.props
           .deleteApplication(application.id)
           .then(() => {
@@ -52,7 +56,8 @@ class ApplicationContainer extends Component {
               type: 'error',
               message: err.errors,
             });
-          }),
+          });
+      },
     });
   };
 
@@ -130,7 +135,6 @@ class ApplicationContainer extends Component {
   render() {
     const { items, createdAppsloading } = this.props.applications;
     const pathname = this.props.location.pathname;
-
     return (
       <div class="application-index-page">
         {['/applications', ROUTES_INFO.APPLICATIONS].includes(pathname) &&
