@@ -45,7 +45,7 @@ app/Models/Customer/Truecaller                         @razorpay/checkout-backen
 app/Models/Pricing/                                    @razorpay/pricing-team
 app/Models/Payout/                                     @razorpay/Payouts-core
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
-app/Models/Reversal/                                   mohamed.safwan@razorpay.com                             @razorpay/Payouts-core
+app/Models/Reversal/                                   @razorpay/Payouts-core
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
@@ -83,7 +83,7 @@ app/Gateway/Upi                                        @razorpay/techupicore sha
 #
 
 tests/Functional/QrCode/                               @razorpay/qr-code-devs
-tests/Functional/Transfer/                             mohamed.safwan@razorpay.com
+tests/Functional/Transfer/                             @razorpay/Payouts-core
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 
