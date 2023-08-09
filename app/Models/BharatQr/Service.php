@@ -115,7 +115,7 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
 
-            (new QrPaymentRequest\Service())->createFailedQRPaymentRequest($input, QrPaymentRequest\Type::BHARAT_QR, $gateway);
+            (new QrPaymentRequest\Service())->createFailedQRPaymentRequest($input, $gateway);
 
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }

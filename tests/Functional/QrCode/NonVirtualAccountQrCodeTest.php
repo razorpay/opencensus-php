@@ -3372,4 +3372,41 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
     }
+
+    public function testPaymentForUnsuccessfulStatusCallback()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode([
+                                          'usage'          => 'single_use',
+                                          'type'           => 'upi_qr',
+                                          'fixed_amount'   => true,
+                                          'payment_amount' => 4000
+                                      ],
+                                      'live',
+                                      'LiveAccountMer'
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['TxnStatus'] = 'FAILURE';
+
+        $this->makeUpiIciciPayment($request);
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getLastEntity('payment', true, 'live');
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true, 'live');
+
+        $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
+        $this->assertEquals(null, $qrPayment);
+        $this->assertEquals(null, $payment);
+    }
 }

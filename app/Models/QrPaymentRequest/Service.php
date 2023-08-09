@@ -2,20 +2,15 @@
 
 namespace RZP\Models\QrPaymentRequest;
 
-use Carbon\Carbon;
-
 use Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Yesbank\Fields;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Constants\Entity as BaseConstants;
 use RZP\Gateway\Upi\icici\Fields as ICICIFields;
-use RZP\Gateway\Upi\Yesbank\Gateway as YesbankGateway;
 
 class Service extends Base\Service
 {
@@ -63,25 +58,54 @@ class Service extends Base\Service
         return null;
     }
 
-    public function createFailedQRPaymentRequest($input, $type, $gateway = null)
+    public function createFailedQRPaymentRequest($input, $gateway = null)
     {
+        $merchantRef = null;
         try
         {
             switch ($gateway)
             {
                 case BaseConstants::UPI_YESBANK:
-                    $request[Entity::QR_CODE_ID]            = (new YesbankGateway())->getQrPaymentMerchantReference($input['data']['upi'][Fields::MERCHANT_REFERENCE]);
-                    $request[Entity::TRANSACTION_REFERENCE] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID];
-                    break;
+                {
+                    $input = $input['data'];
 
+                    if (isset($input['meta']) === true)
+                    {
+                        unset($input['meta']);
+                    }
+
+                    if (isset($input['_raw']) === true)
+                    {
+                        unset($input['_raw']);
+                    }
+
+                    $merchantRef                            = $input['upi'][Fields::MERCHANT_REFERENCE];
+                    $request[Entity::TRANSACTION_REFERENCE] = $input['upi'][Fields::NPCI_REFERENCE_ID];
+
+                    break;
+                }
                 case BaseConstants::UPI_ICICI:
-                    $data                                   = json_decode($input, true);
-                    $request[Entity::QR_CODE_ID]            = substr($data[ICICIFields::MERCHANT_TRAN_ID], 0, UniqueIdEntity::ID_LENGTH);
-                    $request[Entity::TRANSACTION_REFERENCE] = (string) $data[ICICIFields::BANK_RRN];
-                    break;
+                {
+                    if (is_array($input) === false)
+                    {
+                        $input = json_decode($input, true);
+                    }
 
+                    $merchantRef                            = $input[ICICIFields::MERCHANT_TRAN_ID];
+                    $request[Entity::TRANSACTION_REFERENCE] = (string) $input[ICICIFields::BANK_RRN];
+
+                    break;
+                }
                 default:
                     return null;
+            }
+
+            $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+            if (($merchantRef !== null) and
+                (method_exists($gatewayClass, 'getQrPaymentMerchantReference') === true))
+            {
+                $request[Entity::QR_CODE_ID] = $gatewayClass->getQrPaymentMerchantReference($merchantRef);
             }
 
             return $this->core->create($request, $input, true);
@@ -93,7 +117,8 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::FAILED_QR_PAYMENT_SAVE_REQUEST_FAILED,
                 [
-                    Entity::QR_CODE_ID            => $request[Entity::QR_CODE_ID],
+                    'gateway'                     => $gateway,
+                    'merchantReference'           => $merchantRef,
                     Entity::TRANSACTION_REFERENCE => $request[Entity::TRANSACTION_REFERENCE]
                 ]
             );
