@@ -6,6 +6,7 @@ namespace RZP\Gateway\Mozart\Mock\Upi;
 
 use Illuminate\Support\Collection;
 use RZP\Gateway\Upi\Yesbank\Status;
+use RZP\Gateway\Upi\Yesbank\Fields;
 
 class MozartUpiResponse extends Collection
 {
@@ -132,6 +133,28 @@ class MozartUpiResponse extends Collection
         {
             $data[self::STATUS] = Status::FAILURE_STATUS;
         }
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setPayerNote(array $input)
+    {
+        $data = $this->getData();
+
+        $data['meta']['response']['content'][Fields::PAYER_NOTE] = $input[15];
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setTransactionAuthDate(array $input)
+    {
+        $data = $this->getData();
+
+        $data['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE] = $input[4];
 
         $this->put(self::DATA, $data);
 

@@ -261,7 +261,7 @@ trait NonVirtualAccountQrCodeTrait
 
         $request = $this->getMockServer('upi_yesbank')->getCallback($upiEntity, $payment);
 
-        return $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
     }
 
     private function getTRFieldFromString($qrString)

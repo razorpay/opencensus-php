@@ -85,6 +85,10 @@ class PreProcess extends Base\Mock\Server
             Terminal\Entity::GATEWAY =>'upi_yesbank',
         ]);
 
+        $response->setPayerNote($input);
+
+        $response->setTransactionAuthDate($input);
+
         if ($input[7] !== '00')
         {
             $response->setSuccess(false);

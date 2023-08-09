@@ -402,7 +402,7 @@ class UpiYesBankQRCodeTest extends TestCase
             }
     }
 
-    public function runQrPaymentEntityAssertions($expected = true): void
+    public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = []): void
     {
         $qrPayment        = $this->getLastEntity('qr_payment', true);
         $payment          = $this->getLastEntity('payment', true);
@@ -418,6 +418,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
         $this->assertEquals($upi['merchant_reference'], $trValue);
         $this->assertEquals('107611570997', $upi['npci_reference_id']);
 
@@ -616,6 +617,32 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('qr_code', $payment['receiver_type']);
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    public function testRemarksPassedDuringPaymentOnQrCode() :void
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $notes = "Sample notes passed during payment";
+
+        $payment = [
+            'amount'      => '300',
+            'description' => $notes,
+            'vpa'         => 'abcba@yesbank',
+        ];
+
+        $this->makeUpiYesBankPayment($qrCodeEntity, $payment);
+
+        $this->runQrPaymentEntityAssertions(true, $payment);
     }
 
 }
