@@ -133,20 +133,20 @@ class UpdateMerchantContext extends Job
         [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndSetBasicAuth($this->merchantId);
 
         $canUpdateMerchantContext = $this->updateContextRequirements
-                                         ->canUpdateMerchantContext($merchantDetail);
+            ->canUpdateMerchantContext($merchantDetail);
 
-        $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
-            "merchant_id"   => $merchant->getId(),
-            "business_type" => $merchantDetail->getBusinessType(),
-            "bvs_validation_id" => $this->validationId,
-            "CAN_UPDATE_MERCHANT_CONTEXT"=>$canUpdateMerchantContext,
-            "POA_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POA_VERIFICATION_STATUS),
-            "COMPANY_PAN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS),
-            "BANK_DETAILS_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::BANK_DETAILS_VERIFICATION_STATUS),
-            "POI_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POI_VERIFICATION_STATUS),
-            "CIN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::CIN_VERIFICATION_STATUS),
-            "GSTIN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::GSTIN_VERIFICATION_STATUS),
-            "SHOP_ESTABLISHMENT_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS)
+        $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, [
+            "merchant_id"                            => $merchant->getId(),
+            "business_type"                          => $merchantDetail->getBusinessType(),
+            "bvs_validation_id"                      => $this->validationId,
+            "CAN_UPDATE_MERCHANT_CONTEXT"            => $canUpdateMerchantContext,
+            "POA_VERIFICATION_STATUS"                => $merchantDetail->getAttribute(Entity::POA_VERIFICATION_STATUS),
+            "COMPANY_PAN_VERIFICATION_STATUS"        => $merchantDetail->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS),
+            "BANK_DETAILS_VERIFICATION_STATUS"       => $merchantDetail->getAttribute(Entity::BANK_DETAILS_VERIFICATION_STATUS),
+            "POI_VERIFICATION_STATUS"                => $merchantDetail->getAttribute(Entity::POI_VERIFICATION_STATUS),
+            "CIN_VERIFICATION_STATUS"                => $merchantDetail->getAttribute(Entity::CIN_VERIFICATION_STATUS),
+            "GSTIN_VERIFICATION_STATUS"              => $merchantDetail->getAttribute(Entity::GSTIN_VERIFICATION_STATUS),
+            "SHOP_ESTABLISHMENT_VERIFICATION_STATUS" => $merchantDetail->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS)
         ]);
 
         if ($canUpdateMerchantContext === true)
@@ -161,7 +161,7 @@ class UpdateMerchantContext extends Job
             {
                 $newActivationStatus = Status::UNDER_REVIEW;
             }
-          
+
             // Experiment For Automation Activation For Website Merchant
 
             $splitzResult = $this->isAutomationActivationExperimentEnabled($merchant);
@@ -220,7 +220,7 @@ class UpdateMerchantContext extends Job
                 $additionalData = optional($websiteDetail)->getAdditionalData() ?? [];
 
                 $input = [
-                    Website\Entity::ADDITIONAL_DATA => array_replace_recursive($additionalData, [
+                    Website\Entity::ADDITIONAL_DATA       => array_replace_recursive($additionalData, [
                         'admin_website_details' => $adminWebsiteDetails
                     ]),
                     Website\Entity::ADMIN_WEBSITE_DETAILS => array_replace_recursive($adminWebsiteDetails, [
@@ -235,9 +235,9 @@ class UpdateMerchantContext extends Job
                 // save category & subcategory
                 $businessDetailsInput = [
                     BusinessDetail\Entity::METADATA => [
-                        DetailEntity::BUSINESS_CATEGORY     => $merchantDetail->getBusinessCategory(),
-                        DetailEntity::BUSINESS_SUBCATEGORY  => $merchantDetail->getBusinessSubcategory(),
-                        'mcc'                               => $merchant->getCategory()
+                        DetailEntity::BUSINESS_CATEGORY    => $merchantDetail->getBusinessCategory(),
+                        DetailEntity::BUSINESS_SUBCATEGORY => $merchantDetail->getBusinessSubcategory(),
+                        'mcc'                              => $merchant->getCategory()
                     ]
                 ];
 
@@ -259,8 +259,8 @@ class UpdateMerchantContext extends Job
                 $mccResult = $mccCategorisation->getMetadata();
 
                 $merchantInput = [
-                    MerchantEntity::CATEGORY    => strval($mccResult[MVD\Constants::PREDICTED_MCC]),
-                    MerchantEntity::CATEGORY2   => $mccResult[MVD\Constants::CATEGORY]
+                    MerchantEntity::CATEGORY  => strval($mccResult[MVD\Constants::PREDICTED_MCC]),
+                    MerchantEntity::CATEGORY2 => $mccResult[MVD\Constants::CATEGORY]
                 ];
 
                 $merchant->edit($merchantInput);
@@ -283,11 +283,10 @@ class UpdateMerchantContext extends Job
 
                 if ($merchant->isLinkedAccount() === true)
                 {
-                    $this->trace->info(TraceCode::SHOULD_TRIGGER_NEEDS_CLARIFICATION,
-                        [
-                            'shouldTriggerNeedsClarification'   =>  $clarificationCore->shouldTriggerNeedsClarification($merchantDetail),
-                            '$kycClarificationReasons'          =>  (new Core())->composeNeedsClarificationReason($merchantDetail)
-                        ]);
+                    $this->trace->info(TraceCode::SHOULD_TRIGGER_NEEDS_CLARIFICATION, [
+                        'shouldTriggerNeedsClarification' => $clarificationCore->shouldTriggerNeedsClarification($merchantDetail),
+                        '$kycClarificationReasons'        => (new Core())->composeNeedsClarificationReason($merchantDetail)
+                    ]);
                 }
 
                 if ($clarificationCore->shouldTriggerNeedsClarification($merchantDetail) === true)
@@ -302,10 +301,10 @@ class UpdateMerchantContext extends Job
                             ->getUpdatedKycClarificationReasons($input, $merchantDetail->getId(), DetailConstant::SYSTEM);
 
                         $this->trace->info(TraceCode::MERCHANT_CONTEXT_KYC_CLARIFICATION_REASON, [
-                            'merchant_id'              => $merchant->getId(),
-                            'kycClarificationReasons'  => $kycClarificationReasons,
-                            'bvs_validation_id'        => $this->validationId,
-                            'duration' =>  (microtime(true) - $startTime) * 1000,
+                            'merchant_id'             => $merchant->getId(),
+                            'kycClarificationReasons' => $kycClarificationReasons,
+                            'bvs_validation_id'       => $this->validationId,
+                            'duration'                => (microtime(true) - $startTime) * 1000,
                         ]);
 
                         $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
@@ -321,7 +320,7 @@ class UpdateMerchantContext extends Job
 
             $activationStatus = $merchantDetail->getActivationStatus();
 
-            $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
+            $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, [
                 'merchant_id'           => $merchant->getId(),
                 'new_activation_status' => $newActivationStatus,
                 'old_activation_status' => $activationStatus
@@ -350,21 +349,21 @@ class UpdateMerchantContext extends Job
                     $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant, $triggerWorkflow);
 
                     $this->trace->info(TraceCode::UPDATE_ACTIVATION_STATUS_DURATION, [
-                        'merchant_id'              => $merchant->getId(),
-                        'bvs_validation_id'        => $this->validationId,
-                        'duration' =>  (microtime(true) - $startTime) * 1000,
+                        'merchant_id'       => $merchant->getId(),
+                        'bvs_validation_id' => $this->validationId,
+                        'duration'          => (microtime(true) - $startTime) * 1000,
                     ]);
                 }
 
-                if($newActivationStatus === Status::NEEDS_CLARIFICATION)
+                if ($newActivationStatus === Status::NEEDS_CLARIFICATION)
                 {
                     (new Merchant\Core)->appendTag($merchant, "Auto NC");
 
                     $this->sendAutoNeedsClarificationEvent($merchant);
 
                     $this->trace->debug(TraceCode::AUTO_NC_TAG_ADDED, [
-                        'merchant_id'   => $merchant->getId(),
-                        'tags'          => $merchant->tagNames()
+                        'merchant_id' => $merchant->getId(),
+                        'tags'        => $merchant->tagNames()
                     ]);
                 }
             }
@@ -372,7 +371,7 @@ class UpdateMerchantContext extends Job
             $this->sendSegmentEvents();
         }
 
-        if($merchant->isResellerPartner())
+        if ($merchant->isResellerPartner())
         {
             (new UpdatePartnerActivationContext($merchant))->update($this->validationId);
         }

@@ -5738,33 +5738,28 @@ class Core extends Base\Core
 
             $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails, $websitePolicy, $negativeKeyword);
 
+            if (($activationStatusAutomation === Status::ACTIVATED) and
+                ($splitzVariant === Constants::SPLITZ_KQU))
+            {
+                $activationStatusAutomation = Status::KYC_QUALIFIED_UNACTIVATED;
+            }
+
+            try
+            {
+                (new Service)->saveBusinessDetailsForMerchant($merchantId, [
+                    BusinessDetailEntity::METADATA => [
+                        'activation_status' => $activationStatusAutomation
+                    ]
+                ]);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+            }
+
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
-                if (($activationStatusAutomation === Status::ACTIVATED) and
-                    ($splitzVariant === Constants::SPLITZ_KQU))
-                {
-                    return Status::KYC_QUALIFIED_UNACTIVATED;
-                }
-
                 return $activationStatusAutomation;
-            }
-            else
-            {
-                if ($splitzVariant === Merchant\Constants::SPLITZ_PILOT)
-                {
-                    try
-                    {
-                        (new Service)->saveBusinessDetailsForMerchant($merchantId, [
-                            BusinessDetailEntity::METADATA => [
-                                'activation_status' => $activationStatusAutomation
-                            ]
-                        ]);
-                    }
-                    catch (\Throwable $ex)
-                    {
-                        $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
-                    }
-                }
             }
 
             return Status::ACTIVATED_MCC_PENDING;
