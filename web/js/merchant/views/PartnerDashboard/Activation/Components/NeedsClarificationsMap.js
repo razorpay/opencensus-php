@@ -9,7 +9,7 @@ export const getNeedsClarificationTabsData = (
   const allFieldsHash = {};
   const kycFieldsMap = {};
   const kycTabContent = [];
-  const needsKyc = activationDetails.kyc_clarification_reasons;
+  const needsKyc = activationDetails?.kyc_clarification_reasons;
 
   const addField = (f) => {
     const name = f.name || f._name;
@@ -58,7 +58,7 @@ export const getNeedsClarificationTabsData = (
 
   const prepareField = (field, clarificationDetails, forceMap) => {
     const reasons = [];
-    const latestNc = needsKyc.nc_count; // latest needs clarrification
+    const latestNc = needsKyc?.nc_count; // latest needs clarrification
 
     const origKey = field;
     if (!allFieldsHash[field] || Boolean(forceMap)) {
@@ -148,8 +148,8 @@ export const getNeedsClarificationTabsData = (
     scanFields(ndcFields);
 
     const bankDetailsforNC = {};
-    let removedBankDetailsFromNC = needsKyc.clarification_reasons;
-    if (needsKyc.clarification_reasons) {
+    let removedBankDetailsFromNC = needsKyc?.clarification_reasons;
+    if (needsKyc?.clarification_reasons) {
       for (const [key, value] of Object.entries(needsKyc.clarification_reasons)) {
         if (
           key === 'bank_account_name' ||
@@ -169,9 +169,9 @@ export const getNeedsClarificationTabsData = (
     for (const field in newClarificationDetails) {
       prepareField(field, newClarificationDetails);
     }
-    for (const field in needsKyc.additional_details) {
+    for (const field in needsKyc?.additional_details) {
       // const newFieldName = generateNewField(field, needsKyc.additional_details[field]);
-      prepareField(field, needsKyc.additional_details, true);
+      prepareField(field, needsKyc?.additional_details, true);
     }
 
     return kycTabContent;

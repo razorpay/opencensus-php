@@ -3,6 +3,8 @@ import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { PARTNER_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 
 export default ({ onCloseClick, user }) => {
   const activationName =
@@ -14,7 +16,12 @@ export default ({ onCloseClick, user }) => {
   } else {
     modalTitle = `${activationName} Required`;
   }
+
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+
+  const shouldRedirectToEasyFlow =
+    user.partner_type === PARTNER_TYPE.AGGREGATOR ||
+    user.partner_type === PARTNER_TYPE.PURE_PLATFORM;
 
   let modalBody = (
     <div>
@@ -25,9 +32,15 @@ export default ({ onCloseClick, user }) => {
           : `Please fill and submit the ${activationName} Form to access live mode.`}
         {!user.isOrgAxis ? (
           <div class="Modal__actions text-right">
-            <NavLink to={activationUrl} onClick={onCloseClick}>
-              <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
-            </NavLink>
+            {!shouldRedirectToEasyFlow ? (
+              <button class="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>
+                Fill {activationName} Form
+              </button>
+            ) : (
+              <NavLink to={activationUrl} onClick={onCloseClick}>
+                <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
+              </NavLink>
+            )}
           </div>
         ) : null}
       </ShowWhen>

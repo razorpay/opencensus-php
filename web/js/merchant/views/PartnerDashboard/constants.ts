@@ -52,6 +52,12 @@ export const ORG_CUSTOM_CODE = {
 
 export const NOT_AVAILABLE = 'N/A';
 
+export const PARTNER_TYPE = {
+  PURE_PLATFORM: 'pure_platform',
+  RESELLER: 'reseller',
+  AGGREGATOR: 'aggregator',
+};
+
 export const PARTNER_TYPE_DISPLAY_NAMES = {
   reseller: 'Reseller',
   aggregator: 'Aggregator',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from 'common/services/test/test-utils';
+import { render, screen, userEvent, delay } from 'common/services/test/test-utils';
 import {
   StartReferringStep,
   ActivateAccountStep,
@@ -22,6 +22,7 @@ const commonProps = {
     },
   },
   partnerType: 'reseller',
+  trackUserEvent: jest.fn(),
 };
 
 let history;
@@ -31,6 +32,7 @@ describe('ActivationStepVariants', () => {
     history = createMemoryHistory();
     history.push = jest.fn();
     window.cdnBaseUrl = 'https://razorpay-cdn.com';
+    window.EASY_ONBOARDING_URL = 'https://sme-dashboard.dev.razorpay.in/onboarding';
   });
 
   describe('StartReferringStep', () => {
@@ -54,12 +56,40 @@ describe('ActivationStepVariants', () => {
       orgName: 'Razorpay',
       trackUserEvent: jest.fn(),
     };
+
+    const windowMock = jest.spyOn(window, 'open').mockImplementation(() => {});
     test('should render ActivateAccountStep', () => {
       render(<ActivateAccountStep {...defaultProps} />);
       expect(
         screen.getByText('Give us a few details and become eligible for commissions'),
       ).toBeVisible();
       expect(screen.getByRole('button', { name: 'Submit KYC' })).toBeVisible();
+    });
+
+    test('should redirect to easy flow for partner type pure-platforms', async () => {
+      const props = {
+        ...defaultProps,
+        partnerType: 'pure_platform',
+      };
+      render(<ActivateAccountStep {...props} />);
+      const submitKycButton = screen.getByRole('button', { name: 'Submit KYC' });
+      await userEvent.click(submitKycButton);
+      await delay(1000);
+      expect(props.trackUserEvent).toHaveBeenCalled();
+      expect(windowMock).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+    });
+
+    test('should redirect to easy flow for partner type aggregator', async () => {
+      const props = {
+        ...defaultProps,
+        partnerType: 'aggregator',
+      };
+      render(<ActivateAccountStep {...props} />);
+      const submitKycButton = screen.getByRole('button', { name: 'Submit KYC' });
+      await userEvent.click(submitKycButton);
+      await delay(1000);
+      expect(props.trackUserEvent).toHaveBeenCalled();
+      expect(windowMock).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     });
   });
 

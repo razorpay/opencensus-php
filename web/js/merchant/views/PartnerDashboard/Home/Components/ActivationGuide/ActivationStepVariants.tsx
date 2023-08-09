@@ -11,6 +11,7 @@ import ActivationStep from 'merchant/views/PartnerDashboard/Home/Components/Acti
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import { useApp } from 'common/context/App';
+import { PARTNER_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 interface StartStepT {
   fuxStatus: FUXStatusStateT;
@@ -95,6 +96,22 @@ export const ActivateAccountStep = ({
     stepName: 'activate-account',
   };
   // Note : above default stepContent for instantly_activated
+
+  const shouldRedirectToEasyFlow =
+    partnerType === PARTNER_TYPE.AGGREGATOR || partnerType === PARTNER_TYPE.PURE_PLATFORM;
+
+  if (shouldRedirectToEasyFlow) {
+    stepContent.onClickCTA = () => {
+      trackUserEvent('redirect to easy-dashboard CTA', {
+        actionName: 'Redirect',
+        screen: 'onboarding',
+        properties: {
+          'CTA Label': 'Submit KYC',
+        },
+      });
+      redirectToEasyAfter1sec();
+    };
+  }
 
   if (activation_status === 'under_review' || activation_status === 'kyc_qualified_unactivated') {
     stepContent.title = 'Account activation in process';
