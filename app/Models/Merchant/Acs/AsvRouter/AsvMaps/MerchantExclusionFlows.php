@@ -239,6 +239,11 @@ final class MerchantExclusionFlows
         'refund_fetch_by_id' => true,
         'refund_fetch_creation_data' => true,
         'adj_add' => true,
+        'customer_add_bank_account' => true,
+        'customer_delete_bank_account' => true,
+        'p2p_turbo_preferences' =>  true,
+        'p2p_turbo_gateway_config' =>  true,
+        'customer_create'=> true,
     );
 
     public static function isExclusionFLow(string $flow): bool
