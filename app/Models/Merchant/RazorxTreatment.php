@@ -889,4 +889,9 @@ final class RazorxTreatment
      * Razorx flag to block MID timeout on upi collect payment with input expiry time
      */
     const BLOCK_MERCHANT_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'block_merchant_timeout_on_upi_collect_expiry';
+
+    /**
+     * Razorx flag to Remove API Routing rules fallback on API Service
+     */
+    const REMOVE_API_ROUTER_FALLBACK = 'remove_api_router_fallback';
 }

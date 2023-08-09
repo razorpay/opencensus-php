@@ -6,12 +6,14 @@ use App;
 use Cache;
 use Config;
 use DeepCopy\DeepCopy;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Models\Payment\Processor\PayLater;
@@ -975,10 +977,29 @@ class Selector extends Base\Core
             return false;
         }
 
-        if ($payment[Entity::METHOD] === Method::EMI)
+        if ($payment[Entity::METHOD] === Method::EMI && !$this->isEMIFallbackApplicable())
         {
-            return $this->isEMIFallbackApplicable();
+            return false;
         }
+
+        $variant = $this->app['razorx']->getTreatment($payment[Entity::METHOD],
+            RazorxTreatment::REMOVE_API_ROUTER_FALLBACK,
+            $this->app['basicauth']->getMode() ?? Mode::LIVE);
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $this->trace->count(Terminal\Metric::ROUTER_FALLBACK, [
+                'payment_method' => $payment[Entity::METHOD],
+                'skip_fallback' => true,
+            ]);
+
+            return false;
+        }
+
+        $this->trace->count(Terminal\Metric::ROUTER_FALLBACK, [
+            'payment_method' => $payment[Entity::METHOD],
+            'skip_fallback' => false,
+        ]);
 
         return true;
     }
