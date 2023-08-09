@@ -33,7 +33,7 @@ class MerchantApplicationListener extends BaseListener
             )
             {
                 // call partnership service to sync entity
-                app('partnerships')->upsertMerchantApplication(['merchant_application' => $entity->getId()]);
+                app('partnerships')->upsertMerchantApplication(['merchant_application' => $entity->toArray()]);
             }
         }
         catch(\Throwable $e)
