@@ -1,44 +1,44 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, withRouter } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Link, withRouter } from 'react-router-dom';
+
 import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
 import Definition from 'common/ui/Definition';
-import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
-import ShowWhen from 'merchant/components/ShowWhen';
+import Alert from 'common/ui/Forms/Alert';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { isInteger } from 'common/utils/validators';
+import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import MaskedContact from 'merchant/components/Mask/Contact';
+import MaskedEmail from 'merchant/components/Mask/Email';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import lazy from 'merchant/routes/LazyLoader';
+import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
+import { isPlatformTransaction } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
+import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
 import PaymentProvider from 'merchant/views/Transactions/Payments/components/PaymentProvider';
 import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
 import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers';
-import PaymentDisputes from './PaymentDisputes';
-import PaymentReceipt from './PaymentReceipt';
-import PaymentPageDetails from './PaymentPageDetails';
-import PaymentSplitInItems from './PaymentSplitInItems';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import SettlementOverview from './SettlementOverview';
-import AnnouncementBar from 'merchant/components/AnnouncementBar';
-import MaskedEmail from 'merchant/components/Mask/Email';
-import MaskedContact from 'merchant/components/Mask/Contact';
-import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
-import { isInteger } from 'common/utils/validators';
-import track from 'merchant/views/Transactions/Payments/track';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { isPlatformTransaction } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
-import lazy from 'merchant/routes/LazyLoader';
 import {
   REFUND_STATUSES,
   FETCH_EZETAP_KEY_NAME,
 } from 'merchant/views/Transactions/Payments/constants';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import track from 'merchant/views/Transactions/Payments/track';
 
-// styles
+import PaymentDisputes from './PaymentDisputes';
+import PaymentPageDetails from './PaymentPageDetails';
+import PaymentReceipt from './PaymentReceipt';
+import PaymentSplitInItems from './PaymentSplitInItems';
+import SettlementOverview from './SettlementOverview';
 import './Payments.styl';
 
 const INIT_POINT = 'payment-details';
