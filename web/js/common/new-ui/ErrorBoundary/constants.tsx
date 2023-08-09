@@ -27,6 +27,7 @@ export enum Teams {
   RAZORPAY_X = 'RazorpayX',
   MERCHANT_REPORTING = 'Merchant Reporting',
   MAGIC_CHECKOUT = 'Magic Checkout',
+  RAZORPAY_WALLET = 'Razorpay Wallet',
 }
 
 // Maintain this list in ascending order

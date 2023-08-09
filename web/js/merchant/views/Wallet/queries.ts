@@ -1,3 +1,5 @@
+import errorService from '@razorpay/universe-utils/errorService';
+import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams, decodeSensitiveFields } from 'common/utils/rzp-utils';
 
@@ -29,6 +31,12 @@ export const fetchAccounts = async ({
     }));
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -57,6 +65,12 @@ export const fetchTransactions = async ({
     }));
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -85,6 +99,12 @@ export const fetchPayments = async ({
     }));
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -112,6 +132,12 @@ export const fetchLoads = async ({
     }));
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -133,6 +159,12 @@ export const fetchAccountById = async ({
     }));
     return account[0];
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -158,6 +190,12 @@ export const fetchAccountBalance = async ({
     };
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };

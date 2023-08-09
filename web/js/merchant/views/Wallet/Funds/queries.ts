@@ -6,6 +6,8 @@ import { FundsSummary, Transaction } from 'merchant/views/Wallet/Funds/types';
 
 import type { ModeT } from 'common/services/mode';
 import * as types from 'merchant/views/Wallet/types';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 export const fetchFundTransactions = async ({
   skip,
@@ -27,6 +29,12 @@ export const fetchFundTransactions = async ({
     }));
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
@@ -48,6 +56,12 @@ export const fetchFundsSummary = async ({
     res.available_balance = parseInt(String(res.available_balance), 10);
     return res;
   } catch (e) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
     throw new Error(e?.response?.errors?.[0]);
   }
 };
