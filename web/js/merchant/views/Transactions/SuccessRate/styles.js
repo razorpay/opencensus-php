@@ -43,3 +43,23 @@ export const StyledContainer = styled.div(
     } 
   `,
 );
+
+export const SuccessRateDateFilterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  > div:first-child {
+    min-width: 10rem;
+  }
+  > div :nth-child(2) {
+    margin-left: ${({ theme }) => theme.spacing[2]}px;
+  }
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
+    display: block;
+    > div :nth-child(2) {
+      margin: ${({ theme }) => theme.spacing[5]}px 0 0 0;
+    }
+  }
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+    width: 100%;
+  }
+`;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, server, screen, waitFor, userEvent, waitForElementToBeRemoved } from 'test-utils';
+import { render, server, screen, waitFor, userEvent } from 'test-utils';
 import SuccessRate from 'merchant/views/Transactions/SuccessRate/containers/SuccessRate';
 import {
   errorApiHandler,
@@ -204,8 +204,6 @@ describe('<SuccessRate/>', () => {
     expect(screen.getByTestId('btn-types')).toBeVisible();
 
     await userEvent.click(screen.getByTestId('initial-btn-item'));
-    //TODO :: Add assertion on chart shimmer in future
-    // await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     await waitFor(() => {
       expect(srFetchAllSpy).toHaveBeenLastCalledWith(
         expect.objectContaining({
@@ -215,8 +213,6 @@ describe('<SuccessRate/>', () => {
     });
 
     await userEvent.click(screen.getByTestId('auto-btn-item'));
-    //TODO :: Add assertion on chart shimmer in future
-    // await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     await waitFor(() => {
       expect(srFetchAllSpy).toHaveBeenLastCalledWith(
         expect.objectContaining({
@@ -251,7 +247,6 @@ describe('<SuccessRate/>', () => {
 
     //Debit
     await userEvent.click(screen.getByTestId('debit-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['debit'] },
@@ -260,7 +255,6 @@ describe('<SuccessRate/>', () => {
 
     //Credit
     await userEvent.click(screen.getByTestId('credit-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['credit'] },
@@ -269,7 +263,6 @@ describe('<SuccessRate/>', () => {
 
     //Prepaid
     await userEvent.click(screen.getByTestId('prepaid-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['prepaid'] },
@@ -293,7 +286,6 @@ describe('<SuccessRate/>', () => {
 
     //Debit
     await userEvent.click(screen.getByTestId('debit-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['debit'] },
@@ -302,7 +294,6 @@ describe('<SuccessRate/>', () => {
 
     //Credit
     await userEvent.click(screen.getByTestId('credit-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['credit'] },
@@ -311,7 +302,6 @@ describe('<SuccessRate/>', () => {
 
     //Prepaid
     await userEvent.click(screen.getByTestId('prepaid-btn-method-item'));
-    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
     expect(merchantErrorSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filters: { method: ['card'], type: ['prepaid'] },

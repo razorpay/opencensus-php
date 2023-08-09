@@ -1,11 +1,19 @@
 import React from 'react';
-import { PowerSelect } from 'react-power-select';
 import moment from 'moment';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 
 import DateTimePicker from './DateTimePicker';
+import {
+  Dropdown,
+  DropdownOverlay,
+  ActionList,
+  ActionListItem,
+  Box,
+  CalendarIcon,
+  SelectInput,
+} from '@razorpay/blade/components';
+import { SuccessRateDateFilterContainer } from 'merchant/views/Transactions/SuccessRate/styles';
 
 const customPreset = { label: 'Custom Range', name: 'custom', value: 0, unit: '' };
 
@@ -19,7 +27,8 @@ function DateRangePreset(props) {
   const { presets, dateRange, setDateRange } = props;
   const { startDate, endDate, preset } = dateRange || {};
 
-  const onPresetChange = ({ option }) => {
+  const onPresetChange = (selectedValue) => {
+    const option = presets.find((preset) => preset.name === selectedValue);
     const { name, value, unit } = option;
 
     let start = '';
@@ -34,35 +43,49 @@ function DateRangePreset(props) {
   };
 
   const handleDateChange = ({ date, name }) => {
-    setDateRange({
+    const payload = {
       ...dateRange,
       [name]: date,
       preset: customPreset,
-    });
+    };
+    setDateRange(payload);
   };
 
-  return (
-    <div className="rzp-daterange-picker">
-      <div className="icon-container">
-        <i className="i i-date-range" />
-      </div>
-      <div className="presets-container">
-        {presets.length > 0 && (
-          <ErrorBoundary resetOnProps rank={Ranks.P2}>
-            <PowerSelect
-              className="date-range-preset-select react-normal-select"
-              options={presets}
-              selected={preset}
-              onChange={onPresetChange}
-              optionLabelPath="label"
-              placeholder="Select Preset"
-              searchEnabled={false}
-            />
-          </ErrorBoundary>
-        )}
-      </div>
+  const handleOnPresetChange = ({ values }) => onPresetChange(values[0]);
 
-      <div className="daterange-container">
+  return (
+    <SuccessRateDateFilterContainer data-testid="sr-dashboard-date-filters">
+      <Dropdown>
+        <SelectInput
+          accessibilityLabel="Date Filter"
+          labelPosition="top"
+          name="item"
+          label=""
+          icon={CalendarIcon}
+          value={preset.name}
+          testID="sr-dashboard-date-presets"
+          onChange={handleOnPresetChange}
+        />
+        <DropdownOverlay>
+          <ActionList surfaceLevel={2}>
+            {presets.map((preset) => (
+              <ActionListItem
+                key={preset.name}
+                title={preset.label}
+                value={preset.name}
+                testID={`${preset.name}-date-preset`}
+              />
+            ))}
+          </ActionList>
+        </DropdownOverlay>
+      </Dropdown>
+      <Box
+        borderWidth="thin"
+        borderColor="surface.border.normal.lowContrast"
+        alignItems="center"
+        height="max-content"
+        paddingY="spacing.2"
+      >
         <SuspenseWithLoader>
           <div className="datetime-picker">
             <DateTimePicker
@@ -84,8 +107,8 @@ function DateRangePreset(props) {
             />
           </div>
         </SuspenseWithLoader>
-      </div>
-    </div>
+      </Box>
+    </SuccessRateDateFilterContainer>
   );
 }
 

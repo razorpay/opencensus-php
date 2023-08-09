@@ -47,14 +47,22 @@ $tooltip-border-color = #E0E8F4
 
 .sr-filter
   padding-bottom: $spacer * 3
-  display: flex
+  display: grid
   justify-content: space-between
   align-items: center
+  grid-template-columns: 70% 30%
+
+  @media screen and (max-width 1024px) {
+    display: block
+  }
 
   &-extras
     display: flex
     flex-direction: column
     align-items: flex-end
+
+    @media screen and (max-width 1024px)
+      align-items: flex-start
 
     .btn.btn-outline
       padding: 3px 10px

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import AsyncButton from 'react-async-button';
 import {
   updateDateRange,
   fetchSuccessRate,
@@ -34,6 +33,8 @@ import { DateRangePreset } from './DateRangePreset';
 import TabRefreshButton from './TabRefreshButton';
 
 import SearchMerchant from './SearchMerchant';
+import { Box, Button, Heading } from '@razorpay/blade/components';
+
 const SuccessRateFilter = (props) => {
   const {
     endDate,
@@ -103,6 +104,7 @@ const SuccessRateFilter = (props) => {
   };
 
   const onReset = async () => {
+    resetToInitialState();
     const updateDropdownOptions = false;
 
     const payload = queryFilters(updateDropdownOptions);
@@ -148,34 +150,39 @@ const SuccessRateFilter = (props) => {
 
   return (
     <div className="sr-filter">
-      <div className="sr-filter-inputs">
-        <label>Date Range</label>
-        <div className="datepicker-group">
-          <DateRangePreset
-            presets={PRESETS}
-            dateRange={dateRange}
-            setDateRange={setDateRange}
-            setErrors={setErrors}
-            onPresetChange={onPresetChange}
-          />
-
-          <div className="filter__actions">
-            <AsyncButton
-              className="btn btn-primary btn-sm"
-              onClick={handleSearch}
-              disabled={Object.keys(errors).length > 0}
-              text="Apply"
+      <Box>
+        <Box>
+          <Heading marginBottom="spacing.2">Date Range</Heading>
+          <div className="datepicker-group">
+            <DateRangePreset
+              presets={PRESETS}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              setErrors={setErrors}
+              onPresetChange={onPresetChange}
             />
-            <AsyncButton className="btn btn-sm btn-text" onClick={onReset} text="Clear" />
+
+            <div className="filter__actions">
+              <Button
+                variant="primary"
+                onClick={handleSearch}
+                isDisabled={Object.keys(errors).length > 0}
+              >
+                Apply
+              </Button>
+              <Button variant="tertiary" onClick={onReset} marginLeft="spacing.3">
+                Clear
+              </Button>
+            </div>
           </div>
-        </div>
+        </Box>
         {errors.date && (
           <small className="error-text text-danger">
             <i className="i i-info-outline" />
             <i>{errors.date}</i>
           </small>
         )}
-      </div>
+      </Box>
 
       <div className="sr-filter-extras">
         {isSrAdminEnabled ? (

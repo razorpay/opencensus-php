@@ -23,7 +23,7 @@ const SearchMerchant = ({ onSearch, onReset, isLoading }) => {
           isLoading={query && isLoading}
         />
       </Box>
-      <Box>
+      <Box display="flex" alignItems="center">
         <Button
           marginRight="spacing.3"
           marginY="spacing.4"
