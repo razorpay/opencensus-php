@@ -555,7 +555,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['pending']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['pending']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -607,7 +607,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['rejected']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['rejected']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -658,7 +658,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['scheduled']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['scheduled']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -709,7 +709,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['queued']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['queued']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -760,7 +760,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['processing']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['processing']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -811,7 +811,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['processed']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['processed']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -862,7 +862,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['failed']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['failed']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
@@ -913,7 +913,7 @@
                                                                                                                 </td>
                                                                                                                 <td align="left" style="padding: 0px;width: 35;">
                                                                                                                     <div class="status_amount">
-                                                                                                                        <span>(₹{{$payout_status_count['reversed']['total_amount']}})</span>
+                                                                                                                        <span>(₹{{$payout_status_count['reversed']['total_amount'] / 100}})</span>
                                                                                                                     </div>
                                                                                                                 </td>
                                                                                                             </tr>
