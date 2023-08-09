@@ -3152,11 +3152,11 @@ return [
                     'tax_components' => [
                         [
                             'name'     => 'CGST 9%',
-                            'rate'     => '90000',
+                            'rate'     => 90000,
                         ],
                         [
                             'name'     => 'SGST 9%',
-                            'rate'     => '90000',
+                            'rate'     => 90000,
                         ]
                     ]
                 ],
