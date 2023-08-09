@@ -12,7 +12,7 @@ import { createPaymentsBatch as createBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators } from 'redux';
 
-const iframeHost = window.API_URL;
+const iframeHost = window.PUBLIC_API_URL;
 class BatchUploadContainer extends Component {
   state = {
     fileUploadProgress: 0,
@@ -116,7 +116,7 @@ class BatchUploadContainer extends Component {
           <div class="batch-upload-modal" data-testid="batch-upload-modal">
             {this.state.iFrameLoaded && <Header title="Batch Upload" />}
             <iframe
-              src={`${iframeHost}batches/upload?token=${this.state.ott}`}
+              src={`${iframeHost}/v1/batches/upload?token=${this.state.ott}`}
               class={`
                 batch-payments-iframe
                 ${this.state.status === 'process' ? 'disabled' : ''}
