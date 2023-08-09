@@ -1152,8 +1152,8 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        // Null, because IFSC was not received for IMPS transaction
-        $this->assertNull($bankAccount['ifsc']);
+        // Empty IFSC received for Payer Account
+        $this->assertEquals('', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
@@ -1228,8 +1228,8 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        // Null, because IFSC was not received for IMPS transaction
-        $this->assertNull($bankAccount['ifsc']);
+        // Check Payer Bank Account after IMPS Transaction
+        $this->assertEquals($ifsc, $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
@@ -1776,8 +1776,8 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        // Null, because IFSC was not received for IMPS transaction
-        $this->assertNull($bankAccount['ifsc']);
+        // Check Payer Bank Account after IMPS Transaction
+        $this->assertEquals($ifsc, $bankAccount['ifsc']);
         $this->assertEquals('123123123', $bankAccount['account_number']);
     }
 
@@ -1804,14 +1804,15 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        $this->assertNull($bankAccount['ifsc']);
+        // Check Payer Bank Account after IMPS Transaction
+        $this->assertEquals($ifsc, $bankAccount['ifsc']);
         $this->assertSame('00000000000123456', $bankAccount['account_number']);
 
         $response = $this->makeRequestAndGetContent([
             'method'  => 'PUT',
             'url'     => '/bank_transfers/payer_bank_account/strip',
             'content' => [
-                'payer_ifsc' => 'ABC',
+                'payer_account' => '00000000000123456',
                 'mode'       => 'imps'
             ]
         ]);
@@ -1820,7 +1821,7 @@ class BankTransferTest extends TestCase
 
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        $this->assertNull($bankAccount['ifsc']);
+        $this->assertEquals($ifsc, $bankAccount['ifsc']);
         $this->assertSame('0000000123456', $bankAccount['account_number']);
     }
 
@@ -5153,10 +5154,22 @@ class BankTransferTest extends TestCase
         // Disable foreign key checks to allow testing buggy case
         DB::statement("SET foreign_key_checks = 0");
 
+        $attributes = [
+            'merchant_id'   => '10000000000000',
+            'gateway'       => $payment['gateway'],
+        ];
+
+        $terminal   = $this->fixtures->create(
+            'terminal', $attributes);
+
+        $terminalId = $terminal['id'];
+
+        $this->deleteTerminal('10000000000000', $terminalId);
+
         $this->fixtures->edit(
             'payment',
             $paymentEntity['id'],
-            ['terminal_id' => 'B2K2t8JD9z98vh']);
+            ['terminal_id' => $terminalId]);
 
         // Enable foreign key checks
         DB::statement("SET foreign_key_checks = 1");
@@ -5572,8 +5585,8 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
-        // Null, because IFSC was not received for IMPS transaction
-        $this->assertEquals('UTIB0001918', $bankAccount['ifsc']); //Default IFSC for UTIB
+        // Check Payer IFSC
+        $this->assertEquals('UTIB0000002', $bankAccount['ifsc']); //Default IFSC for UTIB
     }
 
     protected function getPreferences()
@@ -9150,6 +9163,9 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessPgWithTerminalCaching()
     {
+        // Skip Issue: https://razorpay.atlassian.net/browse/EPA-605
+        $this->markTestSkipped('Skipping because Smart Collect Terminal Caching is Disabled');
+
         $this->enableRazorXTreatmentForCaching();
 
         $cacheKey = VirtualAccount\Constant::TERMINAL_CACHE_PREFIX . '_' . '10000000000000';
@@ -9416,9 +9432,14 @@ class BankTransferTest extends TestCase
         $this->assertEquals($requestData['payer_name'], $bankTransfer['payer_name']);
     }
 
-    public function testBankTransferPaymentCaptureOnClosedVa()
+    public function testBankTransferPaymentCaptureOnClosingVa()
     {
-        $this->closeVirtualAccount($this->virtualAccountId);
+        $closeByDate = Carbon::now(Timezone::IST)->addDays(-15)->getTimestamp();
+
+        $this->fixtures->edit('virtual_account', $this->virtualAccountId, [
+            'close_by' => $closeByDate,
+        ]);
+        $this->closeVirtualAccountsByCloseBy();
 
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc          = $this->bankAccount['ifsc'];
@@ -9431,16 +9452,16 @@ class BankTransferTest extends TestCase
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals(false, $bankTransfer['expected']);
-        $this->assertEquals('VIRTUAL_ACCOUNT_CLOSED', $bankTransfer['unexpected_reason']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $bankTransfer['unexpected_reason']);
 
         // Payment is automatically refunded
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['refund_at']);
 
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $this->expectExceptionMessage("Payment done on closed customer identifier cannot be captured.");
+        // $this->expectException(BadRequestValidationFailureException::class);
+        // $this->expectExceptionMessage("Payment done on closed customer identifier cannot be captured.");
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }

@@ -29,7 +29,7 @@ function push_to_sonar {
       -Dsonar.host.url="$SONAR_HOST" \
       -Dsonar.projectKey="$SONAR_PROJECT_ID" \
       -Dsonar.projectName="$SONAR_PROJECT_ID" \
-      -Dsonar.projectVersion="$GIT_COMMIT_HASH" \
+      -Dsonar.projectVersion="$GIT_COMMIT_ID" \
       -Dsonar.login="$SONAR_TOKEN" \
       -Dsonar.sources="$SOURCE_DIR" \
       -Dsonar.exclusions="$EXCLUDE_FILES" \

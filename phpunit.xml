@@ -422,6 +422,7 @@
             <directory>./tests/Functional/VirtualVpaPrefix</directory>
             <directory>./tests/Functional/UpiTransfer</directory>
             <directory>./tests/Functional/QrCode</directory>
+            <directory>./tests/Functional/BankTransfer/</directory>
             <directory>./tests/Functional/Payment/Transfers/</directory>
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
             <file>./tests/Functional/Merchant/AccountTest.php</file>
