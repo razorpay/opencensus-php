@@ -419,7 +419,7 @@ class Service extends Base\Service
                 $customerInfo = array();
                 $customerInfo['email'] = $orderMetaArray['customer_details']['email'];
                 $customerInfo['phone'] = $orderMetaArray['customer_details']['contact'];
-                $customerInfo['ip'] = $orderMetaArray['customer_details']['ip'];
+                $customerInfo['ip'] = $this->app['request']->ip();
 
                 $inputOrder = [
                     'id'            => $rzpOrderId,
