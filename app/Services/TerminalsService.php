@@ -852,6 +852,12 @@ class TerminalsService
             $data[Terminal\Entity::ID] = $content[Terminal\Entity::ID];
         }
 
+        $maxRetryAttempt = $this->app['config']->get('applications.terminals_service.proxy_calls_retry_attempt');
+        $retryAttempt = 0;
+
+        while(true)
+        {
+
         try
         {
             $response = $this->makeRequest($url, $headers, $content, $method, $options);
@@ -910,35 +916,35 @@ class TerminalsService
                 'data'          => $exception,
             ];
 
-            if ( (empty($exception->getData()) === false) and
+            $metricsData = (new Terminal\Service())->addRouteNameToMetrics([]);
+
+            if ((empty($exception->getData()) === false) and
                 (curl_errno($exception->getData()) === CURLE_OPERATION_TIMEDOUT))
             {
 
-                try
+                if($retryAttempt < $maxRetryAttempt)
                 {
-                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY,
-                        ['route'=>$this->app['request.ctx']->getRoute()]);
 
-                    $this->trace->error(TraceCode::TERMINAL_PROXY_CALL_ERROR_RETRY_ATTEMPT, $data);
+                    $retryAttempt++;
 
-                    $response = $this->makeRequest($url, $headers, $content, $method, $options);
+                    if($retryAttempt > 1)
+                    {
+                        //We do immediate retry and from next retry we do with a delay of increasing pattern of 100ms
+                        usleep(($retryAttempt - 1 ) * 100 * 1000);
+                    }
 
-                    return $response;
+                    $metricsData['retry_attempt'] = $retryAttempt;
+
+                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY, $metricsData);
                 }
-                catch (\Exception $exception)
+                else
                 {
-                    $data = [
-                        self::EXCEPTION => $exception->getMessage(),
-                        self::URL       => $url,
-                        'data'          => $exception,
-                    ];
-
                     $this->trace->error(TraceCode::TERMINALS_SERVICE_PROXY_TIMEOUT_RETRY_ERROR, $data);
 
-                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY_ERROR,
-                        ['route'=>$this->app['request.ctx']->getRoute()]);
+                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY_ERROR,$metricsData);
 
                     throw $exception;
+
                 }
 
             }
@@ -946,6 +952,7 @@ class TerminalsService
             {
                 throw $exception;
             }
+
         }
         catch (\Exception $exception)
         {
@@ -959,6 +966,9 @@ class TerminalsService
 
             throw $exception;
         }
+
+        }
+
     }
 
     protected function sendFormRequest($url, $content, $method, $options, $headers)

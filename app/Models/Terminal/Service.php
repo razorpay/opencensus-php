@@ -1748,18 +1748,31 @@ class Service extends Base\Service
 
     public function pushTerminalReadMetrics(string $entityName, bool $fromTerminalsService)
     {
-        $app = App::getFacadeRoot();
-
-        $routeName =  $app['request.ctx']->getRoute();
 
         $metricData = [
-            'route_name'=> $routeName,
             'entity'=>$entityName,
             'fetch_from_ts' => $fromTerminalsService,
         ];
 
+        $metricData = $this->addRouteNameToMetrics($metricData);
+
         $this->trace->count(Terminal\Metric::TERMINAL_RETRIEVED, $metricData);
 
+    }
+
+    public function addRouteNameToMetrics($data)
+    {
+
+        if ($this->app->runningInQueue() === true)
+        {
+            $data['worker_name'] = $this->app['worker.ctx']->getJobName();
+        }
+        else
+        {
+            $data['route_name'] = $this->app['api.route']->getCurrentRouteName();
+        }
+
+        return $data;
     }
 
     public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array

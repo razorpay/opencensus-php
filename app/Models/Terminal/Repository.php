@@ -2631,7 +2631,11 @@ class Repository extends Base\Repository
     {
         $app = App::getFacadeRoot();
 
-        $routeName = $app['request.ctx']->getRoute();
+        $data = [
+            'entity'=>$entity,
+        ];
+
+        $data = (new Terminal\Service())->addRouteNameToMetrics($data);
 
         try
         {
@@ -2639,13 +2643,13 @@ class Repository extends Base\Repository
 
             $start = millitime();
 
-            $terminal = $this->getById($terminalId, true, true, 0.25);
+            $timeout = $app['config']->get('applications.terminals_service.associate_terminals_from_ts_timeout');
+
+            $terminal = $this->getById($terminalId, true, true, $timeout);
 
             $duration = millitime() - $start;
 
-            $this->trace->histogram(Terminal\Metric::TERMINAL_RETRIEVED_CALL_LATENCY_MILLISECONDS, $duration, [
-                'route_name'  => $routeName,
-            ]);
+            $this->trace->histogram(Terminal\Metric::TERMINAL_RETRIEVED_CALL_LATENCY_MILLISECONDS, $duration, $data);
 
             (new Terminal\Service())->pushTerminalReadMetrics($entity,true);
 
@@ -2653,17 +2657,11 @@ class Repository extends Base\Repository
         }
         catch (\Throwable $ex)
         {
+            $app['trace']->count(Terminal\Metric::TERMINAL_RETRIEVED_ERROR, $data);
 
-            $app['trace']->traceException($ex, Trace::CRITICAL, TraceCode::TERMINALS_SERVICE_READ_OVERRIDES_ERROR, [
-                'route_name'=> $routeName,
-                'terminal_id'=>$terminalId,
-                'entity'=>$entity,
-            ]);
+            $data['terminal_id'] = $terminalId;
 
-            $app['trace']->count(Terminal\Metric::TERMINAL_RETRIEVED_ERROR, [
-                'route_name'=> $routeName,
-                'entity'=>$entity,
-            ]);
+            $app['trace']->traceException($ex, Trace::CRITICAL, TraceCode::TERMINALS_SERVICE_READ_OVERRIDES_ERROR, $data);
 
             throw $ex;
         }
