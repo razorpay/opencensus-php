@@ -139,7 +139,10 @@ export default class UpdateSubscriptionLink extends React.Component {
 
   initUpdateSubscription = (subscription) => {
     const { plans } = this.props;
-
+    const disableEdit = isDomesticCardOrIsUPI(
+      subscription?.payment_method,
+      subscription?.card_mandate_id,
+    );
     const fields = {
       id: subscription.id,
       plan_id: subscription.plan_id,
@@ -152,7 +155,9 @@ export default class UpdateSubscriptionLink extends React.Component {
     if (['active'].includes(subscription.status)) {
       fields.schedule_change_at = 'now';
     }
-
+    if (disableEdit) {
+      fields.schedule_change_at = 'cycle_end';
+    }
     if (['authenticated'].includes(subscription.status)) {
       fields.remaining_count = subscription.total_count;
       subscription.remaining_count = subscription.total_count;

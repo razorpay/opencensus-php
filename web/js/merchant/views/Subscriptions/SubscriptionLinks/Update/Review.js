@@ -15,7 +15,7 @@ export default function UpdateSubscriptionLinkReview(props) {
     } else {
       updateSubsStatusDesc = (
         <div>
-          The changes will be applied from the next billing cycle on
+          The changes will be applied from the next billing cycle on{' '}
           {moment.unix(props.prevSubscription.charge_at).format('DD MMM, YYYY')}
         </div>
       );

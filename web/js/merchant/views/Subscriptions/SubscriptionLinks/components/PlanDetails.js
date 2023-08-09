@@ -101,7 +101,11 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               message={
                 <>
                   For this subscription, only the offer can be updated.{' '}
-                  <DocLink class="btn-link" href="https://razorpay.com/docs" target="_blank">
+                  <DocLink
+                    class="btn-link"
+                    href="https://razorpay.com/docs/payments/subscriptions/update/"
+                    target="_blank"
+                  >
                     Know more.
                   </DocLink>
                 </>
