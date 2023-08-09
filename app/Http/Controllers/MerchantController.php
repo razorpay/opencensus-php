@@ -224,12 +224,14 @@ class MerchantController extends Controller
 
     public function putMerchant($id)
     {
-        // this is temporary logging: to get all admins who use this route
-        $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST, []);
-
         $input = Request::all();
 
-        $data = $this->service()->edit($id, $input);
+        // this is temporary logging: to get all admins who use this route
+        $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST, [
+            'input' => $input
+        ]);
+
+        $data = $this->service()->edit($id, $input, true);
 
         return ApiResponse::json($data);
     }

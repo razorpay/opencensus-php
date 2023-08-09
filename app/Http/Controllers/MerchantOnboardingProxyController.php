@@ -24,6 +24,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_DOCUMENT_DELETE       = 'merchant_document_delete';
     const GET_MERCHANT_BMC_RESPONSE      = 'get_merchant_bmc_response';
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
+    const MERCHANT_UPDATE_BY_ADMIN       = 'merchant_update_by_admin';
+
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
     const MERCHANT_RM_FETCH              = 'merchant_rm_details_fetch';
@@ -88,10 +90,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     const ADMIN_ROUTES = [
         self::GET_MERCHANT_BMC_RESPONSE,
+        self::MERCHANT_UPDATE_BY_ADMIN,
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
         self::GET_MERCHANT_BMC_RESPONSE   => Name::VIEW_ALL_ENTITY,
+        self::MERCHANT_UPDATE_BY_ADMIN    => Name::VIEW_ALL_ENTITY,
     ];
 
     const ROUTES_URL_MAP = [
@@ -101,6 +105,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_DELETE         => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDelete',
         self::GET_MERCHANT_BMC_RESPONSE        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantBMCResponse',
         self::SAVE_MERCHANT_BMC_RESPONSE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantBMCResponse',
+        self::MERCHANT_UPDATE_BY_ADMIN         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantUpdateByAdmin',
         self::GET_CLEARBIT_DOMAIN_INFO         => 'twirp/rzp.pg_onboarding.leads.v1.LeadsService/GetClearbitDomainInfo',
         self::MERCHANT_RM_CREATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/CreateRMDetails',
         self::MERCHANT_RM_FETCH                => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/GetRMDetails',
@@ -118,12 +123,14 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_MERCHANT_BMC_RESPONSE     => 10,
         self::SAVE_MERCHANT_BMC_RESPONSE    => 10,
         self::GET_CLEARBIT_DOMAIN_INFO      => 10,
+        self::MERCHANT_UPDATE_BY_ADMIN      => 10,
         self::MERCHANT_DETAILS_PATCH        => 10
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
+        self::MERCHANT_UPDATE_BY_ADMIN,
     ];
 
     public function __construct()
@@ -188,7 +195,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $payload, $headers);
         }
-
+        
+        return null;
     }
 
     //We are not passing $path here as done in BaseProxyController since we are getting path from request itself.

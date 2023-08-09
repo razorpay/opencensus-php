@@ -73,6 +73,7 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Workflow\Observer as WorkflowObserver;
@@ -4466,6 +4467,14 @@ class Service extends Base\Service
                 return $this->core->updateActivationMilestonePGOSInternal($merchantId, $input);
             case 'UPDATE_LEGAL_ENTITY':
                 return $this->core->updateLegalEntityPGOSInternal($merchantId, $input);
+            case 'UPDATE_MERCHANT_ENTITY':
+                $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [
+                    'merchant'  => $merchantId,
+                    'input'     => $input
+                ]);
+                unset($input['action']);
+                $merchantService = new MerchantService();
+                return $merchantService->edit($merchantId, $input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);

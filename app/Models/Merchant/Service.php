@@ -158,6 +158,7 @@ use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\SmsTemplates as SmsTemplates;
 use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
@@ -268,6 +269,8 @@ class Service extends Base\Service
 
     protected PartnerService $partnerService;
 
+    protected $pgosProxyController;
+
     public function __construct()
     {
         parent::__construct();
@@ -277,6 +280,8 @@ class Service extends Base\Service
         $this->featureService = new Feature\Service();
 
         $this->partnerService = new PartnerService();
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
     }
 
     /**
@@ -979,9 +984,40 @@ class Service extends Base\Service
         ];
     }
 
-    public function edit(string $id, array $input): array
+
+    public function edit(string $id, array $input, $handleViaPGOS = false): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+        /*
+        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint 
+        * with a pre-condition that the merchants were onboarding via PGOS
+        */ 
+        if ($handleViaPGOS === true)
+        {
+            $hasMerchantOnboardedViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id);
+
+            if ($hasMerchantOnboardedViaPGOS === true) {
+                $input['merchant_id'] = $id;
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_update_by_admin', $input, $merchant, true);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_EDIT_RESPONSE_PGOS,
+                    [
+                        'merchant_id' => $id,
+                        'response'    => $response,
+                    ]
+                );
+                
+                // throw PGOS response error msg if data is not present
+                if(isset($response['data']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        $response['msg']
+                    );
+                }
+                return $response['data'];
+            }
+        } 
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,

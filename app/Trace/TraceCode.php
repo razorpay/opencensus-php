@@ -3381,6 +3381,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // temporary tracecodes, will be removed
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';
     const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';
+    const  MERCHANT_EDIT_REQUEST_PGOS                           =  'MERCHANT_EDIT_REQUEST_PGOS';
+    const  MERCHANT_EDIT_RESPONSE_PGOS                          =  'MERCHANT_EDIT_RESPONSE_PGOS';
 
     const  CLARIFICATION_DETAILS_EDIT_REQUEST                   =  'CLARIFICATION_DETAILS_EDIT_REQUEST';
     const AUDIT_INFO_ENTITY_LOG                                 = 'AUDIT_INFO_ENTITY_LOG';
