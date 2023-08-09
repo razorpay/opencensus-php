@@ -3333,6 +3333,7 @@ class Core extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+
         }
 
         $variant = $response['response']['variant']['name'] ?? null;
@@ -6036,8 +6037,7 @@ class Core extends Base\Core
             return false;
         }
 
-        if ((new Merchant\Core)->isRegularMerchant($merchantDetails->merchant) === false and
-            $this->blockMerchantActivations($merchantDetails->merchant) === true)
+        if ($this->blockMerchantActivations($merchantDetails->merchant) === true)
         {
             $this->trace->info(TraceCode::BLOCKING_MX_ACTIVATIONS_TEMPORARILY, ["id" => $merchantDetails->getMerchantId()]);
 

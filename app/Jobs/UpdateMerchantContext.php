@@ -155,13 +155,6 @@ class UpdateMerchantContext extends Job
 
             $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
 
-            // override AMP to UR if block_mx=true, testcase: AMP if false, UR if true
-            if (($newActivationStatus === Status::ACTIVATED_MCC_PENDING) and
-                ($detailCore->blockMerchantActivations($merchant) === true))
-            {
-                $newActivationStatus = Status::UNDER_REVIEW;
-            }
-
             // Experiment For Automation Activation For Website Merchant
 
             $splitzResult = $this->isAutomationActivationExperimentEnabled($merchant);
