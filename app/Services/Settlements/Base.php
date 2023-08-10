@@ -40,6 +40,7 @@ class Base
     const INITIATE_INTER_NODAL_TRANSFER     = '/twirp/rzp.settlements.inter_nodal_transfer.v1.InterNodalTransfer/Initiate';
 
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION          = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Execute';
+    const OPTIMIZER_EXTERNAL_SETTLEMENTS_RETRY              = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Retry';
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_MANUAL_EXECUTION   = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/ManualExecute';
     const GET_SETTLEMENT_SOURCE_TRANSACTIONS                = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSourceTxn';
     const GET_SETTLEMENT_FOR_TRANSACTIONS                   = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSettlementForTxn';

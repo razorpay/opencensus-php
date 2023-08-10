@@ -1033,6 +1033,7 @@ class Route
         'setl_transfer_status_update'              => ['post',     'settlements/transfer_status_update' ,            'SettlementController@transferStatusUpdate'                         ],
         'setl_entity_download_file'                => ['post',     'settlements/entities/get_file',                  'SettlementController@getSettlementServiceEntityFile'               ],
         'setl_optimizer_settlement_cron'           => ['post',     'settlements/optimizer/execute',                  'SettlementController@optimizerExternalSettlementsExecute'          ],
+        'setl_optimizer_settlement_retry_cron'     => ['post',     'settlements/optimizer/retry',                    'SettlementController@optimizerExternalSettlementsRetry'            ],
         'setl_optimizer_settlement_manual_api'     => ['post',     'settlements/optimizer/manual_execute',           'SettlementController@optimizerExternalSettlementsManualExecute'    ],
         'setl_merchant_dashboard_config_get'       => ['post',     'settlements/dashboard/merchant_config/get',      'SettlementController@merchantDashboardConfigGet'                   ],
         'setl_entity_alerts'                       => ['post',     'settlements/check_for_entity_alerts',            'SettlementController@checkForEntityAlerts'                         ],
@@ -5920,6 +5921,7 @@ class Route
 
         // Optimizer settlements cron
         'setl_optimizer_settlement_cron',
+        'setl_optimizer_settlement_retry_cron',
 
         'third_watch_address_cod_score',
 
@@ -15200,6 +15202,7 @@ class Route
             'rbl_in_progress_lead_to_sales_force',
             // Optimizer settlements cron
             'setl_optimizer_settlement_cron',
+            'setl_optimizer_settlement_retry_cron',
             'dispute_deduction_reversal_cron',
 
             'bank_transfer_process_test_x_demo_cron',

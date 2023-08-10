@@ -255,6 +255,18 @@ class Api extends Base
 
     /**
      * @param array $input
+     * @param $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function optimizerExternalSettlementsRetry(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::OPTIMIZER_EXTERNAL_SETTLEMENTS_RETRY, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * @param array $input
      * @param null $mode
      * @return array
      * @throws RuntimeException
