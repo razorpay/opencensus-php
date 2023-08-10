@@ -248,6 +248,58 @@ return [
         ],
     ],
 
+    'testFetchPaymentsForQrCodeExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'qr_payment_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'qr_payment_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'=> [
+                'bool'=> [
+                    'filter'=> [
+                        'bool'=> [
+                            'must'=> [
+                                [
+                                    'term'=> [
+                                        'qr_code_id'=> [
+                                            'value'=> 'MNt3GuG5hYPuKZ'
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'term'=> [
+                                        'merchant_id'=> [
+                                            'value'=> '10000000000000'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPaymentsForQrCodeExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => 'MO5mMUDdF3sKdc',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchQrCodeByCustomerEmail' => [
         'entity' => 'collection',
         'count'  => 1,

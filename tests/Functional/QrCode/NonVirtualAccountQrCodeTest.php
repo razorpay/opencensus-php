@@ -1525,19 +1525,33 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchPaymentsForQrCode()
     {
-        $this->markTestSkipped();
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
-        $qrCode = $this->createQrCode();
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ]
+        );
 
+        $qrCode = $this->getDbLastEntity('qr_code');
         $qrCodeId = $qrCode['id'];
 
-        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['merchantTranId'] = $qrCode['reference'];
 
-        $this->processPaymentForQr($qrCodeId);
+        $this->makeUpiIciciPayment($request);
+        $qrPayment = $this->getDbLastEntity('qr_payment');
 
         $expectedResponse = $this->testData['testFetchPaymentsForQrCode'];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment($qrCode['id']));
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value'] = $qrCodeId;
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id']                                                          = $qrPayment['id'];
+
+        $this->createEsMockAndSetExpectations('testFetchPaymentsForQrCode');
+
+        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment('qr_' . $qrCodeId));
     }
 
     protected function processPaymentForQr($qrCodeId)
