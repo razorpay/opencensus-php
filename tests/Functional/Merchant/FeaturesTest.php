@@ -3954,10 +3954,28 @@ Regards,
         $this->mockDCS();
 
         $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
-            ->times(2)
+            ->times(5)
             ->andReturn([
                 'body' => [
                     "balance" => 12000
+                ],
+                'code' => 200
+            ],
+            [
+                'body' => [
+                    "balance" => 0
+                ],
+                'code' => 200
+            ],
+            [
+                'body' => [
+                    "balance" => 0
+                ],
+                'code' => 200
+            ],
+            [
+                'body' => [
+                    "balance" => 0
                 ],
                 'code' => 200
             ],
@@ -4009,10 +4027,28 @@ Regards,
         $this->mockDCS();
 
         $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
-                ->times(2)
+                ->times(5)
                 ->andReturn([
                     'body' => [
                         "balance" => 1000
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
                     ],
                     'code' => 200
                 ],

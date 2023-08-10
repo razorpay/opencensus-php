@@ -68,7 +68,7 @@ class Core extends Base\Core
             Constants::TENANT                        => Constants::TENANT_PG,
         );
 
-        $apiTransactionId = $this->getAPITransactionId($transactorId);
+        $apiTransactionId = $this->getAPITransactionId($transactorId, $payment);
 
         if ($apiTransactionId !== null)
         {

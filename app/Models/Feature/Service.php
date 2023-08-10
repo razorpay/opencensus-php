@@ -26,6 +26,7 @@ use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\Merchant\Balance\Ledger\Core as BalanceCore;
 
 class Service extends Base\Service
 {
@@ -451,7 +452,20 @@ class Service extends Base\Service
             //fetches fee, amount and refund credits from credits table
             $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
 
-            $result[Constants::ACCOUNTS_CREATED_RESPONSE] = (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
+            if (isset($creditBalances[BalanceCore::FEE]) === false)
+            {
+                $creditBalances[BalanceCore::FEE] = 0;
+            }
+            if (isset($creditBalances[BalanceCore::AMOUNT]) === false)
+            {
+                $creditBalances[BalanceCore::AMOUNT] = 0;
+            }
+            if (isset($creditBalances[BalanceCore::REFUND]) === false)
+            {
+                $creditBalances[BalanceCore::REFUND] = 0;
+            }
+
+            $result[Constants::ACCOUNTS_CREATED_RESPONSE] = (new BalanceCore)->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
                 $primaryBalance->getBalance(),
@@ -460,11 +474,11 @@ class Service extends Base\Service
             );
 
             // sync merchant balance and credits on API and CLS
-            $result[Constants::BALANCE_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance(), $reserveBalanceAmount);
+            $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance(), $reserveBalanceAmount);
 
-            $result[Constants::CREDITS_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
+            $result[Constants::CREDITS_RESPONSE] = (new BalanceCore)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
 
-            $result[Constants::RESERVE_BALANCE_RESPONSE] = (new Merchant\Balance\Ledger\Core)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
+            $result[Constants::RESERVE_BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
 
             return $result;
 
@@ -477,12 +491,12 @@ class Service extends Base\Service
         // Taking lock on balance table
         $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
-        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $balance->getBalance(), $reserveBalanceAmount);
+        return (new BalanceCore)->updatePGMerchantBalance($merchant, $balance->getBalance(), $reserveBalanceAmount);
     }
 
     private function updatePGMerchantReserveBalanceAccount($merchant, $reserveBalanceAmount): array
     {
-        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
+        return (new BalanceCore)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
     }
 
     private function updatePGMerchantCreditsAccounts($merchant, $syncBalances): array
@@ -494,18 +508,40 @@ class Service extends Base\Service
 
         if ($syncBalances[\RZP\Models\Ledger\Constants::FEE_CREDITS] !== true)
         {
-            unset($creditBalances[Merchant\Balance\Ledger\Core::FEE]);
+            unset($creditBalances[BalanceCore::FEE]);
+        }
+        else
+        {
+            if (isset($creditBalances[BalanceCore::FEE]) === false)
+            {
+                $creditBalances[BalanceCore::FEE] = 0;
+            }
         }
         if ($syncBalances[\RZP\Models\Ledger\Constants::AMOUNT_CREDITS] !== true)
         {
-            unset($creditBalances[Merchant\Balance\Ledger\Core::AMOUNT]);
+            unset($creditBalances[BalanceCore::AMOUNT]);
+        }
+        else
+        {
+            if (isset($creditBalances[BalanceCore::AMOUNT]) === false)
+            {
+                $creditBalances[BalanceCore::AMOUNT] = 0;
+            }
         }
         if ($syncBalances[\RZP\Models\Ledger\Constants::REFUND_CREDITS] !== true)
         {
-            unset($creditBalances[Merchant\Balance\Ledger\Core::REFUND]);
+            unset($creditBalances[BalanceCore::REFUND]);
+        }
+        else
+        {
+            if (isset($creditBalances[BalanceCore::REFUND]) === false)
+            {
+                $creditBalances[BalanceCore::REFUND] = 0;
+            }
         }
 
-        return (new Merchant\Balance\Ledger\Core)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
+
+        return (new BalanceCore)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
     }
 
     private function ledgerPGGatewayAccountCreateRequest(string $merchantId, string $gateway)
@@ -1668,7 +1704,7 @@ class Service extends Base\Service
 
                 $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $syncBalances)
                 {
-                   if ($syncBalances[Merchant\Balance\Ledger\Core::MERCHANT_BALANCE] === true)
+                   if ($syncBalances[BalanceCore::MERCHANT_BALANCE] === true)
                    {
                        // Taking lock on balance table
                        $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchantId, BalanceType::RESERVE_PRIMARY);

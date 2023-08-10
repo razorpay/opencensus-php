@@ -3985,7 +3985,11 @@ return [
                         "balance_response"          => [
                             "merchant_balance" => 12000
                         ],
-                        "credits_response"          => [],
+                        "credits_response"          => [
+                            "merchant_fee_credits" => 0,
+                            "merchant_amount_credits"=> 0,
+                            "merchant_refund_credits"=> 0,
+                        ],
                         "accounts_created_response" => true,
                         "reserve_balance_response"  => [
                             "merchant_reserve_balance" => 0
@@ -4018,7 +4022,11 @@ return [
                         "balance_response"          => [
                             "merchant_balance" => 1000
                         ],
-                        "credits_response"          => [],
+                        "credits_response"          => [
+                            "merchant_fee_credits" => 0,
+                            "merchant_amount_credits"=> 0,
+                            "merchant_refund_credits"=> 0,
+                        ],
                         "accounts_created_response" => true,
                         "reserve_balance_response"  => [
                             "merchant_reserve_balance" => 0

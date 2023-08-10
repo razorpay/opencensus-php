@@ -621,7 +621,7 @@ class Core extends Base\Core
                         return $txn;
                     }
 
-                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId);
+                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
 
                     $resource = $this->getTransactionMutexresource($payment);
 

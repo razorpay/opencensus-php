@@ -1357,6 +1357,11 @@ class PaymentLedgerTest extends TestCase
 
         $payment = $this->createDirectSettlementPayment();
 
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($payment['id'], 'pay_'.$txn['entity_id']);
+        $this->assertEquals(null, $txn['balance_id']);
+
         $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
 
         $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
@@ -1378,11 +1383,13 @@ class PaymentLedgerTest extends TestCase
                 "credit_accounting" => "fee_credits"
             ],
             "ledger_integration_mode" =>  "reverse-shadow",
-            "tenant" => "PG"
+            "tenant" => "PG",
+            "api_transaction_id" => $txn['id']
         ];
 
         $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
         $this->assertEquals($payment['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($txn['id'], $actualLedgerOutboxEntry['api_transaction_id']);
 
     }
 

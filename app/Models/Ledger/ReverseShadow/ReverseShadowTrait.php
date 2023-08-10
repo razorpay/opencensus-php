@@ -511,7 +511,7 @@ trait ReverseShadowTrait
         return true;
     }
 
-    protected function getAPITransactionId($transactorId)
+    protected function getAPITransactionId($transactorId, $payment)
     {
         $payloadName = $this->getPayloadName($transactorId, Constants::GATEWAY_CAPTURED);
 
@@ -528,6 +528,17 @@ trait ReverseShadowTrait
 
             return $payload[Constants::API_TXN_ID];
         }
+
+        if ($payment->isDirectSettlement() === true)
+        {
+            $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+            if (isset($txn) === true)
+            {
+                return $txn->getId();
+            }
+        }
+
         return null;
     }
 
