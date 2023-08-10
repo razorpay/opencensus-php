@@ -90,7 +90,7 @@
         "ext-gd": "*",
         "ext-curl": "*",
         "mvanduijker/laravel-transactional-model-events": "^2.3",
-        "razorpay/wda-php-sdk": "v1.3.2",
+        "razorpay/wda-php-sdk": "v1.3.1",
         "razorpay/dcs-php-sdk": "dev-master",
         "selective/transformer": "1.2.0",
         "grpc/grpc": "1.52.0",
