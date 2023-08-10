@@ -35,17 +35,21 @@ class Constants
         'checkout_method_level_sr',
         'checkout_instrument_level_sr',
         'checkout_industry_level_sr',
+        'checkout_industry_method_level_sr',
     ];
     public const CR_RELATED_AGGREGATION_NAMES = [
         'checkout_overall_cr',
         'checkout_method_level_cr',
         'checkout_instrument_level_cr',
         'checkout_industry_level_cr',
+        'checkout_industry_method_level_cr',
     ];
 
     public const INDUSTRY_LEVEL_QUERIES = [
         'checkout_industry_level_sr',
         'checkout_industry_level_cr',
+        'checkout_industry_method_level_sr',
+        'checkout_industry_method_level_cr',
     ];
 
     public const ERROR_METRICS_RELATED_AGGREGATION_NAMES = [

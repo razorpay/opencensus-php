@@ -500,6 +500,132 @@ return [
             ],
         ],
     ],
+    'testAnalyticsQueryWhenIndustryMethodLevelQueryInputExpectsDefaultMerchantNoAdded' => [
+        'input'             => [
+            'aggregations' => [
+                'agg1'              => [
+                    'filter_key' => 'agg1',
+                    'agg_type'   => 'sum',
+                    'details'    => [
+                        'index'    => 'payments',
+                        'column'   => 'base_amount',
+                        'group_by' => [
+                            'method',
+                            'status',
+                        ],
+                    ],
+                ],
+                'checkout_industry_method_level_cr' => [
+                    'filter_key' => 'checkout_industry_method_level_cr',
+                    'agg_type'   => 'count',
+                    'details'    => [
+                        'index'    => 'cx_high_level_funnel',
+                        'mode'     => 'test',
+                        'group_by' => [
+                            'histogram_hourly',
+                            'behav_submit_event',
+                            'render_checkout_open_event',
+                            'last_selected_method',
+                        ],
+                    ],
+                ],
+            ],
+            'filters'      => [
+                'default'           => [
+                    [
+                        'producer_timestamp' => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                    ],
+                ],
+                'checkout_industry_method_level_cr' => [
+                    [
+                        'created_at'        => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                        'checkout_library'  => ['checkoutjs'],
+                        'merchant_category' => 'shopping',
+                    ],
+                ],
+                'agg1'              => [
+                    [
+                        'created_at'       => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                        'checkout_library' => ['checkoutjs'],
+                    ],
+                ],
+            ],
+        ],
+        'expected_response' => [
+            'aggregations' => [
+                'agg1' => [
+                    'filter_key' => 'agg1',
+                    'agg_type'   => 'sum',
+                    'details'    => [
+                        'index'    => 'payments',
+                        'column'   => 'base_amount',
+                        'group_by' => [
+                            'method',
+                            'status',
+                        ],
+                    ],
+                ],
+                'checkout_industry_method_level_cr' => [
+                    'filter_key' => 'checkout_industry_method_level_cr',
+                    'agg_type'   => 'count',
+                    'details'    => [
+                        'index'    => 'cx_high_level_funnel',
+                        'mode'     => 'test',
+                        'group_by' => [
+                            'histogram_hourly',
+                            'behav_submit_event',
+                            'render_checkout_open_event',
+                            'last_selected_method',
+                        ],
+                    ],
+                ],
+            ],
+            'filters'      => [
+                'default'           => [
+                    [
+                        'producer_timestamp' => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                        'merchant_id'        => '10000000000000',
+                    ],
+                ],
+                'checkout_industry_method_level_cr' => [
+                    [
+                        'created_at'        => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                        'checkout_library'  => [
+                            'checkoutjs',
+                        ],
+                        'merchant_category' => 'shopping',
+                    ],
+                ],
+                'agg1'              => [
+                    [
+                        'created_at'       => [
+                            'gte' => 1684956600,
+                            'lte' => 1684974800,
+                        ],
+                        'checkout_library' => [
+                            'checkoutjs',
+                        ],
+                        'merchant_id'      => '10000000000000',
+                    ],
+                ],
+            ],
+        ],
+    ],
     'testMerchantAnalyticsErrorMetricsMethodLevelQuery' => [
         'checkout_method_level_top_error_reasons' => [
             'total'           => 5,

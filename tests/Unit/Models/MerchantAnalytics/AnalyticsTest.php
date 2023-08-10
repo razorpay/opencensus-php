@@ -84,6 +84,19 @@ class AnalyticsTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testAnalyticsQueryWhenIndustryMethodLevelQueryInputExpectsDefaultMerchantNoAdded()
+    {
+        $merchantId = '10000000000000';
+
+        $this->validator->validateCheckoutQueries($this->testData[__FUNCTION__]['input']);
+
+        $actual = $this->core->processMerchantAnalyticsQuery($merchantId, $this->testData[__FUNCTION__]['input']);
+
+        $expected = $this->testData[__FUNCTION__]['expected_response'];
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testMerchantAnalyticsSrQuery()
     {
         $response = $this->dataProcessor->processMerchantAnalyticsResponse($this->testData['sr_pinot_response']);

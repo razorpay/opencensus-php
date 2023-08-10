@@ -3483,11 +3483,16 @@ class Validator extends Base\Validator
         'details'                  => 'required|array',
         'details.index'            => 'required|string|in:cx_high_level_funnel',
         'details.group_by'         => 'required|array',
-        'details.group_by.*'       => 'required|string|in:behav_submit_event,render_checkout_open_event,status,histogram_daily,histogram_hourly,histogram_weekly,histogram_monthly',
+        'details.group_by.*'       => 'required|string|in:' .
+            'behav_submit_event,render_checkout_open_event' .
+            ',status,last_selected_method' .
+            ',histogram_daily,histogram_hourly,histogram_weekly,histogram_monthly',
         'details.histogram_column' => 'created_at',
         'details.mode'             => 'required|string|in:test,live',
         'agg_type'                 => 'required|string|in:count',
-        'filter_key'               => 'required|string|in:checkout_industry_level_sr,checkout_industry_level_cr',
+        'filter_key'               => 'required|string|in:' .
+            'checkout_industry_level_sr,checkout_industry_level_cr' .
+            ',checkout_industry_method_level_sr,checkout_industry_method_level_cr',
     ];
 
     protected static $industryLevelQueryFilterRules = [
