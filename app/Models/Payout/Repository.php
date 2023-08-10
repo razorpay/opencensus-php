@@ -1068,7 +1068,14 @@ class Repository extends Base\Repository
         $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')
@@ -1114,7 +1121,14 @@ class Repository extends Base\Repository
         $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')

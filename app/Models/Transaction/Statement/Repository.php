@@ -184,7 +184,14 @@ class Repository extends Transaction\Repository
     {
         if ($query == null)
         {
-            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
+            $connectionType = $this->getPaymentFetchReplicaConnection();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+            {
+                $connectionType = ConnectionType::REPLICA;
+            }
+
+            $query = $this->newQueryWithConnection($connectionType);
         }
 
         $query->from(\DB::raw(Table::TRANSACTION.' IGNORE INDEX (transactions_created_at_index)'));
@@ -197,7 +204,14 @@ class Repository extends Transaction\Repository
         if( ($balance != null and $balance->isTypeBanking())
             and (array_key_exists(self::FROM, $input) or $this->checkDefaultFilters($input)) )
         {
-            $this->baseQuery = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            $connectionType = $this->getPaymentFetchReplicaConnection();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+            {
+                $connectionType = ConnectionType::REPLICA;
+            }
+
+            $this->baseQuery = $this->newQueryWithConnection($connectionType)
                 ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_balance_id_created_at_index)'));
         }
     }

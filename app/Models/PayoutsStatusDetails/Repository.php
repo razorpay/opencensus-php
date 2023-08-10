@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PayoutsStatusDetails;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 
@@ -13,7 +14,14 @@ class Repository extends Base\Repository
     {
         $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
 
-        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = ConnectionType::REPLICA;
+        }
+
+        $result =  $this->newQueryWithConnection($connectionType)
                         ->select(Entity::REASON)
                         ->where($idColumn,$id)
                         ->first();
@@ -56,7 +64,14 @@ class Repository extends Base\Repository
         $payoutIdColumn  = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
         $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = ConnectionType::REPLICA;
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->select(Table::PAYOUTS_STATUS_DETAILS.'.*')
                     ->where($payoutIdColumn, $payoutId)
                     ->orderBy($idColumn,'desc')
