@@ -181,7 +181,7 @@ const ManualReviewOrderSplit = ({
               Automation
             </NavLink>{' '}
             or turn on{' '}
-            <NavLink to="/magic/settings/magic-intelligence" className="magic-link">
+            <NavLink to="/magic/settings/rto-settings" className="magic-link">
               COD Intelligence
             </NavLink>{' '}
             to auto block risky COD orders.

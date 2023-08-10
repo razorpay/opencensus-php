@@ -34,7 +34,8 @@ export const PAYMENT_PAGE_RULE_TYPES = [
 ];
 
 //eslint-disable-next-line
-export const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+export const EMAIL_REGEX =
+  /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 export const STEPS_TEXT = [
   {
@@ -96,7 +97,7 @@ export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE = [
   },
   {
     startingText: 'RTO protection on COD orders',
-    subText: 'You will be eligible for RTO Insurance on these orders.',
+    subText: 'You will be eligible for RTO protection on these orders.',
     image: true,
   },
 ];
@@ -127,24 +128,21 @@ export const DISCONNECT_TEXTS = {
   serviceability: {
     header: 'Disable serviceability using shiprocket',
     subText: 'Are you sure you want to disable ?',
-    desc:
-      'Razorpay will stop receiving Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
+    desc: 'Razorpay will stop receiving Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
     secondaryCtaLabel: "No, don't disable",
     primaryCtaLabel: 'Yes, disable',
   },
   shiprocket: {
     header: 'Disconnect Shiprocket',
     subText: 'Are you sure you want to disconnect ?',
-    desc:
-      'Razorpay will stop receiving order status, Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
+    desc: 'Razorpay will stop receiving order status, Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },
   delhivery: {
     header: 'Disconnect Delhivery',
     subText: 'Are you sure you want to disconnect ?',
-    desc:
-      'Razorpay will stop receiving delivery status updates from your Delhivery account. Orders shipped via Delhivery will no longer be eligible for RTO insurance.',
+    desc: 'Razorpay will stop receiving delivery status updates from your Delhivery account. Orders shipped via Delhivery will no longer be eligible for RTO insurance.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },

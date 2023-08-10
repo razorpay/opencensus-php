@@ -57,12 +57,12 @@ describe('Nested vertical tabs component', () => {
   test('should navigate to destined route', async () => {
     const { history } = render(<App />);
 
-    const MagicIntelligenceTab = screen.getByText('Magic Intelligence');
+    const MagicIntelligenceTab = screen.getByText('RTO Settings');
 
     expect(MagicIntelligenceTab).toBeInTheDocument();
 
     await userEvent.click(MagicIntelligenceTab);
-    expect(history.location.pathname).toEqual('/magic/settings/magic-intelligence');
+    expect(history.location.pathname).toEqual('/magic/settings/rto-settings');
   });
 
   test('should not show COD order automation tab if feature is not enabled', async () => {

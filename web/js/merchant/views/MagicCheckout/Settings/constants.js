@@ -38,8 +38,8 @@ export const TABS = {
     },
     {
       className: 'intelligence-settings',
-      path: '/magic/settings/magic-intelligence',
-      label: 'Magic Intelligence',
+      path: '/magic/settings/rto-settings',
+      label: 'RTO Settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
@@ -76,8 +76,8 @@ export const TABS = {
     },
     {
       className: 'intelligence-settings',
-      path: '/magic/settings/magic-intelligence',
-      label: 'Magic Intelligence',
+      path: '/magic/settings/rto-settings',
+      label: 'RTO settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
@@ -114,8 +114,8 @@ export const TABS = {
     },
     {
       className: 'intelligence-settings',
-      path: '/magic/settings/magic-intelligence',
-      label: 'Magic Intelligence',
+      path: '/magic/settings/rto-settings',
+      label: 'RTO settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },

@@ -38,9 +38,9 @@ export const FLAGGEDREASONS_DOUGHNUT_COLORS = [
   '#5B4EAE',
 ];
 
-export const UPLOAD_ORDER_STATUS_TAB = '/magic/order-status/';
+export const UPLOAD_ORDER_STATUS_TAB = '/magic/delivery-status/';
 
-export const MAGIC_SETTINGS_TAB = '/magic/settings/';
+export const MAGIC_SETTINGS_TAB = '/magic/settings/rto-settings';
 
 export const DEFAULT_SHIPPING_CHARGE = 75;
 

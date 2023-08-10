@@ -3,17 +3,24 @@ export const validateModalInfo = (maxRows, sampleUrl) => (
     <h5 className="modal-info-heading">KEEP IN MIND</h5>
     <ol className="validate-modal-ul">
       <li>
-        File should follow the template format. Download{' '}
-        <a className="btn-link" href={sampleUrl}>
-          <strong>sample file</strong>
-        </a>{' '}
-        for the template.
+        Every shipping provider has a different export template. Magic follows a standard template
+        for Delivery data upload.
       </li>
       <li>
-        Enter Shipping Charges, AWB number and Shipping Provider (e.g. Bluedart) to claim RTO
-        Insurance.
+        Download{' '}
+        <a className="btn-link" href={sampleUrl}>
+          <strong>this sample file</strong>
+        </a>{' '}
+        for the expected template.
       </li>
-      <li>The number of rows in the file should not exceed {maxRows}.</li>
+      <li>Entering shipping provider (Bluedart, DTDC etc.) and AWB number is mandatory.</li>
+      <li>
+        Merchant_order_id should contain your platform order id as mentioned in the order (e.g.
+        #BCA1011)
+      </li>
+      <li>
+        Status should contain shipping status against the order (e.g. RTO, Delivered, Cancelled etc)
+      </li>
     </ol>
   </div>
 );

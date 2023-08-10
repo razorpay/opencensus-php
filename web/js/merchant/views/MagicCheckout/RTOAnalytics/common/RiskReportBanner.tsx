@@ -20,7 +20,7 @@ const RiskReportBanner = (): JSX.Element => {
         <img src={graphScale} alt="graph-scale" className="graph-scale" loading="lazy" /> with COD
         intelligence integration.
       </p>
-      <NavLink to="/magic/settings/magic-intelligence">
+      <NavLink to="/magic/settings/rto-settings">
         <Button.Transparent type="button" className="btn btn-primary intelligence-link-cta">
           Integrate Now
           <span>

@@ -205,9 +205,9 @@ const MagicIntelligenceTab = ({
   return (
     <div className="magic-intelligence">
       <div className="header-wrapper">
-        <div className="font-20 font-bold heading">Reduce RTO orders with Magic Intelligence</div>
+        <div className="font-20 font-bold heading">Reduce RTO orders with Magic Checkout</div>
         <div className="font-14 subtext">
-          Automatically turn off the cash on delivery (COD) payment option for high risk customers
+          Disable COD option or retrieve RTO risk details for high risk customers
         </div>
         <div className="magic-intelligence-toggle">
           <CodIntelligenceToggle
@@ -218,6 +218,10 @@ const MagicIntelligenceTab = ({
             checked={codOrderControl}
             switchMode={() => onToggleClick('manualReview', codOrderControl)}
           />
+          <div className="rto-settings-info-container display-flex">
+            <i className="i i-info-outline intelligence-tooltip font-normal" />
+            <p className="info-text">Note: Only one configuration can be enabled at a time</p>
+          </div>
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">

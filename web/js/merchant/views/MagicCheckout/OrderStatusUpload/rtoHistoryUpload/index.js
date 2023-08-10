@@ -21,7 +21,7 @@ import {
   SAMPLE_FILE_URL,
 } from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload/constants';
 
-const CLOSE_URL = '/magic/order-status';
+const CLOSE_URL = '/magic/delivery-status';
 
 const openFileUpload = (validateBatch, openModal, provider, setProvider) => {
   openModal({
@@ -77,7 +77,7 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }
   ) : (
     <div className="rto-history-container content-wrapper">
       <div className="tab-header">
-        <span className="heading">Order history</span>
+        <span className="heading">Pre-Magic delivery data</span>
         {isUploadAllowed && (
           <span className="pull-right upload-cta" data-testid="upload-order-history-cta">
             <button

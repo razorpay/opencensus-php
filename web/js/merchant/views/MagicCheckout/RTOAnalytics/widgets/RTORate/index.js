@@ -227,7 +227,7 @@ const RTORate = ({
           <div className="rto-rate-nudging-message">
             <p>
               Enable{' '}
-              <NavLink to="/magic/settings/magic-intelligence" className="magic-link">
+              <NavLink to="/magic/settings/rto-settings" className="magic-link">
                 COD Intelligence
               </NavLink>{' '}
               and reduce RTOs by an additional 10% without any manual actions.

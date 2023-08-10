@@ -4,12 +4,12 @@ import RTOHistoryUpload from 'merchant/views/MagicCheckout/OrderStatusUpload/rto
 export const NAV_ITEM = [
   {
     id: 'rtoDeliveryStatus',
-    title: 'Delivery Statuses',
+    title: 'Monthly delivery data',
     component: <OrderStatusTab />,
   },
   {
     id: 'rtoHistoryUpload',
-    title: 'Order History',
+    title: 'Pre-Magic delivery data',
     component: <RTOHistoryUpload />,
   },
 ];

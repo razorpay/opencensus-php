@@ -26,7 +26,7 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
     component: (
       <BatchUpload
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
-        closeUrl="/magic/order-status"
+        closeUrl="/magic/delivery-status"
         ctaText="Create Batch"
         title="Upload Delivery Statuses"
         pendingText="Creating & Sending..."
@@ -59,13 +59,17 @@ const OrderStatuses = ({ openModal, createBatch, validateBatch, fetchAll, orderS
   ) : (
     <div className="delivery-status-container content-wrapper">
       <div className="tab-header">
-        <span className="heading">Delivery Statuses</span>
+        <span className="heading">Monthly delivery data</span>
         <span className="pull-right upload-cta">
           <button className="btn btn-primary" onClick={onUploadClick}>
             <i className="i i-plus" />
             Upload Delivery Statuses
           </button>
         </span>
+        <p className="sub-text">
+          Upload delivery status periodically for orders placed via Magic Checkout to get better
+          reduction of RTOs via COD Intelligence and claim RTO Protection.
+        </p>
       </div>
       <OrderStatusList
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}

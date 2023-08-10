@@ -33,8 +33,8 @@ const routes = [
     Component: BulkAddressUpload,
   },
   {
-    tabName: 'Upload Order Status',
-    path: '/magic/order-status',
+    tabName: 'Delivery Status',
+    path: '/magic/delivery-status',
     Component: OrderStatusUpload,
   },
   {
