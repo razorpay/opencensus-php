@@ -28,7 +28,7 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
         closeUrl="/magic/delivery-status"
         ctaText="Create Batch"
-        title="Upload Delivery Statuses"
+        title="Upload Monthly delivery data"
         pendingText="Creating & Sending..."
         batchType="fulfillment_order_update"
         maxRows={1000000} // 1M (Excel Limit)

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -22,7 +22,7 @@ import {
   COD_ENGINES,
   COD_ENGINE_TYPES,
 } from 'merchant/views/MagicCheckout/CODSettings/constants';
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/Settings/constants';
 
 function SettingsView({
   configs,
@@ -42,7 +42,7 @@ function SettingsView({
       platform,
       cod_engine_type: COD_ENGINE_TYPES.SLAB_ELIGIBILITY,
     };
-    if (platform === PLATFORMS.VALUES.SHOPIFY) {
+    if (platform === PLATFORMS.SHOPIFY) {
       params.shop_id = shop_id;
     }
     Promise.all([
@@ -87,6 +87,15 @@ function SettingsView({
       cod_engine_type: COD_ENGINE_TYPES.LOCATION,
     });
   };
+
+  const options = useMemo(() => {
+    // only show basic settings for wooc stores
+    if (platform === PLATFORMS.WOOCOMMERCE) {
+      return [SETTINGS_OPTIONS[0]];
+    }
+    return SETTINGS_OPTIONS;
+  }, [platform]);
+
   return (
     <div className="settings-view" data-testid="settings-view">
       <div className="cod-setting-item">
@@ -99,7 +108,7 @@ function SettingsView({
           value={engine || {}}
           size="small"
           name="engine"
-          options={SETTINGS_OPTIONS}
+          options={options}
           onChange={onSettingTypeChange}
           className="settings-select"
         />

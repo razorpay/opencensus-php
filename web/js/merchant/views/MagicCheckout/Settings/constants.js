@@ -67,6 +67,13 @@ export const TABS = {
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'cod-settings',
+      path: '/magic/settings/cod-settings',
+      label: 'COD Settings',
+      Component: CODSettingsTab,
+      condition: (_user) => _user.isMagicCODEngineEnabled,
+    },
+    {
       className: 'shipping-settings',
       path: '/magic/settings/shipping',
       label: 'Shipping Settings',

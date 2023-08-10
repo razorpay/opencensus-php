@@ -31,7 +31,7 @@ const openFileUpload = (validateBatch, openModal, provider, setProvider) => {
       <BatchUpload
         accept={['csv']}
         closeUrl={CLOSE_URL}
-        title="Upload RTO History"
+        title="Upload Pre-Magic delivery data"
         batchType="fulfillment_order_update"
         validateBatch={validateBatch}
         processFile
