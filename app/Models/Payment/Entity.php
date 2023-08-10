@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use App;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use Razorpay\Trace\Logger as Trace;
@@ -6098,7 +6099,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::BASE_AMOUNT] = $this->getBaseAmount();
         }
 
-        $this->setUpiIfApplicable($data);
+        $this->setUpiIfApplicable($data, Constants::WEBHOOK);
 
         return $data;
     }
@@ -6121,9 +6122,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     /**
      * Set UPI block to response if applicable.
      * @param array $data
+     * @param string $action
      * @return void
      */
-    private function setUpiIfApplicable(array &$data)
+    private function setUpiIfApplicable(array &$data, string $action = null)
     {
         if (($this->getMethod() === Payment\Method::UPI) and
             ($this->getReference2() !== null))
@@ -6134,6 +6136,30 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->getMethod() === Payment\Method::UPI)
         {
             $data[self::UPI][self::VPA] = $this->getVpa();
+
+            $this->assignUPIFlow($data, $action);
+        }
+    }
+
+    private function assignUPIFlow(array &$data, $action)
+    {
+        $app = App::getFacadeRoot();
+
+        /*
+         * Adding if block to return upi flow attribute for the Merchant and Admin dashboard
+         * So, we are adding basic auth check on querying the upi_metadata table.
+         * This helps avoiding querying to upi_metadata table in public auths on calling payment->toArrayPublic
+         */
+        if ($app['basicauth']->isProxyAuth() === true
+            or $app['basicauth']->isAdminAuth() === true
+            or $app['basicauth']->isPrivateAuth() === true
+            or $action === Constants::WEBHOOK) {
+            $upiMetadata = $this->getUpiMetadata();
+
+            if (isset($upiMetadata) === true and $upiMetadata->getFlow() === Flow::IN_APP)
+            {
+                $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+            }
         }
     }
 

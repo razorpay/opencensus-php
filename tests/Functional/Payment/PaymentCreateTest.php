@@ -4378,6 +4378,8 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
 
+        $this->assertNull( $payment['upi']['flow']);
+
         $upiMetadata = $this->getDbLastEntity('upi_metadata');
 
         $this->assertNotNull($upiMetadata);

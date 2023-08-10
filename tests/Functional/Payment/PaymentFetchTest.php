@@ -2222,6 +2222,7 @@ class PaymentFetchTest extends TestCase
         //Now we fetch the payment by id using private auth and assert that upi_metadata is NOT present
         $paymentFetchResponse = $this->fetchPayment($paymentCreateResponse['payment_id']);
         $this->assertEquals('upi', $paymentFetchResponse['method']);
+        $this->assertEquals('in_app', $paymentFetchResponse['upi']['flow']);
         $this->assertArrayNotHasKey('upi_metadata', $paymentFetchResponse);
 
         //Now we fetch the payment by id using proxy auth and assert that upi_metadata IS present
@@ -2233,6 +2234,8 @@ class PaymentFetchTest extends TestCase
         ];
 
         $paymentFetchResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('in_app', $paymentFetchResponse['upi']['flow']);
 
         //Assert the upi_metadata block that is expected to be present in the response is indeed present
         $expectedUpiMetadataBlock = [

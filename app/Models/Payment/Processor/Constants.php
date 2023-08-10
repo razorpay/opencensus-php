@@ -24,6 +24,8 @@ class Constants
 
     const SUBSCRIPTION                  = 'subscription';
 
+    const WEBHOOK                       = 'webhook';
+
     const ADMIN_EMAIL                   = 'admin_email';
     const USER_EMAIL                    = 'user_email';
     const META_DATA                     = 'meta_data';
