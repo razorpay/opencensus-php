@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 use App;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -41,6 +43,20 @@ class Service extends Base\Service
       return str_replace('1cc/', '', $path);
   }
 
+
+ /**
+  * @param $addressId
+  * @param $customerId
+  * @return array|mixed
+  * @throws BadRequestException
+  * @throws IntegrationException
+  */
+  public function updateAddressUsageToMagicCheckoutService($addressId, $customerId) {
+      $path = "v1/magic/addresses";
+      $input = ['address_id' => $addressId, 'customer_id' => $customerId];
+      return (new Client)->sendRequest($path, $input, Requests::POST);
+  }
+
   public function handleAdminDashboardThemeAutomationReq(array $input): array
   {
       $routeName = $this->app['router']->currentRouteName();
@@ -72,6 +88,6 @@ class Service extends Base\Service
                   null,
                   "Not a valid request");
       }
-  }
+   }
 
 }

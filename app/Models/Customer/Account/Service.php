@@ -1398,6 +1398,7 @@ class Service extends Base\Service
         return false;
     }
 
+    
     /**
      * Calculates count of all merchant saved wallet tokens associated to the customer
      *
@@ -1416,4 +1417,21 @@ class Service extends Base\Service
 
         return count($tokens);
     }
+     
+    public function getMagicCustomer()
+    {
+        if(Session()->has($this->mode . '_app_token') === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $appToken = Session()->get($this->mode . '_app_token');
+
+        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+            ['app_token' => $appToken],
+            $this->merchant,
+            true);
+
+        return $customer;
+      } 
 }

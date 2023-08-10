@@ -8,8 +8,10 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
@@ -23,7 +25,7 @@ use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment;
-
+use RZP\Models\Customer;
 
 class Service extends \RZP\Models\Base\Service
 {
@@ -40,6 +42,7 @@ class Service extends \RZP\Models\Base\Service
 
         $this->mutex = $this->app['api.mutex'];
     }
+
 
     /**
      * Function to update customer details for 1CC Orders.
@@ -61,6 +64,13 @@ class Service extends \RZP\Models\Base\Service
 
         try {
             $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_REQUEST_COUNT, $dimensions);
+
+            if (!empty($input['customer_details']['shipping_address']['id']) && !empty($input['customer_details']['billing_address'])) {
+                $addressId = $input['customer_details']['shipping_address']['id'];
+                $customer = (new Customer\Service)->getMagicCustomer();
+                $customerId = $customer->getId();
+                (new MagicCheckoutService\Service)->updateAddressUsageToMagicCheckoutService($addressId, $customerId);
+            }
 
             try {
                 (new Order1cc\Validator())->validateInput('editCustomerDetails', $input);

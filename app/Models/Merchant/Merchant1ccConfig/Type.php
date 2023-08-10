@@ -56,4 +56,7 @@ class Type {
     //cod-engine configs
     const COD_ENGINE                        = 'cod_engine';
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
+
+    //address sorting config
+    const ONE_CC_ADDRESS_SORT_METHOD             = 'one_cc_address_sort_method';
 }

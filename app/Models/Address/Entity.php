@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID             = 'source_id';
     const SOURCE_TYPE           = 'source_type';
     const PINCODE               = 'pincode';
+    const ADDRESS_ID            = 'id';
 
     protected static $sign      = 'addr';
 

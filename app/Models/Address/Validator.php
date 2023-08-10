@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         Entity::LINE1            => 'sometimes|string|between:1,255',
         Entity::LINE2            => 'sometimes|string|between:1,255',
         Entity::PRIMARY          => 'sometimes|in:0,1',
+        Entity::ADDRESS_ID       => 'sometimes|string',
     ];
 
     protected static $addressCodScoreResponseRules = [

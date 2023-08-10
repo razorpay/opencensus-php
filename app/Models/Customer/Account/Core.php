@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Http\RequestContextV2;
 use Str;
 use http\Url;
@@ -34,6 +36,11 @@ use RZP\Models\Customer\Truecaller\AuthRequest\Core as TruecallerCore;
 use RZP\Models\Customer\Truecaller\AuthRequest\Entity as TruecallerEntity;
 use RZP\Models\Customer\Truecaller\AuthRequest\Constants as TruecallerConstants;
 use RZP\Models\Customer\Truecaller\AuthRequest\Metric as TruecallerMetric;
+use RZP\Models\Merchant\Merchant1ccConfig;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
+use RZP\Http\Request\Requests;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 
 class Core extends Base\Core
 {
@@ -684,10 +691,88 @@ class Core extends Base\Core
         return $maskedRequest;
     }
 
+    /**
+     * @throws IntegrationException
+     * @throws BadRequestException
+     */
+    public function getAddressIdsOrderFromMagicCheckoutService($customerId, $method) {
+        $path = "v1/magic/addresses/sort";
+        $input = ['method' => $method, 'customer_id' => $customerId];
+        return (new Client)->sendRequest($path,$input, Requests::POST);
+    }
+
+    private function canRouteToCheckoutServiceForSorting(): bool
+    {
+        if (getenv('APP_ENV') === 'testing')
+        {
+           return false;
+        }
+
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.magic_address_sorting_experiment_id'),
+                'request_data' => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ]
+        );
+
+        return $expResult['variant'] === 'magic';
+    }
+
+    /**
+     * @throws IntegrationException
+     * @throws BadRequestException
+     */
+    public function sortRZPAddressesFor1CC($addresses, $customer)
+    {
+        $merchantAddressOrderConfig = (new Merchant\Merchant1ccConfig\Core())->get1ccConfigByMerchantIdAndType($this->merchant, 'one_cc_address_sort_method');
+        $addressIds = match($merchantAddressOrderConfig){
+        Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED => $this->getAddressIdsOrderFromMagicCheckoutService($customer->getId(), Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED),
+            default => $this->getAddressIdsOrderFromMagicCheckoutService($customer->getId(), Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_LAST_USED),
+        };
+
+        if (!empty($addressIds['id'])) {
+            $addressIdsFromCheckoutService = $addressIds['id'];
+            usort($addresses, function ($a, $b) use ($addressIdsFromCheckoutService) {
+                $aIndex = array_search($a['id'], $addressIdsFromCheckoutService);
+                $bIndex = array_search($b['id'], $addressIdsFromCheckoutService);
+
+                $aMatched = ($aIndex !== false);
+                $bMatched = ($bIndex !== false);
+
+                if ($aMatched && !$bMatched) {
+                    return -1; // $a is a matching value, $b is not, so $a should come first
+                } elseif (!$aMatched && $bMatched) {
+                    return 1; // $b is a matching value, $a is not, so $b should come first
+                }
+                return $aIndex - $bIndex;
+            });
+
+            return $addresses;
+        }
+
+        return $addresses;
+    }
+
+    /**
+     * @throws IntegrationException
+     * @throws BadRequestException
+     */
     public function fetchRzpAddressesFor1CC($customer)
     {
+        if($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return [];
+        }
         $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
-        return $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+        $addresses = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+        if ($this->canRouteToCheckoutServiceForSorting() === false) {
+            return $addresses;
+        }
+        return $this->sortRZPAddressesFor1CC($addresses, $customer);
     }
 
     public function fetchThirdPartyAddressesFor1cc($customer): array

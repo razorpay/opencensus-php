@@ -679,6 +679,8 @@ return array(
 
     'icic_whitelisted_merchants_experiment_id' => env('ICIC_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
+    'magic_address_sorting_experiment_id' => env('MAGIC_ADDRESS_SORTING_EXP_ID'),
+  
     'partner_bank_account_param_removal_exp_id' => env('PARTNER_BANK_ACCOUNT_PARAM_REMOVAL_EXP_ID'),
 
     'magic_preferences_routing_to_checkout_service_exp_id' => env('MAGIC_PREFERENCES_ROUTING_TO_CHECKOUT_SERVICE_EXP_ID'),
