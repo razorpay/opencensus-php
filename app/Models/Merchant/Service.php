@@ -30,12 +30,14 @@ use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Constants\Metric as ConstantMetric;
+use RZP\Models\Batch;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\RazorxTreatment as Experiment;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
+use RZP\Models\Batch as BatchModel;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
@@ -5679,9 +5681,34 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+
         $batches = $this->core()->createBatches($merchant, $input);
 
+
         return $batches;
+    }
+
+    public function irctcSettlementBatch($input)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::IRCTC_SETTLEMENT_BATCH_ROW,
+                [
+                    'batch row'       => $input,
+                ]);
+
+            (new BatchModel\Processor\IrctcSettlement())->processEntry($input,true);
+        }
+        catch (\Throwable $e)
+        {
+            $error = $e->getError();
+
+            $input[Batch\Header::STATUS]     = Batch\Status::FAILURE;
+            $input[Batch\Header::ERROR_CODE] = $error->getPublicErrorCode();
+            $input[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
+        }
+
+        return $input;
     }
 
     public function sendPayoutMailForMultipleMerchants(array $input)

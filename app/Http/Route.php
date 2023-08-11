@@ -873,6 +873,7 @@ class Route
         'merchant_business_detail_fetch'           => ['get',      'merchant/{id}/business/detail',                  'MerchantController@getMerchantBusinessDetail'                      ],
         'merchant_business_detail_save'            => ['post',     'merchant/{id}/business/detail',                  'MerchantController@postMerchantBusinessDetail'                     ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
+        'irctc_settlement_batch_service'           => ['post',      'settlement_batch/irctc',                        'MerchantController@irctcSettlementBatch'                           ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
         'merchant_bank_allocation'                 => ['post',     'merchant/allocate_bank',                         'MerchantController@postMerchantPreferencesNitroHack'               ],
@@ -5115,6 +5116,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'irctc_settlement_batch_service',
         'internal_org_get',
         'banking_org_merchant_onboarding_escalations',
         'internal_get_banking_config',
@@ -15692,6 +15694,7 @@ class Route
             'create_local_tokens_from_consents_bulk',
             'create_ledger_journal_batch',
             'merchant_upload_miq_admin',
+            'irctc_settlement_batch_service',
         ],
 
         'stork' => [

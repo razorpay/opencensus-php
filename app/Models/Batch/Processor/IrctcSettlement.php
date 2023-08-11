@@ -6,22 +6,40 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Trace\TraceCode;
 
 class IrctcSettlement extends Base
 {
     const IRCTC_PAYMENT_METHODS = ['NB', 'CC', 'DC', 'PPI', 'EMI', 'UPI', 'NA']; // list of payment methods required by IRCTC.
 
-    protected function processEntry(array & $entry)
+    public function processEntry(array & $entry,bool $batchService = false)
     {
         $paymentId = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::PAYMENT_ID]);
 
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $paymentProcessor = (new PaymentProcessor($this->merchant));
+        // As we are not using base class merchant ID is not present in current object
+        if($batchService)
+        {
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+
+            $merchant = $this->repo->merchant->findByPublicId($payment->merchant_id);
+
+            $paymentProcessor = (new PaymentProcessor($merchant));
+
+        }
+        else
+        {
+            $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+            $paymentProcessor = (new PaymentProcessor($this->merchant));
+
+        }
+
 
         $amount = $payment->getAmount();
 
-        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        // The payment amount is inclusive of fees, so
+        // we need to capture with the original amount.
         if ($payment->isFeeBearerCustomer() === true)
         {
             $amount = $amount - $payment->getFee();
@@ -122,4 +140,5 @@ class IrctcSettlement extends Base
         }
         return parent::parseTextRowWithHeadingMismatch($headings, $values, $ix);
     }
+
 }

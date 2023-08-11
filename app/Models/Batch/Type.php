@@ -593,7 +593,8 @@ class Type
         self::CREATE_WALLET_LOADS,
         self::CREATE_WALLET_CONTAINER_LOADS,
         self::PARTNER_SUBMERCHANT_REFERRAL_INVITE,
-        self::CREATE_WALLET_USER_CONTAINERS
+        self::CREATE_WALLET_USER_CONTAINERS,
+        self::IRCTC_SETTLEMENT,
     ];
 
     /**

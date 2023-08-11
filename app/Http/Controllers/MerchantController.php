@@ -1020,6 +1020,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function irctcSettlementBatch(){
+        $input = Request::all();
+
+        $response = $this->service()->irctcSettlementBatch($input);
+
+        return ApiResponse::json($response);
+
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();

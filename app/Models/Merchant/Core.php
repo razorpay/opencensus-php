@@ -170,10 +170,13 @@ class Core extends Base\Core
 
     const MAX_ARRAY_LIMIT_FOR_MERCHANT_ENTITIES_INFO = 10;
 
+    protected $irctcBatchType;
+
     /**
      * @var CapitalSubmerchantUtility
      */
     protected CapitalSubmerchantUtility $capitalSubmerchantUtility;
+
 
     /**
      * @return CapitalSubmerchantUtility
@@ -3217,10 +3220,29 @@ class Core extends Base\Core
                 $batch = (new Batch\Core)->create($params, $merchant);
 
                 $batches[$batchType] = $batch->getId();
+
+                $this->irctcBatchType = $batchType;
+
             }
 
             return $batches;
         });
+
+        $merchantID = $merchant->getId();
+
+        $experimentName = 'batch_service_' . $this->irctcBatchType . '_migration';
+
+        $variant = $this->app->razorx->getTreatment($merchantID,
+            $experimentName,
+           $this->mode
+        );
+
+        $result = (strtolower($variant) === Constants::RAZORX_EXPERIMENT_ON);
+
+        if ($result)
+        {
+            return $batches;
+        }
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
