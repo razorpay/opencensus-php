@@ -142,6 +142,8 @@ class Core extends Base\Core
 
     const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = 21600; // In Seconds
 
+    const FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD = 1000000; // In Paisa
+
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
     const STATUSES_FOR_CARD_VAULT_TOKEN_DELETION = [Attempt\Status::PROCESSED, Attempt\Status::REVERSED, Attempt\Status::FAILED];
@@ -9367,21 +9369,43 @@ class Core extends Base\Core
                 // Fetch Latest direct account balance
                 $gatewayBalance = $this->getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails);
 
+                /**
+                 * Get minimum amount to be maintained at Current Account
+                 * Todo:: Add merchant level configuration for this.
+                 */
+                $fmpGatewayBalanceThreshold = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD]);
+
+                if (empty($fmpGatewayBalanceThreshold) === true)
+                {
+                    $fmpGatewayBalanceThreshold = self::FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD; // In paisa
+                }
+
                 $this->trace->info(TraceCode::CA_BALANCE_FETCHED_FOR_FMP, [
-                    'merchant_id'     => $merchantId,
-                    'channel'         => $channel,
-                    'gateway_balance' => $gatewayBalance,
-                    'offset_amount'   => $offsetAmount,
+                    'merchant_id'               => $merchantId,
+                    'channel'                   => $channel,
+                    'gateway_balance'           => $gatewayBalance,
+                    'offset_amount'             => $offsetAmount,
+                    'gateway_balance_threshold' => $fmpGatewayBalanceThreshold,
                 ]);
 
-                if ($gatewayBalance <= $offsetAmount)
+                if (($gatewayBalance <= $offsetAmount) or
+                    ($gatewayBalance - $offsetAmount < $fmpGatewayBalanceThreshold))
                 {
-                    throw new Exception\LogicException(PayoutConstants::CA_BALANCE_NOT_ENOUGH_FOR_FMP, null, [
-                        'merchant_id'     => $merchantId,
-                        'channel'         => $channel,
-                        'gateway_balance' => $gatewayBalance,
-                        'offset_amount'   => $offsetAmount,
-                    ]);
+                    if ($gatewayBalance <= $fmpGatewayBalanceThreshold)
+                    {
+                        throw new Exception\LogicException(PayoutConstants::CA_BALANCE_NOT_ENOUGH_FOR_FMP, null, [
+                            'merchant_id'               => $merchantId,
+                            'channel'                   => $channel,
+                            'gateway_balance'           => $gatewayBalance,
+                            'offset_amount'             => $offsetAmount,
+                            'amount_difference'         => $offsetAmount - $gatewayBalance,
+                            'gateway_balance_threshold' => $fmpGatewayBalanceThreshold,
+                        ]);
+                    }
+                    else
+                    {
+                        $offsetAmount = $gatewayBalance - $fmpGatewayBalanceThreshold;
+                    }
                 }
 
                 //Create Input for FMPs
@@ -9390,9 +9414,10 @@ class Core extends Base\Core
                 $preferredMode = $fmpInput[Entity::MODE];
 
                 $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_INPUT, [
-                    'merchant_id' => $merchantId,
-                    'channel'     => $channel,
-                    'input'       => $fmpInput,
+                    'merchant_id'         => $merchantId,
+                    'channel'             => $channel,
+                    'input'               => $fmpInput,
+                    'final_offset_amount' => $offsetAmount,
                 ]);
 
                 // Calculate the number of FMPs and its Amount

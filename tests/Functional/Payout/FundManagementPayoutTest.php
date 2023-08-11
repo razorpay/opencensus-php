@@ -134,7 +134,12 @@ class FundManagementPayoutTest extends TestCase
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD => 21600]);
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD       => 21600,
+                Admin\ConfigKey::FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD => 1000000,
+            ]
+        );
     }
 
     protected function getFundManagementPayoutCheckQueueParams($input = null)
@@ -1081,7 +1086,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
 
         $ftsSuccess = false;
 
@@ -1137,7 +1142,7 @@ class FundManagementPayoutTest extends TestCase
         $basDetails = $this->basDetails->reload();
 
         // Gateway balance was fetched from bank and bas_details was updated
-        $this->assertEquals(10000000, $basDetails->getGatewayBalance());
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
         $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
 
         // Asserting that no FMP got created
@@ -1207,7 +1212,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
 
         $ftsSuccess = false;
 
@@ -1263,7 +1268,7 @@ class FundManagementPayoutTest extends TestCase
         $basDetails = $this->basDetails->reload();
 
         // Gateway balance was fetched from bank and bas_details was updated
-        $this->assertEquals(10000000, $basDetails->getGatewayBalance());
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
         $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
 
         // Asserting that no FMP got created
@@ -1310,6 +1315,270 @@ class FundManagementPayoutTest extends TestCase
     }
 
     /**
+     * Dispatch FMP even though offset amount is greater than CA balance, as we want
+     * to consume all of CA balance only leaving behind the amount configured in this threshold
+     * FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD.
+     */
+    public function testFundManagementPayoutCheck_DispatchFmpSuccessWithOffsetAmountGreaterThanCaBalance()
+    {
+        $oldDateTime = Carbon::create(2023, 6, 15, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Features::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockLedgerFetchLiteBalance("15000000.00");
+
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::CHANNEL => Channel::RBL,
+            'error_message'       => PayoutConstants::CA_BALANCE_NOT_ENOUGH_FOR_FMP,
+        ]);
+
+        $mozartSuccess = false;
+
+        $this->mockMozartFetchGatewayBalance(4000, $mozartSuccess, true);
+
+        $ftsSuccess = false;
+
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess);
+
+        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+            Details\Entity::GATEWAY_BALANCE           => 1200000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams([PayoutConstants::TOTAL_AMOUNT_THRESHOLD => 19000000]);
+
+        $fmpInputs = [
+            [
+                PayoutEntity::AMOUNT       => 4500000,
+                PayoutEntity::STATUS       => PayoutStatus::PROCESSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(10)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(9)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(4)->getTimestamp(),
+            ],
+            // Even though considered, it's not included in the calculation of the offset amount
+            [
+                PayoutEntity::AMOUNT       => 2000000,
+                PayoutEntity::STATUS       => PayoutStatus::REVERSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(120)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(119)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+                PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT       => 1000000,
+                PayoutEntity::STATUS       => PayoutStatus::INITIATED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+            ],
+        ];
+
+        $this->createFundManagementPayouts($fmpInputs);
+
+        $this->fixtures->edit('merchant', $this->basDetails->getMerchantId(), [
+            'name'          => 'test_merchant',
+            'billing_label' => 'test_merchant $additional_%characters_/#*greater_than_fifty',
+        ]);
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        $basDetails = $this->basDetails->reload();
+
+        // Gateway Balance fetched from DB
+        $this->assertEquals(1200000, $basDetails->getGatewayBalance());
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertFalse((bool) $boolJobFailureMetricCaptured);
+        $this->assertFalse((bool) $mozartSuccess);
+        $this->assertTrue((bool) $ftsSuccess);
+
+        $expectedParams = [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "currency"     => "INR",
+                "mode"         => "NEFT",
+                "purpose"      => "RZP Fund Management",
+                "amount"       => 200000,
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name"           => $this->bankAccount->getName(),
+                        "ifsc"           => $this->bankAccount->getIfscCode(),
+                        "account_number" => $this->bankAccount->getAccountNumber(),
+                    ],
+                    "contact"      => [
+                        "name" => 'testmerchant additionalcharactersgreaterthanfifty',
+                        "type" => Contact\Type::SELF,
+                    ]
+                ],
+            ],
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
+        ];
+
+        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams) {
+            $this->assertArraySubset($expectedParams, $job->getParams());
+            $this->assertArrayHasKey(PayoutConstants::FMP_UNIQUE_IDENTIFIER, $job->getParams());
+
+            return true;
+        });
+
+        $this->assertEquals(1, Queue::Pushed(FundManagementPayoutInitiate::class)->count());
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * Dispatch FMP with an amount which consumes all CA balance except the amount configured in this threshold
+     * FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD, when offset amount is less than CA balance by an amount
+     * within the above threshold.
+     */
+    public function testFundManagementPayoutCheck_DispatchFmpSuccessWithOffsetAmountLessThanCaBalanceByThreshold()
+    {
+        $oldDateTime = Carbon::create(2023, 6, 15, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Features::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockLedgerFetchLiteBalance("15000000.00");
+
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::CHANNEL => Channel::RBL,
+            'error_message'       => PayoutConstants::CA_BALANCE_NOT_ENOUGH_FOR_FMP,
+        ]);
+
+        $mozartSuccess = false;
+
+        $this->mockMozartFetchGatewayBalance(4000, $mozartSuccess, true);
+
+        $ftsSuccess = false;
+
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess);
+
+        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+            Details\Entity::GATEWAY_BALANCE           => 10000000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams([PayoutConstants::TOTAL_AMOUNT_THRESHOLD => 19000000]);
+
+        $fmpInputs = [
+            [
+                PayoutEntity::AMOUNT       => 4500000,
+                PayoutEntity::STATUS       => PayoutStatus::PROCESSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(10)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(9)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(4)->getTimestamp(),
+            ],
+            // Even though considered, it's not included in the calculation of the offset amount
+            [
+                PayoutEntity::AMOUNT       => 2000000,
+                PayoutEntity::STATUS       => PayoutStatus::REVERSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(120)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(119)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+                PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT       => 1000000,
+                PayoutEntity::STATUS       => PayoutStatus::INITIATED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+            ],
+        ];
+
+        $this->createFundManagementPayouts($fmpInputs);
+
+        $this->fixtures->edit('merchant', $this->basDetails->getMerchantId(), [
+            'name'          => 'test_merchant',
+            'billing_label' => 'test_merchant $additional_%characters_/#*greater_than_fifty',
+        ]);
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        $basDetails = $this->basDetails->reload();
+
+        // Gateway Balance fetched from DB
+        $this->assertEquals(10000000, $basDetails->getGatewayBalance());
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertFalse((bool) $boolJobFailureMetricCaptured);
+        $this->assertFalse((bool) $mozartSuccess);
+        $this->assertTrue((bool) $ftsSuccess);
+
+        $expectedParams = [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "currency"     => "INR",
+                "mode"         => "NEFT",
+                "purpose"      => "RZP Fund Management",
+                "amount"       => 9000000,
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name"           => $this->bankAccount->getName(),
+                        "ifsc"           => $this->bankAccount->getIfscCode(),
+                        "account_number" => $this->bankAccount->getAccountNumber(),
+                    ],
+                    "contact"      => [
+                        "name" => 'testmerchant additionalcharactersgreaterthanfifty',
+                        "type" => Contact\Type::SELF,
+                    ]
+                ],
+            ],
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
+        ];
+
+        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams) {
+            $this->assertArraySubset($expectedParams, $job->getParams());
+            $this->assertArrayHasKey(PayoutConstants::FMP_UNIQUE_IDENTIFIER, $job->getParams());
+
+            return true;
+        });
+
+        $this->assertEquals(1, Queue::Pushed(FundManagementPayoutInitiate::class)->count());
+
+        Carbon::setTestNow();
+    }
+
+    /**
      * Dispatch 2 FMPs since, offset amount is greater than NEFT Threshold
      */
     public function testFundManagementPayoutCheck_DispatchFmpsSuccess()
@@ -1333,7 +1602,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
 
         $ftsSuccess = false;
 
@@ -1398,7 +1667,7 @@ class FundManagementPayoutTest extends TestCase
         $basDetails = $this->basDetails->reload();
 
         // Gateway balance was fetched from bank and bas_details was updated
-        $this->assertEquals(10000000, $basDetails->getGatewayBalance());
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
         $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
 
         // Asserting that no FMP got created
@@ -1623,7 +1892,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
 
         $ftsSuccess = false;
 
@@ -1721,7 +1990,7 @@ class FundManagementPayoutTest extends TestCase
         $basDetails = $this->basDetails->reload();
 
         // Gateway balance was fetched from bank and bas_details was updated
-        $this->assertEquals(10000000, $basDetails->getGatewayBalance());
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
         $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
 
         // Asserting that no FMP got created

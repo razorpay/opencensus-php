@@ -162,6 +162,8 @@ class ConfigKey
 
     const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = self::PREFIX . 'fund_management_payouts_retrieval_threshold';
 
+    const FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD = self::PREFIX . 'fund_management_payouts_gateway_balance_threshold';
+
     const ICICI_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'icici_statement_fetch_retry_limit';
 
     const BLOCK_YESBANK_WALLET_PAYOUTS          = self::PREFIX . 'block_yesbank_wallet_payouts';

@@ -234,6 +234,7 @@ class Validator extends Base\Validator
         ConfigKey::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES                                => 'filled|array',
         ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                    => 'filled|integer',
         ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD                         => 'filled|integer',
+        ConfigKey::FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD                   => 'filled|integer',
         ConfigKey::RZP_INTERNAL_ACCOUNTS                                               => 'array',
         ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS                                          => 'array',
         ConfigKey::SUB_BALANCES_MAP                                                    => 'filled|array',
