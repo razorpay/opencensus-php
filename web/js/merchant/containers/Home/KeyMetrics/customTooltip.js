@@ -177,7 +177,11 @@ const customToolTip = function (tooltipModel) {
           `<span class="label-value">` +
           `${
             isCurrency
-              ? getFormattedAmountNew(value, true, currentMerchantCurrency)
+              ? getFormattedAmountNew(
+                  i18CurrencyConversionFromCommonUnitToMinorUnit(value),
+                  true,
+                  currentMerchantCurrency,
+                )
               : getFormattedAmountNew(value, false, currentMerchantCurrency)
           }` +
           `</span>`;
