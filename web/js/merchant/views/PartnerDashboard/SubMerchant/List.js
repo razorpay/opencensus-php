@@ -96,12 +96,9 @@ export default class SubMerchantsList extends Component {
   };
 
   handleAddMerchant = () => {
-    this.trackUserEvent('partnerships.submerchant.add', {
-      source: 'navbar',
-    });
     analyticsTrack({
       objectName: 'Add New Merchant',
-      actionName: 'clicked',
+      actionName: 'Clicked',
       screen: 'affiliate accounts',
       properties: {
         location: 'navbar',
@@ -141,7 +138,6 @@ export default class SubMerchantsList extends Component {
         toLumberjack: true,
       });
     } else {
-      this.trackUserEvent('partnerships.submerchant.referral');
       analyticsTrack({
         objectName: 'Share Referral Link',
         actionName: 'clicked',

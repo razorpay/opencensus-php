@@ -19,6 +19,7 @@ import {
   validateCompanyAB,
   validatePersonalPAN,
 } from 'common/utils/validators';
+import { analyticsTrack } from 'common/utils/analytics';
 import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
 import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
 import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
@@ -381,6 +382,15 @@ const Activation = (props) => {
   };
 
   const saveCurrentTab = async () => {
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Saved',
+      screen: tabs[activeTab],
+      properties: {
+        section: tabs[activeTab],
+        partnerID: props.user?.merchant.id,
+      },
+    });
     setIsSaving(true);
     const reqData = getRequestData();
     const activationData = await postPartnerActivation(reqData);
@@ -388,12 +398,6 @@ const Activation = (props) => {
       updateActivationState(activationData.data);
     }
     setIsSaving(false);
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.save', {
-        partnerID: props.user?.merchant.id,
-        section: tabs[activeTab],
-      }),
-    );
   };
 
   const next = async () => {
@@ -430,21 +434,27 @@ const Activation = (props) => {
     if (activationData.success) {
       updateActivationState(activationData.data);
     }
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Submitted',
+      screen: window.location,
+      properties: {
         partnerID: props.user?.merchant.id,
-      }),
-    );
+      },
+    });
     setIsSaving(false);
   };
 
   useEffect(() => {
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Opened',
+      section: tabs[activeTab],
+      properties: {
         partnerID: props.user?.merchant.id,
         section: tabs[activeTab],
-      }),
-    );
+      },
+    });
   }, [activeTab]);
 
   const isOnKYCTab = () => {
@@ -512,12 +522,15 @@ const Activation = (props) => {
       }
     });
 
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.save', {
-        partnerID: props.user?.merchant.id,
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Saved',
+      screen: tabs[activeTab],
+      properties: {
         section: tabs[activeTab],
-      }),
-    );
+        partnerID: props.user?.merchant.id,
+      },
+    });
 
     try {
       setIsSaving(true);

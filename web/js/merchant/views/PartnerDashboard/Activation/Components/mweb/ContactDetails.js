@@ -10,6 +10,7 @@ import {
 import useActivation, {
   getRequestData,
 } from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const contactDetailsSchema = Yup.object().shape({
   contact_name: Yup.string()
@@ -32,7 +33,7 @@ const contactDetailsSchema = Yup.object().shape({
     .nullable(),
 });
 
-const ContactDetails = ({ isFormLocked, tracking, partnerID }) => {
+const ContactDetails = ({ isFormLocked, partnerID }) => {
   const { data, postData } = useActivation();
   const contactDetails = data.contact_details;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -59,12 +60,15 @@ const ContactDetails = ({ isFormLocked, tracking, partnerID }) => {
   };
 
   useEffect(() => {
-    tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
-        partnerID,
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Opened',
+      screen: 'Contact Details',
+      properties: {
         section: 'Contact Details',
-      }),
-    );
+        partnerID,
+      },
+    });
   }, []);
 
   return (

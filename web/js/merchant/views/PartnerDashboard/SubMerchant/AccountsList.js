@@ -495,13 +495,10 @@ class ProductSubMerchantsList extends ListContainer {
   };
 
   handleAddMerchant = () => {
-    this.trackUserEvent('partnerships.submerchant.add', {
-      source: 'welcome screen',
-    });
     trackAddNewMerchantEvents('Click - Welcome Screen');
     analyticsTrack({
       objectName: 'Add New Merchant',
-      actionName: 'clicked',
+      actionName: 'Clicked',
       screen: 'affiliate accounts',
       properties: {
         location: 'welcome screen',
@@ -597,11 +594,6 @@ class ProductSubMerchantsList extends ListContainer {
       );
     }
     if (this.props.product === PRODUCT_TYPE.PG) {
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.social', {
-          partnerID: this.props.user.id,
-        }),
-      );
       analyticsTrack({
         objectName: 'Social Share Referral Link',
         actionName: 'clicked',
@@ -613,14 +605,6 @@ class ProductSubMerchantsList extends ListContainer {
         },
         toCleverTap: true,
       });
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.social', {
-          productGroup,
-          partnerID: this.props.user.id,
-          socialMedia: platform,
-          source: 'welcome screen',
-        }),
-      );
     }
   }
 
@@ -633,11 +617,6 @@ class ProductSubMerchantsList extends ListContainer {
         liData: 1764844,
       });
       trackReferral();
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.copy', {
-          partnerID: this.props.user.id,
-        }),
-      );
       analyticsTrack({
         objectName: 'Copy Referal Link',
         actionName: 'clicked',
@@ -648,14 +627,6 @@ class ProductSubMerchantsList extends ListContainer {
         },
         toCleverTap: true,
       });
-      // new event
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.copy', {
-          productGroup,
-          partnerID: this.props.user.id,
-          source: 'welcome screen',
-        }),
-      );
     }
     if (this.props.product === PRODUCT_TYPE.X) {
       this.props.tracking.trackEvent(

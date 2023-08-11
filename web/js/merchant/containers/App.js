@@ -8,7 +8,7 @@ import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { removeItem } from 'common/utils/localStorage';
-import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initSentry } from 'common/utils/observability';
@@ -47,7 +47,6 @@ import {
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
@@ -84,7 +83,6 @@ const IdleTimer = lazy(() =>
 
 initSentry('Merchant');
 
-@RTracking()
 class App extends Component {
   pendingRequests = [];
 
@@ -123,7 +121,6 @@ class App extends Component {
       isFeedbackFormCreated: false,
       isWebView: false,
     };
-
     this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
@@ -617,6 +614,7 @@ class App extends Component {
         location.pathname.startsWith('/partners') &&
         user.isIndependentPartnerKYCEnabled &&
         user.partner_type === 'reseller';
+
       if (isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,
@@ -866,7 +864,6 @@ class App extends Component {
 
   redirectToRoute(role) {
     const pathname = this.props.history.location.pathname;
-
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case rolesList.SELLERAPP:
@@ -930,24 +927,34 @@ class App extends Component {
   };
 
   handlePartnerModeSwitch = (mode) => {
-    if (mode === 'live' && this.state.isPartnerModeEnabled) {
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().interaction('partnerships.partner_KYC.open', {
-          partnerID: this.props.user?.merchant.id,
-          source: 'Live mode',
-        }),
-      );
-    }
     const user = this.props.user;
-    const merchantId = user?.merchant.id;
+    const merchantId = user?.current;
+
+    if (mode === 'live' && this.state.isPartnerModeEnabled) {
+      analyticsTrack({
+        objectName: 'Partner KYC Form',
+        actionName: 'Opened',
+        screen: 'Switch Mode',
+        properties: {
+          source: 'Live mode',
+          section: 'Switch Mode',
+          partnerID: merchantId,
+        },
+      });
+    }
     const isPartnerActivated =
       user?.merchants[merchantId]?.partner?.activation_status === 'activated';
     if (mode === 'live' && !isPartnerActivated) {
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().interaction('partnerships.partner_KYC.pop_up', {
-          partnerID: this.props.user?.merchant.id,
-        }),
-      );
+      analyticsTrack({
+        objectName: 'Partner KYC Activation Required Modal',
+        actionName: 'Opened',
+        screen: 'Switch Mode',
+        properties: {
+          source: 'Live mode',
+          section: 'Pop up',
+          partnerID: merchantId,
+        },
+      });
       if (this.state.isPartnerKYCActivated) {
         LocalStorageService.setItem(this.partnerModeToken, mode);
         location.reload();
@@ -1254,63 +1261,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default compose(
-  withRouter,
-  connect(mapStateToProps, mapDispatchToProps),
-  // eslint-disable-next-line babel/new-cap
-  RTracking(
-    ({ user, mode, isWebView }) => {
-      let utm = null;
-      let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
-      let browser_details = {};
-      const query = qs.parse(window.location.search);
-      let source = 'pg';
-      let u = {};
-      if (user && user.user) {
-        const device_type = isMobileDevice() ? 'mweb' : 'dweb';
-        u = {
-          email_id: user.user.email,
-          user_id: user.user.id,
-          mid: user.current,
-          user_role: user.role,
-          business_type: user.business_type,
-          activation_status: user.activated,
-          is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
-          is_instant_activation_enabled: user.isInstantActivationEnabled,
-          is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
-          is_gstin_mandatory: user.isGstinMandatory,
-          user_business_category: user.business_category,
-          user_business_sub_category: user.business_subcategory,
-          device_type,
-          is_web_view: isWebView,
-        };
-      }
-      if (query.merchant) {
-        source = query.merchant;
-      }
-      if (typeof window.razorpayAnalytics !== 'undefined') {
-        utm = window.razorpayAnalytics.utils.getLandingParams();
-        gclid = window.razorpayAnalytics.utils.getCookie('gclid');
-        if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
-          browser_details = window.razorpayAnalytics.utils.getBrowserDetails();
-        }
-      }
-      return window.rzpQ.component('Home', {
-        ...u,
-        utm_params: utm,
-        gclid,
-        mode: 'live',
-        rzp_mode: mode,
-        source,
-        reffering_url: document.referrer,
-        url: document.location.href,
-        ...browser_details,
-      });
-    },
-    {
-      dispatch: (data) => {
-        window.rzpQ.push(data);
-      },
-    },
-  ),
-)(App);
+export default compose(withRouter, connect(mapStateToProps, mapDispatchToProps))(App);

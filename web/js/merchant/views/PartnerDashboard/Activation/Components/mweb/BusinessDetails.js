@@ -21,6 +21,7 @@ import {
 import useActivation, {
   getRequestData,
 } from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const businessDetailsSchema = ({ hasGSTIN }) =>
   Yup.object().shape({
@@ -77,7 +78,7 @@ const businessDetailsSchema = ({ hasGSTIN }) =>
     bank_branch_ifsc: Yup.string().required('IFSC is a required field').nullable(),
   });
 
-const BusinessDetails = ({ isFormLocked, isFormSubmitted, tracking, partnerID }) => {
+const BusinessDetails = ({ isFormLocked, isFormSubmitted, partnerID }) => {
   const { data, postData } = useActivation();
   const { business_type: businessType } = data;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -109,12 +110,15 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted, tracking, partnerID })
   };
 
   useEffect(() => {
-    tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
+    analyticsTrack({
+      objectName: 'Partner KYC Form',
+      actionName: 'Opened',
+      screen: 'Business Details',
+      properties: {
         partnerID,
         section: 'Business Details',
-      }),
-    );
+      },
+    });
   }, []);
 
   const handleSubmit = (updatedDetails) => {

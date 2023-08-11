@@ -9,6 +9,7 @@ export const getInitialUserOrgState = ({
 }) => ({
   user: {
     isOrgRZP: isRzpOrg,
+    isOrgCurlec: !isRzpOrg,
     ...userExtra,
     merchant: {
       currency: isRzpOrg ? 'INR' : 'MYR',

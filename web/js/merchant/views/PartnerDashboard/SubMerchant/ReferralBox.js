@@ -7,6 +7,7 @@ import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import Image from 'common/ui/Image';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { analyticsTrack } from 'common/utils/analytics';
 
 export default function ReferralBox({
   user,
@@ -22,15 +23,7 @@ export default function ReferralBox({
   const bankingReferralLink = referralData?.[PRODUCT_TYPE.X]?.url ?? '';
   const capitalReferralLink = referralData?.[PRODUCT_TYPE.CAPITAL]?.url ?? '';
   const isCapitalProduct = productType === PRODUCT_TYPE.CAPITAL;
-  const getCurrentProduct = () => {
-    if (productType === PRODUCT_TYPE.PG) {
-      return 'Payments';
-    }
-    if (productType === PRODUCT_TYPE.X) {
-      return 'X';
-    }
-    return '';
-  };
+
   useEffect(() => {
     switch (product) {
       case PRODUCT_TYPE.CAPITAL:
@@ -44,28 +37,29 @@ export default function ReferralBox({
     }
   }, [product]);
 
-  const trackUserEvent = (eventName, properties = {}) => {
-    const productGroup = getCurrentProduct();
-    tracking.trackEvent(
-      window.rzpQ.onbr().interaction(eventName, {
-        partnerID: user.id,
-        productGroup,
-        ...properties,
-      }),
-    );
-  };
-
   useEffect(() => {
     if (productType !== '') {
-      trackUserEvent('partnerships.submerchant.referral.product_group');
+      analyticsTrack({
+        objectName: 'Social Share Referral Box',
+        actionName: 'Opened',
+        screen: window.location,
+        properties: {
+          productType,
+        },
+      });
     }
   }, [productType]);
 
   const handleModalClose = () => {
-    closeModal();
-    trackUserEvent('partnerships.submerchant.referral.product_group', {
-      action: 'cancel',
+    analyticsTrack({
+      objectName: 'Social Share Referral Box',
+      actionName: 'Closed',
+      screen: window.location,
+      properties: {
+        productType,
+      },
     });
+    closeModal();
   };
 
   if (!partnershipForXEnabled) {

@@ -1,12 +1,20 @@
 import App from 'merchant/containers/App';
 import { render } from 'test-utils';
-import store from 'merchant/store';
-const globalState = store.getState();
 
 jest.mock('merchant/components/HeaderNav', () => ({
   __esModule: true,
   default: () => {
     return <div>Header Nav</div>;
+  },
+}));
+jest.mock('common/ui/Forms/SwitchField', () => ({
+  __esModule: true,
+  default: ({ onChange }) => {
+    return (
+      <div data-testid="test-mode-switch" onClick={() => onChange(true, () => {})}>
+        Switch Field
+      </div>
+    );
   },
 }));
 
@@ -50,22 +58,12 @@ const orgDetails = {
   merchant_session_timeout_in_seconds: 2,
 };
 
-const renderApp = (initialState = {}, props = {}) => {
+const renderApp = (props = {}, { initialState = {}, pathname = '/dashboard' }) => {
   return render(<App {...props} />, {
     showModal: true,
-    initialState: {
-      ...globalState,
-      session: {
-        ...globalState.session,
-        user: initialState?.session?.user ?? globalState?.session?.user,
-        org: initialState?.session?.org ?? globalState?.session?.org,
-      },
-    },
-    renderOptions: {
-      historyOptions: {
-        initialEntries: ['/dashboard'],
-      },
-      path: '/dashboard',
+    initialState,
+    historyOptions: {
+      initialEntries: [pathname],
     },
   });
 };

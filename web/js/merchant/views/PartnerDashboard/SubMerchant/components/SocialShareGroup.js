@@ -34,7 +34,6 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
       });
     }
     if (product === PRODUCT_TYPE.PG) {
-      trackUserEvent('partnerships.submerchant.referral.social');
       analyticsTrack({
         objectName: 'Social Share Referral Link',
         actionName: 'clicked',
@@ -46,10 +45,6 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
         },
         toCleverTap: true,
       });
-      trackUserEvent('partnerships.submerchant.referral.product_group.social', {
-        productGroup: 'Payments',
-        socialMedia: platform,
-      });
     }
   };
 
@@ -60,7 +55,6 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
         liData: 1764844,
       });
       trackReferral();
-      trackUserEvent('partnerships.submerchant.referral.copy');
       analyticsTrack({
         objectName: 'Copy Referal Link',
         actionName: 'clicked',
@@ -70,9 +64,6 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
         toCleverTap: true,
-      });
-      trackUserEvent('partnerships.submerchant.referral.product_group.copy', {
-        productGroup: 'Payments',
       });
     }
     if (product === PRODUCT_TYPE.CAPITAL) {

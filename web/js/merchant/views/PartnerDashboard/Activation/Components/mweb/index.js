@@ -25,6 +25,8 @@ import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/r
 import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
+import { analyticsTrack } from 'common/utils/analytics';
+
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const { status: activationStatus, data, postData } = useActivation();
@@ -91,11 +93,7 @@ const RenderMwebActivationForm = (props) => {
         tabId="contact_details"
         completed={isContactDetailsCompleted}
       >
-        <ContactDetails
-          isFormLocked={isFormLocked}
-          tracking={props.tracking}
-          partnerID={props.user?.merchant.id}
-        />
+        <ContactDetails isFormLocked={isFormLocked} partnerID={props.user?.merchant.id} />
       </Tab>,
       <Tab
         key="business_details"
@@ -103,11 +101,7 @@ const RenderMwebActivationForm = (props) => {
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
       >
-        <BusinessDetails
-          isFormLocked={isFormLocked}
-          tracking={props.tracking}
-          partnerID={props.user?.merchant.id}
-        />
+        <BusinessDetails isFormLocked={isFormLocked} partnerID={props.user?.merchant.id} />
       </Tab>,
       <Tab
         key="address_details"
@@ -126,18 +120,21 @@ const RenderMwebActivationForm = (props) => {
   };
 
   const submitForm = () => {
-    const { tracking, showNotification } = props;
+    const { showNotification } = props;
     const reqData = {
       submit: '1',
     };
     postData(reqData)
       .then((res) => {
         if (res.success) {
-          tracking.trackEvent(
-            window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
+          analyticsTrack({
+            objectName: 'Partner KYC Form',
+            actionName: 'Submitted',
+            screen: window.location,
+            properties: {
               partnerID: props.user?.merchant.id,
-            }),
-          );
+            },
+          });
           showNotification('Submitted Successfully');
           window.location = '/app/partners';
         }
