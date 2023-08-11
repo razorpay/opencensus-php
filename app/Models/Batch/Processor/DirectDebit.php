@@ -87,7 +87,7 @@ class DirectDebit extends Base
 
         if($this->hasCardToken($row) === true)
         {
-            $request = Helper::getPaymentInputForToken($row, $order, $customer);
+            $request = Helper::getPaymentInputForToken($row, $order);
         }
 
         $result = $this->processor->process($request);
