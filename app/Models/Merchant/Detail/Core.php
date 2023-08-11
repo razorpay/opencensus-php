@@ -8457,11 +8457,6 @@ class Core extends Base\Core
 
         if ($isRequestToUpdateWebsite === true)
         {
-            if ($this->merchant->getHasKeyAccess() === false)
-            {
-                (new KeyValidator)->checkHasKeyAccess($this->merchant, $this->mode);
-            }
-
             $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
         }
 
