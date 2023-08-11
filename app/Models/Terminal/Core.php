@@ -997,8 +997,12 @@ class Core extends Base\Core
     {
         $onboardedNetworks = $this->getMerchantTokenisationOnboardedNetworksFromRedis($merchantId);
 
-        if (isset($onboardedNetworks) === true)
+        if (empty($onboardedNetworks) === false)
         {
+            $this->trace->info(TraceCode::FETCH_TOKENISATION_TERMINALS_FROM_REDIS_SUCCESS, [
+                'merchantId'        => $merchantId,
+                'onboardedNetworks' => $onboardedNetworks
+            ]);
             return $onboardedNetworks;
         }
 
