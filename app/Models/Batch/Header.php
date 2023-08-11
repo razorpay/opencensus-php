@@ -191,9 +191,10 @@ class Header
     //
     //Partner referral fetch headers
     //
-    const REFERRAL_ID       = 'referral_id';
-    const REF_CODE          = 'ref_code';
-    const REFERRAL_PRODUCT  = 'product';
+    const REFERRAL_ID        = 'referral_id';
+    const REF_CODE           = 'ref_code';
+    const REFERRAL_PRODUCT   = 'product';
+    const REQUEST_KYC_ACCESS = 'request_kyc_access';
 
     //
     // Mpan Bulk creation headers

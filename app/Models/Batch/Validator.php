@@ -1207,6 +1207,11 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE                       => 'sometimes|min:10|max:15|contact_syntax'
     ];
 
+    protected static $partnerSubmerchantReferralInviteConfigRules = [
+        Header::REFERRAL_PRODUCT => 'required|string|in:primary',
+        Header::REQUEST_KYC_ACCESS => 'sometimes|boolean',
+    ];
+
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);
