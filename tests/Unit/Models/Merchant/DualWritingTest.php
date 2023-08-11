@@ -125,6 +125,7 @@ class DualWritingTest extends TestCase
                     "company_pan"      => "ABCCD1235B",
                     "promoter_pan"     => "ABCPD1234A",
                     "company_pan_name" => "CHIZRINZ INFOWAY PRIVATE",
+                    "promoter_pan_name"=> "Promoter Pan Name"
                 ],
                 "payment_preference" => [
                     "others"              => "Others",
@@ -149,7 +150,7 @@ class DualWritingTest extends TestCase
         $merchant1 = (new \RZP\Models\Merchant\Repository)->find('KqsQEszAud2PqZ');
 
         $this->assertArraySubset(["id"            => "KqsQEszAud2PqZ",
-                                  "name"          => "Shwetabh Shekhar",
+                                  "name"          => "",
                                   "email"         => "",
                                   "billing_label" => "CHIZRINZ INFOWAY PRIVATE"],
                                  $merchant1->toArray());
@@ -170,7 +171,7 @@ class DualWritingTest extends TestCase
 
         $this->assertArraySubset(["merchant_id"               => "KqsQEszAud2PqZ",
                                   "email"                     => "",
-                                  "name"                      => "Shwetabh Shekhar",
+                                  "name"                      => "Promoter Pan Name",
                                   "poi_identification_number" => "ABCPD1234A",
                                  ],
                                  $stakeholder1->toArray());
@@ -245,7 +246,7 @@ class DualWritingTest extends TestCase
         $this->assertArraySubset(["id"                        => $stakeholder1->getId(),
                                   "merchant_id"               => "KqsQEszAud2PqZ",
                                   "email"                     => "vasanthik22@gmail.com",
-                                  "name"                      => "Vasanthi",
+                                  "name"                      => "Promoter Pan Name",
                                   "poi_identification_number" => "ABCPD1234A",
                                  ],
                                  $stakeholder2->toArray());
@@ -593,9 +594,9 @@ class DualWritingTest extends TestCase
                         "https://hello.com"
                     ],
                     "whitelisted_domains" => [
-                        "facebook.com",
-                        "microsoft.com",
-                        "hello.com"
+                        "https://www.facebook.com",
+                        "https://www.microsoft.com",
+                        "https://www.hello.com"
                     ]
                 ],
                 "merchant_id"        => $mid,
@@ -1255,12 +1256,12 @@ class DualWritingTest extends TestCase
                 "metadata"           => [
                     "additional_websites" => [
                         "https://www.facebook.com/",
-                        "https://hello.com"
+                        "https://www.hello.com"
                     ],
                     "whitelisted_domains" => [
-                        "facebook.com",
-                        "microsoft.com",
-                        "hello.com"
+                        "https://www.facebook.com",
+                        "https://www.microsoft.com",
+                        "https://www.hello.com"
                     ]
                 ],
                 "merchant_id"        => $mid,

@@ -24,7 +24,7 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'merchant_id'
             ]
         ],
-        'stakeholder.stakeholder_name'   => [
+        'business_identity.promoter_pan_name'   => [
             [
                 "column" => 'name'
             ]

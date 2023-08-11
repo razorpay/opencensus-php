@@ -4668,6 +4668,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_DUAL_WRITE_BACKUP_ERROR                         = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
     const REDIS_DUAL_WRITE_MGET_ERROR                           = 'REDIS_DUAL_WRITE_MGET_ERROR';
 
+    const PGOS_DUAL_WRITE_REQUEST                               = 'PGOS_DUAL_WRITE_REQUEST';
+
     // redis session migration
 
     const REDIS_SESSION_STORE_ERROR                             = 'REDIS_SESSION_STORE_ERROR';

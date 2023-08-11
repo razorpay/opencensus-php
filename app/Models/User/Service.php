@@ -19,6 +19,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\OAuthToken;
 use RZP\Models\Invitation;
@@ -735,7 +736,8 @@ class Service extends Base\Service
                         // Create OBS Workflow For Merchant via PGOS.
                         // Workflow will only be created for merchants who will be onboarded via PGOS
                         try {
-
+                            $orgId = $this->auth->getOrgId();
+                            Org\Entity::silentlyStripSign($orgId);
                             $createWorkflowRequestBody = [
                                 'account_id'                         => $merchantData['id'],
                                 'account_type'                       => "merchant",
@@ -743,7 +745,7 @@ class Service extends Base\Service
                                     $this->auth->getRequestOriginProduct(),
                                 DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
                                 Merchant\Entity::COUNTRY_CODE        => $countryCode,
-                                'org_id'                             => $this->auth->getOrgId(),
+                                'org_id'                             => $orgId,
                             ];
 
                             // sign up response is not driven by PGOS
@@ -3233,14 +3235,14 @@ class Service extends Base\Service
     /**
      * Get the requested token for roast flow
      * This is applicable only for lower environments, mainly in roast flow
-     * 
+     *
      * In Prod env, we return 400
-     * 
+     *
      * @param array $input The input data containing the new name.
      * @return array mixed The response from the name update operation.
      * @throws Exception\BadRequestException If the input is invalid or the username is empty or not different from the current name.
      */
-    public function qaGetTokenForRoast(string $type, array $input) 
+    public function qaGetTokenForRoast(string $type, array $input)
     {
         if (app()->isEnvironmentProduction() === true) {
             throw new BadRequestException('This endpoint is not available in production');

@@ -24,7 +24,7 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'id'
             ]
         ],
-        'stakeholder.stakeholder_name'   => [
+        'business_details.business_name'   => [
             [
                 "column" => 'name'
             ]
@@ -37,6 +37,16 @@ class MerchantsTransformer extends Base\Transformer
         'business_details.billing_label' => [
             [
                 "column" => 'billing_label'
+            ]
+        ],
+        'business_details.computed_category_for_bank' => [
+            [
+                "column" => 'category2'
+            ]
+        ],
+        'business_details.merchant_category_code' => [
+            [
+                "column" => 'category'
             ]
         ],
     ];

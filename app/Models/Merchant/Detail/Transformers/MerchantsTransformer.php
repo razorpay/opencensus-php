@@ -46,11 +46,6 @@ class MerchantsTransformer extends Base\Transformer
                 "function" => 'mapBusinessType'
             ]
         ],
-        'business_details.company_pan_name'            => [
-            [
-                "column" => 'company_pan_name',
-            ]
-        ],
         'business_details.business_name'               => [
             [
                 "column" => 'business_name'
@@ -106,39 +101,14 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'business_operation_pin'
             ]
         ],
-        'business_identity.gstin'                      => [
-            [
-                "column" => 'gstin'
-            ]
-        ],
-        'business_identity.company_cin'                => [
-            [
-                "column" => 'company_cin'
-            ]
-        ],
-        'business_identity.llp_in'                     => [
-            [
-                "column" => 'company_cin'
-            ]
-        ],
-        'business_identity.company_pan'                => [
-            [
-                "column" => 'company_pan'
-            ]
-        ],
-        'business_identity.business_category'          => [
+        'business_details.business_category'      => [
             [
                 "column" => 'business_category'
             ]
         ],
-        'business_identity.business_subcategory'       => [
+        'business_details.business_subcategory'      => [
             [
                 "column" => 'business_subcategory'
-            ]
-        ],
-        'business_identity.business_model'             => [
-            [
-                "column" => 'business_model'
             ]
         ],
         'business_identity.promoter_pan'               => [
@@ -149,6 +119,31 @@ class MerchantsTransformer extends Base\Transformer
         'business_identity.promoter_pan_name'          => [
             [
                 "column" => 'promoter_pan_name'
+            ]
+        ],
+        'business_identity.company_pan'                => [
+            [
+                "column" => 'company_pan'
+            ]
+        ],
+        'business_identity.company_pan_name'            => [
+            [
+                "column" => 'company_pan_name',
+            ]
+        ],
+        'business_identity.gstin'                      => [
+            [
+                "column" => 'gstin'
+            ]
+        ],
+        'business_identity.company_cin'                => [
+            [
+                "column" => 'company_cin'
+            ]
+        ],
+        'business_identity.shop_establishment'  => [
+            [
+                "column" => 'shop_establishment_number'
             ]
         ],
         'business_identity.bank_account_number'        => [
@@ -166,28 +161,28 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'bank_branch_ifsc'
             ]
         ],
-        'business_identity.shop_establishment_number'  => [
+        'business_identity.LLPin'                     => [
             [
-                "column" => 'shop_establishment_number'
+                "column" => 'company_cin'
             ]
         ],
     ];
 
-
+    // business typw is described as varchar in sql hence mapping should to a stringified integer
     public const BUSINESS_TYPE_MAPPING = [
-        "proprietorship"         => 1,
-        "individual"             => 2,
-        "partnership"            => 3,
-        "private_limited"        => 4,
-        "public_limited"         => 5,
-        "llp"                    => 6,
-        "ngo"                    => 7,
-        "educational_institutes" => 8,
-        "trust"                  => 9,
-        "society"                => 10,
-        "not_yet_registered"     => 11,
-        "other"                  => 12,
-        "huf"                    => 13
+        "proprietorship"         => "1",
+        "individual"             => "2",
+        "partnership"            => "3",
+        "private_limited"        => "4",
+        "public_limited"         => "5",
+        "llp"                    => "6",
+        "ngo"                    => "7",
+        "educational_institutes" => "8",
+        "trust"                  => "9",
+        "society"                => "10",
+        "not_yet_registered"     => "11",
+        "other"                  => "12",
+        "huf"                    => "13"
     ];
 
     public function __construct()

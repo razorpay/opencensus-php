@@ -9869,6 +9869,19 @@ class Core extends Base\Core
 
                 unset($data["merchant_id"]);
 
+                $this->trace->info(TraceCode::PGOS_DUAL_WRITE_REQUEST, [
+                    'data' => $data,
+                ]);
+
+                // add changes to ensure if body is empty you unset it
+                if (empty($data["business_registered_address"]) === true) {
+                    unset($data["business_registered_address"]);
+                }
+
+                if (empty($data["business_operation_address"]) === true) {
+                    unset($data["business_operation_address"]);
+                }
+
                 $merchantDetails->edit($data);
 
                 $this->repo->saveOrFail($merchantDetails);

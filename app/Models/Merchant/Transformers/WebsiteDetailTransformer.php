@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Merchant\Transformers;
 
-use RZP\Models\Merchant\Core;
 use RZP\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Core;
+use Selective\Transformer\ArrayTransformer;
+use RZP\Models\Merchant\TLDExtract;
 
 class WebsiteDetailTransformer extends Base\Transformer
 {
@@ -31,7 +34,8 @@ class WebsiteDetailTransformer extends Base\Transformer
         ],
         'metadata.whitelisted_domains' => [
             [
-                "column" => 'whitelisted_domains'
+                "column" => 'whitelisted_domains',
+                "function" => 'transformWhitelistedDomain'
             ]
         ],
     ];
@@ -41,5 +45,27 @@ class WebsiteDetailTransformer extends Base\Transformer
         parent::__construct();
 
         $this->core = new Core();
+    }
+
+    protected function registerFilters(ArrayTransformer $transformer)
+    {
+        $transformer->registerFilter(
+            'transformWhitelistedDomain',
+            function($value) {
+                $this->trace->info(TraceCode::PGOS_DUAL_WRITE_REQUEST, [
+                    'transformWhitelistedDomain' => 'merchant_whitelisted_domain',
+                    'value' => $value,
+                ]);
+                $whitelistedDomains = [];
+                if (empty($value) === false) {
+                    foreach($value as $whitelistedDomain)
+                    {
+                        $whitelistedDomainModified = (new TLDExtract)->getEffectiveTLDPlusOne($whitelistedDomain);
+                        $whitelistedDomains[] = $whitelistedDomainModified;
+                    }
+                }
+                return $whitelistedDomains;
+            }
+        );
     }
 }
