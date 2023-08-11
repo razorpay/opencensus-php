@@ -5,12 +5,16 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Order\OrderMeta;
 use RZP\Exception\BaseException;
+use RZP\Trace\TraceCode;
 
 class OrderController extends Controller
 {
     use Traits\HasCrudMethods;
+
+    const BARRICADE_MERCHANT_INTEGRATION_ORDER_FETCH = 'merchant_integration_order_fetch';
 
     public function createOrder()
     {
@@ -74,6 +78,8 @@ class OrderController extends Controller
         {
             $this->trace->info(TraceCode::ORDER_SEGMENT_EVENT_PUSH_FAILED, []);
         }
+
+        $this->pushForBarricade($data);
 
         return ApiResponse::json($data);
     }
@@ -353,5 +359,30 @@ class OrderController extends Controller
         $data = (new OrderMeta\Service())->getOffersForOrder($orderId, $input);
 
         return ApiResponse::json($data, 200);
+    }
+
+
+    protected function pushForBarricade($data): void
+    {
+
+        $data['action'] = [
+            'action' => self::BARRICADE_MERCHANT_INTEGRATION_ORDER_FETCH
+        ];
+
+        try {
+
+            $waitTime = 600;
+            $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->app['rzp.mode']);
+            $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
+
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::BARRICADE_SQS_PUSH_FAILURE,
+                [
+                    'Data' => $data,
+                ]);
+        }
     }
 }
