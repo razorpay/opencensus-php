@@ -599,6 +599,8 @@ return array(
 
     'partnership_service_commission_shadow_phase_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SHADOW_PHASE_EXP_ID'),
 
+    'prts_commission_reverse_shadow_exp_id' => env('PRTS_COMMISSION__REVERSE_SHADOW_EXP_ID'),
+
     'commission_invoice_events_to_kafka_exp_id'  => env('COMMISSION_INVOICE_EVENTS_TO_KAFKA_EXP_ID'),
 
     'magic_checkout_woocommerce_giftcard_url'       => env('MAGIC_CHECKOUT_WOOCOMMERCE_GIFTCARD_URL'),

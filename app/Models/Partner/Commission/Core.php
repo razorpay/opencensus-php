@@ -420,13 +420,33 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            CommissionCapture::dispatch($this->mode, $batch);
+            if($this->isCommissionReverseShadowEnabled($partner->getId()) === false)
+            {
+                CommissionCapture::dispatch($this->mode, $batch);
+            }
             $this->app->partnerships->dispatchCommissionCaptureToPRTS($partner->getId(), $batch);
         }
 
         return count($commissionIds);
     }
 
+    /**
+     * checks if commission reverse shadow is enabled for a partner
+     * @param string $partnerId
+     *
+     * @return bool
+     */
+    public function isCommissionReverseShadowEnabled(string $partnerId): bool
+    {
+         $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.prts_commission_reverse_shadow_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable(
+            $properties, 'enable', TraceCode::COMMISSION_REVERSE_SHADOW_SPLITZ_ERROR
+        );
+    }
     public function bulkCaptureByPartner(array $input): int
     {
         (new Validator)->validateInput('bulk_capture', $input);
@@ -524,6 +544,10 @@ class Core extends Base\Core
     {
         $traceCode = null;
 
+        if($this->isCommissionReverseShadowEnabled($commission->partner->getId()) === true)
+        {
+            $traceCode = TraceCode::COMMISSION_TRANSACTION_SKIPPED_REVERSE_SHADOW;
+        }
         if ($commission->isCaptured() === true)
         {
             $traceCode = TraceCode::COMMISSION_TRANSACTION_ALREADY_CAPTURED;

@@ -7,6 +7,7 @@ use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception;
