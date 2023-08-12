@@ -1231,7 +1231,10 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function getDataWarehouseConnection(string $cluster = null): string
     {
-        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER, Environment::BETA], true) === true)
+        // Removing Environment::BETA from the array list. Since we now have api db present on
+        // stage mysql (stage-mysql.np.razorpay.vpc) which is acting like warehouse in beta/devserve environment.
+        // Data warehouse connection configs should use DB_WAREHOUSE_HOST and other data warehouse configs
+        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
         {
             return Config::get('database.default');
         }
