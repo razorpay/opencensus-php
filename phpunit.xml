@@ -378,7 +378,7 @@
         </testsuite>
         <testsuite name="QR Payment Test Suite">
             <directory>./tests/Functional/QrCode</directory>
-<!--            <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>-->
+            <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
         </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
