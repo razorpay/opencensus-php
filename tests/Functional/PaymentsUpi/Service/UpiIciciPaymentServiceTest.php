@@ -195,7 +195,17 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->setRazorxMock(function ($mid, $feature, $mode) use ($variant)
         {
-            return $this->getRazoxVariant($feature, 'allow_merchants_on_rearch_ups_v2_s2s', $variant);
+            if ($feature === 'allow_route_on_rearch_ups_v2_payment_create_upi')
+            {
+                return 'on';
+            }
+
+            if ($feature === 'allow_merchants_on_rearch_ups_v2_s2s')
+            {
+                return $variant;
+            }
+
+            return 'control';
         });
 
         $routedViaPgRouter  = false;

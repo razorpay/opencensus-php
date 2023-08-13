@@ -389,9 +389,14 @@ class Processor
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
 
     /**
-     * Razorx flag to block merchants from re-arch flow
+     * Razorx flag to allow merchants from re-arch flow
      */
     const ALLOW_MERCHANTS_ON_REARCH_UPS_V2 = 'allow_merchants_on_rearch_ups_v2';
+
+    /**
+     * Razorx flag to allow route from ups re-arch flow
+     */
+    const ALLOW_ROUTE_ON_REARCH_UPS_V2 = 'allow_route_on_rearch_ups_v2';
 
     /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
@@ -549,7 +554,8 @@ class Processor
 
     protected static $upiRearchRoutes = [
         'payment_create_upi',
-        'payment_create_ajax'
+        'payment_create_ajax',
+        'payment_create_checkout'
     ];
 
     public function __construct(Merchant\Entity $merchant)
@@ -1659,6 +1665,16 @@ class Processor
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_UPS,
                 $this->mode);
             if ($result === 'on') {
+                return false;
+            }
+
+            $featureFlag = self::ALLOW_ROUTE_ON_REARCH_UPS_V2 . '_' . $currentRouteName;
+
+            // Allow re-arch traffic for a route
+            $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag,
+                $this->mode);
+
+            if (str_starts_with($result, 'on') === false) {
                 return false;
             }
 
