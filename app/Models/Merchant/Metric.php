@@ -158,6 +158,7 @@ final class Metric
     const SHOPIFY_ADD_TAG_SUCCESS_COUNT             = 'shopify_add_tag_success_count';
     const SHOPIFY_ADD_TAG_ERROR_COUNT               = 'shopify_add_tag_status_error_count';
     const SHOPIFY_ADD_TAG_CALL_TIME                 = 'shopify_add_tag_call_time';
+    const MAGIC_PREFERENCES_ROUTING_CALL_TIME       = 'magic_preferences_routing_call_time';
 
     const SHOPIFY_REMOVE_TAG_SUCCESS_COUNT          = 'shopify_remove_tag_success_count';
     const SHOPIFY_REMOVE_TAG_ERROR_COUNT            = 'shopify_remove_tag_status_error_count';

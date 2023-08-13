@@ -1768,11 +1768,21 @@ class Service extends Base\Service
     public function getPreferences(array $input): array
     {
         $routeToCheckoutService = $this->canRouteToCheckoutService();
+        $start = millitime();
+        $dimensions = [
+            'service' => 'api'
+        ];
+
         if ($routeToCheckoutService === true) {
-            return (new MerchantService)->getCheckoutPreferencesFromCheckoutService($input);
+            $dimensions['service'] = 'checkout_service';
+            $preferences = (new MerchantService)->getCheckoutPreferencesFromCheckoutService($input);
+        }
+        else {
+            $preferences = (new MerchantService)->getCheckoutPreferences($input);
         }
 
-        return (new MerchantService)->getCheckoutPreferences($input);
+        $this->monitoring->traceResponseTime(Metric::MAGIC_PREFERENCES_ROUTING_CALL_TIME, $start, $dimensions);
+        return $preferences;
     }
 
     private function canRouteToCheckoutService(): bool
@@ -1790,7 +1800,7 @@ class Service extends Base\Service
 
         return $expResult['variant'] === 'checkout_service';
     }
-  
+
     private function segregateShopifyUpdateEmail5xxError(string $errorMessage): string
     {
         $isShopifyError = Str::contains($errorMessage, ['500', '501', '502', '503', '504',]);
