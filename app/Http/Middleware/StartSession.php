@@ -51,8 +51,15 @@ class StartSession extends BaseStartSession
         /** @var string $csMode The mode checkout-service is running in. */
         $csMode = $request->header('X-Checkout-Service-Mode', 'live');
 
-        if (($csMode === 'shadow' || $route !== 'customer_fetch_internal_for_checkout') &&
-            in_array($route, Route::$internalApps['checkout_service'], true)
+        // @ToDo: Remove after customer session decomposition 100% ramp-up
+        $sessionAllowedInternalRoutes = [
+            'customer_fetch_internal_for_checkout' => true,
+            'global_customer_find_or_create_for_checkout' => true,
+        ];
+        $isSessionAllowed = $sessionAllowedInternalRoutes[$route] ?? false;
+
+        if (($csMode === 'shadow' || !$isSessionAllowed) &&
+            in_array($route,Route::$internalApps['checkout_service'], true)
         ) {
             // Do not store a session in cache if checkout-service is running in
             // shadow mode (or) the request is coming to internal routes called

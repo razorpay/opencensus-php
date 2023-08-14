@@ -172,6 +172,8 @@ class Service extends Base\Service
         if ($this->core->isCookieDisabledOnBrowser() === true) {
             $response['session_id'] = $this->core->getTemporarySessionToken();
         }
+        // Set check_cookie to ensure other flows don't break
+        $this->setCheckCookieInSession();
 
         $tokenCore = (new Token\Core());
 
