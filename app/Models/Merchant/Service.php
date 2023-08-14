@@ -991,9 +991,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
         /*
-        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint 
+        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint
         * with a pre-condition that the merchants were onboarding via PGOS
-        */ 
+        */
         if ($handleViaPGOS === true)
         {
             $hasMerchantOnboardedViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id);
@@ -1009,7 +1009,7 @@ class Service extends Base\Service
                         'response'    => $response,
                     ]
                 );
-                
+
                 // throw PGOS response error msg if data is not present
                 if(isset($response['data']) === false)
                 {
@@ -1019,7 +1019,7 @@ class Service extends Base\Service
                 }
                 return $response['data'];
             }
-        } 
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -8980,7 +8980,61 @@ class Service extends Base\Service
 
         $result['referrals'] = $referrals;
 
+        $isExpEnabled = $this->isEasyKycAccessReferralEnabledForPartner($merchant);
+
+        if ($isExpEnabled)
+        {
+            $result['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $referrals);
+        }
+
         return $result;
+    }
+
+    protected function getReferralLinkWithKycAccessConsent(Entity $merchant, $referrals)
+    {
+        $response = null;
+        try
+        {
+            $parameters = [
+                'entity_id'      => $merchant->getId(),
+                'entity_type'    => 'merchant',
+                'product'        => Product::PRIMARY,
+                'name'           => 'referral_with_consent',
+                'meta'           => [
+                    'referral_code' => $referrals['primary']['ref_code'],
+                ]
+            ];
+
+            $referralWithKycAccess = $this->app->partnerships->getReferralLinkWithKycAccessConsent($parameters);
+
+            $response =   $referralWithKycAccess['response']['settings']['value'];
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->count(Merchant\Metric::EASY_KYC_ACCESS_REFERRAL_FETCH_FAILURE_TOTAL);
+
+            $this->trace->traceException($e, null, TraceCode::EASY_KYC_ACCESS_PARTNER_REFERRAL_FETCH_ERROR, ['entity_id' => $merchant->getId()]);
+        }
+
+        finally
+        {
+            return $response;
+        }
+    }
+
+    public function isEasyKycAccessReferralEnabledForPartner(Merchant\Entity $merchant): bool
+    {
+        if($merchant->isResellerPartner() === false)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.easy_kyc_access_referral_experiment_id'),
+        ];
+
+        return  $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
     /**

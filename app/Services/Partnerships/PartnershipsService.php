@@ -5,6 +5,7 @@ namespace RZP\Services\Partnerships;
 
 use App;
 use Request;
+use RZP\Models\Base\Core;
 use Throwable;
 use ApiResponse;
 use RZP\Exception;
@@ -76,6 +77,9 @@ class PartnershipsService extends Base\Service
     CONST UPDATE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Update';
 
     CONST DELETE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
+
+    const GET_REFERRAL_LINK_WITH_KYC_ACCESS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/CreateOrFetch';
+
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -290,6 +294,11 @@ class PartnershipsService extends Base\Service
     public function deleteMerchantAccessMap($parameters)
     {
         return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST);
+    }
+
+    public function getReferralLinkWithKycAccessConsent($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::GET_REFERRAL_LINK_WITH_KYC_ACCESS, Requests::POST);
     }
 
     /**

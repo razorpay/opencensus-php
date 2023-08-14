@@ -6,6 +6,7 @@ use DB;
 use App;
 use Mail;
 use Event;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use Throwable;
 use RZP\Services\Elfin;
 use RZP\Constants\Mode;
@@ -26,6 +27,7 @@ class MerchantReferralTest extends OAuthTestCase
     use MocksSplitz;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use MocksPartnershipsService;
 
     protected function setUp(): void
     {
@@ -62,6 +64,59 @@ class MerchantReferralTest extends OAuthTestCase
                                         ], 'live');
 
         $this->assertNotEmpty($referrals->getReferralLink());
+    }
+
+    public function testEasyKycAccessReferral()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData = &$this->testData['testCreateMerchantReferral'];
+
+        $this->ba->proxyAuth();
+
+        $testData['request']['url'] = "/merchant/referral";
+
+        $url = 'testreferrallink';
+
+        $expectedResponse = [
+            'response' => [
+                'settings' => [
+                    'value' => $url,
+                ]
+            ]
+        ];
+
+        $this->mockPartnershipsServiceTreatment([], $expectedResponse, 'getReferralLinkWithKycAccessConsent');
+
+        $input = [
+            'id'                => $merchantId,
+            'experiment_id'     => 'MNuYX8JifIAFCc',
+        ];
+
+        $output =  [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $response = $this->startTest($testData);
+
+        $referrals = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId, 'product' => 'primary'
+            ], 'live');
+
+        $this->assertNotEmpty($referrals->getReferralLink());
+
+        $this->assertEquals($response['easy_kyc_access_url'], $url);
     }
 
     /**
