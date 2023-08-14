@@ -292,6 +292,8 @@ class Name
     const CREATE_SHIELD_LISTS                 = 'create_shield_lists';
     const DELETE_SHIELD_LISTS                 = 'delete_shield_lists';
     const VIEW_SHIELD_RULE                    = 'view_shield_rule';
+    const CREATE_SHIELD_PARAMETER             = 'create_shield_parameter';
+    const DELETE_SHIELD_PARAMETER             = 'delete_shield_parameter';
     const CREATE_SHIELD_RULE                  = 'create_shield_rule';
     const EDIT_SHIELD_RULE                    = 'edit_shield_rule';
     const DELETE_SHIELD_RULE                  = 'delete_shield_rule';

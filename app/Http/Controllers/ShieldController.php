@@ -13,12 +13,16 @@ class ShieldController extends Controller
     const RULES_UPDATE_ROUTE = 'shield_rules_update';
     const RULES_DELETE_ROUTE = 'shield_rules_delete';
 
+    const PARAMS_CREATE_ROUTE = 'shield_params_create';
+    const PARAMS_DELETE_ROUTE = 'shield_params_delete';
+
     const LIST_CREATE_ROUTE = 'shield_lists_create';
     const LIST_DELETE_ROUTE = 'shield_lists_delete';
 
-    const LIST_ITEM_BULK_CREATE_ROUTE = 'shield_list_items_add_multiple';
-    const LIST_ITEM_DELETE_ROUTE      = 'shield_list_items_delete';
-    const LIST_ITEMS_PURGE_ROUTE      = 'shield_list_items_purge';
+    const LIST_ITEM_BULK_CREATE_ROUTE           = 'shield_list_items_add_multiple';
+    const ADD_DEFAULT_LIST_ITEM_BULK_ROUTE      = 'shield_add_default_list_items';
+    const LIST_ITEM_DELETE_ROUTE                = 'shield_list_items_delete';
+    const LIST_ITEMS_PURGE_ROUTE                = 'shield_list_items_purge';
 
     const RISK_THRESHOLD_CONFIG_CREATE_ROUTE = 'shield_risk_threshold_config_create';
     const RISK_THRESHOLD_CONFIG_UPDATE_ROUTE = 'shield_risk_threshold_config_update';
@@ -37,9 +41,12 @@ class ShieldController extends Controller
         self::RULES_CREATE_ROUTE,
         self::RULES_UPDATE_ROUTE,
         self::RULES_DELETE_ROUTE,
+        self::PARAMS_CREATE_ROUTE,
+        self::PARAMS_DELETE_ROUTE,
         self::LIST_CREATE_ROUTE,
         self::LIST_DELETE_ROUTE,
         self::LIST_ITEM_BULK_CREATE_ROUTE,
+        self::ADD_DEFAULT_LIST_ITEM_BULK_ROUTE,
         self::LIST_ITEM_DELETE_ROUTE,
         self::LIST_ITEMS_PURGE_ROUTE,
         self::RISK_THRESHOLD_CONFIG_CREATE_ROUTE,

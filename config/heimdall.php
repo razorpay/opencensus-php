@@ -1489,6 +1489,8 @@ return [
             Permission::UPDATE_MERCHANT_RISK_THRESHOLD      => 'Update merchant risk threshold',
             Permission::DELETE_MERCHANT_RISK_THRESHOLD      => 'Delete merchant risk threshold',
             Permission::BULK_UPDATE_MERCHANT_RISK_THRESHOLD => 'Bulk Update merchant risk threshold',
+            Permission::CREATE_SHIELD_PARAMETER             =>  'Create Shield Dynamic Parameter',
+            Permission::DELETE_SHIELD_PARAMETER             =>  'Delete Shield Dynamic Parameter',
         ],
 
         PermissionCategory::REPORTING => [

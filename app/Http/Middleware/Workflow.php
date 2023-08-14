@@ -80,6 +80,8 @@ class Workflow
         Permission::CREATE_RISK_THRESHOLD_CONFIG,
         Permission::UPDATE_RISK_THRESHOLD_CONFIG,
         Permission::DELETE_RISK_THRESHOLD_CONFIG,
+        Permission::CREATE_SHIELD_PARAMETER,
+        Permission::DELETE_SHIELD_PARAMETER,
         Permission::EDIT_SHIELD_RULE,
         Permission::DELETE_SHIELD_RULE,
         Permission::CREATE_SHIELD_LIST,

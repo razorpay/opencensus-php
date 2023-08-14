@@ -2570,6 +2570,21 @@ class Route
             'shield/merchants/{merchant_id}/rules/{rule_id}',
             'ShieldController@proxyRequest'
         ],
+        'shield_params_calculate' => [
+            'post',
+            'shield/params/calculate',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_params_create' => [
+            'post',
+            'shield/params',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_params_delete' => [
+            'delete',
+            'shield/params/{param_id}',
+            'ShieldController@proxyRequest'
+        ],
         'shield_rules_create'       => [
             'post',
             'shield/merchants/{merchant_id}/rules',
@@ -2618,6 +2633,11 @@ class Route
         'shield_list_items_add_multiple' => [
             'post',
             'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_add_default_list_items' => [
+            'post',
+            'shield/merchants/{merchant_id}/default_list_items',
             'ShieldController@proxyRequest'
         ],
         'shield_list_items_purge'        => [
@@ -7760,6 +7780,9 @@ class Route
         // Shield Routes
         'shield_rules_get_multiple',
         'shield_rules_get',
+        'shield_params_calculate',
+        'shield_params_create',
+        'shield_params_delete',
         'shield_rules_create',
         'shield_rules_update',
         'shield_rules_delete',
@@ -7770,6 +7793,7 @@ class Route
         'shield_list_items_get_multiple',
         'shield_list_items_get',
         'shield_list_items_add_multiple',
+        'shield_add_default_list_items',
         'shield_list_items_purge',
         'shield_list_items_delete',
         'shield_settings_ui',
@@ -9242,6 +9266,9 @@ class Route
 
         'shield_rules_get_multiple'                   => Permission::VIEW_SHIELD_RULE,
         'shield_rules_get'                            => Permission::VIEW_SHIELD_RULE,
+        'shield_params_calculate'                     => Permission::VIEW_SHIELD_RULE,
+        'shield_params_create'                        => Permission::CREATE_SHIELD_PARAMETER,
+        'shield_params_delete'                        => Permission::DELETE_SHIELD_PARAMETER,
         'shield_rules_create'                         => Permission::CREATE_SHIELD_RULE,
         'shield_rules_update'                         => Permission::EDIT_SHIELD_RULE,
         'shield_rules_delete'                         => Permission::DELETE_SHIELD_RULE,
@@ -9252,6 +9279,7 @@ class Route
         'shield_list_items_get_multiple'              => Permission::VIEW_SHIELD_LIST,
         'shield_list_items_get'                       => Permission::VIEW_SHIELD_LIST,
         'shield_list_items_add_multiple'              => Permission::ADD_SHIELD_LIST_ITEMS,
+        'shield_add_default_list_items'               => Permission::ADD_SHIELD_LIST_ITEMS,
         'shield_list_items_purge'                     => Permission::PURGE_SHIELD_LIST_ITEMS,
         'shield_list_items_delete'                    => Permission::DELETE_SHIELD_LIST_ITEM,
         'shield_settings_ui'                          => Permission::RETRIEVE_SHIELD_UI_SETTINGS,
@@ -14192,6 +14220,7 @@ class Route
             'settlement_ondemand_fetch_by_id',
             'settlement_ondemand_razorpayx_webhook',
             'shield_list_items_add_multiple',
+            'shield_add_default_list_items',
             'shield_list_items_delete',
             'shield_list_items_get',
             'shield_list_items_get_multiple',
@@ -14201,9 +14230,13 @@ class Route
             'shield_lists_get',
             'shield_lists_get_multiple',
             'shield_rules_create',
+            'shield_params_calculate',
+            'shield_params_create',
+            'shield_params_delete',
             'shield_rules_delete',
             'shield_rules_get',
             'shield_rules_get_multiple',
+            'shield_calculate_param',
             'shield_rules_update',
             'shield_settings_ui',
             'shield_risk_threshold_config_get_multiple',
