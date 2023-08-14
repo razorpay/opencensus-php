@@ -244,11 +244,7 @@ class Service extends Base\Service
 
             if ($globalCustomerId !== '') {
                 $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
-            }
-        }
-
-        if (!Arr::hasAny($input, [Payment\Entity::APP_TOKEN, Payment\Entity::GLOBAL_CUSTOMER_ID, Payment\Entity::CUSTOMER_ID])) {
-            if (!empty($input['contact']) && !empty($input['device_token'])) {
+            } elseif(!empty($input['contact']) && !empty($input['device_token'])) {
                 $contact = Customer\Validator::validateAndParseContact($input['contact']);
             }
         }

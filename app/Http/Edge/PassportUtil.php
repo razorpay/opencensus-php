@@ -420,7 +420,8 @@ class PassportUtil
 
     /**
      * Returns global customer id from additional identities claims registered on passport.
-     * @return string|null
+     *
+     * @return string
      */
     public function getGlobalCustomerId(): string
     {

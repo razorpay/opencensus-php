@@ -375,7 +375,13 @@ class Checkout
 
             $this->checkAndFillAppTokenInputFromSession($merchant, $this->app['rzp.mode'], $input);
 
-            $data['customer']['contact'] = $this->findContact($input, $merchant, $data);
+            try {
+                $data['customer']['contact'] = $this->findContact($input, $merchant, $data);
+            } catch (\Exception $e) {
+                $this->trace->error(TraceCode::FIND_CONTACT_FAILED, [
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
         }
 
         $this->checkAndFillAppDetails($input, $merchant, $data, $this->app['rzp.mode']);
@@ -2246,20 +2252,17 @@ class Checkout
 
     protected function findContact($input, $merchant, $data)
     {
-        if ((isset($data['customer']) === true) and
-             (isset($data['customer']['contact']) === true))
-        {
+        if (!empty($data['customer']['contact'])) {
             return $data['customer']['contact'];
         }
 
-        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
-        {
+        if (!empty($input[Payment\Entity::CUSTOMER_ID])) {
             $customer = (new Customer\Repository())->findByPublicIdAndMerchant($input[Payment\Entity::CUSTOMER_ID], $merchant);
 
             return $customer->contact;
         }
 
-        if (isset($input[Payment\Entity::GLOBAL_CUSTOMER_ID]) === true) {
+        if (!empty($input[Payment\Entity::GLOBAL_CUSTOMER_ID])) {
             $customer = (new Customer\Repository())->findByIdAndMerchantId(
                 $input[Payment\Entity::GLOBAL_CUSTOMER_ID],
                 Account::SHARED_ACCOUNT,
@@ -2269,8 +2272,7 @@ class Checkout
             return $customer->contact;
         }
 
-        if (isset($input[Payment\Entity::APP_TOKEN]) === true)
-        {
+        if (!empty($input[Payment\Entity::APP_TOKEN])) {
             $appTokenId = $input[Payment\Entity::APP_TOKEN];
 
             $appToken  = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
