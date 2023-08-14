@@ -162,7 +162,7 @@ class EnachNpciNetbanking extends Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
 
-        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true, 600);
 
         if ((isset($beamResponse['success']) === false) or
             ($beamResponse['success'] === null) or

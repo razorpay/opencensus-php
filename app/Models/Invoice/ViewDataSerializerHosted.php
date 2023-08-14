@@ -849,7 +849,7 @@ class ViewDataSerializerHosted extends Base\Core
 
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::CARD){
 
-                $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $externalEntity->getFrequency() ?? null;
+                $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $externalEntity->getFrequency() ?? 'as_presented';
             }
 
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)

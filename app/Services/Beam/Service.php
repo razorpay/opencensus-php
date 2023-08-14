@@ -195,14 +195,15 @@ class Service
         return false;
     }
 
-    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo)
+    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo, int $timeout=300)
     {
         $this->trace->info(
             TraceCode::BEAM_METHOD_CALL,
             [
                 'push_data'     => $pushData,
                 'interval_info' => $intervalInfo,
-                'mail_info'     => $mailInfo
+                'mail_info'     => $mailInfo,
+                'timeout'       => $timeout
             ]);
 
         $data[self::BEAM_PUSH_FILES]   = $pushData[self::BEAM_PUSH_FILES];
@@ -258,7 +259,7 @@ class Service
 
         $request = $traceRequest = [
             'options' => [
-                'timeout' => 300
+                'timeout' => $timeout
             ],
             'content' => $data,
             'method'  => self::HTTP_POST,

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
@@ -85,6 +86,17 @@ class AuthLink extends Base
                 $entry[Header::AUTH_LINK_NACH_PRI_FILLED_FORM] = $paperMandate->getGeneratedFormUrl($this->invoice);
             }
         }
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        $msg = 'One/multiple rows have values mismatching allowed headers, please refer to guide';
+
+        if (!in_array("frequency", $values)){
+            $msg = 'The uploaded file format is incorrect. Please download the sample file for correct format';
+        }
+
+        throw new BadRequestValidationFailureException($msg, Entity::FILE, compact('headings', 'values', 'ix'));
     }
 
     protected function createAuthLink(array & $entry) : Invoice\Entity

@@ -421,7 +421,7 @@ class PaperNachCiti extends Debit\Base
                     'target' => $this->gatewayFile->getTarget(),
                     'type'   => $this->gatewayFile->getType()
                 ]);
-            
+
             $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
 
             throw new GatewayErrorException(
@@ -539,7 +539,7 @@ class PaperNachCiti extends Debit\Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
 
-        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true, 600);
     }
 
     protected function sendMail($files)
