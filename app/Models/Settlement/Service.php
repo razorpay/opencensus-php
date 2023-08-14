@@ -2266,6 +2266,16 @@ class Service extends Base\Service
         return app('settlements_api')->optimizerExternalSettlementsExecute($input);
     }
 
+    /**
+     * retry optimizer settlements
+     * @param array $input
+     * @return array
+     */
+    public function optimizerExternalSettlementsRetry(array $input) : array
+    {
+        return app('settlements_api')->optimizerExternalSettlementsRetry($input);
+    }
+
     public function settlementsInitiate($input)
     {
         return app('settlements_dashboard')->settlementsInitiate($input);
