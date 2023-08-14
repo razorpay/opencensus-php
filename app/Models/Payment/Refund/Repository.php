@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Status;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
@@ -119,7 +120,7 @@ class Repository extends Base\Repository
         $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
         $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->whereBetween($refundCreatedAt, [$from, $to])
@@ -1050,7 +1051,7 @@ class Repository extends Base\Repository
         $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
         $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->whereBetween($refundCreatedAt, [$from, $to])
