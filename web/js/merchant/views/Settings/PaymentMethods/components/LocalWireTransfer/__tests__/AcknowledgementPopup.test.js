@@ -69,15 +69,15 @@ describe('Acknowledgement Popup flow', () => {
     });
   });
 
-  test('modal should not close when api request results in an error', async () => {
+  test('modal should not close when api request results in an list of errors', async () => {
+    const errors = ['Something went wrong. Please try again later', 'Status 400'];
+
     services.activateAccount.mockImplementation(() => (dispatch) => {
       dispatch(activateAccountPending({ type: 'localBankTransfer', va_currency: 'ach' }));
       return new Promise((_, reject) => {
         setTimeout(() => {
-          dispatch(
-            activateAccountError({ type: 'localBankTransfer', error: { errors: ['api error'] } }),
-          );
-          reject({ errors: ['api error'] });
+          dispatch(activateAccountError({ type: 'localBankTransfer', error: { errors } }));
+          reject({ errors });
         });
       });
     });
@@ -92,7 +92,34 @@ describe('Acknowledgement Popup flow', () => {
     expect(closeModal).not.toHaveBeenCalled();
     expect(showNotification).toHaveBeenCalledWith({
       type: 'error',
-      message: ['api error'],
+      message: errors[0],
+    });
+  });
+
+  test('modal should not close when api request results in an single error', async () => {
+    const error = 'Something went wrong. Please try again later';
+
+    services.activateAccount.mockImplementation(() => (dispatch) => {
+      dispatch(activateAccountPending({ type: 'localBankTransfer', va_currency: 'ach' }));
+      return new Promise((_, reject) => {
+        setTimeout(() => {
+          dispatch(activateAccountError({ type: 'localBankTransfer', error: { errors: error } }));
+          reject({ errors: error });
+        });
+      });
+    });
+
+    renderComponent();
+
+    //mocking activate now click event
+    await userEvent.click(screen.getByText('Activate Now'));
+
+    //close modal should have been called
+    await waitFor(() => expect(showNotification).toHaveBeenCalledTimes(1));
+    expect(closeModal).not.toHaveBeenCalled();
+    expect(showNotification).toHaveBeenCalledWith({
+      type: 'error',
+      message: error,
     });
   });
 });

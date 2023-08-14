@@ -72,7 +72,7 @@ describe('Test b2bExportsAccounts reducer', () => {
 
     expect(store.getState().b2bExportsAccounts).toMatchObject({
       isLoading: false,
-      error: [],
+      error: undefined,
       isIneligiblePurposeCodeModalOpen: false,
     });
   });

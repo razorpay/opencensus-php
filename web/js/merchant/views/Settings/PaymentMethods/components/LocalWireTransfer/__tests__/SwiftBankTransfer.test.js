@@ -144,11 +144,13 @@ describe('When all required info is available for SWIFT account creation', () =>
     });
   });
 
-  test('When accounts creation fails', async () => {
+  test('When accounts creation fails, with multiple errors', async () => {
+    const errors = ['Something went wrong. Please try again later', 'Status 400'];
+
     services.activateAccount.mockImplementation(() => (dispatch) => {
       return new Promise((_, reject) => {
         dispatch(b2bActions.activateAccountError({ type: 'intBankTransfer', response: null }));
-        reject({ success: false, errors: ['dummy error'] });
+        reject({ success: false, errors });
       });
     });
 
@@ -167,7 +169,37 @@ describe('When all required info is available for SWIFT account creation', () =>
     await waitFor(() =>
       expect(showNotification).toHaveBeenCalledWith({
         type: 'error',
-        message: ['dummy error'],
+        message: errors[0],
+      }),
+    );
+  });
+
+  test('When accounts creation fails, with single error', async () => {
+    const error = 'Something went wrong. Please try again later';
+
+    services.activateAccount.mockImplementation(() => (dispatch) => {
+      return new Promise((_, reject) => {
+        dispatch(b2bActions.activateAccountError({ type: 'intBankTransfer', response: null }));
+        reject({ success: false, errors: error });
+      });
+    });
+
+    renderComponent(
+      { leafList },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+      },
+    );
+    expect(screen.getByText('Request')).toBeInTheDocument();
+
+    const requestButton = screen.getByText('Request');
+    await userEvent.click(requestButton);
+
+    await waitFor(() =>
+      expect(showNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: error,
       }),
     );
   });

@@ -41,19 +41,19 @@ export function extractVirtualAccountDetails(data) {
 export function extractPurposeCodeError(errors) {
   let isIneligiblePurposeCodeModalOpen = false;
   let error = '';
+  const errorCode = Array.isArray(errors) ? errors[0] : errors;
 
   // check for ineligible purpose code error;
-  if (errors && !getItem(B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY)) {
-    const errorCode = Array.isArray(errors) ? errors[0] : errors;
-
-    if (errorCode?.toLowerCase().indexOf(PURPOSE_CODE_NOT_ELIGIBLE_ERROR) > -1) {
-      isIneligiblePurposeCodeModalOpen = true;
-      error = errorCode;
-    }
+  if (
+    !getItem(B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY) &&
+    errorCode?.toLowerCase().includes(PURPOSE_CODE_NOT_ELIGIBLE_ERROR)
+  ) {
+    isIneligiblePurposeCodeModalOpen = true;
+    error = errorCode;
   }
 
   if (!error) {
-    error = errors;
+    error = errorCode;
   }
 
   return { isIneligiblePurposeCodeModalOpen, error };

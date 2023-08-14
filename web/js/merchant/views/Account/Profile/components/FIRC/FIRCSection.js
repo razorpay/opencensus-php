@@ -11,6 +11,7 @@ import { fetchPurposeCode } from 'merchant/reducers/profile';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { raiseTicket } from 'merchant/views/TicketSupport/utils';
+import { trackPurposeCodePopupOpened } from 'merchant/views/Account/Profile/components/FIRC/analytics';
 
 const FIRCFormModal = lazy(() => import(/* webpackChunkName: "FIRCFormModal" */ './FIRCFormModal'));
 const HSCodeModal = lazy(() =>
@@ -135,6 +136,8 @@ const FIRCSection = (props) => {
         </SuspenseWithLoader>
       ),
     });
+
+    trackPurposeCodePopupOpened();
   };
 
   const openDownloadFIRCModal = () => {

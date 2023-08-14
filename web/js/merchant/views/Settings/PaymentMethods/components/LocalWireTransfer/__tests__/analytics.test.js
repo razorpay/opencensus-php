@@ -52,10 +52,10 @@ describe('Tests for analytics events', () => {
   });
 
   test('trackActivateClick should call the correct analytic events', () => {
-    trackActivateClick();
+    trackActivateClick('usd');
     expect(analytics.analyticsTrack).toBeCalledTimes(1);
     expect(analytics.analyticsTrack).toBeCalledWith({
-      objectName: 'b2b accounts activation popup',
+      objectName: 'b2b accounts usd activation popup',
       actionName: 'clicked',
       properties: {
         isTermsAndConditionsAccepted: true,
@@ -69,10 +69,10 @@ describe('Tests for analytics events', () => {
   });
 
   test('trackAccountActivated should call the correct analytic events', () => {
-    trackAccountActivated();
+    trackAccountActivated('usd');
     expect(analytics.analyticsTrack).toBeCalledTimes(1);
     expect(analytics.analyticsTrack).toBeCalledWith({
-      objectName: 'b2b accounts activation',
+      objectName: 'b2b accounts usd activation',
       actionName: 'response',
       properties: {
         isActivated: true,
@@ -86,10 +86,10 @@ describe('Tests for analytics events', () => {
 
   test('trackAccountError should call the correct analytic events', () => {
     const error = 'dummy error';
-    trackAccountError(error);
+    trackAccountError(error, 'usd');
     expect(analytics.analyticsTrack).toBeCalledTimes(1);
     expect(analytics.analyticsTrack).toBeCalledWith({
-      objectName: 'b2b accounts activation',
+      objectName: 'b2b accounts usd activation',
       actionName: 'response',
       properties: {
         errorReason: error,

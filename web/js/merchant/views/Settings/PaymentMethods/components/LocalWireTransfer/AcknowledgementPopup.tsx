@@ -41,12 +41,12 @@ const AcknowledgementPopup: React.FC<PopupPropsInterface> = ({
    */
   const onRequest = async () => {
     try {
-      trackActivateClick();
+      trackActivateClick(VA_USD);
       setIsLoading(true);
       const response: any = await activateAccount(VA_USD, 1); // eslint-disable-line
       setIsLoading(false);
       if (response?.success) {
-        trackAccountActivated();
+        trackAccountActivated(VA_USD);
         closeModal();
         showNotification({
           type: 'success',
@@ -54,11 +54,12 @@ const AcknowledgementPopup: React.FC<PopupPropsInterface> = ({
         });
       }
     } catch ({ errors }) {
-      trackAccountError(errors);
+      const error = Array.isArray(errors) ? errors[0] : errors;
+      trackAccountError(error, VA_USD);
       setIsLoading(false);
       showNotification({
         type: 'error',
-        message: errors,
+        message: error,
       });
     }
   };

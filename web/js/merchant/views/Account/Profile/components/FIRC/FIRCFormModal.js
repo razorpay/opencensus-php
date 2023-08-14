@@ -13,6 +13,18 @@ import { MODAL_HEADING, SPECIAL_PURPOSE_CODES, computeSearch } from './utility';
 import 'merchant/views/Account/Profile/components/FIRC/css/firc.styl';
 
 import { createSupportTicketForPurposeCode } from 'merchant/views/Account/Profile/components/FIRC/service';
+import {
+  trackGoToIECCodeStep,
+  trackPurposeCodeSaved,
+  trackPurposeCodeSelected,
+  trackPurposeCodeSearched,
+  trackPurposeCodePopupMode,
+  trackPurposeCodePopupClosed,
+  trackPurposeCodeSavingFailed,
+  trackPurposeCodeSearchCleared,
+  trackPurposeCodeUpdateRequestRaised,
+  trackPurposeCodeUpdateRequestFailed,
+} from 'merchant/views/Account/Profile/components/FIRC/analytics';
 
 const FIRCFormModal = (props) => {
   const { closeModal, showNotification, onSubmit, editMode, user, code } = props;
@@ -40,27 +52,50 @@ const FIRCFormModal = (props) => {
       });
   }, [showNotification]);
 
+  useEffect(() => {
+    trackPurposeCodePopupMode(editMode);
+  }, [editMode]);
+
   const handleNext = useCallback(() => {
     const nextStep = state.is_purpose_code_special ? step + 1 : 3;
     setStep(nextStep);
+
+    if (nextStep === 2) {
+      trackGoToIECCodeStep();
+    }
   }, [state.is_purpose_code_special, step]);
 
   const handlePrev = useCallback(() => {
     const prevStep = state.is_purpose_code_special ? step - 1 : 1;
     setStep(prevStep);
+
+    if (prevStep === 2) {
+      trackGoToIECCodeStep();
+    }
   }, [state.is_purpose_code_special, step]);
 
-  const closePopup = useCallback(() => closeModal(), [closeModal]);
+  const closePopup = useCallback(() => {
+    closeModal();
+    trackPurposeCodePopupClosed();
+  }, [closeModal]);
 
   const handleSearch = useCallback(
     (e) => {
-      const results = computeSearch(list.data, e.target.value);
-      setSearch((prevState) => ({ ...prevState, text: e.target.value, results }));
+      const { value } = e.target;
+      const results = computeSearch(list.data, value);
+      setSearch((prevState) => ({ ...prevState, text: value, results }));
+
+      if (value.length === 1) {
+        trackPurposeCodeSearched();
+      }
     },
     [list.data],
   );
 
-  const clearSearch = () => setSearch({ text: '', results: [] });
+  const clearSearch = () => {
+    setSearch({ text: '', results: [] });
+    trackPurposeCodeSearchCleared();
+  };
 
   const handlePurposeCode = (code) => {
     setState((prevState) => ({
@@ -70,6 +105,8 @@ const FIRCFormModal = (props) => {
       is_purpose_code_special: SPECIAL_PURPOSE_CODES.includes(code.purposeCode),
       iec_code: '',
     }));
+
+    trackPurposeCodeSelected(code.purposeCode);
   };
 
   const handleInput = (e) => {
@@ -95,12 +132,15 @@ const FIRCFormModal = (props) => {
       })
         .then(() => {
           setStep(4);
+          trackPurposeCodeUpdateRequestRaised(formData.purpose_code, code);
         })
         .catch(() => {
           showNotification({
             type: 'error',
             message: 'Failed to raise support ticket.',
           });
+
+          trackPurposeCodeUpdateRequestFailed(formData.purpose_code, code);
         })
         .finally(() => {
           setIsSubmitting(false);
@@ -114,6 +154,8 @@ const FIRCFormModal = (props) => {
             type: 'success',
             message: 'Updated successfully.',
           });
+
+          trackPurposeCodeSaved(formData.purpose_code);
         }
       })
       .catch(() => {
@@ -121,6 +163,7 @@ const FIRCFormModal = (props) => {
           type: 'error',
           message: 'Sorry! Update failed.',
         });
+        trackPurposeCodeSavingFailed(formData.purpose_code);
       })
       .finally(() => {
         setIsSubmitting(false);

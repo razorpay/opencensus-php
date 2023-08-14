@@ -15,6 +15,12 @@ import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/componen
 import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
 import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
 
+import {
+  trackActivateClick,
+  trackAccountActivated,
+  trackAccountError,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
+
 //Styles
 import './LocalWireTransfer.styl';
 
@@ -30,17 +36,21 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, activateAccount
    */
   const onRequest = async () => {
     try {
+      trackActivateClick(VA_SWIFT);
       const response = await activateAccount(VA_SWIFT, 0, 'intBankTransfer');
       if (response?.success) {
+        trackAccountActivated(VA_SWIFT);
         showNotification({
           type: 'success',
           message: 'Accounts have been successfully created!',
         });
       }
     } catch ({ errors }) {
+      const error = Array.isArray(errors) ? errors[0] : errors;
+      trackAccountError(error, VA_SWIFT);
       showNotification({
         type: 'error',
-        message: errors,
+        message: error,
       });
     }
   };

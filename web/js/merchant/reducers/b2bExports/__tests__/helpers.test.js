@@ -121,7 +121,7 @@ describe('extractPurposeCodeError', () => {
     const result = extractPurposeCodeError(errors);
     expect(result).toEqual({
       isIneligiblePurposeCodeModalOpen: false,
-      error: ['Some error', 'Another error'],
+      error: 'Some error',
     });
   });
 

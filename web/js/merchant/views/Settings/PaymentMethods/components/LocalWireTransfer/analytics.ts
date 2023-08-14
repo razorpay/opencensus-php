@@ -14,7 +14,7 @@ const track = ({ properties = {}, ...args }) => {
   });
 };
 
-export const trackAccountCopied = (currency: string) => {
+export const trackAccountCopied = (currency: string): void => {
   track({
     objectName: 'b2b accounts Copied',
     actionName: 'clicked',
@@ -25,7 +25,7 @@ export const trackAccountCopied = (currency: string) => {
   });
 };
 
-export const trackTandCPopupOpened = () => {
+export const trackTandCPopupOpened = (): void => {
   track({
     objectName: 'b2b accounts list',
     actionName: 'clicked',
@@ -36,9 +36,9 @@ export const trackTandCPopupOpened = () => {
   });
 };
 
-export const trackActivateClick = () => {
+export const trackActivateClick = (account: string): void => {
   track({
-    objectName: 'b2b accounts activation popup',
+    objectName: `b2b accounts ${account} activation popup`,
     actionName: 'clicked',
     properties: {
       isTermsAndConditionsAccepted: true,
@@ -48,9 +48,9 @@ export const trackActivateClick = () => {
   });
 };
 
-export const trackAccountActivated = () => {
+export const trackAccountActivated = (account: string): void => {
   track({
-    objectName: 'b2b accounts activation',
+    objectName: `b2b accounts ${account} activation`,
     actionName: 'response',
     properties: {
       isActivated: true,
@@ -59,9 +59,9 @@ export const trackAccountActivated = () => {
   });
 };
 
-export const trackAccountError = (error) => {
+export const trackAccountError = (error: string, account: string): void => {
   track({
-    objectName: 'b2b accounts activation',
+    objectName: `b2b accounts ${account} activation`,
     actionName: 'response',
     properties: {
       errorReason: error,
@@ -71,14 +71,14 @@ export const trackAccountError = (error) => {
   });
 };
 
-export const trackCheckBalanceClicked = () => {
+export const trackCheckBalanceClicked = (): void => {
   track({
     objectName: 'b2b accounts check balance',
     actionName: 'click',
   });
 };
 
-export const trackCheckBalanceFailed = () => {
+export const trackCheckBalanceFailed = (): void => {
   track({
     objectName: 'b2b accounts check balance',
     actionName: 'response',
@@ -88,7 +88,7 @@ export const trackCheckBalanceFailed = () => {
   });
 };
 
-export const trackSubmitPayoutRequest = () => {
+export const trackSubmitPayoutRequest = (): void => {
   track({
     objectName: 'b2b accounts submit payout',
     actionName: 'request',
@@ -98,7 +98,7 @@ export const trackSubmitPayoutRequest = () => {
   });
 };
 
-export const trackSubmitPayoutSuccess = () => {
+export const trackSubmitPayoutSuccess = (): void => {
   track({
     objectName: 'b2b accounts submit payout',
     actionName: 'response',
@@ -108,7 +108,7 @@ export const trackSubmitPayoutSuccess = () => {
   });
 };
 
-export const trackSubmitPayoutFailed = () => {
+export const trackSubmitPayoutFailed = (): void => {
   track({
     objectName: 'b2b accounts submit payout',
     actionName: 'response',
@@ -118,7 +118,7 @@ export const trackSubmitPayoutFailed = () => {
   });
 };
 
-export const trackWithdrawClicked = () => {
+export const trackWithdrawClicked = (): void => {
   track({
     objectName: 'b2b accounts withdraw money',
     actionName: 'click',

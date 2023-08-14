@@ -140,7 +140,7 @@ describe('When all required info is available for ACH account creation', () => {
     await waitFor(() => expect(showNotification).toHaveBeenCalled());
     expect(showNotification).toHaveBeenCalledWith({
       type: 'error',
-      message: ['dummy error'],
+      message: 'dummy error',
     });
   });
 });
