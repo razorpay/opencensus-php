@@ -36,33 +36,11 @@ class PayzappV2ReconTest extends TestCase
 
         $this->terminal = $this->fixtures->create('terminal:shared_payzapp_terminal');
 
-        $this->gateway = Payment\Gateway::WALLET_PAYZAPP;
-
-        $this->fixtures->merchant->enableWallet(Merchant\Account::TEST_ACCOUNT, self::WALLET);
+        $this->fixtures->merchant->enableAdditionalWallets([self::WALLET]);
 
         $this->app['rzp.mode'] = Mode::TEST;
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->onlyMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx
-            ->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    return 'nbplusps';
-                })
-            );
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Wallet', [$this->app])->makePartial();
-
         $this->app->instance('nbplus.payments', $this->nbPlusService);
-
-        $this->markTestSkipped('disabling payzapp temporarily');
     }
 
     public function testPaymentReconciliation()
@@ -252,21 +230,20 @@ class PayzappV2ReconTest extends TestCase
 
         foreach ($content as $entity)
         {
-            $txnid  = 'txn_24603f89-5f24-4962-a2a5-8ea34fe' . random_alpha_string(5);
-            $amount = $entity['amount']/100;
+            $txnid     = 'txn_24603f89-5f24-4962-a2a5-8ea34fe' . random_alpha_string(5);
+            $amount    = $entity['amount']/100;
+            $paymentID = "' " . Payment\Entity::stripDefaultSign($entity[Payment\Entity::ID]);
 
             if ($entity->getEntity() === Entity::PAYMENT)
             {
-                $type        = 'BAT';
-                $id          = Payment\Entity::stripDefaultSign($entity[Payment\Entity::ID]);
-                $refundID    = '';
-                $refundTxnID = '';
+                $type        = 'BAT ';
+                $id          = "' " . Payment\Entity::stripDefaultSign($entity[Payment\Entity::ID]);
+                $refundTxnID = "' PA ";
             }
             else if ($entity->getEntity() === Entity::REFUND)
             {
-                $type        = 'CVD';
-                $id          = Payment\Refund\Entity::stripDefaultSign($entity[Payment\Refund\Entity::PAYMENT_ID]);
-                $refundID    = Payment\Refund\Entity::stripDefaultSign($entity[Payment\Refund\Entity::ID]);
+                $type        = 'CVD ';
+                $id          = "' " . Payment\Refund\Entity::stripDefaultSign($entity[Payment\Refund\Entity::ID]);
                 $refundTxnID = 'txn_24603f89-5f24-4962-a2a5-8ea34fe' . random_alpha_string(5);
             }
 
@@ -296,9 +273,9 @@ class PayzappV2ReconTest extends TestCase
                 'Net Amount' => $amount - 0.5,
                 'DEBITCREDIT_TYPE' => 'DD',
                 'UDF1' => $refundTxnID,
-                'UDF2' => $refundID,
+                'UDF2' => $id,
                 'UDF3' => $txnid,
-                'UDF4' => $id,
+                'UDF4' => $paymentID,
                 'UDF5' => '',
                 'SEQUENCE NUMBER' => '',
                 'ARN NO' => $refundTxnID,

@@ -22,7 +22,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getRefundId($row)
     {
-        return $row[self::COLUMN_REFUND_ID] ?? $row[self::COLUMN_UPI_REFUND_ID];
+        $id = trim($row[self::COLUMN_REFUND_ID], " \t\n\r\0\x0B'");
+        return empty($id) ? $row[self::COLUMN_UPI_REFUND_ID] : $id;
     }
 
     protected function getReconRefundAmount(array $row): int
@@ -32,7 +33,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::COLUMN_GATEWAY_REFUND_ID] ?? $row[self::COLUMN_UPI_RRN];
+        $id = trim($row[self::COLUMN_GATEWAY_REFUND_ID], " \t\n\r\0\x0B'");
+        return empty($id) ?? $row[self::COLUMN_UPI_RRN];
     }
 
     protected function getArn($row)

@@ -14,9 +14,9 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
      *******************/
     const COLUMN_SERVICE_TAX        = ['cgst_amt', 'sgst_amt', 'igst_amt', 'utgst_amt', 'serv_tax'];
     const COLUMN_GATEWAY_FEE        = 'msf';
-    const COLUMN_BANK_REF_NUMBER    = 'tran_id';
+    const COLUMN_BANK_REF_NUMBER    = 'udf3';
     const COLUMN_PAYMENT_AMOUNT     = 'domestic_amt';
-    const COLUMN_PAYMENT_ID         = 'merchant_trackid';
+    const COLUMN_PAYMENT_ID         = 'udf4';
     const COLUMN_UPI_PAYMENT_ID     = 'order_id';
     const COLUMN_UPI_GATEWAY_FEE    = 'msf_amount';
     const COLUMN_UPI_PAYMENT_AMOUNT = 'transaction_amount';
@@ -24,7 +24,8 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::COLUMN_PAYMENT_ID] ?? $row[self::COLUMN_UPI_PAYMENT_ID];
+        $id = trim($row[self::COLUMN_PAYMENT_ID], " \t\n\r\0\x0B'");
+        return empty($id) ? $row[self::COLUMN_UPI_PAYMENT_ID] : $id;
     }
 
     protected function getReconPaymentAmount(array $row): int
@@ -63,6 +64,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::COLUMN_BANK_REF_NUMBER] ?? $row[self::COLUMN_UPI_RRN];
+        $id = trim($row[self::COLUMN_BANK_REF_NUMBER], " \t\n\r\0\x0B'");
+        return empty($id) ? $row[self::COLUMN_UPI_RRN] : $id;
     }
 }

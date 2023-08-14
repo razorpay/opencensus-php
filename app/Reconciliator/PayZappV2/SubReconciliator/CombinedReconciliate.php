@@ -17,8 +17,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     protected function getReconciliationTypeForRow($row): string
     {
-        $txnType    = $row[self::COLUMN_ENTITY_TYPE] ?? null;
-        $upiTxnType = $row[self::COLUMN_UPI_ENTITY_TYPE] ?? null;
+        $txnType    = trim($row[self::COLUMN_ENTITY_TYPE]) ?? null;
+        $upiTxnType = trim($row[self::COLUMN_UPI_ENTITY_TYPE]) ?? null;
 
         if ($txnType === 'BAT')
         {
