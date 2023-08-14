@@ -8632,6 +8632,32 @@ class UserTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testGetForUsersWithBusinessBankingEnabledForRblCAWithBasDetailsUnderMaintenance()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT, Channel::RBL);
+
+        $basd = $this->fixtures->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000003',
+            'account_number'          => '2224440041626998',
+            'status'                  => 'under_maintenance',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => $this->bankingBalance->getId(),
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'channel'                 => 'rbl',
+        ]);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testGetBankingUserWithPermissions()
     {
         $user = $this->fixtures->create('user');

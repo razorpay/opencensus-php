@@ -205,7 +205,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
                     ->where($merchantIdColumn, '=', $merchantId)
-                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->whereIn($statusColumn, [Status::ACTIVE,Status::UNDER_MAINTENANCE])
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
