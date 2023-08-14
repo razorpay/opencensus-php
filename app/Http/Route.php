@@ -2984,6 +2984,8 @@ class Route
         // Growth service
         'growth_get_asset_details'                 => ['post',     'growth/assets',                            'GrowthController@getAssetDetails'                                  ],
         'growth_create_pricing_subscription'       => ['post',     'pricing/merchant/subscriptions',             'GrowthController@createSubscription'                                  ],
+        'growth_cancel_pricing_subscription'       => ['post',     'pricing/merchant/subscriptions/cancel',             'GrowthController@cancelSubscription'                                  ],
+        'growth_get_payment_details_for_pricing_subscription'       => ['post',     'pricing/merchant/subscriptions/getPaymentDetails',             'GrowthController@getPaymentDetails'                                  ],
         'growth_get_pricing_subscription_by_mid'   => ['get',      'pricing/merchant/subscriptions',             'GrowthController@getSubscriptionByMid'                                  ],
         'growth_check_pricing_subscription'        => ['get',      'pricing/merchant/subscriptions/exists',      'GrowthController@checkSubscriptionByMid'                                  ],
         'growth_get_template_by_id'                => ['get',      'growth/template/{id}',                     'GrowthController@getTemplateByIdDetails'                           ],
@@ -7180,6 +7182,8 @@ class Route
         'growth_get_asset_details',
         'growth_get_template_by_id',
         'growth_create_pricing_subscription',
+        'growth_cancel_pricing_subscription',
+        'growth_get_payment_details_for_pricing_subscription',
         'growth_get_pricing_subscription_by_mid',
         'growth_check_pricing_subscription',
 
@@ -10392,6 +10396,8 @@ class Route
         'merchant_razorx_bulk_evaluate'                => '*',
         'growth_get_asset_details'                     => '*',
         'growth_create_pricing_subscription'           => '*',
+        'growth_cancel_pricing_subscription'           => '*',
+        'growth_get_payment_details_for_pricing_subscription'           => '*',
         'growth_get_pricing_subscription_by_mid'       => '*',
         'growth_check_pricing_subscription'            => '*',
         'growth_get_template_by_id'                    => '*',
@@ -11029,6 +11035,8 @@ class Route
             'growth_get_asset_details',
             'growth_get_template_by_id',
             'growth_create_pricing_subscription',
+            'growth_cancel_pricing_subscription',
+            'growth_get_payment_details_for_pricing_subscription',
             'growth_get_pricing_subscription_by_mid',
             'growth_check_pricing_subscription',
             'merchant_activation_otp_send',
@@ -14699,6 +14707,8 @@ class Route
             'growth_get_template_by_id',
             // Growth pricing routes
             'growth_create_pricing_subscription',
+            'growth_cancel_pricing_subscription',
+            'growth_get_payment_details_for_pricing_subscription',
             'growth_get_pricing_subscription_by_mid',
             'growth_check_pricing_subscription',
 

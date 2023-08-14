@@ -106,6 +106,64 @@ class GrowthController extends Controller
         return $response;
     }
 
+    public function cancelSubscription()
+    {
+        $parameters = Request::all();
+        $response = [];
+        $merchant = $this->app['basicauth']->getMerchant();
+        $env = $this->app['env'];
+        $mode = $this->app['rzp.mode'];
+
+        if ($env == 'production' && $mode != Mode::LIVE) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE);
+        }
+
+        try {
+            if (empty($parameters) === false) {
+                if (empty($merchant) === false) {
+                    $parameters["merchant_id"] = $merchant->getId();
+                }
+                $response = $this->app->growthService->cancelSubscription($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the cancelSubscription request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
+
+    public function getPaymentDetails()
+    {
+        $parameters = Request::all();
+        $response = [];
+        $merchant = $this->app['basicauth']->getMerchant();
+        $env = $this->app['env'];
+        $mode = $this->app['rzp.mode'];
+
+        if ($env == 'production' && $mode != Mode::LIVE) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE);
+        }
+
+        try {
+            if (empty($parameters) === false) {
+                if (empty($merchant) === false) {
+                    $parameters["merchant_id"] = $merchant->getId();
+                }
+                $response = $this->app->growthService->getPaymentDetails($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the getPaymentDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
+
     public function getSubscriptionByMid()
         {
             $response = [];

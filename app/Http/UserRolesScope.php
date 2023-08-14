@@ -490,6 +490,8 @@ class UserRolesScope
             'growth_get_asset_details'                      => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_get_template_by_id'                     => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_create_pricing_subscription'            => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
+            'growth_cancel_pricing_subscription'            => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
+            'growth_get_payment_details_for_pricing_subscription'            => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_get_pricing_subscription_by_mid'        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_check_pricing_subscription'             => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_requests_create'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],

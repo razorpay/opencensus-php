@@ -23,6 +23,8 @@ class GrowthService extends Base\Service
 
     const GET_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
     const CREATE_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Create';
+    const CANCEL_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Cancel';
+    const GET_PAYMENT_DETAILS = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/GetPaymentDetails';
     const GET_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/GetByMerchantID';
     const CHECK_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Exists';
     const GET_TEMPLATE_BY_ID_URL = 'twirp/rzp.growth.template.v1.TemplateAPI/Get';
@@ -111,6 +113,16 @@ class GrowthService extends Base\Service
     public function createSubscription($parameters)
     {
         return $this->sendRequest($parameters, self::CREATE_SUBSCRIPTION_URL, Requests::POST);
+    }
+
+    public function cancelSubscription($parameters)
+    {
+        return $this->sendRequest($parameters, self::CANCEL_SUBSCRIPTION_URL, Requests::POST);
+    }
+
+    public function getPaymentDetails($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_PAYMENT_DETAILS, Requests::POST);
     }
 
     public function getSubscriptionByMid($parameters)
