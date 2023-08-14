@@ -11165,9 +11165,50 @@ class Service extends Base\Service
 
            $this->app['basicauth']->setMerchant($this->merchant);
        }
-       else
+
+       (new Validator)->setStrictFalse()->validateInput('merchantPlatformUpdateRequest', $input);
+
+       $merchantPlatformConfig = $this->merchant->getMerchantPlatformConfig();
+
+       $updatePlatform = $input['platform'];
+
+       if ($merchantPlatformConfig === null && $updatePlatform === ShopifyConstants::SHOPIFY)
        {
-         (new Validator)->validateInput('merchantPlatformUpdateRequest', $input);
+           $merchantId = $this->merchant->getId();
+
+           if ($this->merchant->isFeatureEnabled(Features::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION) === false)
+           {
+               try
+               {
+                   $jobRequest = [
+                       'name' => 'pre-magic-order-ingestion',
+                       'status' => 'pending',
+                       'merchant_id' => $merchantId,
+                       'pre_magic_order_ingestion_message' => [
+                           'platform' => $updatePlatform,
+                           'store_name' => $input['shop_id']
+                       ],
+                   ];
+
+                   $this->app['rto_prediction_provider_service']->createJobExecutions($jobRequest);
+
+               }
+               catch (\Exception $ex)
+               {
+                   $this->trace->count(
+                       Metric::PRE_MAGIC_ORDER_JOB_CREATE_ERROR_COUNT,
+                       ['code' => $ex->getCode()]
+                   );
+
+                   $this->trace->error(TraceCode::PRE_MAGIC_ORDER_JOB_CREATE_CALL_ERROR,
+                       [
+                           'code' => $ex->getCode(),
+                           'message' => $ex->getMessage(),
+                           'merchant_id' => $this->merchant->getMerchantId()
+                       ]
+                   );
+               }
+           }
        }
 
        (new Merchant\Core)->associateMerchant1ccConfig(

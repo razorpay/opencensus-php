@@ -707,7 +707,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantPlatformUpdateRequestRules = [
-        'platform'                     => 'required|in:native,woocommerce,shopify,magento'
+        'platform'                     => 'required|in:native,woocommerce,shopify,magento',
+        'shop_id'                      => 'required_if:platform,shopify|string'
     ];
 
     protected static $updateSlabRequestRules = [
