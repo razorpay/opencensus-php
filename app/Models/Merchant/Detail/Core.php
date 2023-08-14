@@ -5760,10 +5760,21 @@ class Core extends Base\Core
 
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
+                if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and
+                    ($this->blockMerchantActivations($merchantDetails->merchant) === true))
+                {
+                    $activationStatusAutomation = Status::UNDER_REVIEW;
+                }
+
                 return $activationStatusAutomation;
             }
 
-            return Status::ACTIVATED_MCC_PENDING;
+            if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
+            {
+                return Status::ACTIVATED_MCC_PENDING;
+            }
+
+            return Status::UNDER_REVIEW;
         }
 
         return Status::UNDER_REVIEW;
@@ -6037,7 +6048,8 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($this->blockMerchantActivations($merchantDetails->merchant) === true)
+        if ((new Merchant\Core)->isRegularMerchant($merchantDetails->merchant) === false and
+            $this->blockMerchantActivations($merchantDetails->merchant) === true)
         {
             $this->trace->info(TraceCode::BLOCKING_MX_ACTIVATIONS_TEMPORARILY, ["id" => $merchantDetails->getMerchantId()]);
 
