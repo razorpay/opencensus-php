@@ -37,6 +37,8 @@ class UserController extends Controller
 {
 
     const ROOT_PATH = '/';
+    
+    const SPLITZ_BULK_EVALUATE_PATH = 'splitz/bulkEvaluate';
 
     const ORG_ERRORS = ['No db records found.'];
 
@@ -45,9 +47,13 @@ class UserController extends Controller
     protected $app;
 
     protected $trace;
+    
+    protected $splitzExprimentData;
 
-    protected $concurrentApiCallExperimentName = 'DASHBOARD_USER_CONCURRENT_API_CALL';
+    const DASHBOARD_USER_CONCURRENT_API_CALL = 'DASHBOARD_USER_CONCURRENT_API_CALL';
 
+    const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
+    
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -84,7 +90,27 @@ class UserController extends Controller
 
         return $data;
     }
-
+    
+    public function setSplitzVariantBulkData($currentMerchant)
+    {
+        if (is_null($currentMerchant))
+        {
+            $this->splitzExprimentData = [] ;
+            return;
+        }
+        
+        $currentMerchantId = $currentMerchant->id;
+        
+        $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
+        $onboardingFluxExperiment =  config('splitz.experiments')[self::ONBOARDING_FTUX];
+        
+        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId];
+        
+        $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, [], self::SPLITZ_BULK_EVALUATE_PATH);
+        
+        $this->splitzExprimentData = $data;
+    }
+    
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
@@ -104,7 +130,7 @@ class UserController extends Controller
                 'api_host'              => ApiUrl::getCheckoutApi(),
                 'session_id'            => Session::getId(),
             ];
-
+            
             if ($this->isRedirectionApplicable($details) === true)
             {
                 $ttl = 12 * 60;
@@ -260,32 +286,15 @@ class UserController extends Controller
 
     private function isConcurrentApiCallEnabledForDashboardUser(): bool
     {
-        $currentMerchantId = Session::get('current_merchant_id');
-    
-        if (app('request.ctx')->isOauthRequest() === true)
-        {
-            $currentMerchantId = app('request.ctx')->getMerchantId();
-        }
-    
-        $currentRouteName = \Route::currentRouteName();
-    
-        $serverName = \Request::server('SERVER_NAME');
-    
-        $isPgRenderCall = (new User\Service)->isPgRenderCall($currentRouteName, $serverName);
-    
-        if (($currentMerchantId === null) or
-            ($isPgRenderCall === false))
+        $experimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
+        
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {
             return false;
         }
     
-        $experimentName = $this->concurrentApiCallExperimentName;
-        
-        $experimentId = config('splitz.experiments')[$experimentName];
-    
-        $data = (new SplitzService())->getVariantBulk($currentMerchantId, [$experimentId], [], "splitz/bulkEvaluate");
-    
-        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
+
     }
     
     private function getSecondChunkedData(array $firstChunkData, bool $isConcurrentApiCallEnabled): array
@@ -389,6 +398,10 @@ class UserController extends Controller
         $this->trace->info(TraceCode::CHUNKED_DETAILS, [
             'shouldRenderCBS' => $isMerchantLogin,
         ]);
+        
+        $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
+        
+        $this->setSplitzVariantBulkData($currentMerchant);
 
         $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
 
@@ -456,8 +469,8 @@ class UserController extends Controller
         $uuid = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
 
         Cookie::queue('rzp_ab_uuid', $uuid);
-
-        $experimentId = config('splitz.experiments')['EASY_ONBOARDING_REDIRECT'];
+        
+        // EASY_ONBOARDING_REDIRECT as true.
         $referralExpId = config('splitz.experiments')['PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY'];
 
         $queryParams = Request::all();
@@ -468,7 +481,7 @@ class UserController extends Controller
             'org'  => $org['custom_code'] ?? ''
         ];
 
-        $data = (new SplitzService())->getVariantBulk($uuid, [$experimentId, $referralExpId], [], "splitz/bulkEvaluate", $requestData);
+        $data = (new SplitzService())->getVariantBulk($uuid, [$referralExpId], [], "splitz/bulkEvaluate", $requestData);
 
         $isReferralExpEnabled = ($data[$referralExpId]['variables']['result'] ?? null) === 'on';
 
@@ -477,7 +490,7 @@ class UserController extends Controller
             return false;
         }
 
-        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+        return true;
     }
 
     private function matchExclusionsToRedirect(bool $isExpEnabled = false): bool
@@ -497,24 +510,6 @@ class UserController extends Controller
         }
 
         return false;
-    }
-
-    private function isEasyOnboardingExperimentEnable(): bool
-    {
-        try
-        {
-            $experiment = (new Merchant\Service)->getTreatment('easy_onboarding') === ['result' => 'on'];
-        }
-        catch (BadRequestError $e)
-        {
-            $this->trace->info(TraceCode::RAZORX_CALL_FAILED, [
-                'error' => $e
-            ]);
-
-            return false;
-        }
-
-        return $experiment;
     }
 
     private function isAuthSourceHasWebsite(): bool
@@ -538,11 +533,6 @@ class UserController extends Controller
             return false;
         }
 
-        if ($this->isEasyOnboardingExperimentEnable() === false)
-        {
-            return false;
-        }
-
         $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
         $activationFormMilestone = $details['activation_form_milestone'] ?? null;
@@ -552,13 +542,9 @@ class UserController extends Controller
         {
             return true;
         }
-
-        $experimentId = config('splitz.experiments')['WEBSITE_COMPLIANCE_FLOW_EXP'];
-
-        $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
-
-        if ((($data[$experimentId]['variables']['result'] ?? null) === 'on') and
-            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2' or $details['submitted'] == 1) and $details['activation_status'] != 'activated') {
+        
+//      WEBSITE_COMPLIANCE_FLOW_EXP is true
+        if (($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2' or $details['submitted'] == 1) and $details['activation_status'] != 'activated') {
             return true;
         };
 
@@ -568,11 +554,6 @@ class UserController extends Controller
 
     private function isRedirectionApplicable($details): bool
     {
-        if ($this->isEasyOnboardingExperimentEnable() === false)
-        {
-            return false;
-        }
-
         if (ApiUrl::isBankingOriginRequest() === true)
         {
             return false;
@@ -1600,7 +1581,7 @@ class UserController extends Controller
                 return false;
             }
 
-            if($this->isFtuxExperimentEnabled($details) === false)
+            if($this->isFtuxExperimentEnabled() === false)
             {
                 return false;
             }
@@ -1655,12 +1636,14 @@ class UserController extends Controller
 
     }
 
-    private function isFtuxExperimentEnabled($details)
+    private function isFtuxExperimentEnabled()
     {
         $experimentId = config('splitz.experiments')['ONBOARDING_FTUX'];
-
-        $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
-
-        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+    
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 }
