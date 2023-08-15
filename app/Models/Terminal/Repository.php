@@ -7,6 +7,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Base\Common;
+use RZP\Constants\Country;
 use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Constants\Mode;
@@ -1071,6 +1072,10 @@ class Repository extends Base\Repository
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
+
+        if(Country::matches($merchant->getCountry() , Country::MY)){
+            $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT_MY];
+        }
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
 

@@ -533,7 +533,7 @@ class CardPaymentServiceTest extends TestCase
      */
     public function testPaymentAuthorizedWithIndiaIINAndMerchantMalaysiaVisaNetwork()
     {
-        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_mpgs_terminal');
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $this->enableCpsConfig();
@@ -572,7 +572,7 @@ class CardPaymentServiceTest extends TestCase
                     'payment' => [
                         'auth_type' => null,
                         'terminal_id'  => $terminal->getId(),
-                        'authentication_gateway' => 'mpi_blade'
+                        'authentication_gateway' => 'mpgs'
                     ],
                 ];
             });
@@ -595,7 +595,7 @@ class CardPaymentServiceTest extends TestCase
 
         $this->assertEquals($terminal->getId(), $payment['terminal_id']);
 
-        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('mpgs', $payment['authentication_gateway']);
     }
 
 

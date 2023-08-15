@@ -2804,7 +2804,7 @@ class Terminal extends Base
             'netbanking'                 => 0,
             'mode'                       => 3,
             'capability'                 => 0,
-            'gateway_merchant_id'        => 'razorpay ocbc',
+            'gateway_merchant_id'        => 'LiJ5sNWBYb918W',
             'gateway_terminal_id'        => 'account ocbc',
             'gateway_terminal_password'  => 'razorpay_password',
             'gateway_terminal_password2' => 'razorpay_password',

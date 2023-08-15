@@ -15,6 +15,7 @@ class Account
     const DEMO_ACCOUNT          = '100DemoAccount';
     const TEST_ACCOUNT          = '10000000000000';
     const SHARED_ACCOUNT        = '100000Razorpay';
+    const SHARED_ACCOUNT_MY     = 'LiJ5sNWBYb918W';
 
     const DEMO_PAGE_ACCOUNT     = '2aTeFCKTYWwfrF';
 
