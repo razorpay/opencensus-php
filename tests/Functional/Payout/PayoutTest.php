@@ -5706,6 +5706,56 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
     }
 
+    public function testCreateCompositePayoutTo30CharVpaWithOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testCreateCompositePayoutWithOtp'];
+
+        $testData['request']['content']['fund_account']['vpa']['address'] = 'test123456test123456test12@ybl';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->assertEquals("test123456test123456test12@ybl", $contact['reference_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+    }
+
+    public function testCreateCompositePayoutTo50CharVpaWithOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testCreateCompositePayoutWithOtp'];
+
+        $testData['request']['content']['fund_account']['vpa']['address'] = 'test123456test123456test123456test123456test123456@ybl';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->assertEquals("test123456test123456test123456test123456", $contact['reference_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+    }
+
     public function testCreateCompositePayoutWithOtpAndWithoutQueueIfLowBalanceInput()
     {
         $this->ba->proxyAuth();

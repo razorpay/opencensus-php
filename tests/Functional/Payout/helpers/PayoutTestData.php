@@ -1899,7 +1899,6 @@ return [
         ],
     ],
 
-
     'testCreateCompositePayoutWithOtpWithSecureContextIncorrectAmount' => [
         'request'  => [
             'method'  => 'POST',

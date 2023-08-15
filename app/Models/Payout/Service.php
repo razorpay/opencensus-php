@@ -1491,7 +1491,8 @@ class Service extends Base\Service
 
         if (isset($fundAccountVpa[Vpa\Entity::ADDRESS]) === true)
         {
-            $input[Entity::FUND_ACCOUNT][FundAccount\Entity::CONTACT][Contact\Entity::REFERENCE_ID] = $fundAccountVpa[Vpa\Entity::ADDRESS];
+            // trimming it to use first 40 characters as refernce_id column validator allows only 40 characters
+            $input[Entity::FUND_ACCOUNT][FundAccount\Entity::CONTACT][Contact\Entity::REFERENCE_ID] = substr($fundAccountVpa[Vpa\Entity::ADDRESS],0,40);
         }
 
         return $input;
