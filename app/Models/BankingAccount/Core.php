@@ -76,11 +76,13 @@ class Core extends Base\Core
     const CA_BALANCE_UPDATE_TIME_LIMIT           = 'ca_balance_update_time_limit';
     const CA_BALANCE_UPDATE_RATE_LIMIT           = 'ca_balance_update_rate_limit';
     const CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT = 'ca_mandatory_balance_update_rate_limit';
+    const CA_BALANCE_UPDATE_PAYOUT_MADE_RATE_LIMIT   = 'ca_balance_update_payout_made_rate_limit';
 
     const DEFAULT_CA_BALANCE_UPDATE_LIMITS = [
         self::CA_BALANCE_UPDATE_TIME_LIMIT           => 1800,
         self::CA_BALANCE_UPDATE_RATE_LIMIT           => 100,
-        self::CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT => 150
+        self::CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT => 150,
+        self::CA_BALANCE_UPDATE_PAYOUT_MADE_RATE_LIMIT    => 500
     ];
 
     // Different rules used in gateway balance update for CA.
@@ -2347,6 +2349,9 @@ class Core extends Base\Core
                 $balanceUpdateLimits = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_CA_BALANCE_UPDATE_LIMITS]);
                 break;
 
+            case Channel::ICICI:
+                $balanceUpdateLimits = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CA_BALANCE_UPDATE_LIMITS]);
+                break;
             default:
                 $balanceUpdateLimits = [];
         }
@@ -2364,6 +2369,8 @@ class Core extends Base\Core
         // This number should be set such that gateway balance is fetched at-least once for all merchants in 10 minutes.
         $limitForMandatoryUpdateRule = $balanceUpdateLimits[self::CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT];
 
+        $limitForPayoutMadeRule = $balanceUpdateLimits[self::CA_BALANCE_UPDATE_PAYOUT_MADE_RATE_LIMIT];
+
         // initializing to empty array as further code will depend on count of these arrays.
         $merchantIdsToDispatch[self::MADE_PAYOUT_RULE]      = [];
         $merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]   = [];
@@ -2372,7 +2379,7 @@ class Core extends Base\Core
         $currentTime = Carbon::now()->getTimestamp();
 
         // get list of distinct merchant ids who have done payouts in last $timePeriod seconds.
-        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout($channel, $currentTime - $timePeriod, $currentTime);
+        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout($channel, $currentTime - $timePeriod, $currentTime, $limitForPayoutMadeRule);
 
         $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel);
 
@@ -2396,8 +2403,8 @@ class Core extends Base\Core
             }
 
             // greater than condition will never be used. Kept it for safe side.
-            if ((count($merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]) >= $limitForMandatoryUpdateRule) and
-                (count($merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE]) >= $limitForBalanceChangeRule))
+            if ((count($merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]) >= $limitForBalanceChangeRule) and
+                (count($merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE]) >= $limitForMandatoryUpdateRule))
             {
                 break;
             }

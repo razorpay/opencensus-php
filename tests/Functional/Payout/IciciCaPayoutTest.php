@@ -20,6 +20,7 @@ use RZP\Models\FeeRecovery;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Payout\Status;
+use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Tests\Functional\TestCase;
@@ -989,6 +990,28 @@ class IciciCaPayoutTest extends TestCase
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
+
+    public function testBalanceFetch()
+    {
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
 
     protected function mockMozartResponseForFetchingBalanceFromIciciGateway($amount, $exception = null): void
     {

@@ -564,7 +564,7 @@ class Repository extends Base\Repository
     }
 
     // get list of merchant ids who have done payouts in given time period.
-    public function getCAMerchantIdsWithAtleastOnePayout(string $channel, int $startTime, int $endTime)
+    public function getCAMerchantIdsWithAtleastOnePayout(string $channel, int $startTime, int $endTime, int $limit)
     {
         $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
         $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
@@ -583,6 +583,7 @@ class Repository extends Base\Repository
                     ->where($balanceChannelColumn, '=', $channel)
                     ->whereBetween($payoutInitiatedAtColumn, [$startTime, $endTime])
                     ->distinct()
+                    ->limit($limit)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
