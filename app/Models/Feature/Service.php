@@ -473,6 +473,11 @@ class Service extends Base\Service
                 $reserveBalanceAmount
             );
 
+            if ($result[Constants::ACCOUNTS_CREATED_RESPONSE] === false)
+            {
+               return $result;
+            }
+
             // sync merchant balance and credits on API and CLS
             $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance(), $reserveBalanceAmount);
 

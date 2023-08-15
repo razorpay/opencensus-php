@@ -317,7 +317,7 @@ class Core extends Base\Core
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
-        else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment))
+        else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
         }

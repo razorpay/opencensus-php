@@ -578,7 +578,9 @@ class Core extends Base\Core
             $openingBalances[self::MERCHANT_RESERVE_OPENING_BALANCE] = (string) $reserveBalanceAmount;
         }
 
-        $payload[self::MERCHANT_OPENING_BALANCES] = $openingBalances;
+        if (count($openingBalances) > 0){
+            $payload[self::MERCHANT_OPENING_BALANCES] = $openingBalances;
+        }
 
         $this->trace->info(
             TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
