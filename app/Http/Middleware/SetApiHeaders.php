@@ -62,17 +62,17 @@ class SetApiHeaders {
         ];
 
         $response = $next($request);
-        
+
         if($response instanceof StreamedResponse)
         {
             foreach ($csrfTokenHeader as $key => $value)
             {
                 $response->headers->set($key, $value);
             }
-            
+
             return $response;
         }
-        
+
         $response->withHeaders($csrfTokenHeader);
 
         return $response;
