@@ -461,6 +461,7 @@ class BusinessSubcategory
         self::ONLINE_CASINO                   => 'Online Casino',
         self::ONLINE_FOOD_ORDERING            => 'Online Food Ordering',
         self::OTA                             => 'OTA',
+        self::OTHERS                          => 'Others',
         self::PAAS                            => 'Platform as a service',
         self::PENSION_FUND                    => 'Pension Fund',
         self::PERSONAL                        => 'Personal',

@@ -970,6 +970,17 @@ return [
                         ],
                     ],
                 ],
+                'others'                  => [
+                    'subcategories' => [
+                        'others'           => [
+                            'category'                 => '5399',
+                            'description'              => 'Others',
+                            'category2'                => 'ecommerce',
+                            'activation_flow'          => 'greylist',
+                            'international_activation' => 'greylist',
+                        ],
+                    ],
+                ],
             ],
             'status_code' => 200,
         ],

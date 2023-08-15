@@ -492,6 +492,7 @@ class BusinessCategory
         ],
 
         self::OTHERS => [
+            Sub::OTHERS
         ],
 
         self::PAAS => [

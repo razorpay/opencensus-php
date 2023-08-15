@@ -50,6 +50,7 @@ class BusinessSubCategoryMetaDataTest extends TestCase
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW,
             BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
+            BusinessSubCategoryMetaData::DESCRIPTION,
             Entity::CATEGORY,
             Entity::CATEGORY2,
             DetailEntity::ACTIVATION_FLOW,

@@ -120,6 +120,7 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessCategory as BusinessCategoriesV2;
 
 class Service extends Base\Service
 {
@@ -1720,8 +1721,14 @@ class Service extends Base\Service
 
             foreach ($subCategories as $subCategory)
             {
-                $subcategoryMetaDataFields = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
-
+                if ($subCategory === BusinessCategoriesV2::OTHERS)
+                {
+                    $subcategoryMetaDataFields = BusinessSubCategoryMetaData::getMetaDataForOthersCategory();
+                }
+                else
+                {
+                    $subcategoryMetaDataFields = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+                }
                 if ($this->isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields) === true)
                 {
                     $subCategoriesMetaData[$subCategory] = $this->getSubCategoryMetaDataFields($subcategoryMetaDataFields);
