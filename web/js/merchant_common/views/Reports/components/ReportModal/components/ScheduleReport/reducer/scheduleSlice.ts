@@ -43,7 +43,10 @@ const scheduleSlice = createSlice({
       state.isCustomEnabled = action.payload;
       if (state?.selectedDataDuration?.value) {
         state.selectedDataDuration = getDataDurations(action.payload)[0];
-        state.selectedRepetition = getRepetitions(action.payload.value, action.payload)[0];
+        state.selectedRepetition = getRepetitions(
+          state?.selectedDataDuration?.value,
+          action.payload,
+        )[0];
       }
     },
     setRunForeverEnabled: (state, action) => {

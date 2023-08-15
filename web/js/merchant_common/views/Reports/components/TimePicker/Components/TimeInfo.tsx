@@ -1,6 +1,11 @@
 import React from 'react';
 import { Block } from 'merchant_common/views/Reports/components/styled';
-import { ChevronDownIcon, ChevronUpIcon, IconButton, Text } from '@razorpay/blade/components';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  IconButton,
+  Text,
+} from 'merchant_common/views/Reports/components';
 import { TimeInfoPropsType } from 'merchant_common/views/Reports/components/TimePicker/types';
 import { TimePickerRow } from 'merchant_common/views/Reports/components/TimePicker/styled';
 

@@ -13,9 +13,12 @@ export const handleMinutesChange: MinutesModifierFn = (
 ) => {
   const guardAt = minutesInterval ? 60 - minutesInterval : 59;
   const diffOffset = minutesInterval ? minutesInterval : 1;
+  const maxMin = 59;
 
-  if (action === 'increase') callback(minutes === guardAt ? 0 : minutes + diffOffset);
-  else if (action === 'decrease') callback(minutes === 0 ? guardAt : minutes - diffOffset);
+  if (action === 'increase')
+    callback(minutes === guardAt ? maxMin : minutes === maxMin ? 0 : minutes + diffOffset);
+  else if (action === 'decrease')
+    callback(minutes === 0 ? maxMin : minutes === maxMin ? guardAt : minutes - diffOffset);
 };
 
 export const getInitialTimeStates = (
@@ -26,7 +29,7 @@ export const getInitialTimeStates = (
   // if yes, returns it. Or resets it to 0.
   const getMin = () => {
     const tM = +date.clone().format('m');
-    if (!minInterval || tM % minInterval === 0) {
+    if (!minInterval || tM % minInterval === 0 || tM === 59) {
       return tM;
     } else {
       return 0;

@@ -81,7 +81,7 @@ export const PickerAbsWrapper = styled(AbsoluteWrapper)`
   z-index: 1;
   left: 0px;
   right: 0px;
-  top: calc(100% + 8px);
+  top: calc(100% + 28px);
 `;
 
 export const SelectedRangeInputField = styled.div<BaseValidationStyledProps>`

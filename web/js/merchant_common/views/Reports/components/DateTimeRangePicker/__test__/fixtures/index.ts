@@ -8,8 +8,11 @@ export const pickerInputFieldAL = 'Picker Input Field';
 export const mainPickerContainerAL = 'Picker Container';
 export const pickerInputFormat = 'MMMM DD, YYYY ~ h:mm A';
 export const initialState = {
-  startDate: TODAY.clone().subtract(5, 'day'),
-  endDate: TODAY.clone().subtract(2, 'day'),
+  startDate: TODAY.clone().startOf('day').subtract(5, 'day'),
+  endDate: TODAY.clone().subtract(2, 'day').endOf('day').set({
+    minute: 59,
+    second: 59,
+  }),
 };
 export const selectedDateInfoBadgeFormat = 'MMM DD, YYYY';
 export const refRangeFirstMonth = 2;

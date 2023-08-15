@@ -92,18 +92,19 @@ describe('Date time calendar component when picker is active', () => {
       screen.getByText(`${initialState.endDate.clone().format(selectedDateInfoBadgeFormat)}`),
     ).toBeInTheDocument();
 
-    // here initial date and final date has same time, so time shown must be same for both, hence length 2
-    expect(screen.getAllByText(`${initialState.endDate.clone().format('h:mm A')}`).length).toBe(2);
-
     const includeTimeSwitch = screen.getByLabelText('Include Time Switch');
     expect(includeTimeSwitch).toBeInTheDocument();
     expect(includeTimeSwitch.children[0]).toHaveAttribute('value', 'true');
 
     expect(
-      screen.getAllByLabelText(
+      screen.queryByLabelText(
         `Selected Time Is ${initialState.startDate.clone().format('h:mm A')}`,
-      ).length,
-    ).toEqual(2);
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByLabelText(`Selected Time Is ${initialState.endDate.clone().format('h:mm A')}`),
+    ).toBeInTheDocument();
   });
 
   it('should show navigation buttons when picker is active', () => {
@@ -265,18 +266,30 @@ describe('Date time calendar component when picker is active', () => {
     const switchToggle = within(screen.getByLabelText('Include Time Switch')).queryByRole('button');
     if (switchToggle) {
       expect(
-        screen.queryAllByLabelText(
+        screen.queryByLabelText(
           `Selected Time Is ${initialState.startDate.clone().format('h:mm A')}`,
-        ).length,
-      ).toEqual(2);
+        ),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByLabelText(
+          `Selected Time Is ${initialState.endDate.clone().format('h:mm A')}`,
+        ),
+      ).toBeInTheDocument();
 
       await userEvent.click(switchToggle);
 
       expect(
-        screen.queryAllByLabelText(
+        screen.queryByLabelText(
           `Selected Time Is ${initialState.startDate.clone().format('h:mm A')}`,
-        ).length,
-      ).toEqual(0);
+        ),
+      ).not.toBeInTheDocument();
+
+      expect(
+        screen.queryByLabelText(
+          `Selected Time Is ${initialState.endDate.clone().format('h:mm A')}`,
+        ),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -288,13 +301,16 @@ describe('Date time calendar component when picker is active', () => {
     const refDate1 = screen.getByLabelText(`Date is ${refDateMoment1.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate1);
 
-    const refDateMoment2 = initialState.startDate.clone().subtract(1, 'day');
+    const refDateMoment2 = initialState.startDate.clone().subtract(1, 'day').endOf('day').set({
+      minute: 59,
+      second: 59,
+    });
     const refDate2 = screen.getByLabelText(`Date is ${refDateMoment2.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate2);
     await userEvent.click(screen.getByLabelText('btn-outside'));
 
     expect(
-      screen.queryByText(
+      await screen.findByText(
         `${refDateMoment1.format(pickerInputFormat)} - ${refDateMoment2.format(pickerInputFormat)}`,
       ),
     ).toBeInTheDocument();

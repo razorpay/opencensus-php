@@ -34,10 +34,6 @@ export interface BaseTimePickerProps {
   helpText?: string;
   label?: string;
   validate?: () => boolean;
-  /**
-   * A callback called when the picker is closed
-   */
-  onClose?: () => void;
   errorText?: string;
   necessityIndicator?: NecessityIndicatorType;
   minutesInterval?: MinutesInterval;
@@ -61,3 +57,25 @@ export type MinutesModifierFn = (
   fn: (y: number) => void,
   y?: MinutesInterval,
 ) => void;
+
+export type PickerInfoProps = Pick<
+  TimePickerPropsType,
+  'disableInput' | 'minutesInterval' | 'onChange'
+> & {
+  defaultValue: moment.Moment;
+};
+
+export type TimePickerContextType = {
+  hour: number;
+  minutes: number;
+  meridiem: MeridiemType;
+  shouldShowPicker: boolean;
+  hourChevUpClick: () => void;
+  hourChevDownClick: () => void;
+  minutesChevUpClick: () => void;
+  minutesChevDownClick: () => void;
+  meridiemChevUpClick: () => void;
+  meridiemChevDownClick: () => void;
+  setShowPicker: (x?: boolean) => void;
+  selectedTime: moment.Moment;
+};

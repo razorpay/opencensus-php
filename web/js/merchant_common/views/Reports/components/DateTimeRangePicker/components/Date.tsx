@@ -85,6 +85,7 @@ export const Date = ({
     const updatedDate = moment(newDate).set({
       minute: currDate.get('minute'),
       hour: currDate.get('hour'),
+      second: currDate.get('minute') === 59 ? 59 : 0,
     });
     return updatedDate;
   };

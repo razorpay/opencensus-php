@@ -19,7 +19,7 @@ describe('TimePicker', () => {
   const App = () => {
     return (
       <>
-        <TimePicker onChange={() => {}} value={moment()} onClose={() => {}} />
+        <TimePicker onChange={() => {}} value={moment()} />
         <p aria-label="selected time" />
       </>
     );

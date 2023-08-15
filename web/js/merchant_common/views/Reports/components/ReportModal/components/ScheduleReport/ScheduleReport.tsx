@@ -394,6 +394,9 @@ export const ScheduleReportModal = ({
               helpText="Enter a schedule name."
               errorText="Mandatory Field: Enter a schedule name."
               necessityIndicator="required"
+              validationState={
+                showErrorInSection === 0 ? (scheduleName?.length ? 'none' : 'error') : 'none'
+              }
             />
 
             <Dropdown selectionType="single">
