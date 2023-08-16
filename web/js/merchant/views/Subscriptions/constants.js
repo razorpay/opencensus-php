@@ -14,7 +14,7 @@ export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 
 export const GATEWAY_MAX_LIMIT = 20000000; // Paisa
 
-export const UPI_AFA_MAX_LIMIT = 500000; // Paisa
+export const UPI_AFA_MAX_LIMIT = 1500000; // Paisa
 export const UPI_MAX_LIMIT_FOR_NON_BFSI = 10000000; // Paisa
 
 export const EMANDATE_MAX_LIMIT = 100000000; // Paisa
