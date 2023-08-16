@@ -1,23 +1,23 @@
 //! This file is not used because Edit Payment Link feature is called off from Product
 //! Slack Reference - https://razorpay.slack.com/archives/C043K5N223F/p1668411467771009?thread_ts=1668410847.606959&cid=C043K5N223F
 
-import React, { useEffect, useState, useCallback } from 'react';
-import Input from 'common/new-ui/Input';
-import debounce from 'common/utils/debounce';
-import isEmpty from '@universe/utils/isEmpty';
-import { merchantFetch } from 'merchant/utils/ajax';
 import Loader from 'common/components/Loader';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import Input from 'common/new-ui/Input';
 import { analyticsTrack } from 'common/utils/analytics';
+import debounce from 'common/utils/debounce';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import isEmpty from 'lodash/isEmpty';
 import {
-  PAYMENT_HANDLE_REGEX,
+  PAYMENT_HANDLE_DEFAULT_SUGGESTION_COUNT,
+  PAYMENT_HANDLE_DOMAIN,
   PAYMENT_HANDLE_MAX_LENGTH,
   PAYMENT_HANDLE_MIN_LENGTH,
-  PAYMENT_HANDLE_DEFAULT_SUGGESTION_COUNT,
-  PAYMENT_HANDLE_SUGGESSTIONS_DEBOUNCE_TIME,
   PAYMENT_HANDLE_PREFIX,
-  PAYMENT_HANDLE_DOMAIN,
+  PAYMENT_HANDLE_REGEX,
+  PAYMENT_HANDLE_SUGGESSTIONS_DEBOUNCE_TIME,
 } from 'merchant/containers/Home/ProductOnboardingCard/constants';
+import { merchantFetch } from 'merchant/utils/ajax';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import ErrorIcon from 'assets/error-icon.svg';
 import SuccessIcon from 'assets/success-tick-green.svg';

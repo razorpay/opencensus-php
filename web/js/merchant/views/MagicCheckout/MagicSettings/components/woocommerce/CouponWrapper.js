@@ -1,13 +1,13 @@
-import { useEffect, useCallback } from 'react';
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
+import {
+  COUPON_CARD,
+  COUPON_FORM,
+  COUPON_SETTINGS,
+  FETCH_STATUS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import CouponCard from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CouponCard';
 import CouponForm from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/CouponForm';
-import {
-  FETCH_STATUS,
-  COUPON_FORM,
-  COUPON_CARD,
-  COUPON_SETTINGS,
-} from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { useCallback, useEffect } from 'react';
 
 const CouponWrapper = ({
   listPromotions,

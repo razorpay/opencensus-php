@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import Input from 'common/new-ui/Input';
-import isEmpty from '@universe/utils/isEmpty';
-import { bindActionCreators } from 'redux';
-import { isUrlLenient } from 'common/utils/validators';
-import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { AsyncBtn } from 'common/new-ui/Button';
-import {
-  PLATFORMS,
-  FETCH_STATUS,
-  COUPON_SETTINGS,
-} from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import Input from 'common/new-ui/Input';
+import { isUrlLenient } from 'common/utils/validators';
+import isEmpty from 'lodash/isEmpty';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { SettingsInputLabel } from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsInputLabel';
 import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
+import {
+  COUPON_SETTINGS,
+  FETCH_STATUS,
+  PLATFORMS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { useCallback, useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {

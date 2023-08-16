@@ -8739,29 +8739,6 @@
     webpackbar "4.0.0"
     workbox-webpack-plugin "6.0.0-alpha.2"
 
-"@universe/services@1.0.30":
-  version "1.0.30"
-  resolved "https://registry.razorpay.com/@universe%2fservices/-/services-1.0.30.tgz#4330ddc82e4755a68f048114faf1e3cb53ff75fa"
-  integrity sha512-SO4589Q4Q/cB/doOXdIW/rsKmIc3yma9zxuMthVc4/t84jcyZ5lcEehE1S9M5Q9XzpNHKfhlUbiuEjzgrvejzw==
-  dependencies:
-    browserslist-useragent "3.0.2"
-    connect-slashes "1.4.0"
-    cookie-parser "1.4.5"
-    cors "2.8.5"
-    express "4.17.1"
-    express-static-gzip "2.0.6"
-    helmet "3.21.2"
-    request "2.88.2"
-    yamlparser "0.0.2"
-
-"@universe/utils@1.0.30":
-  version "1.0.30"
-  resolved "https://registry.razorpay.com/@universe%2futils/-/utils-1.0.30.tgz#b13f416c734760f264531fef7e3646121fb6104a"
-  integrity sha512-sCHP37wcIGGhb6BGct7QbxslE05x5/3t8Vnv3ENuWuq5rnWhgQo/rxtRbHEk9iy0t0KTyrWvUs8FZsiVaMP9Wg==
-  dependencies:
-    date-fns "2.7.0"
-    lodash "4.17.15"
-
 "@universe/utils@1.0.36":
   version "1.0.36"
   resolved "https://registry.razorpay.com/@universe%2futils/-/utils-1.0.36.tgz#bb7feb16632c379668e2e3df7eace2d22798aadf"
@@ -13193,11 +13170,6 @@ connect-history-api-fallback@^2.0.0:
   resolved "https://registry.npmjs.org/connect-history-api-fallback/-/connect-history-api-fallback-2.0.0.tgz#647264845251a0daf25b97ce87834cace0f5f1c8"
   integrity sha512-U73+6lQFmfiNPrYbXqr6kZ1i1wiRqXnp2nhMsINseWXO8lDau0LGEffJ8kQi4EjLZympVgRdvqjAgiZ1tgzDDA==
 
-connect-slashes@1.4.0:
-  version "1.4.0"
-  resolved "https://registry.npmjs.org/connect-slashes/-/connect-slashes-1.4.0.tgz#fe884e9d130e9bd0a40d8ee502c1dfa269f94373"
-  integrity sha512-BJRbgSczzlsRwyF64DxGNIizBTxUf7f/tAsDzq2Nq8eLrm2160vVfm/4vQcjrT4qVFu6qDCqPK+vDaEWJsnSzA==
-
 consola@^2.10.0, consola@^2.15.3:
   version "2.15.3"
   resolved "https://registry.npmjs.org/consola/-/consola-2.15.3.tgz#2e11f98d6a4be71ff72e0bdf07bd23e12cb61550"
@@ -16326,13 +16298,6 @@ expect@^29.0.0, expect@^29.5.0:
     jest-matcher-utils "^29.5.0"
     jest-message-util "^29.5.0"
     jest-util "^29.5.0"
-
-express-static-gzip@2.0.6:
-  version "2.0.6"
-  resolved "https://registry.npmjs.org/express-static-gzip/-/express-static-gzip-2.0.6.tgz#ed3345831bcc7076212a0d035671a49f91a8036c"
-  integrity sha512-RWpcgN8NkbOZLXQ14tVzM0nEZpb9GGVt5vGGECzy1CU5Og1AMdKSoU15k2xtTYKN34t4HC3qCXrHvxnTqcG1iw==
-  dependencies:
-    serve-static "^1.14.1"
 
 express-static-gzip@2.1.1:
   version "2.1.1"

@@ -121,12 +121,6 @@
                     razorpayAnalytics.track('reddit', data.event);
                     break;
                 }
-                case 'linkedIn': {
-                    if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('linkedin', '', data.value);
-
-                    break;
-                }
 
                 default: {
                     if (!checkGa(data)) return;

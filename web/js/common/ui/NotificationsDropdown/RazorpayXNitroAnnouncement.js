@@ -1,27 +1,27 @@
+import axios from 'axios';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Textarea from 'common/ui/Forms/AutoResizeTextarea';
+import InputField from 'common/ui/Forms/InputField';
+import { RadioGroup } from 'common/ui/Forms/RadioGroup';
+import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import { setItem } from 'common/utils/localStorage';
+import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
+import isEmpty from 'lodash/isEmpty';
+import CrossSellSubscriptionsModal from 'merchant/components/Announcements/CrossSellSubscriptions/CrossSellSubscriptionsModal';
+import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
+import { getUser } from 'merchant/store';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateUser } from 'merchant_common/reducers/user';
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
-import axios from 'axios';
-import { getUser } from 'merchant/store';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
 import RTracking from 'react-tracking';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { getCookie } from '../../utils/cookies';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { updateUser } from 'merchant_common/reducers/user';
-import { setItem } from 'common/utils/localStorage';
-import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
-import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-import isEmpty from '@universe/utils/isEmpty';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
-import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
-import { RadioGroup } from 'common/ui/Forms/RadioGroup';
-import InputField from 'common/ui/Forms/InputField';
-import Textarea from 'common/ui/Forms/AutoResizeTextarea';
-import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import { compose } from 'redux';
+import { Field, formValueSelector, reduxForm } from 'redux-form';
+import UltraCampaginModal from 'merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
+import { getCookie } from 'common/utils/cookies';
 import NitroSelfServe from './Neostone/index';
-import UltraCampaginModal from '../../../merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
-import CrossSellSubscriptionsModal from 'merchant/components/Announcements/CrossSellSubscriptions/CrossSellSubscriptionsModal';
 
 const BENEFITS = {
   other: [
@@ -878,6 +878,7 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
 
   if (activeView === 'detail-view') {
     return (
+      // eslint-disable-next-line react/no-unknown-property
       <div ariaHideApp={false} id="hubspot-ca-form-modal">
         <button type="button" class="close btn-close-modal" onClick={handleClose}>
           <i class="i i-close" />

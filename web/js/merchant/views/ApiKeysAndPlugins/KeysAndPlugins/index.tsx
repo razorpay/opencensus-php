@@ -1,16 +1,12 @@
+import Spinner from 'common/ui/Spinner';
+import isEmpty from 'lodash/isEmpty';
+import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
+import * as KeyActions from 'merchant/reducers/keys';
+import * as PluginActions from 'merchant/reducers/plugins';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
-import Spinner from 'common/ui/Spinner';
-import * as KeyActions from 'merchant/reducers/keys';
-import * as PluginActions from 'merchant/reducers/plugins';
-import isEmpty from '@universe/utils/isEmpty';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
-import { Platform } from './types';
-import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants';
-import { getAvailablePlatform, getAvailablePlugin, getProvidedChannels } from './utils';
-import { trackCTAClick, trackPluginSelect } from './events';
 import {
   AddLink,
   GenerateKey,
@@ -20,6 +16,10 @@ import {
   Tab,
   TabSwitcher,
 } from './components';
+import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants';
+import { trackCTAClick, trackPluginSelect } from './events';
+import { Platform } from './types';
+import { getAvailablePlatform, getAvailablePlugin, getProvidedChannels } from './utils';
 
 const KeysAndPluginsSection = ({
   // state from redux

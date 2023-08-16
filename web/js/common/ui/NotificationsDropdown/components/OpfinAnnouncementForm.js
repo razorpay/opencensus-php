@@ -1,14 +1,14 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
 import axios from 'axios';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
-import isEmpty from '@universe/utils/isEmpty';
 import InputField from 'common/ui/Forms/InputField';
 import { RadioGroup } from 'common/ui/Forms/RadioGroup';
+import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
+import isEmpty from 'lodash/isEmpty';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getCookie } from '../../../utils/cookies';
+import React from 'react';
+import { connect } from 'react-redux';
+import { Field, formValueSelector, reduxForm } from 'redux-form';
+import { getCookie } from 'common/utils/cookies';
 
 const EMAIL = 'email';
 const NAME = 'full_name';

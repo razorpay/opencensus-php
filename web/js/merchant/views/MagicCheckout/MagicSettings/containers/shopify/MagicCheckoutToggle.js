@@ -1,19 +1,19 @@
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { useState, useEffect, useCallback } from 'react';
+import { analyticsTrack } from 'common/utils/analytics';
+import isEmpty from 'lodash/isEmpty';
 import {
-  updateMagicSettings,
   disableMagicCheckout,
+  updateMagicSettings,
 } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 import DisableMagicModal from 'merchant/views/MagicCheckout/MagicSettings/components/common/DisableMagicModal';
+import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 import {
-  SHOPIFY_MAGIC_CHECKOUT,
   PLATFORMS,
+  SHOPIFY_MAGIC_CHECKOUT,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { analyticsTrack } from 'common/utils/analytics';
-import isEmpty from '@universe/utils/isEmpty';
+import { useCallback, useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 const REASON_TYPE_OTHERS = 'Others';
 const DESC_MAX_CHARACTER = 1023;

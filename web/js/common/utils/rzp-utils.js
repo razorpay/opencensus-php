@@ -23,7 +23,7 @@ import { utils, write } from 'xlsx';
 import currencies from 'merchant/constants/currency';
 import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 moment.updateLocale('en', {
   relativeTime: {

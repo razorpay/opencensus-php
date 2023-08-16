@@ -1,12 +1,12 @@
-import { useEffect, useCallback } from 'react';
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
 import FormWrapper from 'merchant/views/MagicCheckout/common/components/FormWrapper';
 import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
-import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 import {
   GIFT_CARD_FEATURE,
   GIFT_CARD_SETTINGS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+import { useCallback, useEffect } from 'react';
 
 const GCForm = ({ settings, giftCard, giftCardSettings, setGiftCard, setGiftCardSettings }) => {
   const {

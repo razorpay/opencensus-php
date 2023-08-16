@@ -1,6 +1,6 @@
 import SwitchField from 'common/ui/Forms/SwitchField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
 
 const SettingsToggle = ({ setting, onToggle }) =>
   !isEmpty(setting) && (

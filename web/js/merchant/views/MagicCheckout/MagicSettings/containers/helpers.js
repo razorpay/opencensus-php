@@ -1,4 +1,4 @@
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
 
 export const getInitialSettings = (initialSettings, currentSettings) =>
   isEmpty(currentSettings) ? initialSettings : [...currentSettings];

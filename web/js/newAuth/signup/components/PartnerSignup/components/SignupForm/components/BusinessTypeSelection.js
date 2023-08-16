@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
+import { Modal, ModalBody } from 'common/components/Modal';
+import Loader from 'common/ui/Loader';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { Formik } from 'formik';
+import isEmpty from 'lodash/isEmpty';
+import { merchantFetch } from 'merchant/utils/ajax';
+import {
+  updatePartnerTypeAndConsent,
+  userPreSignup,
+} from 'newAuth/signup/components/PartnerSignup/components/api';
+import { businessTypeSelectionSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
+import { trackWithSegment } from 'newAuth/trackEvents';
+import React, { useEffect, useState } from 'react';
+import BusinessTypeInfo from './BusinessTypeInfo';
 import StepFooter from './StepFooter';
 import {
-  userPreSignup,
-  updatePartnerTypeAndConsent,
-} from 'newAuth/signup/components/PartnerSignup/components/api';
-import { SCREEN_NAME, STEPS, businessTypeSelectionSchema } from 'newAuth/signup/Constants';
-import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
-import { merchantFetch } from 'merchant/utils/ajax';
-import BusinessTypeInfo from './BusinessTypeInfo';
-import Loader from 'common/ui/Loader';
-import { Modal, ModalBody } from 'common/components/Modal';
-import { trackWithSegment } from 'newAuth/trackEvents';
-import isEmpty from '@universe/utils/isEmpty';
-import {
+  StyledBtypeLabel,
+  StyledForm,
+  StyledInfoIcon,
   StyledStepWrapper,
-  StyledTitle,
   StyledSubtitle,
-  StyledTileWrap,
   StyledTileHeading,
   StyledTilesAll,
-  StyledBtypeLabel,
-  StyledInfoIcon,
-  StyledForm,
+  StyledTileWrap,
+  StyledTitle,
 } from './styled';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 const BusinessTypeSelection = ({
   setStep,

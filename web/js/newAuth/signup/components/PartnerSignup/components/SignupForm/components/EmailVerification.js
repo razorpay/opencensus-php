@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
+import { Text, TextInput } from '@razorpay/blade/components';
 import { Formik } from 'formik';
-import { TextInput, Text } from '@razorpay/blade/components';
+import React, { useState } from 'react';
 
-import isEmpty from '@universe/utils/isEmpty';
-import useOTPCountdownTimer from 'newAuth/utils/useOtpCountdownTimer';
-import { verifyEmailOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
+import isEmpty from 'lodash/isEmpty';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { verifyEmailOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
 import {
+  emailVerificationSchema,
+  EMAIL_INCORRECT_OTP_ERROR_DESC,
+  EMAIL_MAX_OTP_TRIES,
+  EMAIL_RESEND_OTP_COUNTDOWN,
   SCREEN_NAME,
   STEPS,
-  EMAIL_RESEND_OTP_COUNTDOWN,
-  EMAIL_MAX_OTP_TRIES,
-  EMAIL_INCORRECT_OTP_ERROR_DESC,
-  emailVerificationSchema,
 } from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
+import useOTPCountdownTimer from 'newAuth/utils/useOtpCountdownTimer';
 
-import StepFooter from './StepFooter';
-import ErrorScreen from './ErrorScreen';
-import {
-  StyledStepWrapper,
-  StyledTitle,
-  StyledSubtitle,
-  StyledInputWrapper,
-  StyledForm,
-} from './styled';
-import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
 import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
+import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
+import ErrorScreen from './ErrorScreen';
+import StepFooter from './StepFooter';
+import {
+  StyledForm,
+  StyledInputWrapper,
+  StyledStepWrapper,
+  StyledSubtitle,
+  StyledTitle,
+} from './styled';
 
 const EmailVerification = ({ emailToken, contactEmail, setEmailToken, setStep, setShowHeader }) => {
   const [isLoading, setIsLoading] = useState(false);

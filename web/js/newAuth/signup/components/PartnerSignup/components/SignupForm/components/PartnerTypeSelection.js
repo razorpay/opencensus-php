@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Formik } from 'formik';
-import StepFooter from './StepFooter';
-import { updatePartnerTypeAndConsent } from 'newAuth/signup/components/PartnerSignup/components/api';
-import { SCREEN_NAME, STEPS, partnerTypeSelectionSchema } from 'newAuth/signup/Constants';
-import { trackWithSegment } from 'newAuth/trackEvents';
-import isEmpty from '@universe/utils/isEmpty';
-import {
-  StyledStepWrapper,
-  StyledTitle,
-  StyledSubtitle,
-  StyledPartnerTypeTiles,
-  StyledForm,
-} from './styled';
-import imageSelectReseller from 'assets/partner-dashboard/select-partner-type-reseller.svg';
 import imageSelectAggregator from 'assets/partner-dashboard/select-partner-type-aggregator.svg';
+import imageSelectReseller from 'assets/partner-dashboard/select-partner-type-reseller.svg';
+import { Formik } from 'formik';
+import isEmpty from 'lodash/isEmpty';
+import { updatePartnerTypeAndConsent } from 'newAuth/signup/components/PartnerSignup/components/api';
+import { partnerTypeSelectionSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
+import { trackWithSegment } from 'newAuth/trackEvents';
+import React, { useEffect, useState } from 'react';
+import StepFooter from './StepFooter';
+import {
+  StyledForm,
+  StyledPartnerTypeTiles,
+  StyledStepWrapper,
+  StyledSubtitle,
+  StyledTitle,
+} from './styled';
 
 const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerFlag }) => {
   const [isLoading, setIsLoading] = useState(false);

@@ -1,26 +1,26 @@
-import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import Loader from 'common/ui/Loader';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import {
-  formatStatus,
-  getStatusClass,
-  getLatestNeedsClarificationComment,
-  isUrlFieldEmpty,
-} from 'merchant/views/Account/WebsiteAppDetails/utils';
-import ViewComments from 'merchant/views/Account/WebsiteAppDetails/ViewComments';
+import LoaderDots from 'common/ui/LoaderDots';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import isEmpty from 'lodash/isEmpty';
 import {
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
-import LoaderDots from 'common/ui/LoaderDots';
-import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
-import isEmpty from '@universe/utils/isEmpty';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
+import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
+import {
+  formatStatus,
+  getLatestNeedsClarificationComment,
+  getStatusClass,
+  isUrlFieldEmpty,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
+import ViewComments from 'merchant/views/Account/WebsiteAppDetails/ViewComments';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 function WebsiteAppDetails({
   activationData,

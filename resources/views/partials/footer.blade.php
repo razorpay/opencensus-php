@@ -19,7 +19,7 @@
         let trackers = ['lj'];
 
          if (window.location.href.indexOf('resetpassword') === -1) {
-          trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'quora', 'reddit'];
+          trackers = ['perf', 'ga', 'fb', 'twitter', 'bing', 'quora', 'reddit'];
           if(window.loadHubspot){
             trackers.push('hubspot');
           }

@@ -1,27 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { Formik } from 'formik';
-import StepFooter from './StepFooter';
-import ErrorModal from './ErrorScreens/ErrorModal';
 import { TextInput } from '@razorpay/blade/components';
-import { registerMobileOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
-import { redirectToLogIn } from 'newAuth/utils';
-import { SCREEN_NAME, STEPS, mobileNumberSchema } from 'newAuth/signup/Constants';
 import whatsappLogo from 'assets/app-store/partner-logos/whatsapp.png';
-import { trackWithSegment } from 'newAuth/trackEvents';
-import isEmpty from '@universe/utils/isEmpty';
 import { Modal, ModalBody } from 'common/components/Modal';
+import { Formik } from 'formik';
+import isEmpty from 'lodash/isEmpty';
+import { registerMobileOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
+import { mobileNumberSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
+import { trackWithSegment } from 'newAuth/trackEvents';
+import { redirectToLogIn } from 'newAuth/utils';
+import React, { useEffect, useState } from 'react';
+import ErrorModal from './ErrorScreens/ErrorModal';
+import StepFooter from './StepFooter';
 
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import {
-  StyledStepWrapper,
-  StyledTitle,
-  StyledSubtitle,
-  StyledInputWrapper,
-  StyledOptInCheckbox,
-  StyledIconWrap,
   StyledCheckboxWrapper,
   StyledForm,
+  StyledIconWrap,
+  StyledInputWrapper,
+  StyledOptInCheckbox,
+  StyledStepWrapper,
+  StyledSubtitle,
+  StyledTitle,
 } from './styled';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 const MobileNumber = ({
   setMobileNumber,

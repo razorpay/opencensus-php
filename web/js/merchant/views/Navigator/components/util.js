@@ -1,4 +1,4 @@
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
 import { Operand } from 'merchant/views/Navigator/models/Operand';
 
 export const operators = [

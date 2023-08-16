@@ -1,28 +1,28 @@
+import isEmpty from 'lodash/isEmpty';
+import PropTypes from 'prop-types';
+import qs from 'query-string';
 import { Component, createRef } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import RTracking from 'react-tracking';
 import { withRouter } from 'react-router-dom';
-import qs from 'query-string';
-import isEmpty from '@universe/utils/isEmpty';
+import RTracking from 'react-tracking';
 
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-import { updateSelfContact } from 'merchant/reducers/team';
-import { updateSession } from 'merchant/reducers/session';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
+import { updateSession } from 'merchant/reducers/session';
+import { updateSelfContact } from 'merchant/reducers/team';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
-import PasswordVerification from './PasswordVerification';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { analyticsTrack } from 'common/utils/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import {
   ACTION_QUERY_PARAM_KEY,
   ENABLE_2FA,
 } from 'merchant/views/Account/Profile/deeplink-constants';
+import PasswordVerification from './PasswordVerification';
 
 @connect((state) => ({ user: state.session.user }), {
   openModal,

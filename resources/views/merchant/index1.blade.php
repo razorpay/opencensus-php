@@ -102,15 +102,5 @@
 
   <!-- head tag ends here -->
   @include('partials/common')
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
-  <script defer src="https://apis.google.com/js/api:client.js"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-928471290');
-  </script>
-  
-  <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
+  <script defer src="https://apis.google.com/js/api:client.js"></script>  
 @endif

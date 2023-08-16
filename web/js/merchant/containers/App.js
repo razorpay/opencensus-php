@@ -419,7 +419,7 @@ class App extends Component {
             }
           });
 
-        const { partner_type } = user?.merchants?.[user.current];
+        const { partner_type } = user?.merchants?.[user.current] || {};
         const isBankingRequest = window?.is_banking_request;
         // use partner mode if merchant kyc is not activated and it's enabled
         if (

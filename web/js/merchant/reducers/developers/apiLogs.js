@@ -1,8 +1,8 @@
-import { makeCollectionReducer } from 'merchant/reducers/collection';
 import { merge } from 'common/utils/immutable';
+import isEmpty from 'lodash/isEmpty';
+import { makeCollectionReducer } from 'merchant/reducers/collection';
 import { merchantFetch } from 'merchant/utils/ajax';
 import moment from 'moment';
-import isEmpty from '@universe/utils/isEmpty';
 
 const API_LOGS = 'API_LOGS';
 

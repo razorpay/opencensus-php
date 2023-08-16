@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useState } from 'react';
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
 import { Layer } from 'common/components/Layer';
 import Snackbar from './Snackbar';
 

@@ -1,29 +1,29 @@
-import React, { useState, useEffect, useContext } from 'react';
-import isEmpty from '@universe/utils/isEmpty';
+import isEmpty from 'lodash/isEmpty';
+import React, { useContext, useEffect, useState } from 'react';
 
 // UI imports
-import {
-  CtaContainer,
-  Title,
-  AddItemContainer,
-  SearchBox,
-  SearchInput,
-  ProductList,
-} from 'merchant/views/MagicCheckout/ShopifyOrderEditing/styled';
 import Loader from 'common/ui/Loader';
 import SearchItem from 'merchant/views/MagicCheckout/ShopifyOrderEditing/OrderEditingModal/components/SearchItem';
+import {
+  AddItemContainer,
+  CtaContainer,
+  ProductList,
+  SearchBox,
+  SearchInput,
+  Title,
+} from 'merchant/views/MagicCheckout/ShopifyOrderEditing/styled';
 
 // Util/constant imports
-import { ModalContext } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/context';
 import { ORDER_EDITING_SUBTABS } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/constants';
+import { ModalContext } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/context';
 
 // Type imports
 import { ShowNotificationType } from 'common/typings';
 
 // API imports
 import {
-  searchLineItems,
   addNewLineItem,
+  searchLineItems,
 } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/api';
 
 interface AddItemsProps {

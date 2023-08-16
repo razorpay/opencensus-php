@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
 import { TextInput } from '@razorpay/blade/components';
-import { SCREEN_NAME, STEPS, contactInfoSchema } from 'newAuth/signup/Constants';
 import { Formik } from 'formik';
-import StepFooter from './StepFooter';
+import isEmpty from 'lodash/isEmpty';
+import { contactInfoSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
-import isEmpty from '@universe/utils/isEmpty';
+import React, { useEffect, useState } from 'react';
+import StepFooter from './StepFooter';
 import {
-  StyledStepWrapper,
-  StyledTitle,
-  StyledSubtitle,
-  StyledInputWrapper,
   StyledForm,
+  StyledInputWrapper,
+  StyledStepWrapper,
+  StyledSubtitle,
+  StyledTitle,
 } from './styled';
 
 const ContactInfo = ({ setStep, setContactName }) => {

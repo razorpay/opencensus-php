@@ -1,40 +1,40 @@
-import React, { useState, useRef } from 'react';
-import { TextInput, Text } from '@razorpay/blade/components';
-import ReCaptchaV2 from 'react-google-recaptcha';
-import { useGoogleReCaptcha as useReCaptchaV3 } from 'react-google-recaptcha-v3';
+import { Text, TextInput } from '@razorpay/blade/components';
+import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
+import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
 import { Formik, useFormikContext } from 'formik';
-import { connect } from 'react-redux';
-import StepFooter from './StepFooter';
+import isEmpty from 'lodash/isEmpty';
+import { setMerchantID } from 'merchant/reducers/newAuth/actions';
 import {
-  StyledStepWrapper,
-  StyledTitle,
-  StyledSubtitle,
-  StyledInputWrapper,
-  StyledForm,
-} from './styled';
-import {
-  STEPS,
-  SCREEN_NAME,
-  MOBILE_MAX_OTP_TRIES,
-  MOBILE_RESEND_OTP_COUNTDOWN,
-  MOBILE_INCORRECT_OTP_ERROR_DESC,
-  mobileVerificationSchema,
-  LOW_CAPTCHA_SCORE,
-  CAPTCHA_FAILED,
-  V3,
-} from 'newAuth/signup/Constants';
-import {
-  verifyMobileOTP,
   registerMobileOTP,
   userWhatsappOptIn,
+  verifyMobileOTP,
 } from 'newAuth/signup/components/PartnerSignup/components/api';
+import {
+  CAPTCHA_FAILED,
+  LOW_CAPTCHA_SCORE,
+  mobileVerificationSchema,
+  MOBILE_INCORRECT_OTP_ERROR_DESC,
+  MOBILE_MAX_OTP_TRIES,
+  MOBILE_RESEND_OTP_COUNTDOWN,
+  SCREEN_NAME,
+  STEPS,
+  V3,
+} from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import useOTPCountdownTimer from 'newAuth/utils/useOtpCountdownTimer';
-import isEmpty from '@universe/utils/isEmpty';
+import React, { useRef, useState } from 'react';
+import ReCaptchaV2 from 'react-google-recaptcha';
+import { useGoogleReCaptcha as useReCaptchaV3 } from 'react-google-recaptcha-v3';
+import { connect } from 'react-redux';
 import ErrorScreen from './ErrorScreen';
-import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
-import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
-import { setMerchantID } from 'merchant/reducers/newAuth/actions';
+import StepFooter from './StepFooter';
+import {
+  StyledForm,
+  StyledInputWrapper,
+  StyledStepWrapper,
+  StyledSubtitle,
+  StyledTitle,
+} from './styled';
 
 const Captcha = ({ invisibleCaptchaRef }) => {
   const { setFieldValue } = useFormikContext();

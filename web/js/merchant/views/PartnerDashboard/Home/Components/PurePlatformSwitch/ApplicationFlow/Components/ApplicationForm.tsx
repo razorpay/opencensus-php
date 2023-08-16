@@ -1,30 +1,30 @@
+import { ArrowRightIcon, Button, TextArea, TextInput } from '@razorpay/blade/components';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
+import { useFormik } from 'formik';
+import isEmpty from 'lodash/isEmpty';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
+import {
+  ApplicationFormProps,
+  PARTNER_SWITCH_PRIVACY_POLICY,
+  PARTNER_SWITCH_TERMS_AND_CONDITIONS,
+  STEPS,
+  validationSchema,
+} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
+import {
+  ApplicationFooter,
+  ApplicationFormContent,
+  ApplicationFormImg,
+  ApplicationFormWrapper,
+  ServiceProvidedDescription,
+  ServiceProvidedHeading,
+} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Styled';
+import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { useFormik } from 'formik';
-import {
-  ServiceProvidedHeading,
-  ServiceProvidedDescription,
-  ApplicationFormContent,
-  ApplicationFormWrapper,
-  ApplicationFormImg,
-  ApplicationFooter,
-} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Styled';
-import { Button, TextInput, TextArea, ArrowRightIcon } from '@razorpay/blade/components';
-import {
-  STEPS,
-  validationSchema,
-  ApplicationFormProps,
-  PARTNER_SWITCH_TERMS_AND_CONDITIONS,
-  PARTNER_SWITCH_PRIVACY_POLICY,
-} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
-import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
-import { merchantFetch } from 'merchant/utils/ajax';
-import isEmpty from '@universe/utils/isEmpty';
-import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
 
 const getInitialState = () => {
   return {

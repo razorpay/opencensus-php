@@ -59,14 +59,6 @@ export const fireAnalyticsEvents = ({ ...data }) => {
       event: data.bingData,
     });
   }
-  if (data.liData) {
-    const event = {};
-    event.conversionId = data.liData;
-    window.rzpAnalytics?.({
-      name: 'linkedIn',
-      value: event,
-    });
-  }
   if (data.quoraData) {
     window.rzpAnalytics?.({
       name: 'quora',

@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import isEmpty from '@universe/utils/isEmpty';
+import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import { bindActionCreators } from 'redux';
+import isEmpty from 'lodash/isEmpty';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
+import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
+import { DEFAULT_RULE, FEE_RULES } from 'merchant/views/MagicCheckout/constants';
+import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 import {
   FETCH_STATUS,
   PLATFORMS,
   SHIPPING_SETTINGS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
-import { FEE_RULES, DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
-import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
-import { AsyncBtn } from 'common/new-ui/Button';
-import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
+import { useCallback, useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 const ShippingForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);

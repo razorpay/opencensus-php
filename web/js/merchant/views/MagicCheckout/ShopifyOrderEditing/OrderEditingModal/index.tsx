@@ -3,11 +3,12 @@ import { connect, ConnectedProps } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 // UI imports
+import Loader from 'common/ui/Loader';
 import ModalHeader from 'common/ui/ModalHeader';
 import {
-  DefaultView,
   AddCustomItemView,
   AddItemView,
+  DefaultView,
   DiscountView,
   ExitIntent,
 } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/OrderEditingModal/views';
@@ -15,20 +16,19 @@ import {
   OrderEditingModalContent,
   OrderEditingModalWrapper,
 } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/styled';
-import Loader from 'common/ui/Loader';
 
 // Util / Constant imports
-import { closeModal } from 'merchant_common/reducers/modals';
-import { ModalContext } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/context';
+import isEmpty from 'lodash/isEmpty';
 import {
-  ORDER_EDITING_SUBTABS,
   HEADER_TITLE,
+  ORDER_EDITING_SUBTABS,
 } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/constants';
-import isEmpty from '@universe/utils/isEmpty';
+import { ModalContext } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/context';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 // Types imports
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { ShowNotificationType } from 'common/typings';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 // API imports
 import { beginOrderEditing } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/api';
