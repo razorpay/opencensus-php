@@ -991,35 +991,31 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
         /*
-        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint
-        * with a pre-condition that the merchants were onboarding via PGOS
-        */
-        if ($handleViaPGOS === true)
+        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint 
+        * with a pre-condition that the merchant was onboarded via PGOS and can update merchant details on PGOS
+        */ 
+        if ($handleViaPGOS === true && $this->pgosProxyController->canUpdateMerchantViaPGOS($merchant) === true)
         {
-            $hasMerchantOnboardedViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id);
+            $input['merchant_id'] = $id;
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_update_by_admin', $input, $merchant, true);
 
-            if ($hasMerchantOnboardedViaPGOS === true) {
-                $input['merchant_id'] = $id;
-                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_update_by_admin', $input, $merchant, true);
-
-                $this->trace->info(
-                    TraceCode::MERCHANT_EDIT_RESPONSE_PGOS,
-                    [
-                        'merchant_id' => $id,
-                        'response'    => $response,
-                    ]
+            $this->trace->info(
+                TraceCode::MERCHANT_EDIT_RESPONSE_PGOS,
+                [
+                    'merchant_id' => $id,
+                    'response'    => $response,
+                ]
+            );
+            
+            // throw PGOS response error msg if data is not present
+            if(isset($response['data']) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $response['msg']
                 );
-
-                // throw PGOS response error msg if data is not present
-                if(isset($response['data']) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        $response['msg']
-                    );
-                }
-                return $response['data'];
             }
-        }
+            return $response['data'];
+        } 
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,

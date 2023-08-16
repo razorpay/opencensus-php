@@ -8381,20 +8381,32 @@ class Core extends Base\Core
 
         $affectedMerchantIdList = [];
 
-        foreach ($primaryOwnerMerchantIdList as $ownerMerchantId)
+        foreach ($primaryOwnerMerchantIdList as $merchantId)
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($ownerMerchantId);
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
             if ($merchant->users()
                     ->where(DetailEntity::ROLE, '=', UserRole::OWNER)
                     ->where(UserEntity::PRODUCT, '=', Product::PRIMARY)
                     ->count() === 1)
             {
-                $affectedMerchantIdList[] = $ownerMerchantId;
+                $affectedMerchantIdList[] = $merchantId;
 
-                $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $input[DetailConstants::NEW_CONTACT_NUMBER]);
+                if ($this->pgosProxyController->canUpdateMerchantViaPGOS($merchant) === true)
+                {
+                    $pgosInput = [
+                        'merchant_id'       => $merchantId,
+                        'contact_mobile'    => $input['new_contact_number'],
+                    ];
 
-                $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+                    $this->pgosProxyController->updateMerchantDetails($merchant, $pgosInput);
+                } 
+                else 
+                {
+                    $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $input[DetailConstants::NEW_CONTACT_NUMBER]);
+    
+                    $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+                }
             }
         }
 
@@ -8419,9 +8431,22 @@ class Core extends Base\Core
 
         $newMerchantContact = $input[DetailConstants::NEW_CONTACT_NUMBER];
 
-        $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $newMerchantContact);
+        $merchantId = $merchant->getId();
 
-        $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+        if ($this->pgosProxyController->canUpdateMerchantViaPGOS($merchant) === true)
+        {
+            $pgosInput = [
+                'merchant_id'       => $merchantId,
+                'contact_mobile'    => $input['new_contact_number'],
+            ];
+
+            $this->pgosProxyController->updateMerchantDetails($merchant, $pgosInput);
+        } 
+        else {
+            $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $newMerchantContact);
+    
+            $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+        }
 
         $args = [
             Constants::MERCHANT               => $merchant,

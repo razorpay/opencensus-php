@@ -10,7 +10,9 @@ use Mail;
 use Event;
 use Redis;
 use Crypt;
+use Config;
 use Mockery;
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Constants\Table;
@@ -58,6 +60,7 @@ use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -195,6 +198,8 @@ class MerchantTest extends TestCase
     protected $esClient;
 
     protected $splitzMock;
+
+    protected $merchantOnboardingProxyControllerMock;
 
     protected $careServiceMock;
 
@@ -2566,6 +2571,148 @@ class MerchantTest extends TestCase
         $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner()->getEmail());
 
         $this->assertNull($merchant->primaryOwner('banking'));
+    }
+
+    public function testEditMerchantEmailUserExistsPgosResponseSuccess()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $apiMerchant = $this->fixtures->merchant->create(["id" => '10000merchant6', "email" => 'liveandtest@localhost.com']);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id' => $apiMerchant['id'],
+            'contact_mobile' => '1234567890',
+            'contact_email' => 'liveandtest@localhost.com',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($apiMerchant['id'], ['email' => 'liveandtest@localhost.com']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $metadata = ["service"=>"pgos"];
+
+        $this->merchantOnboardingProxyControllerMock = Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+
+        $merchantCore = (new Merchant\Core);
+
+        $merchantCore->getSingletonMerchantOnboardingProxyController($this->merchantOnboardingProxyControllerMock);
+
+        $this->merchantOnboardingProxyControllerMock
+            ->shouldReceive('canUpdateMerchantViaPGOS')
+            ->once()
+            ->andReturn(true);
+
+        $this->merchantOnboardingProxyControllerMock
+            ->shouldReceive('updateMerchantDetails')
+            ->once()
+            ->andReturn(["email" => "newemail@razorpay.com"]);
+
+        $userDeviceDetail = $this->fixtures->create('user_device_detail', [
+            'merchant_id'   => $apiMerchant['id'],
+            'user_id'       => $merchantUser->getId(),
+            'signup_source' => 'ios',
+            'metadata'      => $metadata
+        ]);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $merchant = $merchantCore->editEmail($apiMerchant, [
+            'email' => 'newemail@razorpay.com',
+        ]);
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->getEmail());
+
+        $this->assertNull($merchant->primaryOwner('banking'));
+    }
+
+    public function testEditMerchantEmailUserExistsPgosResponseFailure()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+
+        $apiMerchant = $this->fixtures->merchant->create(["id" => '10000merchant6', "email" => 'liveandtest@localhost.com']);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id' => $apiMerchant['id'],
+            'contact_mobile' => '1234567890',
+            'contact_email' => 'liveandtest@localhost.com',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($apiMerchant['id'], ['email' => 'liveandtest@localhost.com']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $metadata = ["service"=>"pgos"];
+
+        $this->merchantOnboardingProxyControllerMock = Mockery::mock(MerchantOnboardingProxyController::class);
+
+        $merchantCore = (new Merchant\Core());
+
+        $merchantCore->getSingletonMerchantOnboardingProxyController($this->merchantOnboardingProxyControllerMock);
+
+        $this->merchantOnboardingProxyControllerMock
+            ->shouldReceive('canUpdateMerchantViaPGOS')
+            ->once()
+            ->andReturn(true);
+
+        $this->merchantOnboardingProxyControllerMock
+            ->shouldReceive('updateMerchantDetails')
+            ->once()
+            ->andReturn(new Exception\IntegrationException("base: default"));
+
+        $userDeviceDetail = $this->fixtures->create('user_device_detail', [
+            'merchant_id'   => $apiMerchant['id'],
+            'user_id'       => $merchantUser->getId(),
+            'signup_source' => 'ios',
+            'metadata'      => $metadata
+        ]);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        try
+        {
+            $merchant = $merchantCore->editEmail($apiMerchant, [
+                'email' => 'newemail@razorpay.com',
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\ServerErrorException::class);
+
+        }
+
+        $this->assertNull($apiMerchant->primaryOwner('banking'));
     }
 
     public function testEditMerchantEmailUserExistsAndOwnerExistsOnBothPgAndX()

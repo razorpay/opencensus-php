@@ -110,6 +110,7 @@ use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
@@ -177,6 +178,11 @@ class Core extends Base\Core
      */
     protected CapitalSubmerchantUtility $capitalSubmerchantUtility;
 
+    /**
+     * @var merchantOnboardingProxyController
+     */
+    protected MerchantOnboardingProxyController $merchantOnboardingProxyController;
+
 
     /**
      * @return CapitalSubmerchantUtility
@@ -189,6 +195,28 @@ class Core extends Base\Core
         }
 
         return $this->capitalSubmerchantUtility;
+    }
+
+    /**
+     * @return MerchantOnboardingProxyController
+     */
+    public function getSingletonMerchantOnboardingProxyController($merchantOnboardingProxyController = null): MerchantOnboardingProxyController
+    {
+        if (empty($this->merchantOnboardingProxyController) === false)
+        {
+            return $this->merchantOnboardingProxyController;
+        }
+
+        if (empty($merchantOnboardingProxyController) === false)
+        {
+            $this->merchantOnboardingProxyController = $merchantOnboardingProxyController;
+
+            return $this->merchantOnboardingProxyController;
+        }
+
+        $this->merchantOnboardingProxyController = new MerchantOnboardingProxyController();
+
+        return $this->merchantOnboardingProxyController;
     }
 
     public function create($input, $merchantDetailInputData = [])
@@ -2476,8 +2504,6 @@ class Core extends Base\Core
             }
         }
 
-        $merchant->edit($input, $operation);
-
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
@@ -2485,13 +2511,48 @@ class Core extends Base\Core
                 'new_email' => $input['email']
             ]);
 
-        $this->saveAndNotify($merchant);
 
-        $newEmail = $merchant->getEmail();
+        $merchantId = $merchant->getId();
 
-        $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
+        $pgosProxyController = $this->getSingletonMerchantOnboardingProxyController();
 
-        return $merchant;
+        if ($pgosProxyController->canUpdateMerchantViaPGOS($merchant) === true)
+        {
+            try {
+
+                $pgosInput = [
+                    'merchant_id' => $merchantId,
+                    'email' => $input['email'],
+                ];
+
+                $pgosResponse = $pgosProxyController->updateMerchantDetails($merchant, $pgosInput);
+
+                $this->notify($merchant);
+                $newEmail = $pgosResponse["activation_response"]["contact_email"];
+                $merchant->edit(['email' => $newEmail], $operation);
+                $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
+                return $merchant;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'error_message' => $ex->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => 'submitted data could not be processed',
+                    'error_message' => $ex->getMessage()
+                ]);
+            }
+        }
+        else
+        {
+            $merchant->edit($input, $operation);
+            $this->saveAndNotify($merchant);
+            $newEmail = $merchant->getEmail();
+            $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
+            return $merchant;
+        }
     }
 
     /**
@@ -2632,6 +2693,11 @@ class Core extends Base\Core
     {
         $this->repo->saveOrFail($merchant);
 
+        $this->notify($merchant);
+    }
+
+    protected function notify($merchant)
+    {
         // Dont notify for linked account changes
         if ($merchant->isLinkedAccount() === true)
         {

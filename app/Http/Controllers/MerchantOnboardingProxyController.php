@@ -4,15 +4,18 @@ namespace RZP\Http\Controllers;
 
 use App;
 use Request;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
-use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 
 class MerchantOnboardingProxyController extends BaseProxyController
 {
@@ -92,6 +95,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
     ];
+
+    const RESTRICTED_ACTIVATION_STATUSES_FOR_MERCHANT_UPDATES = [
+        DetailStatus::ACTIVATED,
+        DetailStatus::KYC_QUALIFIED_UNACTIVATED,
+        DetailStatus::REJECTED,
+    ];
+
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
         self::GET_MERCHANT_BMC_RESPONSE   => Name::VIEW_ALL_ENTITY,
@@ -195,7 +205,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $payload, $headers);
         }
-        
+
         return null;
     }
 
@@ -299,7 +309,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
             ]);
 
-            $merchantOnboardedViaService = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
 
             if (empty($userDeviceDetail) === false)
             {
@@ -333,6 +343,46 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 (new WebsiteService())->updateCommonWebsiteQuestions($body, true);
         }
 
+    }
+
+    public function canUpdateMerchantViaPGOS(Merchant\Entity $merchant): bool
+    {
+        $merchantId = $merchant->getId();
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+
+        if (in_array($activationStatus, self::RESTRICTED_ACTIVATION_STATUSES_FOR_MERCHANT_UPDATES, true) === true)
+        {
+            return false;
+        }
+
+        if ($this->shouldMerchantOnboardViaPGOS($merchantId) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @throws Exception\IntegrationException
+     */
+    public function updateMerchantDetails(Merchant\Entity $merchant, $input)
+    {
+        $response = $this->handlePGOSProxyRequests('merchant_activation_save', $input, $merchant, true);
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'response' => $response
+        ]);
+
+        // throw PGOS response error msg if data is not present
+        if(isset($response['msg']) === true)
+        {
+            throw new Exception\IntegrationException(
+                $response['msg']
+            );
+        }
+
+        return $response;
     }
 
 }
