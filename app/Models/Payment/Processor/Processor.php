@@ -4555,7 +4555,7 @@ class Processor
             return false;
         }
 
-        return (app()->isEnvironmentQA() === true && str_ends_with(strtolower($rzpTestCaseID),'rearch'));
+        return ((app()->isEnvironmentQA() === true  || Environment::isEnvironmentBeta($this->app['env'])) && str_ends_with(strtolower($rzpTestCaseID),'rearch'));
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)

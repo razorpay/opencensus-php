@@ -30,6 +30,11 @@ final class Environment
         return in_array($env, self::QA_ENVS, true);
     }
 
+    public static function isEnvironmentBeta(string $env): bool
+    {
+        return $env===self::BETA;
+    }
+
     public static function isEnvironmentPerf(string $env): bool
     {
         return in_array($env, self::PERF_ENV, true);
