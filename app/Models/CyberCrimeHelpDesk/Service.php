@@ -2,6 +2,7 @@
 
 namespace RZP\Models\CyberCrimeHelpDesk;
 
+use RZP\Exception\BadRequestException;
 use View;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -52,9 +53,17 @@ class Service extends Base\Service
 
         $mailSubject = sprintf($mailSubject, $currentDateTime);
 
+        $complaintId  = $input[Constants::COMPLAINT_ID];
+
+        if(empty($complaintId) === false){
+            $mailSubject = (new TemplateEngine)->render(Constants::LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT_WITH_CASE_ID, []);
+            $mailSubject = sprintf($mailSubject, $complaintId, $currentDateTime);
+        }
+
         $mailBody = \View::make(Constants::LEA_ACKNOWLEDGEMENT_MAIL_TEMPLATE, [
             'currentDateTime'  => $currentDateTime,
-            'payment_requests' => $input[Constants::PAYMENT_REQUESTS]
+            'payment_requests' => $input[Constants::PAYMENT_REQUESTS],
+            'complaintId'      => $complaintId
         ])->render();
 
         $freshDeskConfig = $this->app['config']->get('applications.freshdesk');
@@ -506,6 +515,7 @@ class Service extends Base\Service
             Constants::BANK_ACCOUNT                     => $bankAccount,
             Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS => $share_beneficiary_account_details,
             Constants::IST_DIFF                         => Constants::IST_DIFF_IN_SEC,
+            Constants::COMPLAINT_ID                     => $ticketDetails[Constants::COMPLAINT_ID],
         ])->render();
 
         $replyInputs = ['body' => $mailBody];

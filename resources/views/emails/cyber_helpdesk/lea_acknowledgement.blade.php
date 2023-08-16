@@ -55,7 +55,11 @@
             style="height: 40px"
             src="https://cdn.razorpay.com/static/assets/email/notification.png"
           />
-          <p style="margin: 0; margin-top: 15px">Razorpay Acknowledgement to LEA</p>
+          @if(empty($complaintId) ===  false)
+                <p style="margin: 0; margin-top: 15px">Case ID: {{$complaintId}} | Razorpay Acknowledgement to LEA</p>
+          @else
+                <p style="margin: 0; margin-top: 15px">Razorpay Acknowledgement to LEA</p>
+          @endif
         </div>
       </div>
       <div

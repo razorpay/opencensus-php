@@ -4,6 +4,7 @@
 namespace RZP\Models\CyberCrimeHelpDesk;
 
 use RZP\Base\Validator as BaseValidator;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
@@ -24,6 +25,7 @@ class Validator extends BaseValidator
         'ticket_data.file_names'                    =>  'sometimes|array',
         'ticket_data.fd_ticket_id'                  =>  'required|string|max:255',
         'enable_share_beneficiary_details_checkbox' =>  'required|boolean',
+        'complaint_id'                              =>  'sometimes|string|max:50',
     ];
 
     /**
@@ -33,7 +35,7 @@ class Validator extends BaseValidator
     {
         if($payment->getMethod() !== $requestData[Payment\Entity::METHOD])
         {
-            throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,null, ['payment_id' => $payment->getId()]);
         }
 
         switch ($payment->getMethod())
@@ -41,19 +43,19 @@ class Validator extends BaseValidator
             case Constants::UPI:
                 if ($payment->getReference16() !== $requestData[Payment\Entity::REFERENCE16])
                 {
-                    throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,null, ['payment_id' => $payment->getId()]);
                 }
                 break;
             case Constants::NETBANKING:
                 if ($payment->getReference1() !== $requestData[Payment\Entity::REFERENCE1])
                 {
-                    throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,null, ['payment_id' => $payment->getId()]);
                 }
             case Constants::CARD:
                 if (empty($requestData[Payment\Entity::REFERENCE2]) === false
                     && $payment->getReference2() !== $requestData[Payment\Entity::REFERENCE2])
                 {
-                    throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,null, ['payment_id' => $payment->getId()]);
                 }
         }
     }

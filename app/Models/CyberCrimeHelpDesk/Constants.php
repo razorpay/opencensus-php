@@ -8,6 +8,8 @@ class Constants
 
     const LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT = 'Razorpay Acknowledgement to LEA: %s';
 
+    const LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT_WITH_CASE_ID = 'Case ID: %s | Razorpay Acknowledgement to LEA: %s';
+
     const LEA_ACKNOWLEDGEMENT_MAIL_TEMPLATE = 'emails.cyber_helpdesk.lea_acknowledgement';
 
     const NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_SUBJECT = 'Razorpay | Unauthorized transaction Alert - %s %s | %s';
@@ -88,4 +90,6 @@ class Constants
     const SEGMENT_EVENT_CYBER_CRIME_FETCHED_PAYMENTS = 'cyber_crime_fetched_payments';
 
     const SEGMENT_EVENT_CYBER_CRIME_FRAUD_PAYMENTS = 'cyber_crime_fraud_payments';
+
+    const COMPLAINT_ID = 'complaint_id';
 }
