@@ -1137,6 +1137,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_GROWTH_INTERNAL')                  => [
+        "name"        => "growth_internal",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_GROWTH_INTERNAL'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_GROWTH_INTERNAL'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.growth_internal"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_GROWTH_INTERNAL'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_GROWTH_INTERNAL'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.growth_internal"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_PG_ROUTER')                  => [
         "name"        => "pg_router",
         "credentials" => [
