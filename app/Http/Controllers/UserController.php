@@ -37,7 +37,7 @@ class UserController extends Controller
 {
 
     const ROOT_PATH = '/';
-    
+
     const SPLITZ_BULK_EVALUATE_PATH = 'splitz/bulkEvaluate';
 
     const ORG_ERRORS = ['No db records found.'];
@@ -47,13 +47,13 @@ class UserController extends Controller
     protected $app;
 
     protected $trace;
-    
+
     protected $splitzExprimentData;
 
     const DASHBOARD_USER_CONCURRENT_API_CALL = 'DASHBOARD_USER_CONCURRENT_API_CALL';
 
     const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
-    
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -90,7 +90,7 @@ class UserController extends Controller
 
         return $data;
     }
-    
+
     public function setSplitzVariantBulkData($currentMerchant)
     {
         if (is_null($currentMerchant))
@@ -98,19 +98,19 @@ class UserController extends Controller
             $this->splitzExprimentData = [] ;
             return;
         }
-        
+
         $currentMerchantId = $currentMerchant->id;
-        
+
         $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
         $onboardingFluxExperiment =  config('splitz.experiments')[self::ONBOARDING_FTUX];
-        
+
         $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId];
-        
+
         $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, [], self::SPLITZ_BULK_EVALUATE_PATH);
-        
+
         $this->splitzExprimentData = $data;
     }
-    
+
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
@@ -130,10 +130,18 @@ class UserController extends Controller
                 'api_host'              => ApiUrl::getCheckoutApi(),
                 'session_id'            => Session::getId(),
             ];
-            
+
             if ($this->isRedirectionApplicable($details) === true)
             {
                 $ttl = 12 * 60;
+                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                    'redirection_url' => env('EASY_DASHBOARD_URL'),
+                    'cookie_set'      => true,
+                    'condition'       => $details['user']['signup_campaign'] ?? null,
+                    'user'            => $data['user'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null
+                ]);
 
                 return redirect(env('EASY_DASHBOARD_URL'))->withCookies([
                     Cookie::make('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
@@ -141,8 +149,17 @@ class UserController extends Controller
                 ]);
             }
 
-            if($this->isRedirectionApplicableForFtux($details) === true)
+            if ($this->isRedirectionApplicableForFtux($details) === true)
             {
+                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                    'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
+                    'cookie_set'      => false,
+                    'condition'       => 'FTUX',
+                    'user'            => $data['user'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null
+                ]);
+
                 return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/overview');
             }
 
@@ -156,6 +173,15 @@ class UserController extends Controller
                 ($submitted == 0) and
                 ($milestone !== 'L2'))
             {
+                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                    'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/p2pm',
+                    'cookie_set'      => false,
+                    'condition'       => $signupCampaign,
+                    'user'            => $data['user'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null,
+                ]);
+
                 return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/p2pm');
             }
 
@@ -191,6 +217,15 @@ class UserController extends Controller
                     $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
                     $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining
                     $redirectPath = preg_replace('/signup/', 'onboarding?source=website', $redirectPath);
+
+                    $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                        'redirection_url' => $redirectPath,
+                        'cookie_set'      => false,
+                        'condition'       => 'GUEST_SIGNUP',
+                        'user'            => $data['user'] ?? null,
+                        'api_host'        => $data['api_host'] ?? null,
+                        'session_id'      => $data['session_id'] ?? null,
+                    ]);
 
                     return redirect($redirectPath);
                 }
@@ -262,10 +297,10 @@ class UserController extends Controller
                     // Chunk based straming: set flag to enable streaming
                     Session::put('is_merchant_login', true);
                 }
-                
+
                 $timeTaken = self::millitime() - $startTime;
                 $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
-                
+
                 return view('merchant.index', $data);
             }
             else
@@ -275,10 +310,10 @@ class UserController extends Controller
                 $this->trace->info(TraceCode::CHUNKED_DETAILS, [
                     'chunkRendered' => '2',
                 ]);
-                
+
                 $timeTaken = self::millitime() - $startTime;
                 $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
-                
+
                 echo($view);
                 ob_flush();
                 flush();
@@ -289,16 +324,16 @@ class UserController extends Controller
     private function isConcurrentApiCallEnabledForDashboardUser(): bool
     {
         $experimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
-        
+
         if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {
             return false;
         }
-    
+
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
 
     }
-    
+
     private function getSecondChunkedData(array $firstChunkData, bool $isConcurrentApiCallEnabled): array
     {
         if ($isConcurrentApiCallEnabled)
@@ -308,18 +343,18 @@ class UserController extends Controller
 
         return (new User\Service)->getSecondChunkUserDetails($firstChunkData);
     }
-    
+
     static function millitime(): int
     {
         return round(microtime(true) * 1000);
     }
-    
+
     public function pushUserRenderDataToMetrics($timeTaken, $cbsFlow, $concurrentApICall = false)
     {
         $domain = \Request::server('SERVER_NAME') ?? 'unknown_domain';
-        
+
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
-        
+
         $dimensions = [
             MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN             => ApiUrl::getRequestOrigin(),
             MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN             => $domain,
@@ -327,13 +362,13 @@ class UserController extends Controller
             MetricConstants::LABEL_DASHBOARD_CBS                    => $cbsFlow,
             MetricConstants::LABEL_DASHBOARD_CONCURRENT_API_CALL    => $concurrentApICall
         ];
-        
+
         $this->trace->info(TraceCode::USER_RENDER_DATA, $dimensions + ['time_taken' => $timeTaken]);
-        
+
         try
         {
             $this->metrics->count(MetricConstants::METRIC_USER_PAGE_RENDER, EVENT_TRIGGER_COUNT, $dimensions);
-            
+
             $this->metrics->histogram(MetricConstants::METRIC_HISTOGRAM_USER_PAGE_RENDER, $timeTaken, $dimensions);
         }
         catch (\Throwable $t)
@@ -343,7 +378,7 @@ class UserController extends Controller
             ]);
         }
     }
-    
+
     /**
      * Returns the base template for angular.
      *
@@ -352,7 +387,7 @@ class UserController extends Controller
     public function getIndex()
     {
         $startTime = self::millitime();
-        
+
         $domain = \Request::server('SERVER_NAME');
 
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
@@ -370,7 +405,7 @@ class UserController extends Controller
                 );
             }
         }
-        
+
         // From here logic for chunked Based Streaming has started.
 
         // Overall scenario for Chunked Based Streaming
@@ -400,9 +435,9 @@ class UserController extends Controller
         $this->trace->info(TraceCode::CHUNKED_DETAILS, [
             'shouldRenderCBS' => $isMerchantLogin,
         ]);
-        
+
         $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
-        
+
         $this->setSplitzVariantBulkData($currentMerchant);
 
         $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
@@ -442,7 +477,7 @@ class UserController extends Controller
                 echo $view;
                 ob_flush();
                 flush();
-                
+
                 if (empty($userError) and empty($orgError))
                 {
                     list($secondUserError, $secondChunkData) = $this->getSecondChunkedData($firstChunkData, $isConcurrentApiCallEnabled);
@@ -471,7 +506,7 @@ class UserController extends Controller
         $uuid = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
 
         Cookie::queue('rzp_ab_uuid', $uuid);
-        
+
         // EASY_ONBOARDING_REDIRECT as true.
         $referralExpId = config('splitz.experiments')['PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY'];
 
@@ -544,7 +579,7 @@ class UserController extends Controller
         {
             return true;
         }
-        
+
 //      WEBSITE_COMPLIANCE_FLOW_EXP is true
         if (($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2' or $details['submitted'] == 1) and $details['activation_status'] != 'activated') {
             return true;
@@ -556,6 +591,7 @@ class UserController extends Controller
 
     private function isRedirectionApplicable($details): bool
     {
+
         if (ApiUrl::isBankingOriginRequest() === true)
         {
             return false;
@@ -1641,7 +1677,7 @@ class UserController extends Controller
     private function isFtuxExperimentEnabled()
     {
         $experimentId = config('splitz.experiments')['ONBOARDING_FTUX'];
-    
+
         if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {
             return false;
