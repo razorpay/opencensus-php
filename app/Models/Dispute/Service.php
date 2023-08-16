@@ -187,11 +187,25 @@ class Service extends Base\Service
 
     public function update(string $id, array $input): array
     {
-        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+        if (isset($this->merchant) === true)
+        {
+            $merchant = $this->merchant;
+        }
+        else
+        {
+            $merchantId = $input[Entity::MERCHANT_ID];
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            unset($input[Entity::MERCHANT_ID]);
+        }
+
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $merchant);
 
         $this->addBackfillIfNotPresent($input);
 
-        if ($this->auth->isAdminAuth() === true)
+        if (($this->auth->isAdminAuth() === true) or
+            ($this->auth->isCmmaApp() === true))
         {
             $dispute = $this->core()->update($dispute, $input);
 

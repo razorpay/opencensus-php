@@ -5150,6 +5150,7 @@ class Route
         'merchant_entities_info',
         'merchant_submit_internal',
         'merchant_document_upload_internal',
+        'dispute_edit',
         'merchant_activation_clarifications_save_internal',
         'merchant_activation_clarifications_fetch_internal',
         'merchant_activation_change_log_internal',
@@ -15986,7 +15987,8 @@ class Route
             'internal_fd_fetch_agents',
             'internal_fd_add_note',
             'internal_fd_fetch_agent_detail_for_ticket',
-            'internal_create_risk_action'
+            'internal_create_risk_action',
+            'dispute_edit',
         ],
 
         'pgos' => [

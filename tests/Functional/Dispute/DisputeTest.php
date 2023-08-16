@@ -4367,6 +4367,31 @@ class DisputeTest extends TestCase
         ], $payment);
     }
 
+    public function testDisputeEditViaCmmaAuth()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            DetailEntity::MERCHANT_ID   => $merchant['id'],
+        ]);
+
+        $dispute = $this->fixtures->create('dispute', [
+            DetailEntity::MERCHANT_ID => $merchant['id'],
+            'internal_status'         => 'contested',
+            'status'                  => 'under_review',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $response = $this->startTest();
+    }
+
     /**
      *  While marking a dispute internal_status to `represented` for deduct at onset dispute,
      * if no default schedule is specified, then a schedule of t+45 is to be created.

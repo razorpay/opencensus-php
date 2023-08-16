@@ -1719,6 +1719,20 @@ return [
         ],
     ],
 
+    'testDisputeEditViaCmmaAuth' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'internal_status' => 'represented',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'internal_status' => 'represented',
+            ],
+        ],
+    ],
+
     'testDisputeFetchForAdminInternalRespondByParam'    => [
         'request'   => [
             'method'        => 'get',

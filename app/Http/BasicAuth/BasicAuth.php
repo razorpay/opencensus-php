@@ -2132,6 +2132,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'banking_account_service');
     }
 
+    public function isCmmaApp(): bool
+    {
+        return ($this->getInternalApp() === 'cmma');
+    }
+
     public function isWorkflowsServiceApp(): bool
     {
         return ($this->getInternalApp() === 'workflows');
