@@ -430,7 +430,10 @@ class Gateway
         self::HDFC_EZETAP           => self::HDFC,
         self::UMOBILE               => self::UMOBILE,
         self::FPX                   => self::FPX,
-        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY
+        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY,
+        self::WALLET_RAZORPAYWALLET => [
+            'default'           => self::WALLET_RAZORPAYWALLET,
+        ]
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -466,7 +469,8 @@ class Gateway
         self::PAYSECURE             => self::AXIS,
         self::UMOBILE               => self::UMOBILE,
         self::FPX                   => self::FPX,
-        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY
+        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY,
+        self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET
     ];
 
 
