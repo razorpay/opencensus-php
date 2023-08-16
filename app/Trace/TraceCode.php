@@ -1583,7 +1583,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_DEFAULT_METHODS                          = 'PRICING_PLAN_DEFAULT_METHODS';
     const PRICING_RULES_FILTERED_ON_FILTER                      = 'PRICING_RULES_FILTERED_ON_FILTER';
     const UPI_RECURRING_PRICING_RULE_ERROR                      = 'UPI_RECURRING_PRICING_RULE_ERROR';
-    const PRICING_EMPTY_MATCHED_RULES                           = 'PRICING_EMPTY_MATCHED_RULES';
 
     const ADDRESS_CREATE_REQUEST                                = 'ADDRESS_CREATE_REQUEST';
     const ADDRESS_PRIMARY_SWITCH                                = 'ADDRESS_PRIMARY_SWITCH';

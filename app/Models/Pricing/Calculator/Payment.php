@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
@@ -21,6 +22,8 @@ use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
+use RZP\Models\Merchant;
+
 
 // Terminal Calculator extends Payment Calculator.
 // Take extra care while modifying existing logic.
@@ -32,6 +35,17 @@ class Payment extends Base
     const CSHE_IFSC      = 'CSHE';
     const TVSC_IFSC      = 'TVSC';
 
+    protected $fallbackStandardPlanExperimentId   = null;
+
+    public function __construct(BaseModel\PublicEntity $entity, string $product)
+    {
+        parent::__construct($entity, $product);
+
+        $app = App::getFacadeRoot();
+
+        $this->fallbackStandardPlanExperimentId = $app['config']->get('app.pricing_fallback_standard_plan_experiment_id');
+
+    }
 
     protected static $flexMoneyIssuers = [
           IFSC::BARB,
@@ -775,13 +789,80 @@ class Payment extends Base
         return $pricingRules[0]->getFeeModel();
     }
 
+    private function getCardDetails(): ?array
+    {
+        if ($this->entity->getMethod() == PaymentModel\Method::CARD) {
+            return [
+                Card\Entity::ISSUER => $this->entity->card?->getIssuer(),
+                Card\Entity::TYPE => $this->entity->card?->getTypeElseDefault(),
+                Card\Entity::NETWORK => $this->entity->card?->getNetwork(),
+                Card\Entity::SUBTYPE => $this->entity->card?->getSubtype()
+            ];
+        }
+
+        return null;
+    }
+
+    private function getPaymentDetails(): array
+    {
+        return [
+            PaymentModel\Entity::BANK => $this->entity->getBank(),
+            PaymentModel\Entity::RECEIVER_TYPE => $this->entity->getReceiverType(),
+            PaymentModel\Entity::RECURRING_TYPE => $this->entity->getRecurringType(),
+            PaymentModel\Entity::AUTH_TYPE => $this->entity->getAuthType(),
+            PaymentModel\Entity::EMI_PLAN . '_' . \RZP\Models\Emi\Entity::DURATION => $this->entity->emiPlan?->getDuration(),
+            PaymentModel\Entity::EMI_PLAN . '_' . \RZP\Models\Emi\Entity::ISSUER => $this->entity->emiPlan?->getIssuer(),
+            PaymentModel\Entity::WALLET => $this->entity->getWallet(),
+            PaymentModel\Entity::ID => $this->entity->getId(),
+            PaymentModel\Entity::FEE_BEARER => $this->entity->merchant?->getFeeBearer(),
+            PaymentModel\Entity::METHOD => $this->entity->getMethod(),
+            PaymentModel\Entity::INTERNATIONAL => $this->entity->isInternational(),
+            \RZP\Models\Terminal\Entity::PROCURER => $this->entity->terminal?->getProcurer(),
+            \RZP\Models\Order\Entity::PRODUCT_TYPE => $this->entity->order?->getProductType()
+        ];
+    }
+
     /*
      * Even though function says "get", no rule is getting returned here.
      * This is because even the parent class function has the same behavior.
      */
     public function getRelevantPricingRule(Pricing\Plan $pricing)
     {
-        parent::getRelevantPricingRule($pricing);
+        try{
+            parent::getRelevantPricingRule($pricing);
+        } catch (Exception\LogicException $e) {
+
+            $properties = [
+                'id' => $this->entity->getMerchantId(),
+                'experiment_id' => $this->fallbackStandardPlanExperimentId,
+                'request_data'  => json_encode(['mid' => $this->entity->getMerchantId()]),
+            ];
+
+            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled === true && $e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID) {
+
+                $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT);
+
+                $card = $this->getCardDetails();
+                $payment_details = $this->getPaymentDetails();
+
+                $this->trace->info(TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,[
+                    'pricing_plan'  => $pricing->getId(),
+                    'merchant_id' => $this->entity->getMerchantId(),
+                    'payment_details' => $payment_details,
+                    'card_details' => $card
+                ]);
+
+                $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+
+                $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
+
+                parent::getRelevantPricingRule($pricing);
+            }else{
+                throw $e;
+            }
+        }
 
         $payment = $this->entity;
 

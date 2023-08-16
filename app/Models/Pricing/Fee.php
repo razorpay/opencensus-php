@@ -309,7 +309,7 @@ class Fee extends Base\Core
      *
      * @return Plan
      */
-    protected function addFallbackPricingRules(Plan $pricingPlan, PublicEntity $entity)
+    public function addFallbackPricingRules(Plan $pricingPlan, PublicEntity $entity)
     {
         $merchant = $entity->merchant;
 

@@ -25,6 +25,12 @@ class DefaultPlan
 
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN          = 'EGBQtZbvBrGPHf';
 
+    /* Fallback pricing plan in case no rule is found in merchant plan.
+       Holds PROMOTIONAL_PLAN_ID for now, will be changed later when
+       fallback plan is ready.
+    */
+    const NO_RULE_FALLBACK_PLAN_ID                      = '1In3Yh5Mluj605';
+
     const PARTNER_COMMISSION_PLAN_ID_KEY                = 'PARTNER_COMMISSION_PLAN_ID';
     const SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY = 'SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS';
 

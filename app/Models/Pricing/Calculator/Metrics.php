@@ -6,5 +6,6 @@ class Metrics
 {
     // Metric for tracking the empty matched rules
     const EMPTY_MATCHED_RULES = 'pricing_empty_matched_rules';
+    const SERVER_ERROR_PRICING_RULE_ABSENT_COUNT = 'server_error_pricing_rule_absent_count';
 
 }

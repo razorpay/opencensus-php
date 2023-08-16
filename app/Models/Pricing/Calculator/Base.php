@@ -452,19 +452,6 @@ abstract class Base extends BaseModel\Core
                     'fieldName' => $fieldName
                 ]);
 
-            $this->trace->info(TraceCode::PRICING_EMPTY_MATCHED_RULES,
-                [
-                    'fieldName' => $fieldName,
-                    'fieldValue' => $fieldValue,
-                    'chooseDefault' => $chooseDefault,
-                    'defaultValue' => $defaultValue,
-                    'defaultMatchedIds' => array_map(function ($item) {
-                        return $item['id'];
-                    }, $defaultMatchRules),
-                    'defaultMatchedPlanId' => $planId,
-                ]
-            );
-
             return $defaultMatchRules;
         }
 
@@ -569,7 +556,8 @@ abstract class Base extends BaseModel\Core
         if (count($pricing) !== 1)
         {
             throw new Exception\LogicException(
-                'Only 1 pricing rule should have been present here. Found: ' . count($pricing));
+                'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                count($pricing) == 0 ? ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT : null);
         }
 
         $rule = $pricing[0];
