@@ -137,11 +137,10 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
 
   const handleEditWebsite = (flowType) => {
-    const isEnable = false;
     const { has_key_access: hasWebsite, business_website, isActivated } = user;
 
     // If true => edit website flow; otherwise add flow
-    if (hasWebsite || (business_website && isActivated && isEnable)) {
+    if (hasWebsite || (business_website && isActivated && flowType === FLOWS.BUSINESS_WEBSITE)) {
       openModal({
         size: 'small',
         component: (
@@ -177,7 +176,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     let analyticsObject;
 
     // Edit flow
-    if (hasWebsite || (business_website && isActivated && isEnable)) {
+    if (hasWebsite || (business_website && isActivated && flowType === FLOWS.BUSINESS_WEBSITE)) {
       analyticsObject = {
         objectName: `Website edit`,
         actionName: 'Edit clicked',
