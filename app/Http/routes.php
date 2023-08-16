@@ -290,13 +290,6 @@ Route::group(['middleware'  => 'graph'], function()
 {
     Route::post('/graph', 'GraphController@handleRequestForGraph')
         ->name('graph_request');
-
-});
-
-Route::group(['middleware'  => ['graph_internal', 'auth.graph']], function()
-{
-    Route::get('/org-by-domain', 'AdminController@getOrgByDomainName')->name('get_org_by_domain');
-
 });
 
 Route::group(['middleware'  =>  'slack'], function ()
