@@ -1,18 +1,19 @@
 import React, { Suspense } from 'react';
+
+import GrowthServiceModal from 'common/ui/GrowthServiceModal';
+import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
+import Loader from 'common/ui/Loader';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { stringToLiteral } from 'merchant/models/GrowthService/commonUtils';
+import lazy from 'merchant/routes/LazyLoader';
 import store, { getUser } from 'merchant/store';
 import {
   openModal as openModalProp,
   closeModal as closeModalProp,
 } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
-import { sendDataToSalesForce } from 'common/utils/common-api';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
-import GrowthServiceModal from 'common/ui/GrowthServiceModal';
-import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
-import { stringToLiteral } from 'merchant/models/GrowthService/commonUtils';
-import lazy from 'merchant/routes/LazyLoader';
-import Loader from 'common/ui/Loader';
 
 const PricingSubscriptionComponent = isMobileAndTablet()
   ? lazy(() =>
@@ -76,6 +77,7 @@ const showGSModal = (id, tracking_id) => {
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const isMWeb = isMobileAndTablet();
   return openModal({
+    closeOnOverLay: true,
     component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
     className: !isMWeb ? 'gs-modal' : '',
   });
@@ -90,6 +92,7 @@ const showGSCenterCTAModal = (id) => {
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const isMWeb = isMobileAndTablet();
   return openModal({
+    closeOnOverLay: true,
     component: <GrowthServiceCenterCTAModal template_id={id} />,
     className: !isMWeb ? 'gs-modal' : '',
   });
@@ -123,6 +126,7 @@ const showThankYouModal = (id) => {
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const isMWeb = isMobileAndTablet();
   return openModal({
+    closeOnOverLay: true,
     size: 'medium',
     component: <ThankYouModal template_id={id} />,
     className: !isMWeb ? 'gs-medium-modal' : '',

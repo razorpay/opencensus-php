@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import OffersForYouIcon from './OffersForYouIcon';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import ExclusiveOffer from 'common/ui/ExclusiveOffer/index';
+import NitroSelfServe from 'common/ui/NotificationsDropdown/Neostone/index';
 import RazorpayXNitroAnnouncement, {
   getCampaignID,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import RXPayrollMoonshineModal from 'common/ui/RXPayrollMoonshineModal';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import rTracking from 'react-tracking';
-import * as LocalStorageService from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
+import * as LocalStorageService from 'common/utils/localStorage';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import ExclusiveOffer from '../ExclusiveOffer/index';
-import NitroSelfServe from '../../ui/NotificationsDropdown/Neostone/index';
-import { withRouter } from 'react-router-dom';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
 } from 'merchant/reducers/app';
-import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import OffersForYouIcon from './OffersForYouIcon';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -113,6 +115,7 @@ const OffersForYou = ({
         });
       } else if (!loading && exclusive_offers?.id) {
         openModals({
+          closeOnOverLay: true,
           component: <ExclusiveOffer />,
           size: 'xlarge',
           className: 'GSExclusiveOffer--Modal',
