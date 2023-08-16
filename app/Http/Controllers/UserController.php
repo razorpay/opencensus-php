@@ -234,6 +234,8 @@ class UserController extends Controller
                 $data['pl_customized_form_fields'] = null;
                 $data['is_pl_customer_name_field_enabled'] = null;
             }
+            
+            $data['is_banking_request'] = json_encode(ApiUrl::isBankingOriginRequest());
 
             // If a user accesses PG dashboard using X demo account, then we log out and redirect to sign-in
             // Since this is a PG dashboard route, no need to check product origin explicitly

@@ -10,7 +10,6 @@ import ModalDialog from 'common/ui/ModalDialog';
 import { removeItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initSentry } from 'common/utils/observability';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
@@ -40,14 +39,13 @@ import { matchFullPageView } from 'merchant/routes';
 import {
   classList,
   isPresent,
-  isNone,
   paiseToRupees,
   mergeCurrencyFormatting,
+  getCommonAnalyticsProperties,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import * as EventActions from 'merchant/reducers/trackEvents';
@@ -72,6 +70,9 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
 import lazy from 'merchant/routes/LazyLoader';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
+import cloneDeep from 'lodash/cloneDeep';
+
+const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -177,6 +178,73 @@ class App extends Component {
     return isPartnerKYCActivated && currentMode === 'test' && !isAlreadyActivated;
   };
 
+  partnerActivationKycCallback = ({ data, user, currentMode }) => {
+    let currentPartnerMode = LocalStorageService.getItem(this.partnerModeToken);
+    let isPartnerKYCActivated = LocalStorageService.getItem(
+      `is_partner_activated--${user?.current}`,
+    );
+    const isCurrentPartnerKYCActivated =
+      data?.partner_activation?.activation_status === 'activated';
+    if (user && isCurrentPartnerKYCActivated) {
+      LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
+      isPartnerKYCActivated = 'true';
+    }
+    this.setState({
+      isPartnerKYCActivated: isCurrentPartnerKYCActivated,
+      partnerActivationStatus: data?.partner_activation?.activation_status,
+    });
+    if (!currentPartnerMode) {
+      currentPartnerMode = isPartnerKYCActivated ? 'live' : 'test';
+    } else if (
+      this.canPartnerMoveToLiveMode(
+        currentMode,
+        isCurrentPartnerKYCActivated,
+        isPartnerKYCActivated,
+      )
+    ) {
+      currentPartnerMode = 'live';
+    } else if (!isPartnerKYCActivated) {
+      currentPartnerMode = 'test';
+    }
+
+    this.props.updateSession({
+      partnerMode: currentPartnerMode,
+      isUsingPartnerMode: this.state.isPartnerModeEnabled,
+    });
+  };
+
+  fetchPartnerActivationStatusUpdate = ({ data }) => {
+    let user = cloneDeep(this.props.user);
+    const { activation_status = '' } = data?.partner_activation;
+
+    if (user.merchants[user.current]) {
+      user.merchants[user.current] = {
+        ...user.merchants[user.current],
+        partner: {
+          ...user.merchants[user.current]?.partner,
+          activation_status,
+        },
+      };
+
+      this.props.updateSession({ user });
+    }
+  };
+
+  fetchPartnerActivationStatusCallback = ({
+    data,
+    user,
+    currentMode,
+    partner_type,
+    isBankingRequest,
+  }) => {
+    if (!user.isActivated && this.state.isPartnerModeEnabled) {
+      this.partnerActivationKycCallback({ data, user, currentMode });
+    }
+    if (!isBankingRequest && PARTNER_ACTIVATION_APPLICABLE_TYPES.includes(partner_type)) {
+      this.fetchPartnerActivationStatusUpdate({ data });
+    }
+  };
+
   // nosemgrep
   UNSAFE_componentWillMount() {
     const user = window.rzp_user;
@@ -214,10 +282,6 @@ class App extends Component {
     let isActivated = LocalStorageService.getItem(`is_activated--${user?.current}`);
     const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
 
-    let currentPartnerMode = LocalStorageService.getItem(this.partnerModeToken);
-    let isPartnerKYCActivated = LocalStorageService.getItem(
-      `is_partner_activated--${user?.current}`,
-    );
     if (
       user &&
       currentMode === 'live' &&
@@ -355,36 +419,20 @@ class App extends Component {
             }
           });
 
+        const { partner_type } = user?.merchants?.[user.current];
+        const isBankingRequest = window?.is_banking_request;
         // use partner mode if merchant kyc is not activated and it's enabled
-        if (!user.isActivated && this.state.isPartnerModeEnabled) {
+        if (
+          (!user.isActivated && this.state.isPartnerModeEnabled) ||
+          (!isBankingRequest && PARTNER_ACTIVATION_APPLICABLE_TYPES.includes(partner_type))
+        ) {
           this.fetchPartnerActivationStatus().then(({ data }) => {
-            const isCurrentPartnerKYCActivated =
-              data?.partner_activation?.activation_status === 'activated';
-            if (user && isCurrentPartnerKYCActivated) {
-              LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
-              isPartnerKYCActivated = 'true';
-            }
-            this.setState({
-              isPartnerKYCActivated: isCurrentPartnerKYCActivated,
-              partnerActivationStatus: data?.partner_activation?.activation_status,
-            });
-            if (!currentPartnerMode) {
-              currentPartnerMode = isPartnerKYCActivated ? 'live' : 'test';
-            } else if (
-              this.canPartnerMoveToLiveMode(
-                currentMode,
-                isCurrentPartnerKYCActivated,
-                isPartnerKYCActivated,
-              )
-            ) {
-              currentPartnerMode = 'live';
-            } else if (!isPartnerKYCActivated) {
-              currentPartnerMode = 'test';
-            }
-
-            this.props.updateSession({
-              partnerMode: currentPartnerMode,
-              isUsingPartnerMode: this.state.isPartnerModeEnabled,
+            this.fetchPartnerActivationStatusCallback({
+              data,
+              user,
+              currentMode,
+              partner_type,
+              isBankingRequest,
             });
           });
         }

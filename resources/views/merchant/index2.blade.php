@@ -12,6 +12,7 @@
     window.pl_customized_form_fields = {!! $pl_customized_form_fields !!};
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
     window.session_id = "{!! $session_id !!}";
+    window.is_banking_request = {!! $is_banking_request !!};
   </script>
   <script async src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else

@@ -81,7 +81,6 @@ class Service extends Base\Service
     const SPLITZ_EXPERIMENT_PROMISE = 'splitz_experiments';
     const PARTNER_INTENT_PROMISE = 'partner_intent';
     const CONFIG_PROMISE = 'configs';
-    const PARTNER_ACTIVATION_STATUS_PROMISE = 'partner_activation_status';
     const SALES_FORCE_LEADS_PROMISE = 'create_lead_sales_force';
     
     const PROMISES_PARALLEL_API_CALL = [
@@ -89,7 +88,6 @@ class Service extends Base\Service
         self::SPLITZ_EXPERIMENT_PROMISE,
         self::PARTNER_INTENT_PROMISE,
         self::CONFIG_PROMISE,
-        self::PARTNER_ACTIVATION_STATUS_PROMISE,
     ];
     
     /**
@@ -1324,7 +1322,7 @@ class Service extends Base\Service
         $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses, );
     
         $merchantService = new Merchant\Service;
-        
+
         if (isset($allApiResponses[self::EXPERIMENT_PROMISE]))
         {
             $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
@@ -1370,13 +1368,6 @@ class Service extends Base\Service
             }
         }
     
-        if (isset($allApiResponses[self::PARTNER_ACTIVATION_STATUS_PROMISE]))
-        {
-            $partnerActivationStatus  = $merchantService->processPartnerActivationStatusPromiseResponse($apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE]);
-        
-            $data['merchants'][$globalMerchant['id']]['partner']['activation_status'] = $partnerActivationStatus;
-        }
-        
         return $data;
     }
     
@@ -1446,13 +1437,6 @@ class Service extends Base\Service
             $apiPromiseAny[self::CONFIG_PROMISE] =  new ApiPromiseAny('merchants/me/partner/configs','GET');
             $apiPromiseAny[self::CONFIG_PROMISE]->setPromise($promise);
         
-            // API 1.4.2
-            if (in_array($data['merchants'][$merchant['id']]['partner_type'], Constants::PARTNER_ACTIVATION_APPLICABLE_TYPES))
-            {
-                $promise = $merchantService->fetchPartnerActivationStatusAsyncPromise();
-                $apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE] =  new ApiPromiseAny('partner/activation','GET');
-                $apiPromiseAny[self::PARTNER_ACTIVATION_STATUS_PROMISE]->setPromise($promise);
-            }
         }
         
         return $apiPromiseAny;
@@ -1813,10 +1797,6 @@ class Service extends Base\Service
                                 }
                             }
 
-                            if(in_array($data['merchants'][$merchant['id']]['partner_type'], Constants::PARTNER_ACTIVATION_APPLICABLE_TYPES))
-                            {
-                                $data['merchants'][$merchant['id']]['partner']['activation_status'] = $merchantService->fetchPartnerActivationStatus();
-                            }
                         }
                     }
                 }
