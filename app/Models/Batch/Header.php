@@ -802,7 +802,6 @@ class Header
     const AUTH_LINK_TOKEN_EXPIRE_BY     = 'token_expiry_by';
     const AUTH_LINK_METHOD              = 'method';
     const AUTH_LINK_MAX_AMOUNT          = 'token_max_amount';
-    const AUTH_LINK_FREQUENCY           = 'frequency';
     const AUTH_LINK_EXPIRE_BY           = 'link_expiry_by';
     const AUTH_LINK_AUTH_TYPE           = 'auth_type';
     const AUTH_LINK_BANK                = 'bank';
@@ -3658,7 +3657,6 @@ class Header
                 self::AUTH_LINK_METHOD,
                 self::AUTH_LINK_TOKEN_EXPIRE_BY,
                 self::AUTH_LINK_MAX_AMOUNT,
-                self::AUTH_LINK_FREQUENCY,
                 self::AUTH_LINK_AUTH_TYPE,
                 self::AUTH_LINK_BANK,
                 self::AUTH_LINK_NAME_ON_ACCOUNT,
@@ -3680,7 +3678,6 @@ class Header
                 self::AUTH_LINK_METHOD,
                 self::AUTH_LINK_TOKEN_EXPIRE_BY,
                 self::AUTH_LINK_MAX_AMOUNT,
-                self::AUTH_LINK_FREQUENCY,
                 self::AUTH_LINK_AUTH_TYPE,
                 self::AUTH_LINK_BANK,
                 self::AUTH_LINK_NAME_ON_ACCOUNT,
