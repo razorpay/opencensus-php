@@ -58,6 +58,14 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\CacheControl::class,
         ],
 
+        'graph_internal'     => [
+            \App\Http\Middleware\Cors::class,
+            \App\Http\Middleware\EncryptCookies::class,
+            \App\Http\Middleware\StartSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\CacheControl::class,
+        ],
+
         'web_oauth' => [
             \App\Http\Middleware\Cors::class,
             \App\Http\Middleware\AuthenticateOauth::class,
@@ -74,6 +82,7 @@ class Kernel extends HttpKernel {
         'auth'           => 'App\Http\Middleware\Authenticate',
         'auth.basic'     => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
         'auth.internal'  => 'App\Http\Middleware\InternalAuth',
+        'auth.graph'     => 'App\Http\Middleware\GraphAuth',
         'auth.cron'      => 'App\Http\Middleware\CronAuth',
         'guest'          => 'App\Http\Middleware\RedirectIfAuthenticated',
         'admin'          => 'App\Http\Middleware\AuthenticateAdmin',

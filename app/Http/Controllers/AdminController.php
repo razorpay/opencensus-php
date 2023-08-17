@@ -382,7 +382,7 @@ class AdminController extends Controller
     }
 
     public function postForgotPassword() {
-        
+
         $input = Input::all();
         $domain = \Request::server('SERVER_NAME');
         list($error, $response) = (new Admin\Service)->triggerPassResetEmail($domain, $input);
@@ -390,7 +390,7 @@ class AdminController extends Controller
     }
 
     public function postResetPassword() {
-        
+
         $input = Input::all();
         $domain = \Request::server('SERVER_NAME');
         list($error, $response) = (new Admin\Service)->changePassword($domain, $input);
@@ -467,6 +467,19 @@ class AdminController extends Controller
     public function getOrg()
     {
         $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $this->changeAuthTypeToPasswordForItfTest($error, $org);
+
+        return AppResponse::jsonResponse($error, $org);
+    }
+
+    public function getOrgByDomainName()
+    {
+        $input = Input::all();
+
+        $domain = $input['domainName'];
 
         list($error, $org) = (new Admin\Service)->getOrg($domain);
 
