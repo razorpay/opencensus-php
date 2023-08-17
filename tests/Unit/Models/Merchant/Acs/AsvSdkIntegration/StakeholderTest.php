@@ -131,7 +131,7 @@ class StakeholderTest extends TestCase
 
         // prepare expected data //
         $stakeholderArray = json_decode($this->stakeholderEntityJson1, true);
-        s($stakeholderArray);
+
         $expectedStakeholdersEntity  =  new StakeholderEntity();
         $expectedStakeholdersEntity->setRawAttributes($stakeholderArray);
 

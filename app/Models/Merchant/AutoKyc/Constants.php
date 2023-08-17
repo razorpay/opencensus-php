@@ -75,6 +75,7 @@ class Constants
                 SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS => self::AADHAAR_WITH_PAN_CONDITION,
                 SEntity::AADHAAR_ESIGN_STATUS                 => self::ESIGN_AADHAAR_CONDITION,
             ],
+
             Entity::POA_VERIFICATION_STATUS => self::POA_CONDITION,
         ]
     ];

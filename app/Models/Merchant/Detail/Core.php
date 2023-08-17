@@ -6238,6 +6238,14 @@ class Core extends Base\Core
             return $defaultValue;
         }
 
+        $this->trace->info(TraceCode::AUTO_KYC_PARSER_DEBUG, [
+            'merchant_id'            => $merchantDetails->getId(),
+            'key'                    => $key,
+            'getAttribute'           => $verificationDetail->getAttribute(Merchant\VerificationDetail\Entity::STATUS),
+            'condition'              => $in,
+            'result'                 => in_array($verificationDetail->getAttribute(Merchant\VerificationDetail\Entity::STATUS), $in, true)
+        ]);
+
         return in_array(
             $verificationDetail->getAttribute(Merchant\VerificationDetail\Entity::STATUS),
             $in,
@@ -6260,6 +6268,14 @@ class Core extends Base\Core
             }
         }
 
+        $this->trace->info(TraceCode::AUTO_KYC_PARSER_DEBUG, [
+            'merchant_id'  => $merchantDetails->getId(),
+            'key'          => $key,
+            'getAttribute' => $merchantDetails->getAttribute($key),
+            'condition'    => $in,
+            'result'       => in_array($merchantDetails->getAttribute($key), $in, true)
+        ]);
+
         return in_array($merchantDetails->getAttribute($key), $in, true);
     }
 
@@ -6270,10 +6286,18 @@ class Core extends Base\Core
         if (($isAadhaarEsignRequired === true) and
             (empty($merchantDetails->stakeholder) === false))
         {
+            $this->trace->info(TraceCode::AUTO_KYC_PARSER_DEBUG, [
+                'merchant_id'            => $merchantDetails->getId(),
+                'key'                    => $key,
+                'getAttribute'           => $merchantDetails->stakeholder->getAttribute($key),
+                'condition'              => $in,
+                'result'                 => in_array($merchantDetails->stakeholder->getAttribute($key), $in, true)
+            ]);
+
             return in_array($merchantDetails->stakeholder->getAttribute($key), $in, true);
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -8400,11 +8424,11 @@ class Core extends Base\Core
                     ];
 
                     $this->pgosProxyController->updateMerchantDetails($merchant, $pgosInput);
-                } 
-                else 
+                }
+                else
                 {
                     $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $input[DetailConstants::NEW_CONTACT_NUMBER]);
-    
+
                     $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
                 }
             }
@@ -8441,10 +8465,10 @@ class Core extends Base\Core
             ];
 
             $this->pgosProxyController->updateMerchantDetails($merchant, $pgosInput);
-        } 
+        }
         else {
             $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $newMerchantContact);
-    
+
             $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
         }
 

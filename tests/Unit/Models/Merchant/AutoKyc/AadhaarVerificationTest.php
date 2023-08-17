@@ -52,7 +52,7 @@ class AadhaarVerificationTest extends TestCase
         return $this->splitzMock;
     }
 
-    protected function mockRazorxTreatment()
+    protected function mockRazorxTreatment($variant = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -62,7 +62,7 @@ class AadhaarVerificationTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
+            ->willReturn($variant);
     }
 
 
@@ -226,6 +226,40 @@ class AadhaarVerificationTest extends TestCase
 
         $merchantDetail = $fixtures['merchant_detail'];
         $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testAutoKycForUnregisteredPoaIncorrectDetails()
+    {
+        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [
+            Entity::POI_VERIFICATION_STATUS          => 'verified',
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => 'verified',
+            Entity::POA_VERIFICATION_STATUS          => 'incorrect_details'
+        ], []);
+
+        $this->mockRazorxTreatment('off');
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        $isAutoKycDone  = (new DetailCore)->isAutoKycDone($merchantDetail);
+
+        $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testAutoKycForUnregisteredPoaVerified()
+    {
+        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [
+            Entity::POI_VERIFICATION_STATUS          => 'verified',
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => 'verified',
+            Entity::POA_VERIFICATION_STATUS          => 'verified'
+        ], []);
+
+        $this->mockRazorxTreatment('off');
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        $isAutoKycDone  = (new DetailCore)->isAutoKycDone($merchantDetail);
+
         $this->assertTrue($isAutoKycDone);
     }
 

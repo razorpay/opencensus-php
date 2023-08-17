@@ -5154,6 +5154,7 @@ class CoreTest extends TestCase
             'activation_flow'           => 'whitelist',
             'activation_form_milestone' => 'L2',
             'poi_verification_status'   => 'verified',
+            'poa_verification_status'   => 'verified',
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
             'submitted'                 => true,
