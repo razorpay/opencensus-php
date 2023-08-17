@@ -11,4 +11,7 @@ class Constants
     const PAYMENT_LINK              = 'payment_link';
     // For  Route Marketplace transfers.
     const MARKETPLACE_APPLICATION   = 'marketplace_app';
+
+    // For transaction isolation
+    const APPLICATION_ID            = 'application_id';
 }

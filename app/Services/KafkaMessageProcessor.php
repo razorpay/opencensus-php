@@ -27,6 +27,7 @@ class KafkaMessageProcessor
     const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
     const PGOS_STAGE_CDC_EVENTS               = 'cdc_events_mysql_stage_pg_onboarding';
     const PGOS_PROD_CDC_EVENTS               = 'cdc_events_mysql_prod_pg_onboarding';
+    const PARTNER_WEBHOOK_CALLBACK_EVENTS = "partner_webhook_callback_events";
 
     /** @var Application $app */
     protected $app;
@@ -162,6 +163,9 @@ class KafkaMessageProcessor
             case self::PGOS_STAGE_CDC_EVENTS:
             case self::PGOS_PROD_CDC_EVENTS:
                 return new KafkaJobs\PgosCdcEventsJob($payload, $mode);
+
+            case self::PARTNER_WEBHOOK_CALLBACK_EVENTS:
+                return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);
 
             default:
                 return null;

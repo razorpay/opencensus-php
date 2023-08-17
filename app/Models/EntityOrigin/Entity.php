@@ -67,4 +67,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphTo();
     }
+
+    public function getOriginId()
+    {
+        return $this->getAttribute(self::ORIGIN_ID);
+    }
 }

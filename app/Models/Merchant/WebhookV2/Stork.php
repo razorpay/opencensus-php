@@ -352,6 +352,31 @@ class Stork
         );
     }
 
+    public function processOwnerEvent(array $event)
+    {
+        $processEventReq = [
+            'event' => [
+                'id'         => $event['id'],
+                'service'    => $event['service'],
+                'owner_id'   => $event['owner_id'],
+                'owner_type' => 'application',
+                'name'       => $event['name'],
+                'payload'    => $event['payload'],
+            ],
+        ];
+
+        $eventTrace = $processEventReq;
+        unset($eventTrace['event']['payload']);
+
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $eventTrace);
+
+        $this->service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessOwnerEvent',
+            $processEventReq,
+            self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+        );
+    }
+
     /**
      * For webhooks where owner_type is application, we are initially passing application_id in payload
      * This function extracts & removes the application Id from the payload before we make a Stork request to trigger webhook.

@@ -10188,6 +10188,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_DRAFT_ORDER_FLOW_STARTED                               = 'SHOPIFY_DRAFT_ORDER_FLOW_STARTED';
     const SHOPIFY_RETRY_DRAFT_ORDER_FLOW_STARTED                         = 'SHOPIFY_RETRY_DRAFT_ORDER_FLOW_STARTED';
 
+    const PARTNER_WEBHOOK_CALLBACK_EVENT_REQUEST_PAYLOAD         = 'PARTNER_WEBHOOK_CALLBACK_EVENT_REQUEST_PAYLOAD';
+    const PARTNER_WEBHOOK_CALLBACK_EVENT_INVALID_DATA            = 'PARTNER_WEBHOOK_CALLBACK_EVENT_INVALID_DATA';
+    const PARTNER_WEBHOOK_CALLBACK_EVENT_PROCESSED               = 'PARTNER_WEBHOOK_CALLBACK_EVENT_PROCESSED';
+    const PARTNER_WEBHOOK_CALLBACK_EVENT_ENTITY_ORIGIN_NOT_FOUND = 'PARTNER_WEBHOOK_CALLBACK_EVENT_ENTITY_ORIGIN_NOT_FOUND';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
