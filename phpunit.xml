@@ -380,6 +380,12 @@
             <directory>./tests/Functional/QrCode</directory>
             <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
         </testsuite>
+        <testsuite name="Route Test Suite">
+            <directory>./tests/Functional/Transfer/</directory>
+            <directory>./tests/Functional/Payment/Transfers/</directory>
+            <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
+            <file>./tests/Functional/Merchant/AccountTest.php</file>
+        </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
         </testsuite>
