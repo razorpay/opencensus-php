@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const PAYLOAD               = 'payload';
     const CREATED_AT            = 'created_at';
     const ACCOUNT_ID            = 'account_id';
+    const CONTEXT               = 'context';
 
     protected $entity           = 'event';
 
@@ -22,6 +23,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CONTAINS,
         self::PAYLOAD,
+        self::CONTEXT,
         self::CREATED_AT
     ];
 
@@ -30,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ID,
         self::CONTAINS,
         self::PAYLOAD,
+        self::CONTEXT,
         self::CREATED_AT
     ];
 
@@ -39,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::EVENT,
         self::CONTAINS,
         self::PAYLOAD,
+        self::CONTEXT,
         self::CREATED_AT
     ];
 

@@ -1085,4 +1085,47 @@ return [
             ],
         ],
     ],
+
+    'testOrderPaidEventDataForMerchantsLinkedToPartner' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'order.paid',
+            'contains' => ['payment', 'order'],
+            'context' => [
+                'event_type' => 'partnership',
+                'entity_type' => 'payment'
+            ],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity' => 'order',
+                        'amount' => 50000,
+                        'receipt' => 'random',
+                        'currency' => 'INR',
+                        'status' => 'paid',
+                        'attempts' => 1,
+                        'notes' => []
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

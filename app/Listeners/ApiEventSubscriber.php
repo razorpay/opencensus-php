@@ -35,6 +35,7 @@ use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
@@ -73,6 +74,14 @@ class ApiEventSubscriber extends Base\Core
     protected $listeningMerchant;
 
     /**
+     * For events to be triggered to partners, context contains entity id, entity type and event type.
+     * The data from the context is used to identify if the partner is owner of the entity.
+     *
+     * @var array
+     */
+    protected $context;
+
+    /**
      * Webhook\Stork is initialized with a product(i.e. banking, primary).
      * @var string|null
      */
@@ -81,6 +90,7 @@ class ApiEventSubscriber extends Base\Core
     const MAIN        = 'main';
     const WITH        = 'with';
     const MERCHANT_ID = 'merchant_id';
+    const CONTEXT     = 'context';
 
     const WORKFLOW_SERVICE = 'workflow_service';
     const API_WORKFLOW     = 'api_workflow';
@@ -112,6 +122,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $this->mainEntity  = $params[self::MAIN];
             $this->withPayload = $params[self::WITH] ?? [];
+            $this->context     = [];
 
             //
             // Webhooks can be triggered for shared entities,
@@ -771,6 +782,8 @@ class ApiEventSubscriber extends Base\Core
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
+
+        $this->setContextForEvent($payment->getMerchantId(), 'payment', $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -1856,7 +1869,7 @@ class ApiEventSubscriber extends Base\Core
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
-
+            Event\Entity::CONTEXT    => $this->context,
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -2193,4 +2206,22 @@ class ApiEventSubscriber extends Base\Core
         return;
     }
 
+    private function setContextForEvent(string $merchantId, string $entityType, string $entityId) : void
+    {
+        $isExpEnabled = (new PartnerCore())->isTransactionIsolationExpEnabled($merchantId);
+
+        $this->trace->debug(TraceCode::TRANSACTION_ISOLATION_EXPERIMENT_ENABLED, [
+            'is_exp_enabled' => $isExpEnabled,
+            'merchant_id'   => $merchantId,
+        ]);
+
+        if ($isExpEnabled === true)
+        {
+            $this->context = [
+                'id'          => $entityId,
+                'entity_type' => $entityType,
+                'event_type'  => 'partnership'
+            ];
+        }
+    }
 }

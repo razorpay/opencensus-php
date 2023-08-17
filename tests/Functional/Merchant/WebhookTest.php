@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mockery;
 use Carbon\Carbon;
 
+use RZP\Services\SplitzService;
 use Illuminate\Support\Facades\App;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -41,6 +43,8 @@ class WebhookTest extends TestCase
     use PartnerTrait;
 
     protected $sharedTerminal;
+
+    protected $splitzMock;
 
     protected function setUp(): void
     {
@@ -1220,5 +1224,72 @@ class WebhookTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
 
         $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testOrderPaidEventDataForMerchantsLinkedToPartner()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $partner = $this->fixtures->create('merchant');
+
+        $partnerId = $partner->getId();
+
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // This webhook will be called for order.paid event.
+        $this->expectWebhookEvent(
+            'order.paid',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayHasKey('id', $event['context']);
+            }
+        );
+
+        $output[] = [
+            'id' => $partner->getId(),
+            "experiment" => [
+                "id" => $this->app['config']->get('app.transaction_isolation_for_webhooks_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }

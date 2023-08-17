@@ -1745,4 +1745,40 @@ class Core extends Detail\Core
             Merchant\Entity::ORG_ID       => $merchant->getOrgId()
         ];
     }
+
+    public function isTransactionIsolationExpEnabled(string $merchantId) : bool
+    {
+        $partnerIds = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId)->toArray();
+
+        if (empty($partnerIds))
+        {
+            return false;
+        }
+
+        $properties = [];
+
+        $experimentId = $this->app['config']->get('app.transaction_isolation_for_webhooks_experiment_id');
+
+        foreach ($partnerIds as $partnerId)
+        {
+            $properties[] = [
+                'id'            => $partnerId,
+                'experiment_id' => $experimentId
+            ];
+        }
+
+        $responses = $this->app['splitzService']->bulkCallsToSplitz($properties);
+
+        foreach ($responses as $response)
+        {
+            $variant = $response['variant']['name'] ?? null;
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

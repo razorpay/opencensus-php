@@ -332,6 +332,11 @@ class Stork
             ],
         ];
 
+        if (empty($event->context) === false)
+        {
+            $processEventReq['event']['context'] = $event->context;
+        }
+
         $eventTrace = $processEventReq;
         unset($eventTrace['event']['payload']);
 
