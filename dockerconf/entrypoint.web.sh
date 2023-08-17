@@ -94,6 +94,7 @@ configure_dark(){
     echo "TERMINALS_SERVICE_LIVE_URL=\"https://terminals-dark-live.razorpay.com/\"" >> ./environment/.env.production
     echo "PG_ROUTER_URL=\"https://pg-router-dark-int.razorpay.com/\"" >> ./environment/.env.production
     echo "CARD_VAULT_URL=\"https://vault-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "ELIGIBILITY_SERVICE_LIVE_URL=\"https://checkout-affordability-api-dark.razorpay.com\""  >> ./environment/.env.production
 }
 
 configure_hallmark(){
