@@ -208,7 +208,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     {
         $grossAmt = intval($this->getReconRefundAmount($row));
 
-        $netAmount = (-1) * $grossAmt / 100;
+        $netAmount = (-1) * $grossAmt / $this->getCurrencyDenomination();
 
         $this->setReconNetAmountInOutput($netAmount);
     }
@@ -560,6 +560,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'refund_id' => $refundId,
                 ]);
         }
+
+        $this->setCurrencyDenomination($this->payment);
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 

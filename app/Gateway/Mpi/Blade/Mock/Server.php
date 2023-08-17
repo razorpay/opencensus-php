@@ -102,6 +102,9 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_PARES:
                 $content['Message']['PARes'] = $responseClass->paresWithErrorCode();
                 break;
+            case CardNumber::INTERNATIONAL_VISA_KWD:
+                $content['Message']['PARes'] = $responseClass->internationalVisaResponse($content);
+                break;
             default:
                 $content['Message']['PARes'] = $responseClass->enrolledValidResponse($content);
                 break;

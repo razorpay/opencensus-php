@@ -17,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Orchestrator;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
@@ -172,6 +173,11 @@ class SubReconciliate extends Base\Core
     protected static $reconOutputData = [];
 
     protected static $currentRowNumber = -1;
+
+    // By default, multiplier or divisor for currency is 100.
+    // For three decimal it will be 1000 and for
+    // zero decimal it will be 1
+    protected $currencyDenomination = 100;
 
     public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
@@ -1245,5 +1251,30 @@ class SubReconciliate extends Base\Core
     protected function skipRestOfFile($row)
     {
         return false;
+    }
+
+    public function setCurrencyDenomination($payment)
+    {
+        // default is 100
+        if (empty($payment) === true)
+        {
+            $this->currencyDenomination = 100;
+
+            return;
+        }
+
+        $gatewayCurrency = $payment->getGatewayCurrency();
+
+        $this->currencyDenomination = Currency::getDenomination($gatewayCurrency);
+    }
+
+    public function getCurrencyDenomination()
+    {
+        if (empty($this->currencyDenomination) === true)
+        {
+            $this->currencyDenomination = 100;
+        }
+
+        return $this->currencyDenomination ?? 100;
     }
 }

@@ -495,6 +495,7 @@
             <file>./tests/Functional/Merchant/MerchantDocumentFIRSTest.php</file>
             <file>./tests/Functional/Merchant/CheckoutInternationalPreferencesTest.php</file>
             <file>./tests/Functional/Payment/NbPlusService/NbplusPaymentServiceAppsTest.php</file>
+            <file>./tests/Functional/Gateway/Reconciliation/ReconciliationFileTest.php</file>
         </testsuite>
         <testsuite name="UT_Affordibility_Test_Suite">
             <directory>./tests/Functional/Offer/</directory>

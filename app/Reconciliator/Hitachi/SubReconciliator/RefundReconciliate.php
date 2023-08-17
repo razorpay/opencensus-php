@@ -77,7 +77,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             return null;
         }
 
-        $refundAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+        $isThreeDecimalCurrency = Currency::isThreeDecimalCurrencyFromISOCode($this->getReconCurrencyCode($row));
+
+        $refundAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT], $isThreeDecimalCurrency);
 
         return abs($refundAmount);
     }

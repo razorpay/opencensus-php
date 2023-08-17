@@ -1151,4 +1151,16 @@ class Currency
 
         return false;
     }
+
+    public static function isThreeDecimalCurrencyFromISOCode(string $isoCode = '')
+    {
+        if (empty($isoCode) === true)
+        {
+            return false;
+        }
+
+        $currency = self::getCurrency($isoCode);
+
+        return (in_array($currency, self::THREE_DECIMAL_CURRENCIES) === true);
+    }
 }

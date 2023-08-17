@@ -10,13 +10,18 @@ class Helper
      * @param $amount
      * @return int
      */
-    public static function getIntegerFormattedAmount($amount)
+    public static function getIntegerFormattedAmount($amount, $isThreeDecimalCurrency = false)
     {
         // We are using filter_var to remove comma and other characters that may come in the amount field
         // e.g. in Amazonpay recon file, they send amount as 1,700.00
         $amount = str_replace(',', '', $amount);
 
-        $amountToBeFormatted = floatval($amount) * 100;
+        // For three decimal currencies, multiplier used in converting
+        // gateway amount from major to minor units is 1000.
+        // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1691734829278479?thread_ts=1679426954.344399&cid=C01LK94TC69
+        $multiplier = ($isThreeDecimalCurrency === true) ? 1000 : 100;
+
+        $amountToBeFormatted = floatval($amount) * $multiplier;
 
         //
         // We are converting to int after casting to string as PHP randomly

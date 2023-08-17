@@ -291,7 +291,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gst = intval($rowDetails[Base\Reconciliate::GATEWAY_SERVICE_TAX]);
 
-        $netAmount = ($grossAmt - ($gatewayFee + $gst)) / 100;
+        $netAmount = ($grossAmt - ($gatewayFee + $gst)) / $this->getCurrencyDenomination();
 
         $this->setReconNetAmountInOutput($netAmount);
     }
@@ -1207,6 +1207,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->payment = $this->fetchOrGetPaymentById($paymentId);
             $this->paymentTransaction = $this->getPaymentTransaction();
+
+            $this->setCurrencyDenomination($this->payment);
 
             //
             // It's possible that the payment is in failed state and hence the transaction

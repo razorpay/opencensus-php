@@ -5327,4 +5327,242 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertBatchStatus();
     }
+
+    // For three decimal currencies, multiplier used in converting 
+    // gateway amount from major to minor units is 1000.
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1691734829278479?thread_ts=1679426954.344399&cid=C01LK94TC69
+    public function testHitachiReconDCCPaymentFileKWD()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->fixtures->merchant->addFeatures(['dcc']);
+
+        $amount = 50000;
+        $dccMarkupPercent = 3;
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addDccPaymentConfig($dccMarkupPercent);
+
+        $iin = $this->fixtures->iin->create(['iin' => '542859', 'country' => 'KW', 'issuer' => 'UTIB', 'network' => 'Visa',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+
+        $flowsData = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+        $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
+
+        $this->assertEquals("KWD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+        $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
+
+        $this->payment = $this->getPaymentArrayInternational();
+        $this->payment['amount'] = $amount;
+        $this->payment['dcc_currency'] = $cardCurrency;
+        $this->payment['currency_request_id'] = $currencyRequestId;
+        $this->payment['card']['number'] = CardNumber::INTERNATIONAL_VISA_KWD;
+        $this->payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        // entity after auth/capture
+        $payment = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+        $this->assertTrue($payment['dcc']);
+        $this->assertEquals($convertedAmount, $payment['gateway_amount']);
+        $this->assertEquals(0, $payment['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        $fileAmount     = $gatewayPayment['amount'] / 1000; // for three decimal, divisor is 1000
+        $currencyCode   = Currency::ISO_NUMERIC_CODES[$gatewayPayment['currency']];
+        $rowData = [
+            HitachiPaymentRecon::COLUMN_CURRENCY_CODE   => $currencyCode,
+            HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT  => $fileAmount,
+            HitachiPaymentRecon::COLUMN_AUTH_CODE       => $payment['reference2'],
+        ];
+
+        $row = $this->overrideHitachiPayment($gatewayPayment, $rowData);
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        // assert refund recon
+
+        $this->gateway = $payment['gateway'];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund1 = $this->getDbLastRefund()->toArrayAdmin();
+
+        $this->assertEquals('KWD', $refund1['gateway_currency']);
+        $this->assertEquals(0, $refund1['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['reference1']);
+
+        $entries[] = $this->overrideHitachiRefund($gatewayPayment1, $row);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['reference1']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // For three decimal currencies, multiplier used in converting 
+    // gateway amount from major to minor units is 1000.
+    // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1691734829278479?thread_ts=1679426954.344399&cid=C01LK94TC69
+    public function testHitachiReconDCCOverMCCPaymentFileKWD()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->fixtures->merchant->addFeatures(['dcc']);
+
+        $amount = 50000;
+        $dccMarkupPercent = 3;
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addDccPaymentConfig($dccMarkupPercent);
+
+        $iin = $this->fixtures->iin->create(['iin' => '542859', 'country' => 'KW', 'issuer' => 'UTIB', 'network' => 'Visa',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+
+        $flowsData = [
+            'content' => ['amount' => $amount, 'currency' => 'USD', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+        $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
+
+        $this->assertEquals("KWD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+        $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
+
+        $this->payment = $this->getPaymentArrayInternational();
+        $this->payment['amount'] = $amount;
+        $this->payment['currency'] = 'USD';
+        $this->payment['dcc_currency'] = $cardCurrency;
+        $this->payment['currency_request_id'] = $currencyRequestId;
+        $this->payment['card']['number'] = CardNumber::INTERNATIONAL_VISA_KWD;
+
+        $this->payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        // entity after auth/capture
+        $payment = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+        $this->assertTrue($payment['dcc']);
+        $this->assertEquals($convertedAmount, $payment['gateway_amount']);
+        $this->assertEquals(0, $payment['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        $fileAmount     = $gatewayPayment['amount'] / 1000; // for three decimal, divisor is 1000
+        $currencyCode   = Currency::ISO_NUMERIC_CODES[$gatewayPayment['currency']];
+        $rowData = [
+            HitachiPaymentRecon::COLUMN_CURRENCY_CODE   => $currencyCode,
+            HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT  => $fileAmount,
+            HitachiPaymentRecon::COLUMN_AUTH_CODE       => $payment['reference2'],
+        ];
+
+        $row = $this->overrideHitachiPayment($gatewayPayment, $rowData);
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        // assert refund recon
+
+        $this->gateway = $payment['gateway'];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund1 = $this->getDbLastRefund()->toArrayAdmin();
+
+        $this->assertEquals('KWD', $refund1['gateway_currency']);
+        $this->assertEquals(0, $refund1['gateway_amount']%10); // last digit should be 0 for 3 decimal currency
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['reference1']);
+
+        $entries[] = $this->overrideHitachiRefund($gatewayPayment1, $row);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['reference1']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    private function getPaymentArrayInternational()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '4012010000000007';
+
+        return $paymentArray;
+    }
 }

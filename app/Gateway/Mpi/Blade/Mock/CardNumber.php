@@ -19,6 +19,7 @@ class CardNumber
     const UNKNOWN_ENROLLED                          = '4539074965827311';
     const INTERNATIONAL_VISA_NE                     = '5149066434045615';
     const INTERNATIONAL_VISA_ENROLLED               = '5149063701342189';
+    const INTERNATIONAL_VISA_KWD                    = '5428590000004146';
 
     public static function getAccId($cardNumber) // nosemgrep : razorpay:card_pii_data_parameters
     {

@@ -446,7 +446,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        $paymentAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+        $isThreeDecimalCurrency = Currency::isThreeDecimalCurrencyFromISOCode($this->getReconCurrencyCode($row));
+
+        $paymentAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT], $isThreeDecimalCurrency);
 
         return $paymentAmount;
     }
