@@ -292,6 +292,11 @@ class Entity extends Base\PublicEntity
 
     // -------------- Getters --------------
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getLedgerResponseAwaitedFlag()
     {
         return $this->ledgerResponseAwaitedFlag;
@@ -357,6 +362,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    // This is deprecated, Please use RZP\Models\Transaction\Ledger -> findByIdFromLedger
     public function getTransactionId()
     {
         $transaction = $this->transaction;

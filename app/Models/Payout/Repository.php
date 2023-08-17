@@ -168,6 +168,44 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findBalanceIdById(string $id)
+    {
+        $balanceId = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+                       ->select($balanceId)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Payout\Entity::BALANCE_ID];
+
+        return '';
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findChannelById(string $id)
+    {
+        $channel = $this->repo->payout->dbColumn(Payout\Entity::CHANNEL);
+
+        $result = $this->newQuery()
+                       ->select($channel)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Payout\Entity::CHANNEL];
+
+        return '';
+    }
+
     public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable = $this->repo->fund_transfer_attempt->getTableName();

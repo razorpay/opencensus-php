@@ -542,6 +542,12 @@ final class RazorxTreatment
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW = 'entity_relational_load_from_scrooge_non_shadow';
 
+    // experiment to fetch transaction from central ledger service
+    const RX_TRANSACTION_LOAD_FROM_LEDGER = 'rx_transaction_load_from_ledger';
+
+    // experiment to fetch and return the transaction fetched from central ledger service
+    const RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER = 'rx_transaction_load_and_return_from_ledger';
+
     // Razorx treatment constant to send a single request to bvs for validating aadhaar
     // document, rather than sending a single one.
     const AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION = "aadhaar_front_and_back_joint_validation";

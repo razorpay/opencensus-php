@@ -93,6 +93,11 @@ class Entity extends Base\PublicEntity
         'entity',
     ];
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);

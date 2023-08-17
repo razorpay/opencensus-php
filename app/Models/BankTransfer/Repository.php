@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
+use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Balance;
 
@@ -103,6 +104,25 @@ class Repository extends Base\Repository
                              ->firstOrFail();
 
         return $bankTransfer;
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findBalanceIdById(string $id)
+    {
+        $balanceId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+                       ->select($balanceId)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[BankTransfer\Entity::BALANCE_ID];
+
+        return '';
     }
 
     /**

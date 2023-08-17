@@ -3,25 +3,39 @@
 namespace RZP\Services;
 
 use Request;
+use Symfony\Component\HttpFoundation\Response;
+
+use Razorpay\Trace\Logger as Trace;
+use Razorpay\Edge\Passport\Passport;
+
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Http\Request\Requests;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
-use Razorpay\Edge\Passport\Passport;
+use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstant;
-use Symfony\Component\HttpFoundation\Response;
 use RZP\Models\Payout\Service as PayoutService;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Reversal\Service as ReversalService;
+use RZP\Models\Payout\Repository as PayoutRepository;
 use RZP\Models\Adjustment\Service as AdjustmentService;
+use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Reversal\Repository as ReversalRepository;
 use RZP\Models\BankTransfer\Service as BankTransferService;
 use RZP\Models\FundAccount\Validation\Service as FAVService;
+use RZP\Models\Adjustment\Repository as AdjustmentRepository;
+use RZP\Models\Transaction\Processor\Ledger as LedgerProcessor;
+use RZP\Models\Transaction\CreditType as TransactionCreditType;
+use RZP\Models\BankTransfer\Repository as BankTransferRepository;
+use RZP\Models\FundAccount\Validation\Repository as FAVRepository;
+use RZP\Models\CreditTransfer\Repository as CreditTransferRepository;
 
 class Ledger
 {
@@ -122,6 +136,34 @@ class Ledger
     const MODE = 'mode';
 
     const RAZORPAY_X_TENANT = 'X';
+
+    // transaction response constants
+    const ID             = 'id';
+    const ENTITY         = 'entity';
+    const TRANSACTION    = 'transaction';
+    const ACCOUNT_NUMBER = 'account_number';
+    const SOURCE         = 'source';
+    const MERCHANT_ID    = 'merchant_id';
+
+    // ledger response constants
+    const LEDGER_ENTRY     = 'ledger_entry';
+    const TRANSACTOR_ID    = 'transactor_id';
+    const TRANSACTOR_EVENT = 'transactor_event';
+    const TYPE             = 'type';
+
+    // common response constants
+    const AMOUNT       = 'amount';
+    const BALANCE      = 'balance';
+    const CURRENCY     = 'currency';
+    const CREDIT       = 'credit';
+    const DEBIT        = 'debit';
+    const CREATED_AT   = 'created_at';
+    const UPDATED_AT   = 'updated_at';
+
+    // transaction's balance account type constants
+    const BALANCE_ACCOUNT_TYPE  = 'balance_account_type';
+    const DIRECT                = 'direct';
+    const SHARED                = 'shared';
 
     /**
      * Ledger constructor.
@@ -334,6 +376,214 @@ class Ledger
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchById'],
             Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
+
+    /**
+     * This function is used to fetch journal from ledger and return a transaction entity response
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     * @return Transaction\Entity
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchTransactionFromLedger($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false)
+    {
+        $response = $this->fetchById($requestBody, $requestHeaders, $throwExceptionOnFailure);
+
+        $statusCode     = $response[self::RESPONSE_CODE];
+        $responseBody   = $response[self::RESPONSE_BODY];
+
+        if ($statusCode !== 200)
+        {
+            throw new ServerErrorException('Received invalid status code',
+                ErrorCode::SERVER_ERROR_LEDGER_JOURNAL_FETCH_TRANSACTION,
+                [
+                    self::RESPONSE_CODE => $statusCode,
+                    self::RESPONSE_BODY => $responseBody,
+                ]
+            );
+        }
+
+        // Convert Ledger response to API Transaction Entity schema
+        return $this->createTransactionFromResponse($responseBody);
+    }
+
+    /**
+     * This method is a helper function to generate transaction entity from ledger journal response
+     * @param $journalResponse
+     * @return Transaction\Entity
+     */
+    private function createTransactionFromResponse($journalResponse)
+    {
+        $merchantBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse);
+
+        $transactorInfo = explode('_', $journalResponse[self::TRANSACTOR_ID]);
+
+        $source = $this->getSourceFromLedgerResponse($transactorInfo[0], $transactorInfo[1]);
+
+        $transaction = [
+            TransactionEntity::ID               => $journalResponse[self::ID],
+            TransactionEntity::ENTITY_ID        => $transactorInfo[1],
+            TransactionEntity::MERCHANT_ID      => $merchantBalanceLedgerEntry[self::MERCHANT_ID],
+            TransactionEntity::AMOUNT           => (int) $merchantBalanceLedgerEntry[self::AMOUNT],
+            TransactionEntity::CURRENCY         => $merchantBalanceLedgerEntry[self::CURRENCY],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::DEBIT            => (int) $merchantBalanceLedgerEntry[self::AMOUNT],  // "debit" field is non-zero in case of payouts, fav etc.
+            TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[self::BALANCE],
+            TransactionEntity::CREATED_AT       => $merchantBalanceLedgerEntry[self::CREATED_AT],
+            TransactionEntity::TYPE             => LedgerProcessor\Base::$transactorIDToTypeMap[$transactorInfo[0]],
+            TransactionEntity::FEE              =>  $this->getAmountFromLedgerResponse($journalResponse, LedgerProcessor\Base::PAYABLE, LedgerProcessor\Base::VA_GST) +
+                $this->getAmountFromLedgerResponse($journalResponse, LedgerProcessor\Base::CASH, LedgerProcessor\Base::MERCHANT_VA),
+            TransactionEntity::TAX              => (int) $this->getAmountFromLedgerResponse($journalResponse, LedgerProcessor\Base::PAYABLE, LedgerProcessor\Base::VA_GST),
+            TransactionEntity::CHANNEL          => $this->getChannelForEntity($transactorInfo[0], $transactorInfo[1],$merchantBalanceLedgerEntry[self::MERCHANT_ID]),
+            TransactionEntity::CREDITS          => (int) $this->getAmountFromLedgerResponse($journalResponse, LedgerProcessor\Base::PAYABLE, LedgerProcessor\Base::REWARD),
+            TransactionEntity::CREDIT_TYPE      => TransactionCreditType::DEFAULT,
+            TransactionEntity::BALANCE_ID       => $source->getBalanceId(),
+            TransactionEntity::UPDATED_AT       => $journalResponse[self::UPDATED_AT],
+            TransactionEntity::POSTED_AT        => $journalResponse[self::CREATED_AT],
+        ];
+
+        // set fee to 0 for reversal's of a payout
+        if (($transactorInfo[0] == LedgerProcessor\Base::REVERSAL_PREFIX) and ($source->getEntityType() == 'payout'))
+        {
+            $transaction[TransactionEntity::FEE] = 0;
+        }
+
+        // set credits
+        if ((int) $this->getAmountFromLedgerResponse($journalResponse, LedgerProcessor\Base::PAYABLE, LedgerProcessor\Base::REWARD) > 0)
+        {
+            $transaction[TransactionEntity::CREDIT_TYPE] = TransactionCreditType::REWARD_FEE;
+        }
+
+        // set credit amount
+        if ($merchantBalanceLedgerEntry[self::TYPE] === self::CREDIT)
+        {
+            // When credit amount is non zero, "credit" field is set from "amount" field in ledger response.
+            // "debit" field is 0 in transaction entity in this case.
+            // Happens in case of fund loading.
+            $transaction[self::CREDIT]  = (int) $merchantBalanceLedgerEntry[self::AMOUNT];
+            $transaction[self::DEBIT]   = 0;
+        }
+
+        $txn = new Transaction\Entity;
+        $txn->forceFill($transaction);
+
+        return $txn;
+    }
+
+    /**
+     * This method is a helper function to get the matched ledger entry from ledger journal response
+     * @param $journalResponse
+     * @param string $accountType
+     * @param string $fundAccountType
+     * @return mixed
+     */
+    private function getSpecificLedgerEntryFromJournal($journalResponse, $accountType = LedgerProcessor\Base::PAYABLE, $fundAccountType = LedgerProcessor\Base::MERCHANT_VA)
+    {
+        // check if the transaction is on shared or direct balance from ledger's response
+        foreach($journalResponse[self::LEDGER_ENTRY] as $ledgerEntry) {
+            if ((empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE]) === false)) {
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE][0] !== $accountType)
+                {
+                    continue;
+                }
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE][0] === $fundAccountType)
+                {
+                    return $ledgerEntry;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * This method is a helper function to get the amount of the matched ledger entry from ledger journal response
+     * @param $journalResponse
+     * @param string $accountType
+     * @param string $fundAccountType
+     * @return string
+     */
+    private function getAmountFromLedgerResponse($journalResponse, string $accountType, string $fundAccountType)
+    {
+        // check if the transaction is on shared or direct balance from ledger's response
+        foreach($journalResponse[self::LEDGER_ENTRY] as $ledgerEntry) {
+            if ((empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE]) === false)) {
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE][0] !== $accountType)
+                {
+                    continue;
+                }
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE][0] === $fundAccountType)
+                {
+                    return $ledgerEntry[self::AMOUNT];
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * This method is a helper function to get the source entity from database
+     * @param $entitySign
+     * @param $entityId
+     * @return mixed
+     */
+    private function getSourceFromLedgerResponse($entitySign, $entityId)
+    {
+        switch ($entitySign) {
+            case LedgerProcessor\Base::BANK_TRANSFER_PREFIX:
+                return (new BankTransferRepository)->find($entityId);
+            case LedgerProcessor\Base::ADJUSTMENT_PREFIX:
+                return (new AdjustmentRepository)->find($entityId);
+            case LedgerProcessor\Base::PAYOUT_PREFIX:
+                return (new PayoutRepository)->find($entityId);
+            case LedgerProcessor\Base::FAV_PREFIX:
+                return (new FAVRepository)->find($entityId);
+            case LedgerProcessor\Base::REVERSAL_PREFIX:
+                  return (new ReversalRepository)->find($entityId);
+            case LedgerProcessor\Base::CREDIT_TRANSFER_PREFIX:
+                return (new CreditTransferRepository)->find($entityId);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * This method is a helper function to get the channel for source entity
+     * @param $entitySign
+     * @param $transactorId
+     * @param $merchantId
+     * @return string
+     */
+    private function getChannelForEntity($entitySign, $transactorId, $merchantId)
+    {
+        switch ($entitySign) {
+            case LedgerProcessor\Base::BANK_TRANSFER_PREFIX:
+                return 'yesbank';
+            case LedgerProcessor\Base::ADJUSTMENT_PREFIX:
+                return (new AdjustmentRepository)->findChannelById($transactorId);
+            case LedgerProcessor\Base::PAYOUT_PREFIX:
+                return (new PayoutRepository)->findChannelById($transactorId);
+            case LedgerProcessor\Base::FAV_PREFIX:
+                return (new MerchantRepository)->find($merchantId)->getChannel();
+            case LedgerProcessor\Base::REVERSAL_PREFIX:
+                return (new ReversalRepository)->findChannelById($transactorId);
+            case LedgerProcessor\Base::CREDIT_TRANSFER_PREFIX:
+                return (new CreditTransferRepository)->findChannelById($transactorId);
+            default:
+                return null;
+        }
+    }
+
 
     /**
      * @param      $requestBody

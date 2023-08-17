@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundAccount\Type;
+use RZP\Models\FundAccount\Validation;
 
 class Repository extends Base\Repository
 {
@@ -27,6 +28,25 @@ class Repository extends Base\Repository
             ->where(Entity::STATUS, "=" , Status::CREATED)
             ->where(Entity::FUND_ACCOUNT_TYPE, "=", Type::BANK_ACCOUNT)
             ->get();
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findBalanceIdById(string $id)
+    {
+        $balanceId = $this->repo->fund_account_validation->dbColumn(Validation\Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+                       ->select($balanceId)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Validation\Entity::BALANCE_ID];
+
+        return '';
     }
 
     /**

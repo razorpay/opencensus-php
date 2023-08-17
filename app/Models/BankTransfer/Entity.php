@@ -370,6 +370,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters --------------------------------------
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getMethod()
     {
         return Payment\Method::BANK_TRANSFER;

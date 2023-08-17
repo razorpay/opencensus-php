@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 
@@ -25,6 +26,44 @@ class Repository extends Base\Repository
             ->where(Entity::DESCRIPTION, '=', $description)
             ->merchantId($merchantId)
             ->exists();
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findBalanceIdById(string $id)
+    {
+        $balanceId = $this->repo->adjustment->dbColumn(Adjustment\Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+                       ->select($balanceId)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Adjustment\Entity::BALANCE_ID];
+
+        return '';
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findChannelById(string $id)
+    {
+        $channel = $this->repo->adjustment->dbColumn(Adjustment\Entity::CHANNEL);
+
+        $result = $this->newQuery()
+                       ->select($channel)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Adjustment\Entity::CHANNEL];
+
+        return '';
     }
 
     /**

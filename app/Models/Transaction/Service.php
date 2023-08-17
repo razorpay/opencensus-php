@@ -27,6 +27,7 @@ use RZP\Jobs\Settlement\LedgerReconJob2;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Report\Types\BasicEntityReport;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Transaction\FeeBreakup\Repository as FeesBreakupRepo;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -716,5 +717,85 @@ class Service extends Base\Service
         }
 
         return ['success' => true];
+    }
+
+    /***
+     * This function is used to compare api transaction and transaction entity created from ledger response
+     * @param array $apiTxnArray api db transaction array
+     * @param array $ledgerTxnArray scrooge db transaction array
+     * @param array $extraTrace additional trace info to log
+     * @return void
+     */
+    public function compareTransactionsAndLogDifference($apiTxnArray, $ledgerTxnArray, array $extraTrace = [])
+    {
+        // Compare ledger and api response
+        $this->trace->info(TraceCode::LEDGER_AND_API_TXN_COMPARE, [
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'extra_trace' => $extraTrace,
+        ]);
+
+        try
+        {
+            $diff = $this->differenceKeysOfTransactions($apiTxnArray[0], $ledgerTxnArray[0]);
+
+            if (empty($diff) === false)
+            {
+                $this->trace->info(TraceCode::LEDGER_AND_API_TXN_INCONSISTENCY, [
+                    'diff'        => $diff,
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace' => $extraTrace,
+                ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::COMPARE_API_LEDGER_TXN_FETCH_ERROR,
+                [
+                    'api'           => $apiTxnArray,
+                    'ledger'        => $ledgerTxnArray,
+                    'extra_trace'   => $extraTrace,
+                ]);
+        }
+    }
+
+    public function differenceKeysOfTransactions($apiTxnArray, $ledgerTxnArray) : array
+    {
+        $responseDiff = [];
+
+        $fieldsToCompare = [TransactionEntity::ID,
+            TransactionEntity::ENTITY_ID,
+            TransactionEntity::MERCHANT_ID,
+            TransactionEntity::AMOUNT,
+            TransactionEntity::CURRENCY,
+            TransactionEntity::CREDIT,
+            TransactionEntity::DEBIT,
+            TransactionEntity::BALANCE,
+            TransactionEntity::CREATED_AT,
+            TransactionEntity::TYPE,
+            TransactionEntity::FEE,
+            TransactionEntity::TAX,
+            TransactionEntity::CHANNEL,
+            TransactionEntity::CREDITS,
+            TransactionEntity::CREDIT_TYPE,
+            TransactionEntity::BALANCE_ID,
+            TransactionEntity::UPDATED_AT,
+            TransactionEntity::POSTED_AT];
+
+        foreach ($apiTxnArray as $key => $value)
+        {
+            if (in_array($key, $fieldsToCompare) === false)
+            {
+                continue;
+            }
+
+            if ($ledgerTxnArray[$key] != $value)
+            {
+                $responseDiff[$key]["ledger"]   = $ledgerTxnArray[$key];
+                $responseDiff[$key]["api"]      = $value;
+            }
+        }
+
+        return $responseDiff;
     }
 }

@@ -122,6 +122,44 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param $id
+     * @return string
+     */
+    public function findBalanceIdById(string $id)
+    {
+        $balanceId = $this->repo->reversal->dbColumn(Reversal\Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+                       ->select($balanceId)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Reversal\Entity::BALANCE_ID];
+
+        return '';
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function findChannelById(string $id)
+    {
+        $channel = $this->repo->reversal->dbColumn(Reversal\Entity::CHANNEL);
+
+        $result = $this->newQuery()
+                       ->select($channel)
+                       ->where(Entity::ID, '=', $id)
+                       ->get();
+
+        if (empty($result) === false)
+            return $result->first()[Reversal\Entity::CHANNEL];
+
+        return '';
+    }
+
+    /**
      * calculates the sum of `fee` and `tax` of all the created for a merchant for the given balance_id in the given time frame.
      *
      * select  SUM(payouts.tax) AS tax,SUM(payouts.fees) AS fee

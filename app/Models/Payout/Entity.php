@@ -957,6 +957,11 @@ class Entity extends Base\PublicEntity
         return self::$sign;
     }
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getIsPayoutService(): bool
     {
         return ($this->getAttribute(self::IS_PAYOUT_SERVICE) === 1);

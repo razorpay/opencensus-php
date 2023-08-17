@@ -4,10 +4,11 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 
 use App;
 use Ramsey\Uuid\Uuid;
+use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\Core;
 use RZP\Jobs\LedgerStatus;
+use RZP\Models\Base\Core;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
@@ -82,14 +83,23 @@ class Base extends Core
     const ACCOUNT_TYPE      = 'account_type';
     const FUND_ACCOUNT_TYPE = 'fund_account_type';
     const PAYABLE           = 'payable';
+    const CASH              = 'cash';
     const MERCHANT_VA       = 'merchant_va';
     const MERCHANT_DA       = 'merchant_da';
+    const VA_GST            = 'va_gst';
 
     const BALANCE           = 'balance';
     const MIN_BALANCE       = 'min_balance';
     const MERCHANT_BALANCE  = 'merchant_balance';
     const REWARD_BALANCE    = 'reward_balance';
     const ENTITIES          = 'entities';
+
+    const BANK_TRANSFER_PREFIX   = "bt";
+    const ADJUSTMENT_PREFIX      = "adj";
+    const PAYOUT_PREFIX          = "pout";
+    const FAV_PREFIX             = "fav";
+    const REVERSAL_PREFIX        = "rvrsl";
+    const CREDIT_TRANSFER_PREFIX = "ct";
 
     // Ledger sync retry
     const DEFAULT_MAX_RETRY_COUNT = 3;
@@ -105,6 +115,15 @@ class Base extends Core
 
     const DA_LEDGER_EXT_TO_ENTITY_DEBIT_EVENTS  = [Payout::DA_EXT_PAYOUT_PROCESSED, Payout::DA_EXT_FEE_PAYOUT_PROCESSED];
     const DA_LEDGER_EXT_TO_ENTITY_CREDIT_EVENTS = [Payout::DA_EXT_PAYOUT_REVERSED, Payout::DA_EXT_FEE_PAYOUT_REVERSED];
+
+    public static $transactorIDToTypeMap = [
+        self::BANK_TRANSFER_PREFIX      => Entity::BANK_TRANSFER,
+        self::ADJUSTMENT_PREFIX         => Entity::ADJUSTMENT,
+        self::PAYOUT_PREFIX             => Entity::PAYOUT,
+        self::FAV_PREFIX                => Entity::FUND_ACCOUNT_VALIDATION,
+        self::REVERSAL_PREFIX           => Entity::REVERSAL,
+        self::CREDIT_TRANSFER_PREFIX    => Entity::CREDIT_TRANSFER,
+    ];
 
     public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse, string $merchantIdentifier = self::MERCHANT_VA)
     {

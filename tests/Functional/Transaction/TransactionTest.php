@@ -3,21 +3,25 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use Mail;
+
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Mail\Merchant\BalanceThresholdAlert;
-use RZP\Models\BankingAccount\Channel;
-use RZP\Models\Feature\Constants as Features;
-use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Transaction;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Pricing\Calculator\Tax\Base;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Mail\Merchant\BalanceThresholdAlert;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Transaction\Ledger\Core as LedgerCore;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -1632,5 +1636,457 @@ class TransactionTest extends TestCase
         $payment->merchant()->associate($merchant);
 
         return $payment;
+    }
+
+    public function testFindPayoutTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindPayoutTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'id'              => 'samplePoutId51',
+            'status'          => 'initiated',
+            'pricing_rule_id' => 'nvp2XPMmaRLxb',
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'pout_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'], $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('payout', $ledgerTxnResp->getType());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][2]['amount'] + $mockLedgerResponse['ledger_entry'][3]['amount'], $ledgerTxnResp->getFee());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][2]['amount'], $ledgerTxnResp->getTax());
+        $this->assertEquals($payout->getChannel(), $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($payout->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
+    }
+
+    public function testFindPayoutTransactionFromLedgerExternalFetchDisabled()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('control');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockAPIResponse = $this->testData['testFindPayoutTransactionFromLedgerExternalFetchDisabled']['payload'];
+
+        $mockAPITxnResponse = new Transaction\Entity;
+        $mockAPITxnResponse->forceFill($mockAPIResponse);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockAPIResponse['id'], '10000000000000', $mockAPITxnResponse);
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockAPIResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals('pout_'.$mockAPIResponse['entity_id'], 'pout_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockAPIResponse['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockAPIResponse['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockAPIResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals($mockAPIResponse['credit'], $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockAPIResponse['debit'], $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockAPIResponse['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockAPIResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals($mockAPIResponse['type'], $ledgerTxnResp->getType());
+        $this->assertEquals($mockAPIResponse['fee'], $ledgerTxnResp->getFee());
+        $this->assertEquals($mockAPIResponse['tax'], $ledgerTxnResp->getTax());
+        $this->assertEquals($mockAPIResponse['channel'], $ledgerTxnResp->getChannel());
+        $this->assertEquals($mockAPIResponse['credit_type'], $ledgerTxnResp->getCreditType());
+        $this->assertEquals($mockAPIResponse['balance_id'], $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockAPIResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+    }
+
+    public function testFindPayoutTransactionFromLedgerExternalFetchEnabledReturnDisabled()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturnCallback(static function ($mid, $feature, $mode) {
+                if ($feature === RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER)
+                {
+                    return 'on';
+                }
+
+                return 'control';
+            });
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockAPIResponse = $this->testData['testFindPayoutTransactionFromLedgerExternalFetchEnabledReturnDisabled']['apiPayload'];
+
+        $mockAPITxnResponse = new Transaction\Entity;
+        $mockAPITxnResponse->forceFill($mockAPIResponse);
+
+        $mockLedgerResponse = $this->testData['testFindPayoutTransactionFromLedgerExternalFetchEnabledReturnDisabled']['ledgerPayload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'id'              => 'samplePoutId51',
+            'status'          => 'initiated',
+            'pricing_rule_id' => 'nvp2XPMmaRLxb',
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000', $mockAPITxnResponse);
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockAPIResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals('pout_'.$mockAPIResponse['entity_id'], 'pout_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockAPIResponse['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockAPIResponse['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockAPIResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals($mockAPIResponse['credit'], $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockAPIResponse['debit'], $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockAPIResponse['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockAPIResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals($mockAPIResponse['type'], $ledgerTxnResp->getType());
+        $this->assertEquals($mockAPIResponse['fee'], $ledgerTxnResp->getFee());
+        $this->assertEquals($mockAPIResponse['tax'], $ledgerTxnResp->getTax());
+        $this->assertEquals($mockAPIResponse['channel'], $ledgerTxnResp->getChannel());
+        $this->assertEquals($mockAPIResponse['credit_type'], $ledgerTxnResp->getCreditType());
+        $this->assertEquals($mockAPIResponse['balance_id'], $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockAPIResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+    }
+
+    public function testFindReversalTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindReversalTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'id'              => 'samplePoutId51',
+            'status'          => 'processed',
+            'pricing_rule_id' => 'nvp2XPMmaRLxb',
+        ]);
+
+        $reversal = $this->fixtures->create('reversal', [
+            'id'              => 'sampleRvslId51',
+            'entity_id'       => $payout->getId(),
+            'entity_type'     => 'payout',
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'rvrsl_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'], $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('reversal', $ledgerTxnResp->getType());
+        $this->assertEquals(0, $ledgerTxnResp->getFee());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][2]['amount'], $ledgerTxnResp->getTax());
+        $this->assertEquals($reversal->getChannel(), $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($reversal->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
+    }
+
+    public function testFindFAVTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindFAVTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $fav = $this->fixtures->create('fund_account_validation', [
+            'id'              => 'sampleFavId511',
+            'account_status'  => 'active',
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'fav_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('fund_account_validation', $ledgerTxnResp->getType());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'] + $mockLedgerResponse['ledger_entry'][2]['amount'], $ledgerTxnResp->getFee());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][1]['amount'], $ledgerTxnResp->getTax());
+        $this->assertEquals($fav->merchant->getChannel(), $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($fav->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
+    }
+
+    public function testFindAdjustmentTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindAdjustmentTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $txn = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+        $adj = $this->fixtures->create('adjustment', [
+            'id'                => 'sampleAdjId511',
+            'merchant_id'       => '10000000000000',
+            'amount'            => 500 ,
+            'description'       => 'test adjustment',
+            'transaction_id'    => $txn->getId()
+        ]);
+        $this->fixtures->edit('adjustment', $adj['id'], ['transaction_id' => null]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'adj_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('adjustment', $ledgerTxnResp->getType());
+        $this->assertEquals(0, $ledgerTxnResp->getFee());
+        $this->assertEquals(0, $ledgerTxnResp->getTax());
+        $this->assertEquals($adj->getChannel(), $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($adj->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
+    }
+
+    public function testFindBankTransferTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindBankTransferTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $bankTransfer = $this->fixtures->create('bank_transfer', [
+            'id'             => "sampleBnkTrId5",
+            'utr'            => "2222",
+            'merchant_id'    => '10000000000000'
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'bt_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('bank_transfer', $ledgerTxnResp->getType());
+        $this->assertEquals(0, $ledgerTxnResp->getFee());
+        $this->assertEquals(0, $ledgerTxnResp->getTax());
+        $this->assertEquals('yesbank', $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($bankTransfer->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
+    }
+
+    public function testFindCreditTransferTransactionFromLedger()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $this->testData['testFindCreditTransferTransactionFromLedger']['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+        $ct = $this->fixtures->create('credit_transfer', [
+            'id'             => 'sampleCtrId511',
+            'balance_id'     => $balance->getId(),
+            'amount'         => 500 ,
+            'description'    => 'test credit transfer',
+            'entity_id'      => 'JGSxG6xVOuzDcp',
+            'entity_type'    => 'payout'
+        ]);
+
+        $ledgerTxnResp = (new LedgerCore())->findByIdFromLedger($mockLedgerResponse['id'], '10000000000000');
+        $this->assertNotNull($ledgerTxnResp);
+
+        $this->assertEquals($mockLedgerResponse['id'], $ledgerTxnResp->getId());
+        $this->assertEquals($mockLedgerResponse['transactor_id'], 'ct_'.$ledgerTxnResp->getEntityId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['merchant_id'], $ledgerTxnResp->getMerchantId());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getAmount());
+        $this->assertEquals($mockLedgerResponse['currency'], $ledgerTxnResp->getCurrency());
+        $this->assertEquals(0, $ledgerTxnResp->getDebit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['amount'], $ledgerTxnResp->getCredit());
+        $this->assertEquals($mockLedgerResponse['ledger_entry'][0]['balance'], $ledgerTxnResp->getBalance());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getCreatedAt());
+        $this->assertEquals('credit_transfer', $ledgerTxnResp->getType());
+        $this->assertEquals(0, $ledgerTxnResp->getFee());
+        $this->assertEquals(0, $ledgerTxnResp->getTax());
+        $this->assertEquals($ct->getChannel(), $ledgerTxnResp->getChannel());
+        $this->assertEquals(0, $ledgerTxnResp->getCredits());
+        $this->assertEquals('default', $ledgerTxnResp->getCreditType());
+        $this->assertEquals($ct->getBalanceId(), $ledgerTxnResp->getBalanceId());
+        $this->assertEquals($mockLedgerResponse['updated_at'], $ledgerTxnResp->getUpdatedAt());
+        $this->assertEquals($mockLedgerResponse['created_at'], $ledgerTxnResp->getPostedDate());
     }
 }
