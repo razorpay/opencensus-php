@@ -4,10 +4,10 @@ namespace RZP\Constants;
 
 class TLD
 {
-    // list taken from the public suffix list(5 March 2022 version) to ensure 
-    // that it is in sync with the shield list. 
+    // list taken from the public suffix list(5 March 2022 version) to ensure
+    // that it is in sync with the shield list.
     // https://github.com/publicsuffix/list/blob/master/public_suffix_list.dat
-    // Slack thread: https://razorpay.slack.com/archives/C6QPQKVLZ/p1655359030131919 
+    // Slack thread: https://razorpay.slack.com/archives/C6QPQKVLZ/p1655359030131919
     const TLDS = [
         'ac',
         'com.ac',
@@ -9335,6 +9335,7 @@ class TLD
         'basicserver.io',
         'virtualserver.io',
         'enterprisecloud.nu',
+        'vibrantscreen',
     ];
 
     public static function isValid($tld)
