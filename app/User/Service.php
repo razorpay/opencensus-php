@@ -1303,10 +1303,16 @@ class Service extends Base\Service
 
         return [[], ['details' => $data, 'currentMerchant' => $currentMerchant, 'genericUser' => $genericUser]];
     }
-
+    
+    static function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
     
     private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny): array
     {
+        $startTime = self::millitime();
+        
         if (empty($apiPromiseAny))
         {
             return $data;
@@ -1315,11 +1321,11 @@ class Service extends Base\Service
         $allPromises =  $this->getAllApiPromises($apiPromiseAny);
     
         $this->setStartTimeForAllApiPromises($apiPromiseAny);
-    
+        
         // fire and wait for all the promises to complete
         $allApiResponses = \GuzzleHttp\Promise\Utils::settle($allPromises)->wait();
-    
-        $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses, );
+        
+        $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses);
     
         $merchantService = new Merchant\Service;
 
@@ -1367,7 +1373,14 @@ class Service extends Base\Service
                 }
             }
         }
+
+        $endTime = self::millitime();
     
+        $this->trace->info(TraceCode::API_PROMISE_RESPONSE_TIME_TAKEN, [
+            'promises_response_time_taken'  =>  $endTime - $startTime,
+            'concurrent_call'               =>  true,
+        ]);
+        
         return $data;
     }
     
@@ -1376,6 +1389,8 @@ class Service extends Base\Service
      */
     private function getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data): array
     {
+        $startTime = self::millitime();
+        
         $apiPromiseAny = [];
         
         $currentRouteName = \Route::currentRouteName();
@@ -1438,6 +1453,13 @@ class Service extends Base\Service
             $apiPromiseAny[self::CONFIG_PROMISE]->setPromise($promise);
         
         }
+    
+        $endTime = self::millitime();
+    
+        $this->trace->info(TraceCode::API_PROMISE_BUILT_TIME_TAKEN, [
+            'promises_built_time_taken'  =>  $endTime - $startTime,
+            'concurrent_call'               =>  true,
+        ]);
         
         return $apiPromiseAny;
     }
