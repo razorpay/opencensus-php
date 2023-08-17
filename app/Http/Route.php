@@ -3215,6 +3215,8 @@ class Route
         'commissions_bulk_capture_by_partner'      => ['post',     'commissions/partner/capture/bulk',               'CommissionController@bulkCaptureByPartner'                         ],
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
+        'commissions_reversal_for_refund'          => ['post',     'commissions/payment/refund',                     'CommissionController@reverseCommissionForRefund'                   ],
+
 
         'commissions_invoice_fetch_all'            => ['get',      'commissions/invoice/fetch/bulk',                 'CommissionInvoiceController@fetchBulk'                             ],
         'commissions_invoice_generate'             => ['post',     'commissions/invoice/create',                     'CommissionInvoiceController@postCreateInvoices'                    ],
@@ -6054,6 +6056,7 @@ class Route
 
         // partnership service dependent routes
         'fetch_commission_configs',
+        'commissions_reversal_for_refund',
         'prts_fetch_merchant_entities',
         'fetch_partner_commission_invoice_feature',
         'calculate_commission',
@@ -15524,6 +15527,7 @@ class Route
             'refund_edit_internal',
             'scrooge_refund_back_write',
             'payment_fetch_card_metadata',
+            'commissions_reversal_for_refund',
         ],
 
         'thirdwatch_reports' => [

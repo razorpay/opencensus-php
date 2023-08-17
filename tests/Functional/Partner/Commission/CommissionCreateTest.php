@@ -8,6 +8,7 @@ use App;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\Pricing\Repository as PricingRepo;
 use RZP\Services\Mock\DataLakePresto;
 use Illuminate\Database\Eloquent\Factory;
@@ -332,6 +333,259 @@ class CommissionCreateTest extends TestCase
         return $input;
     }
 
+    /**
+     * Test commission reversal incase of full refund
+     */
+    public function testImplicitCommissionFullRefund()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        // make request for refund for the payment
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']);
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+        $this->assertCount(1, $refundCommissions);
+
+        // credit in commission should be equal to debit in refund commission
+        $this->assertEquals($commissions[0]['credit'], $refundCommissions[1]['debit']);
+    }
+
+    /**
+     * Test commission reversal incase of partial refund
+     */
+    public function testImplicitCommissionPartialRefund()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        // make request for refund for the payment
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']*0.5);
+
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+        $this->assertCount(1, $refundCommissions);
+
+        // partial credit(0.5) in commission should be equal to debit in refund commission
+        $this->assertEquals($commissions[0]['credit']*0.5, $refundCommissions[1]['debit']);
+    }
+
+    /**
+     * commission should not be reversed for refunds of last month
+     */
+    public function testImplicitCommissionShouldNotRefundForLastMonth()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        // make request for refund for the payment with commission created last month
+        $this->fixtures->edit('commission', $commissions[0]['id'], ['created_at' => Carbon::now()->subMonth(2)->getTimestamp()]);
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']*0.5, false);
+
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+        $this->assertCount(0, $refundCommissions);
+    }
+
+
+    /**
+     * Refund should not be created for explicit commission
+     */
+    public function testShouldNotCreateRefundForExplicit()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+       // make request for refund for the payment
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']*0.5, false);
+
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+        $this->assertCount(0, $refundCommissions);
+    }
+
+    /**
+     * invoice should accommodate commission refunds
+     */
+    public function testInvoiceWithCommissionRefunds()
+    {
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreateForRefunds();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']*0.5);
+
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $this->ba->adminAuth();
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month'         => $now->month,
+            'year'          => $now->year,
+            'status'        => 'issued',
+            'gross_amount'  => $commissions[0]['credit']-$refundCommissions[1]['debit'],
+            'tax_amount'    => $commissions[0]['tax']-$refundCommissions[1]['tax'],
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' .Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('processed', $invoice['status']);
+        Mail::assertNotSent(CommissionOpsInvoice::class);
+        Mail::assertNotSent(CommissionInvoice::class);
+    }
+
+    private function reverseCommissionForRefund(string $paymentId, string $amount, bool $withExperiment = true)
+    {
+        $request = [
+            'url' => '/commissions/payment/refund',
+            'method' => 'post',
+            'content' => [
+                'refund_amount' => $amount,
+                'payment_id'    => substr($paymentId, 4),
+                'refund_id'     => 'RandomRefundId',
+            ],
+        ];
+        $input = [
+            "experiment_id" => "MLi1iSjDQwvcnl",
+            "id"            => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        if($withExperiment)
+        {
+            $this->mockSplitzTreatment($input, $output);
+        }
+        $this->ba->scroogeAuth();
+        return $this->makeRequestAndGetContent($request);
+    }
 
     public function testImplicitVariableOnNONINRPaymentCapture()
     {
@@ -2717,6 +2971,34 @@ class CommissionCreateTest extends TestCase
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
+
+        return $testData;
+    }
+
+    protected function setUpCommissionCreateForRefunds($paymentAttributes = [])
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createImplicitPricingPlan();
+
+        $defaultPaymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 4000 * 100,
+        ];
+
+        $paymentAttributes = array_merge($defaultPaymentAttributes, $paymentAttributes);
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->setSubmerchantPrivateAuth();
+
+        $testData = $this->testData['testImplicitCommissionFullRefund'];
 
         $testData['request']['content']['amount'] = $payment->getAmount();
 

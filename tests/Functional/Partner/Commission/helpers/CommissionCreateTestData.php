@@ -97,6 +97,57 @@ return [
         ],
     ],
 
+    'testImplicitCommissionFullRefund' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testImplicitCommissionPartialRefund' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testImplicitCommissionShouldNotRefundForLastMonth' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testShouldNotCreateRefundForExplicit' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 
     'testImplicitVariableCommissionCalculate' => [
         'request' => [

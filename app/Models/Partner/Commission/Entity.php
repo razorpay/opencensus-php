@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECORD_ONLY,
         self::MODEL,
+        self::SOURCE_TYPE,
+        self::SOURCE_ID,
     ];
 
     protected $public = [
@@ -202,6 +204,21 @@ class Entity extends Base\PublicEntity
     public function getType(): string
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getModel(): string
+    {
+        return $this->getAttribute(self::MODEL);
+    }
+
+    public function getRecordOnly(): string
+    {
+        return $this->getAttribute(self::RECORD_ONLY);
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function hasTransaction()

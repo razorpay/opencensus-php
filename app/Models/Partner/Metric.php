@@ -38,6 +38,7 @@ final class Metric
     const PARTNER_ACTIVATION_AUTO_ACTIVATE_SUCCESS_TOTAL     = 'partner_activation_auto_activate_success_total';
     const PARTNER_ACTIVATION_AUTO_ACTIVATE_FAILURE_TOTAL     = 'partner_activation_auto_activate_failure_total';
     const COMMISSION_CAPTURE_JOB_PROCESSING_IN_MS            = 'commission_capture_job_processing_in_ms';
+    const COMMISSION_REFUND_CREATE_JOB_PROCESSING_IN_MS      = 'commission_refund_create_job_processing_in_ms';
     const COMMISSION_INVOICE_GENERATION_JOB_PROCESSING_IN_MS = 'commission_invoice_generation_job_processing_in_ms';
 
     const COMMISSION_INVOICE_GENERATION_FAILED_TOTAL                = 'commission_invoice_generation_failed_total';

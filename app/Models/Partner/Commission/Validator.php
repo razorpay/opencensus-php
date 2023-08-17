@@ -30,6 +30,8 @@ class Validator extends Base\Validator
         Entity::CREDIT      => 'required|integer',
         Entity::RECORD_ONLY => 'required|integer',
         Entity::CURRENCY    => 'sometimes|string|in:' . Currency::INR . ',' . Currency::MYR,
+        Entity::SOURCE_ID   => 'sometimes|string|size:14',
+        Entity::SOURCE_TYPE => 'sometimes|string|in:' . Constants::PAYMENT . ',' . Constants::REFUND,
     ];
 
     protected static $markForSettlementRules        = [
@@ -65,6 +67,12 @@ class Validator extends Base\Validator
         Constants::PAYMENT         => 'required|array',
         Constants::PARTNER_CONFIGS => 'required|array',
         Constants::PARTNER_DETAILS => 'required|array'
+    ];
+
+    protected static $reverseCommissionForRefundRules = [
+        Constants::PAYMENT_ID    => 'required|string|size:14',
+        Constants::REFUND_ID     => 'required|string|size:14',
+        Constants::REFUND_AMOUNT => 'required|integer'
     ];
 
     protected static $calculateCommissionValidators = [

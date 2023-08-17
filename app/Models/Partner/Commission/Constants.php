@@ -9,7 +9,8 @@ use RZP\Models\Merchant\Detail\Status as DetailStatus;
 class Constants
 {
     const PAYMENT = 'payment';
-    const PAYOUT =  'payout';
+    const PAYOUT  = 'payout';
+    const REFUND  = 'refund';
 
     const COMMISSION_BREAK_UP_PREFIX = 'commission_';
 
@@ -34,6 +35,10 @@ class Constants
     const COMPONENTS       = 'components';
     const TDS              = 'tds';
     const TDS_PERCENTAGE   = 'tds_percentage';
+
+    const PAYMENT_ID       = 'payment_id';
+    const REFUND_ID        = 'refund_id';
+    CONST REFUND_AMOUNT    = 'refund_amount';
 
     const FIXED    = 'fixed';
     const VARIABLE = 'variable';

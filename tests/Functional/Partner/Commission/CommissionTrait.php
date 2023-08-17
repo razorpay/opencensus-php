@@ -31,6 +31,17 @@ trait CommissionTrait
         return $commissions;
     }
 
+    public function getCommissionsBySourceId($sourceId)
+    {
+        $commissions = $this->getDbEntities('commission');
+
+        $commissions = $commissions->where(
+            'source_id',
+            $sourceId
+        );
+
+        return $commissions;
+    }
     public function createEntityOrigin($entityType,
                                        $entityId,
                                        $originType = 'application',

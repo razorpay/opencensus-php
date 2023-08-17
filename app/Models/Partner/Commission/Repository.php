@@ -90,9 +90,9 @@ class Repository extends BaseRepository
     {
         // fetching aggregate Tax and Fee for payment (primary) commissions
         $primaryQuery = $this->newQuery()
-                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::CREDIT . ') AS credit, SUM(' . Entity::DEBIT . ') AS debit')
                              ->where(Entity::PARTNER_ID, $partnerId)
-                             ->where(Entity::SOURCE_TYPE, Constants::PAYMENT)
+                             ->whereIn(Entity::SOURCE_TYPE, [E::PAYMENT, E::REFUND])
                              ->whereBetween(Entity::CREATED_AT, [$start, $end]);
 
         $nonZeroTaxPrimaryQuery = clone $primaryQuery;
@@ -102,7 +102,7 @@ class Repository extends BaseRepository
 
         // fetching aggregate Tax and Fee for payout (banking) commissions
         $bankingQuery = $this->newQuery()
-                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::CREDIT . ') AS credit, SUM(' . Entity::DEBIT . ') AS debit')
                              ->where(Entity::PARTNER_ID, $partnerId)
                              ->where(Entity::SOURCE_TYPE, Constants::PAYOUT)
                              ->whereBetween(Entity::CREATED_AT, [$start, $end]);
@@ -240,5 +240,13 @@ class Repository extends BaseRepository
         }
 
         $commission->source()->associate($payment);
+    }
+
+    public function findBySourceIdAndCommissionType(string $sourceId, string $commissionType = Type::IMPLICIT)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::TYPE, $commissionType)
+                    ->first();
     }
 }

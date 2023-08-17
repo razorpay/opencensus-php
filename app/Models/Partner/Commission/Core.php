@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
+use RZP\Constants\Country;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -15,11 +16,13 @@ use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Constants\Environment;
+use Illuminate\Support\Carbon;
 use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
+use RZP\Jobs\CommissionRefundJob;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\CommissionTdsSettlement;
@@ -36,7 +39,7 @@ class Core extends Base\Core
     const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 5000;
 
     public function build(
-        Base\PublicEntity $source,
+        ?Base\PublicEntity $source,
         Merchant\Entity $partner,
         PartnerConfig\Entity $partnerConfig,
         array $input = [],
@@ -46,7 +49,10 @@ class Core extends Base\Core
 
         $commission->build($input);
 
-        $commission->source()->associate($source);
+        if (empty($source) != true)
+        {
+            $commission->source()->associate($source);
+        }
 
         $commission->partner()->associate($partner);
 
@@ -55,6 +61,48 @@ class Core extends Base\Core
         $commission->transaction()->associate($txn);
 
         return $commission;
+    }
+
+    /**
+     * Checks if partner commission is created for a Payment and Partner is not Malaysian
+     *
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    public function isValidForCommissionRefund(string $paymentId): bool
+    {
+        $commission = $this->repo->commission->findBySourceIdAndCommissionType($paymentId);
+        if (empty($commission))
+        {
+            return false;
+        }
+        $partner = $commission->partner;
+
+        return (
+            ($partner->getCountry() !== Country::MY) &&
+            $this->isTimestampInCurrentMonth($commission->getCreatedAt()) &&
+            $this->isCommissionRefundExpEnabled($partner->getId())
+        );
+    }
+
+    // check if timestamp is in current month
+    public function isTimestampInCurrentMonth($timestamp): bool
+    {
+        $date = Carbon::createFromTimestamp($timestamp);
+
+        return $date->isCurrentMonth();
+    }
+
+    private function isCommissionRefundExpEnabled(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.commission_reversal_for_refund_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable(
+            $properties, 'enable', TraceCode::COMMISSION_REFUND_SPLITZ_ERROR
+        );
     }
 
     /**
@@ -83,6 +131,22 @@ class Core extends Base\Core
     public function createFromPayout(Payout\Entity $payout) : array
     {
         return $this->createCommission($payout);
+    }
+
+    public function reverseCommissionForRefund(string $paymentId, string $refundId, int $refundAmount): void
+    {
+        if ( $this->isValidForCommissionRefund($paymentId) )
+        {
+            CommissionRefundJob::dispatch($this->mode, $refundId, $paymentId, $refundAmount);
+            $this->trace->info(
+                TraceCode::COMMISSION_REFUND_JOB_PUSHED,
+                [
+                    'payment_id'        => $paymentId,
+                    'refunded_amount'   => $refundAmount,
+                    'refund_id'         => $refundId,
+                ]
+            );
+        }
     }
 
     /**

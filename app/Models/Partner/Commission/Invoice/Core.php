@@ -1215,7 +1215,7 @@ class Core extends Base\Core
             $aggregateSum = $sumComponent->getAttributes();
 
             // aggregateSum contains both commission and tax
-            $totalSum += $aggregateSum['fee'];
+            $totalSum += $aggregateSum['credit']-$aggregateSum['debit'];
         }
 
         if (empty($totalSum) === true)
@@ -1232,7 +1232,7 @@ class Core extends Base\Core
         foreach ($aggregateSumComponents as $key => $sumComponent)
         {
             $aggregateSum = $sumComponent->getAttributes();
-            $amount = $aggregateSum['fee'];
+            $amount = $aggregateSum['credit']-$aggregateSum['debit'];
 
             if ($amount <= 0) {
                 continue;

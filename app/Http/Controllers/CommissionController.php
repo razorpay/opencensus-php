@@ -35,6 +35,15 @@ class CommissionController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function reverseCommissionForRefund()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->reverseCommissionForRefund($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function captureByPartner(string $partnerId)
     {
         $count = $this->service()->captureByPartner($partnerId);

@@ -12,6 +12,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception;
 use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Models\Partner\Commission\Core as CommissionCore;
 
 class Service extends Base\Service
 {
@@ -46,6 +47,17 @@ class Service extends Base\Service
         return $commission->toArrayPublic();
     }
 
+    public function reverseCommissionForRefund(array $input)
+    {
+        (new Validator())->validateInput('reverse_commission_for_refund', $input);
+
+        $paymentId    = $input[Constants::PAYMENT_ID];
+        $refundId     = $input[Constants::REFUND_ID];
+        $refundAmount = $input[Constants::REFUND_AMOUNT];
+
+        $this->core()->reverseCommissionForRefund($paymentId, $refundId, $refundAmount);
+        return ['success' => true];
+    }
     public function captureByPartner(string $partnerId): int
     {
         $partner = $this->repo->merchant->findOrFailPublic($partnerId);
