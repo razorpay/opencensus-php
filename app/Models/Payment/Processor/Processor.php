@@ -1057,11 +1057,13 @@ class Processor
 
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
-                    'merchant_id' => $merchant->getId(),
-                    '$feeBearerResult' => $feeBearerResult,
-                ]);
+                if ($feeBearerResult !== 'on') {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
+                        'merchant_id' => $merchant->getId(),
+                        '$feeBearerResult' => $feeBearerResult,
+                    ]);
+                }
                 return ($feeBearerResult === 'on');
             }
 
