@@ -125,9 +125,11 @@ class UpiProcessor extends BaseProcessor
 
     protected function processTurboDowntime(Collection $turboGatewayDowntimes, $merchantId = null)
     {
-        //Fetch all ongoing turbo payment downtimes from DB where method = UPI and filter out turbo downtimes
-        $activeTurboPaymentDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethodAndMerchant($this->method, $merchantId)
-                                                       ->where(Entity::TYPE, '=', MerchantMethods::IN_APP);
+        $activeTurboPaymentDowntimes = $this->getRepo()
+                                            ->fetchOngoingDowntimesByMethodAndMerchant($this->method, $merchantId)
+                                            ->where(Entity::TYPE, '=', MerchantMethods::IN_APP);
+
+        $processedPaymentDowntimeIds = [];
 
         $this->trace->info(TraceCode::ACTIVE_TURBO_DOWNTIMES_FETCHED,
                            [
@@ -135,62 +137,27 @@ class UpiProcessor extends BaseProcessor
                                'gateway_downtimes' => $turboGatewayDowntimes,
                            ]);
 
+        foreach ($turboGatewayDowntimes as $gatewayDowntime)
+        {
+            $gatewayDowntime = $turboGatewayDowntimes->where('id', '=', $gatewayDowntime->getId());
+            $paymentDowntime = $this->createPaymentDowntime($gatewayDowntime, 'in_app', 'type');
+
+            //Collect the ids of the payment downtimes which are being created/updated
+            $processedPaymentDowntimeIds[] = $paymentDowntime->getId();
+        }
+
         /*
-         * If there are no active turbo payment downtimes then there are 2 cases
-         * Case 1: There is an active gateway downtime. This means a turbo gateway downtime just got created,
-         *         and thus we need to create a turbo payment downtime corresponding to it.
-         * Case 2: There is no active turbo gateway downtime. This means, turbo is not affected and this we do
-         *          not need to do any turbo related processing
+         * Payment downtimes corresponding to active gateway downtimes should not be resolved.
+         * Remaining payment downtimes should be resolved as there is no corresponding gateway downtime.
          */
-        if ($activeTurboPaymentDowntimes->isEmpty() === true)
-        {
-            // This is Case 1 discussed above
-            if ($this->isTurboDown($turboGatewayDowntimes) === true)
-            {
-                $this->createPaymentDowntime($turboGatewayDowntimes);
-            }
-            // else, Case 2: no action required
-        }
-        else
-        {
-            /*
-             * If active turbo payment downtime exists, then we need to either resolve them or update them
-             * Case 1: If active turbo gateway downtime does not exist, it means we need to resolve the payment downtime.
-             * Case 2: If an active turbo gateway downtime exists, we need to update the existing turbo payment downtime.
-             *         The method createPaymentDowntime takes care of updating the downtime if required.
-             */
-            if ($this->isTurboDown($turboGatewayDowntimes) === false)
-            {
-                //This is Case 1
-                $this->endDowntime($activeTurboPaymentDowntimes);
-            }
-            else
-            {
-                //This is Case 2
-                $this->trace->info(TraceCode::TURBO_DOWNTIME_UPDATE_VIA_CREATE,
-                [
-                    'payment_downtimes' => $activeTurboPaymentDowntimes,
-                    'gateway_downtimes' => $turboGatewayDowntimes,
-                ]);
+        $activeTurboPaymentDowntimes = $activeTurboPaymentDowntimes->whereNotIn('id', $processedPaymentDowntimeIds);
 
-                $this->createPaymentDowntime($turboGatewayDowntimes);
-            }
-        }
-    }
+        $this->trace->info(TraceCode::ACTIVE_TURBO_PAYMENT_DOWNTIMES_TO_RESOLVE,
+                           [
+                               'ids' => $activeTurboPaymentDowntimes->getQueueableIds(),
+                           ]);
 
-    /**
-     * @param Collection $turboGatewayDowntimes
-     *  Contains merchant/platform level gateway downtimes based on the calling method
-     *
-     * This function returns a boolean based on whether turbo as a payment method is down or not.
-     * Currently, it assumes that there can exist only one platfrom level turbo payment downtime in the system
-     * at any point in time and only one merchant level turbo payment downtime for each merchant at any time.
-     *
-     * @return bool
-     */
-    protected function isTurboDown(Collection $turboGatewayDowntimes): bool
-    {
-        return !($turboGatewayDowntimes->isEmpty() === true);
+        $this->endDowntime($activeTurboPaymentDowntimes);
     }
 
     protected function impliesUpiDowntime(Collection $gatewayDowntimes)
@@ -326,6 +293,11 @@ class UpiProcessor extends BaseProcessor
             case 'issuer':
                 $input[Entity::ISSUER] = $instrument;
                 break;
+        // For turbo downtimes, the instrument_type is `type`. Hence, adding a case for the same
+            case 'type':
+                $input[Entity::ISSUER] = $gatewayDowntimes->pluck(GatewayDowntime::ISSUER)[0];
+                $input[Entity::NETWORK] = $gatewayDowntimes->pluck(GatewayDowntime::NETWORK)[0];
+
         }
 
         $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();

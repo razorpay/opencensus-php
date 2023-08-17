@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Methods as MerchantMethods;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 
 class Entity extends Base\PublicEntity
 {
@@ -312,11 +313,12 @@ class Entity extends Base\PublicEntity
 
         $psp       = $this->getPSP();
         $issuer    = $this->getIssuer();
+        $network   = $this->getNetwork();
         $vpaHandle = $this->getVpaHandle();
 
         if ($array[Entity::TYPE] === MerchantMethods\Entity::IN_APP)
         {
-            $instrument = $this->setInstrumentAttributeForTurbo($array, $issuer, $vpaHandle);
+            $instrument = $this->setInstrumentAttributeForTurbo($network, $issuer, $vpaHandle);
         }
         else if (empty($psp) === false)
         {
@@ -338,14 +340,9 @@ class Entity extends Base\PublicEntity
      * Even though turbo downtime is essentially a upi downtime, we need separate handling for the
      * 'instrument' object. All turbo related instrument changes will be executed inside this method
      */
-    public function setInstrumentAttributeForTurbo($array, $issuer, $vpaHandle): array
+    public function setInstrumentAttributeForTurbo($network, $issuer, $vpaHandle): array
     {
-       /*
-        * Note:
-        *  1. 'flow' will inside the method setInstrumentSchemaAndGranularFields(), so not setting the same here.
-        *  2. 'vpa_handle', 'issuer' and 'payer_bank_account' details will be populated in near future while developing
-        *      handling of remitter bank downtimes on upi turbo
-        */
+       // 'flow' is set inside the method setInstrumentSchemaAndGranularFields(), so not setting the same here.
         $instrument = [];
 
         if ((empty($vpaHandle) === false) and
@@ -355,6 +352,15 @@ class Entity extends Base\PublicEntity
         }
 
         //Payer account type and issuer fields to be populated here
+        if ((empty($network) === false) and ($network === Constants::BANK_ACCOUNT_SHORTHAND))
+        {
+            $instrument[Constants::PAYER_ACCOUNT_TYPE] = DowntimeService::getNetworkForTurbo($network);
+        }
+
+        if (empty($issuer) === false and $issuer !== 'UNKNOWN')
+        {
+                $instrument[self::ISSUER] = $issuer;
+        }
 
         return $instrument;
     }

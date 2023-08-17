@@ -2,22 +2,20 @@
 
 namespace RZP\Models\Gateway\Downtime\Webhook;
 
-use anlutro\LaravelSettings\ArrayUtil;
 use App;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Constants\Mode;
 use RZP\Models\Card;
-use RZP\Http\RequestHeader;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Downtime\Metric;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Payment\Downtime\Metric;
 use RZP\Models\Gateway\Downtime\Entity;
+use RZP\Models\Payment\Downtime\Constants;
 use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 
 class DowntimeServiceProcessor implements ProcessorInterface
@@ -359,7 +357,35 @@ class DowntimeServiceProcessor implements ProcessorInterface
             $buildInput[Entity::CARD_TYPE] = isset($input[DowntimeService::FLOW]) ? $input[DowntimeService::FLOW] : null;
         }
 
+        if (empty($input[DowntimeService::FLOW]) === false and $input[DowntimeService::FLOW] === MethodsEntity::IN_APP)
+        {
+            $this->setIssuerAndNetworkForUpiInAppDowntime($input, $buildInput);
+
+            $buildInput[Entity::VPA_HANDLE] = null;
+        }
+
         return $buildInput;
+    }
+
+    protected function setIssuerAndNetworkForUpiInAppDowntime($input, &$buildInput)
+    {
+        /*
+         * For UPI In App downtimes (UPI Turbo Downtimes), `issuer` field will be used to store bank information
+         */
+        if (empty($input['bank']) === false)
+        {
+            $buildInput[Entity::ISSUER] = $input['bank'];
+        }
+
+        /*
+         * For Turbo Downtimes, network field will be used to store payer_account_type info
+         */
+        if (empty($input[Constants::PAYER_ACCOUNT_TYPE]) === false)
+        {
+            $payerAccountType = $input[Constants::PAYER_ACCOUNT_TYPE];
+
+            $buildInput[Entity::NETWORK] = DowntimeService::getNetworkForTurbo($payerAccountType);
+        }
     }
 
     protected function validateRequiredKeys(array $input)
@@ -419,8 +445,17 @@ class DowntimeServiceProcessor implements ProcessorInterface
                 'Downtime Service merchant id present for gateway downtime type : ' . $input[DowntimeService::TYPE]);
         }
 
-        if (isset($input[Entity::NETWORK]) === true && Network::isValidNetworkName($input[Entity::NETWORK]) === false)
+        if (isset($input[Entity::NETWORK]) === true)
         {
+            if ($input[DowntimeService::FLOW] === MethodsEntity::IN_APP)
+            {
+                return;
+            }
+            if (Network::isValidNetworkName($input[Entity::NETWORK]) === true)
+            {
+                return;
+            }
+
             $this->trace->critical(TraceCode::GATEWAY_DOWNTIME_SERVICE_INVALID_INPUT,
                 [   'Type' => $input[DowntimeService::TYPE],
                     'Network' => $input[Entity::NETWORK]]   );
@@ -450,9 +485,9 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     public function getUniqueKeys($data)
     {
-        if ($data[Entity::CARD_TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
+        if ($data[Entity::CARD_TYPE] === MethodsEntity::IN_APP)
         {
-            return DowntimeService::getUniqueKeysWithCardType();
+            return DowntimeService::getUniqueKeysForTurbo();
         }
 
         return DowntimeService::getUniqueKeys();
@@ -462,7 +497,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
     {
         $uniqueKeys = DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS;
 
-        if ($data[Entity::CARD_TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
+        if ($data[Entity::CARD_TYPE] === MethodsEntity::IN_APP)
         {
             $uniqueKeys[] = Entity::CARD_TYPE;
         }

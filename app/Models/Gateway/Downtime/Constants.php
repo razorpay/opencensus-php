@@ -25,6 +25,8 @@ class Constants
 
     const UPI = 'upi';
 
+    const IN_APP = 'in_app';
+
     const NETBANKING = 'netbanking';
 
     // Card Types
@@ -37,8 +39,6 @@ class Constants
     const COLLECT = 'collect';
 
     const INTENT = 'intent';
-
-    const IN_APP = 'in_app';
 
     // Looker dashboard constants
     const LOOKER_NOTIFICATIONS_RAZORX_KEY = 'LOOKER_NOTIFICATIONS_RAZORX_KEY';

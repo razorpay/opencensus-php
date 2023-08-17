@@ -51,6 +51,9 @@ class Constants
     const FETCH_API = 'FETCH_API';
     const EMAILS    = 'EMAILS';
 
+    const BANK_ACCOUNT_SHORTHAND = 'BANK_ACC';
+    const PAYER_ACCOUNT_TYPE = 'payer_account_type';
+
     const TURBO_VPA_HANDLES = [
         ProviderCode::AXIS,
     ];
@@ -76,6 +79,6 @@ class Constants
 
     public static function getTurboQueryInstrument()
     {
-        return [Entity::TYPE];
+        return [Entity::TYPE, Entity::NETWORK, Entity::ISSUER];
     }
 }

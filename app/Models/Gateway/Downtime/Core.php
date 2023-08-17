@@ -3,20 +3,20 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
-
-
 use Razorpay\Trace\Logger;
+
 use RZP\Services;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\DowntimeMetric as DowntimeMetric;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
+use function Termwind\renderUsing;
 
 class Core extends Base\Core
 {
@@ -58,16 +58,21 @@ class Core extends Base\Core
 
         if ($downtime !== null)
         {
+            $this->trace->info(TraceCode::CONFLICTING_GATEWAY_DOWNTIME_FOUND,
+                               [
+                                   'downtime' => $downtime,
+                                   'input'    => $input
+                               ]);
+
             if (($allowUpdateOfExistingDowntime === false) or
-                ($this->allowUpdateOfExistingDowntimes() === false))
+                ($this->allowUpdateOfExistingDowntimes() === false) or
+                ($this->isTurboDowntimeRequest($input) === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT,
                     null,
                     $downtime->toArrayPublic());
             }
-
-            $this->trace->info(TraceCode::CONFLICTING_GATEWAY_DOWNTIME_FOUND, ['downtime' => $downtime]);
 
             $downtime->edit($input, 'edit_duplicate');
         }
@@ -219,7 +224,100 @@ class Core extends Base\Core
 
     public function fetchMostRecentActive(array $input, $fetchByKeys = [])
     {
+        // For turbo downtimes, need to handle multiple existing downtimes instead of the latest downtime
+        if ($this->isTurboDowntimeRequest($input) === true)
+        {
+            return $this->fetchMostRecentActiveUpiTurboDowntime($input, $fetchByKeys);
+        }
+
         return $this->repo->gateway_downtime->fetchMostRecentActive($input, $fetchByKeys);
+    }
+
+    public function isTurboDowntimeRequest(array $input): bool
+    {
+        if ((isset($input[Entity::CARD_TYPE]) === true) and
+           ($input[Entity::CARD_TYPE] === MethodsEntity::IN_APP) and
+           ($input[Entity::METHOD] === Payment\Method::UPI))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Fetches most recent active child/parent downtime based on the current downtime request.
+     * If current downtime request is for a child downtime, it checks if a platform downtime exists, and if yes,
+     * throws an error.
+     *
+     *
+     * @param array $input
+     * @param       $fetchByKeys
+     *
+     * @return null|Entity
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    protected function fetchMostRecentActiveUpiTurboDowntime(array $input, $fetchByKeys = [])
+    {
+        $network = $input[Entity::NETWORK];
+        $issuer = $input[Entity::ISSUER];
+
+        $isRemitterBankDowntime = $input[Entity::NETWORK] !== null && $input[Entity::ISSUER] !== null;
+
+        unset($input[Entity::NETWORK]);
+        unset($input[Entity::ISSUER]);
+
+        $turboDowntimes = $this->repo->gateway_downtime->fetchMostRecentActive($input, $fetchByKeys, true);
+
+        $this->trace->info(TraceCode::TURBO_GATEWAY_DOWNTIMES_FETCHED,
+                           [
+                               'gateway_downtimes' => $turboDowntimes->toArray(),
+                               'input'             => $input,
+                           ]);
+
+        if (count($turboDowntimes) === 0)
+        {
+            return null;
+        }
+
+        $parentTurboDowntimes = $turboDowntimes->where(Entity::NETWORK, '=', Payment\Downtime\Entity::NA)
+                                               ->where(Entity::ISSUER, '=', Payment\Downtime\Entity::UNKNOWN);
+
+        $parentDowntimeIds = count($parentTurboDowntimes) === 0 ? [] : $parentTurboDowntimes->getQueueableIds();
+
+        $remitterBankDowntimes = $turboDowntimes->whereNotIn(Entity::ID, $parentDowntimeIds);
+
+        if ($isRemitterBankDowntime === true)
+        {
+            if (count($parentTurboDowntimes) !== 0)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Attempt to create/update/resolve child downtime during active parent downtime"
+                );
+            }
+
+            $remitterBankDowntimes = $remitterBankDowntimes->where(Entity::ISSUER, '=', $issuer)
+                                                           ->where(Entity::NETWORK, '=', $network);
+
+            if (count($remitterBankDowntimes) > 1)
+            {
+                throw new Exception\LogicException(
+                    "Multiple child turbo downtimes present"
+                );
+            }
+
+            return $remitterBankDowntimes->first();
+        }
+
+        if (count($parentTurboDowntimes) > 1)
+        {
+            throw new Exception\LogicException(
+                "Multiple parent turbo downtimes present"
+            );
+        }
+
+        return $parentTurboDowntimes->first();
     }
 
     public function fetchActiveDowntime($param)

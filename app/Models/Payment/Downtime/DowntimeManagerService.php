@@ -7,6 +7,7 @@ use RZP\Http\Request\Requests;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Models\Payment\Downtime\Entity as DowntimeEntity;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 
 class DowntimeManagerService
 {
@@ -217,6 +218,13 @@ class DowntimeManagerService
         if ($downtime->getType() === MethodsEntity::IN_APP)
         {
             $payload['instrument']['flow'] = MethodsEntity::IN_APP;
+            $network = $downtime->getNetwork();
+
+            if ($network !== null)
+            {
+                $payload['instrument']['payer_account_type'] = DowntimeService::getNetworkForTurbo($network);
+                unset($payload['instrument']['network']);
+            }
         }
 
         return json_encode($payload);

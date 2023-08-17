@@ -3,12 +3,14 @@
 namespace RZP\Models\Payment\Downtime;
 
 use Carbon\Carbon;
-
 use Monolog\Logger;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Constants\Entity as EntityConstants;
 
 class Repository extends Base\Repository
@@ -167,7 +169,7 @@ class Repository extends Base\Repository
 
         $this->addMethodSpecificQuery($query, $input);
 
-        $this->trace->info(TraceCode::DUPLICATE_DOWNTIME_QUERY, ["query" => $query]);
+        $this->trace->info(TraceCode::DUPLICATE_DOWNTIME_QUERY, ["query" => $query->toSql()]);
 
         return $query->first();
     }
@@ -176,7 +178,7 @@ class Repository extends Base\Repository
     {
         $method = $input[Entity::METHOD];
 
-        if ($input[Entity::TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP)
+        if (isset($input[Entity::TYPE]) and $input[Entity::TYPE] === Flow::IN_APP)
         {
             $attributes = Constants::getTurboQueryInstrument();
         }
@@ -191,11 +193,27 @@ class Repository extends Base\Repository
 
             $query->where($attribute, $input[$attribute]);
         }
-        else
+        elseif (($input[Entity::TYPE] === Flow::IN_APP) and
+                ($method === Method::UPI))
         {
             foreach ($attributes as $attribute)
             {
-                if(isset($input[$attribute]) && !($input[$attribute] == Entity::NA || $input[$attribute] == Entity::UNKNOWN))
+                if (isset($input[$attribute]) === true)
+                {
+                    $query->where($attribute, $input[$attribute]);
+                }
+            }
+        }
+        else
+        {
+            $query->where(function ($query) {
+                $query->whereNull(Entity::TYPE)
+                      ->orWhere(Entity::TYPE, '!=', Flow::IN_APP);
+            });
+
+            foreach ($attributes as $attribute)
+            {
+                if (isset($input[$attribute]) && !($input[$attribute] == Entity::NA || $input[$attribute] == Entity::UNKNOWN))
                 {
                     $query->where($attribute, $input[$attribute]);
                     break;
@@ -252,7 +270,7 @@ class Repository extends Base\Repository
 
     /**
      * @param $query
-     * This function modifies the query to exclude downtimes where psp = in_app (turbo downtimes) if
+     * This function modifies the query to exclude downtimes where type = in_app (turbo downtimes) if
      *  1. The current route is payments_downtime with method = GET
      *  2. The merchant making the request does not have in_app payment method enabled
      *
@@ -305,7 +323,7 @@ class Repository extends Base\Repository
                 $query->where(function ($query)
                 {
                     $query->whereNull(Entity::TYPE)
-                          ->orWhere(Entity::TYPE, '!=', \RZP\Models\Merchant\Methods\Entity::IN_APP);
+                          ->orWhere(Entity::TYPE, '!=', Flow::IN_APP);
                 });
             }
         }

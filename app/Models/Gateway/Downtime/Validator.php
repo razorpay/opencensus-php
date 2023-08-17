@@ -13,6 +13,7 @@ use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 
 class Validator extends Base\Validator
 {
@@ -386,7 +387,15 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
+        $cardType = $input[Entity::CARD_TYPE] ?? $this->entity->getCardType();
+
         if (in_array($network, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
+        {
+            return;
+        }
+
+        if (($cardType === \RZP\Models\Merchant\Methods\Entity::IN_APP) and
+            (DowntimeService::getNetworkForTurbo($network) !== null))
         {
             return;
         }

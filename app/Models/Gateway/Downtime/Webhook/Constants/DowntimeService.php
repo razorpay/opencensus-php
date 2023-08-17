@@ -47,6 +47,22 @@ class DowntimeService
         Entity::CARD_TYPE,
     ];
 
+    const UNIQUE_KEYS_FOR_TURBO = [
+        Entity::METHOD,
+        Entity::SOURCE,
+        Entity::CARD_TYPE,
+        Entity::MERCHANT_ID,
+    ];
+
+    const NETWORK_MAP_FOR_UPI_TURBO = [
+        'BANK_ACC'     => 'bank_account',
+        'bank_account' => 'BANK_ACC',
+        'CR_CARD'      => 'credit_card',
+        'credit_card'  => 'CR_CARD',
+        'WALLET'       => 'wallet',
+        'wallet'       => 'WALLET',
+    ];
+
     public static function getUniqueKeys()
     {
         return self::UNIQUE_KEYS;
@@ -61,4 +77,20 @@ class DowntimeService
     {
         return self::PLATFORM_DOWNTIME_UNIQUE_KEYS;
     }
+
+    public static function getUniqueKeysForTurbo()
+    {
+        return self::UNIQUE_KEYS_FOR_TURBO;
+    }
+
+    public static function getNetworkForTurbo($newtork)
+    {
+        if (array_key_exists($newtork, self::NETWORK_MAP_FOR_UPI_TURBO) === false)
+        {
+            return null;
+        }
+
+        return self::NETWORK_MAP_FOR_UPI_TURBO[$newtork];
+    }
+
 }

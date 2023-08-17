@@ -44,6 +44,11 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|string|max:255',
     );
 
+    protected array $defaultTurboParamValues = [
+        Entity::NETWORK => Entity::NA,
+        Entity::ISSUER  => Entity::UNKNOWN,
+    ];
+
     const KEY_OPERATOR_MAP = [
         Entity::GATEWAY     => '=',
         Entity::ISSUER      => '=',
@@ -146,7 +151,10 @@ class Repository extends Base\Repository
 
         foreach ($uniqueKeys as $key)
         {
-            if (isset($input[$key]) === true)
+            if ((isset($input[$key]) === true) or
+                ((isset($input[Entity::CARD_TYPE]) === true) and
+                 ($input[Entity::CARD_TYPE] === MethodsEntity::IN_APP) and
+                 (($key === Entity::NETWORK) or ($key === Entity::ISSUER))))
             {
                 $params[$key] = $input[$key];
             }
@@ -202,7 +210,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchMostRecentActive(array $input, array $fetchByKeys = [])
+    public function fetchMostRecentActive(array $input, array $fetchByKeys = [], $fetchMultiple = false)
     {
         $params = [];
 
@@ -220,6 +228,19 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::getKeyOperatorMap($input), $params, $query);
 
+        /*
+         * Since we do not want turbo downtimes to be picked in deduplication check for non turbo downtimes, we add this
+         * check to explicitly specify the value of the attribute card_type in the select query
+         */
+        if (isset($input[Entity::CARD_TYPE]) === false or $input[Entity::CARD_TYPE] !== MethodsEntity::IN_APP)
+        {
+            $query->where(function($query)
+            {
+                $query->whereNull(Entity::CARD_TYPE)
+                      ->orWhere(Entity::CARD_TYPE, '!=', MethodsEntity::IN_APP);
+            });
+        }
+
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
             $query->whereNull(Entity::TERMINAL_ID);
@@ -230,10 +251,15 @@ class Repository extends Base\Repository
             $query->whereNull(Entity::MERCHANT_ID);
         }
 
-        return $query->whereNull(Entity::END)
-                     ->where(Entity::SCHEDULED, '=', false)
-                     ->latest()
-                     ->first();
+        $query->whereNull(Entity::END)
+              ->where(Entity::SCHEDULED, '=', false);
+
+        if ($fetchMultiple === true)
+        {
+            return $query->get();
+        }
+
+        return $query->latest()->first();
     }
 
     /**
@@ -353,6 +379,20 @@ class Repository extends Base\Repository
             if (isset($input[$key]) === true)
             {
                 $query->where($key, $operator , $input[$key]);
+            }
+            //For turbo gateway downtimes, we need to add query params `issuer` and `network` as parent turbo downtimes
+            //will have null values for network and issuer but we need to query DB with default values.
+            elseif ((isset($input[Entity::CARD_TYPE]) === true) and
+                    ($input[Entity::CARD_TYPE] === MethodsEntity::IN_APP) and
+                    ($key === Entity::NETWORK or $key === Entity::ISSUER) and
+                    (array_key_exists($key, $input) === true))
+            {
+                $value = $this->defaultTurboParamValues[$key] ?? null;
+
+                if ($value !== null)
+                {
+                    $query->where($key, $operator , $value);
+                }
             }
         }
     }
