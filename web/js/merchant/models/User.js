@@ -3,7 +3,6 @@ import { getItem } from 'common/utils/localStorage';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
 import isEmpty from 'lodash/isEmpty';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { PARTNERSHIPS_INVITES_TAB_AUDIENCE_EPOCH } from 'merchant/constants/dates';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
@@ -1282,12 +1281,7 @@ export default class User {
     const variant = getSplitzExperimentVariant('partnerships_invite_flow');
     const isExperimentEnabled = variant?.variables?.result === 'on';
     if (variant.name === 'whitelist') return isExperimentEnabled;
-    return (
-      isExperimentEnabled &&
-      this.created_at >= PARTNERSHIPS_INVITES_TAB_AUDIENCE_EPOCH &&
-      this.partner_type === 'reseller' &&
-      this.isOrgRZP
-    );
+    return isExperimentEnabled && this.partner_type === 'reseller' && this.isOrgRZP;
   }
 
   get isAddReplyMigrationActive() {
