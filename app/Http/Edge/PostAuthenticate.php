@@ -177,12 +177,7 @@ final class PostAuthenticate
         if ( $authenticated === true){
             $consumerExists = ($this->ba->getMerchantId() !== null);
         } else {
-            $apiPassport = $this->ba->getPassport();
-
-            //check whether consumer is set in passport
-            if (isset($apiPassport['consumer'])) {
-                $consumerExists = ($this->ba->getPassport()['consumer']['id'] !== null);
-            }
+            $consumerExists = ($this->ba->getPassportConsumerClaims() !== null);
         }
 
         // For $passport's scalar attributes.
@@ -227,16 +222,28 @@ final class PostAuthenticate
 
     private function ensureRequestContextPassportForPublicAuth(Passport\Passport $passport, array &$errors)
     {
-        if (!$this->isPublicAuth()) {
+
+        if (!$this->isPublicAuth() ) {
             return;
         }
 
-        $isConsumerExpected = true;
-        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
+        // mismatch attributes for oauth and partner in case of public auth is already handled in
+        // ensureRequestContextPassportForOAuth
+        // ensureRequestContextPassportForPartner
+        // as they only check for authFlow type. so skipping it here.
+        if ($this->isOAuth() || $this->isPartnerAuth()){
+            return;
+        }
 
-        // For $passport->consumer's scalar attributes.
-        ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
-        ensureSameOrOverride($passport->consumer->type, self::TYPE_MERCHANT, 'consumer.type', $errors);
+        $consumerId = '';
+
+        $keyEntity = isset($this->ba->authCreds) ? $this->ba->getKeyEntity() : null;
+
+        if (empty($keyEntity) === false && is_object($keyEntity)) {
+            $consumerId = $this->ba->getKeyEntity()->getMerchantId();
+        }
+
+        $this->checkPassportMismatches($passport, $errors, $consumerId, self::TYPE_MERCHANT, self::TYPE_MERCHANT);
     }
 
     private function ensureRequestContextPassportForPrivateAuth(Passport\Passport $passport, array &$errors)
@@ -285,6 +292,16 @@ final class PostAuthenticate
         ensureSameOrOverride($passport->oauth->ownerType, self::TYPE_MERCHANT, 'oauth.owner_type', $errors);
         ensureSameOrOverride($passport->oauth->clientId, $this->ba->getOAuthClientId(), 'oauth.client_id', $errors);
         ensureSameOrOverride($passport->oauth->appId, $this->ba->getOAuthApplicationId(), 'oauth.app_id', $errors);
+
+        //adding credential claim mismatch in case of oauth
+        $credentialPublicKey = $this->ba->getPublicKey();
+        $credentialUsername = explode('-', $credentialPublicKey)[0];
+        $credentialExists = isset($credentialPublicKey);
+        ensureSameExistenceOrOverride($passport->credential, $credentialExists, 'credential', $errors, new Passport\CredentialClaims);
+        if (isset($passport->credential)) {
+            ensureSameOrOverride($passport->credential->username, $credentialUsername, 'credential.username', $errors);
+            ensureSameOrOverride($passport->credential->publicKey, $credentialPublicKey, 'credential.publickey', $errors);
+        }
     }
 
     private function ensureRequestContextPassportForPartner(Passport\Passport $passport, array &$errors)
@@ -542,12 +559,16 @@ final class PostAuthenticate
             return;
         }
 
-        // if request is not authenticated return
-        if ($authenticated === false)
+        $isPublicAuthIdentified = ($this->isPublicAuth() && $this->ba->getPassportConsumerClaims() != null);
+
+
+        // if not authenticated and public auth request is not identified do not check for auth flow type mismatch.
+        if ($authenticated === false && $isPublicAuthIdentified === false)
         {
             return;
         }
 
+        // if request is authenticated or identified then log auth flow mismatches.
         $apiAuthFlow  = $this->getAuthTypeAtAPI();
 
         $edgeAuthFlow = empty($this->passportUtil) ? '' : $this->passportUtil->getAuthTypeFromPassport();

@@ -42,8 +42,6 @@ class BasicAuthTest extends TestCase
      */
     protected $jwksHost;
 
-    protected $razorxValue = '';
-
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BasicAuthData.php';
@@ -51,21 +49,6 @@ class BasicAuthTest extends TestCase
         $this->jwksHost = "https://edge-base.dev.razorpay.in";
 
         parent::setUp();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    return ($this->razorxValue === 'on') ? 'on' : 'control';
-                }) );
-
 
         $this->ba->privateAuth();
     }
@@ -431,7 +414,7 @@ class BasicAuthTest extends TestCase
 
         // overriding public key for test case
         $oldKey = app('config')->get('passport')['public_key'];
-        app('config')->get('passport')['public_key'] = $this->publicKey;
+        app('config')->get('passport')['jwks_host'] = $this->jwksHost;
 
         $this->startTest([
             'request' => [
@@ -995,7 +978,7 @@ class BasicAuthTest extends TestCase
 
     private function sampleConsumerPassportJwtBuilder(string $consumer_id = '', string $consumer_type = 'merchant',
                                                       string $mode = 'live', bool $identified = true,
-                                                      bool $authenticated = true): string
+                                                      bool $authenticated = true,array $credential = []): string
     {
         $sysClock = new SystemClock(new DateTimeZone('UTC'));
         $builder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
@@ -1011,7 +994,8 @@ class BasicAuthTest extends TestCase
             ->withClaim('identified', $identified)
             ->withClaim('authenticated', $authenticated)
             ->withClaim('mode', $mode)
-            ->withClaim('consumer', ['id' => $consumer_id, 'type' => $consumer_type]);
+            ->withClaim('consumer', ['id' => $consumer_id, 'type' => $consumer_type])
+            ->withClaim('credential', $credential);
 
         return $this->samplePassportJwt($builder);
     }
@@ -1341,11 +1325,7 @@ class BasicAuthTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->razorxValue = 'on';
-
         $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCannotSkipWorkflow']);
-
-        $this->razorxValue = '';
     }
 
     public function testMerchantAuthWithImpersonationCanSkipWorkflow()
@@ -1405,10 +1385,6 @@ class BasicAuthTest extends TestCase
             ['merchant_id'        => '100000Razorpay',
                 'activation_form_milestone'=>'L2']);
 
-        $this->razorxValue = 'on';
-
         $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
-
-        $this->razorxValue = '';
     }
 }

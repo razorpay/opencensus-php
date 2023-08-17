@@ -4048,10 +4048,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PASSPORT_NOT_FOUND                                    = 'PASSPORT_NOT_FOUND';
     const EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH                    = 'EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH';
     const EDGE_PASSPORT_CONSUMER_ID_MISMATCH                    = 'EDGE_PASSPORT_CONSUMER_ID_MISMATCH';
-
-    const EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT               = 'EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT';
-    const EDGE_MIDDLEWARE_EXPERIMENT_RESULT                     = 'EDGE_MIDDLEWARE_EXPERIMENT_RESULT';
-
     const RAZORX_REQUEST                                        = 'RAZORX_REQUEST';
     const RAZORX_REQUEST_FAILED                                 = 'RAZORX_REQUEST_FAILED';
     const RAZORX_BULK_REQUEST_FAILED                            = 'RAZORX_BULK_REQUEST_FAILED';
@@ -6123,6 +6119,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_PROXY_REQUEST_ERROR                              = 'EDGE_PROXY_REQUEST_ERROR';
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
+    const RESPONSE_STATUS_AT_AUTH_MIDDLEWARE                    = 'RESPONSE_STATUS_AT_AUTH_MIDDLEWARE';
 
     const PARTNER_AUTH_NOT_ALLOWED                              = 'PARTNER_AUTH_NOT_ALLOWED';
     const ACCOUNT_AUTH_NOT_ALLOWED                              = 'ACCOUNT_AUTH_NOT_ALLOWED';

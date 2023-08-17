@@ -92,4 +92,56 @@ return [
             'status_code' => 401
         ],
     ],
+    'testPublicAuth' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments',
+            'content' => [
+                'amount'            => '50000',
+                'currency'          => 'INR',
+                'email'             => 'a@b.com',
+                'contact'           => '9918899029',
+                'notes'             => [
+                    'merchant_order_id' => 'random order id',
+                ],
+                'description'       => 'random description',
+                'bank'              => 'UCBA',
+                'card'=>[
+                    'number'            => '4012001038443335',
+                    'name'              => 'Harshil',
+                    'expiry_month'      => '12',
+                    'expiry_year'       => '2024',
+                    'cvv'               => '566'
+                ]
+            ],
+            'server' => [
+                'HTTP_X-PASSPORT-USABLE' => 'false'
+            ]
+        ],
+        'response' => [
+            'status_code' => 200
+        ],
+    ],
+    'testPartnerPublicAuth' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+                'HTTP_X-PASSPORT-USABLE' => 'false'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => [
+                    'min_amount' => 500000,
+                    'plans' => [
+                        '9' => 12,
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

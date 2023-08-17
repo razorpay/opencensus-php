@@ -22,7 +22,7 @@ class PassportUtilTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isPartnerAuth', 'isPartnerAuthAllowed', 'getAccountId', 'setPartnerMerchantId', 'setOAuthApplicationId', 'setPartnerAuth'])
+            ->setMethods(['isPartnerAuth', 'isPartnerAuthAllowed', 'getAccountId', 'setPartnerMerchantId', 'setOAuthApplicationId', 'setPartnerAuth', 'setMerchant'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -48,6 +48,7 @@ class PassportUtilTest extends TestCase
         $passport->identified = true;
         $passport->authenticated = $authenticated;
         $passport->mode = $mode;
+        $passport->domain = "razorpay";
         $passport->consumer->type = $consumerType;
         $passport->impersonation->type = $impersonationType;
         $passport->oauth->env = $env;
@@ -135,6 +136,7 @@ class PassportUtilTest extends TestCase
     {
         $passport = new Passport\Passport;
         $passport->mode = 'live';
+        $passport->domain = "razorpay";
 
         $consumer = new Passport\ConsumerClaims;
         $consumer->id = '10000000000000';
@@ -214,14 +216,23 @@ class PassportUtilTest extends TestCase
      * @param bool          $isPartnerAuthAllowed
      * @param bool          $setImpersonationClaims
      * @param bool          $activated
+     * @param bool          $subMerchantExists
      * @param bool          $expectedNull
      */
-    public function testCheckAndSetPartnerMerchantScope($consumerType, $isPartnerAuthAllowed, $setImpersonationClaims, $activated, $expectedNull)
+    public function testCheckAndSetPartnerMerchantScope($consumerType, $isPartnerAuthAllowed, $setImpersonationClaims, $activated, $subMerchantExists, $expectedNull)
     {
         $ba = $this->mockBasicAuth();
         $authCredsMock = Mockery::mock(KeyAuthCreds::class);
         $merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity');
         $ba->authCreds = $authCredsMock;
+
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $merchantRepoMock =  Mockery::mock('\RZP\Models\Merchant\Repository');
+        $repoMock->shouldReceive('driver')->with('merchant')->andReturn($merchantRepoMock);
+        $merchantRepoMock->shouldReceive('find')->andReturnUsing(function () use ($subMerchantExists, $merchantEntityMock) {
+            return $subMerchantExists ? $merchantEntityMock : null;
+        });
+        $this->app->instance('repo', $repoMock);
 
         $ba->expects($this->any())->method('isPartnerAuthAllowed')->willReturn($isPartnerAuthAllowed);
         $ba->expects($this->any())->method('setPartnerAuth')->with(false);
@@ -234,7 +245,8 @@ class PassportUtilTest extends TestCase
         $authCredsMock->shouldReceive('getKey')->andReturn('10000000000000');
         $authCredsMock->shouldReceive('getPartnerApplicationId')->andReturn('10000000000000');
         $authCredsMock->shouldReceive('setOAuthApplicationId')->with('10000000000000');
-        $authCredsMock->shouldReceive('setAndCheckMerchantActivatedForLive')
+        $authCredsMock->shouldReceive('setMerchant')->atMost(1);
+        $authCredsMock->shouldReceive('checkMerchantActivatedForLive')
             ->andReturnUsing(function () use ($activated) {
                 if ($activated) {
                     return null;
@@ -261,18 +273,20 @@ class PassportUtilTest extends TestCase
 
     public function getCheckAndSetPartnerMerchantScopeCases(): array
     {
-        // $consumerType, $isPartnerAuthAllowed, $accountId, $activated, $expectedNull
+        // $consumerType, $isPartnerAuthAllowed, $accountId, $activated, $subMerchantExists, $expectedNull
         return [
             // Case 1: Not partner auth
-            ['merchant', false, '', false, true],
+            ['merchant', false, '', false, false, true],
             // Case 2: Partner auth not allowed
-            ['partner', false, '', false, false],
+            ['partner', false, '', false, false, false],
             // Case 3: Account id is empty
-            ['partner', true, '', false, true],
-            // Case 4: Merchant not activated
-            ['partner', true, '10000000000000', false, false],
-            // Case 5: Merchant activated
-            ['partner', true, '10000000000000', true, true],
+            ['partner', true, '', false, false, true],
+            // Case 4: account doesnt exists
+            ['partner', true, '10000000000000', false, false, false],
+            // Case 5: Merchant not activated
+            ['partner', true, '10000000000000', false, true, false],
+            // Case 6: Merchant activated
+            ['partner', true, '10000000000000', true, true, true],
         ];
     }
 
@@ -297,12 +311,14 @@ class PassportUtilTest extends TestCase
         $authCredsMock->shouldReceive('getMerchant')->andReturnUsing(function () use ($merchantExists, $merchantEntityMock) {
             return $merchantExists ? $merchantEntityMock : null;
         });
+
         $merchantEntityMock->shouldReceive('getId')->andReturn('100000000000');
         $merchantEntityMock->shouldReceive('isFeatureEnabled')->andReturn(true);
         $merchantEntityMock->shouldReceive('isPartner')->andReturn($isPartner);
         $merchantEntityMock->shouldReceive('isPurePlatformPartner')->andReturn($isPurePlatformPartner);
         $authCredsMock->shouldReceive('setPartnerMerchantId')->atMost(1);
-        $authCredsMock->shouldReceive('setAndCheckMerchantActivatedForLive')
+        $authCredsMock->shouldReceive('setMerchant')->atMost(1);
+        $authCredsMock->shouldReceive('checkMerchantActivatedForLive')
             ->andReturnUsing(function () use ($activated) {
                 if ($activated) {
                     return null;

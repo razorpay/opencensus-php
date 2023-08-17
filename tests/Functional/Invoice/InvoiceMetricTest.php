@@ -97,7 +97,7 @@ class InvoiceMetricTest extends TestCase
                 [
                     'middleware_decode_passport_duration_ms',
                     $this->greaterThanOrEqual(0),
-                    [],
+                    ['route' => 'invoice_fetch_multiple'],
                 ]);
 
         $mock->expects($this->at(2))
@@ -139,7 +139,7 @@ class InvoiceMetricTest extends TestCase
                 [
                     'middleware_decode_passport_duration_ms',
                     $this->greaterThanOrEqual(0),
-                    [],
+                    ['route' => 'invoice_create'],
                 ]);
 
         $mock->expects($this->at(2))

@@ -5,12 +5,15 @@ namespace RZP\Tests\Functional\OAuth;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 
+use RZP\Constants\Mode;
+use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OAuthPublicTokenTest extends OAuthTestCase
 {
     use OAuthTrait;
     use PaymentTrait;
+    use PassportTrait;
 
     /**
      * @var string
@@ -44,6 +47,42 @@ class OAuthPublicTokenTest extends OAuthTestCase
         $payment = $this->getDefaultPaymentArray();
 
         $this->doAuthPaymentOAuth($payment);
+    }
+
+    //adding a test case to check if passport attribute mismatches is being reported in case of Oauth public key
+    public function testCreatePaymentOAuthWithEdgePassport()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport(['public_token' => 'TheTestAuthKey','scopes'=> ['read_write']]);
+        $tokenEntity = $tokenEntity->toArray();
+
+        $consumer = ['id' => '10000000000001', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_oauth_TheTestAuthKeZ', 'public_key' => 'rzp_test_oauth_TheTestAuthKey'];
+
+        $oauth = [
+            'app_id' => $tokenEntity['application']['id'],
+            'client_id' => $tokenEntity['client_id'],
+            'access_token_id' => $tokenEntity['id'],
+            'owner_type' => 'merchant',
+            'owner_id' => '10000000000000',
+            'user_id' => '20000000000000',
+            'env' => 'test'
+        ];
+
+        $roles = ['oauth::scope::read_write'];
+
+        $passportJWT = $this->samplePassportJwtBuilder(consumer:$consumer,credential:  $credential, mode: Mode::TEST, oauth: $oauth, roles: $roles,authenticated: false);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $server = ['HTTP_X-Passport-JWT-V1' => $passportJWT];
+
+        $response = $this->doAuthPaymentOAuth($payment,$server);
+
+        $this->assertArrayHasKey('razorpay_payment_id',$response);
+
+        $attrMismatch = $this->app['request.ctx.v2']->passportAttrsMismatch;
+        $this->assertTrue($attrMismatch);
+
     }
 
     public function testOAuthPublicTokenPrivateRoute()

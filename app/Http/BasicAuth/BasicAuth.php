@@ -473,36 +473,6 @@ class BasicAuth
      */
     protected $accountIdFromBody = null;
 
-    // TODO: remove this variable once the Experiment is complete
-    // this variable is used by BusinessAuth Middleware to run additional checks
-    public bool $isEdgeMiddlewareExperimentEnabled = false;
-
-    /**
-     *  Routes which are allowed to pass X-Razorpay-Account on proxy auth
-     *  TODO: move this to BusinessAuth Middleware once experiment is completed
-     * @var array
-     */
-    public array $whitelistRoutesForReferrerPartnerAccess = [
-        'merchant_activation_save',
-        'merchant_activation_details',
-        'merchant_document_upload',
-        'merchant_document_delete',
-        'merchant_store_add',
-        'merchant_store_fetch',
-        'merchant_activation_clarifications_save',
-        'merchant_activation_clarifications_fetch',
-        'merchant_save_business_website',
-        'merchant_website_section_action',
-        'fetch_merchant_escalation',
-        'merchant_fetch_config',
-        'merchant_activation_gst_details',
-        'merchant_document_url_fetch',
-        'merchant_nc_revamp_eligibility',
-        'merchant_edit_pre_signup_details',
-        'merchant_bmc_response_save',
-        'merchant_bmc_response_fetch',
-    ];
-
     public function __construct($app)
     {
         $this->app = $app;
@@ -2867,44 +2837,6 @@ class BasicAuth
             return true;
         }
 
-        // TODO: Need to remove this experiment once all traffic is authenticated by BusinessAuth middleware flow
-        // This experiment is added by Edge team to migrate service checks to BusinessAuth middleware flow specifically for app auth with impersonation cases
-        $this->razorx = $this->app->razorx;
-        $variant =  $this->razorx->getTreatment($this->app['request']->getId(),
-                RazorxTreatment::EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT,
-                $this->getMode());
-
-        $log = [
-            'merchant_id'  => $this->authCreds->getMerchant()->getId(),
-            'experiment'   => $variant,
-            'mode'         => $this->getMode(),
-            'route_name'   => $route_name
-        ];
-
-        $this->trace->info(
-            TraceCode::EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT, $log);
-
-        // dont perform the check here if variant is on
-        // will be done in BusinessAuth Middleware
-        if (strtolower($variant) === 'on')
-        {
-            $this->isEdgeMiddlewareExperimentEnabled = true;
-            return false;
-        }
-
-        $merchantCore = new Merchant\Core;
-        if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
-            ($merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant(), $account) === true))
-        {
-            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT, [
-                    'route_name'     => $route_name,
-                    'submerchant_id' => $account->getId(),
-                    'partner_id'     => $this->authCreds->getMerchant()->getId()
-                ]);
-            return true;
-        }
-        // end of experiment
-
         return false;
     }
 
@@ -3466,6 +3398,15 @@ class BasicAuth
     public function getPassportImpersonationClaims() : array | null
     {
         return $this->getPassport() !== null && isset($this->getPassport()['impersonation']) ? $this->getPassport()['impersonation'] : null;
+    }
+
+    /**
+     * Returns consumer claims registered on passport.
+     * @return array | null
+     */
+    public function getPassportConsumerClaims() : array | null
+    {
+        return $this->getPassport() !== null && isset($this->getPassport()['consumer']) ? $this->getPassport()['consumer'] : null;
     }
 
     /**

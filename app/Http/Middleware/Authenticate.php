@@ -44,11 +44,17 @@ class Authenticate
     const ACCOUNT_ID    = 'account_id';
     const ROUTE         = 'route';
     const HOST          = 'host';
+    const STATUS        = 'status';
+    const AUTH          = 'auth';
+    const PUBLIC_KEY    = 'public_key';
+
+    const AUTH_FLOW     = 'auth_flow';
     const PASSPORT_AUTH = 'passport_auth';
 
     const PASSPORT_AUTH_TYPE   = 'passport_auth_type';
     const APP_MERCHANT_ID      = 'app_merchant_id';
     const PASSPORT_CONSUMER_ID = 'passport_consumer_id';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
 
 
     /**
@@ -149,8 +155,9 @@ class Authenticate
 
             $this->trace->info(TraceCode::AUTHENTICATING_USING_PASSPORT,
                 [
-                    self::KEY_ID             => $this->passport->credential->publicKey,
+                    self::PUBLIC_KEY         => $this->passport->credential->publicKey,
                     self::MERCHANT_ID        => $this->passport->consumer->id,
+                    self::ACCOUNT_ID         => $this->passportUtil->getAccountId(),
                     self::ROUTE              => $route,
                     self::PASSPORT_AUTH_TYPE => $passportAuthType
                 ]

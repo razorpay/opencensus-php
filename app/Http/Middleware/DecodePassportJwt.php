@@ -109,7 +109,7 @@ class DecodePassportJwt
             $this->reqCtx->shouldAuthenticateUsingPassport = $passportUtil->shouldAuthenticateUsingPassport($request);
         }
 
-        $this->trace->histogram(Metric::MIDDLEWARE_DECODE_PASSPORT_DURATION_MS, millitime() - $funcStartedAt);
+        $this->trace->histogram(Metric::MIDDLEWARE_DECODE_PASSPORT_DURATION_MS, millitime() - $funcStartedAt, ['route' => $this->router->currentRouteName()]);
 
         return $next($request);
     }

@@ -33,6 +33,31 @@ class BusinessAuth
     const KEY   = 'key';
 
     /**
+     *  Routes which are allowed to pass X-Razorpay-Account on proxy auth
+     * @var array
+     */
+    public array $whitelistRoutesForReferrerPartnerAccess = [
+        'merchant_activation_save',
+        'merchant_activation_details',
+        'merchant_document_upload',
+        'merchant_document_delete',
+        'merchant_store_add',
+        'merchant_store_fetch',
+        'merchant_activation_clarifications_save',
+        'merchant_activation_clarifications_fetch',
+        'merchant_save_business_website',
+        'merchant_website_section_action',
+        'fetch_merchant_escalation',
+        'merchant_fetch_config',
+        'merchant_activation_gst_details',
+        'merchant_document_url_fetch',
+        'merchant_nc_revamp_eligibility',
+        'merchant_edit_pre_signup_details',
+        'merchant_bmc_response_save',
+        'merchant_bmc_response_fetch',
+    ];
+
+    /**
      * Application instance
      *
      * @var Application
@@ -213,15 +238,6 @@ class BusinessAuth
             return null;
         }
 
-        if (! $this->ba->isEdgeMiddlewareExperimentEnabled) {
-            return null;
-        }
-
-        $this->trace->info(TraceCode::EDGE_MIDDLEWARE_EXPERIMENT_RESULT, [
-            'result' => 'Experiment enabled validating checks at BusinessAuth Middleware',
-            'is_experiment_enabled' => $this->ba->isEdgeMiddlewareExperimentEnabled
-            ]);
-
         // account cannot be null here, as it will be validated by edge if passport auth flow
         // or validated by checkAndSetAccountScope if basic auth flow
         $account = $this->repo->merchant->find($accountId);
@@ -250,13 +266,13 @@ class BusinessAuth
     private function canSkipWorkflowToAccessSubmerchantKyc(string $route, Merchant\Entity $account): bool
     {
         // https://razorpay.slack.com/archives/C012ZGQQFDJ/p1687252415363649
-        if ((in_array($route, $this->ba->whitelistRoutesForReferrerPartnerAccess, true) === true) and
+        if ((in_array($route, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
             ($this->merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->ba->authCreds->getMerchant(), $account) === true))
         {
-            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT,
-                ['route_name' => $route,
+            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT, [
+                    'route_name'     => $route,
                     'submerchant_id' => $account->getId(),
-                    'partner_id' => $this->ba->authCreds->getMerchant()->getId()
+                    'partner_id'     => $this->ba->authCreds->getMerchant()->getId()
                 ]);
 
             return true;

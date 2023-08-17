@@ -882,10 +882,6 @@ final class RazorxTreatment
      */
     const USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT = 'use_merchant_reference_for_unexpected_payment';
 
-    // This is a temporary experiment by Edge team to refactor authenticate middleware
-    // TODO: remove experiment once all traffic is authenticated by BusinessAuth Middleware flow
-    const EDGE_AUTHENTICATE_MIDDLEWARE_EXPERIMENT = 'edge_authenticate_middleware_experiment';
-
     /**
      * Razorx flag to disbale MID on timeout of upi collect payment with input expiry time
      */

@@ -2,72 +2,27 @@
 
 namespace RZP\Tests\Functional\PassportAuth;
 
-use DateTimeZone;
-use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\Token\Builder;
-use Lcobucci\JWT\Encoding\ChainedFormatter;
-use Lcobucci\JWT\Encoding\JoseEncoder;
-
+use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Http\BasicAuth\ClientAuthCreds;
 use RZP\Http\BasicAuth\KeyAuthCreds;
+use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 
 class PassportAuthTest extends TestCase
 {
     use PartnerTrait;
-    use RequestResponseFlowTrait;
-    use GeneratesTestPassportJwts;
+    use PaymentTrait;
+    use PassportTrait;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PassportAuthData.php';
         parent::setUp();
-    }
-
-    function samplePassportJwtBuilder(array $consumer = [], array $credential = [], string $mode = Mode::TEST,
-                                      array $impersonation = [], array $oauth = [], array $roles = [],
-                                      bool $identified = true, bool $authenticated = true): string
-    {
-        $sysClock = new SystemClock(new DateTimeZone('UTC'));
-        $builder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
-        $builder =  $builder
-            ->issuedBy('https://edge.razorpay.com')
-            ->permittedFor('https://api.razorpay.com')
-            ->identifiedBy('per-req-uuid', true)
-            ->issuedAt($sysClock->now())
-            ->canOnlyBeUsedAfter($sysClock->now())
-            ->expiresAt($sysClock->now()->add(new \DateInterval('P15M')))
-            ->withHeader('kid', 'edgev1')
-            // Custom claims follows.
-            ->withClaim('identified', $identified)
-            ->withClaim('authenticated', $authenticated)
-            ->withClaim('mode', $mode)
-            ->withClaim('domain', 'razorpay')
-            ->withClaim('consumer', $consumer)
-            ->withClaim('credential', $credential);
-
-        if(! empty($impersonation))
-        {
-            $builder = $builder->withClaim('impersonation', $impersonation);
-        }
-
-        if(! empty($oauth))
-        {
-            $builder = $builder->withClaim('oauth', $oauth);
-        }
-
-        if(! empty($roles))
-        {
-            $builder = $builder->withClaim('roles', $roles);
-        }
-
-        return $this->samplePassportJwt($builder);
     }
 
     public function testNotAuthenticatedByPassportWhenPassportUnusable()
@@ -532,5 +487,73 @@ class PassportAuthTest extends TestCase
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
         $this->assertOauthValues( '10000000000000', 'rzp_test_oauth_TheTestAuthKey', '20000000000000', $tokenEntity['id'],
             $tokenEntity['client_id'], $tokenEntity['application']['id'], ['read_only'], '10000000000000', '');
+    }
+
+
+    //Public auth test cases
+
+    // public auth with merchant key. added test case here so it can be used in future when enabling auth middleware bypass also
+    public function testPublicMerchantAuth()
+    {
+        $testData = $this->testData['testPublicAuth'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+        $consumer = ['id'=>'10000000000000','type'=>'merchant'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $this->samplePassportJwtBuilder(consumer: $consumer, credential: $credential, authenticated: false);
+        $this->ba->publicAuth();
+        $response = $this->makeRequestAndGetContent($testData['request']);
+        $this->assertArrayHasKey('razorpay_payment_id',$response);
+    }
+
+
+    public function testPartnerPublicAuthWithImpersonation()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create('key', ['id' => $client->getId(), 'merchant_id' => '10000000000000']);
+        $this->fixtures->create('merchant_access_map', ['entity_id'   => $client->getApplicationId(), 'merchant_id' => '100000Razorpay']);
+
+        $this->fixtures->create('emi_plan');
+
+        $this->fixtures->create('methods', [
+            'merchant_id'    => '100000Razorpay',
+            'emi'            => [Merchant\Methods\EmiType::CREDIT => '1'],
+            'disabled_banks' => [],
+            'banks'          => '[]',
+            'addon_methods' => ['credit_emi' => ['HDFC' => 1]],
+        ]);
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $consumer = ['id' => '10000000000000', 'type' => 'partner'];
+        $username = "rzp_test_partner_" . $client->getId();
+        $publickey = $username . "-acc_100000Razorpay";
+        $credential = ['username' => $username, 'public_key' => $publickey];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::TEST, $impersonation,authenticated: false);
+        $testData = $this->testData['testPartnerPublicAuth'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_100000Razorpay';
+
+        $this->ba->publicAuth($username);
+        $response = $this->makeRequestAndGetContent($testData['request']);
+        $this->assertArrayHasKey('HDFC',$response);
+    }
+
+    public function testPublicMerchantAuthWithImpersonation()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey-acc_100000Razorpay'];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::TEST,impersonation: $impersonation,identified: true,authenticated: false);
+        $testData = $this->testData['testPublicAuth'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_100000Razorpay';
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000000000', 'merchant_id' => '100000Razorpay']);
+        $this->ba->publicAuth('rzp_test_TheTestAuthKey');
+        $response = $this->makeRequestAndGetContent($testData['request']);
+        $this->assertArrayHasKey('razorpay_payment_id',$response);
     }
 }
