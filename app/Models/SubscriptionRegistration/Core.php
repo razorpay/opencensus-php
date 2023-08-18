@@ -183,20 +183,8 @@ class Core extends Base\Core
     {
 
         // Set default values for frequency and max amount for upi
-        $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
+        $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
         $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? null;
-
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
-        }
-
 
         // re arrange the input
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
