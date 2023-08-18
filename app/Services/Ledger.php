@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
 use RZP\Http\Request\Requests;
 use RZP\Base\RepositoryManager;
@@ -950,6 +951,19 @@ class Ledger
         if(isset($headers[Passport::PASSPORT_JWT_V1]) === true)
         {
             $this->headers[Passport::PASSPORT_JWT_V1] = $headers[Passport::PASSPORT_JWT_V1];
+        }
+
+        // Add rzp-context-dev-serve header
+        if(isset($headers[RequestHeader::DEV_SERVE_USER]) === true)
+        {
+            if(is_array($headers[RequestHeader::DEV_SERVE_USER]) === true)
+            {
+                $this->headers[RequestHeader::DEV_SERVE_USER] = $headers[RequestHeader::DEV_SERVE_USER][0];
+            }
+            else
+            {
+                $this->headers[RequestHeader::DEV_SERVE_USER] = $headers[RequestHeader::DEV_SERVE_USER];
+            }
         }
     }
 
