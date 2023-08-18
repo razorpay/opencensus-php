@@ -550,7 +550,10 @@ class Service extends Base\Service
                         ]);
 
                         //This function can be removed in future when service agreement is not received in request payload.
-                        $this->unsetServiceAgreementConsent($input);
+                        if ($this->merchant->org->isFeatureEnabled(Feature\Constants::ENABLE_TC_DASHBOARD) === false)
+                        {
+                            $this->unsetServiceAgreementConsent($input);
+                        }
 
                         $this->storeConsents($merchantId, $input);
 

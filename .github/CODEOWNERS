@@ -169,6 +169,9 @@ app/Models/Merchant/Consent                        @razorpay/pg-onboarding-servi
 app/Models/Merchant/Escalations                    @razorpay/pg-onboarding-service
 app/Models/Merchant/Store                          @razorpay/pg-onboarding-service
 app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/Service.php             @razorpay/tech-banking
+app/Models/Merchant/Consent                        @razorpay/tech-banking
+app/Models/Merchant/Service.php                    @razorpay/tech-banking    
 
 
 

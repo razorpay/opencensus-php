@@ -4508,7 +4508,7 @@ return [
         ],
     ],
 
-    'testConsentDetailsForTnCValidation' => [
+    'testConsentDetails' => [
         'request'  => [
             'content' => [
                 'contact_name'                => 'test',

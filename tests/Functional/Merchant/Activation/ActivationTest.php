@@ -5532,7 +5532,7 @@ class ActivationTest extends OAuthTestCase
     }
 
 
-    public function testConsentDetailsForTnCValidation()
+    public function testConsentDetails()
     {
         Mail::fake();
 
@@ -5555,6 +5555,38 @@ class ActivationTest extends OAuthTestCase
         }
 
         $this->assertCount(2, $expectedConsents);
+        $this->assertEmpty(array_diff($values, $expectedConsents));
+
+    }
+
+    // test to verify TnC flow for VAS merchants
+    public function testConsentDetailsForTnCValidationPositiveFlow()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ENABLE_TC_DASHBOARD], "100000razorpay");
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $testData = $this->testData['testConsentDetails'];
+
+        $this->startTest($testData);
+
+        $merchantConsents = \DB::connection('test')->select("select * from merchant_consents where merchant_id = '$merchantId'ORDER BY created_at DESC LIMIT 3 ");
+
+        $values = ["L2_Privacy Policy","L2_Service Agreement","L2_Terms and Conditions"];
+
+        $expectedConsents = [];
+
+        foreach ($merchantConsents as $consent) {
+            $expectedConsents[] = $consent->consent_for;
+        }
+
+        $this->assertCount(3, $expectedConsents);
         $this->assertEmpty(array_diff($values, $expectedConsents));
 
     }
