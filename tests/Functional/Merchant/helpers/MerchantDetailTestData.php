@@ -1499,6 +1499,20 @@ return [
         ],
     ],
 
+    'testDeactivatedMerchantAttributeUpsert' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'rejected',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'rejected',
+            ],
+        ],
+    ],
+
     'testMerchantActivationStatus' => [
         'request' => [
             'content' => [

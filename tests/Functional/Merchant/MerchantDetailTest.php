@@ -75,6 +75,9 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 use RZP\Models\Workflow\Action\Repository as ActionRepository;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
+use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
+use RZP\Models\Merchant\Attribute\Group as MerchantAttributeGroup;
+use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
 use RZP\Models\Merchant\Consent\Repository as MerchantConsentRepository;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
@@ -2027,8 +2030,54 @@ class MerchantDetailTest extends OAuthTestCase
 
             return true;
         });
+    }
 
+    public function testDeactivatedMerchantAttributeUpsert()
+    {
 
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'website'               => $website, 
+            'whitelisted_domains'   => ['abc.com'],
+            'activated'             => 1
+        ]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+
+        Mail::assertQueued(Rejection::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.rejection_notification', $mail->view);
+
+            return true;
+        });
+
+        $value = (new MerchantAttributeRepository())->getValueForProductGroupType($merchant->getId(),
+            'primary', 
+            MerchantAttributeGroup::ACTIVATION, 
+            MerchantAttributeType::DEACTIVATED_AT);
+
+        $this->assertNotEmpty($value);
     }
 
     protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $requestContent, & $responseContent)

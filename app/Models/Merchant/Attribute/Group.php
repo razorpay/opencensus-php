@@ -15,4 +15,5 @@ class Group
     const MASTERCARD                    = 'mastercard';
     const VISA                          = 'visa';
     const PRODUCTS_ENABLED              = 'products_enabled';
+    const ACTIVATION                    = 'activation';
 }

@@ -89,5 +89,9 @@ class GroupType
             Type::REQUESTER_ID,
             Type::MERCHANT_NAME,
         ],
+
+        Group::ACTIVATION => [
+            Type::DEACTIVATED_AT,
+        ],
     ];
 }

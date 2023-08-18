@@ -56,6 +56,7 @@ use RZP\Models\Partner\Activation as PartnerActivation;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Models\Payment\Processor as PaymentProcessor;
+
 /**
  * @property Org\Entity               $org
  * @property Detail\Entity            $merchantDetail
@@ -1357,6 +1358,25 @@ class Entity extends Base\PublicEntity
 
     public function deactivate()
     {
+        /**
+         * NOTE: This is a stop-gap solution to unblock merchants for whom invoices are not being generated when they
+         * get deactivated in the middle of a month
+         * */ 
+        if ($this->getAttribute(self::ACTIVATED))
+        {
+            // surround this in try-catch to avoid failure of main request as they are not always wrapped in transactions
+            try
+            {
+                (new Attribute\Service())->upsertMerchantDeactivatedAttribute($this->getId());
+            }
+            catch(\Exception $e)
+            {
+                app('trace')->traceException($e, Logger::ERROR, TraceCode::MERCHANT_DEACTIVATED_ATTRIBUTE_UPSERT_FAILED, [
+                    'merchant_id' => $this->getId(),
+                ]);
+            }
+        }
+
         $this->setAttribute(self::ACTIVATED, false);
         $this->liveDisable();
         $this->holdFunds();

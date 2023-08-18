@@ -79,4 +79,7 @@ class Type
     const MERCHANT_NAME                   = 'merchant_name';
 
     const X = 'X';
+
+    // Activation 
+    const DEACTIVATED_AT = 'deactivated_at';
 }

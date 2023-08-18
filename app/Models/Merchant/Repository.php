@@ -314,6 +314,54 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    // DBA thread: https://razorpay.slack.com/archives/C3BPZHG8P/p1691660404405689
+    public function fetchMerchantsDeactivatedBetweenTimestamps(
+        int $limit,
+        int $skip,
+        int $fromTimestamp,
+        int $toTimestamp,
+        array $merchantIds = [],
+        array $merchantIdsExcluded = []) : array
+    {
+        $merchantIdCol = $this->dbColumn(Entity::ID);
+
+        $merchantAttributeMerchantId = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::MERCHANT_ID);
+        $merchantAttributeProduct = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+        $merchantAttributeGroup = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::GROUP);
+        $merchantAttributeType = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::TYPE);
+        $merchantAttributeUpdatedAt = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::UPDATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->join(Table::MERCHANT_ATTRIBUTE, $merchantIdCol, '=', $merchantAttributeMerchantId)
+            ->select($merchantIdCol)
+            ->where(Entity::ACTIVATED, '=', 0)
+            ->where($merchantAttributeProduct, '=', Product::PRIMARY)
+            ->where($merchantAttributeGroup, '=', Attribute\Group::ACTIVATION)
+            ->where($merchantAttributeType, '=', Attribute\Type::DEACTIVATED_AT)
+            ->whereBetween($merchantAttributeUpdatedAt, [$fromTimestamp, $toTimestamp])
+            ->where(function ($query)
+            {
+                $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                    ->orWhereNull(Entity::PARENT_ID);
+            })
+            ->take($limit)
+            ->skip($skip);
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($merchantIdCol, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn($merchantIdCol, $merchantIdsExcluded);
+        }
+
+        return $query->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function getSharedAccount(): Entity
     {
         if ($this->sharedMerchant === null)

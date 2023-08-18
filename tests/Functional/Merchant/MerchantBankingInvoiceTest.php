@@ -770,6 +770,88 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testBankingInvoiceEntityCreateWithEInvoiceWithDeactivatedAttribute()
+    {
+        $oldDateTime = Carbon::create(2023, 1, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        // Above fixture sets activated as true
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 0,
+            'activated_at' => null,
+            'live'         => 0
+        ]);
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id'   => '10000000000000',
+                'product'       => 'primary',
+                'group'         => 'activation',
+                'type'          => 'deactivated_at',
+                'value'         => $oldDateTime->timestamp,
+                'updated_at'    => $oldDateTime->timestamp,
+                'created_at'    => $oldDateTime->timestamp
+            ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $testData = $this->testData['testBankingInvoiceEntityCreateWithEInvoiceWithNewXActivationFlag'];
+
+        $expectedContent = $testData['expectedContent'];
+
+        $this->setupEInvoiceClientResponse($expectedContent);
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'][0];
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::BALANCE_ID => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $testData;
+
+        $data['rx_transactions']['balance_id'] = $balanceId;
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertEquals('10000000000000', $eInvoiceEntities['merchant_id']);
+        $this->assertEquals(1, $eInvoiceEntities['month']);
+        $this->assertEquals(2023, $eInvoiceEntities['year']);
+        $this->assertEquals('BANKING', $eInvoiceEntities['type']);
+        $this->assertEquals('generated', $eInvoiceEntities['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntities['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntities['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntities['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntities['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntities['gsp_e_invoice_pdf']);
+
+
+        Carbon::setTestNow();
+    }
+
     public function testBankingInvoiceEntityCreateWithEInvoiceForIciciCa()
     {
         $oldDateTime = Carbon::create(2022, 4, 21, 12, 23, 41, Timezone::IST);

@@ -602,6 +602,37 @@ class Core extends Base\Core
                         'count' => $skip,
                     ]);
             }
+            
+            // In case a merchant is deactivated in the required month<>year, invoice should still be generated for them
+            $skip = 0;
+
+            $fromTimestamp = $this->getPatchedFirstDay($month, $year)
+                                ->getTimestamp();
+
+            do {
+                $merchantIdsDeactivatedInCurrentPeriod = $this->repo
+                    ->merchant
+                    ->fetchMerchantsDeactivatedBetweenTimestamps(
+                        $batch,
+                        $skip,
+                        $fromTimestamp,
+                        $endTimestamp,
+                        $merchantIds,
+                        $merchantIdsExcluded);
+
+                $merchantIdsFetchedViaNewQuery = array_merge($merchantIdsFetchedViaNewQuery, $merchantIdsDeactivatedInCurrentPeriod);
+
+                $count = count($merchantIdsDeactivatedInCurrentPeriod);
+
+                $skip += $count;
+
+            } while ($batch === $count);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_DEACTIVATED_ATTRIBUTE_DISPATCH_COUNT,
+                [
+                    'count' => $skip,
+                ]);
 
             $skip = 0;
 

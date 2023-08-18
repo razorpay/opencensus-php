@@ -578,4 +578,9 @@ class Service extends Base\Service
         $this->core->updateOrCreateAttribute($merchantId, Product::BANKING, Group::PRODUCTS_ENABLED, Type::X, 'true');
     }
 
+    public function upsertMerchantDeactivatedAttribute(string $merchantId) 
+    {
+        $this->core->updateOrCreateAttribute($merchantId, Product::PRIMARY, Group::ACTIVATION, Type::DEACTIVATED_AT, time());
+    }
+
 }
