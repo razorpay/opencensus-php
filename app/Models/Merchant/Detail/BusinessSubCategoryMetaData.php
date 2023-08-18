@@ -288,7 +288,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::CONTENT_AND_PUBLISHING        => [
@@ -585,7 +585,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::FITNESS                       => [
@@ -761,7 +761,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::INTERIOR_DESIGN_AND_ARCHITECT => [
@@ -893,7 +893,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::NBFC                          => [
@@ -970,7 +970,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::PAAS                          => [
@@ -2039,7 +2039,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::AUTO_STORE_HOME_SUPPLY_STORES                      => [

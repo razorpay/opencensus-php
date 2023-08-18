@@ -241,7 +241,21 @@ class BvsValidationTest extends TestCase
                                     'document_type' => Type::AADHAR_FRONT,
                                     'validation_id' => $capturedBvsValidation->getValidationId(),
                                 ]);
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $mid,
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
 
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $mid,
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
         $possibleScenarios = [
             [
                 'input'               => [
@@ -342,7 +356,21 @@ class BvsValidationTest extends TestCase
                                                              'owner_id'      => $mid,
                                                              'artefact_type' => 'bank_account',
                                                          ]);
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $mid,
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
 
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $mid,
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
         $possibleScenarios = [
             [
                 'input'               => [
