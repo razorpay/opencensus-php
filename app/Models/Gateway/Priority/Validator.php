@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Gateway::ZAAKPAY          => 'sometimes|numeric|min:0|max:100',
         Gateway::CCAVENUE         => 'sometimes|numeric|min:0|max:100',
         Gateway::PINELABS         => 'sometimes|numeric|min:0|max:100',
+        Gateway::LYRA         => 'sometimes|numeric|min:0|max:100',
         Gateway::CHECKOUT_DOT_COM => 'sometimes|numeric|min:0|max:100',
         Gateway::INGENICO         => 'sometimes|numeric|min:0|max:100',
         Gateway::BILLDESK_OPTIMIZER => 'sometimes|numeric|min:0|max:100',

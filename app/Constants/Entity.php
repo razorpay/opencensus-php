@@ -311,6 +311,7 @@ class Entity
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
+    const LYRA                   = 'lyra';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
     const CHECKOUT_DOT_COM_OPTIMIZER  = 'checkout_dot_com_optimizer';

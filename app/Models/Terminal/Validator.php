@@ -165,6 +165,7 @@ class Validator extends Base\Validator
         Payment\Gateway::ZAAKPAY,
         Payment\Gateway::CCAVENUE,
         payment\Gateway::PINELABS,
+        Payment\Gateway::LYRA,
         Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
         Payment\Gateway::NETBANKING_PNB,
@@ -428,6 +429,14 @@ class Validator extends Base\Validator
         Entity::NOTES                                   => 'sometimes|string',
         Entity::UPI                                     => 'sometimes|boolean|in:0,1',
     ];
+    protected static $lyraTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:lyra',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+    ];
+
 
     protected static $ingenicoTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:ingenico',

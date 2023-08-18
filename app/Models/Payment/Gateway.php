@@ -34,6 +34,7 @@ class Gateway
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
+    const LYRA                   = 'lyra';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
     const CHECKOUT_DOT_COM_OPTIMIZER = 'checkout_dot_com_optimizer';
@@ -1618,6 +1619,7 @@ class Gateway
             self::ZAAKPAY,
             self::CCAVENUE,
             self::PINELABS,
+            self::LYRA,
             self::CHECKOUT_DOT_COM,
             self::FULCRUM,
             self::INGENICO,
@@ -2173,6 +2175,10 @@ class Gateway
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
+        ],
+        self::LYRA => [
+          Network::VISA,
+          Network::MC
         ],
         self:: CHECKOUT_DOT_COM =>[
             Network::MC,
@@ -4566,6 +4572,7 @@ class Gateway
             self::FULCRUM,
             self::CCAVENUE,
             self::PINELABS,
+            self::LYRA,
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,

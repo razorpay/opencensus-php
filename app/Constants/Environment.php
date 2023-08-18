@@ -44,4 +44,9 @@ final class Environment
     {
         return in_array($env, self::LOWER_ENVS, true);
     }
+
+    public static function isTestingEnvironment(string $env): bool
+    {
+        return in_array($env, [self::TESTING, self::TESTING_DOCKER]);
+    }
 }
