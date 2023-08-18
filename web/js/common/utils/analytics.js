@@ -1,11 +1,13 @@
-import { v4 as uuid } from 'uuid';
-import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
-import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
-import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import getMobileDetect from 'common/utils/mobileDetect';
+import { v4 as uuid } from 'uuid';
+
 import { Modules } from 'common/constant/enums';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { getCookie } from 'common/utils/cookies';
+import getMobileDetect from 'common/utils/mobileDetect';
+import { isMobileDevice } from 'merchant/components/Home/data';
+
+import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
 
 let source = null;
 
@@ -340,4 +342,17 @@ export const capturePrometheusMetric = ({ name, labels = {} }) => {
   } catch (err) {
     //
   }
+};
+
+export const trackShorterKYCEvents = ({ properties, objectName, actionName, screen }) => {
+  analyticsTrack({
+    objectName,
+    actionName,
+    screen,
+    properties: {
+      partnerID: window.rzp_user?.merchant?.id,
+      shorterPartnerKYC: true,
+      ...properties,
+    },
+  });
 };

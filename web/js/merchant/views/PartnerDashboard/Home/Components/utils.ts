@@ -28,7 +28,7 @@ export const showActivationConfetti = (
 
 export const getExperimentsForTracking = (user: any) => {
   return {
-    shorterKYC: user?.isIndependentPartnerKYCEnabled ? 'yes' : 'no',
+    shorterPartnerKYC: user?.isIndependentPartnerKYCEnabled ? 'yes' : 'no',
     onboardAllAsReseller: user?.isOnboardAsResellers ? 'yes' : 'no',
   };
 };

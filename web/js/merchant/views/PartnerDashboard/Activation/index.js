@@ -1,11 +1,35 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import Button from 'common/new-ui/Button';
+import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { trackShorterKYCEvents, analyticsTrack } from 'common/utils/analytics';
+import debounce from 'common/utils/debounce';
+import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
+import {
+  validateCompanyPAN,
+  validateCompanyAB,
+  validatePersonalPAN,
+} from 'common/utils/validators';
+import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
+import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
+import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
 import { merchantFetch } from 'merchant/utils/ajax';
-import ContactDetails from './Components/ContactDetails';
-import BusinessDetails from './Components/BusinessDetails';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import AddressDetails, { validateBothAddressSame } from './Components/AddressDetails';
+import BusinessDetails from './Components/BusinessDetails';
+import ContactDetails from './Components/ContactDetails';
 import Footer from './Components/Footer';
+import KYCStatusModal from './Components/KYCStatus/KYCStatusModal';
+import NeedsClarification from './Components/NeedsClarifications';
+import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
+import NoticeMessage from './Components/NoticeMessage';
+import useActivation from './Hooks/useActivation';
 import {
   FOOTER_BUTTONS,
   displayCompanyPAN,
@@ -14,28 +38,6 @@ import {
   getPincodeDetails,
   getAddressDetailsValidity,
 } from './utils/ActivationUtils';
-import {
-  validateCompanyPAN,
-  validateCompanyAB,
-  validatePersonalPAN,
-} from 'common/utils/validators';
-import { analyticsTrack } from 'common/utils/analytics';
-import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
-import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
-import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
-import useActivation from './Hooks/useActivation';
-import NeedsClarification from './Components/NeedsClarifications';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
-import Button from 'common/new-ui/Button';
-import NoticeMessage from './Components/NoticeMessage';
-import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
-import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
-import { withRouter } from 'react-router-dom';
-import KYCStatusModal from './Components/KYCStatus/KYCStatusModal';
-import { compose } from 'redux';
-import rTracking from 'react-tracking';
-import debounce from 'common/utils/debounce';
 
 const Activation = (props) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -67,6 +69,16 @@ const Activation = (props) => {
   const handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
     setActiveTab(currentTab);
+
+    trackShorterKYCEvents({
+      objectName: `Partner L1 Form ${tabs[currentTab]}`,
+      actionName: 'Clicked',
+      screen: tabs[currentTab],
+      properties: {
+        partnerID: props.user?.merchant.id,
+        sectionName: tabs[currentTab],
+      },
+    });
   };
 
   const convertToBoolean = (value) => {
@@ -402,6 +414,16 @@ const Activation = (props) => {
 
   const next = async () => {
     await saveCurrentTab();
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form Save Button',
+      actionName: 'Clicked',
+      screen: tabs[activeTab],
+      properties: {
+        partnerID: props.user?.merchant.id,
+        sectionName: tabs[activeTab],
+        ctaClicked: 'Save and Next',
+      },
+    });
     setActiveTab(activeTab + 1);
   };
 
@@ -433,6 +455,14 @@ const Activation = (props) => {
     });
     if (activationData.success) {
       updateActivationState(activationData.data);
+      trackShorterKYCEvents({
+        objectName: 'Partner L1 Form',
+        actionName: 'Result',
+        screen: 'Partner L1 Form Result',
+        properties: {
+          partnerID: props.user?.merchant.id,
+        },
+      });
     }
     analyticsTrack({
       objectName: 'Partner KYC Form',
@@ -443,6 +473,17 @@ const Activation = (props) => {
       },
     });
     setIsSaving(false);
+
+    // shorter KYC ARD
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form',
+      actionName: 'Submitted',
+      screen: tabs[activeTab],
+      properties: {
+        partnerID: props.user?.merchant.id,
+        sectionName: tabs[activeTab],
+      },
+    });
   };
 
   useEffect(() => {
@@ -685,6 +726,7 @@ const Activation = (props) => {
                 isConsentTNC={isConsentTNC}
                 setIsConsentTNC={setIsConsentTNC}
                 activeTab={activeTab}
+                tabs={tabs}
                 isFormSubmitted={isFormSubmitted}
               />
             </div>

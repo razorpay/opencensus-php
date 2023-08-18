@@ -100,6 +100,8 @@ export const ActivateAccountStep = ({
   const shouldRedirectToEasyFlow =
     partnerType === PARTNER_TYPE.AGGREGATOR || partnerType === PARTNER_TYPE.PURE_PLATFORM;
 
+  const isShorterKyc = partnerType === PARTNER_TYPE.RESELLER && user.isIndependentPartnerKYCEnabled;
+
   if (shouldRedirectToEasyFlow) {
     stepContent.onClickCTA = () => {
       trackUserEvent('redirect to easy-dashboard CTA', {
@@ -162,6 +164,14 @@ export const ActivateAccountStep = ({
       'Hurray, Your account is now activated. (You will earn commissions once your referred clients register with us and start transacting)';
     stepContent.ctaText = null;
   }
+
+  // opens shorter kyc form
+  if (isShorterKyc) {
+    stepContent.onClickCTA = () => {
+      history.push('/partners/activation');
+    };
+  }
+
   const stepProps = {
     isCurrentStep,
     isNextStep,

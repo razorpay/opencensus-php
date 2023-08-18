@@ -68,7 +68,7 @@ export const validationSchema = Yup.object().shape({
 });
 
 export interface trackingExperimentsProps {
-  shorterKYC: string;
+  shorterPartnerKYC: string;
   onboardAllAsReseller: string;
 }
 
@@ -103,7 +103,7 @@ export interface progressProps {
 }
 
 export const trackingExperimentsTestProp = {
-  shorterKYC: '',
+  shorterPartnerKYC: '',
   onboardAllAsReseller: '',
 };
 

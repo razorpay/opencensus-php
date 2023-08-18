@@ -1,12 +1,30 @@
 import React from 'react';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import Loader from './Loader';
-import ShowWhen from 'merchant/components/ShowWhen';
 import Input from 'common/new-ui/Input';
+import { trackShorterKYCEvents } from 'common/utils/analytics';
 import { classList } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { FOOTER_BUTTONS } from 'merchant/views/PartnerDashboard/Activation/utils/ActivationUtils';
 
-const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
+import Loader from './Loader';
+
+const Save = ({ saveCurrentTab, sectionName }) => {
+  const handleSaveButtonClick = () => {
+    saveCurrentTab();
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form Save Button',
+      actionName: 'Clicked',
+      screen: sectionName,
+      properties: {
+        sectionName,
+        ctaClicked: 'Save',
+      },
+    });
+  };
+
+  return <Button onClick={handleSaveButtonClick}>Save</Button>;
+};
 
 const SaveAndNext = ({ next }) => (
   <Button.Primary iconAfter="chevron-right" onClick={next}>
@@ -51,6 +69,7 @@ const Footer = ({
   setIsConsentTNC,
   activeTab,
   isFormSubmitted,
+  tabs,
 }) => {
   const buttons = [];
 
@@ -64,7 +83,7 @@ const Footer = ({
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE)) {
-    buttons.push(<Save saveCurrentTab={saveCurrentTab} key="0" />);
+    buttons.push(<Save saveCurrentTab={saveCurrentTab} sectionName={tabs[activeTab]} key="0" />);
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE_AND_NEXT)) {
@@ -95,11 +114,23 @@ const Footer = ({
 };
 
 const FooterCheckBox = ({ canSubmitL1Form, checkbox, setCheckBox }) => {
+  const handleCheckBoxChecked = () => {
+    setCheckBox((prevState) => !prevState);
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form TnC',
+      actionName: 'Clicked',
+      screen: 'Partner L1 Form TnC',
+      properties: {
+        sectionName: 'Partner L1 Form TnC',
+      },
+    });
+  };
+
   return (
     <div className="subfooter">
       <Input.Check
         checked={checkbox}
-        onChange={() => setCheckBox(!checkbox)}
+        onChange={handleCheckBoxChecked}
         autoRender={true}
         disabled={!canSubmitL1Form}
         className={classList('footer-checkbox', !canSubmitL1Form ? 'checkbox-cursor' : '')}
