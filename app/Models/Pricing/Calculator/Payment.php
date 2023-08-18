@@ -832,33 +832,38 @@ class Payment extends Base
             parent::getRelevantPricingRule($pricing);
         } catch (Exception\LogicException $e) {
 
-            $properties = [
-                'id' => $this->entity->getMerchantId(),
-                'experiment_id' => $this->fallbackStandardPlanExperimentId,
-                'request_data'  => json_encode(['mid' => $this->entity->getMerchantId()]),
-            ];
-
-            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isExpEnabled === true && $e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID) {
+            if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
 
                 $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT);
 
-                $card = $this->getCardDetails();
-                $payment_details = $this->getPaymentDetails();
+                $properties = [
+                    'id' => $this->entity->getMerchantId(),
+                    'experiment_id' => $this->fallbackStandardPlanExperimentId,
+                    'request_data'  => json_encode(['mid' => $this->entity->getMerchantId()]),
+                ];
 
-                $this->trace->info(TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,[
-                    'pricing_plan'  => $pricing->getId(),
-                    'merchant_id' => $this->entity->getMerchantId(),
-                    'payment_details' => $payment_details,
-                    'card_details' => $card
-                ]);
+                $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
-                $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+                if ($isExpEnabled === true  && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
+                    $card = $this->getCardDetails();
 
-                $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
+                    $payment_details = $this->getPaymentDetails();
 
-                parent::getRelevantPricingRule($pricing);
+                    $this->trace->info(TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,[
+                        'pricing_plan'  => $pricing->getId(),
+                        'merchant_id' => $this->entity->getMerchantId(),
+                        'payment_details' => $payment_details,
+                        'card_details' => $card
+                    ]);
+
+                    $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID);
+
+                    $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
+
+                    parent::getRelevantPricingRule($pricing);
+                }else{
+                    throw $e;
+                }
             }else{
                 throw $e;
             }
