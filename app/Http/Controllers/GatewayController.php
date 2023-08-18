@@ -2107,4 +2107,17 @@ class GatewayController extends Controller
 
         return $payment;
     }
+
+    public function callbackPayerUPIAxisOlive()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_PAYER_CALLBACK, [
+            'input'    => $input,
+        ]);
+
+        return [
+            'success' => true
+        ];
+    }
 }
