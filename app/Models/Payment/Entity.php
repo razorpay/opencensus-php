@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
     const VPA                   = 'vpa';
+    const VPA_TOKEN             = 'vpa_token';
     const ON_HOLD               = 'on_hold';
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const EMAIL                 = 'email';

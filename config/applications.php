@@ -1783,4 +1783,6 @@ return [
         'ie_rejected'                   => env('INTERNATIONAL_PAYMENT_IE_REJECTED_URL'),
         'ie_needs_clarification'        => env('INTERNATIONAL_PAYMENT_IE_NEEDS_CLARIFICATION_URL'),
     ],
+
+    'numeric_mapper_vpa_encryption_key' => env('NUMERIC_MAPPER_VPA_ENCRYPTION_KEY')
 ];

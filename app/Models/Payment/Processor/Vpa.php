@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\PaymentsUpi;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Encryption\AesGcmEncryption;
 use RZP\Error\PublicErrorDescription;
 
 trait Vpa
@@ -96,9 +97,20 @@ trait Vpa
                         'route' => $this->app['api.route']->getCurrentRouteName()
                     ]);
 
-                return $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA,
+                $response = $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA,
                     $input,
                     Payment\Gateway::UPI_ICICI);
+
+                $mode = $this->mode ?? Mode::LIVE;
+
+                $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'numeric_mapper_encrypted_vpa', $mode);
+
+                if($variant === 'encrypted')
+                {
+                    return $this->getEncryptedVpaResponse($response);
+                }
+
+                return $response;
 
             }
             catch (Exception\GatewayErrorException $exception)
@@ -365,5 +377,38 @@ trait Vpa
         $route =  $this->app['api.route']->getCurrentRouteName();
 
         return ((is_numeric($input[Payment\Entity::VPA])) and ($route === 'payment_validate_account'));
+    }
+
+    /**
+     * Encrypts and masks vpa for numeric mapper flow
+     * @param array $response
+     * @return array
+     */
+    protected function getEncryptedVpaResponse(array $response): array
+    {
+        $params = [
+            AesGcmEncryption::IV => $this->generateIV(),
+            AesGcmEncryption::SECRET => $this->app['config']->get('applications.numeric_mapper_vpa_encryption_key'),
+        ];
+
+        $aesGcmEncryptor = (new AesGcmEncryption($params));
+
+        $encryptedVpa = $aesGcmEncryptor->encrypt($response['vpa']).'|'.$params[AesGcmEncryption::IV];
+
+        return [
+            'vpa_token'         => $encryptedVpa,
+            'masked_vpa'        => mask_vpa_for_numeric_mapper($response['vpa']),
+            'success'           => $response['success'],
+            'customer_name'     => $response['customer_name'],
+        ];
+    }
+
+    protected function generateIV(): string
+    {
+        $iv = openssl_random_pseudo_bytes(16);
+
+        $ivHex = bin2hex($iv);
+
+        return $ivHex;
     }
 }

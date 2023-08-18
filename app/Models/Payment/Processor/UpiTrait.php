@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\Secure;
+use RZP\Encryption\AesGcmEncryption;
 use RZP\Gateway\Upi\Base\IntentParams;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Payment\UpiMetadata\Type;
@@ -136,6 +137,16 @@ trait UpiTrait
             return;
         }
 
+        // check for encrypted vpa for Numeric Mapper usecase
+        if ((isset($input[Payment\Method::UPI]) === true and
+            isset($input[Payment\Method::UPI][Payment\Entity::VPA_TOKEN]) === true))
+        {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] = $this->getVpaFromEncryptedVpaIfApplicable($input[Payment\Method::UPI][Payment\Entity::VPA_TOKEN]);
+
+            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+        }
+
+
         // New flow needs to use the UPI block, which was first utilising the `_`  meta block
         // For backward compatibility, we still pick the values from the `_` block and set it
         // on the `upi` block and Payments block has VPA which should be set in the `upi` block
@@ -217,6 +228,39 @@ trait UpiTrait
         {
             $input[Payment\Method::UPI][Entity::MODE] = Payment\UpiMetadata\Mode::UPI_QR;
         }
+    }
+
+    /**
+     * Gets decrypted standard vpa from encrypted vpa_token if passed.
+     * @param string $encryptedVpa
+     * @return string
+     */
+    protected function getVpaFromEncryptedVpaIfApplicable(string $encryptedVpa): string
+    {
+        // Return early if:
+        // 1. vpa is not encrypted and has '@' in it as encrypted vpa should not have '@' symbol OR
+        // 2. vpa does not have '|' delimiter as the iv used for encrypting the vpa is appended after the '|' character.
+        if (strpos($encryptedVpa, '@') > 0 or (str_contains($encryptedVpa, '|') === false))
+        {
+            return $encryptedVpa;
+        }
+
+        $parts = explode('|', $encryptedVpa);
+
+        $cipherText = $parts[0];
+
+        $iv = $parts[1];
+
+        $params = [
+            AesGcmEncryption::IV => $iv,
+            AesGcmEncryption::SECRET => $this->app['config']->get('applications.numeric_mapper_vpa_encryption_key'),
+        ];
+
+        $aesEncryptor = (new AesGcmEncryption($params));
+
+        $decryptedVpa = $aesEncryptor->decrypt($cipherText);
+
+        return $decryptedVpa;
     }
 
     /**

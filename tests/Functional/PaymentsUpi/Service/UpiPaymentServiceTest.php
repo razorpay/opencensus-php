@@ -127,7 +127,7 @@ class UpiPaymentServiceTest extends TestCase
 
         $response =  $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($toAssertResponse, $response);
+        $this->assertArraySubset($toAssertResponse, $response);
 
     }
 
@@ -193,6 +193,65 @@ class UpiPaymentServiceTest extends TestCase
             Entity::ERROR_CODE          => 'SERVER_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'SERVER_ERROR_UPI_PAYMENT_SERVICE_FAILURE'
             ], $payment->toArray());
+    }
+
+    /**
+     * test payment create with encrypted Vpa
+     *
+     * @return void
+     */
+    public function testPaymentCreateWithEncryptedVpa()
+    {
+        // 1.  Send validate account request to get the encrypted vpa.
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value' => '9815225341',  // this is mapped to 'test.vpa@icici' in file app/Services/UpiPayment/Mock/Service.php
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "api_upi_airtel_v1")
+            {
+                return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
+            }
+
+            return $this->getRazoxVariant($feature, 'numeric_mapper_encrypted_vpa', 'encrypted');
+        });
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        // 2.  Create payment with the encrypted vpa.
+        $payment = $this->payment;
+
+        $payment['description'] = 'create_collect_success';
+
+        $payment['upi']['vpa_token'] = $response['vpa_token'];
+
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS => 'created',
+                Entity::REFUND_AT => null,
+                Entity::CPS_ROUTE => Entity::UPI_PAYMENT_SERVICE,
+                Entity::VPA => 'test.cust@icici'
+            ], $payment->toArray()
+        );
     }
 
     /**

@@ -91,7 +91,7 @@ if (! function_exists('array_assoc_flatten_nth_level'))
             $shouldFlatten = $level < $uptoLevel;
 
             $key = ($parent_key === null) ? $key : sprintf($separatorFormat, $parent_key, $key);
-    
+
             if ($shouldFlatten && is_array($value))
             {
                 $shouldFlattenArray = (is_sequential_array($value) === false || $flattenSequential === true);
@@ -1106,6 +1106,30 @@ if (!function_exists('mask_vpa'))
         $username = str_pad($exploded[0], 10, '*', STR_PAD_LEFT);
 
         return mask_except_last4($username, '*') . '@' . ($exploded[1] ?? '');
+    }
+}
+
+if (!function_exists('mask_vpa_for_numeric_mapper'))
+{
+    /**
+     * For VPA we do not need to mask the PSP Code
+     * Only show first character of the username
+     * @param string|null $vpa
+     * @return string|null
+     */
+    function mask_vpa_for_numeric_mapper(string $vpa = null)
+    {
+        if (empty($vpa) === true)
+        {
+            return null;
+        }
+        $exploded = explode('@', $vpa);
+
+        // Pad the username with '*' to make 10 chars long string to hide the actual length of vpa.
+        // The required format for masking is: <first character>*********@<vpa-handle>
+        $username = str_pad($exploded[0][0], 10, '*');
+
+        return $username . '@' . ($exploded[1] ?? '');
     }
 }
 
