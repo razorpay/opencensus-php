@@ -817,6 +817,12 @@ class Service extends Base\Service
 
         }
 
+        $merchantId = $this->auth->getMerchantId();
+        if (in_array($merchantId, Constants::RAZORPAY_ONE_MERCHANTS))
+        {
+            $input[Constants::CUSTOM_FIELDS][Constants::CF_MULTIPRODUCT_USER_P0] = Constants::MULTI_PRODUCT_USER;
+        }
+
         return $input;
     }
 
