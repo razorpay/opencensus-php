@@ -13,6 +13,8 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\AsyncRequest\AsyncRequest;
+use GuzzleHttp\Promise\Utils as PromiseUtils;
 
 class SplitzService extends Base\Service
 {
@@ -243,27 +245,113 @@ class SplitzService extends Base\Service
         ];
     }
 
-    public function bulkCallsToSplitz($parameters)
-    {
+    public function getExperimentFromSplitz($chunkExperimentArray){
         $response = [];
 
-        if (empty($parameters) === false)
+        foreach ($chunkExperimentArray as $batchExperimentArray)
         {
-            $chunkExperimentArray = array_chunk($parameters, 30);
+            $bulk_evaluate = ['bulk_evaluate' => $batchExperimentArray];
 
-            foreach ($chunkExperimentArray as $batchExperimentArray)
+            $result = $this->sendRequest($bulk_evaluate, self::EVALUATE_BULK_URL, Requests::POST);
+
+            if (isset($result['response']['bulk_evaluate_response']) == true)
             {
-                $bulk_evaluate = ['bulk_evaluate' => $batchExperimentArray];
-
-                $result = $this->sendRequest($bulk_evaluate, self::EVALUATE_BULK_URL, Requests::POST);
-
-                if (isset($result['response']['bulk_evaluate_response']) == true)
-                {
-                    $response = array_merge($response, $result['response']['bulk_evaluate_response']);
-                }
+                $response = array_merge($response, $result['response']['bulk_evaluate_response']);
             }
         }
 
+        return $response;
+    }
+
+
+    public function getSplitzDatafromPromise($promises) {
+
+        $response = [];
+
+        if(empty($promises)){
+            return $response;
+        }
+
+        $startTime = millitime();
+
+        $batchResponses = PromiseUtils::settle($promises)->wait();
+
+        foreach ($batchResponses as $batchResponse) {
+            if ($batchResponse['state'] == 'fulfilled') {
+                $result = json_decode($batchResponse['value']->getBody(), true);
+                if(isset($result['bulk_evaluate_response']) == true){
+                    $response = array_merge($response, $result['bulk_evaluate_response']); 
+                }
+            } else {
+                $this->trace->error(TraceCode::SPLITZ_REQUEST_PROMISE_FAILED, [
+                    'status_code' => $batchResponse['reason']->getResponse()->getStatusCode(),
+                    'reason' => $batchResponse['reason']->getMessage()
+                ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION, [
+            'parallel_api' => true,
+            'time_taken'   => millitime() - $startTime
+        ]);
+
+        return $response;
+    }
+
+    public function getExperimentFromSplitzAsync($chunkExperimentArray){
+
+        $promises = [];
+
+        $startTime = millitime();
+
+        foreach ($chunkExperimentArray as $batchExperimentArray)
+        {
+            $bulk_evaluate = ['bulk_evaluate' => $batchExperimentArray];
+
+            $requestParams = $this->getRequestParams($bulk_evaluate, self::EVALUATE_BULK_URL, Requests::POST);
+
+            $options = [
+                'json' => $bulk_evaluate,
+                'headers' => $requestParams['headers'],
+            ];
+
+            $payload = array_merge($options, $requestParams['options']);
+
+            $asyncPromiseInstance = new AsyncRequest($requestParams['url'] ,$requestParams['method']);
+
+            $asyncPromise = $asyncPromiseInstance->requestAsync($payload);
+
+            array_push($promises, $asyncPromise);
+        }
+
+        $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_CREATION, [
+            'parallel_api' => true,
+            'time_taken'   => millitime() - $startTime
+        ]);
+
+        return $this->getSplitzDatafromPromise($promises); 
+    }
+
+    public function bulkCallsToSplitz($parameters, $isParallelReqEnabled = true)
+    {
+        $response = [];
+
+        if (empty($parameters)){
+            return $response;
+        }
+        
+        $chunkExperimentArray = array_chunk($parameters, 30);
+
+        if($isParallelReqEnabled && count($chunkExperimentArray) > 1) {
+            try {
+                $response =  $this->getExperimentFromSplitzAsync($chunkExperimentArray);
+            } catch (\Throwable $e) {
+                throw new Exception\ServerErrorException('Error in fetching splitz async requests', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $e);
+            }
+        } else {
+            $response =  $this->getExperimentFromSplitz($chunkExperimentArray);
+        }
+        
         return $response;
     }
 

@@ -4057,6 +4057,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
     const SPLITZ_REQUEST_FAILED                                 = 'SPLITZ_REQUEST_FAILED';
+    const SPLITZ_REQUEST_PROMISE_FAILED                         = 'SPLITZ_REQUEST_PROMISE_FAILED';
     const SPLITZ_SEGMENT_LAMBDA_REQUEST                         = 'SPLITZ_SEGMENT_LAMBDA_REQUEST';
     const GROWTH_REQUEST                                        = 'GROWTH_REQUEST';
     const GROWTH_REQUEST_FAILED                                 = 'GROWTH_REQUEST_FAILED';
@@ -10199,6 +10200,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_WEBHOOK_CALLBACK_EVENT_INVALID_DATA            = 'PARTNER_WEBHOOK_CALLBACK_EVENT_INVALID_DATA';
     const PARTNER_WEBHOOK_CALLBACK_EVENT_PROCESSED               = 'PARTNER_WEBHOOK_CALLBACK_EVENT_PROCESSED';
     const PARTNER_WEBHOOK_CALLBACK_EVENT_ENTITY_ORIGIN_NOT_FOUND = 'PARTNER_WEBHOOK_CALLBACK_EVENT_ENTITY_ORIGIN_NOT_FOUND';
+
+    const SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_CREATION         = 'SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_CREATION';
+    const SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION       = 'SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
