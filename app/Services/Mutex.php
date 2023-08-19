@@ -123,6 +123,13 @@ class Mutex
             {
                 $requestId = $this->getRequestIdWithCount($resourceRedisValue);
 
+                $this->trace->info(TraceCode::NESTED_MUTEX_ACQUIRE, [
+                    'resource'   => $resource,
+                    'requestId'  => $requestId,
+                    'ttl'        => $ttl,
+                    'route_name' => optional(app('api.route'))->getCurrentRouteName()
+                ]);
+
                 $response = $this->redis->set($resource, $requestId, 'ex', $ttl, 'xx');
             }
             else
@@ -427,6 +434,12 @@ class Mutex
             }
             else
             {
+                $this->trace->info(TraceCode::NESTED_MUTEX_RELEASE, [
+                    'resource'   => $resource,
+                    'requestId'  => $requestId,
+                    'route_name' => optional(app('api.route'))->getCurrentRouteName()
+                ]);
+
                 $requestId = $requestIdArray[0] . '_' . (--$requestCount);
 
                 $ttl = $this->redis->ttl($resource);
