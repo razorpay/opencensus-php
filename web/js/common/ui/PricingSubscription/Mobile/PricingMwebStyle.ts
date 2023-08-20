@@ -170,7 +170,7 @@ const StyledCarouselDot = styled.div(
     background: ${
       isActive
         ? 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)'
-        : theme.colors.surface.border.normal.highContrast
+        : theme.colors.surface.border.normal.lowContrast
     };
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.06);
 `,

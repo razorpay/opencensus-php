@@ -43,7 +43,7 @@ const Carousel = ({
 
   const activeSlide = children?.length
     ? children.map((slide, index) => (
-        <StyledCarouselSlide active={currentSlide === index} key={index}>
+        <StyledCarouselSlide active={currentSlide === index} key={index} data-testid="childSlides">
           {slide}
         </StyledCarouselSlide>
       ))
@@ -87,33 +87,51 @@ const Carousel = ({
     setCurrentSlide((currentSlide + 1) % activeSlide.length);
   };
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>): void => {
-    const touchDown = e.touches[0].clientX;
+    const touchDown = e.touches[0]?.clientX;
     setTouchPosition(touchDown);
   };
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>): void => {
     if (touchPosition === null) return;
-    const currentTouch = e.touches[0].clientX;
+    const currentTouch = e.touches[0]?.clientX;
     const diff = touchPosition - currentTouch;
     if (diff > TOUCH_SPEED) handleRightClick();
     if (diff < -TOUCH_SPEED) handleLeftClick();
     setTouchPosition(null);
   };
   return (
-    <Box position="relative">
-      <StyleSlideContainer onTouchStart={handleTouchStart} onTouchMove={handleTouchMove}>
-        <StyledCarouselSlides currentSlide={currentSlide}>{activeSlide}</StyledCarouselSlides>
+    <Box position="relative" testID="pricingMwebCarousel">
+      <StyleSlideContainer
+        data-testid="touchSliderContainer"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        <StyledCarouselSlides data-testid="activeSlidesContainer" currentSlide={currentSlide}>
+          {activeSlide}
+        </StyledCarouselSlides>
       </StyleSlideContainer>
 
       <StyledCarouselDotWrapper>
-        <StyleLeftSlide onClick={handleLeftClick}>
-          <ChevronLeftIcon color="feedback.icon.neutral.lowContrast" size="xlarge" />
+        <StyleLeftSlide onClick={handleLeftClick} data-testid="carouselLeftPane">
+          <ChevronLeftIcon
+            data-testid="ChevronLeftIcon"
+            color="feedback.icon.neutral.lowContrast"
+            size="xlarge"
+          />
         </StyleLeftSlide>
         {children?.length &&
           children.map((_, index) => (
-            <StyledCarouselDot isActive={currentSlide === index} key={index} />
+            <StyledCarouselDot
+              data-testid="carouselDot"
+              isActive={currentSlide === index}
+              key={index}
+            />
           ))}
-        <StyleRightSlide onClick={handleRightClick}>
-          <ChevronRightIcon color="feedback.icon.neutral.lowContrast" size="xlarge" />
+        <StyleRightSlide onClick={handleRightClick} data-testid="carouselRightPane">
+          <ChevronRightIcon
+            data-testid="ChevronRightIcon"
+            color="feedback.icon.neutral.lowContrast"
+            size="xlarge"
+          />
         </StyleRightSlide>
       </StyledCarouselDotWrapper>
     </Box>

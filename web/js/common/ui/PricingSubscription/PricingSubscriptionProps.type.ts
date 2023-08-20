@@ -97,6 +97,7 @@ interface TncModalText {
 }
 interface TncModal extends TncModalText {
   isOpenTncModal: boolean;
+  zIndex?: 9999;
 }
 interface TrackingObjectType {
   toggle_switch?: string;
