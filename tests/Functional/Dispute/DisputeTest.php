@@ -4369,13 +4369,13 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditViaCmmaAuth()
     {
-        $this->ba->cmmaAppAuth();
-
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->create('merchant_detail', [
             DetailEntity::MERCHANT_ID   => $merchant['id'],
         ]);
+
+        $this->ba->cmmaAppAuth('test', $merchant['id']);
 
         $dispute = $this->fixtures->create('dispute', [
             DetailEntity::MERCHANT_ID => $merchant['id'],
@@ -4386,8 +4386,6 @@ class DisputeTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
-
-        $testData['request']['content']['merchant_id'] = $merchant['id'];
 
         $response = $this->startTest();
     }

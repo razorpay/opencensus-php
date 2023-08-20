@@ -5153,7 +5153,6 @@ class Route
         'merchant_entities_info',
         'merchant_submit_internal',
         'merchant_document_upload_internal',
-        'dispute_edit',
         'merchant_activation_clarifications_save_internal',
         'merchant_activation_clarifications_fetch_internal',
         'merchant_activation_change_log_internal',

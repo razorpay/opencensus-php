@@ -363,9 +363,16 @@ class Authorization
         $this->proxy = false;
     }
 
-    public function cmmaAppAuth()
+    public function cmmaAppAuth($mode = 'test', $merchantId = null)
     {
-        $this->appAuth('rzp_test', \Config::get('applications.cmma')['secret']);
+        if (empty($merchantId) === true)
+        {
+            $this->appAuth('rzp_' . $mode, \Config::get('applications.cmma')['secret']);
+        }
+        else
+        {
+            $this->appAuth('rzp_' . $mode . '_' . $merchantId, \Config::get('applications.cmma')['secret']);
+        }
 
         $this->proxy = false;
     }
