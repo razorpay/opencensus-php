@@ -409,7 +409,7 @@ class Service extends Base\Service
                 'error_message' => $exception->getMessage()
             ]);
 
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
 
@@ -517,7 +517,7 @@ class Service extends Base\Service
                     'error_message' => $exception->getMessage()
                 ]);
 
-                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                     'error description' => 'submitted data could not be processed'
                 ]);
 
@@ -1390,7 +1390,7 @@ class Service extends Base\Service
 
         if ($shouldMerchantOnboardViaPGOS === true and $this->pgosProxyController->isFieldsOwnedByPGOS($inputKeys) === true)
         {
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
         }
@@ -2136,7 +2136,7 @@ class Service extends Base\Service
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
             ]);
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
         }

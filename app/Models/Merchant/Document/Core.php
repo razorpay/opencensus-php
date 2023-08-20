@@ -198,7 +198,7 @@ class Core extends Base\Core
                 'error_message' => $exception->getMessage()
             ]);
 
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, null, [
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
         }
