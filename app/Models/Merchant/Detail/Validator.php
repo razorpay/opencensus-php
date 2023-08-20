@@ -177,7 +177,7 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
-
+        Entity::BANK_DETAILS_VERIFICATION_STATUS        => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
     ];
 
     protected static $editRules = [
@@ -314,6 +314,7 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::BANK_DETAILS_VERIFICATION_STATUS        => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
 
    ];
 

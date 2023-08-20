@@ -51,7 +51,7 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'business_name'
             ]
         ],
-        'business_details.business_description'        => [
+        'business_details.business_model'        => [
             [
                 "column" => 'business_description'
             ]
@@ -61,42 +61,42 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'business_dba'
             ]
         ],
-        'business_details.business_registered_address' => [
+        'business_details.business_registered_address.business_registered_address' => [
             [
                 "column" => 'business_registered_address'
             ]
         ],
-        'business_details.business_registered_state'   => [
+        'business_details.business_registered_address.business_registered_state'   => [
             [
                 "column" => 'business_registered_state'
             ]
         ],
-        'business_details.business_registered_city'    => [
+        'business_details.business_registered_address.business_registered_city'    => [
             [
                 "column" => 'business_registered_city'
             ]
         ],
-        'business_details.business_registered_pin'     => [
+        'business_details.business_registered_address.business_registered_pin'     => [
             [
                 "column" => 'business_registered_pin'
             ]
         ],
-        'business_details.business_operation_address'  => [
+        'business_details.business_operation_address.business_operation_address'  => [
             [
                 "column" => 'business_operation_address'
             ]
         ],
-        'business_details.business_operation_state'    => [
+        'business_details.business_operation_address.business_operation_state'    => [
             [
                 "column" => 'business_operation_state'
             ]
         ],
-        'business_details.business_operation_city'     => [
+        'business_details.business_operation_address.business_operation_city'     => [
             [
                 "column" => 'business_operation_city'
             ]
         ],
-        'business_details.business_operation_pin'      => [
+        'business_details.business_operation_address.business_operation_pin'      => [
             [
                 "column" => 'business_operation_pin'
             ]

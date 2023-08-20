@@ -29,16 +29,6 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'name'
             ]
         ],
-        'stakeholder.stakeholder_email'  => [
-            [
-                "column" => 'email'
-            ]
-        ],
-        'stakeholder.stakeholder_mobile' => [
-            [
-                "column" => 'phone_primary'
-            ]
-        ],
         'business_identity.promoter_pan' => [
             [
                 "column" => 'poi_identification_number'

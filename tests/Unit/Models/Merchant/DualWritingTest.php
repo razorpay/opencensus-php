@@ -245,7 +245,6 @@ class DualWritingTest extends TestCase
 
         $this->assertArraySubset(["id"                        => $stakeholder1->getId(),
                                   "merchant_id"               => "KqsQEszAud2PqZ",
-                                  "email"                     => "vasanthik22@gmail.com",
                                   "name"                      => "Promoter Pan Name",
                                   "poi_identification_number" => "ABCPD1234A",
                                  ],

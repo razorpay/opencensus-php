@@ -701,6 +701,17 @@ class Constants
         ]
     ];
 
+    // Validation failures error codes for PGOS
+    const BAD_REQUEST_CODE      = "bad_request";
+    const INVALID_DATA          = "invalid_data";
+    const INVALID_ARGUMENT      = "invalid_argument";
+
+    const PGOS_VALIDATION_FAILURE_ERROR_CODES = [
+        self::BAD_REQUEST_CODE,
+        self::INVALID_DATA,
+        self::INVALID_ARGUMENT,
+    ];
+
     const INPUT_WEBSITE_STATUS_UNDETERMINED_COUNT = 'input_website_status_undetermined_count';
     const UNDETERMINED                            = 'undetermined';
     const NO                                      = 'no';

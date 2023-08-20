@@ -746,6 +746,7 @@ class Service extends Base\Service
                                 DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
                                 Merchant\Entity::COUNTRY_CODE        => $countryCode,
                                 'org_id'                             => $orgId,
+                                'user_id'                            => $user['id'],
                             ];
 
                             // sign up response is not driven by PGOS

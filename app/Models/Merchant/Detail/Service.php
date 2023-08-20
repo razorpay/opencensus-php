@@ -507,6 +507,11 @@ class Service extends Base\Service
                     'response' => $pgosResponse
                 ]);
 
+                if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                }
+
                 return $pgosResponse['activation_response'];
             }
             catch (\Throwable $exception)
@@ -516,6 +521,11 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                     'error_message' => $exception->getMessage()
                 ]);
+
+                if ($exception instanceof Exception\BadRequestValidationFailureException)
+                {
+                    throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                }
 
                 throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                     'error description' => 'submitted data could not be processed'
