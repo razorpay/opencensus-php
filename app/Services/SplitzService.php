@@ -283,10 +283,12 @@ class SplitzService extends Base\Service
                     $response = array_merge($response, $result['bulk_evaluate_response']); 
                 }
             } else {
-                $this->trace->error(TraceCode::SPLITZ_REQUEST_PROMISE_FAILED, [
+                $errorBody = [
                     'status_code' => $batchResponse['reason']->getResponse()->getStatusCode(),
                     'reason' => $batchResponse['reason']->getMessage()
-                ]);
+                ];
+                $this->trace->error(TraceCode::SPLITZ_REQUEST_PROMISE_FAILED, $errorBody);
+                throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $errorBody);
             }
         }
 
