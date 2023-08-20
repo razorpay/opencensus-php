@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { AlertOctagonIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import {
   updateDateRange,
   fetchSuccessRate,
@@ -13,6 +15,11 @@ import {
   resetSRDashboard,
 } from 'merchant/reducers/successRate';
 import {
+  PRESETS,
+  DEFAULT_INTERVAL,
+  DEFAULT_GROUP_BY,
+} from 'merchant/views/Transactions/SuccessRate/constants';
+import {
   getBreakdownInterval,
   initialFilters,
   queryFilters,
@@ -20,20 +27,14 @@ import {
   validateDateRange,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
-  PRESETS,
-  DEFAULT_INTERVAL,
-  DEFAULT_GROUP_BY,
-} from 'merchant/views/Transactions/SuccessRate/constants';
-import {
   clearFilterSuccessRate,
   filterSuccessRate,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
-import { DateRangePreset } from './DateRangePreset';
-import TabRefreshButton from './TabRefreshButton';
 
+import { DateRangePreset } from './DateRangePreset';
 import SearchMerchant from './SearchMerchant';
-import { Box, Button, Heading } from '@razorpay/blade/components';
+import TabRefreshButton from './TabRefreshButton';
 
 const SuccessRateFilter = (props) => {
   const {
@@ -149,7 +150,7 @@ const SuccessRateFilter = (props) => {
   };
 
   return (
-    <div className="sr-filter">
+    <div className="sr-filter" data-testid="success-rate-filter">
       <Box>
         <Box>
           <Heading marginBottom="spacing.2">Date Range</Heading>
@@ -167,21 +168,36 @@ const SuccessRateFilter = (props) => {
                 variant="primary"
                 onClick={handleSearch}
                 isDisabled={Object.keys(errors).length > 0}
+                testID="sr-filter-apply-btn"
               >
                 Apply
               </Button>
-              <Button variant="tertiary" onClick={onReset} marginLeft="spacing.3">
+              <Button
+                variant="tertiary"
+                onClick={onReset}
+                marginLeft="spacing.3"
+                testID="sr-filter-clear-btn"
+              >
                 Clear
               </Button>
             </div>
           </div>
         </Box>
-        {errors.date && (
-          <small className="error-text text-danger">
-            <i className="i i-info-outline" />
-            <i>{errors.date}</i>
-          </small>
-        )}
+
+        {errors.date ? (
+          <Box display="flex" alignItems="center" testID="sr-filter-error">
+            <AlertOctagonIcon
+              size="medium"
+              color="feedback.negative.action.icon.primary.active.lowContrast"
+            />
+            <Text
+              color="feedback.negative.action.text.primary.active.lowContrast"
+              marginLeft="spacing.2"
+            >
+              {errors.date}
+            </Text>
+          </Box>
+        ) : null}
       </Box>
 
       <div className="sr-filter-extras">
@@ -204,7 +220,7 @@ const SuccessRateFilter = (props) => {
 
 const mapStateToProps = ({ session, successRate }) => {
   const { user } = session;
-  const { filters = {}, tabs = {}, activeTab, searchedMerchantId, isLoading } = successRate;
+  const { filters, tabs, activeTab, searchedMerchantId, isLoading } = successRate;
   const { startDate, endDate, preset } = filters;
 
   return {

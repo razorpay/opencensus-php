@@ -20,7 +20,7 @@ const TabRefreshButton = ({ timestamp, onRefresh, activeTab }) => {
   }, [timestamp]);
 
   return (
-    <div className="tab-refresh">
+    <div className="tab-refresh" data-testid="sr-tab-refresh">
       <span className="last-updated-at">
         Last updated:&nbsp;
         {timestamp ? (
