@@ -1578,15 +1578,7 @@ class Service extends Base\Service
         $basResponse = $this->bankingAccountService->getApplicationForRblPartnerLms($businessId, $applicationId);
 
         // convert to API structure and return
-        $apiResponse = $this->basDtoAdapter->fromBasResponseToApiResponse($basResponse);
-
-        // $this->trace->info(
-        //     TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS,
-        //     [
-        //         'id'            => $applicationId,
-        //         'bas_response'  => $basResponse,
-        //         'api_response'  => $apiResponse,
-        //     ]);
+        $apiResponse = $this->basDtoAdapter->fromBasResponseToApiResponseForPartnerLms($basResponse);
 
         return $apiResponse;
     }

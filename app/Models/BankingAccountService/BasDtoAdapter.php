@@ -751,7 +751,6 @@ class BasDtoAdapter
 
         $apiResponseDto[BankingAccountEntity::FASTER_DOC_COLLECTION_ENABLED] = true;
 
-        // Handle - banking_account_details, after credentials change
         $bankingAccountDetails = $this->getBankingAccountDetailsFromBasResponse($basResponseDto);
 
         $apiResponseDto[BankingAccountEntity::BANKING_ACCOUNT_DETAILS] = $bankingAccountDetails;
@@ -798,7 +797,19 @@ class BasDtoAdapter
             self::REVIEWERS,
             self::SPOCS,
             self::OPS_MX_POCS,
-            self::BANKING_ACCOUNT_DETAILS,
+        ]);
+
+        return $apiReponse;
+    }
+
+    public function fromBasResponseToApiResponseForPartnerLms(array $basResponse)
+    {
+        $apiReponse = $this->fromBasResponseToApiResponse($basResponse);
+
+        $apiReponse = $this->removeFields($apiReponse, [
+            BankingAccountEntity::BANKING_ACCOUNT_DETAILS,
+            BankingAccountEntity::USERNAME,
+            BankingAccountEntity::PASSWORD,
         ]);
 
         return $apiReponse;
@@ -978,7 +989,7 @@ class BasDtoAdapter
         }
 
         return array_map(function($basDto) {
-            return $this->fromBasResponseToApiResponse($basDto);
+            return $this->fromBasResponseToApiResponseForPartnerLms($basDto);
         }, $response);
     }
 

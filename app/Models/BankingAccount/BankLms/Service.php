@@ -282,6 +282,13 @@ class Service extends BankingAccount\Service
     */
     public function updateLeadDetails(string $bankingAccountId, array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_PARTNER_LMS_EDIT,
+            [
+                'banking_account_id' => $bankingAccountId,
+                'input'              => $input,
+            ]);
+
         // Moving validation logic to before we check if the account exist,
         // because some banking accounts may exist in BAS
         $this->validator->validateInput(Validator::PARTNER_LMS_EDIT, $input);

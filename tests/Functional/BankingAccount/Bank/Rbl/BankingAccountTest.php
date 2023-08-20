@@ -13662,7 +13662,11 @@ class BankingAccountTest extends TestCase
     {
         $this->setupBankLMSTest();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(BankingAccount\Entity::USERNAME, $response);
+        $this->assertArrayNotHasKey(BankingAccount\Entity::PASSWORD, $response);
+        $this->assertArrayNotHasKey(BankingAccount\Entity::BANKING_ACCOUNT_DETAILS, $response);
     }
 
     // Test Fetch Multiple Applications
