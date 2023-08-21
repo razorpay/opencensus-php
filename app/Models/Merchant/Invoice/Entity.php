@@ -34,6 +34,8 @@ class Entity extends Base\PublicEntity
     const SEND_EMAIL            = 'send_email';
     const TO_EMAILS             = 'to_emails';
 
+    const SELLER = 'seller';
+
     // Slack channel for alerts
     const P0_PP_ALERTS      = 'p0_pp_alerts';
 

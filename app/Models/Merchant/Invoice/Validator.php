@@ -56,6 +56,7 @@ class Validator extends Base\Validator
         Entity::SEND_EMAIL          => 'sometimes|boolean',
         Entity::TO_EMAILS           => 'required_if:send_email,1|array',
         Entity::TO_EMAILS . '.*'    => 'filled|email',
+        Entity::SELLER              => 'sometimes|in:RSPL,RZPL'
     ];
 
     protected static $pdfControlRules = [

@@ -97,4 +97,21 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function fetchGeneratedEInvoiceFromInvoiceNumberTypeAndDocumentType(
+        string $merchantId,
+        string $invoiceNumber,
+        string $type,
+        string $documentType
+    )
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::INVOICE_NUMBER, '=', $invoiceNumber)
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::STATUS, '=', Status::STATUS_GENERATED)
+            ->where(Entity::DOCUMENT_TYPE, '=', $documentType)
+            ->orderBy(Entity::UPDATED_AT, 'DESC')
+            ->first();
+    }
 }

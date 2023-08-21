@@ -164,6 +164,32 @@ class XEInvoice extends Core
         return $eInvoiceData;
     }
 
+    public function getEInvoiceDataForPdfByInvoiceNumberAndType($merchantId, $invoiceNumber, $type)
+    {
+        $eInvoiceData = [];
+
+        foreach($this->xDocumentTypes as $documentType)
+        {
+            $eInvoiceEntity = $this->repo->merchant_e_invoice->fetchGeneratedEInvoiceFromInvoiceNumberTypeAndDocumentType($merchantId, $invoiceNumber, $type, $documentType);
+
+            if(!isset($eInvoiceEntity))
+            {
+                continue;
+            }
+
+            $invoiceIssueTime = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
+                    ->format('d/m/Y');
+
+            $eInvoiceData[$documentType] = [
+                self::IRN                         => $eInvoiceEntity->getGspIrn(),
+                self::SIGNED_QR_CODE              => $eInvoiceEntity->getGspSignedQrCode(),
+                self::QR_CODE_URL                 => $eInvoiceEntity->getGspQRCodeUrl(),
+                self::INVOICE_NUMBER              => $eInvoiceEntity->getInvoiceNumber(),
+                self::INVOICE_NUMBER_ISSUE_DATE   => $invoiceIssueTime,
+            ];
+        }
+    }
+
     public function shouldGenerateEInvoice(Merchant\Entity $merchant, $fromTimestamp) : bool
     {
         $merchantDetails = $merchant->merchantDetail;

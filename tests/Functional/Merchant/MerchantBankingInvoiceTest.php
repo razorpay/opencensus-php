@@ -2460,6 +2460,45 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testBankingInvoiceDownloadBySeller()
+    {
+        // 1. override time
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23,41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // 2. create CA & VA balance entities
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaAndVANonZero();
+
+        // 3. create invoice entities
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/invoice/create',
+            'method'    => 'POST',
+            'content'   => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // 4. download invoice for RSPL (Razorpay) and assert response
+        $this->ba->proxyAuth();
+
+        $this->mockPdfGeneratorAndUfhService();
+
+        $request = [
+            'url'       => '/reports/invoice/banking',
+            'method'    => 'POST',
+            'content'   => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year, 'seller' => 'RSPL'],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('file_MQgsR8C9eceTxZ', $content['file_id']);
+        $this->assertNull($content['error_message']);
+
+        Carbon::setTestNow();
+    }
+
     public function testMerchantInvoiceGenerationWhenNonKycAndRblCaActive(){
         $oldDateTime = Carbon::create(2021, 5, 21, 12, 23, 41, Timezone::IST);
 
@@ -3097,5 +3136,22 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->assertEquals('randomcode', $eInvoiceEntity['gsp_signed_qr_code']);
         $this->assertEquals('randomurl', $eInvoiceEntity['gsp_qr_code_url']);
         $this->assertEquals('randompdf', $eInvoiceEntity['gsp_e_invoice_pdf']);
+    }
+
+    // mocks PDF and UFH service
+    protected function mockPdfGeneratorAndUfhService()
+    {
+        $tempFile = fopen("testFile.txt", "w");
+        fclose($tempFile);
+
+        $pdfMock = \Mockery::mock('RZP\Models\Invoice\PdfGenerator')->makePartial();
+        $this->app->instance('invoice_pdf_generator', $pdfMock);
+        $pdfMock->shouldReceive('generateBankingInvoice')->times(1)->andReturn('testFile.txt');
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+        $this->app->instance('ufh.service', $ufhService);
+        $ufhService->shouldReceive('uploadFileAndGetUrl')->times(1)->andReturn([
+            'file_id'   => 'file_MQgsR8C9eceTxZ',
+        ]);
     }
 }

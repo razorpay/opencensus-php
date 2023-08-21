@@ -50,11 +50,20 @@ class BankingInvoiceReport extends BaseReport
     const COMBINED                  = 'combined';
     const E_INVOICE_DETAILS         = 'e_invoice_details';
     const SELLER_ENTITY             = 'seller_entity';
+    
+    const RZPL   = 'RZPL';
+    const SELLER = 'seller';
 
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
         'month'          => 'required|digits_between:1,2',
         'invoice_number' => 'sometimes'
+    ];
+
+    const VALIDATION_RULES_BY_SELLER = [
+        'year'           => 'required|digits:4',
+        'month'          => 'required|digits_between:1,2',
+        'seller'         => 'required|in:RSPL,RZPL'
     ];
 
     public $documentTypeMap         = [
@@ -197,6 +206,31 @@ class BankingInvoiceReport extends BaseReport
         $invoiceReport = $this->groupDataForInvoice($invoice, $combinedData);
 
         return $invoiceReport;
+    }
+
+    public function getBankingInvoiceReportBySeller($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_BANKING_INVOICE_REPORT_REQUEST_BY_SELLER, $input);
+
+        (new JitValidator)->rules(self::VALIDATION_RULES_BY_SELLER)->input($input)->validate();
+        
+        $this->month = $input['month'];
+
+        $this->year = $input['year'];
+
+        $invoiceInfix = ($input[self::SELLER] === self::RZPL) ? 'X' : 'R';
+
+        $monthInfix = ($this->month <= 9) ? '0' . $this->month : $this->month;
+
+        $invoiceNumber = substr($this->merchant->getId(), 0, \RZP\Models\Merchant\Invoice\Constants::INVOICE_CODE_LENGTH_FOR_X) . $invoiceInfix . $monthInfix . substr($this->year, 2, 3);
+
+        $invoiceNumber = strtoupper($invoiceNumber);
+
+        unset($input[self::SELLER]);
+
+        $input['invoice_number'] = $invoiceNumber;
+
+        return $this->getInvoiceReportForEInvoice($input, $this->merchant);
     }
 
     protected function getInvoiceReportData(Invoice\Entity $invoice)

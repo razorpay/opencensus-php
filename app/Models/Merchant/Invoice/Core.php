@@ -302,7 +302,7 @@ class Core extends Base\Core
 
     public function generateInvoiceReport($input)
     {
-        $data = (new BankingInvoiceReport)->getInvoiceReport($input);
+        $data = isset($input[Entity::SELLER]) ? (new BankingInvoiceReport)->getBankingInvoiceReportBySeller($input) : (new BankingInvoiceReport)->getInvoiceReport($input);
 
         $invoiceEntity = (new Repository)->findByIdAndMerchantId($data[Entity::ID], $this->merchant->getId());
 
@@ -312,8 +312,18 @@ class Core extends Base\Core
 
         if($XEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true)
         {
-            $data[BankingInvoiceReport::E_INVOICE_DETAILS] = $XEInvoiceCore->getEInvoiceDataForPdf($this->merchant->getId(),
-                $input[Entity::MONTH], $input[Entity::YEAR], EInvoice\Types::BANKING);
+            if (isset($input[Entity::SELLER]))
+            {
+                $data[BankingInvoiceReport::E_INVOICE_DETAILS] = $XEInvoiceCore->getEInvoiceDataForPdfByInvoiceNumberAndType(
+                    $this->merchant->getId(),
+                    $data[Entity::INVOICE_NUMBER],
+                    EInvoice\Types::BANKING);
+            }
+            else
+            {
+                $data[BankingInvoiceReport::E_INVOICE_DETAILS] = $XEInvoiceCore->getEInvoiceDataForPdf($this->merchant->getId(),
+                    $input[Entity::MONTH], $input[Entity::YEAR], EInvoice\Types::BANKING);
+            }
         }
 
         $hasTaxInvoice = isset($data[BankingInvoiceReport::ROWS][EInvoice\DocumentTypes::INV]);
@@ -372,6 +382,12 @@ class Core extends Base\Core
                     }
                 }
 
+                if (isset($input[Entity::SELLER]))
+                {
+                    $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = $input[Entity::SELLER];
+                    continue;
+                }
+
                 if($rblAccountInvoiceAmount > 0)
                 {
                     if($virtualAccountInvoiceAmount === 0){
@@ -394,11 +410,17 @@ class Core extends Base\Core
         {
             foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItem)
             {
+                if (isset($input[Entity::SELLER]))
+                {
+                    $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = $input[Entity::SELLER];
+                    continue;
+                }
+
                 $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
             }
         }
 
-        $pathToTemporaryFile = (new PdfGenerator)->generateBankingInvoice($data);
+        $pathToTemporaryFile = $this->app['invoice_pdf_generator']->generateBankingInvoice($data);
 
         $fileAccessUrl = $this->uploadViaUfh($pathToTemporaryFile, $invoiceEntity);
 
