@@ -432,8 +432,8 @@ class Checkout
     {
         try {
             if ($merchant->getCountry() === 'MY') {
-                $data['terms'] = ['display_name' => 'Terms & Conditions', 'url' => 'https://curlec.com/terms-of-service/'];
-                $data['privacy'] = ['display_name' => 'Privacy Policy', 'url' => 'https://curlec.com/privacy-policy/'];
+                $data['terms'] = ['display_name' => 'Terms & Conditions', 'url' => 'https://curlec.com/s/terms-of-use/'];
+                $data['privacy'] = ['display_name' => 'Privacy Policy', 'url' => 'https://curlec.com/s/privacy/'];
             }
         }
         catch (\Throwable $e)
