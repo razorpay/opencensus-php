@@ -88,6 +88,17 @@ class AuthLink extends Base
         }
     }
 
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        $msg = 'One/multiple rows have values mismatching allowed headers, please refer to guide';
+
+        if (!in_array("frequency", $values)){
+            $msg = 'The uploaded file format is incorrect. Please download the sample file for correct format';
+        }
+
+        throw new BadRequestValidationFailureException($msg, Entity::FILE, compact('headings', 'values', 'ix'));
+    }
+
     protected function createAuthLink(array & $entry) : Invoice\Entity
     {
         $settings = $this->settingsAccessor->all()->toArray();
