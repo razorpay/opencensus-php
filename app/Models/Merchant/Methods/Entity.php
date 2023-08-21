@@ -718,7 +718,12 @@ class Entity extends Base\PublicEntity
 
     public function isOlamoneyEnabled()
     {
-        return $this->getAttribute(self::OLAMONEY);
+        /*
+         Disabling ola money
+        */
+
+        //return $this->getAttribute(self::OLAMONEY);
+        return false;
     }
 
     public function isPhonepeswitchEnabled()
@@ -912,7 +917,7 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
-    public function isSodexoEnabled(): bool 
+    public function isSodexoEnabled(): bool
     {
         $addonMethods = $this->getAddonMethods();
 

@@ -3618,6 +3618,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testOlamoneyReconPaymentFile()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
         $this->getNewWalletEntity('10000000000000', 'olamoney');
@@ -3646,6 +3648,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testOlamoneyReconRefundFile()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');

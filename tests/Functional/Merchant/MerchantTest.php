@@ -971,6 +971,21 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testPreferencesToCheckDisabledOlaMoneyWallet()
+    {
+        $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
+
+        $this->fixtures->create('terminal:shared_olamoney_terminal', ['gateway_merchant_id2' => 'v2', 'id' => '1001OlamoneyTl']);
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('olamoney', $response['methods']['wallet']);
+    }
+
     public function testRollDemoKey()
     {
         $this->createMerchant();
