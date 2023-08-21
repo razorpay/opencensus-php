@@ -21,6 +21,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { trackReportsSection } from './configs/analytics.config';
 import { Schedules } from './features/Schedules';
+import { useReportsSplitzExperiments } from './hooks';
 
 // Features Of Reports
 const getReportsFeatures = (isSchedulesEnabled: boolean) => {
@@ -53,9 +54,7 @@ const getReportsFeatures = (isSchedulesEnabled: boolean) => {
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
-  const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);
   return {
-    isSchedulesEnabled,
     allReportConfigs: allConfigs.data,
     user: pickProps(session.user, ['current', 'international']),
     refDashboardConfig: getReportsDashboardConfig(dashboardType, session),
@@ -87,9 +86,10 @@ export const ReportsSection = connect(
     showNotification,
     fetchAccounts,
     dashboardType,
-    isSchedulesEnabled,
   }: ReportSectionProps): JSX.Element => {
-    const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), [isSchedulesEnabled]);
+    const { isSchedulesEnabled } = useReportsSplitzExperiments();
+
+    const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
 
     const handleAllConfigsFetch = async (validationCheck = true) => {
       try {

@@ -21,7 +21,6 @@ export interface OverViewPropsType {
   refDashboardConfig: RefDashboardConfigType;
   showNotification: ShowNotificationType;
   dashboardType: DashboardType;
-  isOverviewRecentsFilterEnabled?: boolean;
 }
 
 export type BaseDivType = {

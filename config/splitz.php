@@ -234,13 +234,6 @@ return [
         // Left Nav revamp
         'LEFT_NAV_REVAMP' => env('LEFT_NAV_REVAMP', ''),
 
-        // Reports Revamp
-        'MERCHANT_REPORTS_REVAMP' => env('MERCHANT_REPORTS_REVAMP', ''),
-        'PARTNER_REPORTS_REVAMP' => env('PARTNER_REPORTS_REVAMP', ''),
-        'LA_REPORTS_REVAMP' => env('LA_REPORTS_REVAMP', ''),
-        'REPORTS_REVAMP_RECENTS' => env('REPORTS_REVAMP_RECENTS', ''),
-        'REPORTS_SCHEDULES' => env('REPORTS_SCHEDULES', ''),
-
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import * as overviewApi from 'merchant_common/views/Reports/api/overview';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { render, screen, userEvent, waitFor } from 'test-utils';
 import { OverView } from 'merchant_common/views/Reports/features/Overview';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';

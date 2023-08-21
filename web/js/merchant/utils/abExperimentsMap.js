@@ -474,41 +474,6 @@ export default {
     'Kmd4oqDWnxSFe8',
   ],
 
-  reports_revamp_recents: [
-    // beta
-    'LhJWXVuaVbbpnR',
-    // prod
-    'LhJcdQNbjDvQo5',
-  ],
-
-  merchant_reports_revamp: [
-    // beta experiment ids
-    'LEG6dZms3jSwvI',
-    // prod experiment ids
-    'LEIsWDFrD9MivV',
-  ],
-
-  partner_reports_revamp: [
-    // beta experiment ids
-    'Lby69yituOrSj2',
-    // prod experiment ids
-    'LbzMrW66OjfDsw',
-  ],
-
-  la_reports_revamp: [
-    // beta experiment ids
-    'Lby668Otnw4zQE',
-    // prod experiment ids
-    'LbzO5k3RZqiN4V',
-  ],
-
-  reports_schedules: [
-    // beta experiment ids
-    'LpcUyqou4GEsNz',
-    // prod experiment ids
-    'LoMqyEzW0E5wvE',
-  ],
-
   universal_search_enabled: [
     // beta experiment ids
     'Lf6qHEprAH4UCm',

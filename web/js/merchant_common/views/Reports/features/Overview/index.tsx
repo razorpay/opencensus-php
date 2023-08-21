@@ -15,7 +15,6 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs, recentConfigs } = reportsCore[dashboardType].overview.reportConfigs;
   const refDashboardConfig = getReportsDashboardConfig(dashboardType, session);
   return {
-    isOverviewRecentsFilterEnabled: session?.user?.isRevampedReportsEnabled?.overviewRecents,
     refDashboardConfig,
     allReportConfigs: allConfigs.data,
     recentlyUsedReportConfigs: recentConfigs.data,

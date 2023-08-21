@@ -14,7 +14,7 @@ import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Ove
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';
 import { OverviewBanner } from 'merchant_common/views/Reports/features/Overview/components/OverviewBanner';
 import { overviewConfigFilterOptions } from 'merchant_common/views/Reports/features/Overview/constants/common';
-import { useTheme } from 'merchant_common/views/Reports/hooks';
+import { useTheme, useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
 import { getRecentConfigs } from 'merchant_common/views/Reports/api/overview';
 import {
   AccessabilityToolbar,
@@ -38,8 +38,9 @@ export const OverviewSection = ({
   refDashboardConfig: { headers, basePath, parseConfigs, customConfigs },
   showNotification,
   dashboardType,
-  isOverviewRecentsFilterEnabled,
 }: OverViewPropsType): JSX.Element => {
+  const { isOverviewRecentsFilterEnabled } = useReportsSplitzExperiments();
+
   const overviewFilterDropdownOptions = useMemo(
     () => overviewConfigFilterOptions(isOverviewRecentsFilterEnabled),
     [isOverviewRecentsFilterEnabled],
