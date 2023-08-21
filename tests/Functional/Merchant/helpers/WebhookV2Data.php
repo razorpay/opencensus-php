@@ -736,29 +736,6 @@ return [
         ],
     ],
 
-    'testCreateWebhookForBankingAlreadyExistsFailure' => [
-        'request' => [
-            'method' => 'POST',
-            'url'    => '/v1/webhooks',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'content' => $sampleApiWebhookRequestForBanking,
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED,
-        ],
-    ],
-
     'listWebhookForBankingBeforeCreateStorkExpectations' => [
         'expected_request' => [
             'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
@@ -1691,26 +1668,6 @@ return [
         ],
         'response' => [
             'content' => []
-        ],
-    ],
-
-    'testDeleteWebhookForProductBanking' => [
-        'request' => [
-            'url' => '/webhooks/{wk_id}',
-            'method'  => 'DELETE',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
-                ],
-            ],
-            'status_code' => 403,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
 

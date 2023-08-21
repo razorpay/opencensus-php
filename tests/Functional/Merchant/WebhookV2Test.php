@@ -219,7 +219,6 @@ class WebhookV2Test extends TestCase
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->expectStorkServiceRequestForAction('listWebhookForBankingWhenReturnsNoWebhooks');
         $this->expectStorkServiceRequestForAction('createWebhookForBanking');
 
         $this->startTest();
@@ -261,22 +260,6 @@ class WebhookV2Test extends TestCase
             'business_type' => 4
         ]);
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForBankingAlreadyExistsFailure()
-    {
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '10000000000000',
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->expectStorkServiceRequestForAction('listWebhookForBankingBeforeCreate');
-        $this->dontExpectStorkServiceRequest('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create');
 
         $this->startTest();
     }
@@ -780,18 +763,6 @@ class WebhookV2Test extends TestCase
 
         // deleting a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
-    }
-
-    public function testDeleteWebhookForProductBanking()
-    {
-        $this->testCreateWebhookForBanking();
-
-        $testData = $this->testData['testDeleteWebhookForProductBanking'];
-        $testData['request']['url'] = '/webhooks/' . 'webhook0000001';
-
-        $this->ba->addXOriginHeader();
-
-        $this->startTest();
     }
 
     public function testGetWebhookEventsForAggregatorPartner()

@@ -153,11 +153,6 @@ class Service extends Base\Service
      */
     protected function create(array $input): array
     {
-        if ($this->auth->isProductBanking() === true)
-        {
-            $this->checkAndFailIfWebhookExistsOnStork($input);
-        }
-
         $this->setUserIdForInputAndKey($input, self::CREATED_BY);
 
         $res = (new Stork($this->mode, $this->product))->create($input);
@@ -283,15 +278,6 @@ class Service extends Base\Service
      */
     public function delete(string $webhookId, string $merchantId = null)
     {
-        if ($this->auth->isProductBanking() === true)
-        {
-            /*
-            * Delete webhook is used in PG product only.
-            * Throw exception if banking product tries to hit
-            * Fix for https://razorpay.atlassian.net/browse/SBB-945
-            */
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
-        }
         $merchantId = $merchantId ?? $this->merchant->getId();
 
         $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
