@@ -34,6 +34,7 @@ use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Models\Merchant\MerchantApplications as MerchantApp;
 use Throwable;
 
 class Core extends Base\Core
@@ -962,7 +963,19 @@ class Core extends Base\Core
     {
         try
         {
-            $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment?->getPublicKey() ?? null, $transfer);
+            // when async processing kicks in, merchant context is not set. Fetch merchant from transfer
+            if($this->merchant == null)
+            {
+                $this->merchant = $transfer->merchant;
+            }
+
+            $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant , $payment?->getPublicKey() ?? null, $transfer);
+
+            $this->trace->info(TraceCode::FETCH_ROUTE_PARTNERSHIPS_PARENT_ACCOUNT, [
+                'transfer_id'           => $transfer?->getId(),
+                'transfer_payment_id'   => $transferPayment?->getId(),
+                'parent_merchant'       => $parentMerchant?->getId(),
+            ]);
 
             if (empty($parentMerchant) === true or
                 in_array($parentMerchant->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
@@ -1528,6 +1541,14 @@ class Core extends Base\Core
 
     private function setPartnerContextIfApplicable(?string $publicKey, ?Base\Entity $entity)
     {
+        $this->trace->debug(
+            TraceCode::SET_PARTNER_CONTEXT_IF_APPLICABLE,
+            [
+                Merchant\Constants::PUBLIC_KEY       => $publicKey,
+                Entity::ID                           => $entity?->getId(),
+            ]
+        );
+
         if (empty($this->partner) === false)
         {
             return;
@@ -1551,6 +1572,36 @@ class Core extends Base\Core
                 if ($originType === EntityOrigin\Constants::APPLICATION)
                 {
                     $application = $origin;
+                }
+            }
+            else if(empty($entity) === false and $entity->getEntityName() === Constants\Entity::TRANSFER)
+            {
+                try
+                {
+                    $entityOrigin =  (new EntityOrigin\Repository)->fetchByEntityTypeAndEntityId(Constants\Entity::TRANSFER, $entity->getId());
+
+                    if (empty($entityOrigin) === false and $entityOrigin[EntityOrigin\Entity::ORIGIN_TYPE] === EntityOrigin\Constants::MARKETPLACE_APPLICATION)
+                    {
+                        $appId = $entityOrigin[EntityOrigin\Entity::ORIGIN_ID];
+
+                        $application =  (new EntityOrigin\Core())->fetchEntityByType(EntityOrigin\Constants::APPLICATION, $appId);
+
+                        $this->trace->info(
+                            TraceCode::SET_PARTNER_CONTEXT_FROM_ENTITY,
+                            [
+                                Merchant\Constants::PUBLIC_KEY       => $publicKey,
+                                Merchant\Constants::PARTNER_ID       => $application->getMerchantId(),
+                                Merchant\Constants::APPLICATION_ID   => $application->getId()
+                            ]
+                        );
+                    }
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException($ex, Logger::ERROR, TraceCode::SET_PARTNER_CONTEXT_FROM_ENTITY_FAILED, [
+                        EntityOrigin\Entity::ENTITY_TYPE => Constants\Entity::TRANSFER,
+                        Entity::ID                       => $entity?->getId(),
+                    ]);
                 }
             }
         }

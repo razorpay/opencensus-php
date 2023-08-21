@@ -284,7 +284,7 @@ class Core extends Base\Core
         return $originEntity;
     }
 
-    protected function fetchEntityByType(string $entityType, string $entityId)
+    public function fetchEntityByType(string $entityType, string $entityId)
     {
         $entity = null;
 
