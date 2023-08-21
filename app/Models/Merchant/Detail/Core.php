@@ -5684,6 +5684,10 @@ class Core extends Base\Core
         {
             $currentActivationFlow = $this->getActivationFlow(
                 $merchantDetails->merchant, $merchantDetails, null, false);
+
+            $merchantDetails->setActivationFlow($currentActivationFlow);
+
+            $this->repo->saveOrFail($merchantDetails);
         }
 
         $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
