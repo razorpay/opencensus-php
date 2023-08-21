@@ -10553,9 +10553,9 @@ class Route
         'payout_links_integration_details'             => '*',
 
         // Sub VA Routes
-        'sub_virtual_account_list'                     => Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
-        'sub_virtual_account_transfer_with_otp'        => Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
-        'sub_virtual_account_transfer_list'            => Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_list'                     => Permission::CREATE_PAYOUT,
+        'sub_virtual_account_transfer_with_otp'        => Permission::CREATE_PAYOUT,
+        'sub_virtual_account_transfer_list'            => Permission::CREATE_PAYOUT,
 
         // Allow coupon validation for X
         'coupon_validate'                              => Permission::COUPON_VALIDATE,
