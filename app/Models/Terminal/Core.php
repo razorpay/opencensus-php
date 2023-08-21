@@ -878,7 +878,7 @@ class Core extends Base\Core
         $syncInstruments = false;
         if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL) )
         {
-            $syncInstruments = $option[TerminalConstants::SYNC_INSTRUMENTS];
+            $syncInstruments = true;
         }
 
         $terminal->setEnabledBanks($banksToEnable);
