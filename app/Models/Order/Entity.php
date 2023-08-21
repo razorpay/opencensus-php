@@ -1266,4 +1266,25 @@ class Entity extends Base\PublicEntity
 
         return $arrayPublic;
     }
+
+    public function toRTOEligibilityArray()
+    {
+        $arrayInternal = $this->toArrayInternal();
+
+        $orderMetaArray = $this->orderMetas;
+
+        foreach ($orderMetaArray as $orderMeta)
+        {
+            if ($orderMeta->getType() === Type::ONE_CLICK_CHECKOUT)
+            {
+                $value = $orderMeta->getValue();
+
+                $arrayInternal[OrderMeta\Order1cc\Fields::NET_PRICE] = $value[OrderMeta\Order1cc\Fields::NET_PRICE] ?? 0;
+
+                $arrayInternal[OrderMeta\Order1cc\Fields::SUB_TOTAL] = $value[OrderMeta\Order1cc\Fields::SUB_TOTAL] ?? 0;
+            }
+        }
+
+        return $arrayInternal;
+    }
 }

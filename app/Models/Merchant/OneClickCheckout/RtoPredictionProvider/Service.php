@@ -97,13 +97,15 @@ class Service
 
         $address = $input['address'];
 
-        $orderDetails = (new Order\Service())->fetchByIdInternal($orderId);
+        $orderDetails = (new Order\Service())->fetchByIdForRTOPrediction($orderId);
 
         $uniqueId = $orderId . ':' . Str::uuid();
 
         $rtoServiceRequestContent['id'] = $uniqueId;
 
         $rtoServiceRequestContent['merchant_id'] = app('basicauth')->getMerchantId();
+
+        $rtoServiceRequestContent['merchant_subcategory'] = app('basicauth')->getMerchant()->getCategory2();
 
         $order['id'] = $orderId;
 
@@ -130,6 +132,20 @@ class Service
         $order['device']['pathname'] = $_SERVER['REQUEST_URI'] ?? "";
 
         $order['device']['search'] = $_SERVER['QUERY_STRING'] ?? "";
+
+        // for new features
+        $order['shipping_charges'] = $orderDetails['shipping_fee'];
+
+        $order['has_promotions'] = false;
+
+        if (isset($orderDetails['promotions']) && count($orderDetails['promotions']) > 0)
+        {
+            $order['has_promotions'] = true;
+        }
+
+        $order['sub_total'] = $orderDetails['sub_total'];
+
+        $order['net_price'] = $orderDetails['net_price'];
 
         if (strcmp($address['type'], 'shipping_address') == 0 )
         {

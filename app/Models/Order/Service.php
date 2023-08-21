@@ -541,6 +541,13 @@ class Service extends Base\Service
         return $order->toArrayInternal();
     }
 
+    public function fetchByIdForRTOPrediction($id)
+    {
+        $order = $this->repo->order->findByPublicId($id);
+
+        return $order->toRTOEligibilityArray();
+    }
+
     public function fetchByIdForAdmin($id, $input)
     {
         $orderId = Entity::verifyIdAndSilentlyStripSign($id);
