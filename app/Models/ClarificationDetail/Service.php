@@ -2,8 +2,10 @@
 
 namespace RZP\Models\ClarificationDetail;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
@@ -90,6 +92,10 @@ class Service extends Base\Service
         {
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'submitted data could not be processed'
             ]);
         }
 
@@ -206,6 +212,10 @@ class Service extends Base\Service
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
             ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'submitted data could not be processed'
+            ]);
         }
 
         return $this->core->getClarificationDetail($merchantId);
@@ -249,6 +259,10 @@ class Service extends Base\Service
         {
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'submitted data could not be processed'
             ]);
         }
 
@@ -514,6 +528,10 @@ class Service extends Base\Service
         {
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'submitted data could not be processed'
             ]);
         }
 
