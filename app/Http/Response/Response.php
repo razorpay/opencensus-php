@@ -575,6 +575,7 @@ class Response
             'store_hosted_page_data_options',
             'store_create_order',
             'store_create_order_options',
+            'fetch_public_customer_eligibility',
         ];
 
         if (in_array($route, $routes, true) === true)
