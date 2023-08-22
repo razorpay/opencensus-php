@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\State;
+use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Services\Workflow;
@@ -519,6 +520,8 @@ class Core extends Base\Core
                     $partnerActivation->setLocked(false);
 
                     $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
+                    $this->sendNeedsClarificationSms($merchant);
+                    $this->sendNeedsClarificationWhatsappCommunication($merchant, $partnerActivation);
                 }
             }
 
@@ -659,6 +662,67 @@ class Core extends Base\Core
     }
 
     /**
+     * This function would format the needs clarification reasons and sends sms to the partner
+     *
+     * @param Merchant\Entity $merchant
+     */
+    private function sendNeedsClarificationSms(Merchant\Entity $merchant): void
+    {
+        $this->sendSms(
+            $merchant,
+            Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_SMS_TEMPLATE_NAME,
+            TraceCode::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_SMS_FAILED
+        );
+    }
+
+    /**
+     * This function would format the needs clarification reasons and sends whatsapp message to the partner
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $partnerActivation
+     */
+    private function sendNeedsClarificationWhatsappCommunication(Merchant\Entity $merchant, Entity $partnerActivation): void
+    {
+        $contactMobile = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($contactMobile) === true)
+        {
+            return;
+        }
+
+        $clarificationCore = new Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $partnerActivation->getKycClarificationReasons());
+
+        $whatsappTemplateName = Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME;
+
+        $whatappTemplate = Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE;
+
+        $params = [
+            'name'            => $merchant->getName(),
+            'clarifications'  => $clarificationReasons,
+        ];
+
+        $whatsAppPayload = [
+            'ownerId'            => $merchant->getId(),
+            'ownerType'          => 'merchant',
+            'template_name'      => $whatsappTemplateName,
+            'params'             => $params,
+            'is_cta_template'    => true,
+            'button_url_param'   => 'app/activation',
+        ];
+
+        (new Stork)->sendWhatsappMessage(
+            $this->mode,
+            $whatappTemplate,
+            $contactMobile,
+            $whatsAppPayload
+        );
+    }
+
+
+    /**
      * @param Merchant\Entity $merchant
      */
     private function sendPartnerActivationEvents(Merchant\Entity $merchant)
@@ -674,6 +738,84 @@ class Core extends Base\Core
         $email = new ActivationMail($merchant->getId());
 
         Mail::queue($email);
+
+        $this->sendPartnerActivationSms($merchant);
+        $this->sendPartnerActivationWhatsappCommunication($merchant);
+    }
+
+    private function sendPartnerActivationSms(Merchant\Entity $merchant)
+    {
+       $this->sendSms(
+           $merchant,
+           Constants::PARTNER_ACTIVATION_ACTIVATED_SMS_TEMPLATE_NAME,
+           TraceCode::PARTNER_ACTIVATION_ACTIVATED_SMS_FAILED
+       );
+    }
+
+    private function sendPartnerActivationWhatsappCommunication(Merchant\Entity $merchant): void
+    {
+        $contactMobile = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($contactMobile) === true)
+        {
+            return;
+        }
+
+        $whatsappTemplateName = Constants::PARTNER_ACTIVATION_ACTIVATED_WHATSAPP_TEMPLATE_NAME;
+
+        $whatappTemplate = Constants::PARTNER_ACTIVATION_ACTIVATED_WHATSAPP_TEMPLATE;
+
+        $params = [
+            'name'          => $merchant->getName(),
+            'id'            => $merchant->getId(),
+        ];
+
+        $whatsAppPayload = [
+            'ownerId'       => $merchant->getId(),
+            'ownerType'     => 'merchant',
+            'template_name' => $whatsappTemplateName,
+            'params'        => $params,
+        ];
+
+        (new Stork)->sendWhatsappMessage(
+            $this->mode,
+            $whatappTemplate,
+            $contactMobile,
+            $whatsAppPayload
+        );
+    }
+
+    private function sendSms(Merchant\Entity $merchant, string $template, string $traceCode = null ) : void
+    {
+        try
+        {
+            $contactMobile = $merchant->merchantDetail->getContactMobile();
+
+            if (empty($contactMobile) === false)
+            {
+                $smsPayload = [
+                    'ownerId'           => $merchant->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $merchant->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $contactMobile,
+                    'templateName'      => $template,
+                    'templateNamespace' => 'partnerships-experience',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'id'     => $merchant->getId(),
+                    ]
+                ];
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, $traceCode, [
+                'merchant_id'      => $merchant->getId(),
+            ]);
+        }
     }
 
     private function resetWorkflowSingleton()

@@ -59,4 +59,23 @@ class Constants
 
     const ACTIVATION_ROUTE_NAME     = 'partner_activation_status';
     const PARTNER_CONTROLLER     = 'RZP\Http\Controllers\PartnerController@updatePartnerActivationStatus';
+
+    const PARTNER_ACTIVATION_ACTIVATED_SMS_TEMPLATE_NAME = 'Sms.Partner_activation.Activated';
+    const PARTNER_ACTIVATION_NEEDS_CLARIFICATION_SMS_TEMPLATE_NAME = 'Sms.Partner_activation.Needs_clarification';
+    const PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME = 'partner_activation_needs_clarification';
+
+    const PARTNER_ACTIVATION_ACTIVATED_WHATSAPP_TEMPLATE_NAME = 'partner_activation_activated';
+
+    const PARTNER_ACTIVATION_ACTIVATED_WHATSAPP_TEMPLATE = '
+    Dear Razorpay Partner{name},
+    Congratulations!!
+    You have completed KYC for your Partner account {id}. Your account is now active and you can receive commissions directly to your linked account. Keep referring! ';
+
+
+    const PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE = '
+    Dear Razorpay Partner {name},
+    We have received your KYC details but require additional clarifications about your submission. To complete your KYC, please visit your Partner Dashboard and submit the required information.
+    Document issue:{$clarifications}
+    How you can fix it:{$clarifications}
+    Head to your Partner Dashboard here';
 }

@@ -13,6 +13,7 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -247,6 +248,15 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->createMerchant(self::MERCHANT_ID, false, null);
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Activated', '8888888888', [
+            'id' => self::MERCHANT_ID
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
         $testData = $this->testData['saveAllPartnerActivationDetails'];
         $this->runRequestResponseFlow($testData);
@@ -272,6 +282,15 @@ class PartnerActivationTest extends OAuthTestCase
     public function testPartnerNeedsClarification()
     {
         Mail::fake();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Needs_clarification', '8888888888', [
+            'id' => self::MERCHANT_ID
+        ]);
 
         $this->updatePartnerActivationToNeedsClarification();
 
