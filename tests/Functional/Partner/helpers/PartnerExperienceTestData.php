@@ -1707,24 +1707,38 @@ return [
         ],
     ],
 
-    'testPartnerSalesPoc'   => [
+    'testPartnerSalesPoc' => [
+        'request'  => [
+            'url'    => '/partner/sales_poc',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    'Enabler_POC__r' => [
+                        'Name'  => 'Test Razorpay',
+                        'Email' => 'test.sales@example.com',
+                        'Phone' => '9876543210',
+                        'Title' => 'Partnerships',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testEmptyPartnerSalesPoc'   => [
         'request'   => [
             'url'       => '/partner/sales_poc',
             'method'    => 'GET',
         ],
         'response'  => [
             'content'       => [
-                'items' => [
-                'Name'              => 'Test Razorpay',
-                'Email'             => 'test.sales@example.com',
-                'Phone'             => '9876543210',
-                'Title'             => 'Partnerships',
-                 ]
+                'items'  => [],
             ],
         ],
     ],
 
-    'testEmptyPartnerSalesPoc'   => [
+    'testSelfServePartnerSalesPoc'   => [
         'request'   => [
             'url'       => '/partner/sales_poc',
             'method'    => 'GET',

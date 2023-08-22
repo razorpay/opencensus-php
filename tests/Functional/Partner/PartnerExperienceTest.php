@@ -2782,10 +2782,36 @@ class PartnerExperienceTest extends OAuthTestCase
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
 
         $expectedResponse = [
-                'Name'              => 'Test Razorpay',
-                'Email'             => 'test.sales@example.com',
-                'Phone'    => '9876543210',
-                'Title'             => 'Partnerships',
+            'Enabler_POC__r' => [
+                'Name'  => 'Test Razorpay',
+                'Email' => 'test.sales@example.com',
+                'Phone' => '9876543210',
+                'Title' => 'Partnerships',
+            ]
+        ];
+
+        $this->setUpSalesforceMock();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceRequest(self::DEFAULT_MERCHANT_ID, $expectedResponse, 'getPartnershipSalesPOCForMerchantId');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testSelfServePartnerSalesPoc() : void
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $expectedResponse = [
+            'Enabler_POC__r' => [
+                'Name'  => 'Partner Self Serve',
+                'Email' => 'test.sales@example.com',
+                'Phone' => '9876543210',
+                'Title' => 'Partnerships',
+            ]
         ];
 
         $this->setUpSalesforceMock();

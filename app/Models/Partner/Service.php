@@ -25,6 +25,7 @@ use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Service extends Base\Service
@@ -489,6 +490,14 @@ class Service extends Base\Service
         if($isEnabled)
         {
             $response = $this->app['salesforce']->getPartnershipSalesPOCForMerchantId($merchantId);
+
+            $selfServePartner = $this->isSelfServePartner($response);
+
+            if($selfServePartner)
+            {
+                $response = [];
+            }
+
         }
 
         return ['items'   =>  $response];
@@ -592,5 +601,17 @@ class Service extends Base\Service
         $isFeatureEnabled = (new FeatureService())->checkFeatureEnabled(FeatureConstants::APPLICATION, $oauthAppId, $featureKey)[FeatureConstants::STATUS];
 
         return is_bool($isFeatureEnabled) ? $isFeatureEnabled : false;
+    }
+
+    private function isSelfServePartner(array $sfResponse): bool
+    {
+        $isSelfServe = false;
+
+        if (empty($sfResponse) == false && $sfResponse["Enabler_POC__r"]["Name"] === PartnerConstants::PARTNER_SELF_SERVE)
+        {
+            $isSelfServe = true;
+        }
+
+        return $isSelfServe;
     }
 }

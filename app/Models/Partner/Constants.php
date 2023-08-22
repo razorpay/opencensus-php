@@ -16,6 +16,8 @@ class Constants
     const ADDRESS ='address';
     const COUNTRY ='country';
 
+    const PARTNER_SELF_SERVE = "Partner Self Serve";
+
     public static $subMActivationStatusLabels = [
         'activated' => 'Activated',
         'activated_mcc_pending' => 'Activated Mcc Pending',
