@@ -1,3 +1,4 @@
+import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import { openModal, notifyError } from 'razorx/components/Modal';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -32,8 +33,8 @@ export default class extends React.Component {
       experiments: null,
     });
 
-    rexFetch({ url: 'feature_flags/' + id })
-      .then(resp => {
+    rexFetch({ url: `feature_flags/${id}` })
+      .then((resp) => {
         this.setState({
           isFetching: false,
         });
@@ -44,20 +45,14 @@ export default class extends React.Component {
           });
         }
       })
-      .catch(err => {
+      .catch((_) => {
         this.setState({
           isFetching: false,
         });
       });
 
     Promise.all(this.getExperimentsFetchArray(id)).then(
-      ([
-        expLiveTotal,
-        expTestTotal,
-        expLiveCreated,
-        expTestCreated,
-        expActivated,
-      ]) => {
+      ([expLiveTotal, expTestTotal, expLiveCreated, expTestCreated, expActivated]) => {
         this.setState({
           experiments: {
             live: {
@@ -71,7 +66,7 @@ export default class extends React.Component {
             activated: expActivated.items[0],
           },
         });
-      }
+      },
     );
   }
 
@@ -110,35 +105,33 @@ export default class extends React.Component {
     return [liveTotal, testTotal, liveCreated, testCreated, activeExperiment];
   }
 
-  showExperimentModal = isJSONView => {
+  showExperimentModal = () => (isJSONView) => {
     if (!isJSONView) {
       return openModal(<ExperimentsModal feature={this.state.data} />);
     }
 
     if (!window.CodeFlask) {
       notifyError('JSON Editor is missing. Reload page / check your Network!');
-      return;
+      return null;
     }
 
-    openModal(<ExperimentsModal feature={this.state.data} JSONView />);
+    return openModal(<ExperimentsModal feature={this.state.data} JSONView />);
   };
 
-  showFeatureModal = _ => {
+  showFeatureModal = (_) => {
     openModal(<FeaturesModal data={this.state.data} onEdit={this.onEdit} />);
   };
 
-  showJSONModal = _ => {
+  showJSONModal = (_) => {
     if (!window.CodeFlask) {
       notifyError('JSON Editor is missing. Reload page / check your Network!');
       return;
     }
 
-    openModal(
-      <FeaturesModal data={this.state.data} onEdit={this.onEdit} JSONView />
-    );
+    openModal(<FeaturesModal data={this.state.data} onEdit={this.onEdit} JSONView />);
   };
 
-  onEdit = data => {
+  onEdit = (data) => {
     this.setState({
       data,
     });
@@ -206,20 +199,18 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {experiments &&
-          !experiments.live.total &&
-          !experiments.test.total && (
-            <span class="to-right">
-              <a class="link text-bold" onClick={showFeatureModal}>
-                Edit Feature
-              </a>{' '}
-              ({' '}
-              <a class="link text-bold" onClick={showJSONModal}>
-                RAW
-              </a>{' '}
-              )
-            </span>
-          )}
+        {experiments && !experiments?.live?.total ? (
+          <span class="to-right">
+            <a class="link text-bold" onClick={showFeatureModal}>
+              Edit Feature
+            </a>{' '}
+            ({' '}
+            <a class="link text-bold" onClick={showJSONModal}>
+              RAW
+            </a>{' '}
+            )
+          </span>
+        ) : null}
       </div>
 
       <div class="pad-highlight">
@@ -232,9 +223,7 @@ const Details = ({
             {data.updated_at !== data.created_at && (
               <div>
                 <b>Last Updated at</b>
-                <span class="inline-block">
-                  on {formatDate(data.updated_at)}
-                </span>
+                <span class="inline-block">on {formatDate(data.updated_at)}</span>
               </div>
             )}
           </div>
@@ -264,9 +253,7 @@ const Details = ({
                     <b>ID: </b> {experiments.activated.id}
                     <Link
                       class="link m-l"
-                      to={`/experiments/${
-                        experiments.activated.id
-                      }?feature_id=${data.id}`}
+                      to={`/experiments/${experiments.activated.id}?feature_id=${data.id}`}
                     >
                       View
                     </Link>
@@ -279,14 +266,11 @@ const Details = ({
           </div>
 
           <div>
-            <a className="link text-bold" onClick={_ => showExperimentModal()}>
+            <a className="link text-bold" onClick={showExperimentModal()}>
               Create Experiment
             </a>{' '}
             ({' '}
-            <a
-              className="link text-bold"
-              onClick={_ => showExperimentModal(true)}
-            >
+            <a className="link text-bold" onClick={showExperimentModal(true)}>
               RAW
             </a>{' '}
             )
@@ -304,10 +288,7 @@ const Details = ({
                     {!!experiments.live.total && (
                       <a
                         class="link m-l"
-                        onClick={goToExperiment(
-                          'live',
-                          `/experiments?feature_id=${data.id}`
-                        )}
+                        onClick={goToExperiment('live', `/experiments?feature_id=${data.id}`)}
                       >
                         View
                       </a>
@@ -318,10 +299,7 @@ const Details = ({
                     {!!experiments.test.total && (
                       <a
                         class="link m-l"
-                        onClick={goToExperiment(
-                          'test',
-                          `/experiments?feature_id=${data.id}`
-                        )}
+                        onClick={goToExperiment('test', `/experiments?feature_id=${data.id}`)}
                       >
                         View
                       </a>
@@ -346,7 +324,7 @@ const Details = ({
                         class="link m-l"
                         onClick={goToExperiment(
                           'live',
-                          `/experiments?feature_id=${data.id}&status=created`
+                          `/experiments?feature_id=${data.id}&status=created`,
                         )}
                       >
                         View
@@ -360,7 +338,7 @@ const Details = ({
                         class="link m-l"
                         onClick={goToExperiment(
                           'test',
-                          `/experiments?feature_id=${data.id}&status=created`
+                          `/experiments?feature_id=${data.id}&status=created`,
                         )}
                       >
                         View
