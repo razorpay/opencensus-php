@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 use App;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Merchant\OneClickCheckout\Constants as OneClickCheckoutConstants;
+use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Order;
@@ -831,11 +833,31 @@ class Core extends Base\Core
 
         $promotions = $rzpOrder['promotions'];
 
+        $nectorCoinsToBeRefunded = false;
+
         foreach($promotions as $promotion)
         {
             if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
             {
                 (new GiftCards)->refundGiftCard($promotion, $rzpOrder, $rzpPayment, $this->merchant->getId());
+            }
+            else if(isset($promotions['type']) && $promotion['type'] === 'nector_coins')
+            {
+                $nectorCoinsToBeRefunded = true;
+            }
+        }
+
+        if($nectorCoinsToBeRefunded === true)
+        {
+            $pricingObject = (new OneClickCheckoutCore())->get1CcPricingObject($orderId);
+
+            $rzpOrderAmount = $pricingObject['line_items_total'] - $pricingObject[OneClickCheckoutConstants::TOTAL_COUPON_VALUE];
+
+            $this->trace->info(TraceCode::REFUND_NECTOR_COINS_REQUEST,['order_id' => $orderId]);
+            $response = (new Nector)->refundNectorPayment($body['customer']['phone']??$rzpOrder['customer_details']['contact'],$rzpOrderAmount,$orderId);
+            if($response != null && $response['data'] != null && $response['data']['points_balance']>0)
+            {
+                $this->trace->info(TraceCode::REFUND_NECTOR_COINS_REQUEST,['order_id' => $orderId, 'response' => $response]);
             }
         }
 
@@ -1017,7 +1039,7 @@ class Core extends Base\Core
         return 80770236719; //Mumbai Location used for international orders.
     }
 
-    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = []): array
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = [], array $nectorCoinsResponse = []): array
     {
         $start = millitime();
 
@@ -1029,7 +1051,7 @@ class Core extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
-        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment, $utmParameters);
+        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment, $utmParameters, $nectorCoinsResponse);
 
         $isSEwithCouponApplied = $body['script_with_coupon_applied'];
 
@@ -1388,7 +1410,7 @@ class Core extends Base\Core
         return ['customer' => $customer];
     }
 
-    protected function getCreateOrderPayload($rzpOrder, $rzpPayment, array $utmParameters): array
+    protected function getCreateOrderPayload($rzpOrder, $rzpPayment, array $utmParameters, array $nectorCoinsResponse): array
     {
         $checkoutId = $rzpOrder['notes']['storefront_id'];
 
@@ -1421,6 +1443,15 @@ class Core extends Base\Core
         $body = $this->getOrderFromCheckout($checkout['data']['node']);
 
         $noteAttributes = $body['note_attributes'];
+
+        if($nectorCoinsResponse['applied'] === true)
+        {
+            array_push($noteAttributes,
+                [
+                    'name'  => 'paid_by_nector_coins',
+                    'value' => round($nectorCoinsResponse['amount']/100,2)
+                ]);
+        }
 
         if (empty($rzpOrder['notes']['gstin']) === false)
         {
@@ -1531,7 +1562,7 @@ class Core extends Base\Core
                 {
                     $giftCardAmount = $giftCardAmount + $value['value'];
                 }
-                else
+                else if(!isset($value['type']) || $value['type']!=='nector_coins')
                 {
                     $couponCode = $value['code'];
 
@@ -1588,6 +1619,19 @@ class Core extends Base\Core
             $discountAmountPaise = $rzpOrder['line_items_total'] + ($totalTax*100) + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
 
+        if($nectorCoinsResponse['applied'] === false)
+        {
+            $discountAmountPaise = $discountAmountPaise - $nectorCoinsResponse['amount'];
+        }
+
+        $nectorCoinsApplicable = $nectorCoinsResponse['amount'] ?? 0;
+
+        if($promotionCouponAmount > 0)
+        {
+            $couponAmount = $couponAmount + $nectorCoinsApplicable;
+            $promotionCouponAmount = $promotionCouponAmount + $nectorCoinsApplicable;
+        }
+
         if(isset($scriptDiscountTitle))
         {
             if($isSEwithCouponApplied == true)
@@ -1597,13 +1641,20 @@ class Core extends Base\Core
             }
             else
             {
-                $rzpOffers = $discountAmountPaise;
-                $discountAmountPaise = $couponAmount + $rzpOffers;
+                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable;
+                $discountAmountPaise = $couponAmount + $rzpOffers + $nectorCoinsApplicable;
             }
         }
         else
         {
-            $rzpOffers = $discountAmountPaise - $couponAmount;
+            if($couponAmount>0)
+            {
+                $rzpOffers = $discountAmountPaise - $couponAmount;
+            }
+            else
+            {
+                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable;
+            }
         }
 
         $rzpOffersRupee = round($rzpOffers/100,2);
@@ -1635,6 +1686,16 @@ class Core extends Base\Core
                     'code'   => 'Razorpay offers(₹'.$rzpOffersRupee.')',
                     'amount' => $discountAmountRupee,
                 ];
+            }
+            else
+            {
+                if($nectorCoinsResponse['applied'] === true)
+                {
+                    $body['discount_codes'][] = [
+                        'code'   => 'coins discount',
+                        'amount' => round($nectorCoinsApplicable/100, 2),
+                    ];
+                }
             }
         }
 

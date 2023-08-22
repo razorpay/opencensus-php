@@ -83,6 +83,12 @@ class CommonUtils extends Base\Core
         }));
     }
 
+    public function getNectorCoinsFromPromotions(array $promotions) {
+        return array_values(array_filter($promotions, function($coin){
+            return (isset($coin[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&  $coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS);
+        }));
+    }
+
     /**
      * @param string $orderId
      * @throws Exception\BadRequestValidationFailureException
@@ -133,12 +139,28 @@ class CommonUtils extends Base\Core
 
         foreach ($promotions as $coupon) {
             if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === false ||
-                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== OrderOneCCFields::GIFT_CARD) {
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== OrderOneCCFields::GIFT_CARD &&
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::NECTOR_COINS) {
                     $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
                     return $discount;
             }
         }
 
+        return $discount;
+    }
+
+    public function getNectorCoinsApplied(array $promotions) {
+        $discount = 0;
+        if (empty($promotions) === true) {
+            return $discount;
+        }
+
+        foreach ($promotions as $coupon) {
+            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === true && $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS) {
+                $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
+                return $discount;
+            }
+        }
         return $discount;
     }
 

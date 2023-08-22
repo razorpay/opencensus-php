@@ -6,6 +6,8 @@ use App;
 use Illuminate\Support\Str;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
+use RZP\Models\Merchant\OneClickCheckout\Constants as OneClickCheckoutConstants;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as OrderOneCCFields;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -30,6 +32,7 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerA
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantProvider;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Nector;
 
 
 class Service extends Base\Service
@@ -711,9 +714,11 @@ class Service extends Base\Service
 
         $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
 
+        $nectorCoinsResponse = $this->deductNectorCoinsIfApplicabale($order, $fromShopifyApi);
+
         $orderArray = $order->toArrayPublic();
 
-        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi, $source);
+        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse);
 
         if($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE))
         {
@@ -847,9 +852,8 @@ class Service extends Base\Service
     }
 
     // places final order and gateway transaction to Shopify
-    public function placeShopifyOrder($order, $payment, $fromShopifyApi, $source): array
+    public function placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse): array
     {
-
         $utmParameters =[];
 
         $orderMeta = array_first($order->orderMetas, function ($orderMeta)
@@ -868,7 +872,7 @@ class Service extends Base\Service
 
         $orderMeta = $this->getOrderMeta($order);
 
-        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta);
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta, $nectorCoinsResponse);
 
         $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT, ['source' => $source, 'method' => $fromShopifyApi?'api':'sqs']);
 
@@ -1449,6 +1453,123 @@ class Service extends Base\Service
             }
         }
     }
+
+    public function deductNectorCoinsIfApplicabale($rzpOrder, $fromShopifyApi) : array{
+
+        if (!$this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS)){
+            return [];
+        }
+
+        $nectorCoinsResponse = $this->checkIfNectorCoinsIsApplied($rzpOrder);
+
+        $isNectorPaymentUsed = $nectorCoinsResponse['used'];
+
+        $nectorCouponValue = $nectorCoinsResponse['amount'];
+
+        $promotionsAll = $nectorCoinsResponse['promotions'];
+
+        if($fromShopifyApi === false)
+        {
+            return[
+                'amount'=>$nectorCouponValue,
+                'applied'=>false,
+                'required'=>$isNectorPaymentUsed,
+            ];
+        }
+
+        if($isNectorPaymentUsed === false)
+        {
+            return[
+                'amount'=>$nectorCouponValue,
+                'applied'=>false,
+                'required'=>false,
+            ];
+        }
+
+        $rzpOrderId = $rzpOrder->getPublicId();
+
+        try {
+            $pricingObject = (new OneClickCheckoutCore())->get1CcPricingObject($rzpOrderId);
+
+            $rzpOrderAmount = $pricingObject[Order1cc\Fields::LINE_ITEMS_TOTAL] - $pricingObject[OneClickCheckoutConstants::TOTAL_COUPON_VALUE];
+
+            $this->trace->info(TraceCode::DEDUCT_NECTOR_COINS_REQUEST,['is_nector_payment_used'=> $isNectorPaymentUsed, 'order_id' => $rzpOrderId]);
+
+            $phone = $rzpOrder->toArrayPublic()['customer_details']['contact'];
+
+            $nectorDeductedResponse = (new Nector)->deductNectorPayment($phone, $rzpOrderAmount, $rzpOrderId);
+
+            $this->trace->info(TraceCode::DEDUCT_NECTOR_COINS_RESPONSE, ['nector_deduction_response' => $nectorDeductedResponse, 'order_id' => $rzpOrderId]);
+
+            if ($nectorDeductedResponse['meta']['code'] === 200) {
+
+                return [
+                    'amount'=>$nectorCouponValue,
+                    'applied'=>true,
+                    'required'=>true
+                ];
+
+            }
+            else
+            {
+                $this->trace->error(TraceCode::DEDUCT_NECTOR_COINS_ERROR, ['order_id' => $rzpOrderId]);
+                return [
+                    'amount'=>$nectorCouponValue,
+                    'applied'=>false,
+                    'required'=>true
+                ];
+            }
+        }catch (\Exception $e){
+            //if exception while deducting nector coins
+            $this->trace->error(TraceCode::DEDUCT_NECTOR_COINS_ERROR, ['order_id' => $rzpOrderId, 'error'=> $e->getMessage()]);
+            return [
+                'amount'=>$nectorCouponValue,
+                'applied'=>false,
+                'required'=>true
+            ];
+        }
+    }
+
+    public function checkIfNectorCoinsIsApplied($rzpOrder) : array {
+
+        $orderMeta = array_first($rzpOrder->orderMetas ?? [], function ($orderMeta)
+        {
+            return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $promotions = $orderMeta->getValue()['promotions'] ?? [];
+
+        $isNectorPaymentUsed = false;
+
+        $nectorCouponValue = 0;
+
+        $promotionsAll = [];
+
+        if(!empty($promotions)) {
+
+            foreach ($promotions as $promotion) {
+
+                if (isset($promotion['type']) && $promotion['type'] === 'nector_coins')
+                {
+                    $isNectorPaymentUsed = true;
+
+                    $nectorCouponValue = $promotion['value'];
+                }
+                else
+                {
+                    array_push($promotionsAll, $promotion);
+                }
+            }
+        }
+
+        return [
+            'amount'=> $nectorCouponValue,
+            'used'=> $isNectorPaymentUsed,
+            'promotions' => $promotionsAll,
+            'order_meta' => $orderMeta
+        ];
+    }
+
     // getOrderAnalytics checks if the Shopify order is stored in cache and returns it. This is used by the frontend
     // for pushing events to Google Analytics.
     public function getOrderAnalytics(array $input): array

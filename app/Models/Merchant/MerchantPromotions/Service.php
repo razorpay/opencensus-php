@@ -370,11 +370,18 @@ class Service extends Base\Service
             /*  if true remove gift card
              *  and coupon as well
              */
+            $nectorPromotions = (new CommonUtils())->getNectorCoinsFromPromotions($promotions);
+
             if ($couponRestriction === true) {
                 $promotions = [];
             }
             else {
                 $promotions = (new CommonUtils())->removeCouponsFromPromotions($promotions);
+            }
+
+            if(count($nectorPromotions)>0)
+            {
+                array_push($promotions, $nectorPromotions);
             }
 
             array_push($promotions, $decodedResponse['promotion']);
@@ -496,6 +503,12 @@ class Service extends Base\Service
 
             $existingPromotions = $orderMeta->getValue()['promotions'] ?? [];
             $promotions = (new CommonUtils())->removeCouponsFromPromotions($existingPromotions);
+
+            $nectorPromotions = (new CommonUtils())->getNectorCoinsFromPromotions($existingPromotions);
+            if(count($nectorPromotions) > 0)
+            {
+                array_push($promotions, $nectorPromotions);
+            }
 
             (new OneClickCheckoutCore)->update1CcOrder($orderId, [
                 'promotions' => $promotions,

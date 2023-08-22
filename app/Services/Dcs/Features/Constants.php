@@ -207,6 +207,7 @@ class Constants
     const OneCcInputEnglish = 'one_cc_input_english';
     const OneCcMandatoryLogin = 'one_cc_mandatory_login';
     const DisablePreMagicOrderIngestion = 'disable_pre_magic_order_ingestion';
+    const OneCcEnableNectorCoins = 'one_cc_enable_nector_coins';
 
     //reporting service features
     const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
@@ -428,6 +429,7 @@ class Constants
         self::DisablePreMagicOrderIngestion => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCEnablePluginDiscount => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCShopifyDraftOrder => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -647,6 +649,7 @@ class Constants
         APIFeaturesConstants::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION      => self::DisablePreMagicOrderIngestion,
         APIFeaturesConstants::ONE_CC_ENABLE_PLUGIN_DISCOUNT                 => self::OneCCEnablePluginDiscount,
         APIFeaturesConstants::ONE_CC_SHOPIFY_DRAFT_ORDER                    => self::OneCCShopifyDraftOrder,
+        APIFeaturesConstants::ONE_CC_ENABLE_NECTOR_COINS                    => self::OneCcEnableNectorCoins,
     ];
 
     /**

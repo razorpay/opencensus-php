@@ -91,6 +91,13 @@ class Service extends Base\Service
                 if (count($promotions) > 0) {
                     if ($couponRestriction === true) {
                         $promotions = (new CommonUtils())->removeCouponsFromPromotions($promotions);
+
+                        $nectorPromotions = (new CommonUtils())->getNectorCoinsFromPromotions($promotions);
+
+                        if(count($nectorPromotions)>0)
+                        {
+                            array_push($promotions,$nectorPromotions);
+                        }
                     }
 
                     if ($multipleGiftCardsSupported === false) {
@@ -458,7 +465,9 @@ class Service extends Base\Service
 
         $minimumAllowedCartAmount = 100; // minimum cart amount should be Rs 1.
 
-        $cartAmountAfterDiscount = max(0,$lineItemsTotal-$discount);
+        $nectorCoinsDiscount = (new CommonUtils())->getNectorCoinsApplied($promotions);
+
+        $cartAmountAfterDiscount = max(0,$lineItemsTotal-$discount-$nectorCoinsDiscount);
 
         $finalCartAmount = max($minimumAllowedCartAmount, $cartAmountAfterDiscount + $shippingFeeValue + $taxValue);
 

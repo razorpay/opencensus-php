@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb6ba8023d53bba18005bce057b9e3d5",
+    "content-hash": "12ad87c64967fff37a5bbba4152549b1",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11018,12 +11018,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "0849a249cb0feb0408178bff51c8eb793e85ffc6"
+                "reference": "fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/0849a249cb0feb0408178bff51c8eb793e85ffc6",
-                "reference": "0849a249cb0feb0408178bff51c8eb793e85ffc6",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da",
+                "reference": "fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da",
                 "shasum": ""
             },
             "require": {
@@ -11049,7 +11049,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-07-31T05:23:02+00:00"
+            "time": "2023-08-16T10:39:22+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -19304,6 +19304,7 @@
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
         "razorpay/dcs-php-sdk": 20,
+        "razorpay/config-proto": 20,
         "laracasts/testdummy": 20,
         "roave/no-leaks": 20
     },

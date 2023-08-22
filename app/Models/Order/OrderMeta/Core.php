@@ -414,7 +414,10 @@ class Core extends Base\Core
             $couponsApplied = (new OneClickCheckoutUtils())->removeGiftCardsFromPromotions($promotions);
 
             if (count($couponsApplied) > 0) {
-                $discount = $couponsApplied[0][Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
+                foreach($couponsApplied as $couponApplied)
+                {
+                    $discount = $discount + $couponApplied[Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
+                }
             }
         }
 

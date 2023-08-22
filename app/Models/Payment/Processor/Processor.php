@@ -9670,16 +9670,29 @@ class Processor
             $promotions = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
 
             $couponData = null;
+            $nectorDiscount = null;
             if (empty($promotions) === false)
             {
                 foreach ($promotions as $promotion)
                 {
                     if (isset($promotion['type']) === false ||
-                        $promotion['type'] !== 'gift_card')
+                        $promotion['type'] !== 'gift_card' && $promotion['type'] !== 'nector_coins')
                     {
                         $couponData = $promotion;
                     }
+                    else if (isset($promotion['type']) === true && $promotion['type'] === 'nector_coins')
+                    {
+                        $nectorDiscount = $promotion;
+                    }
                 }
+            }
+            if($nectorDiscount !== null && $input['method'] === Payment\Method::COD)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    "cod is not allowed when nector coins is applied");
             }
             if ($couponData !== null)
             {

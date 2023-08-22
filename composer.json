@@ -98,7 +98,8 @@
         "ext-grpc": "*",
         "ext-pdo": "*",
         "code-orange/redis-counting-semaphore": "^1.2",
-        "guzzlehttp/guzzle": "7.7"
+        "guzzlehttp/guzzle": "7.7",
+        "razorpay/config-proto": "dev-master"
     },
     "repositories": [
         {

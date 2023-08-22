@@ -295,6 +295,9 @@ class Constants
     const TOTAL_GIFT_CARD_VALUE = 'total_gift_card_value';
     const FINAL_ADJUSTED_COD_VALUE = 'final_adjusted_cod_value';
     const TOTAL_TAX_APPLIED        = 'total_tax_applied';
+    const NECTOR_COINS_APPLIED     = 'nector_coins_applied';
+
+    const NECTOR_COINS             = 'nector_coins';
 
     const ORDER_STATUS_REFUNDED = 'refunded';
 

@@ -1871,6 +1871,7 @@ class Constants
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
     const ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION = 'disable_pre_magic_order_ingestion';
+    const ONE_CC_ENABLE_NECTOR_COINS = 'one_cc_enable_nector_coin';
     /**
      * Feature flag is used to disable auto read and auto submit feature on checkout.
      */
@@ -1948,6 +1949,7 @@ class Constants
         self::RAZORPAY_WALLET,
         self::WALLET_PAYTM_AUTO_DEBIT,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
+        self::ONE_CC_ENABLE_NECTOR_COINS
     ];
 
     const ONE_CC_FEATURES = [
@@ -1972,6 +1974,7 @@ class Constants
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER,
+        self::ONE_CC_ENABLE_NECTOR_COINS
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2611,6 +2614,7 @@ class Constants
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION =>true,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
+        self::ONE_CC_ENABLE_NECTOR_COINS       => true,
     ];
 
     // Entity type constants

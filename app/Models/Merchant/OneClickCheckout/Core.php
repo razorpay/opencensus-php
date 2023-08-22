@@ -60,9 +60,11 @@ class Core extends Base\Core
 
         $couponValueApplied = (new Utils\CommonUtils())->getAppliedCouponValue($promotions);
 
+        $nectorCoinsApplied = (new Utils\CommonUtils())->getNectorCoinsApplied($promotions);
+
         $totalGiftCardValueApplied = $this->calculateTotalGiftCardValue($promotions);
 
-        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied) + $totalTaxApplied + $shippingFee + $codFee - $totalGiftCardValueApplied - $finalCartAmount;
+        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied - $nectorCoinsApplied) + $totalTaxApplied + $shippingFee + $codFee - $totalGiftCardValueApplied - $finalCartAmount;
 
         return [
             Order1cc\Fields::NET_PRICE => $finalCartAmount,
@@ -70,6 +72,7 @@ class Core extends Base\Core
             Order1cc\Fields::SHIPPING_FEE => $shippingFee,
             Order1cc\Fields::COD_FEE => $codFee,
             Constants::TOTAL_COUPON_VALUE => $couponValueApplied,
+            Constants::NECTOR_COINS_APPLIED => $nectorCoinsApplied,
             Constants::TOTAL_GIFT_CARD_VALUE => $totalGiftCardValueApplied,
             Constants::FINAL_ADJUSTED_COD_VALUE => $totalGiftCardValueApplied != 0 ? $adjustedCodFee : $codFee,
             Constants::TOTAL_TAX_APPLIED   => $totalTaxApplied,
