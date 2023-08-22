@@ -1,15 +1,15 @@
 * @razorpay/merchant-dashboard
 
-web/js/merchant/components/Announcements          @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/merchant/models/GrowthService              @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/AnnouncementBanner               @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/NotificationsDropdown            @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/OffersForYou                     @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/WhatsNew                         @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/DashboardBanner                  @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/GrowthServiceModal               @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/ExclusiveOffer                   @shivamrazorpay @Rozamo @AnshulNautiyal
-web/js/common/ui/MultiSlider                      @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/merchant/components/Announcements          @razorpay/platform-growth-fe
+web/js/merchant/models/GrowthService              @razorpay/platform-growth-fe
+web/js/common/ui/AnnouncementBanner               @razorpay/platform-growth-fe
+web/js/common/ui/NotificationsDropdown            @razorpay/platform-growth-fe
+web/js/common/ui/OffersForYou                     @razorpay/platform-growth-fe
+web/js/common/ui/WhatsNew                         @razorpay/platform-growth-fe
+web/js/common/ui/DashboardBanner                  @razorpay/platform-growth-fe
+web/js/common/ui/GrowthServiceModal               @razorpay/platform-growth-fe
+web/js/common/ui/ExclusiveOffer                   @razorpay/platform-growth-fe
+web/js/common/ui/MultiSlider                      @razorpay/platform-growth-fe
 web/js/merchant/Reports                           @joel-jaimon @TanroopSing @asp48
 web/js/merchant/ReportsAsync                      @joel-jaimon @TanroopSing @asp48
 web/js/merchant/reducers/reports                  @joel-jaimon @TanroopSing @asp48
