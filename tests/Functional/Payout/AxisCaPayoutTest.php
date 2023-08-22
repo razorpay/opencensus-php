@@ -41,6 +41,7 @@ use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 use RZP\Jobs\ConnectedBankingAccountGatewayBalanceUpdate;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
@@ -52,6 +53,7 @@ class AxisCaPayoutTest extends TestCase
     use WorkflowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use FeeRecoveryTrait;
 
     private $ownerRoleUser;
 
@@ -93,44 +95,15 @@ class AxisCaPayoutTest extends TestCase
 
     protected function setupScheduleAndScheduleTaskForMerchant()
     {
-        $createScheduleRequest = [
-            'method'  => 'POST',
-            'url'     => '/schedules',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
-            'content'   => [
-                'type'      => 'fee_recovery',
-                'name'      => 'Basic T+7',
-                'period'    => 'daily',
-                'interval'  => 7,
-            ],
-        ];
+        $this->setupDefaultScheduleForFeeRecovery();
+        $this->createScheduleTaskForMerchantAndBalance($this->merchant->getId(), $this->bankingBalance->getId());
 
-        $this->ba->adminAuth();
+        // $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
-
-        $scheduleTaskInput = [
-            'type'          => 'fee_recovery',
-            'schedule_id'   => $schedule['id'],
-        ];
-
-        $scheduleTask = (new Schedule\Task\Core)->create($this->merchant, $this->bankingBalance , $scheduleTaskInput);
-
-        $scheduleTask->saveOrFail();
-
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        $pastTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $this->fixtures->edit('schedule_task', $scheduleTask['id'], [
-            'next_run_at'  => $pastTimeStamp
-        ]);
-
-        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
-            'created_at'   => $pastTimeStamp
-        ]);
+        // // keeping this in case it is required in tests
+        // $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+        //     'created_at'   => $currentTimestamp
+        // ]);
     }
 
     protected function setUpMerchantForBusinessBankingLive(
@@ -1256,7 +1229,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testFeeRecoveryPayoutCronForAxis()
     {
-        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+        $oldTime = Carbon::create(2020, 1, 4, 12, 45, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -1306,7 +1279,7 @@ class AxisCaPayoutTest extends TestCase
 
         $this->createRzpFeesContactAndFundAccountForAxis();
 
-        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+        $newTime = Carbon::create(2020, 1, 7, 9, 10, null);
 
         Carbon::setTestNow($newTime);
 

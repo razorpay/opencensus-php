@@ -25,6 +25,9 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
+    /** @var \RZP\Services\Mutex $mutex */
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -309,6 +312,42 @@ class Core extends Base\Core
         }
 
         return ['success' => true];
+    }
+
+    public function updateNextRunAndLastRunForFeeRecoveryTasks(Task\Entity $task)
+    {
+        // compute nextRunAt and lastRunAt based on custom logic
+        $nextRunAt = $task->getNextRunAt();
+        $task->setLastRunAt($nextRunAt); // +1 is done in the job execution
+
+        $refTime = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
+
+        [$startTime, $endTime] = $this->getNextInterval($refTime);
+        $task->setNextRunAt($endTime->timestamp);
+    }
+
+    // ref time will be the current nextRunAt - end time of the current interval
+    public function getNextInterval(Carbon $refTime)
+    {
+        $refTime = $refTime->copy();
+
+        $startTime = $refTime->copy();
+
+        $startTime = $refTime->copy()->addSeconds(1);
+
+        $endTime = $startTime->copy()->endOfDay();
+
+        while ($endTime->day % 3 != 0)
+        {
+            $endTime = $endTime->addDay();
+        }
+
+        if ($endTime->month != $startTime->month)
+        {
+            $endTime = $startTime->copy()->endOfMonth()->endOfDay();
+        }
+
+        return [$startTime, $endTime];
     }
 
     protected function skipIfExistingFeeRecoveryDataExists(Entity $feeRecovery): bool

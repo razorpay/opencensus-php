@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\FeeRecovery\Entity;
@@ -96,7 +97,10 @@ class FeeRecovery extends Job
 
         try
         {
-            $response = (new FeeRecoveryCore)->createFeeRecoveryPayout($data);
+
+            $feeRecoveryCore = new FeeRecoveryCore();
+
+            $response = $feeRecoveryCore->createFeeRecoveryPayout($data);
 
             $this->trace->info(
                 TraceCode::FEE_RECOVERY_CRON_SUCCESS,
@@ -106,7 +110,7 @@ class FeeRecovery extends Job
                 ]
             );
 
-            $this->task->updateNextRunAndLastRun();
+            $feeRecoveryCore->updateNextRunAndLastRunForFeeRecoveryTasks($this->task);
 
             $this->repoManager->saveOrFail($this->task);
 

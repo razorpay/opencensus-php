@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
+use RZP\Models\FeeRecovery;
 use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
@@ -61,6 +62,7 @@ use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
+use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
@@ -81,6 +83,7 @@ class BankingAccountTest extends TestCase
     use MocksDiagTrait;
     use CreateLegalDocumentsTrait;
     use MocksSplitz;
+    use FeeRecoveryTrait;
 
     const DefaultMerchantId = '10000000000000';
 
@@ -2493,7 +2496,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $dataToReplace = [
           'request' => [
@@ -2525,7 +2528,11 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $this->startTest($dataToReplace);
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
@@ -2593,13 +2600,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
-        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
-        $this->assertEquals($scheduleTask['entity_type'], 'balance');
-        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], $merchantDetail->merchant['id'], $timeBeforeActivation, $timeAfterActivation);
 
         $counter = $this->getDbLastEntity('counter')->toArray();
 
@@ -2664,7 +2665,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $dataToReplace = [
             'request' => [
@@ -2696,7 +2697,11 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $this->startTest($dataToReplace);
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
@@ -2766,13 +2771,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
-        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
-        $this->assertEquals($scheduleTask['entity_type'], 'balance');
-        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], $merchantDetail->merchant['id'], $timeBeforeActivation, $timeAfterActivation);
 
         $counter = $this->getDbLastEntity('counter')->toArray();
 
@@ -2846,7 +2845,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $dataToReplace = [
             'request' => [
@@ -2919,7 +2918,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $dataToReplace = [
             'request' => [
@@ -2951,7 +2950,11 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $this->startTest($dataToReplace);
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
@@ -3013,13 +3016,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
-        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
-        $this->assertEquals($scheduleTask['entity_type'], 'balance');
-        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], $merchantDetail->merchant['id'], $timeBeforeActivation, $timeAfterActivation);
 
         $counter = $this->getDbLastEntity('counter')->toArray();
 
@@ -3061,7 +3058,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $this->mockFundAccountService();
 
@@ -7164,27 +7161,6 @@ class BankingAccountTest extends TestCase
 
     }
 
-    protected function setupDefaultScheduleForFeeRecovery()
-    {
-        $createScheduleRequest = [
-            'method'  => 'POST',
-            'url'     => '/schedules',
-            'content' => [
-                'type'      => 'fee_recovery',
-                'name'      => 'Basic T+7',
-                'period'    => 'daily',
-                'interval'  => 7,
-                'hour'      => 8,
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
-
-        return $schedule;
-    }
-
     public function testBulkAssignReviewersToBankingAccounts()
     {
         $bankingAccount1 = $this->fixtures->create('banking_account', [
@@ -9895,7 +9871,7 @@ class BankingAccountTest extends TestCase
 
         $this->setupDataForActivation($bankingAccount);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $request = [
             'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate',

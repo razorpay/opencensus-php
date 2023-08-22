@@ -31,6 +31,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
+use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
@@ -41,6 +42,7 @@ class BankingAccountServiceTest extends TestCase
     use TestsBusinessBanking;
     use MocksDiagTrait;
     use RequestResponseFlowTrait;
+    use FeeRecoveryTrait;
 
     protected $config;
 
@@ -61,27 +63,6 @@ class BankingAccountServiceTest extends TestCase
         $this->sfLeadsTimeStamp = (int) $this->config['applications.banking_account_service.rbl_leads_sf_time_filter'];
     }
 
-    protected function setupDefaultScheduleForFeeRecovery()
-    {
-        $createScheduleRequest = [
-            'method'  => 'POST',
-            'url'     => '/schedules',
-            'content' => [
-                'type'      => 'fee_recovery',
-                'name'      => 'Basic T+7',
-                'period'    => 'daily',
-                'interval'  => 7,
-                'hour'      => 8,
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
-
-        return $schedule;
-    }
-
     public function testCreateBankingEntities($bank = 'icici')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -97,7 +78,7 @@ class BankingAccountServiceTest extends TestCase
 
         $this->mockLedgerSns(0);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $this->ba->bankingAccountServiceAppAuth();
 
@@ -109,7 +90,11 @@ class BankingAccountServiceTest extends TestCase
             ]
         ];
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $response = $this->startTest($dataToReplace);
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $balance = $this->getDbEntity('balance',
                                       [
@@ -133,13 +118,7 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertNotNull($basd);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
-        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
-        $this->assertEquals('balance', $scheduleTask['entity_type']);
-        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], '10000000000000', $timeBeforeActivation, $timeAfterActivation);
 
         $feature = $this->getLastEntity('feature', true);
 
@@ -350,11 +329,15 @@ class BankingAccountServiceTest extends TestCase
         $ledgerSnsPayloadArray = [];
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $this->ba->bankingAccountServiceAppAuth();
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $response = $this->startTest();
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $balance = $this->getDbEntity('balance',
             [
@@ -378,13 +361,7 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertNotNull($bankingAccountStmtDetails);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
-        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
-        $this->assertEquals('balance', $scheduleTask['entity_type']);
-        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], '10000000000000', $timeBeforeActivation, $timeAfterActivation);
 
         $testFeaturesArray = $this->getDbEntity('feature',
             [
@@ -431,7 +408,7 @@ class BankingAccountServiceTest extends TestCase
 
     public function testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccess()
     {
-        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+        $this->setupDefaultScheduleForFeeRecovery();
 
         $attributes = [
             'bas_business_id'   => '10000000000000',
@@ -466,7 +443,11 @@ class BankingAccountServiceTest extends TestCase
 
         $this->ba->bankingAccountServiceAppAuth();
 
+        $timeBeforeActivation = Carbon::now(Timezone::IST);
+
         $response = $this->startTest();
+
+        $timeAfterActivation = Carbon::now(Timezone::IST);
 
         $balance = $this->getDbEntity('balance',
             [
@@ -513,13 +494,7 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertEquals(1, $liveMerchant['has_key_access']);
 
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        // Every activated merchant should have a default schedule task for fee recovery purposes.
-        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
-        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
-        $this->assertEquals('balance', $scheduleTask['entity_type']);
-        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertScheduleTasksForActivatedCA($balance['id'], '10000000000000', $timeBeforeActivation, $timeAfterActivation);
     }
 
     public function testCreateBusinessId()

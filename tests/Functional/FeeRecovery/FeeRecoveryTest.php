@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Queue;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\FeeRecovery;
@@ -24,6 +25,7 @@ use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\FeeRecovery\Entity as FeeRecoveryEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 
 class FeeRecoveryTest extends TestCase
 {
@@ -32,6 +34,7 @@ class FeeRecoveryTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use FeeRecoveryTrait;
 
     private $checkerRoleUser;
 
@@ -39,6 +42,14 @@ class FeeRecoveryTest extends TestCase
      * @var Entity
      */
     private $bankingAccount;
+
+    /** @var Merchant\Balance\Entity $balance */
+    protected $balance;
+
+    protected $contactForPayout;
+
+    /** @var Merchant\Entity $merchant */
+    protected $merchant;
 
     /**
      * @var \RZP\Models\FundAccount\Entity
@@ -110,6 +121,12 @@ class FeeRecoveryTest extends TestCase
         $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');
 
         $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3', 'live');
+    }
+
+    protected function setupScheduleAndScheduleTaskForMerchant()
+    {
+        $this->setupDefaultScheduleForFeeRecovery();
+        $this->createScheduleTaskForMerchantAndBalance($this->merchant->getId(), $this->bankingBalance->getId());
     }
 
     public function testCreateFeeRecoveryAtPayoutCreationForRBLPayouts()
@@ -541,7 +558,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testFeeRecoveryPayoutCron()
     {
-        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+        $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
 
         Carbon::setTestNow($oldTime);
 
@@ -589,7 +606,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
 
-        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+        $newTime = Carbon::create(2020, 1, 7, 7, 0, null);
 
         Carbon::setTestNow($newTime);
 
@@ -679,7 +696,7 @@ class FeeRecoveryTest extends TestCase
     {
         Queue::fake();
 
-        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+        $oldTime = Carbon::create(2020, 1, 4, 8, null, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -697,7 +714,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
 
-        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+        $newTime = Carbon::create(2020, 1, 7, 7, 0, null);
 
         $task = $this->getDbLastEntity('schedule_task');
 
@@ -730,7 +747,7 @@ class FeeRecoveryTest extends TestCase
 
         $currentTime = Carbon::now(Timezone::IST);
 
-        $nextRunTime = Schedule\Library::computeFutureRun($task->schedule, $lastRun, $currentTime, true);
+        [$start, $nextRunTime] = (new FeeRecovery\Core)->getNextInterval($currentTime);
 
         // Assert that last run and next run is updated when job is run
         $this->assertEquals($nextRunAt, $task['last_run_at']);
@@ -740,13 +757,13 @@ class FeeRecoveryTest extends TestCase
 
     public function testFeeRecoveryPayoutCronNextAndLastRunUpdateForZeroAmount()
     {
-        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+        $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
 
         Carbon::setTestNow($oldTime);
 
         $this->setupScheduleAndScheduleTaskForMerchant();
 
-        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+        $newTime = Carbon::create(2020, 1, 7, 7, 0, null, Timezone::IST);
 
         $task = $this->getDbLastEntity('schedule_task');
 
@@ -766,7 +783,7 @@ class FeeRecoveryTest extends TestCase
 
         $currentTime = Carbon::now(Timezone::IST);
 
-        $nextRunTime = Schedule\Library::computeFutureRun($task->schedule, $lastRun, $currentTime, true);
+        [$start, $nextRunTime] = (new FeeRecovery\Core)->getNextInterval($currentTime);
 
         // Assert that last run and next run is updated when job is run
         $this->assertEquals($nextRunAt, $task['last_run_at']);
@@ -1950,45 +1967,6 @@ class FeeRecoveryTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
     }
 
-    protected function setupScheduleAndScheduleTaskForMerchant()
-    {
-        $createScheduleRequest = [
-            'method'  => 'POST',
-            'url'     => '/schedules',
-            'content'   => [
-                'type'      => 'fee_recovery',
-                'name'      => 'Basic T+7',
-                'period'    => 'daily',
-                'interval'  => 7,
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
-
-        $scheduleTaskInput = [
-            'type'          => 'fee_recovery',
-            'schedule_id'   => $schedule['id'],
-        ];
-
-        $scheduleTask = (new Schedule\Task\Core)->create($this->merchant, $this->balance , $scheduleTaskInput);
-
-        $scheduleTask->saveOrFail();
-
-        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
-
-        $pastTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $this->fixtures->edit('schedule_task', $scheduleTask['id'], [
-            'next_run_at'  => $pastTimeStamp
-        ]);
-
-        $this->fixtures->edit('balance', $this->balance->getId(), [
-            'created_at'   => $pastTimeStamp
-        ]);
-    }
-
     public function testFeeRecoveryRetryAfterOnePayoutFTAReconFailedSecondSuccess()
     {
         $this->testCreateFeeRecoveryPayout();
@@ -2976,5 +2954,40 @@ class FeeRecoveryTest extends TestCase
                     return strtolower($defaultBehaviour);
                 }));
 
+    }
+
+    public function testGetNextInterval()
+    {
+        $core = new FeeRecovery\Core();
+
+        // End of month
+        $refTime = Carbon::create(2022, 12, 31, 23, 59, 59, Timezone::IST);
+        [$startTime, $endTime] = $core->getNextInterval($refTime);
+
+        $expectedStartTime  = Carbon::create(2023, 1, 1, 0, 0, 0, Timezone::IST);
+        $expectedEndTime    = Carbon::create(2023, 1, 3, 23, 59, 59, Timezone::IST);
+
+        $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
+        $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);
+
+        // Mid of interval - cases when merchant gets activated, existing intervals need to be updated
+        $refTime = Carbon::create(2023, 8, 17, 14, 36, 34, Timezone::IST);
+        [$startTime, $endTime] = $core->getNextInterval($refTime);
+
+        $expectedStartTime  = Carbon::create(2023, 8, 17, 14, 36, 35, Timezone::IST);
+        $expectedEndTime    = Carbon::create(2023, 8, 18, 23, 59, 59, Timezone::IST);
+
+        $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
+        $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);
+
+        // End of Month Feb
+        $refTime = Carbon::create(2023, 2, 27, 23, 59, 59, Timezone::IST);
+        [$startTime, $endTime] = $core->getNextInterval($refTime);
+
+        $expectedStartTime  = Carbon::create(2023, 2, 28, 0, 0, 0, Timezone::IST);
+        $expectedEndTime    = Carbon::create(2023, 2, 28, 23, 59, 59, Timezone::IST);
+
+        $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
+        $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);
     }
 }

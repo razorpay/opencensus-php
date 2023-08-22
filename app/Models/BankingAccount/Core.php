@@ -21,6 +21,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\User;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
+use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Schedule\Type;
@@ -92,6 +93,10 @@ class Core extends Base\Core
 
     // Values for default Fee Recovery Schedule
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
+    // This should be updated to 3 but we are not using schedule in any way other than creating a schedule task
+    // And the interval [last_run_at and next_run_at] are updated using custom logic
+    // We would have to change the value in DB right after deployment
+    // hence skipping to update this
     const DEFAULT_SCHEDULE_INTERVAL = 7;
 
     /** @var ActivationDetail\Service $activationDetailService */
@@ -1615,9 +1620,13 @@ class Core extends Base\Core
 
         $task = (new Task\Core)->create($merchant, $balance, $input);
 
-        $oneWeekLaterTimeStamp = Carbon::now(Timezone::IST)->addWeek()->getTimestamp();
+        $currentTimestamp = Carbon::now(Timezone::IST);
 
-        $task->setNextRunAt($oneWeekLaterTimeStamp);
+        [$startTime, $endTime] = (new FeeRecovery\Core())->getNextInterval($currentTimestamp);
+
+        $task->setLastRunAt($currentTimestamp->timestamp); // +1 is done while executing the job
+
+        $task->setNextRunAt($endTime->timestamp);
 
         $this->repo->schedule_task->saveOrFail($task);
 
@@ -1625,7 +1634,9 @@ class Core extends Base\Core
             [
                 'merchant_id'   => $merchant->getId(),
                 'balance_id'    => $balance->getId(),
-                'task_id'       => $task->getId()
+                'task_id'       => $task->getId(),
+                'start_time'    => $startTime->timestamp,
+                'end_time'      => $endTime->timestamp,
             ]);
     }
 
