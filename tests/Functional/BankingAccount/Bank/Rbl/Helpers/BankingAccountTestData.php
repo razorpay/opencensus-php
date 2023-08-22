@@ -5895,9 +5895,9 @@ return [
             'method' => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
-                    'Header' => [ 
-                        'TranID' => '220128134659', 
-                        'Corp_ID' => 'RZPAY' 
+                    'Header' => [
+                        'TranID' => '220128134659',
+                        'Corp_ID' => 'RZPAY'
                     ],
                     'Body' => [
                         'Account No.' => '4099834512998',
@@ -5987,6 +5987,24 @@ return [
             'content' => [
                 'id' => 'bacc_JuLWj2OnFAcg72'
             ]
+        ]
+    ],
+
+    'testFilterInterestedProduct' => [
+        'request' => [
+            'url'     => '/admin/banking_account?interested_product=escrow',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                ],
+            ],
         ]
     ]
 ];

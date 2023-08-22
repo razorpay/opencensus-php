@@ -184,6 +184,7 @@ class Entity extends Base\PublicEntity
     const FROM_DOCKET_ESTIMATED_DELIVERY_DATE = 'from_docket_estimated_delivery_date';
     const TO_DOCKET_ESTIMATED_DELIVERY_DATE = 'to_docket_estimated_delivery_date';
     const EXCLUDE_STATUS = 'exclude_status';
+    const INTERESTED_PRODUCT = 'interested_product';
 
     // Fields to apply filters common for admin dashboard and partner LMS
     const FILTER_MERCHANTS = 'filter_merchants';

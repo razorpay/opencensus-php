@@ -1148,8 +1148,17 @@ class Repository extends Base\Repository
             $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) == \'\' OR ' .
                 'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) = ?',[$skipDwtValue]);
         }
+    }
 
+    public function addQueryParamInterestedProduct(Base\BuilderEx $query, $params)
+    {
+        $interestedProductValue = (string)$params[Entity::INTERESTED_PRODUCT];
 
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."interested_product"\')) = \''.$interestedProductValue.'\'');
     }
 
     /**

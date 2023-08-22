@@ -13162,6 +13162,54 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testFilterInterestedProduct()
+    {
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+            'additional_details'        => json_encode([
+                'interested_product' => 'escrow'
+            ])
+        ]);
+
+        $ba2 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890125',
+            'account_number'        => '2224440041626906',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000001',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba2->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function verifyFreshDeskTicketCreationBehaviourForSalesLed(string $baId, string $baActivationDetailId, array $activationDetail, array $reqContent, Admin\Admin\Entity $admin)
     {
         $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);
@@ -13363,7 +13411,7 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($request);
-        
+
         // Test with new admin API
 
         $request = [

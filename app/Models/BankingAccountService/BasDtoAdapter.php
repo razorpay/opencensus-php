@@ -160,6 +160,7 @@ class BasDtoAdapter
         "activation_detail.additional_details.ops_follow_up_date"                          => "banking_account_application.metadata.ops_follow_up_date",
         "activation_detail.additional_details.ops_revived_lead"                            => "banking_account_application.metadata.ops_revived_lead",
         "activation_detail.verification_date"                                              => "banking_account_application.metadata.verification_date",
+        "activation_detail.additional_details.interested_product"                          => "banking_account_application.metadata.interested_product",
         "activation_detail.additional_details.entity_proof_documents"                      => "banking_account_application.application_specific_fields.entity_proof_documents",
 
         "activation_detail.rbl_activation_details.revised_declaration"                     => "partner_bank_application.auxiliary_details.revised_declaration",
@@ -363,6 +364,7 @@ class BasDtoAdapter
         'banking_account_activation_details.additional_details.account_opening_webhook_date'              => 'banking_account_application.metadata.additional_details.account_opening_webhook_date',
         'banking_account_activation_details.additional_details.mid_office_poc_name'                       => 'banking_account_application.metadata.additional_details.mid_office_poc_name',
         'banking_account_activation_details.additional_details.api_onboarded_date'                        => 'banking_account_application.metadata.additional_details.api_onboarded_date',
+        'banking_account_activation_details.additional_details.interested_product'                        => 'banking_account_application.metadata.interested_product',
         'banking_account_activation_details.rbl_activation_details.customer_appointment_booking_date'     => 'partner_bank_application.doc_collection_details.customer_appointment_booking_date',
         'banking_account_activation_details.rbl_activation_details.first_calling_time'                    => 'partner_bank_application.auxiliary_details.first_calling_time',
         'banking_account_activation_details.rbl_activation_details.wa_message_sent_date'                  => 'partner_bank_application.auxiliary_details.wa_message_sent_date',

@@ -156,6 +156,7 @@ return [
                         ]
                     ],
                     'ops_revived_lead' => true,
+                    'interested_product' => 'escrow',
                 ],
                 'rbl_activation_details' => [
                     'revised_declaration' => false,
@@ -315,7 +316,8 @@ return [
                         ]
                     ],
                     'ops_revived_lead'  => true,
-                    'verification_date' => null
+                    'verification_date' => null,
+                    'interested_product' => 'escrow'
                 ],
                 'bank_account_type' => 'business_plus',
                 'sales_team' => 'SME',

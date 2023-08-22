@@ -55,6 +55,7 @@ class Fetch extends BaseFetch
             Entity::TO_OPS_FOLLOW_UP_DATE               => 'sometimes|epoch',
             Entity::SKIP_DWT                            => 'sometimes|int',
             Entity::OPS_MX_POC_ID                       => 'sometimes|string',
+            Entity::INTERESTED_PRODUCT                  => 'sometimes|string',
         ],
     ];
 
@@ -111,6 +112,7 @@ class Fetch extends BaseFetch
             Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE,
             Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE,
             Entity::EXCLUDE_STATUS,
+            Entity::INTERESTED_PRODUCT,
             self::EXPAND_EACH,
         ],
         AuthType::PROXY_AUTH => [
