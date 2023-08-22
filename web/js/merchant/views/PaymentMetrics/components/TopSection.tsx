@@ -1,11 +1,13 @@
 import React from 'react';
 import CRComparison from './CRComparison';
+import IndustryCRComparison from './IndustryCrComparison';
 import { CardContainer } from './styled';
 
-const TopSection = (): React.ReactElement => {
+const TopSection = ({ category = '' }): React.ReactElement => {
   return (
     <CardContainer>
       <CRComparison />
+      {category && <IndustryCRComparison category={category} />}
     </CardContainer>
   );
 };

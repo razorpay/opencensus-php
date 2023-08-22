@@ -20,8 +20,15 @@ export type PaymentMetricsReducerProps = {
   selectedMetricInterval: string;
 };
 
+export type User = {
+  merchant: {
+    category2: string | null;
+  };
+};
+
 export type AllPaymentMetricsProps = {
   paymentMetrics: PaymentMetricsReducerProps;
+  user: User;
   updateInterval: (string) => any;
   updateDateRange: (Filter) => any;
   resetPaymentDashboard: () => any;
@@ -42,9 +49,11 @@ export type LoadingErrorProps = {
 export type OverallCrProps = {
   paymentMetrics: PaymentMetricsReducerProps;
   getOverallCR: (Filter) => any;
+  category: string;
   selectedMetricsUpdateDateRange: (Filter) => any;
   selectedMetricsUpdateInterval: (string) => any;
   setSelectedMetric: (string) => any;
+  getIndustryOverallCR: (Filter) => void;
 };
 
 export type GraphDataTokenTypes = {

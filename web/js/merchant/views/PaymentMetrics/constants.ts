@@ -54,18 +54,21 @@ export const DEFAULT_LOADING_ERROR_DESCRIPTION =
 export const CHART_NAME_MAP = {
   OVERALL_CR: 'checkout_overall_cr',
   METHOD_LEVEL_CR: 'checkout_method_level_cr',
+  INDUSTRY_OVERALL_CR: 'checkout_industry_level_cr',
 };
 
 export const CHART_INITIAL_DATA = {
   [CHART_NAME_MAP.OVERALL_CR]: { isLoading: false, error: '', datasets: [] },
   [CHART_NAME_MAP.METHOD_LEVEL_CR]: { isLoading: false, error: '', datasets: [] },
+  [CHART_NAME_MAP.INDUSTRY_OVERALL_CR]: { isLoading: false, error: '', datasets: [] },
 };
 
 export const GRAPHS_DATA = {
   OVERALL_CR: {
     name: 'Overall CR',
     title: 'Overall Conversion rate',
-    description: 'Overall CR of your Business',
+    description:
+      'The percentage of payments submitted out of all attempted payments as a trending line chart',
     xLabel: 'Time in',
     yLabel: 'Overall CR',
     xAxisID: 'overall_cr_x',
@@ -74,11 +77,22 @@ export const GRAPHS_DATA = {
   METHOD_LEVEL_CR: {
     name: 'Method Level CR',
     title: 'Method Level Conversion rate',
-    description: 'Method Level CR of your Business',
+    description:
+      'he percentage of payments submitted out of all attempted payments for each individual payment method (e.g., credit cards, digital wallets, UPI etc)',
     xLabel: 'Time in',
     yLabel: 'Method Level CR',
     xAxisID: 'method_level_cr_x',
     yAxisID: 'method_level_cr_y',
+  },
+  INDUSTRY_OVERALL_CR: {
+    name: 'Industry Level Overall CR',
+    title: 'Industry Level Conversion Rate',
+    description:
+      'The percentage of payments submitted out of all attempted payments within your specific industry',
+    xLabel: 'Time in',
+    yLabel: 'Overall CR',
+    xAxisID: 'industry_overall_cr_x',
+    yAxisID: 'industry_overall_cr_y',
   },
 };
 
@@ -110,8 +124,9 @@ export const namedColors = {
 };
 
 export const defaultTagStyle = {
-  color: namedColors['black.500'],
-  backgroundColor: namedColors['black.400'],
+  color: 'rgb(91, 132, 199)',
+  backgroundColor1: 'rgba(91, 132, 199 , 0.3)',
+  backgroundColor2: 'rgba(91, 132, 199 , 0.05)',
 };
 
 export const tagStyles = [
@@ -124,7 +139,10 @@ export const tagStyles = [
   '#6473FF',
   '#FFF278',
   '#CF6AFE',
-  '#A7FFA',
+  '#A7FFFA',
+  '#FCBA03',
+  '#CF2B54',
+  '#902BCF',
 ];
 
 // COLORS FOR LINE CHART END //
@@ -150,4 +168,14 @@ export const timeAxisUnit = {
   },
 };
 
-// CHART CONFIG END START //
+export const WEEKS_MAP = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+// CHART CONFIG CONSTANT END //

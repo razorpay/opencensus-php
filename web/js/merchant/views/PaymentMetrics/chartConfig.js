@@ -17,14 +17,8 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel, xAxisID, yAxisID
     },
     elements: {
       point: {
-        radius: (ctx) => {
-          const isLastPoint = ctx.dataIndex === ctx.dataset.data.length - 1; // change the point radius for last data point
-          if (isLastPoint) return 4;
-          return 2;
-        },
-        hoverRadius: () => {
-          return 4;
-        },
+        radius: () => 3,
+        hoverRadius: () => 4,
       },
       line: {
         lineTension: 10,

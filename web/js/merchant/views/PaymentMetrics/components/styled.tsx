@@ -198,9 +198,11 @@ export const CardFooter = styled.div`
     }
     .green {
       color: #00a040;
+      flex-shrink: 0;
     }
     .red {
       color: #c32f00;
+      flex-shrink: 0;
     }
   }
 `;
@@ -237,13 +239,14 @@ export const LoadingErrorContainerTitle = styled.span`
 export const LoadingErrorContainerDescription = styled.span`
   font-size: 14px;
   margin-top: 6px;
+  text-align: center;
 `;
 
 export const ChartCardContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px 24px;
-  > :first-child {
+  > div {
     margin-bottom: 30px;
   }
 `;

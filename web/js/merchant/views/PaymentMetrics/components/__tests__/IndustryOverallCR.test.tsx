@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, server, waitFor, screen } from 'test-utils';
 import { rest } from 'msw';
-import OverallCr from 'merchant/views/PaymentMetrics/components/OverallCrGraph';
 import moment from 'moment';
+import IndustryLevelOverallCr from 'merchant/views/PaymentMetrics/components/IndustryLevelOverallCr';
 
 const updateServerResponse = () => {
   server.use(
@@ -12,7 +12,7 @@ const updateServerResponse = () => {
         ctx.json({
           status_code: 200,
           data: {
-            checkout_overall_cr: {
+            checkout_industry_level_cr: {
               result: [
                 {
                   timestamp: moment().endOf('hour').unix(),
@@ -32,19 +32,19 @@ const updateServerResponse = () => {
   );
 };
 
-describe('CR Comparison', () => {
-  test('should render Overall Conversion rate as a with heading', async () => {
+describe('CR Comparison for Indutry Level', () => {
+  test('should render Industry Level Overall Conversion rate as component with heading', async () => {
     updateServerResponse();
-    render(<OverallCr />, {});
+    render(<IndustryLevelOverallCr />, { category: 'others' });
     await waitFor(() => {
-      expect(screen.queryByText('Overall CR')).toBeInTheDocument();
+      expect(screen.queryByText('Industry Level Conversion Rate')).toBeInTheDocument();
     });
   });
   test('should render Overall Conversion rate with dots and canvas graph', async () => {
     updateServerResponse();
-    const { container } = render(<OverallCr />, {});
+    const { container } = render(<IndustryLevelOverallCr />, { category: 'others' });
     await waitFor(() => {
-      expect(screen.queryByText('Overall CR')).toBeInTheDocument();
+      expect(screen.queryByText('Industry Level Conversion Rate')).toBeInTheDocument();
       expect(container.getElementsByClassName('chartjs-render-monitor').length).toBe(1);
     });
   });

@@ -5,6 +5,7 @@ import {
   getTimelineData,
   getMethodLevelCRData,
   methodLevelSplit,
+  getIndustryOverallCRData,
 } from 'merchant/views/PaymentMetrics/helpers';
 import {
   CHART_INITIAL_DATA,
@@ -17,6 +18,7 @@ import {
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const UPDATE_INTERVAL = 'UPDATE_INTERVAL';
 const OVERALL_CR = 'OVERALL_CR';
+const INDUSTRY_OVERALL_CR = 'INDUSTRY_OVERALL_CR';
 const METHOD_LEVEL_CR = 'METHOD_LEVEL_CR';
 const SET_SELECTED_METRIC = 'SET_SELECTED_METRIC';
 const SELECTED_METRICS_UPDATE_DATE_RANGE = 'SELECTED_METRICS_UPDATE_DATE_RANGE';
@@ -32,7 +34,12 @@ export const getOverallCR =
         chart: CHART_NAME_MAP[OVERALL_CR],
       },
     });
-    const result = await getOverallCRData({ lte, gte, breakdown });
+    let result = {};
+    try {
+      result = await getOverallCRData({ lte, gte, breakdown });
+    } catch (error) {
+      result = error;
+    }
     let error = '';
     let data = [];
     const datasets = [];
@@ -51,13 +58,18 @@ export const getOverallCR =
         // get missing timestamp data as well as from backend if value 0 they are not sending
         // but for chart to get staring line we need to plot 0 otherwise it will act as dot
         data = getTimelineData({ data, startTime: gte, endTime: lte, breakdown });
+        const ctx = document.getElementsByClassName('chartjs-render-monitor')[0]?.getContext('2d');
+        const gradient = ctx?.createLinearGradient(0, 0, 0, 400);
+        gradient?.addColorStop(0, defaultTagStyle.backgroundColor1);
+        gradient?.addColorStop(1, defaultTagStyle.backgroundColor2);
         datasets.push({
           label: GRAPHS_DATA[OVERALL_CR].name,
           data,
-          fill: false,
+          fill: true,
           borderWidth: 2,
           borderColor: defaultTagStyle.color,
-          backgroundColor: defaultTagStyle.backgroundColor,
+          pointBackgroundColor: defaultTagStyle.color,
+          backgroundColor: gradient || defaultTagStyle.backgroundColor1,
           xAxisID: GRAPHS_DATA[OVERALL_CR].xAxisID,
           yAxisID: GRAPHS_DATA[OVERALL_CR].yAxisID,
           tagName: GRAPHS_DATA[OVERALL_CR].name,
@@ -84,7 +96,12 @@ export const getMethodLevelCR =
     });
     let error = '';
     let data = [];
-    const result = await getMethodLevelCRData({ lte, gte, breakdown });
+    let result;
+    try {
+      result = await getMethodLevelCRData({ lte, gte, breakdown });
+    } catch (error) {
+      result = error;
+    }
     if (result.data?.ERROR || result.errors) {
       error = result.data?.ERROR || result.errors?.[0];
       dispatch({
@@ -105,6 +122,69 @@ export const getMethodLevelCR =
         payload: {
           chart: CHART_NAME_MAP[METHOD_LEVEL_CR],
           data,
+        },
+      });
+    }
+  };
+
+export const getIndustryOverallCR =
+  ({ lte, gte, breakdown, category }) =>
+  async (dispatch) => {
+    dispatch({
+      type: `${INDUSTRY_OVERALL_CR}::PENDING`,
+      payload: {
+        chart: CHART_NAME_MAP[INDUSTRY_OVERALL_CR],
+      },
+    });
+    let result = {};
+    try {
+      result = await getIndustryOverallCRData({ lte, gte, breakdown, category });
+    } catch (error) {
+      result = error;
+    }
+
+    let error = '';
+    let data = [];
+    const datasets = [];
+    if (result.data?.ERROR || result.errors) {
+      error = result.data?.ERROR || result.errors?.[0];
+      dispatch({
+        type: `${INDUSTRY_OVERALL_CR}::ERROR`,
+        payload: {
+          chart: CHART_NAME_MAP[INDUSTRY_OVERALL_CR],
+          error,
+        },
+      });
+    } else {
+      data = (result.data && result.data[CHART_NAME_MAP[INDUSTRY_OVERALL_CR]]?.result) || [];
+
+      if (data.length) {
+        // get missing timestamp data as well as from backend if value 0 they are not sending
+        // but for chart to get staring line we need to plot 0 otherwise it will act as dot
+        data = getTimelineData({ data, startTime: gte, endTime: lte, breakdown });
+        const ctx = document.getElementsByClassName('chartjs-render-monitor')[1]?.getContext('2d');
+
+        const gradient = ctx?.createLinearGradient(0, 0, 0, 400);
+        gradient?.addColorStop(0, defaultTagStyle.backgroundColor1);
+        gradient?.addColorStop(1, defaultTagStyle.backgroundColor2);
+        datasets.push({
+          label: GRAPHS_DATA[INDUSTRY_OVERALL_CR].name,
+          data,
+          fill: true,
+          borderWidth: 2,
+          borderColor: defaultTagStyle.color,
+          pointBackgroundColor: defaultTagStyle.color,
+          backgroundColor: gradient || defaultTagStyle.backgroundColor1,
+          xAxisID: GRAPHS_DATA[INDUSTRY_OVERALL_CR].xAxisID,
+          yAxisID: GRAPHS_DATA[INDUSTRY_OVERALL_CR].yAxisID,
+          tagName: GRAPHS_DATA[INDUSTRY_OVERALL_CR].name,
+        });
+      }
+      dispatch({
+        type: `${INDUSTRY_OVERALL_CR}::SUCCESS`,
+        payload: {
+          chart: CHART_NAME_MAP[INDUSTRY_OVERALL_CR],
+          data: datasets,
         },
       });
     }
@@ -175,6 +255,7 @@ export default (state = initialState, action) => {
     }
     case `${OVERALL_CR}::PENDING`:
     case `${METHOD_LEVEL_CR}::PENDING`:
+    case `${INDUSTRY_OVERALL_CR}::PENDING`:
       return merge(state, {
         chartData: {
           ...state.chartData,
@@ -184,6 +265,7 @@ export default (state = initialState, action) => {
 
     case `${OVERALL_CR}::ERROR`:
     case `${METHOD_LEVEL_CR}::ERROR`:
+    case `${INDUSTRY_OVERALL_CR}::ERROR`:
       return merge(state, {
         chartData: {
           ...state.chartData,
@@ -193,6 +275,7 @@ export default (state = initialState, action) => {
 
     case `${OVERALL_CR}::SUCCESS`:
     case `${METHOD_LEVEL_CR}::SUCCESS`:
+    case `${INDUSTRY_OVERALL_CR}::SUCCESS`:
       return merge(state, {
         chartData: {
           ...state.chartData,

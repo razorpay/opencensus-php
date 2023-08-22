@@ -14,15 +14,18 @@ import { AllPaymentMetricsProps } from 'merchant/views/PaymentMetrics/types';
 import TopSection from './TopSection';
 import OverallCR from './OverallCrGraph';
 import MethodLevelCR from './MethodLevelCr';
+import IndustryLevelOverallCr from './IndustryLevelOverallCr';
 
 const AllPaymentMetrics = ({
   paymentMetrics,
+  user,
   updateInterval,
   updateDateRange,
   resetPaymentDashboard,
 }: AllPaymentMetricsProps): React.ReactElement => {
   const { filters, interval } = paymentMetrics;
   const { startDate, endDate, preset } = filters;
+  const category = user?.merchant?.category2 || '';
 
   useEffect(() => {
     return resetPaymentDashboard;
@@ -47,10 +50,11 @@ const AllPaymentMetrics = ({
         />
       </TopBar>
       <MetricsPanelContainer>
-        <TopSection />
+        <TopSection category={category} />
         <ChartCardContainer>
           <OverallCR />
           <MethodLevelCR startDate={startDate} endDate={endDate} interval={interval} />
+          {category && <IndustryLevelOverallCr category={category} />}
         </ChartCardContainer>
       </MetricsPanelContainer>
     </Fragment>
@@ -60,8 +64,9 @@ const AllPaymentMetrics = ({
 export default compose<React.FunctionComponent>(
   withRouter,
   connect(
-    ({ paymentMetrics }) => ({
+    ({ paymentMetrics, session }) => ({
       paymentMetrics,
+      user: session.user,
     }),
     (dispatch) => {
       return bindActionCreators(

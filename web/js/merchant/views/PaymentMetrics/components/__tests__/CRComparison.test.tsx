@@ -42,7 +42,7 @@ describe('CR Comparison', () => {
     render(<TopSection />, {});
     expect(screen.queryByText('Overall Conversion rate')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.queryByText('Last Week Same day')).toBeInTheDocument();
+      expect(screen.queryByText('Yesterday')).toBeInTheDocument();
     });
   });
 

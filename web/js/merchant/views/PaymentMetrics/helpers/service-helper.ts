@@ -29,6 +29,7 @@ export const getOverallCRData = ({
             lte,
           },
           render_checkout_open_event: 'true',
+          checkout_library: ['hosted', 'checkoutjs'],
         },
       ],
     },
@@ -61,6 +62,47 @@ export const getMethodLevelCRData = ({ lte, gte, breakdown = 'daily' }) => {
             lte,
           },
           render_checkout_open_event: 'true',
+          checkout_library: ['hosted', 'checkoutjs'],
+        },
+      ],
+    },
+  };
+  return getPaymentMetricsData(payload);
+};
+
+export const getIndustryOverallCRData = ({
+  lte,
+  gte,
+  breakdown = 'daily',
+  category,
+}: {
+  lte: number;
+  gte: number;
+  breakdown?: string;
+  category: string;
+}) => {
+  const payload = {
+    aggregations: {
+      checkout_industry_level_cr: {
+        filter_key: 'checkout_industry_level_cr',
+        details: {
+          index: 'cx_high_level_funnel',
+          group_by: [`histogram_${breakdown}`, 'behav_submit_event', 'render_checkout_open_event'],
+          mode: 'live',
+        },
+        agg_type: 'count',
+      },
+    },
+    filters: {
+      checkout_industry_level_cr: [
+        {
+          merchant_category: category,
+          created_at: {
+            gte,
+            lte,
+          },
+          render_checkout_open_event: 'true',
+          checkout_library: ['hosted', 'checkoutjs'],
         },
       ],
     },
