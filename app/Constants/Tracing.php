@@ -38,6 +38,9 @@ class Tracing
         );
 
         return array_merge($routesToInclude, [
+            // used by checkout-service
+            'merchant_methods_offers_checkout_internal',
+
             // used by capital-cards service
             'user_fetch',
             'capital_cards_service',
