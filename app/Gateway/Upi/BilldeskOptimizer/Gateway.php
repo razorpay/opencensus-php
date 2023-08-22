@@ -34,6 +34,13 @@ class Gateway extends Base\Gateway
 
         $method = $input["payment"]["method"];
 
+        if ($input['merchant']->isTPVRequired() === true) {
+
+            $input['merchant']['feature'] = [
+                'tpv' => $input['merchant']->isTPVRequired()
+            ];
+        }
+
         if ($method === Payment\Method::UPI) {
             return $this->upiAuthorize($input);
         }

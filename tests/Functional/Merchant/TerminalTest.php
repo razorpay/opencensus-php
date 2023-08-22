@@ -2310,6 +2310,39 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditBilldeskOptimizerTerminalWithTpv()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'billdesk_optimizer',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret2' => "1231424",
+                'upi' => 1,
+                'netbanking' => 1,
+                'card' => 1,
+                'mode' => 3,
+                'tpv' => 2,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'tpv' => "1",
+            'type'    => [
+                'non_recurring' => '1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( "1", $content['tpv']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
+    }
+
     public function testEditPayuEmiTerminal()
     {
         $terminal = $this->fixtures->create(
@@ -3616,6 +3649,52 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testCreateBilldeskOptimizerTerminalWithTpvDisabled()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'billdesk_optimizer',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret2' => "1231424",
+                'upi' => 1,
+                'netbanking' => 1,
+                'card' => 1,
+                'mode' => 3,
+                'tpv' => 0,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $this->assertEquals( "0", $terminal['tpv']);
+    }
+
+    public function testCreateBilldeskOptimizerTerminalWithTpv()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'billdesk_optimizer',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret2' => "1231424",
+                'upi' => 1,
+                'netbanking' => 1,
+                'card' => 1,
+                'mode' => 3,
+                'tpv' => 1,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $this->assertEquals( "1", $terminal['tpv']);
     }
 
     public function testEditBilledeskTerminal()
