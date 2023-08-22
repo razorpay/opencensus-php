@@ -69,10 +69,12 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      * @return bool
      */
-    public function isValidForCommissionRefund(string $paymentId): bool
+    public function isValidForCommissionRefund(string $paymentId, string $refundId): bool
     {
         $commission = $this->repo->commission->findBySourceIdAndCommissionType($paymentId);
-        if (empty($commission))
+        $refundedCommission = $this->repo->commission->findBySourceIdAndCommissionType($refundId);
+
+        if (empty($commission) == true or empty($refundedCommission) == false)
         {
             return false;
         }
@@ -135,7 +137,7 @@ class Core extends Base\Core
 
     public function reverseCommissionForRefund(string $paymentId, string $refundId, int $refundAmount): void
     {
-        if ( $this->isValidForCommissionRefund($paymentId) )
+        if ( $this->isValidForCommissionRefund($paymentId,$refundId) )
         {
             CommissionRefundJob::dispatch($this->mode, $refundId, $paymentId, $refundAmount);
             $this->trace->info(
