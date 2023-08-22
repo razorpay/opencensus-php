@@ -2183,7 +2183,6 @@ class Processor
         if ((isset($input[Payment\Entity::METHOD])) and
             ($input[Payment\Entity::METHOD] === Payment\Method::CARD))
         {
-
             $variant = $this->app->razorx->getTreatment(
                 $this->merchant->getId(),
                 Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,

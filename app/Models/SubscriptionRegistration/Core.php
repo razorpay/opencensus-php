@@ -66,17 +66,20 @@ class Core extends Base\Core
 
         $subscriptionRegistration = (new Entity)->build($input);
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
-            $this->mode
-        );
-
-        if ($variant === 'on')
+        if (($subscriptionRegistration->getMethod() === Payment\Method::CARD) or
+            ($subscriptionRegistration->getMethod() === null))
         {
-            $validator->validateFrequencyAndMaxAmountCardRecurring($input);
-            $validator->validateFrequencyUpiAutoPay($input);
-            $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+            $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $validator->validateFrequencyAndMaxAmountCardRecurring($input);
+                $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+            }
         }
 
         $subscriptionRegistration->merchant()->associate($merchant);
@@ -180,8 +183,20 @@ class Core extends Base\Core
     {
 
         // Set default values for frequency and max amount for upi
-        $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
+        $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
         $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? null;
+
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT,
+            $this->mode
+        );
+
+        if ($variant === 'on')
+        {
+            $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
+        }
+
 
         // re arrange the input
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
