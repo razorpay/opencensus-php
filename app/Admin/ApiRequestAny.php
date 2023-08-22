@@ -175,6 +175,13 @@ class ApiRequestAny
             $defaultHeaders['X-Mobile-Oauth'] = 'true';
         }
 
+        $orgId = Request::header(Headers::X_ORG_ID);
+
+        if(!empty($orgId))
+        {
+            $defaultHeaders['X-Org-Id'] = $orgId;
+        }
+        
         $headers = $options['headers'] ?? [];
 
         $headers = array_merge($defaultHeaders, $headers);

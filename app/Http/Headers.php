@@ -18,4 +18,6 @@ class Headers
     const X_DASHBOARD_ADMIN_AS_MERCHANT = 'X-Dashboard-AdminLoggedInAsMerchant';
 
     const X_RAZORPAY_REQUEST_ID = 'X-Razorpay-Request-Id';
+    
+    const X_ORG_ID              = 'X-Org-Id';
 }
