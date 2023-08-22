@@ -11,7 +11,7 @@ export const makeIdLink =
 
     const { hash } = window.location;
 
-    const screen = initiatePage?.split('.')[0];
+    const screen = initiatePage?.split('.')[0] || 'Payment Details';
     const page = initiatePage?.split('.')[1];
     const selfServeInitiateData = {
       selfServeAction: 'Payment Details Fetched',

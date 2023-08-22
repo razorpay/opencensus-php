@@ -15,8 +15,24 @@ const syntaxHighlighterCustomStyles = {
   background: '#1E222E',
 };
 
+const defaultWebhookLog = {
+  request_id: '',
+  request: {
+    method: '',
+    url: '',
+    route_name: '',
+    header: {},
+    body: {},
+  },
+  response: {
+    http_status_code: '',
+    header: {},
+    body: {},
+  },
+};
+
 const RequestDetails = ({ id, items: webhookLogs }) => {
-  const webhookLog = webhookLogs.find((log) => log.request_id === id) || {};
+  const webhookLog = webhookLogs.find((log) => log.request_id === id) || defaultWebhookLog;
 
   useEffect(() => {
     trackWebhookLogDetailsOpened();

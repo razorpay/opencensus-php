@@ -29,7 +29,7 @@ const EditSlugModal = ({
   showNotification,
   fetchPaymentHandle,
 }: EditSlugModalPropTypes): JSX.Element => {
-  const previousSlug = handleInfo.slug.replace(/@/g, '');
+  const previousSlug = handleInfo.slug?.replace(/@/g, '') || '';
   const [slug, setSlug] = useState(previousSlug);
 
   const onInputChange = debounce((val) => {

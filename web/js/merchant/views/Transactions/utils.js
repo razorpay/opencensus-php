@@ -8,7 +8,7 @@ export const getInitiatePointAndPageAndScreenName = () => {
 
   const initiatePoint = params?.init_point;
   const initiatePage = params?.init_page;
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Transactions';
   const page = initiatePage?.split('.')[1];
 
   return { initiatePoint, initiatePage, screen, page };
@@ -42,7 +42,7 @@ export const addIdLinkAndSelfServeInitiate = (
 ) => {
   const { hash } = window.location;
 
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Transactions';
   const page = initiatePage?.split('.')[1];
   const selfServeInitiateData = {
     selfServeAction: selfServeActionName,

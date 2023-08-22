@@ -17,7 +17,7 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 @connect(null, {
   updateUDFField,
@@ -77,7 +77,7 @@ export default class EditableDisplayField extends React.Component {
   };
 
   get isCheckoutOption() {
-    const { field, checkoutOptions } = this.props;
+    const { field, checkoutOptions = {} } = this.props;
 
     if (field && field.name) {
       if ([checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1) {

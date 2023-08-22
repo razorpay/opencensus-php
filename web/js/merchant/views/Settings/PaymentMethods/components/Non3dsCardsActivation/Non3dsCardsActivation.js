@@ -54,7 +54,7 @@ const Non3dsCardsActivation = ({
 
   const handleLearnMoreModalOpen = () => {
     setLearnMoreModalOpen(true);
-    logAnalytics(EVENTS.LEARN_MORE_MODAL, 'opened');
+    logAnalytics(EVENTS.LEARN_MORE_MODAL, { actionName: 'opened' });
   };
 
   const handleLearnMoreModalClose = () => {

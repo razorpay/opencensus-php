@@ -112,7 +112,7 @@ export default class InputDropdown extends React.Component {
           <div class="Input-elWrapper">
             <div class="Input-el">
               {name && (
-                <input name={name} value={selectedOption[optionValuePath]} hidden readOnly />
+                <input name={name} value={selectedOption?.[optionValuePath]} hidden readOnly />
               )}
               <ErrorBoundary resetOnProps rank={Ranks.P2}>
                 <PowerSelect

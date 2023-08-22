@@ -114,7 +114,9 @@ export default class Message extends React.Component {
               {showCompleteReply && (
                 <p className="message-to mt-24">
                   To :{' '}
-                  {from_razorpay ? this.props.message.to_emails.join(', ') : 'Razorpay Account'}
+                  {from_razorpay
+                    ? this.props?.message?.to_emails?.join(', ') || 'Razorpay Account'
+                    : 'Razorpay Account'}
                 </p>
               )}
 

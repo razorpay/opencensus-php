@@ -17,7 +17,7 @@ const SettlementsListItem = ({
   terminalProviders,
   initiatePage,
 }) => {
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Settlements';
   const page = initiatePage?.split('.')[1];
   const selfServeInitiateData = {
     selfServeAction: 'Settlement Details Fetched',

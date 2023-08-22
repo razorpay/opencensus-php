@@ -15,6 +15,21 @@ const syntaxHighlighterCustomStyles = {
   background: '#1E222E',
 };
 
+const defaultApiLog = {
+  request_id: '',
+  request: {
+    method: '',
+    url: '',
+    header: {},
+    body: {},
+  },
+  response: {
+    http_status_code: '',
+    header: {},
+    body: {},
+  },
+};
+
 @connect((state) => ({ ...state.apiLogs }), {
   ...ApiLogsActions,
 })
@@ -29,7 +44,7 @@ export default class RequestDetails extends Component {
 
   render() {
     const { id, items: apiLogs } = this.props;
-    const apiLog = apiLogs.find((log) => log.request_id === id) || {};
+    const apiLog = apiLogs.find((log) => log.request_id === id) || defaultApiLog;
 
     return (
       <div className="request-details-log">

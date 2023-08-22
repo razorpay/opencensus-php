@@ -34,7 +34,7 @@ const getOrderId = ({ notes }) => {
 };
 
 const getRazorpayOrderId = ({ order_id }, initiatePage) => {
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Transactions';
   const page = initiatePage?.split('.')[1];
 
   if (order_id) {

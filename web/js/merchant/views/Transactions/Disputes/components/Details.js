@@ -51,7 +51,7 @@ const DisputeDetails = (props) => {
 
   const initiatePoint = params?.init_point;
   const initiatePage = params?.init_page;
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Disputes';
   const page = initiatePage?.split('.')[1];
 
   const canUserTakeAction = [
@@ -296,10 +296,10 @@ const DisputeDetails = (props) => {
                   Learn More
                   <>
                     <strong>
-                      {dispute.reason.network} •{' '}
-                      <span title="gateway code">{dispute.reason.gateway_code}</span>
+                      {dispute?.reason?.network} •{' '}
+                      <span title="gateway code">{dispute?.reason?.gateway_code}</span>
                     </strong>
-                    <div>{dispute.reason.gateway_description}</div>
+                    <div>{dispute?.reason?.gateway_description}</div>
                   </>
                 </ContentToggler>
               </EntityDetailRow>

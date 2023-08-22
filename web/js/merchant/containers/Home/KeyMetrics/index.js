@@ -790,7 +790,7 @@ class KeyMetricsContainer extends Component {
               const currentCount = tabState.data.count;
 
               if (tabName === SAVED_CARDS) {
-                const savedCardData = data[tabName].result.filter((item) => item.saved_card)[0];
+                const savedCardData = data[tabName]?.result?.filter((item) => item.saved_card)[0];
 
                 previousCount = savedCardData ? savedCardData.value : 0;
               }

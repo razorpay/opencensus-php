@@ -398,7 +398,7 @@ class webhookForm extends Component {
     const { filterGroupedWebhooks, searchEventsQuery, isSecretPresent } = this.state;
 
     let noOfEventsSelected = 0;
-    if (webhookFormData && webhookFormData.values) {
+    if (webhookFormData?.values?.events) {
       noOfEventsSelected = Object.values(webhookFormData.values.events).reduce(
         (counter, eventValue) => {
           if (eventValue) ++counter;

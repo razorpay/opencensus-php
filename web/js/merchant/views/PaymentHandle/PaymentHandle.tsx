@@ -28,7 +28,12 @@ const PaymentHandle = ({
           setOnboardingVisible(true);
           createPaymentHandle();
         } else {
-          throw new Error(); // this will take us to catch block in case of other errors
+          setApiFailed(true);
+          showNotification({
+            type: 'error',
+            hidePrevious: true,
+            message: 'Something went wrong, Our team will get back to you shortly.',
+          });
         }
       });
     } catch {
