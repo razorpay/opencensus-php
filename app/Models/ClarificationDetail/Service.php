@@ -244,6 +244,11 @@ class Service extends Base\Service
 
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
 
+                foreach ($input as $groupName => $details)
+                {
+                    $this->validateFieldsData($merchantId, $groupName, $details);
+                }
+
                 $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_save', $pgosInput, $merchant);
 
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
@@ -260,6 +265,11 @@ class Service extends Base\Service
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
             ]);
+
+            if ($exception instanceof Exception\BadRequestValidationFailureException)
+            {
+                throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+            }
 
             throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
@@ -329,6 +339,21 @@ class Service extends Base\Service
             return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $groupName, $details) {
 
                 $this->saveClarifications($merchantId, $groupName, $details);
+
+                //validate document is existing or not and remove document fields details
+                $fieldsInput = $this->validator->validateAndRemoveDocumentFields($details[Constants::FIELD_DETAILS]);
+
+                $this->validator->validateFieldDetails($merchantId, $fieldsInput);
+
+            });
+        }
+    }
+
+    private function validateFieldsData($merchantId, $groupName, $details)
+    {
+        if (isset($details[Constants::FIELD_DETAILS]) === true)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $groupName, $details) {
 
                 //validate document is existing or not and remove document fields details
                 $fieldsInput = $this->validator->validateAndRemoveDocumentFields($details[Constants::FIELD_DETAILS]);
