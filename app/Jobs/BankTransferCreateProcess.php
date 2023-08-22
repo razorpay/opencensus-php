@@ -66,6 +66,7 @@ class BankTransferCreateProcess extends Job
         }
         catch (\Exception $ex)
         {
+            //todo: Do we want to enable retry for RequestExceptions
             $this->trace->traceException(
                 $ex,
                 null,

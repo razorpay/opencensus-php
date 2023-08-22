@@ -25,6 +25,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
@@ -364,6 +365,13 @@ abstract class Processor extends Base\Core
         try
         {
             $this->getPaymentProcessor()->process($input, $gatewayData);
+        }
+        catch (RequestsException $e)
+        {
+            //todo: Add FT
+            $this->trace->traceException($e);
+
+            throw $e;
         }
         catch (\Exception $e)
         {
