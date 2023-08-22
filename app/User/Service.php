@@ -1258,7 +1258,7 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            return [$error, ['details' => $data, 'currentMerchant' => [], 'genericUser' => []]];
+            return [$error, ['details' => $data, 'currentMerchant' => null, 'genericUser' => null]];
         }
 
         $userDetails = $genericUser->toArray();
@@ -1285,7 +1285,7 @@ class Service extends Base\Service
 
         if ($currentMerchant === null)
         {
-            return [[], ['details' => $data, 'currentMerchant' => [], 'genericUser' => []]];
+            return [[], ['details' => $data, 'currentMerchant' => null, 'genericUser' => null]];
         }
 
         $data = $data + $currentMerchant->toArray();
@@ -1481,14 +1481,19 @@ class Service extends Base\Service
 
         $merchants = $chunkData['details']['user']['merchants'];
 
-        $genericUser = $chunkData['genericUser'];
+        $genericUser = $chunkData['genericUser'] ?? null;
 
-        $currentMerchant =  $chunkData['currentMerchant'];
+        $currentMerchant =  $chunkData['currentMerchant'] ?? null;
 
         $activated = false;
+    
+        $currentMerchantId = null;
+    
+        if(!is_null($currentMerchant))
+        {
+            $currentMerchantId = $currentMerchant->id;
+        }
 
-        $currentMerchantId = $currentMerchant->id;
-        
         $merchantService = new Merchant\Service;
 
         // If the user is logged in as someone
@@ -1661,14 +1666,19 @@ class Service extends Base\Service
 
         $merchants = $chunkData['details']['user']['merchants'];
 
-        $genericUser = $chunkData['genericUser'];
+        $genericUser = $chunkData['genericUser'] ?? null;
 
-        $currentMerchant =  $chunkData['currentMerchant'];
+        $currentMerchant =  $chunkData['currentMerchant'] ?? null;
 
         $activated = false;
-
-        $currentMerchantId = $currentMerchant->id;
-
+        
+        $currentMerchantId = null;
+        
+        if(!is_null($currentMerchant))
+        {
+            $currentMerchantId = $currentMerchant->id;
+        }
+        
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
