@@ -69,6 +69,21 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'website_details.others'
             ]
         ],
+        'payment_preference.whatsapp_sms_email'                      => [
+            [
+                "column" => 'website_details.whatsapp_sms_email'
+            ]
+        ],
+        'payment_preference.website_not_ready'                      => [
+            [
+                "column" => 'website_details.website_not_ready'
+            ]
+        ],
+        'payment_preference.live_website_or_app'                      => [
+            [
+                "column" => 'website_details.live_website_or_app'
+            ]
+        ],
     ];
 
 
