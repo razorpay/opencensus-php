@@ -36,6 +36,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_RM_UPDATE             = 'merchant_rm_details_update';
     const SEND_OTP                       = 'send_otp';
 
+    const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
+
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
     const ENABLE                         = 'enable';
@@ -121,7 +123,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_FETCH                => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/GetRMDetails',
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
-        self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch'
+        self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
+
+        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
     ];
 
     // timeout in seconds
@@ -134,13 +138,15 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_BMC_RESPONSE    => 10,
         self::GET_CLEARBIT_DOMAIN_INFO      => 10,
         self::MERCHANT_UPDATE_BY_ADMIN      => 10,
-        self::MERCHANT_DETAILS_PATCH        => 10
+        self::MERCHANT_DETAILS_PATCH        => 10,
+        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
+        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
     ];
 
     public function __construct()

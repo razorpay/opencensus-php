@@ -5788,7 +5788,19 @@ class Core extends Base\Core
     {
         $merchantId = $merchantDetails->getMerchantId();
 
+        $merchant = $merchantDetails->merchant;
+
+        if (empty($merchant) === false and $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        {
+            return Status::ACTIVATED_MCC_PENDING;
+        }
+
         if ($this->isAdditionalDocRequired($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
+        {
+            return Status::ACTIVATED_MCC_PENDING;
+        }
+
+        if ($this->isAdditionalDocRequiredAndNotVerified() === true)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -5837,6 +5849,12 @@ class Core extends Base\Core
                     {
                         return Status::ACTIVATED_MCC_PENDING;
                     }
+
+                    if ($this->isSubCategoryExcluded($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]) === true)
+                    {
+                        return Status::ACTIVATED_MCC_PENDING;
+                    }
+
                 }
 
                 if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
@@ -5854,6 +5872,11 @@ class Core extends Base\Core
         }
         else
         {
+            if ($this->isSubCategoryExcluded($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
+            {
+                return Status::ACTIVATED_MCC_PENDING;
+            }
+
             if ($this->hasAppUrls($merchantDetails) === false)
             {
                 if (optional($signatory)->getStatus() === BvsValidation\Constants::VERIFIED)
@@ -5884,6 +5907,13 @@ class Core extends Base\Core
         $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
 
         return $subcategoryMetaData[SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
+    }
+
+    private function isSubCategoryExcluded($category, $subCategory): bool
+    {
+        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
+
+        return $subcategoryMetaData[SubcategoryV2::AUTOMATION_ACTIVATION_ALLOWED] === false;
     }
 
     private function getApplicableActivationStatusForNoDoc(Entity $merchantDetails): string
@@ -10006,5 +10036,38 @@ class Core extends Base\Core
                 'ErrorMessage' => $e->getMessage()
             ]);
         }
+    }
+
+    public function isAdditionalDocRequiredAndNotVerified()
+    {
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['pgos.proxy.request.mock'];
+
+        if($mock === true)
+        {
+            return false;
+        }
+
+        $pgosPayload = [];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_onboarding_docs_verification',
+            $pgosPayload, $this->merchant);
+
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'response' => $response
+        ]);
+
+        if ($response['additional_docs']['is_required'] === false)
+        {
+            return false;
+        }
+
+        if ($response['additional_docs']['is_verified'] === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

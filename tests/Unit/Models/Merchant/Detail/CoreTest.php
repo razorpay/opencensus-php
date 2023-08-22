@@ -2956,14 +2956,6 @@ class CoreTest extends TestCase
 
     public function testGetApplicableActivationStatusForRegisteredMerchantInNeedsClarification()
     {
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
-
-        $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
             'business_category'         => 'financial_services',
@@ -2973,6 +2965,29 @@ class CoreTest extends TestCase
             'poi_verification_status'   => 'verified',
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
@@ -2996,14 +3011,6 @@ class CoreTest extends TestCase
 
     public function testGetApplicableActivationStatusForRegisteredMerchantInUnderReview()
     {
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
-
-        $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
             'business_category'         => 'financial_services',
@@ -3014,6 +3021,21 @@ class CoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
 
@@ -3036,14 +3058,6 @@ class CoreTest extends TestCase
 
     public function testGetApplicableActivationStatusForUnRegisteredMerchantInUnderReview()
     {
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
-
-        $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 2,
             'business_category'         => 'ecommerce',
@@ -3054,6 +3068,21 @@ class CoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
 
@@ -3073,14 +3102,6 @@ class CoreTest extends TestCase
 
     public function testApplicableActivationStatusForNonRiskyMerchant()
     {
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
             'business_category'         => 'financial_services',
@@ -3093,6 +3114,22 @@ class CoreTest extends TestCase
         ]);
 
         $merchant = $merchantDetails->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
         (new MerchantCore())->appendTag($merchant, 'random_tag');
 
         $this->mockRazorxTreatment();
@@ -3102,14 +3139,6 @@ class CoreTest extends TestCase
 
     public function testApplicableActivationStatus()
     {
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
             'business_category'         => 'financial_services',
@@ -3120,6 +3149,21 @@ class CoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->mockRazorxTreatment();
 
@@ -3185,14 +3229,6 @@ class CoreTest extends TestCase
     {
         Mail::fake();
 
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
-
-        $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'financial_services',
@@ -3205,6 +3241,21 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_Website'          => null
         ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->mockRazorxTreatment();
 
@@ -3274,14 +3325,6 @@ class CoreTest extends TestCase
     {
         Mail::fake();
 
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'ecommerce',
@@ -3297,6 +3340,21 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $output = [
             "response" => [
@@ -3315,14 +3373,6 @@ class CoreTest extends TestCase
     {
         Mail::fake();
 
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'ecommerce',
@@ -3335,6 +3385,21 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_website'          => 'https://google.com',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetails->getId());
 
@@ -3364,14 +3429,6 @@ class CoreTest extends TestCase
     {
         Mail::fake();
 
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'ecommerce',
@@ -3388,6 +3445,21 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
         ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->createWebsitePolicyAndNegativeKeywordFixtures($merchant->getId());
 
@@ -3549,14 +3621,6 @@ class CoreTest extends TestCase
     {
         Mail::fake();
 
-        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->getMock();
-
-        $detailCoreMock->expects($this->any())
-            ->method('isAutoKycDone')
-            ->willReturn(true);
-
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'ecommerce',
@@ -3572,6 +3636,29 @@ class CoreTest extends TestCase
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
@@ -3765,7 +3852,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3775,6 +3862,10 @@ class CoreTest extends TestCase
         $detailCoreMock->expects($this->exactly(2))
             ->method('canSubmit')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -3905,11 +3996,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -3983,11 +4079,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -4004,6 +4105,14 @@ class CoreTest extends TestCase
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
@@ -4067,11 +4176,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -4112,11 +4226,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 6,
@@ -4319,11 +4438,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 9,
@@ -5124,6 +5248,8 @@ class CoreTest extends TestCase
     {
         Queue::fake();
 
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->mockRazorxTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -5208,6 +5334,22 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => 'website_policy',
             'artefact_identifier'  => 'number',
+        ]);
+
+        $merchantUserlive = $this->fixtures->on('live')->user->createUserForMerchant($merchantDetails->getMerchantId());
+
+        $this->fixtures->on('live')->create('user_device_detail', [
+            'merchant_id'     =>$merchantDetails->getMerchantId(),
+            'user_id'         => $merchantUserlive->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $merchantUser = $this->fixtures->on('test')->user->createUserForMerchant($merchantDetails->getMerchantId());
+
+        $this->fixtures->on('test')->create('user_device_detail', [
+            'merchant_id'     =>$merchantDetails->getMerchantId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $kafkaEventPayload = [
@@ -5390,7 +5532,7 @@ class CoreTest extends TestCase
 
         Queue::assertPushed(UpdateMerchantContext::class);
 
-        (new UpdateMerchantContext(Mode::LIVE, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+        (new UpdateMerchantContext(Mode::TEST, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
 
         $newBvsValidationData = $this->getDbEntity('bvs_validation',
                                                    ['owner_id'        => $merchantDetails->getId(),
@@ -5562,12 +5704,17 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
@@ -5635,12 +5782,17 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
@@ -5706,12 +5858,17 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -5950,11 +6107,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -6723,12 +6885,17 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6764,12 +6931,17 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6781,6 +6953,14 @@ class CoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
             'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->createSignatoryValidationFixture($merchantDetails->getId());
@@ -6807,12 +6987,17 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6824,6 +7009,14 @@ class CoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'         => 'under_review',
             'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->createSignatoryValidationFixture($merchantDetails->getId());
@@ -6850,12 +7043,17 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -6900,11 +7098,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7085,11 +7288,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7106,6 +7314,14 @@ class CoreTest extends TestCase
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
@@ -7299,7 +7515,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7309,6 +7525,10 @@ class CoreTest extends TestCase
         $detailCoreMock->expects($this->exactly(2))
             ->method('canSubmit')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7441,11 +7661,16 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
             ->method('isAutoKycDone')
             ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7943,6 +8168,8 @@ class CoreTest extends TestCase
     {
         Queue::fake();
 
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->mockRazorxTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -8032,6 +8259,14 @@ class CoreTest extends TestCase
             "international_activation_flow" => "whitelist",
             "company_pan_doc_verification_status" => "verified",
             "activation_form_milestone" => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
@@ -8755,4 +8990,381 @@ class CoreTest extends TestCase
 
         $this->assertEquals('under_review', $merchantDetails->getActivationStatus());
     }
+
+    //If merchant is not easy merchant, automation activation logic will not apply
+    public function testGetApplicableActivationStatusFoNonEasyMerchant()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'not_easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    //Merchant is a part of certain subcategories for which automation activation logic won't apply
+    public function testGetApplicableActivationStatusForExcludedSubcategories()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'education',
+            'business_subcategory'      => 'college',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'financial_services',
+                'subcategory'       => 'accounting',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    //If additional doc is asked from merchants, merchant will not be moved to KQU/Activated
+    public function testGetApplicableActivationStatusIfAdditionalDocRequiredNotVerified()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    //If additional doc is asked from merchant and is verified, merchant will moved to KQU/Activated
+    public function testGetApplicableActivationStatusIfAdditionalDocRequiredVerified()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAdditionalDocRequiredAndNotVerified')
+            ->willReturn(false);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
 }
