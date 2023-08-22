@@ -2321,7 +2321,7 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
-            $isUpiReArchPayment = false;
+            $isReArchPayment = false;
 
             if (($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
@@ -2333,7 +2333,7 @@ class Processor
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
-                $isUpiReArchPayment = true;
+                $isReArchPayment = true;
 
                 $paymentData = $this->processPaymentViaPGRouter($input, $startTime);
 
@@ -2397,11 +2397,11 @@ class Processor
         {
             $payment = $payment ?? null;
 
-            $this->logUPIPaymentFailure($e, $payment, $input);
+            $this->logUPIPaymentFailure($e, $payment, $input, $isReArchPayment);
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            $this->addUpiDimensions($dimensions, $input, $payment, $isUpiReArchPayment);
+            $this->addUpiDimensions($dimensions, $input, $payment, $isReArchPayment);
 
             if ($payment instanceof Payment\Entity === true)
             {
@@ -2417,6 +2417,17 @@ class Processor
                 $properties['merchant'] = $this->merchant->getMerchantProperties();
             }
 
+            if ((isset($input['method']) === true) &&
+            ($input['method'] !== Payment\Method::UPI))
+            {
+                $properties['upi_properties'] = [
+                    'is_rearch' => $isReArchPayment,
+                    'library'   => $input['_']['library'] ?? 'unknown',
+                    'route'     => $this->route->getCurrentRouteName(),
+                ];
+            }
+
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta, $properties);
 
             throw $e;
@@ -2426,7 +2437,7 @@ class Processor
     /**
      * Logs upi payment failure
      */
-    private function logUPIPaymentFailure(\Throwable $e, $payment, $input)
+    private function logUPIPaymentFailure(\Throwable $e, $payment, $input, $isReArchPayment)
     {
         if (($input['method'] !== Payment\Method::UPI) || ($e === null))
         {
@@ -2463,6 +2474,8 @@ class Processor
 
         $logData[Metric::LABEL_TRACE_CODE]              = array_get($errorAttributes, Error::INTERNAL_ERROR_CODE);
         $logData[Metric::LABEL_TRACE_EXCEPTION_CLASS]   = get_class($e);
+        $logData['is_rearch']                           = $isReArchPayment;
+        $logData['library']                             = $input['_']['library'] ?? 'unknown';
 
         $this->trace->info(TraceCode::UPI_PAYMENT_INITIATE_FAILURE_LOG, $logData);
     }
@@ -2484,6 +2497,8 @@ class Processor
 
         $dimensions['input_method'] = Payment\Method::UPI;
         $dimensions['is_rearch']    = $isUpiReArchPayment ?? false;
+        $dimensions['library']      = $input['_']['library'] ?? 'unknown';
+        $dimensions['route']        = $this->route->getCurrentRouteName();
 
         if ($payment instanceof Payment\Entity === true)
         {
