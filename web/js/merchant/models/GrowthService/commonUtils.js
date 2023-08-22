@@ -1,11 +1,13 @@
+import get from 'lodash/get';
+
+import { getUser } from 'merchant/store';
+
 import {
   routeToChannelIDMap,
   assetNames,
   growthAssetSchema,
   eventToGrowthEventTypeMap,
 } from './data';
-import { getUser } from 'merchant/store';
-import get from 'lodash/get';
 
 const getRouteMap = (isOrgRZP = true) => {
   if (isOrgRZP) return routeToChannelIDMap.rzp;
@@ -78,6 +80,8 @@ export const getAssetTrackingProperties = (
     campaign_id,
     sub_campaign_id,
     template_id,
+    asset,
+    dynamic_asset_name,
     channel_id,
     tags = {},
   } = tracking_data;
@@ -96,6 +100,8 @@ export const getAssetTrackingProperties = (
     product_feature: target_product_feature,
     growth_event_type,
     template_id,
+    asset,
+    dynamic_asset_name,
     channel_id,
     ...tags,
   };

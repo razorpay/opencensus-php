@@ -1,8 +1,9 @@
+import { getItem } from 'common/utils/localStorage';
 import GenericEntity from 'merchant/models/GenericEntity';
 import { getMode, getUser } from 'merchant/store';
-import { assetNames, namespace } from './data';
-import { getItem } from 'common/utils/localStorage';
+
 import { getChannelID, sortAssetData, isValidAssetData, sortCarouselBanner } from './commonUtils';
+import { assetNames, namespace } from './data';
 
 export default class GrowthService extends GenericEntity {
   resourceUrl = 'growth/assets';
@@ -77,6 +78,8 @@ export default class GrowthService extends GenericEntity {
               template_id: template.id,
               channel_id,
               channel_detail: channelDetail,
+              asset: template.asset,
+              dynamic_asset_name: dynamicAssets,
             });
             assetData.push({
               ...template.data,

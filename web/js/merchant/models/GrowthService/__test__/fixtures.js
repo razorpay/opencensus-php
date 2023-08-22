@@ -42,12 +42,14 @@ const empty_tracking_obj = {
   version: undefined,
   version_description: undefined,
   campaign_id: undefined,
+  dynamic_asset_name: undefined,
   sub_campaign_id: undefined,
   target_metric: undefined,
   product_feature: undefined,
   growth_event_type: undefined,
   template_id: undefined,
   channel_id: undefined,
+  asset: undefined,
 };
 
 const card_id = 'test_id';
@@ -60,6 +62,8 @@ const trackingData = {
   campaign_id: 'IF7Nec84wWYRqO',
   sub_campaign_id: 'IF7Uk0WuK32Eh8',
   template_id: 'IF7Uk0WuK32E45',
+  asset: 'BANNER',
+  dynamic_asset_name: undefined,
   channel_id: 'IF7Uk0WuK32E46',
   tags: {
     product_feature: 'RazorpayX Current Account',
@@ -77,8 +81,10 @@ const expectedTrackingObj = {
   target_metric: undefined,
   product_feature: 'RazorpayX Current Account',
   growth_event_type: undefined,
+  dynamic_asset_name: undefined,
   template_id: 'IF7Uk0WuK32E45',
   channel_id: 'IF7Uk0WuK32E46',
+  asset: 'BANNER',
 };
 
 const banners = [

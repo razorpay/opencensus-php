@@ -1,15 +1,17 @@
-import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
-import { compose } from 'redux';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import React, { useState } from 'react';
 import rTracking from 'react-tracking';
-import Loader from 'common/ui/Loader';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
+
 import { AsyncBtn } from 'common/new-ui/Button';
+import Loader from 'common/ui/Loader';
 import { SubmissionSuccessfull } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from 'common/utils/common-api';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const Description = ({ description, type }) => {
   switch (type) {
@@ -85,11 +87,18 @@ const ExclusiveOffer = ({
   };
 
   const buttonHandler = () => {
+    const eventName = 'merchant_dashboard.click_form_cta1';
     tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+      window.rzpQ.merchantActions().initiated(eventName, {
         cta_text: exclusive_offers?.offer_cta?.label,
         pageUrl: window.location.href,
         trackingID: exclusive_offers?.id,
+        ...getAssetTrackingProperties(
+          exclusive_offers.id,
+          exclusive_offers.tracking_data,
+          {},
+          eventName,
+        ),
       }),
     );
     if (exclusive_offers?.offer_cta?.handler)
