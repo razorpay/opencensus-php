@@ -885,6 +885,13 @@ class Repository extends Base\Repository
     {
         $payout = $this->repo->payout->fetchPayoutWithExpands(PublicEntity::stripDefaultSign($id), $this->expandsForTypePayoutForLedger);
 
+        $this->trace->info(TraceCode::SETTING_LEDGER_TXN_SOURCE_TRACE, [
+            'payout_id'      => $id,
+            'is_payout_set'  => (isset($payout) === true),
+            'merchant_id'    => optional($merchant)->getId(),
+            'transaction_id' => $transaction[Statement\Entity::ID] ?? null,
+        ]);
+
         // Adding fund_account in extraSourceFields because when doing $payout->toArrayPublic(), "fund_account"
         // key gets removed since it is not present in $visible array. Merging it in $source array later.
         $extraSourceFields = [
