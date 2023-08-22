@@ -72,9 +72,17 @@ class BatchMicroService
         $this->username = $this->batchServiceConfig['username'];
 
         $this->secret = $this->batchServiceConfig['password'];
-
-        // Timeout if the batch service fails to connect to the api in 1 second.
-        $this->client = new Client(['base_uri' => $this->batchServiceUrl,'connect_timeout' => 1]);
+    
+        // Currently this route appears to take more than 1s, so increasing the timeout
+        if ($routeName === 'payment_page_get_batches')
+        {
+            $this->client = new Client(['base_uri' => $this->batchServiceUrl,'connect_timeout' => 5]);
+        }
+        else 
+        {
+            // Timeout if the batch service fails to connect to the api in 1 second.
+            $this->client = new Client(['base_uri' => $this->batchServiceUrl,'connect_timeout' => 1]);
+        }
     }
 
     public function forwardToBatchServiceRequest(array $input, Merchant\Entity $merchant, FileStore\Entity $ufhFile = null)
@@ -723,6 +731,35 @@ class BatchMicroService
         return $response;
     }
 
+    public function getBatchesByPaymentLinkIdFromBatchService(String $paymentLinkId, String $merchantId, array $inputQueryParams): array
+    {
+
+        $options[RequestHeader::X_ENTITY_ID] = $merchantId;
+
+        $queryParams =  http_build_query($inputQueryParams);
+
+        $relativeUrl = self::BATCH_URLS['batch'] . '/getBatchesByPaymentLinkId/'. $paymentLinkId. '?'. $queryParams;
+
+        try
+        {
+            $options['mode'] = $this->mode ?? 'live';
+
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
+        }
+        catch (\Exception $exception)
+        {
+            // Handling  5xx and 4xx exceptions as one.
+            // Returning null as the caller has to take care of the response.
+
+            $this->trace->traceException($exception,
+                Trace::ERROR,
+                TraceCode::BATCH_SERVICE_FAILED);
+
+            return [];
+        }
+
+        return $response;
+    }
 
     public function getMultipleBatchesFromBatchService(Merchant\Entity $merchant = null, array $inputQueryParams = null)
     {
@@ -899,7 +936,7 @@ class BatchMicroService
 
         try
         {
-            $options['mode'] = $this->mode;
+            $options['mode'] = $this->mode ?? 'live';
 
             if ($merchantId !== null)
             {

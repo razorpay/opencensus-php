@@ -220,8 +220,6 @@ class Service extends Base\Service
 
         $batch = $this->repo->payment_page_record->getBatchesByPaymentPageId($batchId);
 
-        $batchSettings = $batch['records'][0]['settings'];
-
         if(in_array('sms',$input['notify_on']) === true)
         {
             $batchSettings['sms_notify'] = 1;
@@ -570,33 +568,40 @@ class Service extends Base\Service
 
         foreach ($udfSchema as $udf)
         {
-            $nameKey = $udf[Entity::NAME];
-
             // get udf['name'] from ppr
             if($udf[Entity::NAME] === PaymentPageRecord\Entity::PRIMARY_REF_ID)
             {
-                $nameKey = PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID;
+                $value = $paymentPageRecord[PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID];
+
+                $udfData[$udf[Entity::NAME]] = $value;
             }
 
-            if($udf[Entity::NAME] === PaymentPageRecord\Entity::PHONE)
+            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::EMAIL_TITLE)
             {
-                $nameKey = PaymentPageRecord\Entity::CONTACT;
+                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::EMAIL];
             }
 
-            $value = $otherDetails[$udf[Entity::TITLE]] ?? $paymentPageRecord[$nameKey];
-
-            $udfData[$udf[Entity::NAME]] = $value;
-
-            if(isset($otherDetails[$nameKey]) === true)
+            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::PHONE_TITLE)
             {
-                unset($otherDetails[$nameKey]);
+                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::CONTACT];
             }
 
-            if(isset($otherDetails[$udf[Entity::TITLE]]) === true)
+            else
             {
+
+                $udfData[$udf[Entity::NAME]] = $otherDetails[$udf[Entity::TITLE]];
+
                 unset($otherDetails[$udf[Entity::TITLE]]);
             }
+        }
 
+        // Remove all {name: value} pairs of sec_ref_id's from otherdetails
+        foreach ($otherDetails as $key => $value)
+        {
+            if (PaymentPageRecord\Entity::isSecondaryRefId($key) === true)
+            {
+                unset($otherDetails[$key]);
+            }
         }
 
         $response['udf_data'] = $udfData;
@@ -717,7 +722,7 @@ class Service extends Base\Service
 
             $skip = $input['skip'] ?? 0;
 
-            $hasMore = false;
+            $hasMore = true;
 
             //Since batch service only supports max 25 batches at a time for this route
             if ($count > PaymentPageRecord\Constants::MAX_LIMIT_FOR_GET_BATCH)
@@ -725,71 +730,113 @@ class Service extends Base\Service
                 $count = PaymentPageRecord\Constants::MAX_LIMIT_FOR_GET_BATCH;
             }
 
-            $result = $this->repo->payment_page_record->getBatchesByPaymentPageId($id, $skip, $count);
+            $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+                                                        PaymentPageRecord\Constants::GET_BATCHES_FOR_BATCH_PAYMENT_PAGES,
+                                                        $this->mode);
 
-            $batches = $result['records'];
-            $totalCount = $result['totalCount'];
-
-
-            $count = 0;
-            $batchArr = [];
-            foreach ($batches as $batchId) {
-              $batchArr[$count]  = $batchId[PaymentPageRecord\Entity::BATCH_ID];
-              $count++;
-            }
-
-            $this->merchant = $this->auth->getMerchant();
-
-            $batchResponse = [];
-            if (count($batchArr) > 0) {
-                $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, $batchArr) ?? [];
-            }
-
-            // change the status of the batch as per the mapping defined in statusClusterMapping
-            foreach ($batchResponse as &$batch)
+            if ($result === 'batch_id')
             {
-                $mappedStatus =  (new Services\BatchMicroService())->statusClusterMapping($batch[Batch\Entity::STATUS]);
-
-                $batch[Batch\Entity::STATUS] = $mappedStatus;
-
-                $batch[Batch\Entity::ID] = 'batch_'.$batch[Batch\Entity::ID];
-
-                $batch['entity'] = 'batch';
-
-                $batch['type'] = 'payment_page';
-
-                $batch['config'] = $batch['settings'];
-
-                unset($batch['settings']);
+                return $this->getBatchesFromBatchIds($paymentPageId, $count, $skip, $hasMore);
             }
-
-            // build response
-
-            $response = [];
-
-            $response['entity'] = 'collection';
-
-            $response['count'] = count($batchArr);
-
-            $response['items'] = $batchResponse;
-
-            if ($count + $skip < $totalCount)
+            else
             {
-                $hasMore = true;
+                $startTime = millitime();
+
+                $res = $this->getBatchesFromPaymentLinkId($paymentPageId, $count, $skip, $hasMore);
+
+                $this->trace->histogram(Merchant\Metric::FETCH_BATCHES_WITH_PAYMENT_PAGE_ID, millitime()-$startTime);
+
+                return $res;
             }
-
-            $response['has_more'] = $hasMore;
-
-            $this->trace->info(
-                TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE,
-                [
-                    'Batch service Response' => $batchResponse,
-                ]);
-
-            return $response;
-
         });
 
+    }
+
+    public function getBatchesFromBatchIds(string $paymentPageId,int $count, int $skip,bool $hasMore)
+    {
+        $id = Entity::stripDefaultSign($paymentPageId);
+
+        $result = $this->repo->payment_page_record->getBatchesByPaymentPageId($id, $skip, $count);
+
+        $batches = $result['records'];
+        $totalCount = $result['totalCount'];
+
+        $count = 0;
+        $batchArr = [];
+        foreach ($batches as $batchId) {
+            $batchArr[$count]  = $batchId[PaymentPageRecord\Entity::BATCH_ID];
+            $count++;
+        }
+
+        $this->merchant = $this->auth->getMerchant();
+
+        $batchResponse = [];
+        if (count($batchArr) > 0) {
+            $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, $batchArr) ?? [];
+        }
+
+        return $this->processBatchResponse($batchResponse);
+    }
+
+    public function getBatchesFromPaymentLinkId(string $paymentPageId,int $count,int $skip,bool $hasMore)
+    {
+
+        $inputQueryParams = [
+            'batch_type_id' => 'payment_page',
+            'count' => $count,
+            'skip' => $skip
+        ];
+
+
+        $batchResponse = $this->app->batchService->getBatchesByPaymentLinkIdFromBatchService(
+                                    $paymentPageId,
+                                    $this->merchant->getId(),
+                                    $inputQueryParams);
+
+        return $this->processBatchResponse($batchResponse);
+
+    }
+
+    public function processBatchResponse(array $batchResponse)
+    {
+        // change the status of the batch as per the mapping defined in statusClusterMapping
+        foreach ($batchResponse as &$batch)
+        {
+            $mappedStatus =  (new Services\BatchMicroService())->statusClusterMapping($batch[Batch\Entity::STATUS]);
+
+            $batch[Batch\Entity::STATUS] = $mappedStatus;
+
+            $batch[Batch\Entity::ID] = 'batch_'.$batch[Batch\Entity::ID];
+
+            $batch['entity'] = 'batch';
+
+            $batch['type'] = 'payment_page';
+
+            $batch['config'] = $batch['settings'];
+
+            unset($batch['settings']);
+        }
+
+        // build response
+
+        $response = [];
+
+        $response['entity'] = 'collection';
+
+        $response['count'] = count($batchResponse);
+
+        $response['items'] = $batchResponse;
+
+        // Setting it to true as FE does the calculation
+        $response['has_more'] = true;
+
+        $this->trace->info(
+            TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE,
+            [
+                'Batch service Response' => $response,
+            ]);
+
+        return $response;
     }
 
     public function setMerchantDetails(array $input)

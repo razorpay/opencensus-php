@@ -174,6 +174,11 @@ class Core extends Base\Core
         {
             if (in_array($udf[PaymentLink::TITLE],$keys) === true)
             {
+                // if the input field is empty and field is not required, skip the validation for that field
+                if ((empty($input[$udf[PaymentLink::TITLE]]) === true) and ($udf['required'] === false))
+                {
+                    continue;
+                }
                 $name = $udf[PaymentLink::NAME];
 
                 $allUdfEntries[$name] = $input[$udf[PaymentLink::TITLE]];
@@ -208,7 +213,6 @@ class Core extends Base\Core
 
         foreach ($udf_schema as $udf)
         {
-
             if (($udf[Entity::REQUIRED] === true) and
                 (!in_array($udf[PaymentLink::TITLE],$keys)))
             {
@@ -221,6 +225,12 @@ class Core extends Base\Core
             if (Entity::isSecondaryRefId($udf[PaymentLink::NAME]))
             {
                 $other_details[$udf[PaymentLink::NAME]] = $input[$udf[PaymentLink::TITLE]];
+            }
+
+            // store secondary_reference_id_1 temporarily in input for security validation, this will be unsetted later
+            if ($udf[PaymentLink::NAME] === Entity::SECONDARY_1)
+            {
+                $response[Entity::SECONDARY_1] = $input[$udf[PaymentLink::TITLE]];
             }
 
             if ($udf[PaymentLink::NAME] === Entity::PRIMARY_REF_ID)
@@ -242,40 +252,19 @@ class Core extends Base\Core
 
                 $response[Entity::PRIMARY_REFERENCE_ID] = $input[$udf[PaymentLink::TITLE]];
             }
-            elseif ($udf[PaymentLink::NAME] === Entity::EMAIL)
+            elseif ($udf[PaymentLink::TITLE] === Entity::EMAIL_TITLE)
             {
                 $response[Entity::EMAIL] = $input[$udf[PaymentLink::TITLE]];
             }
-            elseif ($udf[PaymentLink::NAME] === Entity::PHONE)
+            elseif ($udf[PaymentLink::TITLE] === Entity::PHONE_TITLE)
             {
                 $response[Entity::CONTACT] = $input[$udf[PaymentLink::TITLE]];
             }
             else
             {
-
-                if (Entity::isSecondaryRefId($udf[PaymentLink::NAME]) === true)
-                {
-                    if (($udf[Entity::PATTERN] === Entity::EMAIL) and
-                        (isset($response[Entity::EMAIL]) === false))
-                    {
-                        $response[Entity::EMAIL] = $input[$udf[PaymentLink::TITLE]];
-                    }
-
-                    if (($udf[Entity::PATTERN] === Entity::PHONE) and
-                        (isset($response[Entity::CONTACT]) === false))
-                    {
-                        $response[Entity::CONTACT] = $input[$udf[PaymentLink::TITLE]];
-                    }
-
-                }
                 $other_details[$udf[PaymentLink::TITLE]] = $input[$udf[PaymentLink::TITLE]];
             }
 
-            // store secondary_reference_id_1 temporarily in input for security validation, this will be unsetted later
-            if ($udf[PaymentLink::NAME] === Entity::SECONDARY_1)
-            {
-                $response[Entity::SECONDARY_1] = $input[$udf[PaymentLink::TITLE]];
-            }
         }
 
         $response[Entity::OTHER_DETAILS] = $other_details ?? '';

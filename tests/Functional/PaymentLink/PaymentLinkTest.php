@@ -576,7 +576,7 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($settings['key'], 'all_fields');
 
-        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\",\"item1\":\"field_6\",\"item2\":\"field_7\",\"Father Name\":\"field_8\",\"item3\":\"field_9\"}");
+        self::assertEquals($settings['value'], '{"Email":"field_1","Phone":"field_2","contact":"field_3","Address":"field_4","DOB":"field_5","item1":"field_6","item2":"field_7","Father Name":"field_8","Primary reference id":"field_9","item3":"field_10"}');
     }
 
     public function testCreatePaymentPageRecordWithCustomFieldsSchema()
@@ -595,7 +595,7 @@ class PaymentLinkTest extends TestCase
 
         $entityArray = $entity->toArray();
 
-        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_6": {"key": "item1", "value": "100001", "dataType": "string"}, "field_7": {"key": "item2", "value": "20000", "dataType": "string"}}');
+        $this->assertEquals($entityArray['custom_field_schema'], '{"field_3": {"key": "contact", "value": "0987654321", "dataType": "string"}, "field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_6": {"key": "item1", "value": "100001", "dataType": "string"}, "field_7": {"key": "item2", "value": "20000", "dataType": "string"}}');
     }
 
     public function testFetchPaymentPageRecordsAfterPPUpdate()
@@ -637,6 +637,111 @@ class PaymentLinkTest extends TestCase
         $testData['request']['content']['sec__ref__id_1'] = 'test123';
 
         $content = $this->makeRequestAndGetContent($testData["request"]);
+    }
+
+    public function testPaymentPageCreateWithEmailTitleChanged()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateWithEmailNotRequired()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res['id'];
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => '',
+            'Phone' => 1231231234,
+            'DOB' => 'test',
+            'Address' => 'testaddress',
+            'item1' => 1234,
+            'item2' => 12323
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "");
+        $this->assertEquals($resp["error_description"], "");
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record');
+
+        $paymentPageRecordArray = $paymentPageRecord->toArray();
+        $this->assertEquals($paymentPageRecordArray['email'], '');
+
+        // verify it throws error if required field is missing
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => '',
+            'Phone' => 1231231235,
+            'DOB' => 'test',
+            'Address' => '',
+            'item1' => 1234,
+            'item2' => 12323
+        ];
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_description"],"The validation failed for address");
+    }
+
+    public function testPaymentPageCreateWithEmailAsSecRefId1()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res['id'];
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'SRN' => 'test123',
+            'Phone' => 1231231234,
+            'Address' => 'testaddress',
+            'item1' => 1234,
+            'item2' => 12323
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "");
+        $this->assertEquals($resp["error_description"], "");
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record');
+
+        $paymentPageRecordArray = $paymentPageRecord->toArray();
+
+        $this->assertEquals($paymentPageRecordArray['email'], 'test@test.com');
+        $this->assertEquals($paymentPageRecordArray['contact'], 1231231234);
     }
 
     public function testPaymentPageCreateWithMoreThan5SeccRefIds()
@@ -1192,7 +1297,9 @@ class PaymentLinkTest extends TestCase
 
         $this->sendRequest($testData['request']);
 
-        $testData['request']['content']['Phone'] = '883344';
+        $testData['request']['content']['Primary reference id'] = '883434343';
+
+        $testData['request']['content']['Phone'] = '88334422343';
 
         $testData['request']['content']['amount'] = '200';
 
@@ -1250,8 +1357,8 @@ class PaymentLinkTest extends TestCase
                 'type'        => 'payment_page',
                 'status'      => 'COMPLETED'
             ]);
-        $mock->shouldAllowMockingMethod('getMultipleBatchesFromBatchService')
-            ->shouldReceive('getMultipleBatchesFromBatchService')
+        $mock->shouldAllowMockingMethod('getBatchesByPaymentLinkIdFromBatchService')
+            ->shouldReceive('getBatchesByPaymentLinkIdFromBatchService')
             ->andReturn([$batchEntity]);
     }
 
@@ -1342,8 +1449,6 @@ class PaymentLinkTest extends TestCase
 
     public function testFetchRecordsForPL()
     {
-        $this->createPaymentLinkWithMultipleItem();
-
         $res = $this->setUpCreateRecordForFileUpload("setUpPaymentPageWithSecRefIdForFileUpload");
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';

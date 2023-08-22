@@ -53,6 +53,10 @@ class Entity extends Base\PublicEntity
 
     const SEC_REF_ID_PREFIX = 'sec__ref__id';
 
+    // fixed titles for email and contact
+    const EMAIL_TITLE = "Email";
+    const PHONE_TITLE = "Phone";
+
     protected $generateIdOnCreate = true;
 
     protected $visible = [

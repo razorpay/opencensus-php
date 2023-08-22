@@ -323,8 +323,33 @@ class Core extends Base\Core
             }
             $this->checkForMandatoryPrimaryAndSecondaryRefIds($udfSchemaNew);
 
+            $this->checkEmailAndContactTitles($udfSchemaNew);
+
         }
 
+    }
+
+    public function checkEmailAndContactTitles(array $udfSchema)
+    {
+        $emailJson = array_first($udfSchema, function($json) {
+            return $json['title'] === PaymentPageRecord\Entity::EMAIL_TITLE;
+        });
+
+        if ($emailJson === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'Email field\'s title cannot be changed');
+        }
+
+        $contactJson = array_first($udfSchema, function($json) {
+            return $json['title'] === PaymentPageRecord\Entity::PHONE_TITLE;
+        });
+
+        if ($contactJson === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'Phone field\'s title cannot be changed');
+        }
     }
 
     public function validateUpdatePrimaryOrSecRefIds(array $udfSchemaOld, array $udfSchemaNew)
