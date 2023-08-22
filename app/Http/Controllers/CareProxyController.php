@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use phpDocumentor\Reflection\Types\Self_;
 use Request;
 use ApiResponse;
 use RZP\Error\ErrorCode;
@@ -134,6 +135,10 @@ class CareProxyController extends Controller
     // SAV
     const SAV_FETCH_MERCHANT_STATS = 'twirp/rzp.care.sav.v1.SavService/FetchMerchantStats';
 
+    const ADMIN_CREATE_ENTITY = 'twirp/rzp.care.admin.v1.AdminService/CreateEntity';
+
+    const SAV_FETCH_RESPONSE_SUGGESTION = 'twirp/rzp.care.sav.v1.SavService/FetchResponseSuggestions';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -178,6 +183,8 @@ class CareProxyController extends Controller
         self::SAV_FETCH_PROBABLE_REASONS              => Name::VIEW_ALL_ENTITY,
         self::FRESHDESK_MERCHANT_GET_TICKETS          => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_MERCHANT_STATS                => Name::VIEW_ALL_ENTITY,
+        self::ADMIN_CREATE_ENTITY                     => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::SAV_FETCH_RESPONSE_SUGGESTION           => Name::VIEW_ALL_ENTITY,
     ];
 
     /**
@@ -275,6 +282,8 @@ class CareProxyController extends Controller
         self::SAV_FETCH_PROBABLE_REASONS,
         self::SAV_FETCH_MERCHANT_STATS,
         self::FRESHDESK_MERCHANT_GET_TICKETS,
+        self::ADMIN_CREATE_ENTITY,
+        self::SAV_FETCH_RESPONSE_SUGGESTION,
     ];
 
     const CHAT_ROUTES = [
