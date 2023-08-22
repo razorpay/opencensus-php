@@ -1505,8 +1505,10 @@ class Service extends Base\Service
             $nettTax    = round($partnerFee * Merchant\Invoice\Constants::GST_PERCENTAGE) + $platformFeeTransferDetails['tax'];
 
             $platformFeeDetails = [
-                'amount'    => $platformFee,
-                'tax'       => $nettTax
+                'amount'            => $platformFee,
+                'tax'               => $nettTax,
+                'transfer_details'  => $platformFeeTransferDetails,
+                'reversal_details'  => $platformFeeReversalDetails
             ];
 
             $this->trace->info(
@@ -1517,8 +1519,6 @@ class Service extends Base\Service
                     'year'                  => $year,
                     'begin_timestamp'       => $beginTimestamp,
                     'end_timestamp'         => $endTimestamp,
-                    'platform_fee_transfer' => $platformFeeTransferDetails,
-                    'platform_fee_reversal' => $platformFeeReversalDetails,
                     'platform_fee_details'  => $platformFeeDetails,
                 ]
             );

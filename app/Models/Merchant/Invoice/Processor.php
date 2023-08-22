@@ -597,10 +597,7 @@ class Processor extends Base\Core
 
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'payment');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'payment');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -637,10 +634,7 @@ class Processor extends Base\Core
 
         if ($type === Type::VALIDATION)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'transaction');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -676,10 +670,7 @@ class Processor extends Base\Core
 
         if ($type === Type::OTHERS)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'transaction');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -698,6 +689,10 @@ class Processor extends Base\Core
                         $this->beginTimestamp,
                         $this->endTimestamp);
 
+                $platformFeeDetails = $this->getPlatformFeeDetails();
+
+                $transactionFeeAmount = $this->removePlatformFeeTransferAmountFromFeeDetails($transactionFeeAmount, $platformFeeDetails);
+
                 $this->storeResultsInCache($cacheKey, $transactionFeeAmount);
             }
 
@@ -715,10 +710,7 @@ class Processor extends Base\Core
 
         if ($this->isInvoiceTypeOfRefund($type) === true)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'transaction');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -757,10 +749,7 @@ class Processor extends Base\Core
         // Hence, the cumulative tax value can be negative
         if ($this->isInvoiceTypeOfRefund($type) === true)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'reversal');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'reversal');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -796,10 +785,7 @@ class Processor extends Base\Core
 
         if ($type === Type::PRICING_BUNDLE)
         {
-            // creating the cacheKey
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(
-                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'growth_service.invoice');
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'growth_service.invoice');
 
             // fetching data from cache
             $cacheResult = $this->fetchResultsFromCache($cacheKey);
@@ -827,29 +813,14 @@ class Processor extends Base\Core
 
         if ($type === Type::PLATFORM_FEE)
         {
-            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
-            $cacheKey = sprintf(self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+            $platformFeeDetails = $this->getPlatformFeeDetails();
 
-            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+            $platformFeeAmount = [
+                Entity::AMOUNT  => $platformFeeDetails[Entity::AMOUNT] ?? 0,
+                Entity::TAX     => $platformFeeDetails[Entity::TAX] ?? 0,
+            ];
 
-            if ($cacheResult != null)
-            {
-                $platformFeeAmount = $cacheResult;
-            }
-            else
-            {
-                $platformFeeAmount = (new TransferService())->getPlatformFeeDetailsForMerchant($this->merchantId, $this->month, $this->year, $this->beginTimestamp, $this->endTimestamp);
-
-                if (empty($platformFeeAmount) === true)
-                {
-                    $platformFeeAmount = [
-                        Entity::AMOUNT => 0,
-                        Entity::TAX => 0
-                    ];
-                }
-
-                $this->storeResultsInCache($cacheKey, $platformFeeAmount);
-            }
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'transaction');
 
             $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
@@ -1098,6 +1069,26 @@ class Processor extends Base\Core
         }
     }
 
+    protected function getPlatformFeeDetails(): ?array
+    {
+        $cacheKey = $this->getCacheKeyFromTypeAndTableName(Type::PLATFORM_FEE, 'transaction');
+
+        $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+        if ($cacheResult != null)
+        {
+            $platformFeeDetails = $cacheResult;
+        }
+        else
+        {
+            $platformFeeDetails = (new TransferService())->getPlatformFeeDetailsForMerchant($this->merchantId, $this->month, $this->year, $this->beginTimestamp, $this->endTimestamp);
+
+            $this->storeResultsInCache($cacheKey, $platformFeeDetails);
+        }
+
+        return $platformFeeDetails;
+    }
+
     private function getPatchedFirstDay($month, $year)
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
@@ -1157,6 +1148,50 @@ class Processor extends Base\Core
         return false;
     }
 
+    // remove platform fee transfer amount from the fee details (trxn, payment etc.) to avoid double
+    // calculation since there is already a separate line item for platform fee transfer in the invoice
+    private function removePlatformFeeTransferAmountFromFeeDetails($feeDetails, $platformFeeDetails)
+    {
+        if (empty($feeDetails) === true or empty($platformFeeDetails) === true)
+        {
+            return $feeDetails;
+        }
+
+        $details = $feeDetails->getAttributes();
+
+        $fees = $details['fee'] - ($platformFeeDetails['transfer_details']['fee'] ?? 0);
+
+        $tax = $details['tax'] - ($platformFeeDetails['transfer_details']['tax'] ?? 0);
+
+        // ideally this is not possible but to avoid negative fee & tax amount, don't update the attributes
+        if ($fees < 0 or $tax < 0)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_MONTHLY_INVOICE_NEGATIVE_FEE_DETAILS,
+                [
+                    'overall_trxn_fee'  => $details['fee'],
+                    'overall_trxn_tax'  => $details['tax'],
+                    'updated_fee'       => $fees,
+                    'updated_tax'       => $tax
+                ]
+            );
+
+            return $feeDetails;
+        }
+
+        $feeDetails->setAttribute('fee', $fees);
+
+        $feeDetails->setAttribute('tax', $tax);
+
+        return $feeDetails;
+    }
+
+    private function getCacheKeyFromTypeAndTableName(string $type, string $tableName): string
+    {
+        // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+        return sprintf(self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, $tableName);
+    }
+
     public function fetchResultsFromCache(string $cacheKey)
     {
         return $this->app['cache']->tags($this->cacheTag)->get($cacheKey);
@@ -1171,5 +1206,4 @@ class Processor extends Base\Core
     {
         return $this->cacheKeyArr;
     }
-
 }

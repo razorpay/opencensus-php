@@ -525,7 +525,7 @@ class EntityReportTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testFetchInvoiceReportForMerchantWithPlatformFee()
+    public function testFetchInvoiceReportForMerchantWithOnlyPlatformFeeLineItem()
     {
         $this->markTestSkipped("Some issue with wkhtmltopdf package, will fix it later");
 
@@ -533,18 +533,27 @@ class EntityReportTest extends TestCase
 
         Carbon::setTestNow($oldDateTime);
 
-        $this->fixtures->create('merchant_invoice',
+        // create partner
+        $this->fixtures->create('merchant',
             [
-                'type'       => Invoice\Type::CARD_LTE_2K,
-                'gstin'      => null,
-                'balance_id' => 10000000000000,
-                'month'      => 5,
-                'year'       => 2019,
-                'amount'     => 0,
-                'tax'        => 0,
+                'id'            => '10000000000002',
+                'email'         => 'testmail1@mail.info',
+                'name'          => 'partner_and_parent',
+                'partner_type'  => 'pure_platform'
             ]
         );
 
+        // create partner
+        $this->fixtures->create('merchant',
+            [
+                'id'        => '10000000000001',
+                'email'     => 'testmail2@mail.info',
+                'name'      => 'linked_account',
+                'parent_id' => '10000000000002',
+            ]
+        );
+
+        // sub-merchant details
         $this->fixtures->create('merchant_detail',
             [
                 'merchant_id'               => '10000000000000',
@@ -553,68 +562,33 @@ class EntityReportTest extends TestCase
             ]
         );
 
-        $this->fixtures->create('transfer',
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000002','pure_platform');
+
+        // map partner & sub-merchant
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $client->getApplicationId(),
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => '10000000000002',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000002');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->create('merchant_invoice',
             [
-                'id'            => 'LhV9fg1fXagWCN',
-                'status'        => 'processed',
-                'merchant_id'   => '10000000000000',
-                'source_id'     => 'abacad',
-                'to_id'         => '10000000000001',
-                'amount'        => 1000,
-                'fees'           => 5,
-                'tax'           => 2,
+                'type'       => Invoice\Type::PLATFORM_FEE,
+                'gstin'      => null,
+                'balance_id' => 10000000000000,
+                'month'      => 5,
+                'year'       => 2019,
+                'amount'     => 100,
+                'tax'        => 10,
             ]
         );
-
-        $this->fixtures->create('transaction',
-            [
-                'merchant_id'   => '10000000000000',
-                'entity_id'     => 'LhV9fg1fXagWCN',
-                'type'          => 'transfer',
-                'created_at'    => 1558290912,
-                'amount'        => 1000,
-                'fee'           => 5,
-                'tax'           => 2,
-            ]
-        );
-
-        $payment = $this->fixtures->create('payment',
-            [
-                'transfer_id' => 'LhV9fg1fXagWCN',
-                'amount'      => 1000,
-                'gateway'     => 'amex'
-            ]
-        );
-
-        $paymentTrxn = $this->fixtures->create('transaction',
-            [
-                'merchant_id'   => '10000000000000',
-                'entity_id'     => $payment['id'],
-                'type'          => 'payment',
-                'amount'        => 1000,
-                'created_at'    => 1558290996
-            ]
-        );
-
-        $this->fixtures->edit('payment', $payment['id'], ['transaction_id' => $paymentTrxn['id']]);
-
-        $this->fixtures->reversal->createTransferReversal('LhV9fg1fXagWCN', ['amount' => 1000]);
-
-        $this->fixtures->create('merchant',
-            [
-                'id'        => '10000000000002',
-                'email'     => 'testmail1@mail.info',
-                'name'      => 'parent_merchant',
-            ]
-        );
-
-        $this->fixtures->create('merchant',
-            [
-            'id'        => '10000000000001',
-            'email'     => 'testmail2@mail.info',
-            'name'      => 'linked_account',
-            'parent_id' => '10000000000002',
-        ]);
 
         $input = [
             'year'      => $oldDateTime->year,
@@ -647,9 +621,28 @@ class EntityReportTest extends TestCase
             ]
         );
 
+        // create linked account
+        $this->fixtures->create('merchant',
+            [
+                'id'        => '10000000000001',
+                'email'     => 'testmail2@mail.info',
+                'name'      => 'linked_account',
+                'parent_id' => '10000000000002',
+            ]
+        );
+
+        // create sub-merchant details
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => 'Karnataka',
+            ]
+        );
+
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000002','pure_platform');
 
-        // Assign submerchant to partner
+        // map partner & sub-merchant
         $accessMapData = [
             'entity_type'     => 'application',
             'entity_id'       => $client->getApplicationId(),
@@ -663,26 +656,6 @@ class EntityReportTest extends TestCase
 
         $this->mockAllSplitzTreatment();
 
-        $this->fixtures->create('merchant_invoice',
-            [
-                'type'       => Invoice\Type::CARD_LTE_2K,
-                'gstin'      => null,
-                'balance_id' => 10000000000000,
-                'month'      => 5,
-                'year'       => 2019,
-                'amount'     => 0,
-                'tax'        => 0,
-            ]
-        );
-
-        $this->fixtures->create('merchant_detail',
-            [
-                'merchant_id'               => '10000000000000',
-                'gstin'                     => null,
-                'business_registered_state' => 'Karnataka',
-            ]
-        );
-
         $this->fixtures->create('transfer',
             [
                 'id'            => 'LhV9fg1fXagWCN',
@@ -691,7 +664,7 @@ class EntityReportTest extends TestCase
                 'source_id'     => 'abacad',
                 'to_id'         => '10000000000001',
                 'amount'        => 1000,
-                'fees'           => 5,
+                'fees'          => 5,
                 'tax'           => 2,
             ]
         );
@@ -711,6 +684,7 @@ class EntityReportTest extends TestCase
         $payment = $this->fixtures->create('payment',
             [
                 'transfer_id' => 'LhV9fg1fXagWCN',
+                'merchant_id'   => '10000000000001',
                 'amount'      => 1000,
                 'gateway'     => 'amex'
             ]
@@ -718,7 +692,7 @@ class EntityReportTest extends TestCase
 
         $paymentTrxn = $this->fixtures->create('transaction',
             [
-                'merchant_id'   => '10000000000000',
+                'merchant_id'   => '10000000000001',
                 'entity_id'     => $payment['id'],
                 'type'          => 'payment',
                 'amount'        => 1000,
@@ -729,14 +703,6 @@ class EntityReportTest extends TestCase
         $this->fixtures->edit('payment', $payment['id'], ['transaction_id' => $paymentTrxn['id']]);
 
         $this->fixtures->reversal->createTransferReversal('LhV9fg1fXagWCN', ['amount' => 1500]);
-
-        $this->fixtures->create('merchant',
-            [
-                'id'        => '10000000000001',
-                'email'     => 'testmail2@mail.info',
-                'name'      => 'linked_account',
-                'parent_id' => '10000000000002',
-            ]);
 
         $input = [
             'year'      => $oldDateTime->year,
@@ -753,77 +719,7 @@ class EntityReportTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testFetchInvoiceReportForMerchantWithPlatformFeeAndNoInvoiceData()
-    {
-        $this->markTestSkipped("Some issue with wkhtmltopdf package, will fix it later");
-
-        $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
-
-        Carbon::setTestNow($oldDateTime);
-
-        $this->fixtures->create('merchant_detail',
-            [
-                'merchant_id'               => '10000000000000',
-                'gstin'                     => null,
-                'business_registered_state' => 'Karnataka',
-            ]
-        );
-
-        $this->fixtures->create('transfer',
-            [
-                'id'            => 'LhV9fg1fXagWCN',
-                'status'        => 'processed',
-                'merchant_id'   => '10000000000000',
-                'source_id'     => 'abacad',
-                'to_id'         => '10000000000001',
-                'amount'        => 1000,
-                'fees'           => 5,
-                'tax'           => 2,
-                'processed_at'  => 1558290912
-            ]
-        );
-
-        $this->fixtures->create('transaction',
-            [
-                'merchant_id'   => '10000000000000',
-                'entity_id'     => 'LhV9fg1fXagWCN',
-                'type'          => 'transfer',
-                'created_at'    => 1558290912
-            ]
-        );
-
-        $this->fixtures->create('merchant',
-            [
-                'id'        => '10000000000002',
-                'email'     => 'testmail1@mail.info',
-                'name'      => 'parent_merchant',
-            ]
-        );
-
-        $this->fixtures->create('merchant',
-            [
-                'id'        => '10000000000001',
-                'email'     => 'testmail2@mail.info',
-                'name'      => 'linked_account',
-                'parent_id' => '10000000000002',
-            ]);
-
-        $input = [
-            'year'      => $oldDateTime->year,
-            'month'     => $oldDateTime->month,
-            'format'    => 'new',
-        ];
-
-        $invoiceEntries = $this->fetchInvoice($input);
-
-        $this->assertNotEmpty($invoiceEntries['signed_url']);
-
-        $this->assertNull($invoiceEntries['error']);
-
-        Carbon::setTestNow();
-    }
-
-    public function testFetchInvoiceReportForMerchantWithZeroPlatformFeeAndNoInvoiceData()
+    public function testFetchInvoiceReportForMerchantWithZeroPlatformFeeAndNoOtherLineItem()
     {
         $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
 

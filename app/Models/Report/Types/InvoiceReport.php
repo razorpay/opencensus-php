@@ -248,6 +248,20 @@ class InvoiceReport extends BaseReport
             }
             else if ($type === Invoice\Type::PLATFORM_FEE and $amount <= 0)
             {
+                if ($amount < 0)
+                {
+                    $this->trace->info(
+                        TraceCode::MERCHANT_MONTHLY_INVOICE_NEGATIVE_PLATFORM_FEE,
+                        [
+                            'merchant_id'   => $this->merchant->getId() ?? null,
+                            'month'         => $this->month,
+                            'year'          => $this->year,
+                            'amount'        => $amount,
+                            'tax'           => $tax
+                        ]
+                    );
+                }
+                
                 // TODO: keep this edge case until a solution is finalised on this
                 continue;
             }
