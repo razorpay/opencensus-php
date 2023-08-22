@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TextHighlighter children should have background color applied and removed after 5 sec 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <span
+          class="highlight-text__inview"
+        >
+          Text Highlight
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;
+
+exports[`TextHighlighter children should have background color applied and removed after 5 sec 2`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <span
+          class="highlight-text__remove"
+        >
+          Text Highlight
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;
+
+exports[`TextHighlighter children should not have background color applied 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <span
+          class="highlight-text__remove"
+        >
+          Text Highlight
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;

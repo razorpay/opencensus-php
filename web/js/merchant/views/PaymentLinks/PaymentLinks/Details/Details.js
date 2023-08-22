@@ -1,23 +1,22 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import Definition from 'common/ui/Definition';
-import Spinner from 'common/ui/Spinner';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
+import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import Tooltip from 'common/ui/Tooltip';
 import CopyLink from 'merchant/components/CopyLink';
+import CustomerDetails from 'merchant/components/CustomerDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import Tooltip from 'common/ui/Tooltip';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
-import CustomerDetails from 'merchant/components/CustomerDetails';
-import ReminderStepsDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details/ReminderStepsDetails';
 import PaymentDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details/PaymentDetails';
-
+import ReminderStepsDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details/ReminderStepsDetails';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/Details/track';
 import {
   EditExpiry,
   EditMinimumAmount,
@@ -25,13 +24,11 @@ import {
   EditReceipt,
   EditBusinessSegment,
 } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
-
 import {
   trackDetailViewEdits,
   trackTogglePartialPayment,
   trackClickDuplicatePaymentLink,
 } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
-import track from 'merchant/views/PaymentLinks/PaymentLinks/Details/track';
 
 export default (props) => {
   const {
@@ -57,6 +54,8 @@ export default (props) => {
   const isExpired = status === 'expired';
 
   const isSmsOrEmailSent = paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
+
+  const customFields = paymentlink?.custom_fields || {};
 
   const isRemindersEnabled =
     paymentlink.reminders?.status &&
@@ -364,6 +363,9 @@ export default (props) => {
                           )
                   }
                 />
+                {Object.entries(customFields).map(([label, value]) => (
+                  <EntityDetailRow key={label} label={label} value={value} />
+                ))}
                 {!user.isCustomNotesDropdownEnabled ? (
                   <EntityDetailRow label="Notes">
                     <EditNotes

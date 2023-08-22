@@ -1,5 +1,7 @@
 import { rest } from 'msw';
 
+import { DEFAULT_CONFIGS } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/DynamicFields';
+
 export const fetchRemindersHandler = () => {
   return rest.get('*/merchant/api/:mode/reminders/service/merchant_settings', (req, res, ctx) => {
     return res(
@@ -217,4 +219,75 @@ export const fetchPaymentLinkDetailsV2 = () => {
       ctx.delay(10),
     );
   });
+};
+
+export const fetchDynamicFieldsSuccess = (configurations = DEFAULT_CONFIGS) => {
+  return rest.get(
+    '*/merchant/api/:mode/payment_links/configuration/custom_fields',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: {
+            configurations,
+          },
+        }),
+        ctx.delay(100),
+      );
+    },
+  );
+};
+
+export const fetchDynamicFieldsError = () => {
+  return rest.get(
+    '*/merchant/api/:mode/payment_links/configuration/custom_fields',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: false,
+          errors: ['Something went wrong', 'Status Code: 404'],
+        }),
+        ctx.delay(50),
+      );
+    },
+  );
+};
+
+export const updateDynamicFields = () => {
+  return rest.post(
+    '*/merchant/api/:mode/payment_links/configuration/custom_fields',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: {
+            configurations: [
+              {
+                type: 'account_number',
+                merchant_id: 'LtobxC3HUcQsD2',
+                mode: 'test',
+                configuration: {
+                  type: 'string',
+                  label: 'Account Number',
+                  is_mandatory: true,
+                  masking_length: '5',
+                },
+                id: 'MHbEDIRbMOCBig',
+                created_at: 1690193192,
+                updated_at: 1690194560,
+                deleted_at: 0,
+              },
+            ],
+          },
+        }),
+        ctx.delay(10),
+      );
+    },
+  );
 };

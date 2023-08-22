@@ -1,13 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { luminateRow } from 'merchant/reducers/app';
-import BatchValidate from './Validate';
-import BatchCreate from './Create';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
 import { getCustomURL } from 'merchant/components/DocsLink';
-import { bindActionCreators } from 'redux';
+import { luminateRow } from 'merchant/reducers/app';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import BatchCreate from './Create';
+import BatchValidate from './Validate';
 /**
  * Container:  Switches between validation or creation of batch.
  */
@@ -71,6 +73,7 @@ class BatchUpload extends Component {
 
     trackCloseModal && trackCloseModal();
   };
+
   render() {
     const {
       accept,
@@ -104,11 +107,15 @@ class BatchUpload extends Component {
       displayMsgs,
       isDragDropDisabled,
       hideCloseBtn,
+      isSampleFileLoading,
+      shouldShowSampleDownloadBtn,
+      onSampleFileDownload,
     } = this.props;
 
     const { batchName, batch, currentStatus } = this.state;
 
     const docLink = getCustomURL(docUrl);
+
     return (
       <div className={`batch-upload-modal ${batchListClass} ${currentStatus}`}>
         <ModalHeader
@@ -122,7 +129,9 @@ class BatchUpload extends Component {
                 <BatchValidate
                   accept={accept}
                   onValidation={this.handleValidation}
-                  onSampleFileDownload={this.props.onSampleFileDownload}
+                  onSampleFileDownload={onSampleFileDownload}
+                  isSampleFileLoading={isSampleFileLoading}
+                  shouldShowSampleDownloadBtn={shouldShowSampleDownloadBtn}
                   docUrl={docLink}
                   onDocumentClick={onDocumentClick}
                   clickToUploadAnalytics={clickToUploadAnalytics}

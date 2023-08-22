@@ -15,12 +15,7 @@ const FormWrapper = ({
 }) => {
   const { values, errors, validateForm } = useFormikContext();
 
-  const validationCb = useCallback(
-    (...rest) => {
-      validateTab(...rest);
-    },
-    [validateTab],
-  );
+  const validationCb = useCallback(validateTab, [validateTab]);
 
   useEffect(() => {
     // this is needed as for first time user, form is not being validated

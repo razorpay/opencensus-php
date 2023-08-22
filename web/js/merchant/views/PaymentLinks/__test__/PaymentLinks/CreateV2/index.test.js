@@ -1,14 +1,49 @@
 import React from 'react';
-import { render, screen, fireEvent, server, userEvent } from 'test-utils';
-import * as handlers from 'merchant/views/PaymentLinks/__test__/mocks/handlers';
-import CreateV2 from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/index';
-import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
-import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/model';
+import {
+  render,
+  screen,
+  fireEvent,
+  server,
+  userEvent,
+  waitForLoadingToFinish,
+  waitFor,
+} from 'test-utils';
+
 import User from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
+import * as handlers from 'merchant/views/PaymentLinks/__test__/mocks/handlers';
+import CreateV2 from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/index';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import * as apiHelpers from 'merchant/views/PaymentLinks/PaymentLinks/model';
+import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
+
+jest.mock('merchant/views/PaymentLinks/utils', () => ({
+  ...jest.requireActual('merchant/views/PaymentLinks/utils'),
+  showDynamicFields: jest.fn(),
+}));
+
 const onCloseMock = jest.fn();
+
+const DEFAULT_USER = new User({
+  current: 1,
+  merchant: {
+    country_code: 'IN',
+    currency: 'INR',
+    product_international: '0000000000',
+  },
+  merchants: {
+    1: {
+      country_code: 'IN',
+      currency: 'INR',
+      product_international: '111',
+    },
+  },
+});
+
 jest.spyOn(track.lj.form, 'create').mockImplementation(() => {});
+jest.spyOn(apiHelpers, 'createPaymentLinkV2');
+
 describe('Payment Link Create V2 Unit Test', () => {
   beforeAll(() => {
     window.rzp_user = {};
@@ -26,28 +61,14 @@ describe('Payment Link Create V2 Unit Test', () => {
 
   afterEach(() => {
     jest.useRealTimers();
-    track.lj.form.create.mockClear();
+    jest.clearAllMocks();
   });
 
   const renderApp = (
     props = {},
     initialState = {
       session: {
-        user: new User({
-          current: 1,
-          merchant: {
-            country_code: 'IN',
-            currency: 'INR',
-            product_international: '0000000000',
-          },
-          merchants: {
-            1: {
-              country_code: 'IN',
-              currency: 'INR',
-              product_international: '111',
-            },
-          },
-        }),
+        user: DEFAULT_USER,
       },
     },
   ) => {
@@ -151,7 +172,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     expect(screen.getByText('Create Payment Link')).toBeInTheDocument();
   });
 
-  test('should have malaysian currency on successfull submit', () => {
+  test('should have malaysian currency on successful submit', async () => {
     server.use(
       handlers.fetchRemindersHandler(),
       handlers.fetchRemindersMerchantConfigHandler(),
@@ -181,20 +202,61 @@ describe('Payment Link Create V2 Unit Test', () => {
 
     renderApp(null, initialStoreState);
 
-    setTimeout(async () => {
-      // create payment link
-      const amount = screen.getByPlaceholderText('0.00');
-      expect(amount).toBeInTheDocument();
-      await userEvent.type(amount, '200');
-      const createPLCTA = screen.getByRole('button', {
-        name: /Create Payment Link/i,
-      });
-      await userEvent.click(createPLCTA);
+    await waitForLoadingToFinish();
 
-      expect(createPaymentLinkV2).toHaveBeenCalledWith({
-        currency: 'MYR',
-        amount: 200,
-      });
-    }, 100);
+    // create payment link
+    await userEvent.type(screen.getByPlaceholderText('0.00'), '200');
+    await userEvent.click(screen.getByRole('button', { name: /Create Payment Link/i }));
+
+    expect(apiHelpers.createPaymentLinkV2).toHaveBeenCalledWith({
+      currency: 'MYR',
+      amount: 20000,
+    });
+    expect(track.lj.form.create).toHaveBeenCalled();
+  });
+
+  test('should render "Standard Payment Link" form with dynamic fields and should be able to create payment link', async () => {
+    showDynamicFields.mockReturnValue(true);
+
+    server.use(handlers.fetchDynamicFieldsSuccess());
+
+    renderApp();
+
+    // Click on standard payment link to open form.
+    await userEvent.click(screen.getAllByText('Create Now')[0]);
+
+    await waitForLoadingToFinish();
+
+    // Fill amount field.
+    await userEvent.type(screen.getByPlaceholderText('0.00'), '400');
+    // Fill account number field.
+    await userEvent.type(screen.getByPlaceholderText('Account Number'), 'test_account_number');
+    // Fill reference id field.
+    await userEvent.type(screen.getByPlaceholderText('123456'), 'test_reference_number');
+
+    // Create payment link.
+    await userEvent.click(screen.getByRole('button', { name: /Create Payment Link/i }));
+
+    expect(apiHelpers.createPaymentLinkV2).toHaveBeenCalledWith({
+      currency: 'INR',
+      amount: 40000,
+      custom_fields: { 'Account Number': 'test_account_number' },
+      reference_id: 'test_reference_number',
+    });
+    expect(track.lj.form.create).toHaveBeenCalled();
+  });
+
+  test('should render notification error when fetchPaymentLinkCustomFields promise fails', async () => {
+    showDynamicFields.mockReturnValue(true);
+
+    server.use(handlers.fetchDynamicFieldsError());
+
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('Notification--error')).toHaveTextContent(
+        'Something went wrong Status Code: 404',
+      );
+    });
   });
 });

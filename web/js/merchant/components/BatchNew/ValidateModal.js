@@ -1,17 +1,19 @@
 import { Component } from 'react';
-import ShowWhen from 'merchant/components/ShowWhen';
-import FileUpload from 'merchant/components/File/Upload';
-import { Link } from 'react-router-dom';
-import { titleCase, monetaryUnitText } from 'common/utils/rzp-utils';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { Link as LinkBlade } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { DocLink } from 'merchant/components/DocsLink';
+import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+
+import { titleCase, monetaryUnitText } from 'common/utils/rzp-utils';
+import { DocLink } from 'merchant/components/DocsLink';
+import FileUpload from 'merchant/components/File/Upload';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import {
   BATCH_TYPE,
   BATCH_UPLOAD_POINTS,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
@@ -40,7 +42,7 @@ class BatchValidateModal extends Component {
       files,
       fileUploadProgress,
       maxFileSize = DEFAULT_MAX_FILE_SIZE,
-      onSampleFileDownload = () => {},
+      onSampleFileDownload = false,
       onErrorReportDownload = () => {},
       user,
       batchClass,
@@ -52,6 +54,8 @@ class BatchValidateModal extends Component {
       onSuccess = () => {},
       isDragDropDisabled,
       hideCloseBtn,
+      isSampleFileLoading = false,
+      shouldShowSampleDownloadBtn = false,
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -233,9 +237,25 @@ class BatchValidateModal extends Component {
 
                 <p className="download-sample-file-p">
                   In case of any issues, please{' '}
-                  <a className="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
-                    <strong>download sample file</strong>
-                  </a>
+                  <ShowWhen additionalCondition={() => sampleUrl}>
+                    <LinkBlade
+                      href={sampleUrl}
+                      onClick={onSampleFileDownload}
+                      accessibilityLabel="batch-upload-download-sample-file"
+                    >
+                      download sample file
+                    </LinkBlade>
+                  </ShowWhen>
+                  <ShowWhen additionalCondition={() => !sampleUrl && shouldShowSampleDownloadBtn}>
+                    <LinkBlade
+                      variant="button"
+                      onClick={onSampleFileDownload}
+                      isDisabled={isSampleFileLoading}
+                      accessibilityLabel="batch-upload-download-sample-file"
+                    >
+                      download Sample File
+                    </LinkBlade>
+                  </ShowWhen>
                 </p>
               </div>
             )}
