@@ -1,8 +1,9 @@
 import React from 'react';
+
 import { render, screen, waitFor } from 'common/services/test/test-utils';
-import EarningsTransactionalDetails from 'merchant/views/PartnerDashboard/Earnings/Transactional/Details';
-import { mockCommissionDetailOnceForCurlec } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/once-handlers';
 import { getInitialUserOrgState } from 'common/tests/utils';
+import { mockCommissionDetailOnceForCurlec } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/once-handlers';
+import EarningsTransactionalDetails from 'merchant/views/PartnerDashboard/Earnings/Transactional/Details';
 
 const defaultProps = {
   id: 'comm_G8vny1PSg5hY5Q',
@@ -20,8 +21,7 @@ describe('test suite for Earnings Transactional Detail', () => {
     await waitFor(() => {
       expect(screen.getByTestId('transactional-details-panel')).toBeVisible();
       expect(screen.getByText('Earnings from Razorpay')).toBeInTheDocument();
-      expect(screen.getByText('Affiliated Account')).toBeInTheDocument();
-      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('₹ 7.00');
+      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('₹7.00');
     });
   });
 
@@ -35,8 +35,19 @@ describe('test suite for Earnings Transactional Detail', () => {
     await waitFor(() => {
       expect(screen.getByTestId('transactional-details-panel')).toBeVisible();
       expect(screen.getByText('Earnings from Curlec')).toBeInTheDocument();
+      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('RM7.00');
+    });
+  });
+
+  test('should render transactional detail', async () => {
+    const state = getInitialUserOrgState({ isRzpOrg: true });
+    render(<EarningsTransactionalDetails {...defaultProps} />, {
+      initialState: { session: state },
+    });
+    await waitFor(() => {
+      expect(screen.getByText(/Payment Details/i)).toBeInTheDocument();
       expect(screen.getByText('Affiliated Account')).toBeInTheDocument();
-      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('RM 7.00');
+      expect(screen.getByText('Dec 4, 2020')).toBeInTheDocument();
     });
   });
 });

@@ -1,7 +1,10 @@
-import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
-export default props => (
+import ListFilter from 'merchant/components/ListFilter';
+
+import SourceTypeFilter from './SourceTypeFilter';
+
+export default (props) => (
   <ListFilter {...props}>
     <div className="form-group list-filter-item">
       <label>Commissions ID</label>
@@ -10,11 +13,11 @@ export default props => (
 
     <div className="form-group list-filter-item">
       <label>Merchant ID</label>
-      <Field
-        name="merchant_id"
-        component="input"
-        class="form-control input-sm"
-      />
+      <Field name="merchant_id" component="input" class="form-control input-sm" />
+    </div>
+    <div class="form-group list-filter-item">
+      <label>Source</label>
+      <Field name="source_type" component={SourceTypeFilter} />
     </div>
 
     <div class="form-group list-filter-item count">

@@ -65,3 +65,8 @@ export const PARTNER_TYPE_DISPLAY_NAMES = {
   bank: 'Bank',
   fully_managed: 'Fully Managed',
 };
+
+export const COMMISSION_TYPE = {
+  REFUND: 'refund',
+  PAYMENT: 'payment',
+};

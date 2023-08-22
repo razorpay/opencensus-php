@@ -1,15 +1,11 @@
 import { connect } from 'react-redux';
 
+import Amount from 'common/ui/Amount';
+import DataTable from 'common/ui/Table/DataTable';
+import { earningId, createdAtShort } from 'common/ui/item/pair';
+import { capitalize } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchEarnings as fetchAll } from 'merchant/reducers/collection';
-
-import DataTable from 'common/ui/Table/DataTable';
-import Amount from 'common/ui/Amount';
-
-import { earningId, createdAtShort } from 'common/ui/item/pair';
-
-import { capitalize } from 'common/utils/rzp-utils';
-
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Transactional/ListFilter';
 
 const sourceType = {
