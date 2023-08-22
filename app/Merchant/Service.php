@@ -535,9 +535,9 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function fetchPartnerConfigsAsyncPromise(): PromiseInterface
+    public function fetchPartnerConfigsAsyncPromise(Guzzle $guzzleClient): PromiseInterface
     {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(['client_type' => 'merchant', 'guzzle_client' => $guzzleClient]);
 
         return $request->sendAsyncPromise('merchants/me/partner/configs', 'GET');
     }
@@ -692,9 +692,9 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getPartnerIntentAsyncPromise(): PromiseInterface
+    public function getPartnerIntentAsyncPromise(Guzzle $guzzleClient): PromiseInterface
     {
-        $request = new ApiRequestAny(['client_type'    => 'merchant']);
+        $request = new ApiRequestAny(['client_type'    => 'merchant', 'guzzle_client' => $guzzleClient]);
 
         return $request->sendAsyncPromise('merchant/partner-intent', 'GET');
     }
@@ -1125,11 +1125,11 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getExperimentPromise(): PromiseInterface
+    public function getExperimentPromise(Guzzle $guzzleClient): PromiseInterface
     {
         $razorxService = (new Razorx\Service());
 
-        return $razorxService->getBulkTreatmentPromise(Razorx\Service::FEATURE_FLAGS);
+        return $razorxService->getBulkTreatmentPromise(Razorx\Service::FEATURE_FLAGS, $guzzleClient);
     }
 
     public function getBusinessTypes(){

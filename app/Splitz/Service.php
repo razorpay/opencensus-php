@@ -6,6 +6,7 @@ use App\Base;
 use App\Trace\TraceCode;
 use App\User\Constants;
 use App\Admin\ApiRequestAny;
+use GuzzleHttp\Client as Guzzle;
 use Illuminate\Foundation\Application;
 use GuzzleHttp\Promise\PromiseInterface;
 
@@ -35,9 +36,11 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getSplitzVariantBulkAsyncPromise($merchantId): ?PromiseInterface
+    public function getSplitzVariantBulkAsyncPromise($merchantId, Guzzle $guzzleClient): ?PromiseInterface
     {
-        return $this->getVariantBulkAsyncPromise($merchantId, config('splitz.experiments'));
+        $clientType = ['client_type' => 'merchant', 'guzzle_client' => $guzzleClient];
+        
+        return $this->getVariantBulkAsyncPromise($merchantId, config('splitz.experiments'), $clientType);
     }
 
     /**

@@ -4,10 +4,12 @@ namespace App\User;
 
 
 use Auth;
+use GuzzleHttp\Client as Guzzle;
 use Trace;
 use Cookie;
 use Session;
 use Request;
+use Config;
 use App\Base;
 use DateTimeZone;
 use App\Merchant;
@@ -1384,6 +1386,17 @@ class Service extends Base\Service
         return $data;
     }
     
+    private function getGuzzleClient(): Guzzle
+    {
+        $guzzleClient = new Guzzle([
+                                        'base_uri' => ApiUrl::getApiBaseUrl(),
+                                        'defaults' => [
+                                            'timeout' => Config::get('api.request_timeout'),
+                                        ]
+                                    ]);
+        
+        return $guzzleClient;
+    }
     /**
      * @throws BadRequestError
      */
@@ -1406,12 +1419,14 @@ class Service extends Base\Service
     
         $currentMerchantId = $currentMerchant->id;
         
+        $guzzleClient =  $this->getGuzzleClient();
+        
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
             ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
             ($experiments === "1"))
         {
-            $promise = $merchantService->getExperimentPromise();
+            $promise = $merchantService->getExperimentPromise($guzzleClient);
             $apiPromiseAny[self::EXPERIMENT_PROMISE] = new ApiPromiseAny('razorx/bulkevaluate','GET');
             $apiPromiseAny[self::EXPERIMENT_PROMISE]->setPromise($promise);
         }
@@ -1421,7 +1436,7 @@ class Service extends Base\Service
             ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
             ($splitzExperiments === "1"))
         {
-            $promise = (new SplitzService())->getSplitzVariantBulkAsyncPromise($currentMerchantId);
+            $promise = (new SplitzService())->getSplitzVariantBulkAsyncPromise($currentMerchantId, $guzzleClient);
         
             if (!empty($promise))
             {
@@ -1434,7 +1449,7 @@ class Service extends Base\Service
         if (($isBankingRequest === false) and
             (new Helper)->isOwner($currentMerchant))
         {
-            $promise = $merchantService->getPartnerIntentAsyncPromise();
+            $promise = $merchantService->getPartnerIntentAsyncPromise($guzzleClient);
         
             $apiPromiseAny[self::PARTNER_INTENT_PROMISE] =  new ApiPromiseAny('merchant/partner-intent','GET');
             $apiPromiseAny[self::PARTNER_INTENT_PROMISE]->setPromise($promise);
@@ -1448,7 +1463,7 @@ class Service extends Base\Service
             $data['merchants'][$merchant['id']]['partner'] = [];
         
             // API 1.4.1
-            $promise = $merchantService->fetchPartnerConfigsAsyncPromise();
+            $promise = $merchantService->fetchPartnerConfigsAsyncPromise($guzzleClient);
             $apiPromiseAny[self::CONFIG_PROMISE] =  new ApiPromiseAny('merchants/me/partner/configs','GET');
             $apiPromiseAny[self::CONFIG_PROMISE]->setPromise($promise);
         

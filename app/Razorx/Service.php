@@ -8,7 +8,7 @@ use App\Base;
 use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
 use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 
 class Service extends Base\Service
@@ -236,11 +236,11 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getBulkTreatmentPromise(array $features): \GuzzleHttp\Promise\PromiseInterface
+    public function getBulkTreatmentPromise(array $features, Guzzle $guzzleClient): \GuzzleHttp\Promise\PromiseInterface
     {
         $featureString = implode(', ', $features);
 
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(['client_type' => 'merchant', 'guzzle_client' => $guzzleClient]);
 
         return $request->sendAsyncPromise("razorx/bulkevaluate?features=$featureString", 'GET');
     }
