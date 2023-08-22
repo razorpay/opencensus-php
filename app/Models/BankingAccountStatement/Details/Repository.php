@@ -71,11 +71,7 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
-        $statusList =
-            [
-                Status::ACTIVE,
-                Status::UNDER_MAINTENANCE
-            ];
+        $statusList = Status::getStatusesForActiveCaFlows();
 
         return $this->newQuery()
                     ->select($basDetailsAttr)
@@ -95,11 +91,7 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
-        $statusList =
-            [
-                Status::ACTIVE,
-                Status::UNDER_MAINTENANCE
-            ];
+        $statusList = Status::getStatusesForActiveCaFlows();
 
         return $this->newQuery()
                     ->select($basDetailsAttr)
@@ -124,11 +116,7 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
-        $statusList =
-        [
-            Status::ACTIVE,
-            Status::UNDER_MAINTENANCE
-        ];
+        $statusList = Status::getStatusesForActiveCaFlows();
 
         return $this->newQuery()
                     ->select($basDetailsAttr)
@@ -178,11 +166,13 @@ class Repository extends Base\Repository
 
         $sixHourEarlierTimeStamp = Carbon::now(Constants\Timezone::IST)->subHours(6)->getTimestamp();
 
+        $statusList = Status::getStatusesForActiveCaFlows();
+
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
                     ->whereIn($balanceIdColumn, $balanceIdList)
                     ->where($updatedAtColumn, '>=', $sixHourEarlierTimeStamp)
-                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->whereIn($statusColumn, $statusList)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
@@ -202,10 +192,12 @@ class Repository extends Base\Repository
         $balanceIdColumn  = $this->dbColumn(Entity::BALANCE_ID);
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
+        $statusList = Status::getStatusesForActiveCaFlows();
+
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
                     ->where($merchantIdColumn, '=', $merchantId)
-                    ->whereIn($statusColumn, [Status::ACTIVE,Status::UNDER_MAINTENANCE])
+                    ->whereIn($statusColumn, $statusList)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
@@ -280,12 +272,14 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $bankingAccountMerchantIdColumn = $this->repo->banking_account_statement_details->dbColumn(Entity::MERCHANT_ID);
 
+        $statusList = Status::getStatusesForActiveCaFlows();
+
         $query =  $this->newQueryWithConnection($this->getSlaveConnection())
             ->join(Constants\Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
             ->select($merchantIdColumn)
             ->where($channelColumn, '=', $channel)
             ->where($accountTypeColumn, '=', $accountType)
-            ->whereIn($statusColumn, [Status::ACTIVE,Status::UNDER_MAINTENANCE])
+            ->whereIn($statusColumn, $statusList)
             ->where($merchantActivatedColumn, '=', 0)
             ->where(function ($query)
             {

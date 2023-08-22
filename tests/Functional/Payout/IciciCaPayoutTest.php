@@ -1962,6 +1962,44 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('icici', $payout['channel']);
     }
 
+    public function testQueuedPayoutWithForMerchantWithUnderMaintenanceStatus()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
+        ];
+
+        $this->fixtures->edit('banking_account_statement_details','xbas0000000002',[
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'status'                  => Details\Status::UNDER_MAINTENANCE,
+        ]);
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+
+        $this->fixtures->edit('banking_account_statement_details','xbas0000000002',[
+            'gateway_balance'         => 500000000
+        ]);
+
+        $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('created', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+    }
+
     public function testQueuedPayoutWithFetchAndUpdateBalanceFromGateway()
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);

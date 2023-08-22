@@ -38,6 +38,14 @@ class Status
         }
     }
 
+    public static function getStatusesForActiveCaFlows()
+    {
+        return [
+            self::ACTIVE,
+            self::UNDER_MAINTENANCE,
+        ];
+    }
+
     public static function getStatusesForWhichSubAccountPayoutIsAllowed()
     {
         return [
