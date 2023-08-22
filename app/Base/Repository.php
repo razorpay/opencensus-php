@@ -62,12 +62,13 @@ class Repository extends \Razorpay\Spine\Repository
     const DELETED      = 'deleted';
 
     // Data Warehouse
-    const ADMIN_FETCH                          = "data_warehouse_admin_fetch";
-    const MERCHANT_FETCH                       = "data_warehouse_merchant_fetch";
-    const MERCHANT_TIDB_EXPERIMENT             = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
-    const ADMIN_TIDB_EXPERIMENT                = 'admin_tidb_experiment';
-    const TIDB_GATEWAY_FALLBACK                = 'tidb_gateway_fallback';
-    const PAYMENT_QUERIES_TIDB_MIGRATION       = 'payment_queries_tidb_migration';
+    const ADMIN_FETCH                    = "data_warehouse_admin_fetch";
+    const MERCHANT_FETCH                 = "data_warehouse_merchant_fetch";
+    const MERCHANT_TIDB_EXPERIMENT       = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
+    const ADMIN_TIDB_EXPERIMENT          = 'admin_tidb_experiment';
+    const TIDB_GATEWAY_FALLBACK          = 'tidb_gateway_fallback';
+    const PAYMENT_QUERIES_TIDB_MIGRATION = 'payment_queries_tidb_migration';
+    const PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB = 'payment_P0_queries_migration_from_tidb';
     const PAYMENT_FETCH_QUERIES_TIDB_MIGRATION = 'payment_fetch_queries_tidb_migration';
 
     const ADMIN_TIDB_EXPERIMENT_REFUNDS = 'admin_tidb_experiment_refunds';

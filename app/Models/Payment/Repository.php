@@ -2451,14 +2451,44 @@ EOT;
             return $payment;
         }
 
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        // experiment added as P0 flows were going to TiDB
+        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
+        {
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
+                            ->where(Entity::ORDER_ID, '=', $orderId)
+                            ->first();
+            $this->resetDefaultConnInEntity($payment);
 
-        $payment = $this->newQueryWithConnection($connectionType)
-                        ->whereNotNull(Entity::CAPTURED_AT)
-                        ->where(Entity::ORDER_ID, '=', $orderId)
-                        ->first();
+        }else{
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+            $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
+                            ->where(Entity::ORDER_ID, '=', $orderId)
+                            ->first();
+        }
 
         return $payment;
+    }
+
+    //Resetting the connection to default as we don't want any subsequent DB calls going to this Archive data replica.
+    public function resetDefaultConnInEntity($entity)
+    {
+        if(empty($entity) === true){
+            return;
+        }
+        $defaultConn = $this->connection;
+        $entity->setConnection($defaultConn);
+    }
+
+    public function resetDefaultConnInEntities($entities)
+    {
+        if(empty($entities) === true){
+
+            return;
+        }
+        foreach ($entities as $entity)
+        {
+            $this->resetDefaultConnInEntity($entity);
+        }
     }
 
     public function getTopMerchantVolumeWiseBetweenTimestamp(int $from, int $to, int $limit)
@@ -3744,14 +3774,27 @@ EOT;
 
     public function getCapturedPaymentsForInvoice(string $invoiceId)
     {
+        // added as P0 flows were going to TiDB
+        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA));
+            $payments = $query
+                ->where(Entity::INVOICE_ID, $invoiceId)
+                ->where(Entity::STATUS, '=', Status::CAPTURED)
+                ->get();
+
+            $this->resetDefaultConnInEntities($payments);
+
+        }else{
             $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-            $query = $this->newQueryWithConnection($connectionType);
+            $payments = $this->newQueryWithConnection($connectionType)
+                ->where(Entity::INVOICE_ID, $invoiceId)
+                ->where(Entity::STATUS, '=', Status::CAPTURED)
+                ->get();
+        }
 
-            return $query
-                        ->where(Entity::INVOICE_ID, $invoiceId)
-                        ->where(Entity::STATUS, '=', Status::CAPTURED)
-                        ->get();
+        return $payments;
     }
 
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
@@ -4442,15 +4485,29 @@ EOT;
             return $payment;
         }
 
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-        $payment = $this->newQueryWithConnection($connectionType)
-                        ->where(Entity::TOKEN_ID, $tokenId)
-                        ->where(Entity::MERCHANT_ID, $merchantId)
-                        ->where(Entity::METHOD, $method)
-                        ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
-                        ->where(Entity::STATUS, Status::AUTHORIZED)
-                        ->first();
+        // added as P0 flows were going to TiDB
+        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
+        {
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
+                            ->where(Entity::TOKEN_ID, $tokenId)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->where(Entity::METHOD, $method)
+                            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+                            ->where(Entity::STATUS, Status::AUTHORIZED)
+                            ->first();
+            $this->resetDefaultConnInEntity($payment);
+
+        }else{
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::TOKEN_ID, $tokenId)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->where(Entity::METHOD, $method)
+                            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+                            ->where(Entity::STATUS, Status::AUTHORIZED)
+                            ->first();
+        }
 
         return $payment;
     }
