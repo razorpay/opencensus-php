@@ -18,7 +18,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $connectionType = ConnectionType::REPLICA;
+            $connectionType = $this->getSlaveConnection();
         }
 
         $result =  $this->newQueryWithConnection($connectionType)
@@ -68,7 +68,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $connectionType = ConnectionType::REPLICA;
+            $connectionType = $this->getSlaveConnection();
         }
 
         return $this->newQueryWithConnection($connectionType)

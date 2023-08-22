@@ -188,7 +188,7 @@ class Repository extends Transaction\Repository
 
             if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
             {
-                $connectionType = ConnectionType::REPLICA;
+                $connectionType = $this->getSlaveConnection();
             }
 
             $query = $this->newQueryWithConnection($connectionType);
@@ -208,7 +208,7 @@ class Repository extends Transaction\Repository
 
             if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
             {
-                $connectionType = ConnectionType::REPLICA;
+                $connectionType = $this->getSlaveConnection();
             }
 
             $this->baseQuery = $this->newQueryWithConnection($connectionType)
