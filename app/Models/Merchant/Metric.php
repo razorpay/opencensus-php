@@ -148,10 +148,10 @@ final class Metric
     const SHOPIFY_APPLY_GIFT_CARD_ERROR_COUNT       = 'shopify_gift_card_validate_error_count';
     const SHOPIFY_APPLY_GIFT_CARD_SUCCESS_COUNT     = 'shopify_gift_card_validate_success_count';
 
-    const SHOPIFY_ORDER_REFUND_REQUEST_COUNT        = 'shopify_order_refund_request_count';
-    const SHOPIFY_ORDER_REFUND_SUCCESS_COUNT        = 'shopify_order_refund_success_count';
-    const SHOPIFY_ORDER_REFUND_ERROR_COUNT          = 'shopify_order_refund_error_count';
-    const SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT    = 'shopify_1cc_webhook_issue_refund_count';
+    const SHOPIFY_ORDER_REFUND_REQUEST_COUNT          = 'shopify_order_refund_request_count';
+    const SHOPIFY_ORDER_REFUND_SUCCESS_COUNT          = 'shopify_order_refund_success_count';
+    const SHOPIFY_ORDER_REFUND_ERROR_COUNT            = 'shopify_order_refund_error_count';
+    const SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT      = 'shopify_1cc_webhook_issue_refund_count';
 
     const SHOPIFY_GIFT_CARD_REFUND_REQUEST_COUNT    = 'shopify_gift_card_refund_request_count';
     const SHOPIFY_GIFT_CARD_REFUND_SUCCESS_COUNT    = 'shopify_gift_card_refund_success_count';

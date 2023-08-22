@@ -28,6 +28,10 @@ class Webhooks extends Base\Core
     const REFUND_CREATED = 'refund/created';
     const REFUND_MUTEX_KEY = 'shopify_1cc_refund_order_mutex';
 
+    const SHOPIFY_WEBHOOK_CACHE_KEY = 'shopify_1cc_webhook';
+
+    const SHOPIFY_WEBHOOK_CACHE_KEY_TTL = 1 * 86400; // 1 day
+
     const MUTEX_LOCK_TTL_SEC = 60;
     const MAX_RETRY_COUNT = 4;
     const MAX_RETRY_DELAY_MILLIS = 1 * 30 * 1000;
@@ -48,6 +52,8 @@ class Webhooks extends Base\Core
         $this->utils = new Shopify\Utils();
 
         $this->validator = new Validator();
+
+        $this->cache = $this->app['cache'];
     }
 
     /**
@@ -145,6 +151,21 @@ class Webhooks extends Base\Core
             return;
         }
 
+        if (isset($headers['x-shopify-webhook-id']) === false || $headers['x-shopify-webhook-id'] === null)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'missing_webhook_id', 'refund_type' => 'unknown']);
+
+            $this->trace->error(
+              TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+              [
+                'type'    => 'missing_webhook_id',
+                'headers' => $headers,
+              ]);
+            return;
+        }
+
         $rzpPaymentRefundTxn = $this->getRzpRefundTxn($input);
 
         if (empty($rzpPaymentRefundTxn) === true)
@@ -180,6 +201,8 @@ class Webhooks extends Base\Core
         }
 
         $signature = $headers['x-shopify-hmac-sha256'];
+        $webhookId = $headers['x-shopify-webhook-id'];
+
         $isSignatureValid = $this->validator->isSignatureValid($rawContents, $signature, $configs['api_secret']);
 
         if ($isSignatureValid === false)
@@ -295,7 +318,9 @@ class Webhooks extends Base\Core
         // set the merchant after we get the correct mode
         $this->findAndSetMerchantOrFail($configs['merchant_id']);
 
-        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId, $rzpPaymentRefundTxn);
+        $webhookCacheKey = $this->getWebhookCacheKey($this->merchant->getId(), $webhookId);
+
+        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId, $webhookCacheKey, $rzpPaymentRefundTxn);
 
         if ($isValid === false)
         {
@@ -352,6 +377,13 @@ class Webhooks extends Base\Core
         try
         {
             $res = (new Payment\Service)->refund($paymentId, ['amount' => $refundFromWebhook]);
+            // Mark the webhook has processed for idempotency.
+            $this->cache->set(
+                $webhookCacheKey,
+                'true',
+                self::SHOPIFY_WEBHOOK_CACHE_KEY_TTL
+            );
+
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
                 [
@@ -359,6 +391,7 @@ class Webhooks extends Base\Core
                     'reason'      => 'success',
                     'refund_type' => $refundType
                 ]);
+
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_SUCCESS,
                 [
@@ -372,6 +405,7 @@ class Webhooks extends Base\Core
         catch (BadRequestException $e)
         {
             $error = $e->getError();
+
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
                 [
@@ -379,6 +413,7 @@ class Webhooks extends Base\Core
                     'reason'      => strtolower($error['internal_error_code']),
                     'refund_type' => $refundType
                 ]);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
                 [
@@ -391,6 +426,11 @@ class Webhooks extends Base\Core
               ]);
               return;
         }
+    }
+
+    protected function getWebhookCacheKey(string $merchantId, string $webhookId)
+    {
+        return self::SHOPIFY_WEBHOOK_CACHE_KEY . ':' . $merchantId . ':' .$webhookId;
     }
 
     /**

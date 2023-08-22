@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 class Validator extends Base\Core
@@ -21,7 +22,10 @@ class Validator extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->monitoring = new Shopify\Monitoring();
+
+        $this->cache = $this->app['cache'];
     }
 
     /**
@@ -52,6 +56,7 @@ class Validator extends Base\Core
         Payment\Entity $payment,
         Merchant\Entity $merchant,
         string $merchantRzpOrderId,
+        $webhookCacheKey,
         $rzpPaymentRefundTxn): bool
     {
         if ($order->is1ccShopifyOrder() === false)
@@ -75,6 +80,25 @@ class Validator extends Base\Core
                     'order_id'             => $orderId,
                     'payment_id'           => $payment->getPublicId(),
                     'merchant_rzp_orderId' => $merchantRzpOrderId,
+                ]);
+            return false;
+        }
+
+        $duplicateWebhook = $this->isDuplicateWebhookRequest($webhookCacheKey);
+
+        if($duplicateWebhook === true)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'duplicate_webhook_req', 'refund_type' => 'unknown']);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                    'type'        => 'duplicate_webhook_req',
+                    'order_id'    => $order->getPublicId(),
+                    'payment_id'  => $payment->getPublicId(),
+                    'merchant_id' => $merchant->getPublicId(),
                 ]);
             return false;
         }
@@ -134,7 +158,7 @@ class Validator extends Base\Core
         // https://stackoverflow.com/questions/2803321/and-vs-as-operator to understand why we
         // specifically use '&&' over 'and' when doing multi-variable comparisons. To be safe
         // we also wrap `()` over the expression to enforce operator precedence.
-        $canIssueRefund = ($refundStatus === null && $method !== 'cod' && $paymentStatus === 'captured');
+        $canIssueRefund = (($refundStatus === null || $refundStatus === 'partial') && $method !== 'cod' && $paymentStatus === 'captured');
         if ($canIssueRefund === false)
         {
             $this->trace->error(
@@ -149,6 +173,21 @@ class Validator extends Base\Core
                 ]);
         }
         return $canIssueRefund;
+    }
+
+    /**
+     * Verify whether the duplicate webhook request triggered for idempotency.
+     */
+    public function isDuplicateWebhookRequest(string $webhookCacheKey): bool
+    {
+        $isDuplicateWebhook = $this->cache->get($webhookCacheKey);
+
+        if($isDuplicateWebhook === 'true')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }
