@@ -80,7 +80,6 @@ export const createSupportTicketForPurposeCode = async ({
   );
   ticketData.set('subject', `[Merchant] Account related assistance`);
   ticketData.set('custom_fields[cf_merchant_id]', user.id);
-  ticketData.set('tags[]', 'purpose_code_update');
   ticketData.set('custom_fields[cf_merchant_id_dashboard]', `merchant_dashboard_${user.id}`);
   ticketData.set('custom_fields[cf_new_requester_category]', 'Merchant');
   ticketData.set('custom_fields[cf_new_requester_sub_category]', 'Account related assistance');

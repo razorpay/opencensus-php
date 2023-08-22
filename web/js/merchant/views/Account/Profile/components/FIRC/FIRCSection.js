@@ -43,22 +43,25 @@ const Label = ({ title, description }) => (
   </div>
 );
 
-const SelectPurposeCode = ({ clickHandler }) => (
-  <div>
-    <a onClick={clickHandler}>Select Code</a>
-    <Popover align="top" theme="dark">
-      <PopoverBody>
-        <>
-          <span>To get</span>
-          <b>
-            <i> purpose code on FIRS</i>
-          </b>
-          <span>, please update your code here.</span>
-        </>
-      </PopoverBody>
-    </Popover>
-  </div>
-);
+const SelectPurposeCode = ({ clickHandler }) => {
+  const onClick = () => clickHandler();
+  return (
+    <div>
+      <a onClick={onClick}>Select Code</a>
+      <Popover align="top" theme="dark">
+        <PopoverBody>
+          <>
+            <span>To get</span>
+            <b>
+              <i> purpose code on FIRS</i>
+            </b>
+            <span>, please update your code here.</span>
+          </>
+        </PopoverBody>
+      </Popover>
+    </div>
+  );
+};
 
 const SelectHSCode = ({ clickHandler }) => (
   <SuspenseWithLoader>
