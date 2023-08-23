@@ -116,7 +116,7 @@ class MerchantReferralTest extends OAuthTestCase
 
         $this->assertNotEmpty($referrals->getReferralLink());
 
-        $this->assertEquals($response['easy_kyc_access_url'], $url);
+        $this->assertEquals($response['referrals']['primary']['easy_kyc_access_url'], $url);
     }
 
     /**

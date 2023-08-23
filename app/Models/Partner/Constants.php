@@ -13,6 +13,8 @@ class Constants
     const WEEKLY_ACTIVATION_SUMMARY_PARTNER_LIMIT = 1000000;
     const WEEKLY_ACTIVATION_SUMMARY_JOB_BATCH_SIZE = 10;
 
+    const REFERRAL_WITH_CONSENT = 'REFERRAL_WITH_CONSENT';
+
     const ADDRESS ='address';
     const COUNTRY ='country';
 

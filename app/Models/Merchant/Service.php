@@ -991,9 +991,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
         /*
-        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint 
+        * handleViaPGOS check is added for handling merchant edit via PGOS specifically for `merchant_edit` endpoint
         * with a pre-condition that the merchant was onboarded via PGOS and can update merchant details on PGOS
-        */ 
+        */
         if ($handleViaPGOS === true && $this->pgosProxyController->canUpdateMerchantViaPGOS($merchant) === true)
         {
             $input['merchant_id'] = $id;
@@ -1006,7 +1006,7 @@ class Service extends Base\Service
                     'response'    => $response,
                 ]
             );
-            
+
             // throw PGOS response error msg if data is not present
             if(isset($response['data']) === false)
             {
@@ -1015,7 +1015,7 @@ class Service extends Base\Service
                 );
             }
             return $response['data'];
-        } 
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -8980,7 +8980,7 @@ class Service extends Base\Service
 
         if ($isExpEnabled)
         {
-            $result['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $referrals);
+            $result['referrals'][Product::PRIMARY]['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $referrals);
         }
 
         return $result;
@@ -8995,7 +8995,7 @@ class Service extends Base\Service
                 'entity_id'      => $merchant->getId(),
                 'entity_type'    => 'merchant',
                 'product'        => Product::PRIMARY,
-                'name'           => 'referral_with_consent',
+                'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
                 'meta'           => [
                     'referral_code' => $referrals['primary']['ref_code'],
                 ]
