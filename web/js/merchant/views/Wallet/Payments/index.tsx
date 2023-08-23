@@ -5,7 +5,7 @@ import moment from 'moment';
 import DataTable from 'common/ui/Table/DataTable';
 import { idItem } from 'common/ui/item/id';
 import * as items from 'common/ui/item';
-import { Badge } from '@razorpay/blade/components';
+import { Badge, Box } from '@razorpay/blade/components';
 import { withNoWrap } from 'merchant/views/Wallet/styled';
 import Filters from 'merchant/views/Wallet/Payments/Filters';
 
@@ -16,7 +16,7 @@ import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/AccountDetail/constant
 
 import type {
   Column,
-  ListApiResponse,
+  DashboardListApiResponse,
   WalletPayment,
   PaymentsFilterParams,
 } from 'merchant/views/Wallet/types';
@@ -68,6 +68,16 @@ const accountIdCol: PaymentColumn = {
   value: (item) => <div>{item.account_id}</div>,
 };
 
+const contact: PaymentColumn = {
+  title: withNoWrap('Contact'),
+  value: (item) => <Box>{item.contact}</Box>,
+};
+
+const referenceId: PaymentColumn = {
+  title: withNoWrap('Reference Id'),
+  value: (item) => <Box>{item.reference_id}</Box>,
+};
+
 const Payments = (): JSX.Element => {
   const { mode } = useContext(SessionContext);
   const [paginationState, setPaginationState] = useState({
@@ -75,13 +85,13 @@ const Payments = (): JSX.Element => {
     count: 25,
   });
   const [filters, setFilters] = useState<PaymentsFilterParams>({
-    issuing_account_id: '',
+    account_id: '',
     from: moment().subtract(7, 'days').unix(),
     to: moment().unix(),
   });
 
   const urlQuery = new URLSearchParams(location.search);
-  const accountId = urlQuery.get('accountId') || filters.issuing_account_id;
+  const accountId = urlQuery?.get('accountId') || filters?.account_id;
 
   useEffect(() => {
     setPaginationState({
@@ -90,12 +100,15 @@ const Payments = (): JSX.Element => {
     });
   }, [filters]);
 
-  const { data, isLoading, error } = useQuery<ListApiResponse<WalletPayment>, Error>({
+  const { data, isLoading, error } = useQuery<
+    DashboardListApiResponse<{ payments: WalletPayment[] }>,
+    Error
+  >({
     queryKey: ['wallet:payments', accountId, mode, filters, paginationState],
     queryFn: () =>
       fetchPayments({
         ...filters,
-        issuing_account_id: accountId,
+        account_id: accountId,
         mode,
         count: paginationState.count,
         skip: paginationState.skip,
@@ -110,17 +123,19 @@ const Payments = (): JSX.Element => {
         count={paginationState.count}
         skip={paginationState.skip}
         error={error?.message}
-        hasMoreData={data?.has_more ?? true}
+        hasMoreData={true}
         loading={isLoading}
-        items={data?.items || []}
+        items={data?.entities.payments || []}
         columns={[
           id,
-          accountIdCol,
-          created_at,
           amount,
           merchantId,
-          description,
+          referenceId,
           statusCol,
+          contact,
+          accountIdCol,
+          created_at,
+          description,
           failure_reason,
           notes,
         ]}

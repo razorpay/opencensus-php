@@ -31,7 +31,7 @@ describe('Wallet > Loads', () => {
     await userEvent.type(screen.getByTestId('accountId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ issuing_account_id: input, from: '', to: '' });
+    expect(mock).toBeCalledWith({ account_id: input, from: '', to: '' });
   });
 
   test('Should receive load id in callback when id is entered', async () => {
@@ -43,7 +43,7 @@ describe('Wallet > Loads', () => {
     await userEvent.type(screen.getByTestId('loadId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ load_id: input, from: '', to: '' });
+    expect(mock).toBeCalledWith({ id: input, from: '', to: '' });
   });
 
   test('Should display loads table with expected rows', () => {

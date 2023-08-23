@@ -6,6 +6,7 @@ import { stringifyQueryParams, decodeSensitiveFields } from 'common/utils/rzp-ut
 import { WALLET_BASE_PATH } from 'merchant/views/Wallet/constants';
 
 import type * as types from 'merchant/views/Wallet/types';
+import { getAppliedFilters } from './utils';
 
 export const fetchAccounts = async ({
   mode = 'test',
@@ -46,17 +47,17 @@ export const fetchTransactions = async ({
   skip = 0,
   count = 25,
   ...filters
-}: types.TransactionListApiParams): Promise<types.ListApiResponse<types.Transaction>> => {
+}: types.TransactionListApiParams): Promise<
+  types.DashboardListApiResponse<{ transactions: types.Transaction[] }>
+> => {
   try {
-    const res = await fetch<types.ListApiResponse<types.Transaction>>({
-      url: `${WALLET_BASE_PATH}/transactions${stringifyQueryParams({
-        ...filters,
-        count,
-        skip,
-      })}`,
+    const res = await fetch<types.DashboardListApiResponse<{ transactions: types.Transaction[] }>>({
+      url: `${WALLET_BASE_PATH}/dashboard/transactions`,
       mode,
+      method: 'POST',
+      data: getAppliedFilters({ filters, skip, count }),
     });
-    res.items = res.items.map((item) => ({
+    res.entities.transactions = res.entities.transactions.map((item) => ({
       ...item,
       amount: parseInt(String(item.amount), 10),
       credit: parseInt(String(item.credit), 10),
@@ -80,19 +81,18 @@ export const fetchPayments = async ({
   skip = 0,
   count = 25,
   ...filters
-}: types.ListApiParams): Promise<types.ListApiResponse<types.WalletPayment>> => {
+}: types.ListApiParams): Promise<
+  types.DashboardListApiResponse<{ payments: types.WalletPayment[] }>
+> => {
   try {
-    const url = `${WALLET_BASE_PATH}/payments${stringifyQueryParams({
-      ...filters,
-      count,
-      skip,
-    })}`;
-
-    const res = await fetch<types.ListApiResponse<types.WalletPayment>>({
+    const url = `${WALLET_BASE_PATH}/dashboard/payments`;
+    const res = await fetch<types.DashboardListApiResponse<{ payments: types.WalletPayment[] }>>({
       url,
       mode,
+      method: 'POST',
+      data: getAppliedFilters({ filters, skip, count }),
     });
-    res.items = res.items.map((item) => ({
+    res.entities.payments = res.entities.payments.map((item) => ({
       ...item,
       amount: parseInt(String(item.amount), 10),
       created_at: parseInt(String(item.created_at), 10),
@@ -114,18 +114,18 @@ export const fetchLoads = async ({
   skip = 0,
   count = 25,
   ...filters
-}: types.ListApiParams): Promise<types.ListApiResponse<types.WalletLoad>> => {
+}: types.ListApiParams): Promise<
+  types.DashboardListApiResponse<{ recharges: types.WalletLoad[] }>
+> => {
   try {
-    const url = `${WALLET_BASE_PATH}/loads${stringifyQueryParams({
-      ...filters,
-      skip,
-      count,
-    })}`;
-    const res = await fetch<types.ListApiResponse<types.WalletLoad>>({
+    const url = `${WALLET_BASE_PATH}/dashboard/loads`;
+    const res = await fetch<types.DashboardListApiResponse<{ recharges: types.WalletLoad[] }>>({
       url,
       mode,
+      method: 'POST',
+      data: getAppliedFilters({ filters, skip, count }),
     });
-    res.items = res.items.map((item) => ({
+    res.entities.recharges = res.entities.recharges.map((item) => ({
       ...item,
       amount: parseInt(String(item.amount), 10),
       created_at: parseInt(String(item.created_at), 10),

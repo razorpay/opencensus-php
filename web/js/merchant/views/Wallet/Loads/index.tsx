@@ -5,7 +5,7 @@ import moment from 'moment';
 import * as items from 'common/ui/item';
 import { idItem } from 'common/ui/item/id';
 import DataTable from 'common/ui/Table/DataTable';
-import { Badge } from '@razorpay/blade/components';
+import { Badge, Box } from '@razorpay/blade/components';
 import { withNoWrap } from 'merchant/views/Wallet/styled';
 import Filters from 'merchant/views/Wallet/Loads/Filters';
 
@@ -15,7 +15,7 @@ import { toTitleCase } from 'common/utils';
 import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/AccountDetail/constants';
 
 import type {
-  ListApiResponse,
+  DashboardListApiResponse,
   WalletLoad,
   Column,
   LoadsFilterParams,
@@ -66,6 +66,16 @@ const accountIdCol: LoadColumn = {
   value: (item) => <div>{item.account_id}</div>,
 };
 
+const contact: LoadColumn = {
+  title: withNoWrap('Contact'),
+  value: (item) => <Box>{item.contact}</Box>,
+};
+
+const referenceId: LoadColumn = {
+  title: withNoWrap('Reference Id'),
+  value: (item) => <Box>{item.reference_id}</Box>,
+};
+
 type LoadColumn = Column<WalletLoad>;
 
 const Loads = (): JSX.Element => {
@@ -75,13 +85,13 @@ const Loads = (): JSX.Element => {
     count: 25,
   });
   const [filters, setFilters] = useState<LoadsFilterParams>({
-    issuing_account_id: '',
+    account_id: '',
     from: moment().subtract(7, 'days').unix(),
     to: moment().unix(),
   });
 
   const urlQuery = new URLSearchParams(location.search);
-  const accountId = urlQuery.get('accountId') || filters.issuing_account_id;
+  const accountId = urlQuery.get('accountId') || filters.account_id;
 
   useEffect(() => {
     setPaginationState({
@@ -90,12 +100,15 @@ const Loads = (): JSX.Element => {
     });
   }, [filters]);
 
-  const { data, isLoading, error } = useQuery<ListApiResponse<WalletLoad>, Error>({
+  const { data, isLoading, error } = useQuery<
+    DashboardListApiResponse<{ recharges: WalletLoad[] }>,
+    Error
+  >({
     queryKey: ['wallet:loads', accountId, mode, paginationState, filters],
     queryFn: () =>
       fetchLoads({
         ...filters,
-        issuing_account_id: accountId,
+        account_id: accountId,
         mode,
         count: paginationState.count,
         skip: paginationState.skip,
@@ -112,18 +125,20 @@ const Loads = (): JSX.Element => {
         error={error?.message}
         columns={[
           id,
-          accountIdCol,
-          created_at,
           amount,
           type,
-          description,
           statusCol,
+          contact,
+          accountIdCol,
+          referenceId,
+          description,
+          created_at,
           failure_reason,
           notes,
         ]}
-        hasMoreData={data?.has_more ?? true}
+        hasMoreData={true}
         loading={isLoading}
-        items={data?.items || []}
+        items={data?.entities.recharges || []}
         paginate={setPaginationState}
       />
     </div>

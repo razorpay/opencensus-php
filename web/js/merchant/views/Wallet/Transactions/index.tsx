@@ -4,12 +4,25 @@ import React, { useContext, useEffect, useState } from 'react';
 
 import DataTable from 'common/ui/Table/DataTable';
 import Filters from 'merchant/views/Wallet/Transactions/Filters';
+import {
+  ID,
+  ACCOUNT_ID,
+  AMOUNT,
+  CREATED_AT,
+  TYPE,
+  SOURCE,
+  REFERENCE_ID,
+  CONTACT,
+} from 'merchant/views/Wallet/Transactions/constants';
 
 import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import { fetchTransactions } from 'merchant/views/Wallet/queries';
 
-import { ListApiResponse, Transaction, TransactionFilterParams } from 'merchant/views/Wallet/types';
-import { ID, ACCOUNT_ID, AMOUNT, CREATED_AT, TYPE, SOURCE, REFERENCE_ID } from './constants';
+import {
+  DashboardListApiResponse,
+  TransactionFilterParams,
+  Transaction,
+} from 'merchant/views/Wallet/types';
 
 export const Transactions = (): JSX.Element => {
   const { mode } = useContext<WalletSession>(SessionContext);
@@ -29,8 +42,11 @@ export const Transactions = (): JSX.Element => {
     });
   }, [filters]);
 
-  const { isLoading, data, error } = useQuery<ListApiResponse<Transaction>, Error>({
-    queryKey: ['wallet:transactions', mode, paginationState],
+  const { isLoading, data, error } = useQuery<
+    DashboardListApiResponse<{ transactions: Transaction[] }>,
+    Error
+  >({
+    queryKey: ['wallet:transactions', filters, mode, paginationState],
     queryFn: () => fetchTransactions({ ...filters, ...paginationState, mode }),
   });
 
@@ -39,14 +55,14 @@ export const Transactions = (): JSX.Element => {
       <Filters onSubmit={setFilters} />
       <DataTable
         title="Transactions"
-        columns={[ID, AMOUNT, TYPE, REFERENCE_ID, ACCOUNT_ID, SOURCE, CREATED_AT]}
+        columns={[ID, AMOUNT, TYPE, REFERENCE_ID, CONTACT, ACCOUNT_ID, SOURCE, CREATED_AT]}
         count={paginationState.count}
         skip={paginationState.skip}
         paginate={setPagination}
         error={error?.message}
-        items={data?.items || []}
+        items={data?.entities.transactions || []}
         loading={isLoading}
-        hasMoreData={data?.has_more ?? true}
+        hasMoreData={true}
       />
     </div>
   );

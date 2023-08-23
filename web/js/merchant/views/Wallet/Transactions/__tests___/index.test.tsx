@@ -17,17 +17,17 @@ describe('Wallet > Transactions > List Table', () => {
 
     await waitForLoadingToFinish();
 
-    expect(screen.getByText('Transaction ID')).toBeInTheDocument();
-    expect(screen.getByText('I9eCvXfHx7nzZf')).toBeInTheDocument();
-    expect(screen.getByText('Reference ID')).toBeInTheDocument();
-    expect(screen.getByText('Account ID')).toBeInTheDocument();
-    expect(screen.getByText('iacc_I9eCvXfHx7nzZf')).toBeInTheDocument();
+    expect(screen.getByText('Transaction Id', { selector: 'th' })).toBeInTheDocument();
+    expect(screen.getByText('itxn_MSQSunez0tjxDX')).toBeInTheDocument();
+    expect(screen.getByText('Reference Id', { selector: 'th' })).toBeInTheDocument();
+    expect(screen.getByText('Account Id')).toBeInTheDocument();
+    expect(screen.getByText('iacc_MSQShu0g115l39')).toBeInTheDocument();
     expect(screen.getByText('Source')).toBeInTheDocument();
-    expect(screen.getByText('merchant')).toBeInTheDocument();
+    expect(screen.getByText('ipay_MSQSumyGI3Hl1j')).toBeInTheDocument();
     expect(screen.getByText('Type')).toBeInTheDocument();
     expect(screen.getByText('Debit')).toBeInTheDocument();
     expect(screen.getByText('Created At')).toBeInTheDocument();
     expect(screen.getByText('Amount')).toBeInTheDocument();
-    expect(screen.getByText('200')).toBeInTheDocument();
+    expect(screen.getByText('INR 100')).toBeInTheDocument();
   });
 });

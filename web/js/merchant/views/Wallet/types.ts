@@ -49,6 +49,7 @@ export interface WalletPayment {
   account_holder_name: string;
   program_name: string;
   merchant_id: string;
+  reference_id: string;
 }
 
 export interface WalletLoad {
@@ -66,6 +67,7 @@ export interface WalletLoad {
   program_name: string;
   failure_reason: string;
   notes: string;
+  reference_id: string;
 }
 
 export interface AccountBalance {
@@ -87,11 +89,19 @@ export interface ListApiResponse<T> {
   has_more: boolean;
   items: T[];
 }
+
+export interface DashboardListApiResponse<T> {
+  totals: string | null;
+  total_count: string;
+  count: number;
+  entity: string;
+  entities: T;
+}
 export interface ListApiParams {
   skip: number;
   count: number;
   mode: ModeT;
-  issuing_account_id?: string;
+  account_id?: string;
 }
 
 export interface DetailApiParams {
@@ -137,7 +147,7 @@ export interface TransactionFilterParams {
 export type TransactionListApiParams = TransactionFilterParams & ListApiParams;
 
 export interface LoadsFilterParams {
-  issuing_account_id?: string;
+  account_id?: string;
   from: number;
   to: number;
   load_id?: string;
@@ -146,10 +156,34 @@ export interface LoadsFilterParams {
 export type AccountLoadsListApiParams = LoadsFilterParams & ListApiParams;
 
 export interface PaymentsFilterParams {
-  issuing_account_id?: string;
+  account_id?: string;
   from: number;
   to: number;
   payment_id?: string;
 }
 
 export type AccountPaymentsListApiParams = PaymentsFilterParams & ListApiParams;
+
+export interface AppliedFiltersParams {
+  filters: {
+    from?: number;
+    to?: number;
+    contact?: string;
+    id?: string;
+    account_id?: string;
+  };
+  skip: number;
+  count: number;
+}
+
+export interface AppliedFilters {
+  filters: Array<{ key: string; op: string; value: string }>;
+  pagination: {
+    limit: number;
+    skip: number;
+  };
+  time_range?: {
+    from?: number;
+    to?: number;
+  };
+}

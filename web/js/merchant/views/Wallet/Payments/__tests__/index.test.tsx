@@ -30,7 +30,7 @@ describe('Wallet > Payments', () => {
     await userEvent.type(screen.getByTestId('accountId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ issuing_account_id: input, from: '', to: '' });
+    expect(mock).toBeCalledWith({ account_id: input, from: '', to: '' });
   });
 
   test('Should receive account id in callback when id is entered', async () => {
@@ -42,7 +42,7 @@ describe('Wallet > Payments', () => {
     await userEvent.type(screen.getByTestId('paymentId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ payment_id: input, from: '', to: '' });
+    expect(mock).toBeCalledWith({ id: input, from: '', to: '' });
   });
 
   test('Should display Payments table with expected rows', () => {

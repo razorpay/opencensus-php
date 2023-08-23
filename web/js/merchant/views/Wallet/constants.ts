@@ -10,3 +10,5 @@ export const walletPaths = {
 };
 
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';
+
+export const TIME_RANGE_FILTER = ['from', 'to'];

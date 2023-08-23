@@ -28,6 +28,6 @@ describe('Wallet > Accounts > Filters', () => {
     await userEvent.type(screen.getByTestId('id'), id);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock.mock.calls[0][0]).toMatchObject({ id });
+    expect(mock.mock.calls[0][0]).toMatchObject({ transaction_id: id, from: '', to: '' });
   });
 });

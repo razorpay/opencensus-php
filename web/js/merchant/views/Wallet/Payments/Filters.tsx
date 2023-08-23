@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
 import ListFilter from 'merchant/components/ListFilter';
+import { ContactField, ReferenceIdField } from 'merchant/views/Wallet/common/Fields';
+
 import 'react-dates/initialize';
 
 import type { AccountPaymentsListApiParams } from 'merchant/views/Wallet/types';
@@ -27,23 +29,22 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
     <ListFilter date={date} onSubmit={onSubmit} form="walletAccountsPaymentsFilter">
       <div className="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field
-          name="payment_id"
-          component="input"
-          class="form-control input-sm"
-          data-testid="paymentId"
-        />
+        <Field name="id" component="input" class="form-control input-sm" data-testid="paymentId" />
       </div>
 
       <div className="form-group list-filter-item">
         <label>Account Id</label>
         <Field
-          name="issuing_account_id"
+          name="account_id"
           component="input"
           class="form-control input-sm"
           data-testid="accountId"
         />
       </div>
+
+      <ReferenceIdField />
+
+      <ContactField />
 
       <div className="form-group datepicker-group">
         <label>Duration</label>
