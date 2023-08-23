@@ -331,7 +331,7 @@ class Repository extends Base\Repository
         $merchantAttributeType = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::TYPE);
         $merchantAttributeUpdatedAt = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::UPDATED_AT);
 
-        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->join(Table::MERCHANT_ATTRIBUTE, $merchantIdCol, '=', $merchantAttributeMerchantId)
             ->select($merchantIdCol)
             ->where(Entity::ACTIVATED, '=', 0)
