@@ -112,17 +112,11 @@
             <directory>./tests/Functional/Customer/</directory>
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
-            <directory>./tests/Functional/Invoice/</directory>
-            <exclude>/tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
-            <directory>./tests/Functional/FundTransfer/</directory>
+            <exclude>./tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
             <directory>./tests/Functional/Invitation/</directory>
-            <directory>./tests/Functional/BankingAccountTpv/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">
-            <file>./tests/Functional/Merchant/AccountTest.php</file>
-            <file>./tests/Functional/Merchant/AccountV2DocumentsTest.php</file>
-            <file>./tests/Functional/Merchant/AccountV2Test.php</file>
             <file>./tests/Functional/Merchant/AmountCreditsTest.php</file>
             <file>./tests/Functional/Merchant/AppCheckerTest.php</file>
             <file>./tests/Functional/Merchant/BalanceConfigTest.php</file>
@@ -355,11 +349,6 @@
             <directory>./tests/Functional/Gateway/Aeps/</directory>
             <directory>./tests/Functional/Gateway/Amex/</directory>
             <directory>./tests/Functional/Gateway/Atom/</directory>
-            <directory>./tests/Functional/Gateway/AxisGenius/</directory>
-            <directory>./tests/Functional/Gateway/Billdesk/</directory>
-            <directory>./tests/Functional/Gateway/Enach/</directory>
-            <directory>./tests/Functional/Gateway/Esigner/</directory>
-            <directory>./tests/Functional/Gateway/Netbanking/</directory>
         </testsuite>
         <testsuite name="Gateway-2 Test Suite">
             <directory>./tests/Functional/Gateway/Mpi/</directory>
@@ -395,7 +384,6 @@
             <directory>./tests/Functional/BankingAccountStatement/</directory>
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
-            <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
         </testsuite>
         <testsuite name="ES Ondemand Test Suite">
@@ -431,7 +419,6 @@
             <directory>./tests/Functional/BankTransfer/</directory>
             <directory>./tests/Functional/Payment/Transfers/</directory>
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
-            <file>./tests/Functional/Merchant/AccountTest.php</file>
             <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
         </testsuite>
         <testsuite name="Post Payment Test Suite">
