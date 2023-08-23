@@ -19,7 +19,8 @@ class Fetch extends BaseFetch
             EsRepository::CUSTOMER_CONTACT => 'sometimes|string',
             Entity::ENTITY_TYPE            => 'sometimes|string',
             Entity::USAGE_TYPE             => 'sometimes|string',
-            Entity::PROVIDER               => 'sometimes|string'
+            Entity::PROVIDER               => 'sometimes|string',
+            EsRepository::QUERY            => 'sometimes|string|min:1|max:100',
         ],
     ];
 
@@ -40,6 +41,7 @@ class Fetch extends BaseFetch
             EsRepository::CUSTOMER_NAME,
             EsRepository::CUSTOMER_CONTACT,
             Entity::ENTITY_TYPE,
+            EsRepository::QUERY,
         ],
     ];
 
@@ -57,6 +59,7 @@ class Fetch extends BaseFetch
         EsRepository::CUSTOMER_EMAIL,
         EsRepository::CUSTOMER_NAME,
         EsRepository::CUSTOMER_CONTACT,
+        EsRepository::QUERY,
     ];
 
     const COMMON_FIELDS = [

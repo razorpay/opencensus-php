@@ -25,6 +25,13 @@ class EsRepository extends Base\EsRepository
         Entity::PROVIDER,
     ];
 
+    protected $queryFields = [
+        Entity::NOTES. ".value",
+        Entity::NAME,
+        self::CUSTOMER_NAME,
+    ];
+
+
     public function buildQueryForEntityType(array &$query, $value)
     {
         return $query;
