@@ -1,4 +1,4 @@
-import moment from 'moment';
+const moment = require('moment');
 const { expect } = require('@playwright/test');
 const { COMMON_SELECTORS } = require('./selectors');
 const { routes } = require('./constants');

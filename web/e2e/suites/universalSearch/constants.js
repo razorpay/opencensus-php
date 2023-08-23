@@ -1,4 +1,4 @@
-import { getDefaultDateRangeForPayments } from 'merchant/components/HeaderNav/UniversalSearch/utils/EntitySearch';
+const { getDefaultDateRangeForPayments } = require('../../utils');
 
 export const SEARCH_TERMS_WITH_EXPECTED_RESULTS = [
   {
