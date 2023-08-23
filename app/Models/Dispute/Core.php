@@ -1026,9 +1026,12 @@ class Core extends Base\Core
                     {
                         $fdOutboundEmailRequest = $this->getFdRequestPayload($merchantId, $merchant, $bulkMailData);
 
-                        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+                        if (empty($fdOutboundEmailRequest) === false)
+                        {
+                            $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
-                        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+                            (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+                        }
                     }
                     else
                     {
@@ -1080,7 +1083,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $this->pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase);
+            $this->pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase, $e);
         }
     }
 
@@ -1097,7 +1100,7 @@ class Core extends Base\Core
         $this->trace->count(Metrics::DISPUTE_MAIL_SUCCESS);
     }
 
-    private function pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase)
+    private function pushMetricsForDisputeFdMailFailure($bulkMailData, $merchantId, $disputeIds, $disputePhase, $e)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
@@ -1114,20 +1117,25 @@ class Core extends Base\Core
 
             if ($experimentEnabled === true)
             {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::DISPUTE_BULK_MAIL_FD_PROCESSING_ERROR,
-                    [
-                        'merchant_id' => $merchantId,
-                        'phase'       => $disputePhase,
-                        'dispute_ids' => $disputeIds,
-                    ]
-                );
-
-                $this->trace->count(Metrics::DISPUTE_FD_MAIL_FAILURE);
+                $this->traceAndPushMetricsForDisputeFdMailFailure($merchantId, $disputeIds, $disputePhase, $e);
             }
         }
+    }
+
+    private function traceAndPushMetricsForDisputeFdMailFailure($merchantId, $disputeIds, $disputePhase, $e)
+    {
+        $this->trace->traceException(
+            $e,
+            Trace::ERROR,
+            TraceCode::DISPUTE_BULK_MAIL_FD_PROCESSING_ERROR,
+            [
+                'merchant_id' => $merchantId,
+                'phase'       => $disputePhase,
+                'dispute_ids' => $disputeIds,
+            ]
+        );
+
+        $this->trace->count(Metrics::DISPUTE_FD_MAIL_FAILURE);
     }
 
     private function getFdRequestPayload(string $merchantId, Merchant\Entity $merchant, array $merchantData): array
@@ -1155,6 +1163,13 @@ class Core extends Base\Core
         $file = new UploadedFile($filePath, $fileName. '.csv', 'text/csv', null, true);
 
         $emailIds = $merchantData[DisputeConstants::MERCHANT][FreshdeskConstants::EMAIL];
+
+        if (empty($emailIds) === true)
+        {
+            $this->traceAndPushMetricsForMerchantsWithNoEmail($merchantId, $disputeIds, $disputePhase);
+
+            return [];
+        }
 
         if (gettype($emailIds) === DisputeConstants::TYPE_STRING)
         {
@@ -1202,6 +1217,19 @@ class Core extends Base\Core
         }
 
         return $fdOutboundEmailRequest;
+    }
+
+    private function traceAndPushMetricsForMerchantsWithNoEmail($merchantId, $disputeIds, $disputePhase)
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_BULK_MAIL_MERCHANTS_WITH_NO_EMAIL,
+            [
+                'dispute_ids' => $disputeIds,
+                'merchant_id' => $merchantId,
+                'phase' => $disputePhase,
+            ]);
+
+        $this->trace->count(Metrics::DISPUTE_FD_MAIL_MERCHANTS_WITH_NO_EMAIL);
     }
 
     private function renderHtmlBody(string $viewName, array $tableData, array &$merchantData): string
