@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Key\Metric;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Entity as E;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Http\BasicAuth\ClientAuthCreds;
 use Razorpay\OAuth\Client as OAuthClient;
 
@@ -124,6 +125,11 @@ class Core extends Base\Core
      */
     public function fetchEntityOrigin(Base\PublicEntity $entity)
     {
+        if(($entity->getEntityName() === E::PAYMENT) and ($entity->getReceiverType() === Receiver::POS))
+        {
+            return null;
+        }
+
         $receiver       = $entity->receiver;      // Example receiver: Qr_code entity
 
         $subscriptionId = null;
