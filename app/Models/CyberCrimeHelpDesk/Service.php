@@ -53,10 +53,14 @@ class Service extends Base\Service
 
         $mailSubject = sprintf($mailSubject, $currentDateTime);
 
-        $complaintId  = $input[Constants::COMPLAINT_ID];
+        $complaintId  = '';
 
-        if(empty($complaintId) === false){
+        if(empty($input[Constants::COMPLAINT_ID]) === false)
+        {
+            $complaintId = $input[Constants::COMPLAINT_ID];
+
             $mailSubject = (new TemplateEngine)->render(Constants::LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT_WITH_CASE_ID, []);
+
             $mailSubject = sprintf($mailSubject, $complaintId, $currentDateTime);
         }
 

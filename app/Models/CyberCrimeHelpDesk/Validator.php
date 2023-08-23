@@ -15,7 +15,8 @@ class Validator extends BaseValidator
     protected static $sendMailToLEAFromCyberCrimeHelpdeskRules = [
         'requester_mail'    => 'required|email|max:255',
         'payment_requests'  => 'required|array',
-        'files'             => 'sometimes|array'
+        'files'             => 'sometimes|array',
+        'complaint_id'      => 'sometimes|string|max:50',
     ];
 
     protected static $cyberCrimeHelpdeskWorkflowActionCreateRules = [

@@ -55,8 +55,8 @@
             style="height: 40px"
             src="https://cdn.razorpay.com/static/assets/email/notification.png"
           />
-          @if(empty($complaintId) === false)
-                <p style="margin: 0; margin-top: 15px">Case ID: {{$complaintId}} | Razorpay Response to LEA</p>
+          @if(empty($complaint_id) === false)
+                <p style="margin: 0; margin-top: 15px">Case ID: {{$complaint_id}} | Razorpay Response to LEA</p>
           @else
                 <p style="margin: 0; margin-top: 15px">Razorpay Response to LEA</p>
           @endif
