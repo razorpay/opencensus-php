@@ -204,7 +204,7 @@ class Repository extends Base\Repository
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -269,7 +269,7 @@ class Repository extends Base\Repository
 
             try
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -387,7 +387,7 @@ class Repository extends Base\Repository
 
             try
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -458,7 +458,7 @@ class Repository extends Base\Repository
 
             $data = ["function" => "fetch", "params" => $params];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -553,7 +553,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -612,7 +612,7 @@ class Repository extends Base\Repository
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -680,7 +680,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "findByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -756,7 +756,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "findActivatedTerminalByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -819,7 +819,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "findTerminalByGatewayMerchantIdAndGatewayTerminalId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway_terminal_id"=> $gatewayTerminalId, "gateway"=> $gateway];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -894,7 +894,7 @@ class Repository extends Base\Repository
                 "mpan" => $mpan
             ];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -962,7 +962,7 @@ class Repository extends Base\Repository
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1028,7 +1028,7 @@ class Repository extends Base\Repository
 
                 if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
                 {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                     $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1165,7 +1165,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "getEmandateTerminalsForMerchantAndSharedMerchant", "gateways" => $gateways];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1256,7 +1256,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getAllBankTransferTerminals", "gateway" => $gateway];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1359,7 +1359,7 @@ class Repository extends Base\Repository
                 "gateway_terminal_id" => $gatewayTerminalId
             ];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1425,7 +1425,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByIdAndMerchantId", "mid" => $mid, "tid" => $tid];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1497,7 +1497,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByMerchantIdAndGateway", "mid" => $mid, "gateway" => $gateway];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1571,7 +1571,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1648,7 +1648,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getRecurringTerminalsByMidAndGateway", "mid" => $mid, "gateway" => $gateway];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1722,7 +1722,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $mid];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1879,7 +1879,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByTerminalIds", "ids" => $ids];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -1979,7 +1979,7 @@ class Repository extends Base\Repository
                 "gateway" => $gateway,
             ];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2038,7 +2038,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "findByGatewayMpan", "gateway" => $gateway, "mpan" => $mpan];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2179,7 +2179,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByMerchantProviderAndMethod", "mid" => $merchantId, "gateway_acquirer" => $provider];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2252,7 +2252,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "findByMerchantIdAndMethod", "mid" => $merchantId, "method" => $method];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2314,7 +2314,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "findManyEnabledByIds", "ids" => $ids];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2392,7 +2392,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "findByMerchantIdGatewayAndCurrency", "mid" => $merchantId, "gateway" => $gateway];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
@@ -2450,7 +2450,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "fetchByMerchantIdGatewayAndStatus", "mid" => $mid, "gateway" => $gateway, "status" => $status];
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+//            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 

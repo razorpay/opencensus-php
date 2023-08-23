@@ -161,7 +161,7 @@ class SplitzService extends Base\Service
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters]);
+//        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters]);
 
         return [
             'url'     => $url,
@@ -280,7 +280,7 @@ class SplitzService extends Base\Service
             if ($batchResponse['state'] == 'fulfilled') {
                 $result = json_decode($batchResponse['value']->getBody(), true);
                 if(isset($result['bulk_evaluate_response']) == true){
-                    $response = array_merge($response, $result['bulk_evaluate_response']); 
+                    $response = array_merge($response, $result['bulk_evaluate_response']);
                 }
             } else {
                 $errorBody = [
@@ -331,7 +331,7 @@ class SplitzService extends Base\Service
             'time_taken'   => millitime() - $startTime
         ]);
 
-        return $this->getSplitzDatafromPromise($promises); 
+        return $this->getSplitzDatafromPromise($promises);
     }
 
     public function bulkCallsToSplitz($parameters, $isParallelReqEnabled = true)
@@ -341,7 +341,7 @@ class SplitzService extends Base\Service
         if (empty($parameters)){
             return $response;
         }
-        
+
         $chunkExperimentArray = array_chunk($parameters, 30);
 
         if($isParallelReqEnabled && count($chunkExperimentArray) > 1) {
@@ -353,7 +353,7 @@ class SplitzService extends Base\Service
         } else {
             $response =  $this->getExperimentFromSplitz($chunkExperimentArray);
         }
-        
+
         return $response;
     }
 

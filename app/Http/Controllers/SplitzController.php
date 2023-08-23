@@ -185,7 +185,7 @@ class SplitzController extends Controller
         $headers = [];
 
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
-        
+
         $parameters = Request::all();
 
         unset($parameters['service_path']);
@@ -200,7 +200,7 @@ class SplitzController extends Controller
             'timeout' => $this->requestTimeout,
         ];
 
-        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'options' => $options]);
+//        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'options' => $options]);
 
         return [
             'url'     => $url,

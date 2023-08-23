@@ -1208,13 +1208,13 @@ class Core extends Base\Core
         $response['status'] = false;
         try
         {
-            $this->trace->info(
-                TraceCode::FEATURE_GET_STATUS_REQUEST,
-                [
-                    Entity::FEATURE     => $featureName,
-                    Entity::ENTITY_TYPE => $entityType,
-                    Entity::ENTITY_ID   => $entityId,
-                ]);
+//            $this->trace->info(
+//                TraceCode::FEATURE_GET_STATUS_REQUEST,
+//                [
+//                    Entity::FEATURE     => $featureName,
+//                    Entity::ENTITY_TYPE => $entityType,
+//                    Entity::ENTITY_ID   => $entityId,
+//                ]);
 
             $entityId = $entityId ?? $this->merchant->getId();
 

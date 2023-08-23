@@ -194,9 +194,9 @@ trait Verify
             throw $e;
         }
 
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
-            $this->getTracableVerifyProperties($customProperties));
+//        $this->trace->info(
+//            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
+//            $this->getTracableVerifyProperties($customProperties));
 
         return $data;
     }
@@ -216,12 +216,12 @@ trait Verify
             'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
         ];
 
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFICATION_INITIATED,
-            [
-                'payment_id' => $payment->getId(),
-                'gateway'    => $payment->getGateway(),
-            ]);
+//        $this->trace->info(
+//            TraceCode::PAYMENT_VERIFICATION_INITIATED,
+//            [
+//                'payment_id' => $payment->getId(),
+//                'gateway'    => $payment->getGateway(),
+//            ]);
 
         $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment, null, $extraProperties);
 
@@ -254,11 +254,11 @@ trait Verify
 
         }
 
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
-            [
-                'event_properties' => $this->getTracableVerifyProperties($customProperties),
-            ]);
+//        $this->trace->info(
+//            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
+//            [
+//                'event_properties' => $this->getTracableVerifyProperties($customProperties),
+//            ]);
 
         return $data;
     }
@@ -410,7 +410,7 @@ trait Verify
             'error_code_non_verifiable' => $errorCodeNonVerifiable,
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_VERIFY_EVENT_DATA, $this->getTracableVerifyProperties($eventData));
+//        $this->trace->info(TraceCode::PAYMENT_VERIFY_EVENT_DATA, $this->getTracableVerifyProperties($eventData));
     }
 
     /**

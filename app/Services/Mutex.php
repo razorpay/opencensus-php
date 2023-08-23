@@ -159,10 +159,10 @@ class Mutex
          */
         if ($response !== null)
         {
-            $this->trace->info(TraceCode::MUTEX_REDIS_RESPONSE_NOT_NULL,
-                [
-                    'response' => $response
-            ]);
+//            $this->trace->info(TraceCode::MUTEX_REDIS_RESPONSE_NOT_NULL,
+//                [
+//                    'response' => $response
+//            ]);
 
             return true;
         }

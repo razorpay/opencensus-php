@@ -290,7 +290,7 @@ class TerminalController extends Controller
 
         $traceData = ["method" => $method, "path" => $path];
 
-        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $traceData);
+//        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $traceData);
 
         $path = str_replace("v1/terminals/proxy","v1", $path);
 

@@ -1635,7 +1635,7 @@ class Entity extends Base\PublicEntity
             {
                 $terminalId = $terminal['id'];
 
-                $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST, ["Id" => $terminalId]);
+//                $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST, ["Id" => $terminalId]);
 
                 $path = "v2/terminals/credentials/" . $terminal[Entity::ID];
 

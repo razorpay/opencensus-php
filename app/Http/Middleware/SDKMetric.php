@@ -61,10 +61,10 @@ class SDKMetric
             {
                 $userAgent = $request->userAgent();
                 // added trace log for sdk data
-                $this->trace->info(TraceCode::SDK_USAGE, [
-                    self::USER_AGENT => $request->userAgent(),
-                    self::MERCHANT_ID => $merchantID
-                ]);
+//                $this->trace->info(TraceCode::SDK_USAGE, [
+//                    self::USER_AGENT => $request->userAgent(),
+//                    self::MERCHANT_ID => $merchantID
+//                ]);
             }
             // pushing metric for sdk usage
             $this->trace->count(self::SDK_USAGE, [
