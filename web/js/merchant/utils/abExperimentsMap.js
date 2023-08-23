@@ -659,12 +659,6 @@ export default {
     // production env id
     'M2B4FXLdVgc3wj',
   ],
-  partnership_phantom_pure_platform: [
-    // stage
-    'LoGdTEB7Wo0UuW',
-    // prod
-    'LoGggyN9DVhO7A',
-  ],
   recurring_card_multi_frequency: [
     //prod
     'MA6kWlvm3jWXqO',

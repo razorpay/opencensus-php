@@ -5,6 +5,7 @@ import AsyncButton from 'react-async-button';
 import { Link, withRouter, NavLink } from 'react-router-dom';
 import { ArrowLeftIcon, Text } from '@razorpay/blade/components';
 import { autoPrefixUrls, titleCase } from 'common/utils/rzp-utils';
+import { withSplitzService } from 'common/splitz';
 
 import { required, lenientUrl, flexibleDevUrl } from 'common/utils/validators';
 
@@ -16,7 +17,6 @@ import InputField from 'common/ui/Forms/InputField';
 import TaggedInput from 'common/ui/Forms/TaggedInput';
 import Fieldset from 'common/ui/Forms/Fieldset';
 import LoaderDots from 'common/ui/LoaderDots';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import AppWebhook from './AppWebhook';
 
@@ -286,9 +286,13 @@ class NewApplicationForm extends Component {
       location: { pathname },
       match: { params },
       user,
+      splitz,
     } = this.props;
+    const { abExperiments } = splitz;
     const { edit, details } = this.state;
     const isPartner = pathname.includes('/partners');
+    const isExpEnabledForConfigurator =
+      abExperiments.Partnerships_oauth_phantom?.variables.result === 'on';
 
     return (
       <div class="content-box new-application-form">
@@ -307,7 +311,7 @@ class NewApplicationForm extends Component {
             </header>
             <header>
               <NavLink to={`/partners/applications/${params.id}`}>Integration Settings</NavLink>
-              <ShowWhen additionalCondition={(user) => user.isPhantomPurePlatformEnabled}>
+              {isExpEnabledForConfigurator ? (
                 <NavLink
                   to={{
                     pathname: `/partners/applications/configuration/${params.id}`,
@@ -316,7 +320,7 @@ class NewApplicationForm extends Component {
                 >
                   Onboarding UI Configurator
                 </NavLink>
-              </ShowWhen>
+              ) : null}
             </header>
           </>
         ) : (
@@ -565,4 +569,4 @@ function WebhookDetail({ webhookLoading, webhook, mode = '', showWebhookModal })
   );
 }
 
-export default NewApplicationForm;
+export default withSplitzService(NewApplicationForm);

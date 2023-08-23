@@ -2050,11 +2050,6 @@ export default class User {
     return variant?.name === 'enable';
   }
 
-  get isPhantomPurePlatformEnabled() {
-    const variant = getSplitzExperimentVariant('partnership_phantom_pure_platform');
-    return variant?.name === 'enable';
-  }
-
   get isCustomReportExtensionsEnabled() {
     return this.isOrgFeatureEnabled('custom_report_extensions');
   }

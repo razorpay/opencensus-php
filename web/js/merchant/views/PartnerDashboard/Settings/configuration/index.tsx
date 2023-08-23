@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from '@razorpay/blade/components';
 import ShowWhen from 'merchant/components/ShowWhen';
 import WhiteLabelTheme from './WhiteLabelTheme';
 import { StyledHeader, StyledLink } from './styles';
+import { useSplitzService } from 'common/splitz';
 
 interface ThemeConfigProps {
   appId?: string;
@@ -36,6 +37,9 @@ export const AppConfiguration = ({
     state: { appName },
   },
 }: AppConfigProps): JSX.Element => {
+  const { abExperiments } = useSplitzService();
+  const isExpEnabled = abExperiments.Partnerships_oauth_phantom?.variables?.result === 'on';
+
   return (
     <div className="tabbed-container">
       <header>
@@ -51,11 +55,11 @@ export const AppConfiguration = ({
       </header>
       <header>
         <NavLink to={`/partners/applications/${id}`}>Integration Settings</NavLink>
-        <ShowWhen additionalCondition={(user) => user.isPhantomPurePlatformEnabled}>
+        {isExpEnabled ? (
           <NavLink to={`/partners/applications/configuration/${id}`}>
             Onboarding UI Configurator
           </NavLink>
-        </ShowWhen>
+        ) : null}
       </header>
       <ThemeConfiguration appId={id} />
     </div>

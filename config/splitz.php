@@ -28,7 +28,6 @@ return [
 
         // partnership for Phantom
         'PARTNERSHIP_FOR_PHANTOM' => env('PARTNERSHIP_FOR_PHANTOM', ''),
-        'PARTNERSHIP_PHANTOM_PURE_PLATFORM' => env('PARTNERSHIP_PHANTOM_PURE_PLATFORM', ''),
 
         // partner onboarding resuming
         'SHOW_RESUME_ONBAORDING' => env('SHOW_RESUME_ONBAORDING', ''),
