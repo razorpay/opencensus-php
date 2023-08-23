@@ -238,9 +238,14 @@ class Service extends Base\Service
                 $updatedManualControlCodOrderFlag = isset($input[Type::MANUAL_CONTROL_COD_ORDER]) &&
                     $input[Type::MANUAL_CONTROL_COD_ORDER] === true;
 
+                $updatedPrepayCODConfig = isset($input[Type::ONE_CC_PREPAY_COD_CONVERSION]) &&
+                    isset($input[Type::ONE_CC_PREPAY_COD_CONVERSION][Constants::ENABLED]) &&
+                    $input[Type::ONE_CC_PREPAY_COD_CONVERSION][Constants::ENABLED] === true;
+
                 if ($updatePlatform === Constants::WOOCOMMERCE)
                 {
-                    if (isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]) && $updatedManualControlCodOrderFlag === true)
+                    if (isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]) &&
+                        ($updatedManualControlCodOrderFlag === true || $updatedPrepayCODConfig === true))
                     {
                         (new Merchant\OneClickCheckout\AuthConfig\Service())->updateWoocommerce1ccAuthConfig([
                             'merchant_id'           => $this->merchant->getId(),
