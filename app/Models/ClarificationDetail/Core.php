@@ -377,15 +377,18 @@ class Core extends Base\Core
 
                     foreach ($clarificationDetail->getFields() as $fieldName)
                     {
-                        $clarificationReasons[$fieldName] = [
-                            [
-                                "reason_type" => $data[Entity::COMMENT_DATA][Constants::TYPE],
-                                "reason_code" => $data[Entity::COMMENT_DATA][Constants::TEXT],
-                                "from"        => $data[Entity::MESSAGE_FROM],
-                                "is_current"  => true,
-                                "nc_count"    => $data[Entity::METADATA][Constants::NC_COUNT]
-                            ]
-                        ];
+                        if (isset($data[Entity::COMMENT_DATA][Constants::TYPE]) === true and isset($data[Entity::COMMENT_DATA][Constants::TEXT]) === true )
+                        {
+                            $clarificationReasons[$fieldName] = [
+                                [
+                                    "reason_type" => $data[Entity::COMMENT_DATA][Constants::TYPE],
+                                    "reason_code" => $data[Entity::COMMENT_DATA][Constants::TEXT],
+                                    "from"        => $data[Entity::MESSAGE_FROM],
+                                    "is_current"  => true,
+                                    "nc_count"    => $data[Entity::METADATA][Constants::NC_COUNT]
+                                ]
+                            ];
+                        }
                     }
 
                     if (empty($clarificationReasons) === false)

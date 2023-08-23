@@ -53,7 +53,7 @@ class MerchantsTransformer extends Base\Transformer
         ],
         'business_details.business_model'        => [
             [
-                "column" => 'business_description'
+                "column" => 'business_model'
             ]
         ],
         'business_details.billing_label'               => [

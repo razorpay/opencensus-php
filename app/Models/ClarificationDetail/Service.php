@@ -567,6 +567,46 @@ class Service extends Base\Service
     {
         if ($status === Status::UNDER_REVIEW)
         {
+            // send the request to merchant onboarding service
+            // this should not affect the current flow, hence wrapped in try catch
+            try {
+                $pgosNCProxyController = new NeedsClarificationProxyController();
+
+                $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+                if ($shouldMerchantOnboardViaPGOS === true) {
+
+                    $pgosInput['merchant_id'] = $merchantId;
+
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_update_clarifications', $pgosInput, $merchant);
+
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'route'     => 'merchant_update_clarifications',
+                        'response'  => $response,
+                        'payload'   => $pgosInput,
+                    ]);
+
+                    return $response;
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                if ($exception instanceof Exception\BadRequestValidationFailureException)
+                {
+                    throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+                }
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => 'submitted data could not be processed'
+                ]);
+            }
+
             $clarifications = $this->repo->clarification_detail->getByMerchantIdAndStatuses($merchantId, [Constants::SUBMITTED, Constants::NEEDS_CLARIFICATION]);
 
             foreach ($clarifications as $clarification)

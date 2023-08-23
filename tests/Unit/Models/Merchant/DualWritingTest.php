@@ -510,63 +510,6 @@ class DualWritingTest extends TestCase
 
     }
 
-    public function testSaveOnboardingDataToAPI()
-    {
-        $mid='KqsQEszAud2PqZ';
-        $this->createAndFetchMocks($mid);
-
-        $data = [
-            "database"            => "stage-pg_onboarding_service",
-            "table"               => "onboarding_details",
-            "type"                => "update",
-            "ts"                  => 1673248693,
-            "xid"                 => 1389385481,
-            "commit"              => true,
-            "position"            => "mysql-bin-changelog.008996=>7826736",
-            "primary_key_columns" => [
-                "id"
-            ],
-            "data"                => [
-                "locked"                        => 0,
-                "activated"                     => 1,
-                "submitted"                     => 1,
-                "merchant_id"                   => $mid,
-                "activated_at"                  => 1673248693,
-                "submitted_at"                  => 1673248693,
-                "signup_source"                 => null,
-                "activation_flow"               => "whitelist",
-                "signup_campaign"               => null,
-                "activation_status"             => null,
-                "activation_progress"           => 60,
-                "activation_form_milestone"     => "L1",
-                "international_activation_flow" => null
-            ]
-            ,
-            "old"                 => []
-        ];
-
-        (new Service)->savePGOSDataToAPI($data);
-
-        $merchant1 = (new \RZP\Models\Merchant\Repository)->find($mid);
-
-        $this->assertArraySubset(["id"           => $mid,
-                                  "activated"    => true,
-                                  "activated_at" => 1673248693
-                                 ],
-                                 $merchant1->toArray());
-
-        $merchant1 = (new \RZP\Models\Merchant\Detail\Repository)->find($mid);
-
-        $this->assertArraySubset(["merchant_id"               => $mid,
-                                  "submitted"                 => true,
-                                  "submitted_at"              => 1673248693,
-                                  "activation_flow"           => "whitelist",
-                                  "activation_progress"       => 60,
-                                  "activation_form_milestone" => "L1",
-                                 ],
-                                 $merchant1->toArray());
-    }
-
     public function testSaveWebsiteDataToAPI()
     {
         $mid='KqsQEszAud2PqZ';

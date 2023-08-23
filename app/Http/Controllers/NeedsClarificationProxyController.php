@@ -17,6 +17,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
     const MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN     = 'merchant_activation_clarifications_save_admin';
     const MERCHANT_NC_REVAMP_ELIGIBILITY                    = 'merchant_nc_revamp_eligibility';
     const MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN              = 'merchant_nc_revamp_eligibility_admin';
+    const MERCHANT_UPDATE_CLARIFICATIONS                    = 'merchant_update_clarifications';
     const MERCHANT_ACTIVATION_DOCUMENT_TYPE                 = 'merchant_activation_document_type';
 
 
@@ -26,6 +27,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
         self::MERCHANT_ACTIVATION_CLARIFICATIONS_FETCH_ADMIN,
         self::MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN,
         self::MERCHANT_NC_REVAMP_ELIGIBILITY,
+        self::MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN,
         self::MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN,
 
     ];
@@ -38,6 +40,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
         self:: MERCHANT_NC_REVAMP_ELIGIBILITY                  => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
         self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN            => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
         self:: MERCHANT_ACTIVATION_DOCUMENT_TYPE               => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetNCAdditionalDocuments',
+        self:: MERCHANT_UPDATE_CLARIFICATIONS                  => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/UpdateClarificationDetails',
     ];
 
     // timeout in seconds
@@ -48,6 +51,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
         self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN            => 10,
         self:: MERCHANT_NC_REVAMP_ELIGIBILITY                           => 10,
         self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN                     => 10,
+        self:: MERCHANT_UPDATE_CLARIFICATIONS                           => 10,
     ];
 
     public function __construct()

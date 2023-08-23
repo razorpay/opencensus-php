@@ -152,10 +152,7 @@ class Transformer
                 break;
 
             case "onboarding_details" :
-                return [
-                    new Merchant\OnboardingDetailsTransformer(),
-                    new MerchantDetail\OnboardingDetailsTransformer(),
-                ];
+                return [];
                 break;
             case "website_details"  :
                 return [
