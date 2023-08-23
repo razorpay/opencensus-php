@@ -22,6 +22,7 @@ use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
 use Razorpay\Api\Request as ApiRequest;
+use App\Splitz\Service as SplitzService;
 
 class AdminController extends Controller
 {
@@ -811,5 +812,22 @@ class AdminController extends Controller
         {
             $org['auth_type'] = 'password';
         }
+    }
+
+    // invalidate the complete splitz cache
+    public function clearSplitzCache() {
+
+        $input = Input::all();
+
+        $error = (new App\Splitz\Validator)->validateInput('splitz_invalidation', $input)->messages();
+
+        if(empty($error) === false)
+        {
+            return [$error, []];
+        }
+
+        $data = (new SplitzService())->clearSplitzCache($input);    
+
+        return AppResponse::jsonResponse([], $data);
     }
 }

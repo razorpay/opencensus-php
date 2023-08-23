@@ -103,8 +103,9 @@ class UserController extends Controller
 
         $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
         $onboardingFluxExperiment =  config('splitz.experiments')[self::ONBOARDING_FTUX];
+        $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
 
-        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId];
+        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled];
 
         $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, [], self::SPLITZ_BULK_EVALUATE_PATH);
 
@@ -336,12 +337,18 @@ class UserController extends Controller
 
     private function getSecondChunkedData(array $firstChunkData, bool $isConcurrentApiCallEnabled): array
     {
+        $isSplitzCachingEnabled = $this->isSplitzCachingEnabled();
+
+        $params = [
+            Constants::SPLITZ_API_CACHING_ENABLED => $isSplitzCachingEnabled
+        ];
+
         if ($isConcurrentApiCallEnabled)
         {
-            return (new User\Service)->getSecondChunkUserDetailsConcurrent($firstChunkData);
+            return (new User\Service)->getSecondChunkUserDetailsConcurrent($firstChunkData, $params);
         }
 
-        return (new User\Service)->getSecondChunkUserDetails($firstChunkData);
+        return (new User\Service)->getSecondChunkUserDetails($firstChunkData, $params);
     }
 
     static function millitime(): int
@@ -377,6 +384,18 @@ class UserController extends Controller
                 'message' => $t->getMessage() ?? 'unknown_message',
             ]);
         }
+    }
+
+    private function isSplitzCachingEnabled(): bool 
+    {
+        $experimentId = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 
     /**

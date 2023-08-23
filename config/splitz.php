@@ -342,5 +342,8 @@ return [
          // For showing offline transactions and functionalities for omni channel merchants
         'OMNI_CHANNEL_MERCHANTS' => env('OMNI_CHANNEL_MERCHANTS', ''),
 
+        // Splitz experiment caching enabled
+        'SPLITZ_API_CACHING_ENABLED' => env('SPLITZ_API_CACHING_ENABLED', ''),
+
     ]
 ];

@@ -106,6 +106,8 @@ class Constants
         "annapurna.pal+008@razorpay.com"
     ];
 
+    const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED'; 
+
     // browser details of the user logging in
     const BROWSER_DETAILS = 'browser_details';
     const DEVICE = 'device';
@@ -147,10 +149,17 @@ class Constants
     const APP                       = "app";
     const WEBSITE                   = "website";
     const UNKNOWN_PLATFORM          = "unknown_platform";
+    const HITS                      = "hits";
+    const MISS                      = "miss";
+
+    const CACHE_KEY                 = "cache_key";
+    const ROUTE_NAME                = "route_name";
 
     const SUCCESS_SUFFIX   = "_success";
     const FAILED_SUFFIX    = "_failed";
     const DURATION_SUFFIX  = "_duration";
+
+    const REDIS_CACHE_PREFIX = 'dashboard_:';
 
     // TOPF BE Flows
     const SEND_SIGNUP_OTP                   = 'send_signup_otp';

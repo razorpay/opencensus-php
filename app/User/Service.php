@@ -1311,7 +1311,7 @@ class Service extends Base\Service
         return round(microtime(true) * 1000);
     }
     
-    private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny): array
+    private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled): array
     {
         $startTime = self::millitime();
         
@@ -1319,6 +1319,8 @@ class Service extends Base\Service
         {
             return $data;
         }
+
+        $currentMerchantId = $currentMerchant->id;
         
         $allPromises =  $this->getAllApiPromises($apiPromiseAny);
     
@@ -1342,11 +1344,17 @@ class Service extends Base\Service
             $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
         }
     
-        if (isset($allApiResponses[self::SPLITZ_EXPERIMENT_PROMISE]))
+        if (empty($data[Constants::SPLITZ_EXPERIMENTS]) && isset($allApiResponses[self::SPLITZ_EXPERIMENT_PROMISE]))
         {
             $splitzExperiments = (new SplitzService())->processVariantBulkAsyncPromiseResponse($apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]);
-        
+
             $data[Constants::SPLITZ_EXPERIMENTS] = $splitzExperiments;
+
+            if($isSplitzCachingEnabled && empty($splitzExperiments) == false){
+
+                (new SplitzService())->setCacheByIdAsyncPromise($currentMerchantId, $splitzExperiments);
+            
+            }
         }
     
         if (isset($allApiResponses[self::PARTNER_INTENT_PROMISE]))
@@ -1434,7 +1442,7 @@ class Service extends Base\Service
         // API 1.2
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
             ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
-            ($splitzExperiments === "1"))
+            ($splitzExperiments === "1") and empty($data[Constants::SPLITZ_EXPERIMENTS]))
         {
             $promise = (new SplitzService())->getSplitzVariantBulkAsyncPromise($currentMerchantId, $guzzleClient);
         
@@ -1592,10 +1600,25 @@ class Service extends Base\Service
                     {
                         $data = $this->switchProduct($data, $user);
                     }
+
+                    $isSplitzCachingEnabled = $params[Constants::SPLITZ_API_CACHING_ENABLED];
+                    
+                    $data[Constants::SPLITZ_EXPERIMENTS] = [];
+
+                    if($isSplitzCachingEnabled) {
+
+                        $splitzExperiments = (new SplitzService())->getCacheByIdAsyncPromise($currentMerchantId);
+
+                        if($splitzExperiments) {
+
+                            $data[Constants::SPLITZ_EXPERIMENTS] = $splitzExperiments;
+                        
+                        }
+                    }
     
                     $apiPromiseAny = $this->getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data);
     
-                    $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny);
+                    $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled);
                 }
             }
         }
@@ -1790,7 +1813,7 @@ class Service extends Base\Service
                         ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
                         ($splitzExperiments === "1"))
                     {
-                        $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
+                        $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId, $params[Constants::SPLITZ_API_CACHING_ENABLED]);
                     }
 
                     //

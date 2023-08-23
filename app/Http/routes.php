@@ -281,6 +281,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/checkout-builder', 'AdminController@getCheckoutBuilder')->name('get_checkout_builder');
     });
 
+    Route::post('/admin/clear-splitz-cache', 'AdminController@clearSplitzCache')->name('clear_splitz_cache');
     Route::get('razorx/{all?}', 'AdminController@getIndex')->name('razorx_catchall')->where(['all' => '.*']);
     Route::get('admin/capital-los/{all?}', 'AdminController@getIndex')->name('capital_catchall')->where(['all' => '.*']);
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*'])->middleware(['set_x_frame', 'set_csp_header']);

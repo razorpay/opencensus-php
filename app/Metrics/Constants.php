@@ -77,6 +77,8 @@ class Constants
   const INVALID_PASSPORT_FOR_OAUTH_ROUTE                = 'invalid_passport_for_oauth_route';
   const INVALID_PASSPORT_FOR_MOBILE_OAUTH_ROUTE         = 'invalid_passport_for_mobile_oauth_route';
   const PASSPORT_MISSING_FOR_OAUTH_ROUTE                = 'passport_missing_for_oauth_route';
+  const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_HIT           = 'splitz_experiment_dashboard_cache_hit';
+  const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'splitz_experiment_dashboard_cache_miss';
 
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';
