@@ -2,6 +2,7 @@
 
 namespace RZP\Models\MerchantRiskAlert;
 
+use RZP\Services\MerchantRiskAlertClient;
 use View;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -460,7 +461,7 @@ class Service extends Base\Service
         );
     }
 
-    private function sendEmail($merchant, array $content, array $input)
+    private function sendEmail($merchant, array $content, array $input, bool $isNeedsClarificationFlow = false)
     {
         try
         {
@@ -470,9 +471,16 @@ class Service extends Base\Service
 
             $ccEmails = (new Dispute\Service)->getCCEmailsWithSalesPOC($merchant->getId());
 
-            $mailSubject = (new TemplateEngine)->render($subject, $data);
-
-            $mailBody = View::make($viewTemplate, $data)->render();
+            if($isNeedsClarificationFlow === true)
+            {
+                $mailSubject = $subject;
+                $mailBody = $viewTemplate;
+            }
+            else
+            {
+                $mailSubject = (new TemplateEngine)->render($subject, $data);
+                $mailBody = View::make($viewTemplate, $data)->render();
+            }
 
             $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
 
@@ -509,6 +517,10 @@ class Service extends Base\Service
                     $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
                 $fdTicketId = $response['id'] ?? null;
+
+                $this->trace->count(Constants::RAS_NEEDS_CLARIFICATION_FD_CREATED, [
+                    "group_id" => $groupId,
+                ]);
             }
             else
             {
@@ -1080,8 +1092,10 @@ class Service extends Base\Service
     /**
      * @throws BadRequestValidationFailureException
      */
-    public function triggerNeedsClarification(string $workflowActionId)
+    public function triggerNeedsClarification(string $workflowActionId, array $input)
     {
+        (new Validator)->validateInput('needs_clarification_request', $input);
+
         $this->trace->info(TraceCode::MERCHANT_RISK_ALERT_TRIGGER_NC_FOR_WORKFLOW, [
             'workflow_action_id' => $workflowActionId,
         ]);
@@ -1096,7 +1110,7 @@ class Service extends Base\Service
 
         if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === false)
         {
-            $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($merchant);
+            $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($merchant, $input);
         }
         else
         {
@@ -1110,25 +1124,35 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    protected function sendOutboundEmailForTriggerNeedsClarification($merchant)
+    protected function sendOutboundEmailForTriggerNeedsClarification($merchant, array $params)
     {
-        $subject = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT;
+        $emailSubject = sprintf( " %s | %s | %s", Constants::RISK_CLARIFICATION, $merchant->getId(), $merchant->getName());
 
-        $viewTemplate = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL;
+        $emailBody = array_get($params, 'email_body');
 
-        $data = [
-            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
-            'merchant_name'              => $merchant->getName() ?? '',
-        ];
+        $teamName = array_get($params, Constants::TEAM_NAME);
+
+        $groupId = $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_FOH'];
+
+        $emailConfig = $this->freshdeskConfig['email_config_ids']['merchant_risk_FOH_email_config'];
+
+        if($teamName == Constants::TRANSACTION_MONITORING_TEAM_NAME)
+        {
+            $groupId = $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction_monitoring'];
+
+            $emailConfig = $this->freshdeskConfig['email_config_ids']['merchant_risk_transaction_monitoring_email_config'];
+        }
 
         return $this->sendEmail($merchant, [
-            $subject, $viewTemplate, $data,
+            $emailSubject,
+            $emailBody,
+            [],
             Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION,
             Constants::FOH_NC_NOTIFICATION,
             Constants::RAS_TRIGGER_REASON_NC_FLOW,
-            $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-            $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
-        ], []);
+            $groupId,
+            $emailConfig,
+        ], [], true);
     }
 
     protected function addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId = ''): void

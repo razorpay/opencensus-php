@@ -4,6 +4,7 @@ namespace RZP\Models\MerchantRiskAlert;
 
 class Constants
 {
+    const RISK_CLARIFICATION                    = 'Risk Clarification';
     const MERCHANT_FOH_KEY                      = 'merchant_foh';
     const MERCHANT_INTERNATIONAL_KEY            = 'merchant_international';
     const MERCHANT_LIVE_KEY                     = 'merchant_live';
@@ -205,5 +206,11 @@ class Constants
     const RAS_RULES_DELETE_PAYLOAD                     = 'ras_rules_delete_payload';
 
     const RAS_RULES_ID                                 = 'ras_rules_id';
+
+    const TEAM_NAME                                    = 'team_name';
+    const MERCHANT_RISK_PG_TEAM_NAME                   = 'Merchant Risk - PG';
+    const TRANSACTION_MONITORING_TEAM_NAME             = 'Transaction Monitoring';
+
+    const RAS_NEEDS_CLARIFICATION_FD_CREATED           = 'ras_needs_clarification_fd_created';
 }
 
