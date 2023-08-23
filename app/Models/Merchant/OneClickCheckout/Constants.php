@@ -41,6 +41,7 @@ class Constants
     const COD_ENGINE                        = 'cod_engine';
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+    const ONE_CC_COUPON_ENGINE             = "onc_cc_coupon_engine";
 
 
     // gift card configs
@@ -168,6 +169,7 @@ class Constants
         self::ONE_CC_ENABLE_GUPSHUP,
         self::COD_ENGINE,
         self::ONE_CC_PREPAY_COD_CONVERSION,
+        self::ONE_CC_COUPON_ENGINE,
     ];
 
     /**
@@ -208,6 +210,7 @@ class Constants
        self::ONE_CC_CAPTURE_GSTIN,
        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
        self::ONE_CC_PREPAY_COD_CONVERSION,
+        self::ONE_CC_COUPON_ENGINE,
     ];
 
     const INTELLIGENCE_CONFIGS = [

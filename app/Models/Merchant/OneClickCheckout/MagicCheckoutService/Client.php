@@ -57,9 +57,6 @@ class Client
 
             $response = $this->makeRequest($url, $headers, $input, $method, $this->getOptions());
 
-            $this->app['trace']->info(TraceCode::MAGIC_CHECKOUT_SERVICE_REQUEST, [
-                'response' => $response,
-            ]);
             if ($response->status_code != 200)
             {
                 $this->app['trace']->info(TraceCode::MAGIC_CHECKOUT_SERVICE_RESPONSE,

@@ -4492,6 +4492,20 @@ class Route
         '1cc_order_edit_add_item_variant'        => ['post', '1cc/magic/platform/order/edit/lineitem/add', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_edit_line_item_quantity'  => ['post', '1cc/magic/platform/order/edit/lineitem/quantity', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_add_custom_item'          => ['post', '1cc/magic/platform/order/edit/lineitem/custom', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+
+        '1cc_coupon_engine_upsert_template'                  => ['put', '1cc/admin/ce/rules/templates', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_templates'                    => ['get', '1cc/admin/ce/rules/templates', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_template'                     => ['get', '1cc/admin/ce/rules/template', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_delete_template'                  => ['delete', '1cc/admin/ce/rules/templates', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_create_segment'                   => ['post', '1cc/dashboard/ce/segments', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_segments'                     => ['get', '1cc/dashboard/ce/segments', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_segment'                      => ['get', '1cc/dashboard/ce/segment', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_delete_segment'                   => ['delete', '1cc/dashboard/ce/segments', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_upsert_coupon'                    => ['put', '1cc/dashboard/ce/coupons', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_coupons'                      => ['get', '1cc/dashboard/ce/coupons', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_sync_platform_coupons'            => ['post', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_get_sync_platform_coupons_status' => ['get', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_search_product_collections'                     => ['get', '1cc/magic/platform/products/collections/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
     ];
 
     public static $public = [
@@ -7205,6 +7219,16 @@ class Route
         '1cc_order_edit_edit_line_item_quantity',
         '1cc_order_edit_add_custom_item',
 
+        '1cc_coupon_engine_create_segment',
+        '1cc_coupon_engine_get_segments',
+        '1cc_coupon_engine_get_segment',
+        '1cc_coupon_engine_delete_segment',
+        '1cc_coupon_engine_upsert_coupon',
+        '1cc_coupon_engine_get_coupons',
+        '1cc_coupon_engine_sync_platform_coupons',
+        '1cc_coupon_engine_get_sync_platform_coupons_status',
+        '1cc_search_product_collections',
+
         // splitz
         'splitz_evaluate_bulk_proxy',
 
@@ -8607,10 +8631,13 @@ class Route
          '1cc_shopify_fetch_themes',
          '1cc_shopify_insert_theme',
          '1cc_shopify_render_magic_snippet',
+
+         '1cc_coupon_engine_upsert_template',
+         '1cc_coupon_engine_get_templates',
+         '1cc_coupon_engine_get_template',
+         '1cc_coupon_engine_delete_template',
          '1cc_shopify_fetch_liquid_files',
          '1cc_shopify_update_liquid_files',
-
-
     ];
 
     public static $routePermission = [
@@ -10125,6 +10152,10 @@ class Route
         'mob_save_workflow'                         => Permission::VIEW_ACTIVATION_FORM,
 
         //magic checkout
+        '1cc_coupon_engine_upsert_template'        => Permission::MAGIC_OPS,
+        '1cc_coupon_engine_get_templates'          => Permission::MAGIC_OPS,
+        '1cc_coupon_engine_get_template'           => Permission::MAGIC_OPS,
+        '1cc_coupon_engine_delete_template'        => Permission::MAGIC_OPS,
         '1cc_shopify_fetch_meta_fields'            => Permission::MAGIC_OPS,
         '1cc_shopify_update_meta_fields'           => Permission::MAGIC_OPS,
         '1cc_shopify_fetch_themes'                 => Permission::MAGIC_OPS,
@@ -12438,6 +12469,17 @@ class Route
             '1cc_order_edit_add_item_variant',
             '1cc_order_edit_edit_line_item_quantity',
             '1cc_order_edit_add_custom_item',
+
+            '1cc_coupon_engine_create_segment',
+            '1cc_coupon_engine_get_segments',
+            '1cc_coupon_engine_get_segment',
+            '1cc_coupon_engine_delete_segment',
+            '1cc_coupon_engine_upsert_coupon',
+            '1cc_coupon_engine_get_coupons',
+            '1cc_coupon_engine_sync_platform_coupons',
+            '1cc_coupon_engine_get_sync_platform_coupons_status',
+            '1cc_search_product_collections',
+
             'growth_get_public_asset_details',
 
             //CAC
@@ -14858,6 +14900,20 @@ class Route
             '1cc_order_edit_add_item_variant',
             '1cc_order_edit_edit_line_item_quantity',
             '1cc_order_edit_add_custom_item',
+
+            '1cc_coupon_engine_upsert_template',
+            '1cc_coupon_engine_get_templates',
+            '1cc_coupon_engine_get_template',
+            '1cc_coupon_engine_delete_template',
+            '1cc_coupon_engine_create_segment',
+            '1cc_coupon_engine_get_segments',
+            '1cc_coupon_engine_get_segment',
+            '1cc_coupon_engine_delete_segment',
+            '1cc_coupon_engine_upsert_coupon',
+            '1cc_coupon_engine_get_coupons',
+            '1cc_coupon_engine_sync_platform_coupons',
+            '1cc_coupon_engine_get_sync_platform_coupons_status',
+            '1cc_search_product_collections',
 
             '1cc_shopify_fetch_liquid_files',
             '1cc_shopify_update_liquid_files',
