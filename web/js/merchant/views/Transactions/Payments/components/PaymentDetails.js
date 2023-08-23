@@ -574,11 +574,7 @@ function PaymentDetails(props) {
                   </Definition>
                 </EntityDetailRow>
 
-                <ShowWhen
-                  additionalCondition={() =>
-                    user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
-                  }
-                >
+                <ShowWhen additionalCondition={() => user.isProjectNitroEnabled}>
                   <AnnouncementBar
                     fromWhere="transactions"
                     url="https://lp.razorpay.com/razorpayxca-pymnts2"

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { compose, bindActionCreators } from 'redux';
+
 import RazorpayXNitroAnnouncement, {
   nitroCampaignId,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
@@ -8,7 +10,6 @@ import {
   closeModal as fnCloseModal,
   openModal as fnOpenModal,
 } from 'merchant_common/reducers/modals';
-import { compose, bindActionCreators } from 'redux';
 
 class ScheduledNitroBanner extends Component {
   componentDidMount() {
@@ -31,10 +32,6 @@ class ScheduledNitroBanner extends Component {
   };
 
   getTitle = () => {
-    if (this.props.user.isProjectNitroCorporateCard) {
-      return 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!';
-    }
-
     return 'Reduce platform fee to 1.65% with a RazorpayX Current Account';
   };
 

@@ -1,25 +1,24 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
-import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
-
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import TestModeCard from './TestMode';
-import ActivationStatusCard from './ActivationStatus';
-import LiveModeCard from './LiveMode';
-import ActivationStatusCardOld from './Activationstatus-old';
-import RxCard from './RxCard';
 import RTracking from 'react-tracking';
-import { hasNeoCouponCode } from './RxCa/data';
-import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
-import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
-import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
-import CaInfoContainer from './RxCa/CaInfo';
-import PaymentProgressBar from 'merchant/containers/Home/OnboardingCard/PaymentProgressBar';
-import ImgTopBg from 'assets/onboarding/top_bg.png';
-import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
-import Image from 'common/ui/Image';
 
+import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
+import ImgTopBg from 'assets/onboarding/top_bg.png';
+import Image from 'common/ui/Image';
+import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
+import PaymentProgressBar from 'merchant/containers/Home/OnboardingCard/PaymentProgressBar';
+import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
+import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
+import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import ActivationStatusCard from './ActivationStatus';
+import ActivationStatusCardOld from './Activationstatus-old';
+import LiveModeCard from './LiveMode';
+import CaInfoContainer from './RxCa/CaInfo';
+import { hasNeoCouponCode } from './RxCa/data';
+import RxCard from './RxCard';
+import TestModeCard from './TestMode';
 import {
   trackTestModeCard,
   trackLiveModeCard,
@@ -124,14 +123,8 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const {
-      mode,
-      user,
-      integration,
-      internationalProductsStatus,
-      limitBreach,
-      isNcEligibile,
-    } = this.props;
+    const { mode, user, integration, internationalProductsStatus, limitBreach, isNcEligibile } =
+      this.props;
     const {
       has_key_access: hasKeyAccess,
       business_website: businessWebsite,
@@ -198,10 +191,7 @@ export default class OnboardingCardInstant extends Component {
     };
     const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
     const hasAppliedCa = this.props.user?.user?.settings?.clicked_ca_apply_request_done;
-    const showNitroRXCAFlow =
-      isActivated &&
-      (user.isProjectNitroEnabled || user.isProjectNitroCorporateCard) &&
-      hasAppliedCa;
+    const showNitroRXCAFlow = isActivated && user.isProjectNitroEnabled && hasAppliedCa;
 
     return (
       <div className="onboarding-card-instant">

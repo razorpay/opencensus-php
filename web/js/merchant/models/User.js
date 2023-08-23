@@ -715,16 +715,7 @@ export default class User {
   }
 
   get isProjectNitroEnabled() {
-    // moving nitro to splitz phase wise, so keeping checks for both splitz and razorx experiments currently.
-
-    const splitzExperimentVariant = getSplitzExperimentVariant('project_nitro');
-
-    if (splitzExperimentVariant?.variables) {
-      return splitzExperimentVariant.variables?.result === 'on';
-    }
-
     return (
-      this.getExpStatus('project_nitro') ||
       this.getExpStatus('project_nitro_1') ||
       this.getExpStatus('project_nitro_feb_2021') ||
       this.getExpStatus('project_nitro_feb_2021_1') ||
@@ -762,10 +753,6 @@ export default class User {
     return (
       getSplitzExperimentVariant('keystone_cash_advance_experiment')?.variables?.result === 'on'
     );
-  }
-
-  get isProjectNitroCorporateCard() {
-    return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
   }
 
   get isGSAnnouncementsEnabled() {

@@ -120,11 +120,7 @@ class TransactionsContainer extends Component {
     return (
       <React.Fragment>
         <div className="banner-container">
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isProjectNitroEnabled || usr.isProjectNitroCorporateCard
-            }
-          >
+          <ShowWhen additionalCondition={(usr) => usr.isProjectNitroEnabled}>
             <AnnouncementBanner
               title="Exclusive Offer For You"
               canBeClosed={false}

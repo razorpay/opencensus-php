@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-
-import * as storage from 'common/utils/localStorage';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ModesDropdown from './SwitchMode';
-import SwitchMerchant from './SwitchMerchant';
-import OffersForYou from 'common/ui/OffersForYou';
-import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducers/growthService';
-import { compose } from 'redux';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { compose } from 'redux';
+
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import OffersForYou from 'common/ui/OffersForYou';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import * as storage from 'common/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducers/growthService';
+
 import { FtuxModal } from './FtuxModal';
-import moment from 'moment';
+import SwitchMerchant from './SwitchMerchant';
+import ModesDropdown from './SwitchMode';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -126,7 +127,6 @@ class NavFragment extends Component {
             additionalCondition={(user) =>
               showOFYNitroFlow ||
               canShowOnboardingOffers ||
-              user.isProjectNitroCorporateCard ||
               user.isProjectMoonshineEnabled ||
               user.isProjectKeystoneCorporateCardsEnabled ||
               user.isProjectKeystoneCashAdvanceEnabled ||

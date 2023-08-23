@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import { connect } from 'react-redux';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
-import Button from 'common/new-ui/Button';
-import Amount from 'common/ui/Amount';
-import { fetchProducts, getApplications } from 'merchant/reducers/capital';
-import { CAPITAL_PRODUCT_NAME_CODE_MAP } from 'merchant/views/Capital/Loans/constants';
-import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
 import errorService from '@razorpay/universe-utils/errorService';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
+import Button from 'common/new-ui/Button';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import Amount from 'common/ui/Amount';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchProducts, getApplications } from 'merchant/reducers/capital';
+import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import { CAPITAL_PRODUCT_NAME_CODE_MAP } from 'merchant/views/Capital/Loans/constants';
 
 const EVENT_CATEGORY_CA_BANNER = 'Cash Advance Banner - Settlements';
 
@@ -141,13 +142,9 @@ const CashAdvanceOrNitroBanner = ({
         </Button.Secondary>
       </AnnouncementBanner>
     );
-  } else if (user.isProjectNitroEnabled || user.isProjectNitroCorporateCard) {
+  } else if (user.isProjectNitroEnabled) {
     return (
-      <ShowWhen
-        additionalCondition={(user) =>
-          user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
-        }
-      >
+      <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
         <AnnouncementBanner
           card_id="nitro-settlements-banner"
           title="Exclusive Offer For You"

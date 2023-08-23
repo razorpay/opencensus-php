@@ -143,7 +143,6 @@ const OffersForYou = ({
         user.isUCCapitalLOCOnlyCampaignEnabled ||
         user.isProjectKeystoneCorporateCardsEnabled ||
         user.isProjectKeystoneCashAdvanceEnabled ||
-        user.isProjectNitroCorporateCard ||
         user.isProjectNitroEnabled ||
         user.isICICILinkedCAFlowEnabled('offers-for-you')
       ) {

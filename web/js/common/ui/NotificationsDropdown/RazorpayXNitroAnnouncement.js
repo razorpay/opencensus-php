@@ -1,26 +1,27 @@
+import React, { useState } from 'react';
 import axios from 'axios';
+import isEmpty from 'lodash/isEmpty';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+import { compose } from 'redux';
+import { Field, formValueSelector, reduxForm } from 'redux-form';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import InputField from 'common/ui/Forms/InputField';
 import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import { getCookie } from 'common/utils/cookies';
 import { setItem } from 'common/utils/localStorage';
 import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
-import isEmpty from 'lodash/isEmpty';
 import CrossSellSubscriptionsModal from 'merchant/components/Announcements/CrossSellSubscriptions/CrossSellSubscriptionsModal';
+import UltraCampaginModal from 'merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import { getUser } from 'merchant/store';
-import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateUser } from 'merchant_common/reducers/user';
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
-import { compose } from 'redux';
-import { Field, formValueSelector, reduxForm } from 'redux-form';
-import UltraCampaginModal from 'merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
-import { getCookie } from 'common/utils/cookies';
+
 import NitroSelfServe from './Neostone/index';
 
 const BENEFITS = {
@@ -62,270 +63,7 @@ const fields = [
 ];
 
 export const nitroCampaignId = () => {
-  const map = {
-    // Beta Nitro
-    GwPth7nhHNdMND: {
-      version: 'nitro_hyderabad_v4',
-      version_description: 'Nitro for hyderabad',
-      target_product_feature: 'XCA',
-    },
-    H7361l13HhrBgO: {
-      version: 'nitro_kolkata_v1',
-      version_description: 'Nitro for kolkata',
-      target_product_feature: 'XCA',
-    },
-    H75RfvQFecKHsT: {
-      version: 'nitro_chennai_v1',
-      version_description: 'Nitro for chennai',
-      target_product_feature: 'XCA',
-    },
-    H75Qu5SInWp3SQ: {
-      version: 'nitro_jaipur_v1',
-      version_description: 'Nitro for jaipur',
-      target_product_feature: 'XCA',
-    },
-    H75Q0JHjnUd5xs: {
-      version: 'nitro_surat_v1',
-      version_description: 'Nitro for surat',
-      target_product_feature: 'XCA',
-    },
-    HF0Ml2IU6gH9rt: {
-      version: 'project-nitro-gandhinagar-v1',
-      version_description: 'Nitro for gandhinagar',
-      target_product_feature: 'XCA',
-    },
-    HF0NZThSDtgNGB: {
-      version: 'project-nitro-vadodara-v1',
-      version_description: 'Nitro for vadodara',
-      target_product_feature: 'XCA',
-    },
-    HF0OIJAqllZPRu: {
-      version: 'project-nitro-ahmedabad-v1',
-      version_description: 'Nitro for ahmedabad',
-      target_product_feature: 'XCA',
-    },
-    HF0Ox4LNEgYHbV: {
-      version: 'project-nitro-bangalore-v1',
-      version_description: 'Nitro for bangalore',
-      target_product_feature: 'XCA',
-    },
-    HZ76WCrNYDOyy9: {
-      version: 'project-nitro-appswitcher',
-      version_description: 'Nitro for appswitcher merchants',
-      target_product_feature: 'XCA',
-    },
-
-    // Prod Nitro
-    GxtSf8y77iWw9e: {
-      version: 'nitro_hyderabad_v4',
-      version_description: 'Nitro for hyderabad',
-      target_product_feature: 'XCA',
-    },
-    H6qGPCBPduY7Gl: {
-      version: 'nitro_kolkata_v1',
-      version_description: 'Nitro for kolkata',
-      target_product_feature: 'XCA',
-    },
-    H6qJ2X77dqHG9I: {
-      version: 'nitro_chennai_v1',
-      version_description: 'Nitro for chennai',
-      target_product_feature: 'XCA',
-    },
-    H6qIJWTzrqt54X: {
-      version: 'nitro_jaipur_v1',
-      version_description: 'Nitro for jaipur',
-      target_product_feature: 'XCA',
-    },
-    HExafLb492K7LU: {
-      version: 'project-nitro-gandhinagar-v1',
-      version_description: 'Nitro for gandhinagar',
-      target_product_feature: 'XCA',
-    },
-    H6qHJJnYOtwfoc: {
-      version: 'nitro_surat_v1',
-      version_description: 'Nitro for surat',
-      target_product_feature: 'XCA',
-    },
-    HExehMbAqYqlWF: {
-      version: 'project-nitro-vadodara-v1',
-      version_description: 'Nitro for vadodara',
-      target_product_feature: 'XCA',
-    },
-    HExiHP6GBUEVcu: {
-      version: 'project-nitro-ahmedabad-v1',
-      version_description: 'Nitro for ahmedabad',
-      target_product_feature: 'XCA',
-    },
-    HExnzHcFfimA6u: {
-      version: 'project-nitro-bangalore-v1',
-      version_description: 'Nitro for bangalore',
-      target_product_feature: 'XCA',
-    },
-    HPc6GXsuboNXiS: {
-      version: 'project-nitro-delhi-v1',
-      version_description: 'Nitro for delhi',
-      target_product_feature: 'XCA',
-    },
-    HPc7OB0N3kh5BR: {
-      version: 'project-nitro-mumbai-v1',
-      version_description: 'Nitro for mumbai',
-      target_product_feature: 'XCA',
-    },
-    HPc8DrLeWZc76W: {
-      version: 'project-nitro-pune-v1',
-      version_description: 'Nitro for pune',
-      target_product_feature: 'XCA',
-    },
-    HPc9cMyPKKeAAX: {
-      version: 'project-nitro-gurgaon-v1',
-      version_description: 'Nitro for gurgaon',
-      target_product_feature: 'XCA',
-    },
-    HPcAKrn53GP41d: {
-      version: 'project-nitro-nagpur-v1',
-      version_description: 'Nitro for nagpur',
-      target_product_feature: 'XCA',
-    },
-    HPcBJQw2E0BzpZ: {
-      version: 'project-nitro-kolhapur-v1',
-      version_description: 'Nitro for kolhapur',
-      target_product_feature: 'XCA',
-    },
-    Hrt8rX7v1tehY1: {
-      version: 'project-nitro-coimbatore-v1',
-      version_description: 'Nitro for coimbatore',
-      target_product_feature: 'XCA',
-    },
-    HzaFJoqZsRDu0c: {
-      version: 'nitro-othercities-v1',
-      version_description: 'Nitro for others cities v1',
-      target_product_feature: 'XCA',
-    },
-    HYlnMMJoE1RjFf: {
-      version: 'project-nitro-appswitcher',
-      version_description: 'Nitro for appswitcher merchants',
-      target_product_feature: 'XCA',
-    },
-
-    // Beta nitro corporate cards
-    HVcXIX8S1cokqB: {
-      version: 'nitro_hyderabad_v4',
-      version_description: 'Nitro for hyderabad',
-      target_product_feature: 'XCA+CCC',
-    },
-
-    // Prod nitro corporate cards
-    HVdaH5ipHEzj6x: {
-      version: 'nitro_hyderabad_v4',
-      version_description: 'Nitro for hyderabad',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1KsF0APg55vP: {
-      version: 'nitro_kolkata_v1',
-      version_description: 'Nitro for kolkata',
-      target_product_feature: 'XCA+CCC',
-    },
-    // Test account for prod
-    HWP22TCyDAfcRG: {
-      version: 'test_nitro_kolkata_v1',
-      version_description: 'Testing Nitro for kolkata',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1HhztGJNiaYA: {
-      version: 'nitro_chennai_v1',
-      version_description: 'Nitro for chennai',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1IZP67ejfclG: {
-      version: 'nitro_jaipur_v1',
-      version_description: 'Nitro for jaipur',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW14FoCLRKdABS: {
-      version: 'project-nitro-gandhinagar-v1',
-      version_description: 'Nitro for gandhinagar',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1382Z5BUYrDV: {
-      version: 'nitro_surat_v1',
-      version_description: 'Nitro for surat',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW15QtkHIilowU: {
-      version: 'project-nitro-vadodara-v1',
-      version_description: 'Nitro for vadodara',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW16dcasfI78sW: {
-      version: 'project-nitro-ahmedabad-v1',
-      version_description: 'Nitro for ahmedabad',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW17UktB0YY7X7: {
-      version: 'project-nitro-bangalore-v1',
-      version_description: 'Nitro for bangalore',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW18PSOqi56mMN: {
-      version: 'project-nitro-delhi-v1',
-      version_description: 'Nitro for delhi',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW19AUgSRz2frR: {
-      version: 'project-nitro-mumbai-v1',
-      version_description: 'Nitro for mumbai',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW19wimb0Bhu8N: {
-      version: 'project-nitro-pune-v1',
-      version_description: 'Nitro for pune',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1Al5SNojQepQ: {
-      version: 'project-nitro-gurgaon-v1',
-      version_description: 'Nitro for gurgaon',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1Bb4TphEGzuU: {
-      version: 'project-nitro-nagpur-v1',
-      version_description: 'Nitro for nagpur',
-      target_product_feature: 'XCA+CCC',
-    },
-    HW1CwITu2o0hdO: {
-      version: 'project-nitro-kolhapur-v1',
-      version_description: 'Nitro for kolhapur',
-      target_product_feature: 'XCA+CCC',
-    },
-    HrtIYOAiX2ipgI: {
-      version: 'project-nitro-coimabtore-v1',
-      version_description: 'Nitro for coimabtore',
-      target_product_feature: 'XCA+CCC',
-    },
-    HzaHdQAoyYFlFJ: {
-      version: 'nitro-othercities-v1',
-      version_description: 'Nitro for others cities v1',
-      target_product_feature: 'XCA+CCC',
-    },
-  };
-
-  const getExpStatus = (name, experimentNameInAbExperimentsMap) => {
-    const splitzExperiment = window.rzp_user?.splitz_experiments[name];
-    if (
-      abExperimentsMap[experimentNameInAbExperimentsMap].includes(name) &&
-      !isEmpty(splitzExperiment)
-    ) {
-      return splitzExperiment?.variables?.result === 'on';
-    }
-    return false;
-  };
-
-  const featureId = Object.keys(map).find(
-    (feature) =>
-      getExpStatus(feature, 'project_nitro') || getExpStatus(feature, 'nitro_corporate_cards'),
-  );
-
   return {
-    ...map[featureId],
     campaign: 'nitro',
     target_metric: 'MTU',
   };
@@ -341,14 +79,13 @@ export const getCampaignID = () => {
   if (user.isICICILinkedCAEnabled) return 'Nitro_ICICIConnected';
   if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
   if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
-  if (user.isProjectNitroCorporateCard) return 'Nitro_CardOfferNewYear';
   return nitroCampaignId(user).version;
 };
 
 export const getProductName = () => {
   const user = getUser();
   if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'LOC';
-  if (user.isProjectNitroCorporateCard || user.isUCCapitalCardsOnlyCampaignEnabled) return 'CARDS';
+  if (user.isUCCapitalCardsOnlyCampaignEnabled) return 'CARDS';
   else return 'Current_Account';
 };
 
@@ -775,14 +512,13 @@ class DetailView extends React.Component {
   render() {
     const showNitroFormFields = this.state.showNitroFormFields;
     const {
-      isProjectNitroCorporateCard,
       isNitroFormFillEnabled,
       isCSSEducationEnabled,
       isCSSOtherBusinessesEnabled,
       isUCCapitalCardsOnlyCampaignEnabled,
       isUCCapitalLOCOnlyCampaignEnabled,
     } = this.props.user;
-    const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
+    const content = BENEFITS.other;
 
     if (this.showKeystoneModal)
       return (
@@ -808,16 +544,9 @@ class DetailView extends React.Component {
               src="/dist/css/assets/razorpay-x-logo-white.svg"
               alt="rx-logo"
             />
-            {isProjectNitroCorporateCard ? (
-              <h3 className="heading">
-                Get <span>1.65%* pricing</span> & a Corporate Card by switching to a RazorpayX
-                Current Account
-              </h3>
-            ) : (
-              <h3 className="heading">
-                Get <span>1.65%* pricing</span> when you switch to a RazorpayX Current Account
-              </h3>
-            )}
+            <h3 className="heading">
+              Get <span>1.65%* pricing</span> when you switch to a RazorpayX Current Account
+            </h3>
             <ul className="list">
               {content.map((data) => (
                 <li key={data}>
@@ -841,14 +570,7 @@ class DetailView extends React.Component {
             </div>
           </div>
           <div className="right-section">
-            <img
-              src={
-                isProjectNitroCorporateCard
-                  ? '/dist/css/assets/rxcacc-dashboard-bg.png'
-                  : '/dist/css/assets/rxca-dashboard-bg.svg'
-              }
-              alt="razorpayx-current-account"
-            />
+            <img src="/dist/css/assets/rxca-dashboard-bg.svg" alt="razorpayx-current-account" />
           </div>
         </div>
       </div>
