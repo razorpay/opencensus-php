@@ -2296,6 +2296,8 @@ class Processor
         {
             $startTime = microtime(true);
 
+            $this->convert3ds2BrowserDetails($input);
+
             $this->validatePaymentForOptimizerOnlyMerchants();
 
             $this->preProcessPosPaymentRequest($input);
@@ -2431,6 +2433,29 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function convert3ds2BrowserDetails(& $input): void
+    {
+       if(empty($input['browser']) === false){
+           if($input['browser']['java_enabled'] == "1"){
+               $input['browser']['java_enabled'] = true;
+           }
+           else if($input['browser']['java_enabled'] == "0"){
+               $input['browser']['java_enabled'] = false;
+           }
+
+           if($input['browser']['javascript_enabled'] == "1"){
+               $input['browser']['javascript_enabled'] = true;
+           }
+           else if($input['browser']['javascript_enabled'] == "0"){
+               $input['browser']['javascript_enabled'] = false;
+           }
+           $input['browser']['screen_width'] = (float)$input['browser']['screen_width'];
+           $input['browser']['screen_height'] = (float)$input['browser']['screen_height'];
+           $input['browser']['color_depth'] = (float)$input['browser']['color_depth'];
+           $input['browser']['timezone_offset'] = (float)$input['browser']['timezone_offset'];
+       }
     }
 
     /**
