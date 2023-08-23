@@ -12,11 +12,18 @@ const IGNORE_FIELDS = [
   WALLET_AUTO_DEBIT_KEY,
 ];
 
-function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {
-  const ignoreFields =
+function APIDetails({
+  providerDetails,
+  isPaytmAutoDebitEnabled,
+  walletAutoDebit,
+  optimizerSeamlessDisabled,
+}) {
+  let ignoreFields =
     !isPaytmAutoDebitEnabled || !walletAutoDebit
       ? IGNORE_FIELDS.concat('CLIENT_KEY', 'CLIENT_SECRET')
       : IGNORE_FIELDS;
+
+  ignoreFields = optimizerSeamlessDisabled ? ignoreFields.concat('Sodexo') : ignoreFields;
 
   return (
     <div className="list-group details-row-container">

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link, ArrowUpRightIcon } from '@razorpay/blade/components';
 
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import { stringTemplate } from 'common/utils/rzp-utils';
 import { SEAMLESS_CONTENT } from 'merchant/views/Navigator/constants';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 const InfoBlock = ({ list, stringReplacer }) => {
   if (typeof list === 'string' && !list) return null;
@@ -102,18 +103,23 @@ const SeamlessNote = (props) => {
             listPoints={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.listPoints}
           />
 
-          <p className="for-more">
-            <span>For more details. Please refer to this &nbsp;</span>
-            <a
-              className="for-more--anchor"
-              target="_blank"
-              rel="noopener noreferrer"
-              href={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerLink}
-              onClick={onAnchorClick}
-            >
-              document <i className="i i-redirect" />
-            </a>
-          </p>
+          {SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerLink ? (
+            <p className="for-more">
+              <span>For more details. Please refer to this &nbsp;</span>
+              <Link
+                href={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerLink}
+                onClick={onAnchorClick}
+                icon={ArrowUpRightIcon}
+                iconPosition="right"
+                rel="noreferrer noopener"
+                target="_blank"
+                variant="anchor"
+                size="small"
+              >
+                document
+              </Link>
+            </p>
+          ) : null}
           {SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerText}
         </div>
       </div>

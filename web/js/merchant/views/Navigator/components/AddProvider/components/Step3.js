@@ -3,12 +3,16 @@ import React, { Fragment } from 'react';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Tooltip from 'common/ui/Tooltip';
-
-import { WalletsMultiSelect } from './WalletsMultiSelect';
-import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
 import { titleCase } from 'common/utils/rzp-utils';
+import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
+import {
+  METHODS,
+  PROVIDER_KEYS,
+  INSTANT_PROVIDER_UNSUPPORTED_METHODS,
+} from 'merchant/views/Navigator/constants';
+
 import { WalletAutoDebit } from './WalletAutoDebit';
-import { METHODS, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
+import { WalletsMultiSelect } from './WalletsMultiSelect';
 
 export function Step3({
   isEdit,
@@ -90,7 +94,13 @@ export function Step3({
                       <div>
                         {data_value
                           .filter((method) => {
-                            if (method === 'upi' && Gateway_details?.optimizer_seamless_disabled) {
+                            // For Instant on-boarding there are certain methods not supported
+                            const IS_METHOD_UPSUPPORTED =
+                              Gateway_details?.optimizer_seamless_disabled &&
+                              INSTANT_PROVIDER_UNSUPPORTED_METHODS[selectedProvider]?.includes(
+                                method,
+                              );
+                            if (IS_METHOD_UPSUPPORTED) {
                               return false;
                             }
                             return true;
@@ -109,7 +119,7 @@ export function Step3({
                               />
                             </span>
                           ))}
-                        {isSodexoEnabled ? (
+                        {isSodexoEnabled && !Gateway_details?.optimizer_seamless_disabled ? (
                           <span className="payment-method-checkbox-span">
                             <Input.Check
                               id={PROVIDER_KEYS.SODEXO}

@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { Step1 } from 'merchant/views/Navigator/components/AddProvider/components/Step1';
 import { deepClone } from 'common/utils/rzp-utils';
+import { Step1 } from 'merchant/views/Navigator/components/AddProvider/components/Step1';
 
 describe('Step 1 Screen', () => {
   let mockProps;
@@ -23,6 +23,7 @@ describe('Step 1 Screen', () => {
           'Payment Methods': {
             data_value: ['card', 'upi', 'netbanking', 'emi', 'wallet', 'emandate', 'sodexo'],
           },
+          optimizer_seamless_disabled: false,
         },
         paytm: {
           'Gateway Name': { data_value: 'PayTm' },
@@ -131,7 +132,7 @@ describe('Step 1 Screen', () => {
       expect(getAllByTestId('selected-gateway')).toHaveLength(1);
       expect(getByText('PayU')).toBeInTheDocument();
       expect(getByText('Change Gateway')).toBeInTheDocument();
-      expect(getByText(/Enable seamless option/)).toBeInTheDocument();
+      expect(getByText(/Integration type/)).toBeInTheDocument();
     });
 
     it('should render selected gateway - readOnly', () => {

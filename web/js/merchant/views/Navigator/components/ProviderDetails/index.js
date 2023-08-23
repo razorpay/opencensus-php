@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
 
 import Spinner from 'common/ui/Spinner';
 import { titleCase, isBlank } from 'common/utils/rzp-utils';
-
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
 import {
   TPV_OPTIONS,
@@ -18,6 +13,9 @@ import {
   PROVIDER_KEYS,
   WALLET_AUTO_DEBIT_KEY,
 } from 'merchant/views/Navigator/constants';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
@@ -174,6 +172,7 @@ export default class ProviderDetails extends Component {
                     providerDetails={providerDetails}
                     isPaytmAutoDebitEnabled={isPaytmAutoDebitEnabled}
                     walletAutoDebit={walletAutoDebit}
+                    optimizerSeamlessDisabled={optimizer_seamless_disabled}
                   />
                 </div>
               </div>

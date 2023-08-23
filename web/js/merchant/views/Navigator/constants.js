@@ -1,3 +1,7 @@
+import { Link } from '@razorpay/blade/components';
+
+import { CommonPoints } from 'merchant/views/Navigator/components/Provider/SeamlessComponents/CommonPoints';
+
 export const NETBANKING_FEATURES = 'Netbanking Features';
 export const UPI_FEATURES = 'UPI Features';
 
@@ -61,12 +65,17 @@ export const HAS_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis'];
 export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis'];
 
 /** Seamless option constants - Start **/
-export const SEAMLESS_PROVIDERS = ['paytm'];
+export const SEAMLESS_PROVIDERS = ['paytm', 'payu'];
 
 export const SEAMLESS_OPTIONS = [
   { label: 'Instant (beta)', value: true },
   { label: 'Server-to-Server', value: false },
 ];
+
+export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
+  paytm: ['upi'],
+  payu: ['emi', 'emandate'],
+};
 
 export const SEAMLESS_CONTENT = {
   paytm: {
@@ -144,6 +153,78 @@ export const SEAMLESS_CONTENT = {
         'UPI Intent and collect flows have been enabled',
       ],
       footerLink: 'https://razorpay.com/docs/payments/optimizer/paytm-s2s',
+      footerText: null,
+    },
+  },
+  payu: {
+    disable: {
+      headerText: 'Enable Instant (beta)',
+      infoBlock: (
+        <div>
+          <p>
+            Go live with your Payu PG account instantly via &rsquo;Instant&rsquo; integration mode.
+          </p>
+          <p>
+            This is a beta release and supports the following payment methods - Cards, Netbanking,
+            UPI, Wallet.
+          </p>
+        </div>
+      ),
+      buttonText: 'Prerequisites:',
+      listPoints: (
+        <ul>
+          <li>
+            Configure the necessary webhooks on the Payu dashboard as mentioned&nbsp;
+            <Link
+              href="https://razorpay.com/docs/payments/optimizer/payu-instant"
+              target="_blank"
+              rel="noopener noreferrer"
+              size="small"
+            >
+              here
+            </Link>
+          </li>
+          <li>
+            Please ensure that all necessary methods have been enabled on your Payu account (eg: UPI
+            Intent)
+          </li>
+        </ul>
+      ),
+      footerLink: 'https://razorpay.com/docs/payments/optimizer/payu-instant',
+      footerText: null,
+    },
+    enable: {
+      headerText: 'Enable Server-to-Server',
+      infoBlock: (
+        <div>
+          <p>Your PayU account should have the seamless option enabled to use optimizer.</p>
+        </div>
+      ),
+      buttonText: 'How to enable seamless option on PayU?',
+      listPoints: (
+        <ol>
+          <CommonPoints gatewayName="PayU" />
+          <li>
+            If you are going to use UPI as a payment method following steps will have to configured:
+            <ol type="a">
+              <li>
+                configure webhook URL as{' '}
+                <Link
+                  href="https://api.razorpay.com/v1/callback/payu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="small"
+                >
+                  {`https://api.razorpay.com/v1/callback/payu`}
+                </Link>{' '}
+                to receive UPI response
+              </li>
+              <li>enable UPI on seamless with the flag “txn_s2s_flow=4”</li>
+            </ol>
+          </li>
+        </ol>
+      ),
+      footerLink: null,
       footerText: null,
     },
   },

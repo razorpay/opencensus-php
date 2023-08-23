@@ -1,24 +1,12 @@
 import React from 'react';
+import qs from 'query-string';
 import { connect } from 'react-redux';
 import { withRouter, Link, Redirect } from 'react-router-dom';
-import qs from 'query-string';
 import { CSSTransition } from 'react-transition-group';
 
 import Spinner from 'common/ui/Spinner';
 import { deepClone } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
-
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
-import { addProvider, editProvider } from 'merchant/views/Navigator/service';
-
-import FullPageCover from './FullPageCover';
-import FullPageCoverHeader from './FullPageCoverHeader';
-import { HowToGetDetails } from './Provider/HowToGetDetails';
-import { Step1, Step2, Step3 } from './AddProvider/index';
-import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 import {
   INIT_PROVIDER_STATE,
   INIT_FORM_STATE,
@@ -30,7 +18,19 @@ import {
   SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS,
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS,
+  INSTANT_PROVIDER_UNSUPPORTED_METHODS,
+  SEAMLESS_PROVIDERS,
 } from 'merchant/views/Navigator/constants';
+import { addProvider, editProvider } from 'merchant/views/Navigator/service';
+import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { Step1, Step2, Step3 } from './AddProvider/index';
+import FullPageCover from './FullPageCover';
+import FullPageCoverHeader from './FullPageCoverHeader';
+import { HowToGetDetails } from './Provider/HowToGetDetails';
+import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 
 @withRouter
 @connect(
@@ -189,9 +189,9 @@ export default class AddProvider extends React.Component {
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
 
     // check if gateway level seamless option is enabled
-    const seamlessOptionExist = providers?.[selectedProvider]?.hasOwnProperty(
-      'optimizer_seamless_disabled',
-    );
+    const seamlessOptionExist =
+      SEAMLESS_PROVIDERS?.includes(selectedProviderWithAcquirer) &&
+      providers?.[selectedProvider]?.hasOwnProperty('optimizer_seamless_disabled');
 
     // check if radio button is toggled
     const seamlessRadioValue = provider?.Gateway_details?.hasOwnProperty(
@@ -291,7 +291,10 @@ export default class AddProvider extends React.Component {
             ...Gateway_details,
             optimizer_seamless_disabled: bool,
             ...(bool && {
-              'Payment Methods': Gateway_details?.['Payment Methods'].filter((m) => m !== 'upi'),
+              'Payment Methods': Gateway_details?.['Payment Methods'].filter(
+                (method) =>
+                  !INSTANT_PROVIDER_UNSUPPORTED_METHODS[selectedProvider].includes(method),
+              ),
             }),
           },
         },
