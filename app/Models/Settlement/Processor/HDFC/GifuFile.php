@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Feature;
@@ -88,7 +89,7 @@ class GifuFile extends Base\BaseGifuFile
     /**
      * @throws \RZP\Exception\BadRequestException
      */
-    public function getGifuData($input, $fromTimestamp = null, $toTimestamp = null): array
+    public function getGifuData($input, $fromTimestamp = null, $toTimestamp = null, $manualGifuTimeRange = null): array
     {
         $data = [];
 
@@ -98,9 +99,22 @@ class GifuFile extends Base\BaseGifuFile
 
         $modData = [];
 
+        if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
+        {
+            $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_MATRIX,
+                [
+                    'no gifu generation due to holiday' => Carbon::today(Timezone::IST),
+                ]
+            );
+
+            return $data;
+        }
+
         $date = Carbon::now()->format('d-m-Y');
 
-        $from = $fromTimestamp ?? Carbon::yesterday(Timezone::IST)->addHour(13)->getTimestamp(); // 1 pm
+        $prevWorkingDay = Holidays::getPreviousWorkingDay(Carbon::today(Timezone::IST));
+
+        $from = $fromTimestamp ?? $prevWorkingDay->copy()->addHour(13)->getTimestamp(); // 1 pm
 
         $to = $toTimestamp ?? Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -119,11 +133,11 @@ class GifuFile extends Base\BaseGifuFile
         if ($isGifuCustomEnabled === true) {
 
             // fetching payments for cards DS
-            $beginForCardsFromCache = (new AdminService)->getConfigKey([
+            $beginForCardsFromCache = $manualGifuTimeRange['from_card_ds_timestamp'] ?? (new AdminService)->getConfigKey([
                 'key' => ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
             ]);
 
-            $toForCards = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp(); // 11:59:59 PM yesterday
+            $toForCards = $manualGifuTimeRange['to_card_ds_timestamp'] ?? Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp(); // 11:59:59 PM yesterday
 
             $lastCapturedTimeForCards = $this->repo->payment->fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($input,$beginForCardsFromCache,$toForCards,['card'])->first()->last_capture_timestamp;
 
@@ -142,11 +156,11 @@ class GifuFile extends Base\BaseGifuFile
             );
 
             // fetching payments for UPI DS
-            $beginForUpiFromCache = (new AdminService)->getConfigKey([
+            $beginForUpiFromCache = $manualGifuTimeRange['from_upi_ds_timestamp'] ?? (new AdminService)->getConfigKey([
                 'key' => ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
             ]);
 
-            $toForUpi = Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
+            $toForUpi = $manualGifuTimeRange['to_upi_ds_timestamp'] ?? Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
 
             $lastCapturedTimeForUpi = $this->repo->payment->fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($input,$beginForUpiFromCache,$toForUpi,['upi'])->first()->last_capture_timestamp;
 
@@ -201,6 +215,13 @@ class GifuFile extends Base\BaseGifuFile
                 }
 
                 $amount = $this->getAggregatedSettlementAmount($value['settlements'] ?? []);
+
+                $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_MATRIX,
+                    [
+                        'settlement amount' => $amount,
+                        'mid '=>$mid
+                    ]
+                );
 
                 $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? []);
 

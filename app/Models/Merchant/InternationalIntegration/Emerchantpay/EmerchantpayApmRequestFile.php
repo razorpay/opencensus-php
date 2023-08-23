@@ -59,7 +59,7 @@ class EmerchantpayApmRequestFile extends Base\BaseGifuFile
     /**
      * @throws RecoverableException
      */
-    public function getGifuData($input, $from, $to)
+    public function getGifuData($input, $from, $to, $manualGifuTimeRange = null)
     {
         $data = [];
         $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);

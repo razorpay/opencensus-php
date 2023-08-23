@@ -408,6 +408,8 @@ class Service extends Base\Service
 
         $to = null;
 
+        $manualGifuTimeRange = null;
+
         $org = $this->repo->org->findOrFail($orgId);
 
         if (($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
@@ -426,6 +428,7 @@ class Service extends Base\Service
             $merchantIds = $input['merchant_ids'];
             $from = $input['from_timestamp'];
             $to = $input['to_timestamp'];
+            $manualGifuTimeRange = $input['manual_gifu_time_range'] ?? null;
         }
         else
         {
@@ -436,9 +439,11 @@ class Service extends Base\Service
 
         $fileProcessor = new $class;
 
-        $ufhResponse = $fileProcessor->generate($merchantIds, $from, $to);
+        $ufhResponse = $fileProcessor->generate($merchantIds, $from, $to, $manualGifuTimeRange);
 
-        if(count($ufhResponse) !== 0){
+        $isSendFileToBeam = $input['send_file_to_beam'] ?? true;
+
+        if(count($ufhResponse) !== 0 && $isSendFileToBeam === true){
             $fileProcessor->sendGifuFile($ufhResponse);
         }
 

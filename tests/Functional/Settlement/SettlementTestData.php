@@ -120,7 +120,17 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/IUXvshap3Hbzos/send_gifu_file',
-            'content' => []
+            'content' => [
+                'from_timestamp'=>'1689156000',
+                'to_timestamp'=>'1689233400',
+                'manual_gifu_time_range'=>[
+                    'from_card_ds_timestamp'=>'1689093000',
+                    'to_card_ds_timestamp'=>'1689186599',
+                    'from_upi_ds_timestamp'=>'1689093000',
+                    'to_upi_ds_timestamp'=>'1689182999',
+                ],
+                'send_file_to_beam'=> false
+            ]
         ],
         'response' => [
             'content' => [
@@ -128,6 +138,17 @@ return [
                 'status'  => 'mocked',
                 'bucket'  => 'test'
             ]
+        ]
+    ],
+
+    'testCustomGefuFileCreationAfterHoliday' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/IUXvshap3Hbzos/send_gifu_file',
+            'content' => []
+        ],
+        'response' => [
+            'content' => []
         ]
     ],
 

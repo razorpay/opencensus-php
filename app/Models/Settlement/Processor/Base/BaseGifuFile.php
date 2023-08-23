@@ -56,9 +56,9 @@ abstract class BaseGifuFile extends Base\Core
     /**
      * @throws ServerErrorException
      */
-    public function generate($input, $from, $to)
+    public function generate($input, $from, $to, $manualGifuTimeRange = null)
     {
-        $gifuData = $this->getGifuData($input,$from,$to);
+        $gifuData = $this->getGifuData($input, $from, $to, $manualGifuTimeRange);
 
         if(count($gifuData) === 0)
         {
@@ -114,7 +114,7 @@ abstract class BaseGifuFile extends Base\Core
         return $responseFromUfhUpload;
     }
 
-    abstract public function getGifuData($input,$from,$to);
+    abstract public function getGifuData($input,$from,$to,$manualGifuTimeRange = null);
 
     abstract protected function customFormattingForFile($path,FileStore\Creator $creator = null);
 

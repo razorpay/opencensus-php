@@ -54,7 +54,7 @@ class GifuFile extends Base\BaseGifuFile
     /**
      * @throws RecoverableException
      */
-    public function getGifuData($input, $from, $to): array
+    public function getGifuData($input, $from, $to, $manualGifuTimeRange = null): array
     {
         $data = [];
 
