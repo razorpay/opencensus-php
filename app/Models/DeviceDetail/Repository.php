@@ -26,6 +26,13 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchByMerchantId(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->first();
+    }
+
     public function fetchByAppsflyerId(string $appsflyerId)
     {
         return $this->newQuery()
