@@ -210,7 +210,7 @@ class Service extends Base\Service
                     'response'    => $pgosResponse,
                 ]);
 
-                return $pgosResponse;
+                return $pgosResponse['activation_response'];
             }
             catch (\Throwable $exception) {
                 // this should not introduce error counts as it is running in shadow mode

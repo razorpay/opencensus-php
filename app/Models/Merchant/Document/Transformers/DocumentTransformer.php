@@ -19,6 +19,11 @@ class DocumentTransformer extends Base\Transformer
     //            ]
 
     protected $rules = [
+        'id'        => [
+            [
+                "column" => 'id'
+            ]
+        ],
         'merchant_id'        => [
             [
                 "column" => 'merchant_id'

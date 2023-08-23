@@ -493,11 +493,14 @@ class Core extends Base\Core
             // blacklisted merchant should not be allowed to submit l2 form
             $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-            $response = Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM],
-                function() use ($merchant, $input, $originProduct)
-                {
-                    return $this->submitActivationForm($merchant, $input, $originProduct);
-                });
+            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $originProduct)
+            {
+                return Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM],
+                    function() use ($merchant, $input, $originProduct)
+                    {
+                        return $this->submitActivationForm($merchant, $input, $originProduct);
+                    });
+            });
 
             // If activation status changes to under_review and previous activation status is
             // Needs Clarification, then it means merchant has responded to Needs Clarification.

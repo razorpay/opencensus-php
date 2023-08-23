@@ -734,6 +734,7 @@ class Core extends Base\Core
                 if (empty($document) === false)
                 {
                     unset($data[Entity::MERCHANT_ID]);
+                    unset($data[Entity::ID]);
 
                     $data[Entity::SOURCE] = 'UFH';
 
@@ -751,7 +752,9 @@ class Core extends Base\Core
 
                     $data[Entity::ENTITY_ID] = $data[Entity::MERCHANT_ID];
 
-                    $document->generateId();
+                    $document->setId($data[Entity::ID]);
+
+                    unset($data[Entity::ID]);
 
                     $document->build($data);
 
