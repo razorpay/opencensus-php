@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Metric;
 use RZP\Jobs;
@@ -1088,6 +1089,36 @@ trait Capture
                         'input' => $input,
                         'merchant_id' => $payment->getMerchantId(),
                     ]);
+                return;
+            }
+
+            //This will only be enabled for live mode in production. Non-prod & prod test mode won't be broken down to multiple queues.
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::USE_NEW_MERCHANT_BALANCE_UPDATE_QUEUES, $this->mode);
+            if (strtolower($variant) === 'on')
+            {
+                $ascii = ord($payment->getMerchantId());
+                $queueNo = $ascii%5;
+
+                if ($queueNo === 0)
+                {
+                    Jobs\MerchantBasedBalanceUpdateCommon1::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                }
+                else if ($queueNo === 1)
+                {
+                    Jobs\MerchantBasedBalanceUpdateCommon2::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                }
+                else if ($queueNo === 2)
+                {
+                    Jobs\MerchantBasedBalanceUpdateCommon3::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                }
+                else if ($queueNo === 3)
+                {
+                    Jobs\MerchantBasedBalanceUpdateCommon4::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                }
+                else
+                {
+                    Jobs\MerchantBasedBalanceUpdateCommon5::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                }
                 return;
             }
 

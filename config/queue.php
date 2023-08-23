@@ -686,6 +686,26 @@ return [
         'test'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_V3'),
     ],
 
+    'merchant_based_balance_update_common_1' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_1'),
+    ],
+
+    'merchant_based_balance_update_common_2' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_2'),
+    ],
+
+    'merchant_based_balance_update_common_3' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_3'),
+    ],
+
+    'merchant_based_balance_update_common_4' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_4'),
+    ],
+
+    'merchant_based_balance_update_common_5' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_5'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

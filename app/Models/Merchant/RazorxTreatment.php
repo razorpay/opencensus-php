@@ -896,4 +896,6 @@ final class RazorxTreatment
      * Razorx flag to Remove API Routing rules fallback on API Service
      */
     const REMOVE_API_ROUTER_FALLBACK = 'remove_api_router_fallback';
+
+    const USE_NEW_MERCHANT_BALANCE_UPDATE_QUEUES = 'use_new_merchant_balance_update_queues';
 }
