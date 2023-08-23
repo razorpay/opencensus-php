@@ -42,7 +42,6 @@ class Entity extends Base\PublicEntity
         self::EVENT,
         self::CONTAINS,
         self::PAYLOAD,
-        self::CONTEXT,
         self::CREATED_AT
     ];
 

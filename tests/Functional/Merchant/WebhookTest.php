@@ -1282,6 +1282,44 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testOrderPaidWebhookEventPayloadWithTransactionIsolationExpDisabled()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $this->storkMock = $this->storkMock ?: $this->createStorkMock();
+
+        $matcher = function (array $event) use ($expectedEvent)
+        {
+            $this->assertArraySelectiveEquals($expectedEvent, $event);
+            $this->assertArrayNotHasKey('context', $event);
+        };
+
+        $argMatcher = $this->getArgMatcher('order.paid', $matcher);
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->times(1)
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
+            ->andReturn(new \WpOrg\Requests\Response);
+
+        $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.transaction_isolation_for_webhooks_experiment_id'),
+            ],
+            "variant"    => null
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();

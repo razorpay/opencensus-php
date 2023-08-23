@@ -3,6 +3,7 @@
 namespace RZP\Tests\Traits;
 
 use Mockery;
+use Closure;
 use \WpOrg\Requests\Response;
 use RZP\Models\Base\UniqueIdEntity;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -29,15 +30,33 @@ trait TestsWebhookEvents
      *     );
      * - Also see dontExpectWebhookEvent, dontExpectAnyWebhookEvent and expectWebhookEventWithContents.
      *
-     * @param  string   $name
-     * @param  callable $matcher
+     * @param string        $name
+     * @param callable|null $matcher
+     *
      * @return void
      */
     protected function expectWebhookEvent(string $name, callable $matcher = null)
     {
         $this->storkMock = $this->storkMock ?: $this->createStorkMock();
 
-        $argMatcher = function(array $arg) use ($name, $matcher)
+        $argMatcher = $this->getArgMatcher($name, $matcher);
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->zeroOrMoreTimes()
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
+            ->andReturn(new \WpOrg\Requests\Response);
+    }
+
+    /**
+     * @param string        $name
+     * @param callable|null $matcher
+     *
+     * @return Closure
+     */
+    protected function getArgMatcher(string $name, callable $matcher = null): Closure
+    {
+        return function(array $arg) use ($name, $matcher)
         {
             // $arg['event'] is stork's event struct.
             if ($name !== $arg['event']['name'])
@@ -69,12 +88,6 @@ trait TestsWebhookEvents
                 return false;
             }
         };
-
-        $this->storkMock
-            ->shouldReceive('request')
-            ->zeroOrMoreTimes()
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
-            ->andReturn(new \WpOrg\Requests\Response);
     }
 
     /**
