@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
@@ -351,7 +352,7 @@ class Core extends Base\Core
         try
         {
             $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
-            $settlementTime = Carbon::createFromTimestamp(Carbon::now(Timezone::IST)->getTimestamp(), Timezone::IST)
+            $settlementTime = Carbon::createFromTimestamp(Carbon::now($merchant->getTimeZone())->getTimestamp(), $merchant->getTimeZone())
                 ->format('d/m/Y h:i A');
 
             $email = null;
@@ -620,7 +621,8 @@ class Core extends Base\Core
                 $args = [
                     'settlement'          => $settlement,
                     'merchant'            => $merchant,
-                    'bankAccountNumber'   => $bankAccountNumber
+                    'bankAccountNumber'   => $bankAccountNumber,
+                    'currency_symbol'     => Currency::getSymbol($merchant->getCurrency()),
                 ];
 
                 (new SettlementNotificationHandler($args))->sendForEvent(Events::PROCESSED);

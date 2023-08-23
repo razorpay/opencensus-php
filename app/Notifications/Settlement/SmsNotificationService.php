@@ -3,6 +3,7 @@
 namespace RZP\Notifications\Settlement;
 
 use Carbon\Carbon;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Service;
@@ -98,7 +99,6 @@ class SmsNotificationService extends BaseNotificationService
     {
         $merchant = $this->args['merchant'];
         $settlement = $this->args['settlement'];
-
         $payload = [
             'template' => $this->getTemplateMessage(),
             'receiver' => $this->getPhone(),
@@ -107,14 +107,15 @@ class SmsNotificationService extends BaseNotificationService
                 'merchant_id'     => $merchant->getId(),
                 'bank_account_id' => $this->args['bankAccountNumber'],
                 'settlement_id'   => $settlement->getPublicId(),
-                'date'            => Carbon::now(timezone::IST)->format('j M Y, g A'),
+                'date'            => Carbon::now($merchant->getTimeZone())->format('j M Y, g A'),
             ]
         ];
 
         if($this->event === Events::PROCESSED)
         {
+            $currencySymbol = $this->args['currency_symbol'] ?? Currency::SYMBOL[Currency::INR];
             $payload['params']['utr']    = $settlement->getUtr();
-            $payload['params']['amount'] = 'Rs.'.$settlement->getAmount()/100;
+            $payload['params']['amount'] = $currencySymbol . ' ' . $settlement->getAmount()/100;
         }
         else
         {
