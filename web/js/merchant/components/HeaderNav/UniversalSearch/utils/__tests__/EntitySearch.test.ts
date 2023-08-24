@@ -1,14 +1,14 @@
+import { searchableEntities } from 'merchant/components/HeaderNav/UniversalSearch/configs';
+import {
+  SearchableEntityType,
+  SearchableEntities,
+} from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import {
   entitySearch,
   transformEntitySearchResults,
   makeQuery,
   getDefaultDateRangeForPayments,
 } from 'merchant/components/HeaderNav/UniversalSearch/utils/EntitySearch';
-import { searchableEntities } from 'merchant/components/HeaderNav/UniversalSearch/configs';
-import {
-  SearchableEntityType,
-  SearchableEntities,
-} from 'merchant/components/HeaderNav/UniversalSearch/typings';
 
 describe('Entity search util', () => {
   test('Valid entity id as search query', () => {
@@ -25,7 +25,12 @@ describe('Entity search util', () => {
 
   test('Valid email as search query', () => {
     const searchResults = entitySearch('akash.raina@razorpay.com');
-    const validSearchResults: SearchableEntities[] = ['Payments', 'PaymentLinks', 'Accounts'];
+    const validSearchResults: SearchableEntities[] = [
+      'Payments',
+      'PaymentLinks',
+      'Accounts',
+      'QRcodes',
+    ];
 
     expect(searchResults.success).toBe(true);
     searchResults.results.forEach((result) => {
@@ -67,6 +72,9 @@ describe('Entity search util', () => {
       'Transfers',
       'Reversals',
       'Accounts',
+      'Subscriptions',
+      'Plans',
+      'QRcodes',
     ];
 
     expect(searchResults.success).toBe(false);
@@ -125,6 +133,9 @@ describe('Transform search results util', () => {
       'Transfers',
       'Accounts',
       'Reversals',
+      'Subscriptions',
+      'QRcodes',
+      'Plans',
     ];
 
     expect(transformedSearchResults).toHaveLength(Object.keys(searchableEntities).length);

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import {
   entityAttributes,
   searchableEntities,
@@ -12,7 +14,6 @@ import {
   EntityAttributeTypes,
   AttributeType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
-import moment from 'moment';
 
 // **** Constants ****
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
@@ -43,7 +44,6 @@ export function entitySearch(searchQuery: string): {
     } else {
       // eslint-disable-next-line no-lonely-if
       if (attribute.matchWith.includes(searchQuery.toLowerCase())) {
-        console.log('1.', attribute.matchWith.includes(searchQuery.toLowerCase()), attribute);
         matchedEntities.push(...attribute.entities);
         matchedAttribute.push(attribute.attributeId);
         matchedAttributeType = attribute.attributeType;
