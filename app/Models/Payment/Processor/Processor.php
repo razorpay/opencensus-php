@@ -1753,7 +1753,7 @@ class Processor
     private function performCustomChecksToRouteViaUpsRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array
     {
         $routeViaReArch = true;
-        $dimensions = array_fill(0, 36, 0);
+        $dimensions = array_fill(0, 38, 0);
 
         $response = [
             'route_via_ups' => $routeViaReArch
@@ -1989,9 +1989,21 @@ class Processor
             $dimensions[33] = 1;
         }
 
-        $dimensions[34] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS) === true)
+        {
+            $routeViaReArch = false;
+            $dimensions[34] = 1;
+        }
 
-        $dimensions[35] = (string) $currentRouteName;
+        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $routeViaReArch = false;
+            $dimensions[35] = 1;
+        }
+
+        $dimensions[36] = (string) strtolower($input['_']['library'] ?? 'unknown');
+
+        $dimensions[37] = (string) $currentRouteName;
 
         $dimensionsString = implode(', ', $dimensions);
 
