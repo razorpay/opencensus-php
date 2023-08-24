@@ -116,7 +116,7 @@ class Service extends Base\Service
             {
                 $fetchCouponsUrlConfig = $this->merchant->getFetchCouponsUrlConfig();
 
-                if ($fetchCouponsUrlConfig === null)
+                if ($fetchCouponsUrlConfig === null || $fetchCouponsUrlConfig->getValue()=== '')
                 {
                     $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
                     $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_FETCH_COUPONS_URL_NOT_CONFIGURED);
@@ -310,7 +310,7 @@ class Service extends Base\Service
             } else {
                 $couponValidityUrlConfig = $this->merchant->getApplyCouponUrlConfig();
 
-                if ($couponValidityUrlConfig === null) {
+                if ($couponValidityUrlConfig === null || $couponValidityUrlConfig->getValue() === '') {
 
                     $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_INVALID_REQUEST_COUNT, $dimensions);
                     $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_COUPON_VALIDITY_URL_NOT_CONFIGURED);
