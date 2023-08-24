@@ -61,6 +61,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED';
     const GATEWAY_ERROR_PARES_NOT_SUCCESSFUL                                        = 'GATEWAY_ERROR_PARES_NOT_SUCCESSFUL';
     const GATEWAY_ERROR_INVALID_PARES_XML                                           = 'GATEWAY_ERROR_INVALID_PARES_XML';
+    const GATEWAY_ERROR_ALT_ID_CREATE_ERROR                                         = 'GATEWAY_ERROR_ALT_ID_CREATE_ERROR';
     const GATEWAY_ERROR_INVALID_PARES_FORMAT                                        = 'GATEWAY_ERROR_INVALID_PARES_FORMAT';
     const GATEWAY_ERROR_PARES_DATA_MISMATCH                                         = 'GATEWAY_ERROR_PARES_DATA_MISMATCH';
     const GATEWAY_ERROR_DATA_MISMATCH                                               = 'GATEWAY_ERROR_DATA_MISMATCH';

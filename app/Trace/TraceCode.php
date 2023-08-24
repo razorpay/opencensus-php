@@ -5257,6 +5257,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEND_EMAIL_SUCCESSFUL                                 = 'SEND_EMAIL_SUCCESSFUL';
     const SEND_EMAIL_FAILED_INVALID_RECIPIENT                   = 'SEND_EMAIL_FAILED_INVALID_RECIPIENT';
 
+    const VAULT_ALT_ID_REQUEST                                  = 'VAULT_ALT_ID_REQUEST';
+    const VAULT_ALT_ID_RESPONSE                                 = 'VAULT_ALT_ID_RESPONSE';
+    const VAULT_ALT_ID_REQUEST_FETCH_ERROR                      = 'VAULT_ALT_ID_REQUEST_FETCH_ERROR';
     const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';
@@ -7497,6 +7500,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
     const VAULT_ENCRYPTION_FAILED                             = 'VAULT_ENCRYPTION_FAILED';
+    const VAULT_CREATE_ALT_ID_DATA_FAILED                     = 'VAULT_CREATE_ALT_ID_DATA_FAILED';
     const VAULT_CARD_METADATA_SAVE_FAILED                     = 'VAULT_CARD_METADATA_SAVE_FAILED';
     const VAULT_CARD_METADATA_FETCH_FAILED                    = 'VAULT_CARD_METADATA_FETCH_FAILED';
     const CARD_METADATA_FETCH_AFTER_3_DAYS                    = 'CARD_METADATA_FETCH_AFTER_3_DAYS';

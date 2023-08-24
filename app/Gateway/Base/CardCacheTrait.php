@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Base;
 
+use RZP\Models\CapitalVirtualCards\Core;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 
@@ -68,6 +69,14 @@ trait CardCacheTrait
             // Multiplying by 60 since cache put() expect ttl in seconds
             $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl * 60);
         }
+
+        // Storing alt id data in cache. 3 is value for alt id
+        if ($input['card']['trivia'] === 3  && isset($input['alt_id_data']))
+        {
+            $keyAltId = $this->getAltIdCacheKey($input);
+
+            $this->app['cache']->store($this->secureCacheDriver)->put($keyAltId, $input['alt_id_data'], $cacheTtl * 60);
+        }
     }
 
     /**
@@ -75,7 +84,7 @@ trait CardCacheTrait
      * @param array $input
      * @throws \Exception
      */
-    protected function setCardNumberAndCvv(array & $input,$cardArray=[])
+    protected function setCardNumberAndCvv(array & $input,$cardArray=[], $action = null)
     {
         $data = $this->getCardDetailsFromCache($input);
 
@@ -111,6 +120,36 @@ trait CardCacheTrait
             $input['card'][Card\Entity::TOKENISED]        = $data[Card\Entity::TOKENISED];
             $input['card'][Card\Entity::TOKEN_PROVIDER]   = $data[Card\Entity::TOKEN_PROVIDER];
         }
+
+        if ($input['card'][Card\Entity::TRIVIA] == 3){
+
+            $altIdData = $this->getAltIdDetailsFromCache($input);
+
+            if (empty($altIdData['alt_id_data']) === true && $action === Action::CAPTURE)
+            {
+                //for capture if we do not get data in cache we need to call detokenize api
+                $altIdData['alt_id_data']['alt_id']['value'] = (new Card\CardVault)->detokenizeAltIdData($input['card'][Card\Entity::VAULT_TOKEN]);
+                $altIdData['alt_id_data']['alt_id'][Card\Entity::EXPIRY_MONTH] = $input['card'][Card\Entity::TOKEN_EXPIRY_MONTH];
+                $altIdData['alt_id_data']['alt_id'][Card\Entity::EXPIRY_YEAR] = $input['card'][Card\Entity::TOKEN_EXPIRY_YEAR];
+            }
+
+            if (empty($altIdData['alt_id']) === false)
+            {
+                $input['card'][Card\Entity::CRYPTOGRAM_VALUE] = $altIdData['alt_id'][Card\Entity::CRYPTOGRAM_VALUE];
+                $input['card'][Card\Entity::NUMBER] = $altIdData['alt_id']['value'];
+                $input['card'][Card\Entity::EXPIRY_MONTH] = $altIdData['alt_id'][Card\Entity::EXPIRY_MONTH];
+                $input['card'][Card\Entity::EXPIRY_YEAR] = $altIdData['alt_id'][Card\Entity::EXPIRY_YEAR];
+                $input['card'][Card\Entity::VAULT_TOKEN] = $altIdData[Card\Entity::TOKEN];
+            }
+            else
+            {
+                $this->trace->warning(
+                    TraceCode::VAULT_ALT_ID_REQUEST_FETCH_ERROR,
+                    [
+                        'message' => 'alt_id not present in cache'
+                    ]);
+            }
+        }
     }
 
     /**
@@ -125,6 +164,13 @@ trait CardCacheTrait
         return $this->app['cache']->store($this->secureCacheDriver)->get($key) ?: [];
     }
 
+    protected function getAltIdDetailsFromCache($input)
+    {
+        $key = $this->getAltIdCacheKey($input);
+
+        return $this->app['cache']->store($this->secureCacheDriver)->get($key) ?: [];
+    }
+
     /**
      * @param $paymentId
      * @return string
@@ -132,6 +178,11 @@ trait CardCacheTrait
     protected function getCacheKey($input)
     {
         return sprintf(static::CACHE_KEY, $input['payment']['id']);
+    }
+
+    protected function getAltIdCacheKey($input)
+    {
+        return sprintf(static::CACHE_KEY, 'alt_id_'.$input['payment']['id']);
     }
 
     protected function getDriver()

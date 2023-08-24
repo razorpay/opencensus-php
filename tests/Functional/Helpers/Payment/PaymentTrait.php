@@ -4045,6 +4045,24 @@ trait PaymentTrait
                     ];
                     break;
 
+                case 'alt_id':
+                    $response['success'] = true;
+
+                    $response['provider'] = strtolower($input['iin']['network']);
+
+                    $token = '9fab08f0ac2e49d7b33d7eb3bf26dbc4';
+                    $response['token']  = $token;
+
+                    $response['alt_id'] = [
+                        [
+                            'value' => '2223000000000007',
+                            'expiry_month' => '12',
+                            'expiry_year' => '2024',
+                            'cryptogram_value' => 'AgAAAAAcfGcac/wAABFcgqYAAAA=',
+                        ]
+                    ];
+                    break;
+
                 case 'cards/fingerprints':
                     $response['fingerprint'] = '1234';
                     break;

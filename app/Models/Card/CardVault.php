@@ -213,6 +213,43 @@ class CardVault extends Base\Core
         }
     }
 
+    public function fetchAltIdData($fetchAltIdRequest)
+    {
+        try
+        {
+            return $this->cardVault->fetchAltIdData($fetchAltIdRequest);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message'       => 'Failed to fetch alt id data'
+                ]
+            );
+        }
+    }
+
+    public function detokenizeAltIdData($vaultToken)
+    {
+        try
+        {
+            return $this->cardVault->detokenize($vaultToken,'payments_alt_id');
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'vault_token'   => $vaultToken,
+                    'message'       => 'Failed to detokenize data'
+                ]
+            );
+
+            throw $e;
+        }
+    }
+
     public function saveCardMetaData($card, $input, $isRzpX = false)
     {
         try
@@ -358,7 +395,11 @@ class CardVault extends Base\Core
             {
                 if (empty($input['trivia']) === false)
                 {
-                    if (empty($input['network']) === true || $input['network'] !== NetworkName::DICL)
+                    if ($input['trivia'] === '3' )
+                    {
+                        $buNamespace = 'payments_alt_id';
+                    }
+                    else if (empty($input['network']) === true || $input['network'] !== NetworkName::DICL)
                     {
                         $buNamespace = 'payments_token_pan';
                     }

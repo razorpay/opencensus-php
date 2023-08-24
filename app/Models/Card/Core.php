@@ -695,6 +695,41 @@ class Core extends Base\Core
         $card->setVault($vault);
     }
 
+    public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $terminalGatewayInput)
+    {
+        $response = null;
+        try {
+            $cardVault = (new Card\CardVault);
+
+            $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
+            $this->trace->info(
+                TraceCode::VAULT_ALT_ID_RESPONSE,
+                [
+                    'alt_id_response'        => $response,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_CREATE_ALT_ID_DATA_FAILED
+            );
+        }
+
+        // need to update this as we use terminalGatewayInput during authentication
+        if (isset($response['alt_id']))
+        {
+            $terminalGatewayInput['card'][Card\Entity::NUMBER] = $response['alt_id']['value'];
+            $terminalGatewayInput['card'][Card\Entity::EXPIRY_MONTH] = $response['alt_id']['expiry_month'];
+            $terminalGatewayInput['card'][Card\Entity::EXPIRY_YEAR] = $response['alt_id']['expiry_year'];
+            $terminalGatewayInput['card'][Card\Entity::CRYPTOGRAM_VALUE] = $response['alt_id']['cryptogram_value'];
+            $terminalGatewayInput['card'][Card\Entity::TRIVIA] = 3;
+            $terminalGatewayInput['alt_id_data'] = $response;
+        }
+        return $response;
+    }
+
     public function saveCardMetaData(Card\Entity $card, array $input, $isRzpX = false)
     {
         $cardMetaData = [];

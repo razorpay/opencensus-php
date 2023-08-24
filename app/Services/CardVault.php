@@ -294,6 +294,13 @@ class CardVault
         return $response;
     }
 
+    public function fetchAltIdData($payload)
+    {
+        $response = $this->sendRequest('alt_id', 'post', $payload);
+
+        return $response;
+    }
+
     public function validateToken($token)
     {
         $input = [

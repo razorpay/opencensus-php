@@ -6876,13 +6876,13 @@ class Processor
         }
         else if ($action === Action::CALLBACK or $action === Action::PAY)
         {
-            $this->setCardNumberAndCvv($input,$cardArray);
+            $this->setCardNumberAndCvv($input,$cardArray, $action);
         }
         else if ($action === Action::CAPTURE)
         {
             try
             {
-                $this->setCardNumberAndCvv($input,$cardArray);
+                $this->setCardNumberAndCvv($input,$cardArray, $action);
             }
             catch (\Exception $e)
             {

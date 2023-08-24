@@ -529,6 +529,37 @@ trait Authorize
 
     }
 
+    protected function setAltIdRequestData(array $input, array & $gatewayInput, Payment\Entity $payment)
+    {
+        $requestData = [];
+        if(!($payment->isCard() === true)){
+            return $requestData;
+        }
+        if(isset($input['card']))
+        {
+            $requestData['card'] = $input['card'];
+        }
+        if(isset($gatewayInput['iin']))
+        {
+            $requestData['iin']['iin'] = $gatewayInput['iin']['iin'];
+            $requestData['iin']['issuer'] = $gatewayInput['iin']['issuer'];
+            $requestData['iin']['network'] = $gatewayInput['iin']['network'];
+        }
+        if(isset($payment['merchant_id']))
+        {
+            $requestData['merchant']['id'] = $payment['merchant_id'];
+        }
+        if(isset($payment['amount']))
+        {
+            $requestData['payment']['amount'] = $payment['amount'];
+        }
+        if(isset($payment['currency']))
+        {
+            $requestData['payment']['currency'] = $payment['currency'];
+        }
+        return $requestData;
+    }
+
     protected function set3ds2AuthenticationParams(array $input, array & $gatewayInput, Payment\Entity $payment)
     {
         if(!($payment->isCard() === true)){
@@ -673,6 +704,21 @@ trait Authorize
             {
                 break;
             }
+
+            if(isset($payment->card) && $payment->card->getTrivia()!='1' && $payment->card->getName() == 'testAltIdVISA') {
+            //make condition $payment->card->getTrivia()!='1' to enable alt id
+            //call alt id and set trivia 3 for alt id
+            //experiment to check if we can go ahead with alt id
+            $razorxFeature = "alt_id_".$payment->getGateway();
+            $variant = $this->app->razorx->getTreatment($payment->getId(), $razorxFeature, $this->mode);
+            $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
+                [
+                    'feature'   =>  $razorxFeature,
+                    'variant' => $variant,
+                ]);
+            if ($variant === 'on') {
+                $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput);
+            }}
 
             // TODO: This is temporarily added here until we make
             // gateway functions like authorize for bank transfer.
@@ -863,6 +909,25 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput)
+    {
+        $cardCore = new Card\Core;
+        $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment);
+
+        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input, $terminalGatewayInput);
+
+        // saving data in card entity for future use
+        if(isset($altIdData['token']) && isset($altIdData['alt_id'])){
+            $payment->card->setVaultToken($altIdData['token']);
+            $payment->card->setTokenExpiryMonth($altIdData['alt_id']['expiry_month']);
+            $payment->card->setTokenExpiryYear($altIdData['alt_id']['expiry_year']);
+            $payment->card->setTrivia(3);
+        }
+        $this->repo->saveOrFail($payment->card);
+
+        return $altIdData;
     }
 
     /**
