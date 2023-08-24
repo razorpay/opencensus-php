@@ -761,7 +761,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
-            if(Payment\Gateway::shouldSkipDebit($input['payment']) !== true)
+            if(Payment\Gateway::shouldSkipDebit($input['payment'],$this->payment->isOptimizerWalletLinkAndPaySupported($input)) !== true)
             {
                 $this->callGatewayFunction(Payment\Action::AUTHORIZE, $input);
             }

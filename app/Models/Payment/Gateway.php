@@ -4875,10 +4875,16 @@ class Gateway
 
     public static function canRunOtpFlowViaNbPlus($payment)
     {
+        if ($payment[Payment\Entity::GATEWAY] === WALLET::PAYTM &&
+            $payment[Payment\Entity::METHOD] === Payment\Method::WALLET &&
+            $payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return true;
+        }
+
         $gateways = [
             self::WALLET_FREECHARGE,
             self::WALLET_BAJAJ,
-            Wallet::PAYTM,
         ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];
@@ -4899,11 +4905,15 @@ class Gateway
         return ((in_array($gateway, $gateways, true)) and ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE));
     }
 
-    public static function shouldSkipDebit($payment)
+    public static function shouldSkipDebit($payment, $isOptimizerLinkAndPayWallet=false)
     {
+        if($isOptimizerLinkAndPayWallet === true)
+        {
+            return true;
+        }
+
         $gateways = [
-            Gateway::WALLET_BAJAJ,
-            Gateway::PAYTM,
+            Gateway::WALLET_BAJAJ
         ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];
