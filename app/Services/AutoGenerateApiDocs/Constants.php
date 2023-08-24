@@ -6,7 +6,7 @@ class Constants
 {
     const FILES_DIR = './_docs/';
 
-    const TOTAL_API_DETAILS_FILES = 10;
+    const TOTAL_API_DETAILS_FILES = 8;
 
     const API_SUMMARY                          = 'api_summary';
 
