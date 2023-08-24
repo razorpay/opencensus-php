@@ -258,6 +258,7 @@ export default class BaseScreen extends React.Component {
                   lpVariant={this.state.lpVariant}
                   lpFold={this.state.lpFold}
                   businessTypeName={this.state.businessTypeName}
+                  orgDetails={orgDetails}
                 />
               )
             : null}

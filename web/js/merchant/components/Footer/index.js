@@ -22,6 +22,10 @@ export const FOOTER_LINKS = [
 
 export const MALAYSIAN_FOOTER_LINKS = [
   {
+    label: 'Merchant Agreement',
+    link: POLICY_LINKS.MERCHANT_AGGREMENT_CURLEC,
+  },
+  {
     label: 'Terms of Use',
     link: POLICY_LINKS.TERMS_OF_USE_CURLEC,
   },

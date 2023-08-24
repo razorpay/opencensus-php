@@ -1,10 +1,20 @@
 import React from 'react';
-import SlideContoller from './SlideController';
-import { track } from '../ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { track } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+
+import SlideContoller from './SlideController';
+
+const PARTNER_PROGRAM_URL = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'https://razorpay.com/partners/',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'https://curlec.com/docs/partners/',
+};
 
 const S0 = (props) => {
+  const orgCode = props.orgDetails.custom_code;
+  const partnerProgramUrl = PARTNER_PROGRAM_URL[orgCode] || PARTNER_PROGRAM_URL.rzp;
+
   const handleNextClick = () => {
     props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.welcome', {
@@ -66,7 +76,7 @@ const S0 = (props) => {
         </div>
         <div className="learn-more">
           <a
-            href="https://razorpay.com/partners/"
+            href={partnerProgramUrl}
             target="_blank"
             className=""
             style={{
