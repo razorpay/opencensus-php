@@ -40,75 +40,79 @@ const PlanDetails = ({ affordability, user, loading }) => {
     track.requestHelp();
   };
 
+  const showPlanDetailsSection = false; // temporarily hidding the plan detail section
+
   return (
     <div className="plans-wrapper">
-      <p className="caption">Plan Details</p>
+      {showPlanDetailsSection ? <p className="caption">Plan Details</p> : null}
       <div className="plan-details-grid">
         <div className="plan-details">
-          <div className="plan-details-wrapper block">
-            <div>
-              <p className="plan-heading">{isEnabled ? 'Current Plan' : 'Last Active Plan'}</p>
-              {loading ? (
-                <span className="PlaceholderLoader" />
-              ) : (
-                <p className="plan-value">{!pricing || !pricing?.rate ? 'Free' : 'Paid'}</p>
-              )}
-            </div>
-            {!isEnabled ? (
+          {showPlanDetailsSection ? (
+            <div className="plan-details-wrapper block">
               <div>
-                <p className="plan-heading">Disabled On</p>
-                <p className="plan-value">{formattedDate}</p>
-                <p>{actionYear}</p>
-              </div>
-            ) : null}
-            <div>
-              <p className="plan-heading">
-                {!isEnabled ? 'Last ' : ''} Payment <span>(Excluding GST)</span>
-              </p>
-              <p className="plan-value">
-                {!pricing || !pricing?.rate ? (
-                  '₹0'
+                <p className="plan-heading">{isEnabled ? 'Current Plan' : 'Last Active Plan'}</p>
+                {loading ? (
+                  <span className="PlaceholderLoader" />
                 ) : (
-                  <>
-                    ₹{pricing.rate / 100}
-                    {pricing.default && pricing.rate < pricing.default ? (
-                      <>
-                        <span className="discounted-price">₹{pricing.default / 100}</span>
-                        <Chip text="Special Offer!" type="offer" />
-                      </>
-                    ) : null}
-                  </>
+                  <p className="plan-value">{!pricing || !pricing?.rate ? 'Free' : 'Paid'}</p>
                 )}
-              </p>
-              <p>per month</p>
-            </div>
-            {isEnabled ? (
-              <div className="customize-widget">
-                <p className="plan-heading">Customising your Widget</p>
+              </div>
+              {!isEnabled ? (
+                <div>
+                  <p className="plan-heading">Disabled On</p>
+                  <p className="plan-value">{formattedDate}</p>
+                  <p>{actionYear}</p>
+                </div>
+              ) : null}
+              <div>
+                <p className="plan-heading">
+                  {!isEnabled ? 'Last ' : ''} Payment <span>(Excluding GST)</span>
+                </p>
+                <p className="plan-value">
+                  {!pricing || !pricing?.rate ? (
+                    '₹0'
+                  ) : (
+                    <>
+                      ₹{pricing.rate / 100}
+                      {pricing.default && pricing.rate < pricing.default ? (
+                        <>
+                          <span className="discounted-price">₹{pricing.default / 100}</span>
+                          <Chip text="Special Offer!" type="offer" />
+                        </>
+                      ) : null}
+                    </>
+                  )}
+                </p>
+                <p>per month</p>
+              </div>
+              {isEnabled ? (
+                <div className="customize-widget">
+                  <p className="plan-heading">Customising your Widget</p>
+                  <a
+                    href="https://razorpay.com/docs/payments/payment-gateway/affordability/widget#customise-the-widget"
+                    onClick={trackCustomizationGuide}
+                    className="plan-value btn btn-link"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    View Guide <i className="i i-external-link" />
+                  </a>
+                </div>
+              ) : null}
+              <div className="hidden-xs">
+                <p className="plan-heading">In case of any queries</p>
                 <a
-                  href="https://razorpay.com/docs/payments/payment-gateway/affordability/widget#customise-the-widget"
-                  onClick={trackCustomizationGuide}
-                  className="plan-value btn btn-link"
                   target="_blank"
+                  href="https://razorpay.com/support/#request"
+                  className="plan-value btn btn-link link"
                   rel="noreferrer noopener"
+                  onClick={trackSupportClick}
                 >
-                  View Guide <i className="i i-external-link" />
+                  Contact Support
                 </a>
               </div>
-            ) : null}
-            <div className="hidden-xs">
-              <p className="plan-heading">In case of any queries</p>
-              <a
-                target="_blank"
-                href="https://razorpay.com/support/#request"
-                className="plan-value btn btn-link link"
-                rel="noreferrer noopener"
-                onClick={trackSupportClick}
-              >
-                Contact Support
-              </a>
             </div>
-          </div>
+          ) : null}
           {isEnabled ? (
             <div className="configure-wrapper">
               <p className="caption config-head">Configure</p>
