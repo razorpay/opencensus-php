@@ -85,10 +85,14 @@ const CurlecSuccessContainer = lazy(
   () => import('merchant/views/PartnerDashboard/SubMerchant/components/CurlecSuccessContainer'),
 );
 
+/*
+  Note: a revamped version of this component(InviteMerchantModal) is in use under a ramp experiment. 
+  Should aim at removing this code after the ramp up finishes (will need to ramp up in capital and x flows separately)
+*/
+
 // TODO replace window.rzpQ with analyticsTrack for entire file. currently handled only for capital
 class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   onAddSuccess: () => void;
-  isPartnershipForXEnabled: boolean;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipFUX: boolean;
   isShowResumeOnboarding: boolean;
@@ -99,15 +103,9 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     super(props);
     const { user, addType, referralData, onAddSuccess = () => {}, org } = props;
     const state = getInitialState({ user, addType, referralData });
-    const {
-      isPartnershipForXEnabled,
-      isPartnershipFUX,
-      isPartnershipForCapitalEnabled,
-      isShowResumeOnboarding,
-    } = user;
+    const { isPartnershipFUX, isPartnershipForCapitalEnabled, isShowResumeOnboarding } = user;
     this.state = state;
     this.onAddSuccess = onAddSuccess;
-    this.isPartnershipForXEnabled = isPartnershipForXEnabled;
     this.isPartnershipFUX = isPartnershipFUX;
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
     this.isShowResumeOnboarding = isShowResumeOnboarding;
@@ -124,7 +122,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     const { merchantType } = this.state;
     if (this.isPGInviteFlow()) return '/files/sample_invite_submerchant_batch.xlsx';
 
-    if (merchantType !== PRODUCT_TYPE.CAPITAL && this.isPartnershipForXEnabled) {
+    if (merchantType !== PRODUCT_TYPE.CAPITAL) {
       return '/files/sample_submerchant_batch.xlsx';
     }
     if (this.isCapitalProduct()) {
@@ -659,9 +657,6 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
 
   componentDidMount() {
     trackAddNewMerchantEvents('Open Form');
-    if (!this.isPartnershipForXEnabled) {
-      this.eventAddNewMerchant();
-    }
     this.fetchReferralURL();
   }
 
@@ -1000,16 +995,12 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   </div>
 
                   <div className="modal-actions clearfix">
-                    <ShowWhen
-                      additionalCondition={(currentUser) => currentUser.isPartnershipForXEnabled}
+                    <Button.Transparent
+                      onClick={this.handleBackClick}
+                      style={{ marginRight: '14px' }}
                     >
-                      <Button.Transparent
-                        onClick={this.handleBackClick}
-                        style={{ marginRight: '14px' }}
-                      >
-                        Back
-                      </Button.Transparent>
-                    </ShowWhen>
+                      Back
+                    </Button.Transparent>
                     <AsyncButton
                       className="btn btn-primary"
                       text="Send Invite"

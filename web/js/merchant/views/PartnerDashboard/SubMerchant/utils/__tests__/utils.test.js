@@ -42,7 +42,6 @@ describe('InitialState for AddMerchant', () => {
       getInitialState({
         ...addMerchantProps,
         addType: PRODUCT_TYPE.PG,
-        user: { isPartnershipForXEnabled: false },
       }),
     ).toStrictEqual({
       ...defaultAddMerchantState,

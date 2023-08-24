@@ -44,6 +44,12 @@ jest.mock('merchant/views/Transactions/AnalyticsTrack', () => ({
   selfServeTrackResult: jest.fn(),
 }));
 
+// Note: this mock is added to mimic user getters for experiments to return undefined by default.
+jest.mock('common/splitz', () => ({
+  ...jest.requireActual('common/splitz'),
+  useSplitzService: () => ({ abExperiments: {} }),
+}));
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 

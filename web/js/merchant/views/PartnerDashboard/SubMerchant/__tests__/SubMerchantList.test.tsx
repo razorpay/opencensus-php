@@ -48,7 +48,7 @@ jest.mock('merchant/views/PartnerDashboard/SubMerchant/AddMerchant', () => ({
   },
 }));
 
-jest.mock('merchant/views/PartnerDashboard/SubMerchant/ReferralBox', () => ({
+jest.mock('merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink', () => ({
   __esModule: true,
   default: ({ closeModal }) => {
     return (
@@ -110,7 +110,7 @@ describe('List', () => {
     ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
     renderApp(renderOptions);
 
-    const addButton = screen.getByRole('button', { name: /Add New Accounts/i });
+    const addButton = screen.getByRole('button', { name: /Add New Clients/i });
     expect(addButton).toBeInTheDocument();
     await userEvent.click(addButton);
 

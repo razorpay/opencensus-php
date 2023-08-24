@@ -1,7 +1,14 @@
 import { Component } from 'react';
-import { Link as LinkBlade } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  List,
+  Link as LinkBlade,
+  ListItem,
+  ListItemText,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import { titleCase, monetaryUnitText } from 'common/utils/rzp-utils';
@@ -56,6 +63,7 @@ class BatchValidateModal extends Component {
       hideCloseBtn,
       isSampleFileLoading = false,
       shouldShowSampleDownloadBtn = false,
+      nullStatusNotification = null,
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -65,7 +73,10 @@ class BatchValidateModal extends Component {
     }
     const countryCode = user?.merchant?.country_code ?? 'IN';
     const monetaryUnit = monetaryUnitText(countryCode);
-
+    const isInviteFlow = [
+      'partner_submerchant_invite',
+      'partner_submerchant_referral_invite',
+    ].includes(batchType);
     return (
       <div className={batchClass ? batchClass : 'modal-body'}>
         {!batchClass ? <h4 className="modal-heading">UPLOAD FILE</h4> : null}
@@ -97,45 +108,73 @@ class BatchValidateModal extends Component {
               {notifyMsg}
             </h5>
           )}
+          {!status && !notifyMsg ? nullStatusNotification : null}
         </div>
 
         {/* Show batch upload modal info when no file uploaded */}
         {!status || status === 'exceed' ? (
           <>
-            {batchType === 'partner_submerchant_invite' ? (
-              <div className="top-download-link">
-                <a className="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
-                  <strong>Download sample file</strong>
-                </a>
-              </div>
-            ) : null}
             <div className="modal-info partner-submerchant">
-              <h5 style={{ fontSize: '16px' }}>Keep in mind</h5>
-              <ol className="validate-modal-ul">
-                <li>
-                  File should follow the template format. Download&nbsp;
-                  <a className="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
-                    <strong>sample file</strong>
-                  </a>
-                  &nbsp;for the template.
-                </li>
-                {batchType === 'partner_submerchant_invite' && user?.isPartnershipForXEnabled && (
-                  <li>
-                    Name and email fields are mandatory for each account &amp; phone number is
-                    optional
-                  </li>
-                )}
-                <li>The number of accounts in the file should not exceed 500.</li>
-                {batchType === 'partner_submerchant_invite' ? (
-                  // // MobileNumber SMS Text will be added later
-                  // <li>Once file is processed invite will be sent to all accounts on email/sms.</li>
-                  <li>Once file is processed invite will be sent to all accounts on email.</li>
-                ) : (
-                  <li>Once the file is processed email invite will be sent to all accounts.</li>
-                )}
-
-                <li>These accounts will be listed under affiliate accounts on your dashboard.</li>
-              </ol>
+              <Box
+                display="flex"
+                flexDirection="column"
+                gap="spacing.2"
+                justifyContent="center"
+                alignItems="flex-start"
+                paddingTop="spacing.3"
+                marginBottom="spacing.1"
+                backgroundColor="surface.background.level3.lowContrast"
+              >
+                <Heading>Keep in mind</Heading>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  gap="spacing.3"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <List size="small">
+                    <ListItem>
+                      <ListItemText>
+                        File should follow the template format. Download&nbsp;
+                        <LinkBlade href={sampleUrl} onClick={onSampleFileDownload}>
+                          sample file
+                        </LinkBlade>{' '}
+                        for the template.
+                      </ListItemText>
+                    </ListItem>
+                    {isInviteFlow ? (
+                      <ListItem>
+                        <ListItemText>
+                          Name and email fields are mandatory for each account & phone number is
+                          optional
+                        </ListItemText>
+                      </ListItem>
+                    ) : null}
+                    <ListItem>
+                      <ListItemText>
+                        The number of accounts in the file should not exceed 500.
+                      </ListItemText>
+                    </ListItem>
+                    <ListItem>
+                      {isInviteFlow ? (
+                        <ListItemText>
+                          Once file is processed invite will be sent to all accounts on email/sms.
+                        </ListItemText>
+                      ) : (
+                        <ListItemText>
+                          Once the file is processed email invite will be sent to all accounts.
+                        </ListItemText>
+                      )}
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText>
+                        These accounts will be listed under affiliate accounts on your dashboard.
+                      </ListItemText>
+                    </ListItem>
+                  </List>
+                </Box>
+              </Box>
             </div>
             {this.props.modalInfo || (
               <div className="modal-info">
@@ -198,14 +237,14 @@ class BatchValidateModal extends Component {
                                 this.props.closeModal();
                               }}
                             >
-                              <Link
+                              <RouterLink
                                 to={{
                                   pathname: '/config',
                                   hash: 'instantrefunds',
                                 }}
                               >
                                 settings
-                              </Link>
+                              </RouterLink>
                             </strong>{' '}
                             for default refund speed).
                           </li>

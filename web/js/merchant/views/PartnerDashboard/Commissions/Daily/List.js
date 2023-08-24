@@ -14,6 +14,8 @@ import { without } from 'common/utils/rzp-utils';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Daily/ListFilter';
 import EmptyDailyList from 'merchant/views/PartnerDashboard/Commissions/components/EmptyDailyList';
+import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
+import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 
 const activeMerchants = {
   title: 'No. of Active Accounts',
@@ -50,7 +52,10 @@ const getVolmeListItem = (currency) => {
     closeModal,
   },
 )
-export default class CommissionsDailyList extends ListContainer {
+class CommissionsDailyList extends ListContainer {
+  state = {
+    isInviteMerchantModalOpen: false,
+  };
   constructor(props) {
     super(props);
 
@@ -79,16 +84,21 @@ export default class CommissionsDailyList extends ListContainer {
   }
 
   handleAddMerchant = () => {
-    this.props.openModal({
-      size: 'med-large',
-      component: (
-        <AddMerchant
-          closeModal={this.props.closeModal}
-          source="daily-earning"
-          org={this.props.org}
-        />
-      ),
-    });
+    const { experiments } = this.props;
+    if (experiments.isEasierAccessToSubmerchantKycEnabled) {
+      this.setState({ isInviteMerchantModalOpen: true });
+    } else {
+      this.props.openModal({
+        size: 'med-large',
+        component: (
+          <AddMerchant
+            closeModal={this.props.closeModal}
+            source="daily-earning"
+            org={this.props.org}
+          />
+        ),
+      });
+    }
   };
 
   renderLessThanRequiredMerchants = () => {
@@ -105,7 +115,7 @@ export default class CommissionsDailyList extends ListContainer {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, experiments } = this.props;
     const currency = user.merchant.currency;
     const volume = getVolmeListItem(currency);
 
@@ -124,7 +134,14 @@ export default class CommissionsDailyList extends ListContainer {
           EmptyComponent={this.renderLessThanRequiredMerchants}
           {...this.props}
         />
+        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+          <InviteMerchantModal
+            isOpen={this.state.isInviteMerchantModalOpen}
+            onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
+          />
+        ) : null}
       </div>
     );
   }
 }
+export default withPartnerDashboardExperiments(CommissionsDailyList);

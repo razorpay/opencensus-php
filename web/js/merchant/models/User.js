@@ -1259,12 +1259,6 @@ export default class User {
     return getSplitzExperimentVariant('enable_easy_dashboard_nc')?.variables?.result === 'on';
   }
 
-  get isPartnershipsContactFilterEnabled() {
-    return (
-      getSplitzExperimentVariant('partnerships_combined_contact_filter')?.variables?.result === 'on'
-    );
-  }
-
   get isPartnershipsInviteFlowEnabled() {
     const variant = getSplitzExperimentVariant('partnerships_invite_flow');
     const isExperimentEnabled = variant?.variables?.result === 'on';
@@ -1746,11 +1740,6 @@ export default class User {
 
   get isPartnershipNPS() {
     const variant = getSplitzExperimentVariant('partnership_nps');
-    return variant?.name === 'exposed';
-  }
-
-  get isPartnershipForXEnabled() {
-    const variant = getSplitzExperimentVariant('partnership_for_razorpayx');
     return variant?.name === 'exposed';
   }
 

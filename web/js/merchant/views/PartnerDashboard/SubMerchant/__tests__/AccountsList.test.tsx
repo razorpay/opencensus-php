@@ -236,8 +236,12 @@ describe('AccountsList', () => {
         expect(screen.getAllByText('Account Name')).toHaveLength(2);
       });
       expect(screen.getAllByText('Account ID')).toHaveLength(2);
-      expect(screen.getByText('Email ID')).toBeInTheDocument();
-      expect(screen.getByText('Registered Email')).toBeInTheDocument();
+      if (product === 'primary') {
+        expect(screen.getAllByText('Contact')).toHaveLength(2);
+      } else {
+        expect(screen.getByText('Email ID')).toBeInTheDocument();
+        expect(screen.getByText('Registered Email')).toBeInTheDocument();
+      }
       expect(screen.getByText(items[0].id)).toBeInTheDocument();
       expect(screen.getByText(items[0].name)).toBeInTheDocument();
       expect(screen.getByText(items[0].email)).toBeInTheDocument();

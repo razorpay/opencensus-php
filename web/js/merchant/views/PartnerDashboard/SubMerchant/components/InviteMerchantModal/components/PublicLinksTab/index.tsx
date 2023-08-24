@@ -1,0 +1,115 @@
+import React, { useState } from 'react';
+import { Badge, Box, Divider, Text, Spinner, Alert } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { ShowNotificationType } from 'common/typings';
+import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
+import FAQContent from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/FAQModal/FAQContent';
+import useReferralLinks from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/hooks/useReferralLinks';
+import { getHasSelectedKycAccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
+import ClientAssistOptions from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink/ClientAssistOptions';
+import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink/SocialShareGroup';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+interface PublicLinksTabProps {
+  productType: string;
+  showNotification: ShowNotificationType;
+}
+const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps): JSX.Element => {
+  const inviteFlow = INVITE_TAB_TYPES.PUBLIC_LINK;
+
+  // Formik hooks and Validation
+  const { data: referralData, isLoading } = useReferralLinks({ showNotification });
+  const hasSelectedKycAccess = getHasSelectedKycAccess();
+  const referralUrl = referralData?.[productType]?.url;
+  const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
+
+  const [shouldShowAlert, setShouldShowAlert] = useState(false);
+
+  if (isLoading)
+    return (
+      <Box display="flex" alignItems="center" justifyContent="center" marginTop="spacing.5">
+        <Spinner alignSelf="center" accessibilityLabel="public-links-spinner" />
+      </Box>
+    );
+  return (
+    <>
+      <Box display="flex" gap="spacing.3" alignItems="center" marginTop="spacing.5">
+        <Text>
+          You can now invite users to by sharing a public link on any of your social media profiles
+        </Text>
+        <Divider />
+      </Box>
+      {hasSelectedKycAccess === null && easyAccessUrl && productType === PRODUCT_TYPE.PG ? (
+        <>
+          <Box display="flex" gap="spacing.3" alignItems="center" marginTop="spacing.9">
+            <Badge contrast="high" variant="information" size="large">
+              New update
+            </Badge>
+            <Divider />
+          </Box>
+          <Box display="flex" flexDirection="column" gap="spacing.0" marginTop="spacing.5">
+            <Text weight="bold">Assist the client with their KYC</Text>
+            <Text size="small">
+              to provide them with a quick and seamless onboarding experience.
+            </Text>
+          </Box>
+        </>
+      ) : null}
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap="spacing.3"
+        marginTop="spacing.5"
+        marginBottom="spacing.9"
+      >
+        {easyAccessUrl ? (
+          <ClientAssistOptions
+            initialValue={
+              hasSelectedKycAccess === null || hasSelectedKycAccess === true ? 'yes' : 'no'
+            }
+            inviteFlow={inviteFlow}
+            productType={productType}
+            referralUrl={referralUrl}
+            easyAccessUrl={easyAccessUrl}
+            showAlert={setShouldShowAlert}
+          />
+        ) : (
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap="spacing.5"
+            padding={['spacing.5', 'spacing.5', 'spacing.7']}
+            backgroundColor="surface.background.level3.lowContrast"
+          >
+            <SocialShareGroup
+              isKycAssistedSelected={null}
+              inviteFlow={inviteFlow}
+              productType={productType}
+              showDivider={false}
+              referralUrl={referralUrl}
+            />
+          </Box>
+        )}
+      </Box>
+      {hasSelectedKycAccess === null && easyAccessUrl && productType === PRODUCT_TYPE.PG ? (
+        <FAQContent inviteFlow={inviteFlow} productType={productType} />
+      ) : null}
+      {shouldShowAlert ? (
+        <Alert
+          contrast="high"
+          description="Please copy the new link before sharing it."
+          intent="notice"
+          title="Your public link has changed"
+        />
+      ) : null}
+    </>
+  );
+};
+
+export default connect(
+  () => ({}),
+  (dispatch) => bindActionCreators({ showNotification }, dispatch),
+)(PublicLinksTab);

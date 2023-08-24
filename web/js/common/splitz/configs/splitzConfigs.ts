@@ -89,6 +89,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'partnerships_easier_access_to_submerchant_kyc',
+          experimentId: {
+            beta: 'MNuYX8JifIAFCc',
+            production: 'MNuWeZSwz01j8V',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
   ],

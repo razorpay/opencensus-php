@@ -4,7 +4,6 @@ import { UserT } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 export default function useTrackPartnerExperiments(user: UserT): void {
   const {
-    isPartnershipForXEnabled,
     isSubMerchantKycResellerEnabled,
     isPartnershipNPS,
     isPartnershipFUX,
@@ -27,7 +26,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
       activationType: 'partner-experiments',
       user,
       properties: {
-        isPartnershipForXEnabled,
         isSubMerchantKycResellerEnabled,
         isPartnershipNPS,
         isPartnershipFUX,
@@ -42,7 +40,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
       },
     });
   }, [
-    isPartnershipForXEnabled,
     isSubMerchantKycResellerEnabled,
     isPartnershipNPS,
     isPartnershipFUX,

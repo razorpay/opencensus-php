@@ -48,6 +48,7 @@ type Getters = {
   isSupportRole: boolean;
   isOrgAllowedFunctionality: (featureName: string) => boolean;
   findTag: (tag: string) => boolean;
+  isPartner: (args: string) => boolean;
   isSettlementV3RevampEnabled: boolean;
   isSingleReconEnabled: boolean;
   isOptimizerEnabled: boolean;
@@ -58,6 +59,8 @@ type Getters = {
   isPaymentPageFileUploadEnabled: boolean;
   isSodexoInstrumentEnabled: boolean;
   isSearchv2Phase1Enabled: boolean;
+  isPartnershipForCapitalEnabled: boolean;
+  isPartnershipsInviteFlowEnabled: boolean;
 };
 
 type UserProperties = {

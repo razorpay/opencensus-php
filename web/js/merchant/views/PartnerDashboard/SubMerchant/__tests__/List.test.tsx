@@ -18,7 +18,6 @@ const state = {
       isFeatureEnabled,
       findTag,
       isPartnershipForCapitalEnabled: true,
-      isPartnershipForXEnabled: true,
       isPartnershipFUX: true,
       isPartnershipsInviteFlowEnabled: false,
       instantActivation,
@@ -111,23 +110,6 @@ describe('List', () => {
         return false;
       });
       renderApp();
-      expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
-    });
-
-    test('...if the feature is not enabled for the merchant', () => {
-      findTag.mockImplementation((value) => {
-        if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount) return false;
-        return true;
-      });
-      const newState = {
-        session: {
-          user: {
-            ...state.session.user,
-            isPartnershipForXEnabled: false,
-          },
-        },
-      };
-      renderApp(newState);
       expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
     });
   });

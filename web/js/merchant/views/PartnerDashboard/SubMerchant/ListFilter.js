@@ -35,6 +35,13 @@ export default ({
       </div>
     ) : null}
 
+    {showAppIdFilter ? (
+      <div class="form-group list-filter-item">
+        <label>Application Id</label>
+        <Field name="application_id" component="input" class="form-control input-sm" />
+      </div>
+    ) : null}
+
     {showActivationStatusFilter ? (
       <div class="form-group list-filter-item">
         <label>Activation Status</label>
@@ -46,13 +53,6 @@ export default ({
       <div class="form-group list-filter-item">
         <label>Email ID</label>
         <Field name="email" component="input" class="form-control input-sm" />
-      </div>
-    ) : null}
-
-    {showAppIdFilter ? (
-      <div class="form-group list-filter-item">
-        <label>Application Id</label>
-        <Field name="application_id" component="input" class="form-control input-sm" />
       </div>
     ) : null}
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { trackReferral } from 'merchant/views/PartnerDashboard/ga';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
-import { mediaWindowUrl } from './SocialShare';
+import { mediaWindowUrl } from './utils/social-share';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -9,7 +9,8 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default function SocialShareGroup({ referralUrl, tracking, product, partnerID, source }) {
   const trackUserEvent = (eventName, properties = {}) => {
-    tracking.trackEvent(
+    // TODO: replace with analyticsTrack
+    tracking?.trackEvent(
       window.rzpQ.onbr().clicked(eventName, {
         partnerID,
         source,

@@ -29,15 +29,6 @@ export default {
     // prod experiment ids
     'LEhcQ6vsmvThCM',
   ],
-  partnership_for_razorpayx: [
-    // beta experiment ids
-    'HNHi7nieMQCDeh',
-    'InVJYbqVV9YmDt', // ramp
-
-    // prod experiment ids
-    'HbwBfwuYGuM2Xx',
-    'InWTItYNx0bVUa', // ramp
-  ],
   submerchant_kyc_reseller: [
     // beta experiment ids
     'I8KTdSuwTZ8dYt',
@@ -527,12 +518,6 @@ export default {
     'L3AHj3UNHRhUXQ',
     // prod
     'L3DutoiWP8H6Zn',
-  ],
-  partnerships_combined_contact_filter: [
-    // beta
-    'M7GGcZW6UqtnPU',
-    // prod
-    'M7GKFjFdXexw0Q',
   ],
   partnerships_invite_flow: [
     // beta

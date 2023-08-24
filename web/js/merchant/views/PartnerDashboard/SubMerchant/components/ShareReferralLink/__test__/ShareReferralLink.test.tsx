@@ -1,87 +1,70 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, userEvent } from 'common/services/test/test-utils';
-import { referralData } from './mocks/fixtures';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import ReferralBox from 'merchant/views/PartnerDashboard/SubMerchant/ReferralBox';
 import { getInitialUserOrgState } from 'common/tests/utils';
-// TODO : covered only Capital use case, have to cover others later
+import { referralData } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
+
 import * as analytics from 'common/utils/analytics';
 
 const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
 
-const tracking = {
-  trackEvent: jest.fn(),
-};
 const closeModal = jest.fn();
 
 const session = getInitialUserOrgState({
   isRzpOrg: true,
   userExtra: {
+    findTag: jest.fn(),
     isPartnershipForCapitalEnabled: true,
   },
   orgExtra: {},
 });
 
-describe('ReferralBox', () => {
+describe('ShareReferralLink', () => {
   beforeAll(() => {
     document.execCommand = jest.fn();
-    window.rzp_user = {};
-    window.rzpQ = {
-      merchantActions: () => {
-        return {
-          initiated: jest.fn(),
-        };
-      },
-      onbr: () => {
-        return {
-          interaction: jest.fn(),
-        };
-      },
-    };
-
-    window.rzpQ.component = jest.fn();
   });
 
-  const renderApp = ({ user = session.user, ...restProps }) => {
+  const renderApp = ({ user = session.user, product, ...restProps }) => {
     return render(
-      <ReferralBox
+      <ShareReferralLink
         closeModal={closeModal}
-        partnershipForXEnabled={true}
         referralData={referralData}
-        tracking={tracking}
         user={user}
+        product={product}
         {...restProps}
       />,
     );
   };
 
-  test('should render referralBox for capital with props', () => {
+  // Note: Skippnig for now: div for Line of Credit is rendering but test matcher is unable to detect it in dom!
+  test('should render ShareReferralLink for capital with props', () => {
     renderApp({
       product: PRODUCT_TYPE.CAPITAL,
-      user: { ...session.user, partnershipForXEnabled: true },
     });
-    expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
+    expect(screen.getByText('Line of Credit')).toBeInTheDocument();
     expect(screen.getByText(referralData.capital.url)).toBeInTheDocument();
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
     expect(
-      screen.getByText('Refer merchants to Capital products like Line Of Credit'),
+      screen.getByText('Refer merchants to Capital products like Line of Credit'),
     ).toBeInTheDocument();
   });
 
-  test('should render referralBox for PG', () => {
+  test('should render ShareReferralLink for PG', async () => {
     renderApp({
       product: PRODUCT_TYPE.PG,
-      user: { ...session.user, partnershipForXEnabled: true },
     });
     expect(screen.getByText('Razorpay Payments')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('No, my client will perform KYC on their own'));
     expect(screen.getByText(referralData.primary.url)).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
+    expect(screen.getByText(referralData.primary.easy_kyc_access_url)).toBeInTheDocument();
   });
 
-  test('track events in referralBox for PG', async () => {
+  test('track events in ShareReferralLink for PG', async () => {
     renderApp({
       product: PRODUCT_TYPE.PG,
-      user: { ...session.user, partnershipForXEnabled: true },
     });
     expect(analyticsTrackSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -89,7 +72,7 @@ describe('ReferralBox', () => {
         actionName: 'Opened',
       }),
     );
-    await userEvent.click(screen.getByTestId('modal-header-close-btn'));
+    await userEvent.click(screen.getByLabelText('Close'));
     expect(analyticsTrackSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: 'Social Share Referral Box',

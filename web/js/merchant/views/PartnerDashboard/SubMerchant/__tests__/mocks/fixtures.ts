@@ -5,21 +5,22 @@ export const referralData = {
     id: 'JI2nEgUqma8orT',
     merchant_id: 'JFzhDzLxXOgAxM',
     ref_code: 'jvujyvvs0hbn18',
-    url: 'https://stage.rzp.io/i/F2EATxY1',
+    url: 'https://stage.rzp.io/i/F2EATxY1banking',
     product: 'banking',
   },
   primary: {
     id: 'JI2nEbCHWfzNjP',
     merchant_id: 'JFzhDzLxXOgAxM',
     ref_code: 'jvujyvvnosjz0p',
-    url: 'https://stage.rzp.io/i/P0VAF2dqB',
+    url: 'https://stage.rzp.io/i/P0VAF2primary',
+    easy_kyc_access_url: 'https://stage.rzp.io/i/P0VAF2dqB_kyc_access',
     product: 'primary',
   },
   capital: {
     id: 'JI2nEbCHWfzNjP',
     merchant_id: 'JFzhDzLxXOgAxM',
     ref_code: 'jvujyahcosjz0p',
-    url: 'https://stage.rzp.io/i/P0ZMF2dqB',
+    url: 'https://stage.rzp.io/i/P0ZMF2capital',
     product: 'capital',
   },
 };
@@ -349,9 +350,7 @@ export const defaultAddMerchantState = {
   isFormValid: false,
 };
 export const addMerchantProps = {
-  user: {
-    isPartnershipForXEnabled: true,
-  },
+  user: {},
   addType: PRODUCT_TYPE.CAPITAL,
 };
 

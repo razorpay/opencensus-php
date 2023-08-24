@@ -1,27 +1,29 @@
 import { Component, Suspense } from 'react';
+import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Route, Switch, withRouter } from 'react-router-dom';
-
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { merchantFetch } from 'merchant/utils/ajax';
 import RTracking from 'react-tracking';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-import lazy from 'merchant/routes/LazyLoader';
-
-import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
-import AddMerchant from './AddMerchant';
-import ReferralBox from './ReferralBox';
-import Announcement from 'merchant/components/Announcements/Instant';
-import { XSubMerchantList, PrimarySubMerchantList, CapitalSubMerchantList } from './AccountsList';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import Announcement from 'merchant/components/Announcements/Instant';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import ProductWrapper from 'common/ui/ProductWrapper';
-import { Box, Spinner } from '@razorpay/blade/components';
+import lazy from 'merchant/routes/LazyLoader';
+import { merchantFetch } from 'merchant/utils/ajax';
+import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
+import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
+import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { XSubMerchantList, PrimarySubMerchantList, CapitalSubMerchantList } from './AccountsList';
+import AddMerchant from './AddMerchant';
+import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
 import PGInvitesNavLinks from './components/PGInviteNavLinks';
 
 const AllInvitesTable = lazy(() =>
@@ -44,7 +46,7 @@ const AllInvitesTable = lazy(() =>
   },
 )
 @RTracking(() => window.rzpQ.component('SubMerchantsList'))
-export default class SubMerchantsList extends Component {
+class SubMerchantsList extends Component {
   componentDidMount() {
     const { user, location } = this.props;
     if (location?.state?.addType) {
@@ -108,20 +110,24 @@ export default class SubMerchantsList extends Component {
     });
 
     trackAddNewMerchantEvents('Click - Navbar');
-    const { closeModal, openModal, org } = this.props;
+    const { closeModal, openModal, org, experiments } = this.props;
     const { referralData } = this.state;
     const addMerchantType = this.getProductType();
-    openModal({
-      size: 'med-large',
-      component: (
-        <AddMerchant
-          closeModal={closeModal}
-          referralData={referralData}
-          addType={addMerchantType}
-          org={org}
-        />
-      ),
-    });
+    if (addMerchantType === PRODUCT_TYPE.PG && experiments.isEasierAccessToSubmerchantKycEnabled) {
+      this.setState({ isInviteMerchantModalOpen: true });
+    } else {
+      openModal({
+        size: 'med-large',
+        component: (
+          <AddMerchant
+            closeModal={closeModal}
+            referralData={referralData}
+            addType={addMerchantType}
+            org={org}
+          />
+        ),
+      });
+    }
   };
 
   handleShareReferralLink = () => {
@@ -152,13 +158,12 @@ export default class SubMerchantsList extends Component {
     this.props.openModal({
       size: 'med-large',
       component: (
-        <ReferralBox
+        <ShareReferralLink
           user={this.props.user}
           closeModal={this.props.closeModal}
           referralData={this.state.referralData}
           tracking={this.props.tracking}
           partnerID={this.props.user.id}
-          partnershipForXEnabled={this.props.user.isPartnershipForXEnabled}
           product={product}
         />
       ),
@@ -185,7 +190,6 @@ export default class SubMerchantsList extends Component {
     this.showX =
       props.user.isPartner() &&
       !props.user.isPartner('pure_platform') &&
-      props.user.isPartnershipForXEnabled &&
       !props.user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount);
 
     this.state = {
@@ -242,7 +246,7 @@ export default class SubMerchantsList extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, experiments } = this.props;
     const { isPartnershipForCapitalEnabled } = user;
     const { tabsData } = this.state;
     if (user.isPartnerIntent()) {
@@ -284,7 +288,7 @@ export default class SubMerchantsList extends Component {
                 }
               >
                 <button className="btn btn-primary" onClick={this.handleAddMerchant} type="button">
-                  <i className="i i-plus" /> Add New Accounts
+                  <i className="i i-plus" /> Add New Clients
                 </button>
               </ShowWhen>
             </>
@@ -293,21 +297,18 @@ export default class SubMerchantsList extends Component {
           <content>
             <div className="sub-merchants-list">
               <Switch>
-                {user.isPartnershipForXEnabled ? (
-                  <Route
-                    path={`${this.props.match.path}/x`}
-                    render={(props) => (
-                      <XSubMerchantList
-                        {...props}
-                        product={PRODUCT_TYPE.X}
-                        referralData={this.state.referralData}
-                      />
-                    )}
-                    exact
-                  />
-                ) : (
-                  ''
-                )}
+                <Route
+                  path={`${this.props.match.path}/x`}
+                  render={(props) => (
+                    <XSubMerchantList
+                      {...props}
+                      product={PRODUCT_TYPE.X}
+                      referralData={this.state.referralData}
+                    />
+                  )}
+                  exact
+                />
+                )
                 {isPartnershipForCapitalEnabled ? (
                   <Route
                     path={`${this.props.match.path}/capital`}
@@ -323,7 +324,6 @@ export default class SubMerchantsList extends Component {
                 ) : (
                   ''
                 )}
-
                 <Route
                   path={`${this.props.match.path}/`}
                   render={(props) => (
@@ -335,7 +335,6 @@ export default class SubMerchantsList extends Component {
                   )}
                   exact
                 />
-
                 {this.props.user.isPartnershipsInviteFlowEnabled && (
                   <Route
                     path={`${this.props.match.path}/all`}
@@ -367,7 +366,16 @@ export default class SubMerchantsList extends Component {
             </div>
           </content>
         </ProductWrapper>
+        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+          <InviteMerchantModal
+            initialProductType={this.getProductType()}
+            initialStep={INVITE_MERCHANT_STEPS.INVITE_TABS}
+            isOpen={this.state.isInviteMerchantModalOpen}
+            onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
+          />
+        ) : null}
       </>
     );
   }
 }
+export default withPartnerDashboardExperiments(SubMerchantsList);

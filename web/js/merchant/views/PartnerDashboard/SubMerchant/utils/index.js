@@ -20,8 +20,7 @@ export const numberDifferentiation = (value) => {
   return val;
 };
 
-export const getInitialState = ({ user, addType, referralData }) => {
-  const { isPartnershipForXEnabled } = user;
+export const getInitialState = ({ addType, referralData }) => {
   const state = {
     file_id: '',
     addMode: ADD_MODE.single,
@@ -52,13 +51,8 @@ export const getInitialState = ({ user, addType, referralData }) => {
       break;
     }
     default: {
-      if (!isPartnershipForXEnabled) {
-        state.step = 1;
-        state.merchantType = PRODUCT_TYPE.PG;
-      } else {
-        state.step = 1;
-        state.merchantType = PRODUCT_TYPE.X;
-      }
+      state.step = 1;
+      state.merchantType = PRODUCT_TYPE.X;
     }
   }
   return state;

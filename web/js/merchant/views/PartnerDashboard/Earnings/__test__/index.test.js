@@ -16,7 +16,6 @@ const initialState = {
       findTag: () => true,
       isCommissionInvoicesEnabled: true,
       isPartnershipForCapitalEnabled: true,
-      isPartnershipForXEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
       isOrgAllowedFunctionality: () => false,

@@ -26,6 +26,8 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 import PageHeading from './Components/PageHeading';
+import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 const PurePlatformSwitchGuideLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
@@ -40,10 +42,13 @@ const Home = ({
   org,
   partnerSwitchFlag,
 }: PartnerHomeT): JSX.Element => {
+  const { isEasierAccessToSubmerchantKycEnabled } = usePartnerDashboardExperiments();
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
     isFetching: true,
   });
+  const [isInviteMerchantModalOpen, setIsInviteMerchantModalOpen] = useState(false);
+  const [inviteMerchantModalProductType, setInviteMerchantProductType] = useState('');
 
   const merchant = user.merchants[user.current];
   const partnerName = merchant.name;
@@ -88,18 +93,23 @@ const Home = ({
     }
   };
   const handleReferClient = (source: AddMerchantSource, type?: string): void => {
-    openModal({
-      size: 'med-large',
-      component: (
-        <AddMerchant
-          closeModal={closeModal}
-          addType={type}
-          onAddSuccess={onAddMerchantSuccess}
-          source={source}
-          org={org}
-        />
-      ),
-    });
+    if (isEasierAccessToSubmerchantKycEnabled) {
+      setIsInviteMerchantModalOpen(true);
+      setInviteMerchantProductType(type || '');
+    } else {
+      openModal({
+        size: 'med-large',
+        component: (
+          <AddMerchant
+            closeModal={closeModal}
+            addType={type}
+            onAddSuccess={onAddMerchantSuccess}
+            source={source}
+            org={org}
+          />
+        ),
+      });
+    }
   };
 
   const handleCapitalRefer = (): void => {
@@ -172,6 +182,15 @@ const Home = ({
           />
         </Suspense>
       </ShowWhen>
+
+      {isEasierAccessToSubmerchantKycEnabled ? (
+        <InviteMerchantModal
+          isOpen={isInviteMerchantModalOpen}
+          onAddSuccess={onAddMerchantSuccess}
+          initialProductType={inviteMerchantModalProductType}
+          onDismiss={() => setIsInviteMerchantModalOpen(false)}
+        />
+      ) : null}
     </div>
   );
 };

@@ -1,67 +1,68 @@
 import { Fragment } from 'react';
+import { Badge, Box } from '@razorpay/blade/components';
+import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import QueryString from 'query-string';
-import { Badge, Box } from '@razorpay/blade/components';
-
-import ListContainer from 'merchant/containers/ListContainer';
-
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
-import { switchMerchant } from 'merchant/reducers/session';
-import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import RTracking from 'react-tracking';
+import { compose } from 'redux';
 
-import DataTable from 'common/ui/Table/DataTable';
+import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
+import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Image from 'common/ui/Image';
+import Loader from 'common/ui/Loader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
-
-import ShowWhen from 'merchant/components/ShowWhen';
+import DataTable from 'common/ui/Table/DataTable';
 import Time from 'common/ui/Time';
 import { getTime } from 'common/ui/item';
+import {
+  submerchant as submerchantColumn,
+  submerchantId as id,
+  email as emailColumn,
+} from 'common/ui/item/pair';
+import { analyticsTrack } from 'common/utils/analytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import {
   ActivationStatusLabel,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
-import {
-  submerchant as submerchantColumn,
-  submerchantId as id,
-  email as emailColumn,
-} from 'common/ui/item/pair';
-
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchProducts } from 'merchant/reducers/capital';
+import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
+import { switchMerchant } from 'merchant/reducers/session';
+import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
-import AddMerchant from './AddMerchant';
-import ConfirmGenerateReport from './components/ConfirmGenerateReport';
-import ListFilter from './ListFilter';
+import {
+  getActivationStatusBulk,
+  getFormattedCapitalResponse,
+} from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import {
   trackSearchAnalytics,
   trackClearAnalytics,
   trackReferral,
   trackAddNewMerchantEvents,
 } from 'merchant/views/PartnerDashboard/ga';
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
-import { mediaWindowUrl } from './components/SocialShare';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import Loader from 'common/ui/Loader';
+import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import AddMerchant from './AddMerchant';
+import ListFilter from './ListFilter';
 import ActionButtonKYC from './components/ActionButtonKYC';
-import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
-import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
-import Image from 'common/ui/Image';
-import {
-  getActivationStatusBulk,
-  getFormattedCapitalResponse,
-} from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
-import { fetchProducts } from 'merchant/reducers/capital';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import PGInvitesNavLinks from './components/PGInviteNavLinks';
-import { isInviteRecentlyAccepted } from './utils';
 import { fetchInvites } from './components/AllInvitesTable/api';
+import ConfirmGenerateReport from './components/ConfirmGenerateReport';
+import InviteMerchantModal from './components/InviteMerchantModal';
+import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
+import PGInvitesNavLinks from './components/PGInviteNavLinks';
+import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
+import { mediaWindowUrl } from './components/utils/social-share';
+import { isInviteRecentlyAccepted } from './utils';
 
 const email = {
   title: 'Registered Email',
@@ -236,6 +237,7 @@ class ProductSubMerchantsList extends ListContainer {
     orgName: this.props?.org?.business_name || 'Razorpay',
     isPGInvitesEmpty: true,
     isPGInvitesEmptyCheckLoading: true,
+    isInviteMerchantModalOpen: false,
   };
 
   constructor(props) {
@@ -506,10 +508,15 @@ class ProductSubMerchantsList extends ListContainer {
       },
       toCleverTap: true,
     });
-    this.props.openModal({
-      size: 'med-large',
-      component: <AddMerchant closeModal={this.props.closeModal} org={this.props?.org} />,
-    });
+    const { experiments, openModal } = this.props;
+    if (experiments.isEasierAccessToSubmerchantKycEnabled) {
+      this.setState({ isInviteMerchantModalOpen: true });
+    } else {
+      openModal({
+        size: 'med-large',
+        component: <AddMerchant closeModal={this.props.closeModal} org={this.props?.org} />,
+      });
+    }
   };
 
   handleSwitchMerchant = (merchantId) => () => {
@@ -680,7 +687,7 @@ class ProductSubMerchantsList extends ListContainer {
 
   render() {
     // prettier-ignore
-    const { user, product, referralData, location, org } = this.props;
+    const { user, experiments, product, referralData, location, org } = this.props;
     const { capitalLoading, capitalItems, isPGInvitesEmpty, isPGInvitesEmptyCheckLoading } =
       this.state;
     let appIdColumn = [];
@@ -694,8 +701,7 @@ class ProductSubMerchantsList extends ListContainer {
       user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
 
     const isCombinedContactFilterEnabled =
-      isPGProductWithInviteFlow ||
-      (user.isPartnershipsContactFilterEnabled && user.isOrgRZP && product === PRODUCT_TYPE.PG);
+      isPGProductWithInviteFlow || (user.isOrgRZP && product === PRODUCT_TYPE.PG);
 
     const shouldShowWelcomeScreen =
       (!isPGProductWithInviteFlow || isPGInvitesEmpty) &&
@@ -795,7 +801,9 @@ class ProductSubMerchantsList extends ListContainer {
               <div
                 className={`submerchant-filter-wrapper ${
                   isPGProductWithInviteFlow ? 'invite-flow-enabled' : ''
-                } ${isCombinedContactFilterEnabled ? 'combined-filter-enabled' : ''}`}
+                } ${isCombinedContactFilterEnabled ? 'combined-filter-enabled' : ''} ${
+                  user.isPartner('pure_platform') ? 'show-app-id-filter' : ''
+                }`}
               >
                 <ListFilter
                   form="SubmerchantListFilter"
@@ -974,6 +982,15 @@ class ProductSubMerchantsList extends ListContainer {
             )}
           </div>
         </div>
+
+        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+          <InviteMerchantModal
+            initialProductType={product}
+            initialStep={INVITE_MERCHANT_STEPS.INVITE_TABS}
+            isOpen={this.state.isInviteMerchantModalOpen}
+            onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
+          />
+        ) : null}
       </tabbed-container>
     );
   }
@@ -995,32 +1012,41 @@ const getDispatchToProps = (productType = PRODUCT_TYPE.PG) => {
   };
 };
 
-export const PrimarySubMerchantList = connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
-    ...state.submerchants,
-  }),
-  getDispatchToProps(PRODUCT_TYPE.PG),
+export const PrimarySubMerchantList = compose(
+  withPartnerDashboardExperiments,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
+      ...state.submerchants,
+    }),
+    getDispatchToProps(PRODUCT_TYPE.PG),
+  ),
 )(ProductSubMerchantsList);
 
-export const XSubMerchantList = connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    ...state.submerchants,
-  }),
-  getDispatchToProps(PRODUCT_TYPE.X),
+export const XSubMerchantList = compose(
+  withPartnerDashboardExperiments,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      ...state.submerchants,
+    }),
+    getDispatchToProps(PRODUCT_TYPE.X),
+  ),
 )(ProductSubMerchantsList);
 
-export const CapitalSubMerchantList = connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    products: state.loanApplicationDetails.products,
-    ...state.submerchants,
-  }),
-  getDispatchToProps(PRODUCT_TYPE.CAPITAL),
+export const CapitalSubMerchantList = compose(
+  withPartnerDashboardExperiments,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      products: state.loanApplicationDetails.products,
+      ...state.submerchants,
+    }),
+    getDispatchToProps(PRODUCT_TYPE.CAPITAL),
+  ),
 )(ProductSubMerchantsList);

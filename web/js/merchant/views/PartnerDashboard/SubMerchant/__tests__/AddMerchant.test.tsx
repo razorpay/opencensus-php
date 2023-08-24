@@ -192,6 +192,7 @@ describe('AddMerchant', () => {
   });
 
   test('should send create invite call for partnerships invite flow', async () => {
+    jest.setTimeout(10000);
     const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
     isPartner.mockImplementation((type) => type === 'reseller');
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });

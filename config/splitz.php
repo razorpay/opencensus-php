@@ -19,10 +19,6 @@ return [
         // Partnership Survey
         'PARTNERSHIP_NPS' => env('PARTNERSHIP_NPS', ''),
 
-        // partnership for RazorpayX
-        'PARTNERSHIP_FOR_RAZOARPAYX' => env('PARTNERSHIP_FOR_RAZOARPAYX', ''),
-        'PARTNERSHIP_FOR_RAZOARPAYX_RAMP' => env('PARTNERSHIP_FOR_RAZOARPAYX_RAMP', ''),
-
         'SUBMERCHANT_KYC_RESELLER' => env('SUBMERCHANT_KYC_RESELLER', ''),
         'SUBMERCHANT_KYC_RESELLER_RAMP' => env('SUBMERCHANT_KYC_RESELLER_RAMP', ''),
 
@@ -156,7 +152,6 @@ return [
         //new NC flow
         'ENABLE_EASY_DASHBOARD_NC' => env('ENABLE_EASY_DASHBOARD_NC', ''),
         'PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY'      => env('PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY', ''),
-        'PARTNERSHIPS_COMBINED_CONTACT_FILTER'      => env('PARTNERSHIPS_COMBINED_CONTACT_FILTER', ''),
         'PARTNERSHIPS_INVITE_FLOW'      => env('PARTNERSHIPS_INVITE_FLOW', ''),
 
         // Onboarding all as resellers
