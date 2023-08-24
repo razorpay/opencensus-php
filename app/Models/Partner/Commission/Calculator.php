@@ -1255,7 +1255,7 @@ class Calculator extends Base\Core
 
         if ($originType === EntityOrigin\Constants::APPLICATION)
         {
-            if ($merchantAccessMapCore->isMerchantMappedToApplication($submerchant, $origin))
+            if ($merchantAccessMapCore->isMerchantMappedToApplication($submerchant->getId(), $origin->getId()))
             {
                 $partnerApp = $origin;
                 $this->setIsPartnerOriginated(true);

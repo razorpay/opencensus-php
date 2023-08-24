@@ -345,19 +345,21 @@ trait PartnerTrait
         return [$application, $accessMap];
     }
 
-    public function setPurePlatformContext(string $mode = 'live'): string
+    public function setPurePlatformContext(string $mode = Mode::LIVE, $allowImpersonation = true): string
     {
         list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
 
         $client = $this->getAppClientByEnv($application);
 
-        $token = $this->generateOAuthAccessTokenForClient(
-            [
-                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-                'scopes' => ['read_write'],
-                'mode' => $mode,
-            ],
-            $client);
+        $merchantId = $allowImpersonation ? Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID: Constants::DEFAULT_PLATFORM_MERCHANT_ID;
+
+        $attributes =  [
+            'merchant_id'   => $merchantId,
+            'scopes'        => ['read_write'],
+            'mode'          => $mode,
+        ];
+
+        $token = $this->generateOAuthAccessTokenForClient($attributes, $client);
 
         $this->ba->oauthBearerAuth($token->toString());
 
@@ -409,6 +411,7 @@ trait PartnerTrait
             'entity_type'     => 'application',
             'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
         ];
+
         $accessMapData = array_merge($accessMapAttributes, $accessMapData);
         $accessMap = $this->fixtures->create('merchant_access_map', $accessMapData);
 

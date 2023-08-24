@@ -77,7 +77,7 @@ class Core extends Base\Core
         }
         else
         {
-            (new AccessMap\Core)->validateMerchantMappedToApplication($subMerchant, $application);
+            (new AccessMap\Core)->validateMerchantMappedToApplication($subMerchant->getId(), $application->getId());
 
             $config = $this->repo->partner_config->getSubMerchantConfig($application->getId(), $subMerchant->getId());
         }
@@ -109,7 +109,7 @@ class Core extends Base\Core
 
         if (empty($subMerchant) === false)
         {
-            (new AccessMap\Core)->validateMerchantMappedToApplication($subMerchant, $application);
+            (new AccessMap\Core)->validateMerchantMappedToApplication($subMerchant->getId(), $application->getId());
 
             $config = $this->repo->partner_config->getSubMerchantConfig($application->getId(), $subMerchant->getId());
         }

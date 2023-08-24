@@ -4,14 +4,14 @@ namespace Functional\Merchant;
 
 use Mail;
 
+use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\SplitzService;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Merchant\Repository;
 use RZP\Models\Merchant\Service;
-use RZP\Models\Merchant\Document;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\MocksSplitz;
@@ -24,9 +24,9 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Merchant\Metric as MerchantMetric;
-use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class AccountV2Test extends TestCase
@@ -45,8 +45,17 @@ class AccountV2Test extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/AccountV2TestData.php';
 
         parent::setUp();
+    }
 
+    protected function mockSplitzTreatmentWithOutput($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
 
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testCreateAccountV2ForMandatoryFilledRequest()
@@ -61,7 +70,6 @@ class AccountV2Test extends TestCase
 
         $this->validateSupportingEntitiesCreation($accountId);
     }
-
 
     public function testSettleToPartnerSubmerchantMetrics()
     {
@@ -476,6 +484,138 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testFetchAccountV2ByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type'         => 2,
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'mutual_fund',
+        ];
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAccountV2ByPlatformPartnerWithExpDisabled()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type'         => 2,
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'mutual_fund',
+        ];
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatmentWithOutput($output);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAccountV2ByPlatformPartnerWithInvalidAccId()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type'         => 2,
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'mutual_fund',
+        ];
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        // create merchant account not mapped to partner
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
+    // the platform partner should not be allowed to access route other than account_fetch_v2
+    public function testAccessByPlatformPartnerForInvalidRoute()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type'         => 2,
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'mutual_fund',
+        ];
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
     public function testDeleteAccountV2()
     {
         $this->setUpPartnerWithKycHandled();
@@ -515,10 +655,10 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
-    private function getDimensionsForAccountV2Metrics()
+    private function getDimensionsForAccountV2Metrics(string $partnerType = MerchantConstants::AGGREGATOR): array
     {
         return [
-            'partner_type'              => 'aggregator',
+            'partner_type'              => $partnerType,
             'submerchant_business_type' => 'individual'
         ];
     }

@@ -9,21 +9,19 @@ use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\Encoding\ChainedFormatter;
-use Lcobucci\JWT\Token\Builder as JWTBuilder;
 use Lcobucci\JWT\Signer as JWTSigner;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
-use Razorpay\Edge\Passport\Passport;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Token\Builder as JWTBuilder;
+
 use Razorpay\OAuth\OAuthServer;
-use RZP\Constants\HyperTrace;
-use RZP\Error\PublicErrorDescription;
+use Razorpay\Edge\Passport\Passport;
+use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Application\Repository as OAuthAppRepo;
+
 use RZP\Exception;
-use RZP\Http\Edge\Metric;
-use RZP\Http\OAuthScopes;
-use RZP\Http\RequestContextV2;
 use RZP\Http\Route;
-use RZP\Models\Application\Entity;
 use RZP\Models\Key;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -33,20 +31,24 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Http\Edge\Metric;
+use RZP\Http\OAuthScopes;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Models\EntityOrigin;
+use RZP\Constants\HyperTrace;
+use RZP\Http\RequestContextV2;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
+use RZP\Models\Application\Entity;
 use RZP\Models\User\Entity as User;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Batch\Entity as BatchEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
-use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Trace\Tracer;
-use RZP\Models\Merchant\RazorxTreatment;
 
 /**
  * Class BasicAuth
@@ -2112,7 +2114,7 @@ class BasicAuth
         return ($this->getInternalApp() === 'workflows');
     }
 
-    public function getOAuthApplicationId()
+    public function getOAuthApplicationId(): ?string
     {
         return $this->applicationId;
     }

@@ -1128,6 +1128,100 @@ return [
         ],
     ],
 
+    'testFetchAccountV2ByPlatformPartner' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'type'              => 'standard',
+                'status'            => 'created',
+                'business_type'     => 'individual',
+                'profile'           => [
+                    'category'       => 'financial_services',
+                    'subcategory'    => 'mutual_fund',
+                    'addresses'      => [],
+                ],
+                'live'              => true,
+                'hold_funds'        => false,
+            ],
+        ],
+    ],
+
+    'testFetchAccountV2ByPlatformPartnerWithExpDisabled' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'GET',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED,
+        ],
+    ],
+
+    'testFetchAccountV2ByPlatformPartnerWithInvalidAccId' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFAAA',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAccessByPlatformPartnerForInvalidRoute' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFAAA',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
     'testDeleteAccountV2' => [
         'request' => [
             'url'    => '/v2/accounts/{accountId}',

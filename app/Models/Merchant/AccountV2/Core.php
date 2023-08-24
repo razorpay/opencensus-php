@@ -93,9 +93,7 @@ class Core extends Merchant\Core
 
         $relations = ['merchantDetail', 'features', 'emails'];
 
-        $account = $this->repo
-            ->merchant
-            ->findOrFailPublicWithRelations($accountId, $relations);
+        $account = $this->repo->merchant->findOrFailPublicWithRelations($accountId, $relations);
 
         $merchantDetails = $account->merchantDetail;
 

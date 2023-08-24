@@ -367,15 +367,6 @@ class Core extends Base\Core
         }
     }
 
-    public function getMerchantAppMapping(Merchant\Entity $merchant, Application\Entity $app)
-    {
-        $accessMap = $this->repo
-                          ->merchant_access_map
-                          ->findMerchantAccessMapOnEntityId($merchant->getId(), $app->getId(), Entity::APPLICATION);
-
-        return $accessMap;
-    }
-
     /**
      * Returns the internal partner oauth app associated with the submerchant.
      * Since we are querying for only non pure-platform partners here, at most one merchant access map should exist.
@@ -440,27 +431,26 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Merchant\Entity    $merchant
-     * @param Application\Entity $app
+     * @param string $merchantId
+     * @param string $appId
      *
      * @return bool
      */
-    public function isMerchantMappedToApplication(Merchant\Entity $merchant, Application\Entity $app) : bool
+    public function isMerchantMappedToApplication(string $merchantId, string $appId) : bool
     {
-        $accessMap = $this->getMerchantAppMapping($merchant, $app);
+        $accessMap = $this->repo->merchant_access_map->findMerchantAccessMapOnEntityId($merchantId, $appId, Entity::APPLICATION);
 
         return (empty($accessMap) === false);
     }
 
     /**
-     * @param Merchant\Entity    $merchant
-     * @param Application\Entity $app
-     *
+     * @param string $merchantId
+     * @param string $appId
      * @throws Exception\BadRequestException
      */
-    public function validateMerchantMappedToApplication(Merchant\Entity $merchant, Application\Entity $app)
+    public function validateMerchantMappedToApplication(string $merchantId, string $appId)
     {
-        $isMapped = $this->isMerchantMappedToApplication($merchant, $app);
+        $isMapped = $this->isMerchantMappedToApplication($merchantId, $appId);
 
         if ($isMapped === false)
         {
@@ -468,8 +458,8 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
                 null,
                 [
-                    'submerchant_id' => $merchant->getId(),
-                    'application_id' => $app->getId(),
+                    'submerchant_id' => $merchantId,
+                    'application_id' => $appId,
                 ]);
         }
     }

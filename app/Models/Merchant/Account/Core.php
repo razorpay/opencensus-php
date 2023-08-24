@@ -3,18 +3,17 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Exception;
-use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant\WebhookV2\Stork;
-use RZP\Trace\TraceCode;
-use RZP\Trace\Tracer;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AccountV2\Type;
+use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 use RZP\Models\Merchant\LinkedAccountReferenceData;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Validator as MerchantValidator;
@@ -216,30 +215,45 @@ class Core extends Merchant\Core
     {
         $isRouteAccount = $this->checkIfRouteAccount($accountId, $accountType);
 
-        // As part of making Partnership api's available for Route product,
-        //for linked accounts don't want to check parent merchant access with merchant_access_map but instead using parent id attribute on linked account entity.
+        // As part of making Partnership APIs available for Route product, for linked accounts don't want to check
+        // parent merchant access with merchant_access_map but instead using parent id attribute on linked account entity.
         if ($isRouteAccount === true)
         {
             $this->validateLinkedAccountAccess($partner, $accountId);
         }
         else
         {
-            Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId) {
-                $partner->getValidator()->validateIsAggregatorPartner($partner);
+            Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId)
+            {
+                if ($partner->isPurePlatformPartner() === true && $this->app['request.ctx']->getRoute() === 'account_fetch_v2')
+                {
+                    Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
 
-                if ($accountId !== null) {
                     Entity::verifyIdAndSilentlyStripSign($accountId);
 
-                    $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
+                    (new Merchant\AccessMap\Core())->validateMerchantMappedToApplication($accountId, $this->app['basicauth']->getOAuthApplicationId());
+                }
+                else
+                {
+                    $partner->getValidator()->validateIsAggregatorPartner($partner);
 
-                    if ($isMapped === false) {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
-                            null,
-                            [
-                                'account_id' => $accountId,
-                                'partner_id' => $partner->getId(),
-                            ]);
+                    if (empty($accountId) === false)
+                    {
+                        Entity::verifyIdAndSilentlyStripSign($accountId);
+
+                        $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
+
+                        if ($isMapped === false)
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                                null,
+                                [
+                                    'account_id' => $accountId,
+                                    'partner_id' => $partner->getId(),
+                                ]
+                            );
+                        }
                     }
                 }
             });
