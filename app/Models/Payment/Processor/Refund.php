@@ -1187,16 +1187,16 @@ trait Refund
             {
                 return null;
             }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Payment transaction should have been present',
-                    null,
-                    [
-                        'payment_id'    => $payment->getId(),
-                        'refund_id'     => $refund->getId(),
-                    ]);
-            }
+//            else
+//            {
+//                throw new Exception\LogicException(
+//                    'Payment transaction should have been present',
+//                    null,
+//                    [
+//                        'payment_id'    => $payment->getId(),
+//                        'refund_id'     => $refund->getId(),
+//                    ]);
+//            }
         }
 
         $txnCore = new Transaction\Core;

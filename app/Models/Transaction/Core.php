@@ -832,15 +832,6 @@ class Core extends Base\Core
 
     public function createFromRefund(Refund\Entity $refund, $txnId = null)
     {
-        // refund's payment must have transaction
-        $payment = $refund->payment;
-
-        // if merchant has pg_ledger_reverse_shadow enabled, we will not be asserting if payment txn exists.
-        if ($refund->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
-        {
-            assertTrue ($payment->hasTransaction() === true);
-        }
-
         return $this->createTransactionForSource($refund, $txnId);
     }
 

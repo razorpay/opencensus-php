@@ -92,6 +92,11 @@ class Refund extends Base
 
         if ($payment->hasBeenCaptured())
         {
+            //Handle async transaction create
+            if ($payment->getTransactionId() === null)
+            {
+                return $nowTimestamp;
+            }
             $paymentTxn = $payment->transaction;
 
             // Setting current timestamp to refund settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
