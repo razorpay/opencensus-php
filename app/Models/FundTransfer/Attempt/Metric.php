@@ -40,6 +40,9 @@ final class Metric
      */
     const FTA_SLA_EXPIRED                   = 'fta_sla_expired';
 
+
+    const FTS_QUEUE_DISPATCH_FAILED         = 'fts_queue_dispatch_failed';
+
     // ------ Histograms ------
 
     /**

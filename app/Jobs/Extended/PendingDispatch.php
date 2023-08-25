@@ -48,6 +48,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING    = 'banking_account_statement_source_linking';
     const FUND_MANAGEMENT_PAYOUT_CHECK                = 'fund_management_payout_check';
     const FUND_MANAGEMENT_PAYOUT_INITIATE             = 'fund_management_payout_initiate';
+    const FTS_FUND_TRANSFER                           = 'fts_fund_transfer';
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
@@ -63,6 +64,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING,
         self::FUND_MANAGEMENT_PAYOUT_CHECK,
         self::FUND_MANAGEMENT_PAYOUT_INITIATE,
+        self::FTS_FUND_TRANSFER
     ];
 
     /**

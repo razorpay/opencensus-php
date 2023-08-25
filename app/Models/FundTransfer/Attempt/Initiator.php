@@ -769,6 +769,10 @@ class Initiator extends Base\Core
         }
         catch(\Throwable $e)
         {
+            $this->trace->count(Metric::FTS_QUEUE_DISPATCH_FAILED, [
+                'source_type' => $fta->getSourceType()
+            ]);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
