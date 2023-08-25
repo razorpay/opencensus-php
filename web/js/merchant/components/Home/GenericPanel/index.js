@@ -32,6 +32,16 @@ const NoDataMsg = ({ title = '', subtitle = '' }) => {
   );
 };
 
+const PanelFallback = ({ title = '', subtitle = '' }) => {
+  return (
+    <Overlay>
+      <span>
+        <NoDataMsg title={title} subtitle={subtitle} />
+      </span>
+    </Overlay>
+  );
+};
+
 /*
  * Useful to show actionable items on top of the panel
  */
@@ -171,6 +181,6 @@ Panel.propTypes = {
   },
 };
 
-export { PanelTopbar, PanelBody, PanelFooter };
+export { PanelTopbar, PanelBody, PanelFooter, PanelFallback };
 
 export default Panel;

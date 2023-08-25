@@ -14,6 +14,7 @@ import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
+  PanelFallback,
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
@@ -25,6 +26,7 @@ import Mobile from './Mobile';
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import D3ScriptLoaderHoc from 'merchant/hoc/D3ScriptLoaderHoc';
 
 const Treemap = lazy(() =>
   import(/* webpackChunkName: 'Treemap' */ 'merchant/containers/Home/PaymentMethods/Treemap'),
@@ -308,15 +310,19 @@ class PaymentMethods extends Component {
           </div>
         </PanelTopbar>
         <PanelBody>
-          <SuspenseWithLoader>
-            <Treemap
-              data={this.state.data}
-              isCurrency={'isCurrency' in selectedAgg}
-              onLevelChange={this.onLevelChange}
-              currentLevel={this.state.currentLevel}
-              onCSVData={this.onCSVData}
-            />
-          </SuspenseWithLoader>
+          <D3ScriptLoaderHoc
+            Fallback={() => <PanelFallback title="Oh snap! Couldn’t load graph data." />}
+          >
+            <SuspenseWithLoader>
+              <Treemap
+                data={this.state.data}
+                isCurrency={'isCurrency' in selectedAgg}
+                onLevelChange={this.onLevelChange}
+                currentLevel={this.state.currentLevel}
+                onCSVData={this.onCSVData}
+              />
+            </SuspenseWithLoader>
+          </D3ScriptLoaderHoc>
         </PanelBody>
         <PanelFooter className="clearfix">
           <div className="pull-left">
