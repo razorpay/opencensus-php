@@ -42,7 +42,7 @@ class Service extends Base\Service
         $this->cacheTimeout = 2 * 12 * 60; 
     }
 
-    public function getSplitzVariantBulk($merchantId, $isSplitzCachingEnabled): array
+    public function getSplitzVariantBulk($merchantId, $isSplitzCachingEnabled = false): array
     {
         $clientType = ['client_type' => 'merchant'];
        
