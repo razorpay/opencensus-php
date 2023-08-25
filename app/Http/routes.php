@@ -285,6 +285,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('razorx/{all?}', 'AdminController@getIndex')->name('razorx_catchall')->where(['all' => '.*']);
     Route::get('admin/capital-los/{all?}', 'AdminController@getIndex')->name('capital_catchall')->where(['all' => '.*']);
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*'])->middleware(['set_x_frame', 'set_csp_header']);
+    Route::post('admin/clear-org-cache', 'AdminController@clearOrgCache')->name('clear_org_cache');
 });
 
 Route::group(['middleware'  => 'graph'], function()

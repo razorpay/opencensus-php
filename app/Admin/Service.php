@@ -44,6 +44,7 @@ use Carbon\Carbon;
 use UAParser\Parser;
 use Aws\Laravel\AwsFacade as AWS;
 use Illuminate\Support\Facades\App as App;
+use Illuminate\Support\Facades\Redis;
 
 class Service extends Base\Service
 {
@@ -1843,7 +1844,7 @@ class Service extends Base\Service
         try {
             $request = new ApiRequestAny();
             list($error, $data) = $request->processInput($input)->send('admin/forgot_password', 'POST');
-        } 
+        }
         catch (\Razorpay\Api\Errors\BadRequestError $e) {
             $error[] = $e->getMessage();
         }
@@ -1855,10 +1856,57 @@ class Service extends Base\Service
         try {
             $request = new ApiRequestAny();
             list($error, $data) = $request->processInput($input)->send('admin/reset_password', 'POST');
-        } 
+        }
         catch (\Razorpay\Api\Errors\BadRequestError $e) {
             $error[] = $e->getMessage();
         }
         return [$error, $data];
+    }
+
+    public function getKeysByPattern($pattern) {
+        $keys = [];
+
+        $cursor = null;
+
+        $patternWithPrefix = "dashboard_:" . $pattern;
+
+        do {
+            [$cursor, $batch] = Redis::scan($cursor, 'MATCH', $patternWithPrefix);
+
+            $keys = array_merge($keys, $batch);
+        } while ($cursor !== '0');
+
+        return $keys;
+    }
+
+    public function clearOrgCacheForAllDomains(): array
+    {
+        $success = [];
+        $failure = [];
+        $cacheKeys = $this->getKeysByPattern(self::CACHE_KEY_ORG_DATA . "*");
+        foreach ($cacheKeys as $key) {
+            $domain = substr($key, strlen("dashboard_:org_data_"));
+            try
+            {
+                $this->cache->forget($key);
+
+                $this->app['trace']->info(TraceCode::INVALIDATE_ORG_CACHE, [
+                    'domain' => $domain,
+                ]);
+
+                array_push($success, $domain);
+            }
+            catch (\http\Exception $e)
+            {
+                $this->app['trace']->error(TraceCode::INVALIDATE_ORG_CACHE, [
+                    'domain' => $domain,
+                    'error' => $e->getMessage(),
+                ]);
+
+                array_push($failure, $domain);
+            }
+
+        }
+        return ["success"=>$success, "failure"=> $failure];
     }
 }

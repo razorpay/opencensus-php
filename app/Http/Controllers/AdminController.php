@@ -826,7 +826,15 @@ class AdminController extends Controller
             return [$error, []];
         }
 
-        $data = (new SplitzService())->clearSplitzCache($input);    
+        $data = (new SplitzService())->clearSplitzCache($input);
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
+    // Invalidate the /org cache for all domains
+    public function clearOrgCache() {
+
+        $data = (new Admin\Service)->clearOrgCacheForAllDomains();
 
         return AppResponse::jsonResponse([], $data);
     }

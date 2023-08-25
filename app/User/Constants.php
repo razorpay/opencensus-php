@@ -106,7 +106,7 @@ class Constants
         "annapurna.pal+008@razorpay.com"
     ];
 
-    const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED'; 
+    const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED';
 
     // browser details of the user logging in
     const BROWSER_DETAILS = 'browser_details';
