@@ -12,8 +12,9 @@ import {
   Reminders,
   LinkExpiry,
   Notes,
-  DynamicFields,
+  PayerName,
 } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default class UPIForm extends React.Component {
   onSubmit = () => {
@@ -24,7 +25,7 @@ export default class UPIForm extends React.Component {
 
   render() {
     const { props } = this;
-    const { formData, dynamicFields } = props;
+    const { formData, showPayerName } = props;
 
     const content = (
       <FormWizard
@@ -50,11 +51,9 @@ export default class UPIForm extends React.Component {
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
         />
-        <DynamicFields
-          payerName={formData.name}
-          dynamicFields={dynamicFields}
-          disabled={props.disabled}
-        />
+        <ShowWhen additionalCondition={() => showPayerName}>
+          <PayerName defaultValue={formData?.name} required={true} />
+        </ShowWhen>
         <ContactDetails
           disabled={props.disabled}
           defaultContactNumber={formData.contact}

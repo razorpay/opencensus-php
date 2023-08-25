@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import { App } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/UPIForm';
+import {
+  App,
+  enablePayerNameProps,
+} from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/UPIForm';
 
 describe('UPIForm - Unit Test', () => {
   const renderApp = (props = {}, initialState) => {
@@ -38,5 +41,16 @@ describe('UPIForm - Unit Test', () => {
     };
     const { container } = renderApp(props);
     expect(container.querySelector('.StandAloneContainer')).toBeInTheDocument();
+  });
+
+  test('should render "Payer Name"', () => {
+    const props = {
+      showPayerName: true,
+      formData: {},
+      remindersConfig: {},
+    };
+    const initialState = { ...enablePayerNameProps };
+    renderApp(props, initialState);
+    expect(screen.getByText('Payer Name')).toBeInTheDocument();
   });
 });

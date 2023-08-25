@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-
-function TextHighlighter({ children, hashedWith, location }) {
+function TextHighlighter({ children, hashedWith }) {
   const [highLight, setHighlight] = useState(false);
-
   const handleHighlight = () => {
     setHighlight(true);
     setTimeout(() => {
       setHighlight(false);
     }, 5000);
   };
-
   useEffect(() => {
-    const { pathname, hash } = location;
-
-    if (pathname?.includes(hashedWith) || hash?.includes(hashedWith)) {
+    if (location.pathname?.includes(hashedWith)) {
       handleHighlight();
     }
   }, []);

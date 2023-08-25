@@ -1,5 +1,5 @@
-import * as analytics from 'common/utils/analytics';
 import track from 'merchant/views/PaymentLinks/BatchUpload/track';
+import * as analytics from 'common/utils/analytics';
 
 const actionName = 'clicked';
 const screen = 'Create Payment Link';
@@ -29,8 +29,8 @@ describe('Batch Upload Track Unit Test Case', () => {
   const lumberjackTrackMock = jest.fn();
   track.init(lumberjackTrackMock);
 
-  test('should track downloadSampleInModal event', () => {
-    track.downloadSampleInModal();
+  test('should track donwloadSampleInModal event', () => {
+    track.donwloadSampleInModal();
     expect(analytics.analyticsTrack).toHaveBeenCalledWith({
       objectName: 'payment link create sample modal',
       actionName,

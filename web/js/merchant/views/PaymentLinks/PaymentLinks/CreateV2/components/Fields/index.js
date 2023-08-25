@@ -9,7 +9,6 @@ import Notes from './Notes';
 import PartialPayment from './PartialPayments';
 import MWebContactDetails from './MWebContactDetails';
 import PayerName from './PayerName';
-import DynamicFields from './DynamicFields';
 
 export {
   Amount,
@@ -23,5 +22,4 @@ export {
   PartialPayment,
   MWebContactDetails,
   PayerName,
-  DynamicFields,
 };

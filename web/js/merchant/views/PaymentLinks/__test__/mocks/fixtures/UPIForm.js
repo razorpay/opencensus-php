@@ -28,13 +28,6 @@ jest.mock(
   },
 );
 
-jest.mock(
-  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/DynamicFields',
-  () => () => {
-    return <div>Dynamic Fields</div>;
-  },
-);
-
 jest.mock('common/utils/localStorage', () => ({
   setItem: jest.fn(),
   getItem: jest.fn().mockReturnValue(true),
@@ -45,6 +38,13 @@ const defaultProps = {
   formData: {
     currency: 'INR',
     amount: '200',
+  },
+};
+
+export const enablePayerNameProps = {
+  user: { isOrgAllowedFunctionality: jest.fn() },
+  org: {
+    features: ['enable_payer_name_for_pl'],
   },
 };
 

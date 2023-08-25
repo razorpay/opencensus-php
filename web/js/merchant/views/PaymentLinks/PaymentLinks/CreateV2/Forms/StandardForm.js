@@ -12,11 +12,12 @@ import {
   LinkExpiry,
   Notes,
   MWebContactDetails,
-  DynamicFields,
+  PayerName,
 } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields';
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as LocalStorageService from 'common/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 // TODO: Feels like, can be written in better.
 export default class StandardForm extends React.Component {
@@ -41,7 +42,7 @@ export default class StandardForm extends React.Component {
   }
   render() {
     const { props } = this;
-    const { formData, disableCurrencySelect, contactPlaceholder, dynamicFields, disabled } = props;
+    const { formData, showPayerName, disableCurrencySelect, contactPlaceholder } = props;
 
     const content = (
       <FormWizard
@@ -67,11 +68,9 @@ export default class StandardForm extends React.Component {
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
         />
-        <DynamicFields
-          payerName={formData.name}
-          dynamicFields={dynamicFields}
-          disabled={disabled}
-        />
+        <ShowWhen additionalCondition={() => showPayerName}>
+          <PayerName defaultValue={formData?.name} required={true} />
+        </ShowWhen>
         {props.isMobileResolution ? (
           <MWebContactDetails
             disabled={props.disabled}
@@ -89,6 +88,7 @@ export default class StandardForm extends React.Component {
             contactPlaceholder={contactPlaceholder}
           />
         )}
+
         <Notify
           disabled={props.disabled}
           defaultContactValue={formData.sms_notify}

@@ -1,12 +1,12 @@
 import React from 'react';
-
-import * as analytics from 'common/utils/analytics';
 import {
   App,
   generateUser,
   paymentLinkConfig,
 } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/Details';
 import { render, screen, userEvent, fireEvent } from 'test-utils';
+
+import * as analytics from 'common/utils/analytics';
 
 describe('Payment Link Details', () => {
   const trackEditNotes = jest.fn();
@@ -341,17 +341,5 @@ describe('Payment Link Details', () => {
     expect(screen.getByText('rzp customer')).toBeInTheDocument();
     expect(screen.getByText('Expires On')).toBeInTheDocument();
     expect(screen.getByText('Edit Expiry')).toBeInTheDocument();
-  });
-
-  test('should render custom fields', () => {
-    const getPaymentLinkConfig = {
-      ...paymentLinkConfig(),
-      custom_fields: { 'Test Custom Field Label': 'Test Custom Field Value' },
-    };
-
-    renderApp({ isLoading: false, getPaymentLinkConfig });
-
-    expect(screen.getByText('Test Custom Field Label')).toBeInTheDocument();
-    expect(screen.getByText('Test Custom Field Value')).toBeInTheDocument();
   });
 });

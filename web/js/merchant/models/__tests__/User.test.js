@@ -1,18 +1,16 @@
 import { getDefaultUserObj } from 'merchant/models/__tests__/mocks/fixtures/User';
+
 import * as store from 'merchant/store';
 
 const getModeSpy = jest.spyOn(store, 'getMode');
 
 describe('User model', () => {
-  const user = getDefaultUserObj();
-
   afterEach(() => {
     // cleanup splitz experiments
     window.rzp_user = {
       ...window.rzp_user,
       splitz_experiments: {},
     };
-    jest.clearAllMocks();
   });
 
   test('should return true when merchant feature flag enable_merchant_expiry_pl is set', () => {
@@ -322,14 +320,16 @@ describe('User model', () => {
   });
 
   describe('isCustomReportExtensionsEnabled', () => {
-    test('should return true when org level feature flag - custom_report_extensions is enabled', () => {
+    test('should return true if when org level feature flag - custom_report_extensions is enabled', () => {
+      const user = getDefaultUserObj();
+
       user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(true);
 
       expect(user.isCustomReportExtensionsEnabled).toBe(true);
     });
 
-    test('should return false if when org level feature flag - custom_report_extensions is not enabled', () => {
-      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(false);
+    test('should return true if when org level feature flag - custom_report_extensions is not enabled', () => {
+      const user = getDefaultUserObj();
 
       expect(user.isCustomReportExtensionsEnabled).toBe(false);
     });
@@ -371,20 +371,6 @@ describe('User model', () => {
         .mockReturnValueOnce(false); // optimizer_razorpay_vas feature is enabled
       jest.spyOn(user, 'findTag').mockReturnValue(true);
       expect(user.isSuccessRateEnabled).toBe(true);
-    });
-  });
-
-  describe('isDynamicPlOffset', () => {
-    test('should return true when mid level feature flag - dynamic_pl_offset is enabled', () => {
-      user.isFeatureEnabled = jest.fn().mockReturnValueOnce(true);
-
-      expect(user.isDynamicPlOffset).toBe(true);
-    });
-
-    test('should return false when mid level feature flag - dynamic_pl_offset is not enabled', () => {
-      user.isFeatureEnabled = jest.fn().mockReturnValueOnce(false);
-
-      expect(user.isDynamicPlOffset).toBe(false);
     });
   });
 });

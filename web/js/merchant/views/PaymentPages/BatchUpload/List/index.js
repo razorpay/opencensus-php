@@ -1,33 +1,32 @@
 import { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-
-import { getErrorMessageFromResponse, exportFileAsExcel } from 'common/utils/rzp-utils';
 import BatchList from 'merchant/containers/BatchNew/ListV2';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   fetchPaymentPageBatches as fetchAll,
   createPaymentPageBatch as createBatch,
   validatePaymentPageBatch as validateBatch,
 } from 'merchant/reducers/batches';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+
+import track from 'merchant/views/PaymentPages/BatchUpload/track';
 import PaymentLinksForm from 'merchant/views/PaymentLinks/BatchUpload/components/PaymentLinksForm';
-import SendAllLinks from 'merchant/views/PaymentLinks/BatchUpload/components/SendAllLinks';
+import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   getHeaderList,
   getFormattedExcelData,
   allowSendAllLinks,
 } from 'merchant/views/PaymentPages/BatchUpload/helper';
-import track from 'merchant/views/PaymentPages/BatchUpload/track';
 import {
   MAX_ROWS,
   MAX_FILE_SIZE,
   BATCH_UPLOAD_DOC_URL,
   BATCH_TYPE,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
-import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { openModal } from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-
+import SendAllLinks from 'merchant/views/PaymentLinks/BatchUpload/components/SendAllLinks';
+import { getErrorMessageFromResponse, exportFileAsExcel } from 'common/utils/rzp-utils';
 const gaEvents = setGaTrack('Dashboard - Payment Page - BU');
 
 const BatchListContainer = ({
@@ -183,7 +182,6 @@ const BatchListContainer = ({
         docUrl={BATCH_UPLOAD_DOC_URL}
         onDocumentClick={track.onDocumentClickInModal}
         onSampleFileDownload={onSampleFileDownload}
-        shouldShowSampleDownloadBtn
         clickToUploadAnalytics={track.uploadClicked}
         onError={track.fileUploadError}
         onSuccess={track.fileUploadSuccess}
@@ -209,9 +207,8 @@ const BatchListContainer = ({
       trackPagination={track.onPagination}
       gaEvents={gaEvents}
       onSampleFileDownload={onSampleFileDownload}
-      shouldShowSampleDownloadBtn
       location={location}
-      isSampleFileLoading={isPaymentPageDetailsLoading}
+      isPaymentPageDetailsLoading={isPaymentPageDetailsLoading}
       fetchAll={fetchAllBatches}
       batchActions={[sendAllLinks]}
     />

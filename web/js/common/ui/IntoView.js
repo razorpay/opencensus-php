@@ -19,15 +19,9 @@ function IntoView({ children, location, hashedWith }) {
 
     const urlSegments = location.pathname.split('/');
 
-    let hashPresent = false;
-
-    if (Array.isArray(hashedWith)) {
-      hashPresent = hashedWith.some((hash) => urlSegments.includes(hash));
-    } else if (location.hash) {
-      hashPresent = location.hash.includes(hashedWith);
-    } else {
-      hashPresent = urlSegments.includes(hashedWith);
-    }
+    const hashPresent = Array.isArray(hashedWith)
+      ? hashedWith.some((hash) => urlSegments.includes(hash))
+      : urlSegments.includes(hashedWith);
 
     if (hashPresent && showView.current) {
       // add delay to wait for whole dom to load then scroll to the target element

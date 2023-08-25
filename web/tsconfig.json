@@ -77,8 +77,7 @@
     "js/merchant/views/MagicCheckout/**/*",
     "js/merchant/views/RazorpayXWidget",
     "js/merchant/views/PaymentMetrics",
-    "js/common/splitz",
-    "js/merchant/views/Settings/Configuration"
+    "js/common/splitz"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

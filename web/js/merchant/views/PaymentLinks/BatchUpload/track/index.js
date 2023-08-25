@@ -31,7 +31,7 @@ function _track() {
   }
 
   return {
-    downloadSampleInModal: () => {
+    donwloadSampleInModal: () => {
       sendToLumberjack('pl_batch.create.sample');
       sendToSegment('payment link create sample modal', 'clicked');
     },

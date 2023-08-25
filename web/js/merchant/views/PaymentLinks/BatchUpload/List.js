@@ -1,23 +1,19 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { exportFileAsExcel } from 'common/utils/rzp-utils';
 import BatchList from 'merchant/containers/BatchNew/ListV2';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   fetchPaymentLinkBatches as fetchAll,
   createPaymentLinkBatch as createBatch,
   validatePaymentLinkBatch as validateBatch,
 } from 'merchant/reducers/batches';
-import { fetchPaymentLinkCustomFields } from 'merchant/reducers/paymentlinks/details';
-import { showDynamicFields, convertExcelToObj } from 'merchant/views/PaymentLinks/utils';
-import { openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 
+import track from './track';
 import PaymentLinksForm from './components/PaymentLinksForm';
 import SendAllLinks from './components/SendAllLinks';
-import track from './track';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
@@ -28,7 +24,7 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
       issuableIdList: state.paymentBatchIds.issuableIdList,
     };
   },
-  { fetchAll, createBatch, validateBatch, openModal, showNotification },
+  { fetchAll, createBatch, validateBatch, openModal },
 )
 export default class BatchListContainer extends Component {
   constructor(props) {
@@ -43,80 +39,18 @@ export default class BatchListContainer extends Component {
       sms_notify: 0,
       email_notify: 0,
       reminder_enable: 1,
-      dynamicFields: [],
-      isCustomFieldsLoading: false,
     };
   }
 
-  getFileNameAndUrl = () => {
-    const fileName = this.props.user.isPaymentlinksV2Enabled
-      ? 'sample_batch_payment_links_v2'
-      : 'sample_batch_payment_links';
+  get sampleUrl() {
+    let url = '/files/sample_batch_payment_links.xlsx';
 
-    const url = `/files/${fileName}.xlsx`;
-
-    return { url, fileName };
-  };
-
-  getPaymentsLinksCustomFields = async () => {
-    const res = await fetchPaymentLinkCustomFields();
-    const fields = res?.data?.configurations || [];
-
-    let customFields = [];
-
-    if (fields.length > 0) {
-      customFields = fields.reduce((acc, { configuration }) => {
-        acc[`custom_field[${configuration.label}]`] = '1234567890';
-
-        return acc;
-      }, {});
-
-      this.setState({ dynamicFields: customFields });
+    if (this.props.user.isPaymentlinksV2Enabled) {
+      url = '/files/sample_batch_payment_links_v2.xlsx';
     }
 
-    return customFields;
-  };
-
-  downloadSampleFile = async () => {
-    try {
-      const { url, fileName } = this.getFileNameAndUrl();
-
-      if (!showDynamicFields()) {
-        return window.open(url, '_self');
-      }
-
-      this.setState({ isCustomFieldsLoading: true });
-
-      const rows = await convertExcelToObj(url);
-
-      let customFields = this.state.dynamicFields;
-
-      if (!customFields.length) {
-        customFields = await this.getPaymentsLinksCustomFields();
-      }
-
-      const modifiedData = rows.map((fields) => ({ ...fields, ...customFields }));
-
-      return exportFileAsExcel({
-        finalDataSend: [{ category: `custom_fields`, data: modifiedData }],
-        fileFormat: 'xlsx',
-        fileName,
-      });
-    } catch (error) {
-      return this.props.showNotification({
-        type: 'error',
-        message: error?.errors?.join(' '),
-      });
-    } finally {
-      this.setState({ isCustomFieldsLoading: false });
-    }
-  };
-
-  downloadSampleFileInModal = () => {
-    track.downloadSampleInModal();
-
-    this.downloadSampleFile();
-  };
+    return url;
+  }
 
   handlePaymentLinksFormChange = (propName, value) => {
     this.setState({
@@ -165,7 +99,6 @@ export default class BatchListContainer extends Component {
         reminder_enable,
       },
     };
-
     return (
       <BatchUpload
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
@@ -178,7 +111,9 @@ export default class BatchListContainer extends Component {
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
+        sampleUrl={this.sampleUrl}
         onDocumentClick={track.onDocumentClickInModal}
+        onSampleFileDownload={track.donwloadSampleInModal}
         clickToUploadAnalytics={track.uploadClicked}
         onError={track.fileUploadError}
         onSuccess={track.fileUploadSuccess}
@@ -187,9 +122,6 @@ export default class BatchListContainer extends Component {
         trackCloseModal={track.abandonBatchModal}
         trackCreateBatch={track.createBatch}
         trackSuccessModalClose={track.successModalClose}
-        onSampleFileDownload={this.downloadSampleFileInModal}
-        shouldShowSampleDownloadBtn
-        isSampleFileLoading={this.state.isCustomFieldsLoading}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}
@@ -207,6 +139,7 @@ export default class BatchListContainer extends Component {
       <BatchList
         form="batchListFilter"
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
+        sampleUrl={this.sampleUrl}
         batchType={this.props.user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link'}
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
@@ -216,9 +149,6 @@ export default class BatchListContainer extends Component {
         onClearAnalytics={track.onClearAnalytics}
         trackPagination={track.onPagination}
         gaEvents={gaEvents}
-        onSampleFileDownload={this.downloadSampleFile}
-        isSampleFileLoading={this.state.isCustomFieldsLoading}
-        shouldShowSampleDownloadBtn
         {...this.props}
       />
     );
