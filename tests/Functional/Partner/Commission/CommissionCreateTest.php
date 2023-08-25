@@ -712,6 +712,18 @@ class CommissionCreateTest extends TestCase
         $this->assertCommisionAndTransactionData(CommissionType::IMPLICIT);
     }
 
+    //Test invoice generation should be skipped for non-partner merchants
+    public function testInvoiceGenerationForNonPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->fixtures->edit('merchant', $partner->getId(), ['partner_type' => null]);
+
+        $generated = (new Invoice\Core)->generateInvoice($partner, []);
+
+        $this->assertFalse($generated);
+    }
+
     public function testInvoiceOnHoldClear()
     {
         Mail::fake();

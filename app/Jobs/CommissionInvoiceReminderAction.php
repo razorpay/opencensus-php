@@ -74,6 +74,12 @@ class CommissionInvoiceReminderAction extends Job
                     $invoiceCount = $invoices->count();
 
                     $partner          = $this->repoManager->merchant->findOrFail($partnerId);
+
+                    if($partner->isPartner() == false)
+                    {
+                        continue;
+                    }
+
                     $activationStatus = $core->getApplicablePartnerActivationStatus($partner);
 
                     // Don't send reminders to the partner in rejected state. [PLAT-483]

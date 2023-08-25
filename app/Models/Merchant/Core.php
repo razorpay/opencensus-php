@@ -5913,6 +5913,9 @@ class Core extends Base\Core
 
             $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
         }
+
+        $this->deletePartnerDomainFeatures($partner);
+
     }
 
     /**
@@ -5929,6 +5932,12 @@ class Core extends Base\Core
 
             $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
         }
+    }
+
+    protected function deletePartnerDomainFeatures($partner)
+    {
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $partner->getId(), Feature\Constants::GENERATE_PARTNER_INVOICE);
+        (new Feature\Core)->delete($feature, true);
     }
 
     /**

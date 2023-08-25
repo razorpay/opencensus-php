@@ -15,6 +15,10 @@ use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
+use RZP\Models\Feature\Core;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Feature\Entity as FeatureEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\User\BankingRole;
@@ -347,6 +351,14 @@ class PartnerTest extends OAuthTestCase
 
         $this->assertTrue($merchant->isPartner());
 
+        $featureParams = [
+            FeatureEntity::ENTITY_ID   => $merchant->getId(),
+            FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            FeatureEntity::NAME        => FeatureConstants::GENERATE_PARTNER_INVOICE,
+        ];
+
+        (new Core())->create($featureParams, true, false, 'test');
+
         // attach a submerchant to the partner and give dashboard access
         $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
@@ -399,6 +411,25 @@ class PartnerTest extends OAuthTestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
 
         $this->assertFalse($merchant->isPartner());
+
+        // Validate that generate partner invoice feature is removed when partner is unmarked as partner
+        $featureEntity = $this->getDbEntities('feature',
+                                              [
+                                                  'entity_id' => $merchant->getId(),
+                                                  'entity_type' => 'merchant',
+                                                  'name' => FeatureConstants::GENERATE_PARTNER_INVOICE
+                                              ], 'test');
+
+        $this->assertEquals(0 , count($featureEntity));
+
+        $featureEntity = $this->getDbEntities('feature',
+                                              [
+                                                  'entity_id' => $merchant->getId(),
+                                                  'entity_type' => 'merchant',
+                                                  'name' => FeatureConstants::GENERATE_PARTNER_INVOICE
+                                              ], 'live');
+
+        $this->assertEquals(0 , count($featureEntity));
 
         // test that on unmark, all dashboard access mappings, access maps are deleted
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID, 'live');

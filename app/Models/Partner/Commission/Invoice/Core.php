@@ -890,8 +890,18 @@ class Core extends Base\Core
         return [$newTncPartners,$oldTncPartners];
     }
 
-    protected function generate(Merchant\Entity $partner, array $input)
+    protected function generate(Merchant\Entity $partner, array $input): bool
     {
+        //skip invoice generation for the prev month if the partner is unmarked as partner in current/prev month
+        if($partner->isPartner() == false)
+        {
+            $this->trace->info(TraceCode::COMMISSION_INVOICE_GENERATION_SKIPPED, [
+                'partner_id' => $partner->getId()
+            ]);
+
+            return false;
+        }
+
         $previousMonth = Carbon::now(Timezone::IST)->subMonth();
 
         $year  = $input[Entity::YEAR] ?? $previousMonth->year;
@@ -910,7 +920,7 @@ class Core extends Base\Core
                     'invoice_ids' => $invoices->getIds(),
                 ]);
 
-            return;
+            return false;
         }
 
         if ($invoices->isEmpty() === false)
@@ -932,7 +942,7 @@ class Core extends Base\Core
                         'invoice_ids' => $invoices->getIds(),
                     ]);
 
-                return;
+                return false;
             }
         }
 
@@ -954,7 +964,7 @@ class Core extends Base\Core
                         'partner'     => $partner->getId(),
                     ]);
 
-                return;
+                return false;
             }
 
             $this->updateInvoiceAmounts($invoice);
@@ -982,6 +992,8 @@ class Core extends Base\Core
             }
             $this->app->partnerships->createInvoiceShadowPhase($invoice, $month, $year, $regenerateIfExists||$forceRegenerate);
         });
+
+        return true;
     }
 
     public function isPartnerInvoiceAutoApprovalEnabled(Merchant\Entity $partner, Entity $invoice): bool
