@@ -6124,6 +6124,13 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT]['default_offers'] = $defaultOffersBool;
 
+        $merchantTimeoutSetting = (new Core)->getPaymentTimeoutWindow($merchant);
+
+        if (isset($merchantTimeoutSetting) === true)
+        {
+            $data[EntityConstants::MERCHANT]['custom_timeout'] = $merchantTimeoutSetting;
+        }
+
         return $data;
     }
 
