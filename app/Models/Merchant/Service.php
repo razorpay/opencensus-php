@@ -8018,26 +8018,28 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->find($merchantId);
 
-        (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchantId);
-
-        if($input['create_va'])
+        $this->repo->transaction(function()
+            use ($merchant, $input)
         {
-            (new Merchant\Activate)->activateBusinessBankingIfApplicable($merchant);
-        }
-
-        if($input['set_has_key_access'])
-        {
-            $merchantDetail = $merchant->merchantDetail;
-
-            $vaActivated = (new Merchant\Core())->isXVaActivated($merchant);
-
-            if (((empty($merchantDetail->getWebsite()) === false) || ($vaActivated === true)) and
-                ($merchant->getHasKeyAccess() === false))
+            if($input['create_va'])
             {
-                $merchant->setHasKeyAccess(true);
-                $this->repo->saveOrFail($merchant);
+                (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
+
+                (new Merchant\Activate)->activateBusinessBankingIfApplicable($merchant);
             }
-        }
+
+            if($input['set_has_key_access'])
+            {
+                (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
+
+                if ($merchant->getHasKeyAccess() === false)
+                {
+                    $merchant->setHasKeyAccess(true);
+                    
+                    $this->repo->saveOrFail($merchant);
+                }
+            }
+        });
 
         return ['success' => true];
     }
