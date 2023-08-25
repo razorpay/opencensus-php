@@ -40,6 +40,7 @@ class Tracing
         return array_merge($routesToInclude, [
             // used by checkout-service
             'merchant_methods_offers_checkout_internal',
+            'payments_downtime',
 
             // used by capital-cards service
             'user_fetch',
