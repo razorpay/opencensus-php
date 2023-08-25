@@ -104,6 +104,28 @@ describe('Tests for currency formatting', () => {
     expect(getFormattedAmount(11111111, 'ABC')).toBe('111,111.11');
   });
 
+  describe('Tests for malaysians currency formatting', () => {
+    test('formatting 11111 MYR to 111.11', () => {
+      expect(getFormattedAmount(11111, 'MYR')).toBe('111.11');
+    });
+
+    test('formatting 111111 MYR to 1,111.11', () => {
+      expect(getFormattedAmount(111111, 'MYR')).toBe('1,111.11');
+    });
+
+    test('formatting 11111111 MYR to 111,111.11', () => {
+      expect(getFormattedAmount(11111111, 'MYR')).toBe('111,111.11');
+    });
+
+    test('formatting 1111111111 MYR to 11,111,111.11', () => {
+      expect(getFormattedAmount(1111111111, 'MYR')).toBe('11,111,111.11');
+    });
+
+    test('formatting 11111111111 MYR to 111,111,111.11', () => {
+      expect(getFormattedAmount(11111111111, 'MYR')).toBe('111,111,111.11');
+    });
+  });
+
   test('getCurrencyConfig should refer to local window.currencyList when it is defined', () => {
     currencyList.KWD.denomination = 10000;
     window.currencyList = currencyList;

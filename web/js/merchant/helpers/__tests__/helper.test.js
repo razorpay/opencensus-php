@@ -36,7 +36,7 @@ describe('Tests for currency formatting', () => {
   });
 
   test('Test for myr currency formatting', () => {
-    expect(CURRENCY_FORMATTERS.myr(Number(1111111).toFixed(2), 2)).toBe('11,11,111.00');
+    expect(CURRENCY_FORMATTERS.myr(Number(1111111).toFixed(2), 2)).toBe('1,111,111.00');
   });
 
   test('Test for none currency formatting', () => {

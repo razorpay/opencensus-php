@@ -90,9 +90,13 @@ export const CURRENCY_FORMATTERS = {
     return amountStr;
   },
 
-  //  #,##,###.00 or #,##,###.##
+  // #,###.## | #,###,###.## | ###,###,###.##
   myr: (amount, decimals) => {
-    return inrCommaFormatter(amount, decimals);
+    const amountStr = String(amount).replace(
+      new RegExp(`(.{1,3})(?=(...)+(\\..{${decimals}})$)`, 'g'),
+      '$1,',
+    );
+    return amountStr;
   },
 
   none: (amount) => String(amount),
