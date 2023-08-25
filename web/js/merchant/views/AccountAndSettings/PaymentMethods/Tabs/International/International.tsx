@@ -1,18 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Heading, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import PaymentMethodsSection from 'merchant/views/AccountAndSettings/PaymentMethods/components/Section';
-import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { bindActionCreators } from 'redux';
-import { MerchantICProductStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
-import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
-import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
-import {
-  LeafListItemSection,
-  LeafListItem as LeafListItemDiv,
-} from 'merchant/views/AccountAndSettings/PaymentMethods/components/LeafListItem';
-import InternationalCards from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards';
+
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import {
   CommonApiResponse,
   ShowNotificationType,
@@ -20,14 +11,25 @@ import {
   InstrumentListItem,
   LeafListItem as LeafListItemType,
 } from 'common/typings';
-import Firc from 'merchant/views/Settings/Configuration/components/FircAnnouncements/Firc';
-import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
-import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
-import { merchantFetch } from 'merchant/utils/ajax';
 import IntoViewUsingQueryParams from 'common/ui/IntoViewUsingQueryParams';
-import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import { fetchUser as fetchUserFn } from 'merchant/reducers/session';
+import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
+import lazy from 'merchant/routes/LazyLoader';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
+import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import InternationalCards from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards';
+import {
+  LeafListItemSection,
+  LeafListItem as LeafListItemDiv,
+} from 'merchant/views/AccountAndSettings/PaymentMethods/components/LeafListItem';
+import PaymentMethodsSection from 'merchant/views/AccountAndSettings/PaymentMethods/components/Section';
+import { MerchantICProductStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
+import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
+import Firc from 'merchant/views/Settings/Configuration/components/FircAnnouncements/Firc';
+import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
+import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 
 const Paypal = lazy(
   () =>
@@ -173,6 +175,28 @@ const International = ({
               })
             ) {
               return null;
+            }
+
+            if (Array.isArray(leafListItem.leafList)) {
+              return (
+                <Box key={leafListItem.header}>
+                  <Heading as="h4" type="subtle" marginBottom="spacing.4">
+                    {leafListItem.header}
+                  </Heading>
+
+                  {leafListItem.leafList.map((leafListItem) => (
+                    <Box key={leafListItem.header} marginBottom="spacing.5">
+                      <LeafListItemDiv
+                        data-testid="leaf-list-item"
+                        className="level-3"
+                        ref={listItemRef}
+                      >
+                        {renderLeafListItem(leafListItem)}
+                      </LeafListItemDiv>
+                    </Box>
+                  ))}
+                </Box>
+              );
             }
 
             return (

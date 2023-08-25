@@ -10,7 +10,11 @@ export const isInternationalLeafItemDisabled = ({
   const { slug } = leafList || {};
 
   return (
-    ['localcurrencytransfer', 'swiftbanktransfer', 'instantbanktransfer'].includes(slug ?? '') &&
-    !user?.international
+    [
+      'localcurrencytransfer',
+      'swiftbanktransfer',
+      'instantbanktransfer',
+      'moneysaverexportaccount',
+    ].includes(slug ?? '') && !user?.international
   );
 };

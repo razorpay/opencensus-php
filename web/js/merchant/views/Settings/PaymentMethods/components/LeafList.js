@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Text, Link, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link as NavLink } from 'react-router-dom';
-import { Text, Link } from '@razorpay/blade/components';
-import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
-import lazy from 'merchant/routes/LazyLoader';
+
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import lazy from 'merchant/routes/LazyLoader';
+import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
+import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
 
 const Paypal = lazy(() =>
   import(
@@ -121,6 +123,10 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    if (Array.isArray(leafList.leafList)) {
+      return leafList.leafList.map((leafListItem) => renderLeafList(leafListItem));
+    }
+
     const list = leafList.list
       .filter((_) => {
         if (intermediateInstrument && intermediateInstrument.slug === 'netbanking') {
@@ -144,7 +150,9 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
     if (leafList?.slug === 'localcurrencytransfer')
       return (
         <SuspenseWithLoader>
-          <LocalWireTransfer leafList={leafList} />
+          <Box marginBottom="spacing.4">
+            <LocalWireTransfer leafList={leafList} />
+          </Box>
         </SuspenseWithLoader>
       );
     if (leafList?.slug === 'instantbanktransfer') {
@@ -190,12 +198,7 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
       className={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}
     >
       {instrument.leafList.map((leafList) => {
-        if (
-          (leafList.slug === 'localcurrencytransfer' || leafList.slug === 'swiftbanktransfer') &&
-          !user?.international
-        )
-          return null;
-        if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
+        if (isInternationalLeafItemDisabled({ leafList, user })) return null;
 
         function getDescription() {
           const description = leafList?.description;

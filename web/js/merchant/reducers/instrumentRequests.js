@@ -1,8 +1,9 @@
 import React from 'react';
-import lodashset from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
-import { merchantFetch } from 'merchant/utils/ajax';
+import lodashset from 'lodash/set';
+
 import { set } from 'common/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
@@ -947,39 +948,47 @@ export const initialState = {
           ],
         },
         {
-          header: 'Bank Transfers (International)',
-          listHeader: 'Local Currency Bank Transfer',
-          listDescription:
-            'Setup a local account in all locations mentioned below to accept international payments',
-          slug: 'localcurrencytransfer',
-          list: [
+          header: 'MoneySaver Export Account',
+          listHeader: '',
+          listDescription: '',
+          slug: 'moneysaverexportaccount',
+          leafList: [
             {
-              name: 'USD Bank Account',
-              description: 'Accept payments via ACH transfer',
-              message:
-                'Share the below details with your US customers to accept USD payments via ACH transfer',
-              vaCurrency: 'USD',
-              status: 'greyed',
-              slug: 'international.usd',
-              icon: 'https://cdn.razorpay.com/static/assets/instrument-request/usd.svg',
+              header: '',
+              listHeader: 'Local Currency Bank Transfer',
+              listDescription:
+                'Setup a local account in all locations mentioned below to accept international payments',
+              slug: 'localcurrencytransfer',
+              list: [
+                {
+                  name: 'USD Bank Account',
+                  description: 'Accept payments via ACH transfer',
+                  message:
+                    'Share the below details with your US customers to accept USD payments via ACH transfer',
+                  vaCurrency: 'USD',
+                  status: 'greyed',
+                  slug: 'international.usd',
+                  icon: 'https://cdn.razorpay.com/static/assets/instrument-request/usd.svg',
+                },
+              ],
             },
-          ],
-        },
-        {
-          header: 'SWIFT Transfers (International)',
-          listHeader: 'International Money Transfer',
-          listDescription: 'Set up a SWIFT account to accept payments in various currencies',
-          slug: 'swiftbanktransfer',
-          list: [
             {
-              name: 'SWIFT Account',
-              description: 'Accept payments in more than 30 currencies',
-              message:
-                'Share the below details with your international customers to receive payments in various currencies',
-              vaCurrency: 'SWIFT',
-              status: 'greyed',
-              slug: 'international.swift',
-              icon: 'https://cdn.razorpay.com/static/assets/instrument-request/swift.svg',
+              header: '',
+              listHeader: 'International Bank Transfer',
+              listDescription: 'Set up a SWIFT account to accept payments in various currencies',
+              slug: 'swiftbanktransfer',
+              list: [
+                {
+                  name: 'SWIFT Account',
+                  description: 'Accept payments in more than 30 currencies',
+                  message:
+                    'Share the below details with your international customers to receive payments in various currencies',
+                  vaCurrency: 'SWIFT',
+                  status: 'greyed',
+                  slug: 'international.swift',
+                  icon: 'https://cdn.razorpay.com/static/assets/instrument-request/swift.svg',
+                },
+              ],
             },
           ],
         },

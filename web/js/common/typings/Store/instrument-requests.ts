@@ -1,5 +1,5 @@
-import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import User from 'common/typings/User';
+import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 
 export type CommonInstrumentRequestInfo = {
   created_at: number;
@@ -20,6 +20,7 @@ export type LeafListItem = {
   listDescription?: string;
   listHeader?: string;
   slug?: string;
+  leafList?: LeafListItem[];
 };
 
 export type InstrumentListItem = CommonInstrumentRequestInfo & {

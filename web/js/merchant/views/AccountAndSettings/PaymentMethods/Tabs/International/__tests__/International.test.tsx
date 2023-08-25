@@ -1,3 +1,7 @@
+import React from 'react';
+
+import { initialState as instrumentRequestInitialState } from 'merchant/reducers/instrumentRequests';
+import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import International from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International';
 import {
   getProductStatusHandler,
@@ -6,11 +10,8 @@ import {
   fetchUserFeatures,
   fetchUser,
 } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/__tests__/mocks/handlers';
-import { errorHandlers, render, screen, server, waitFor } from 'test-utils';
-import React from 'react';
-import { initialState as instrumentRequestInitialState } from 'merchant/reducers/instrumentRequests';
-import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
+import { errorHandlers, render, screen, server, waitFor } from 'test-utils';
 
 jest.mock(
   'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards',
@@ -124,9 +125,14 @@ describe('International', () => {
     await waitFor(() => {
       expect(screen.getByTestId('international-cards')).toBeInTheDocument();
     });
-    expect(screen.getAllByTestId('leaf-list-item')).toHaveLength(
-      instrumentRequestInitialState.pg[6].leafList.length,
-    );
+
+    // combine all leafList items
+    const totalLeafList =
+      instrumentRequestInitialState.pg[6].leafList.length +
+      instrumentRequestInitialState.pg[6].leafList.find((item) => item.leafList).leafList.length -
+      1;
+
+    expect(screen.getAllByTestId('leaf-list-item')).toHaveLength(totalLeafList);
 
     expect(screen.getByTestId('paypal')).toBeInTheDocument();
     expect(screen.getByText(/Paypal name: Paypal/i)).toBeInTheDocument();
