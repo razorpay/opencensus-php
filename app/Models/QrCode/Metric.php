@@ -10,6 +10,7 @@ class Metric extends Base\Core
 {
     const QR_CODE_CREATE_SUCCESS = 'qr_code_create_success';
     const QR_CODE_CREATE_FAILED  = 'qr_code_create_failed';
+    const QR_CODE_CREATE_LATENCY = 'qr_code_create_latency';
     const QR_CODE_CLOSE_SUCCESS  = 'qr_code_close_success';
     const QR_CODE_CLOSE_FAILED   = 'qr_code_close_failed';
 
@@ -18,6 +19,8 @@ class Metric extends Base\Core
     const LABEL_ERROR_MESSAGE = 'error_message';
     const LABEL_PROVIDER      = 'provider';
     const LABEL_USAGE_TYPE    = 'usage_type';
+    const LABEL_GATEWAY       = 'gateway';
+
     const LABEL_REQUEST_SOURCE = 'request_source';
 
     protected function getDefaultDimensions($requestSource): array
@@ -48,6 +51,7 @@ class Metric extends Base\Core
             Metric::LABEL_USAGE_TYPE    => $input[Entity::REQ_USAGE_TYPE],
             Metric::LABEL_ERROR_MESSAGE => ($errorMessage === null) ? $errorMessage : substr($errorMessage, 0, 100),
             self::LABEL_REQUEST_SOURCE  => $requestSource,
+            self::LABEL_GATEWAY         => $input[Entity::GATEWAY],
         ];
 
         $metric = Metric::QR_CODE_CREATE_SUCCESS;
@@ -61,6 +65,21 @@ class Metric extends Base\Core
             $metric,
             array_merge($customDimensions, $dimensions)
         );
+    }
+
+    public function pushCreateLatencyMetrics($input, $startTimeMs)
+    {
+        $processingTimeMs = (microtime(true) * 1000) - $startTimeMs;
+
+        $requestSource = $input[Entity::REQUEST_SOURCE] ?? null;
+
+        $dimensions = [
+            self::LABEL_REQUEST_SOURCE  => $requestSource,
+            Metric::LABEL_PROVIDER      => $input[Entity::REQ_PROVIDER],
+            self::LABEL_GATEWAY         => $input[Entity::GATEWAY],
+        ];
+
+        $this->trace->histogram(self::QR_CODE_CREATE_LATENCY, $processingTimeMs, $dimensions);
     }
 
     public function pushCloseMetrics($closeReason, $errorMessage, $requestSource)

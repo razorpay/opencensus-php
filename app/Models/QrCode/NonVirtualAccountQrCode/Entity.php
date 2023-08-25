@@ -36,6 +36,7 @@ class Entity extends QrCode\Entity
     const RESP_IMAGE_CONTENT           = 'image_content';
     const TAX_INVOICE                  = 'tax_invoice';
     const REQUEST_SOURCE               = 'request_source';
+    const GATEWAY                      = 'gateway';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -387,5 +388,18 @@ class Entity extends QrCode\Entity
     public function getClosedAt()
     {
         return $this->getAttribute(self::CLOSED_AT);
+    }
+
+    public function getGatewayFromQrString()
+    {
+        $qrString = $this->getQrString();
+
+        $parsedQrString = [];
+
+        parse_str(parse_url($qrString)['query'], $parsedQrString);
+
+        $vpa = (explode("@", $parsedQrString['pa']));
+
+        return 'upi_' . $vpa[1];
     }
 }

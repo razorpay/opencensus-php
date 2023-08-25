@@ -36,9 +36,15 @@ class Service extends QrCode\Service
 
     public function create($input, $virtualAccount = null)
     {
+        $startTimeMs = microtime(true) * 1000;
+
         $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, $input);
 
         $errorMessage = null;
+
+        $gateway = null;
+
+        $metric = new Metric();
 
         try
         {
@@ -55,6 +61,9 @@ class Service extends QrCode\Service
 
             $this->publishQrCodeEvent($qrCode, Event::CREATED);
 
+            $gateway = $qrCode->getGatewayFromQrString();
+
+            $input[Entity::GATEWAY] = $gateway;
         }
         catch (\Exception $ex)
         {
@@ -66,12 +75,14 @@ class Service extends QrCode\Service
         }
         finally
         {
-            (new Metric())->pushCreateMetrics($input, $errorMessage);
+            $metric->pushCreateMetrics($input, $errorMessage);
         }
 
         $this->handleReminderForQrCode($qrCode);
 
         $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
+
+        $metric->pushCreateLatencyMetrics($input, $startTimeMs);
 
         return $qrCode->toArrayPublic();
     }

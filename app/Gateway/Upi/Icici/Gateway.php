@@ -780,6 +780,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['request' => $request]);
 
+        $this->action = Action::INTENT_QR;
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['response' => $response]);
