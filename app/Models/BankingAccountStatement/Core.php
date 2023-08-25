@@ -547,7 +547,8 @@ class Core extends Base\Core
                     return [$fetchMore, $paginationKey, $bankTransactions, $mismatchAmountFound];
                 },
                 300,
-                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+                1
             );
         }
         catch (Exception\BadRequestException $e)
@@ -1882,8 +1883,9 @@ class Core extends Base\Core
                     ]);
             },
             30,
-            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
-        );
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS,
+            2
+        ); // Retries added as async balance update might have taken mutex, which would result in failure.
     }
 
     public function releaseBasDetailsFromStatementFix(string $accountNumber, string $channel)
@@ -1919,8 +1921,9 @@ class Core extends Base\Core
                     ]);
             },
             30,
-            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
-        );
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS,
+            2
+        ); // Retries added as async balance update might have taken mutex, which would result in failure.
     }
 
     protected function updateBasDetailsEntityConsideringMissingStatements(
@@ -1965,8 +1968,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($basDetailEntity);
             },
             30,
-            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
-        );
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS,
+            2
+        ); // Retries added as async balance update might have taken mutex, which would result in failure.
     }
 
     public function getMissingRecordsFromRedisForAccount(string $accountNumber, string $channel, string $merchantId)

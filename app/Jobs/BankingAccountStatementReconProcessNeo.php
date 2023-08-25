@@ -56,10 +56,8 @@ class BankingAccountStatementReconProcessNeo extends Job
         try
         {
             $BasService->insertMissingStatementsAndProcessNeo($this->params);
-
-            $this->delete();
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $this->trace->traceException(
                 $exception,
@@ -68,8 +66,8 @@ class BankingAccountStatementReconProcessNeo extends Job
                 [
                     'params' => $this->params,
                 ]);
-
-            $this->delete();
         }
+
+        $this->delete();
     }
 }

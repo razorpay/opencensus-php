@@ -77,10 +77,8 @@ class BankingAccountStatementUpdate extends Job
 
             $this->trace->histogram(
                 BAS\Metric::BAS_UPDATE_COMPLETED_DURATION_SECONDS, $workerCompletionTotalTime, $dimensions);
-
-            $this->delete();
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $this->trace->traceException(
                 $exception,
@@ -96,8 +94,8 @@ class BankingAccountStatementUpdate extends Job
 
             //store the current params where update failed so it can be replayed.
             $BASCore->storeFailedUpdateParamsInRedis($this->params);
-
-            $this->delete();
         }
+
+        $this->delete();
     }
 }
