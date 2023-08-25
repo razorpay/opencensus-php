@@ -144,10 +144,17 @@ class Repository extends Base\Repository
 
     public function fetchPayoutWithExpands(string $id, array $expands)
     {
-        return $this->newQuery()
-                    ->with($expands)
-                    ->where(Entity::ID, $id)
-                    ->first();
+        $payout = $this->newQuery()
+                       ->with($expands)
+                       ->where(Entity::ID, $id)
+                       ->first();
+
+        if (empty($payout) === true)
+        {
+            $payout = (new DualWrite\Payout())->getAPIPayoutFromPayoutService($id);
+        }
+
+        return $payout;
     }
 
     public function fetchFromUtr($utr, $amount, $balanceId)

@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use RZP\Models\Feature;
+use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -424,6 +426,60 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($response['source']['entity']);
         $this->assertNotEmpty($response['source']['amount']);
         $this->assertEquals($response['source']['id'], $payoutCreated->getPublicId());
+    }
+
+    public function testFetchStatementFromLedgerWithPayoutFromPayoutService()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->createPayout(['id' => 'payout00000001']);
+
+        (new PayoutServiceDataMigration('test', [
+            'from'                  => $this->payout[Entity::CREATED_AT],
+            'to'                    => $this->payout[Entity::CREATED_AT],
+            'balance_id'            => $this->payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = 'payout00000001'")[0];
+
+        $this->assertEquals($this->payout[Entity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'payout00000001', [
+            'id'             => 'payout00000002',
+            'transaction_id' => 'txn00000000002'
+        ]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+        $payoutCreated = $this->getDbLastEntity('payout');
+
+        $testData = $this->testData['testFetchStatementForPayoutFromLedger'];
+
+        $testData['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->create('banking_account', [
+            'id'                    => 'JLcwWU3SsZ7byJ',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->ba->privateAuth();
+        $response = $this->startTest($testData);
+
+        // Asserts other keys existence in response.
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['created_at']);
+        $this->assertNotEmpty($response['source']['id']);
+        $this->assertNotEmpty($response['source']['entity']);
+        $this->assertNotEmpty($response['source']['amount']);
+        $this->assertEquals($response['source']['id'], $this->payout->getPublicId());
     }
 
     public function testFetchStatementForFailedFavFromLedger()
