@@ -28,12 +28,12 @@ describe('Payment Link', () => {
    * @param {*} props = {}
    * @return <PaymentLink /> index file
    */
-  const renderApp = ({ props } = {}) => {
+  const renderApp = ({ props, state } = {}) => {
     return render(<PaymentLink {...defaultProps} {...props} />, {
       showModal: true,
       initialState: {
         session: {
-          user: paymentLinkStoreConfiguration,
+          user: { ...paymentLinkStoreConfiguration, ...state },
         },
       },
       historyOptions: { initialEntries: ['/paymentlinks'] },
@@ -79,7 +79,7 @@ describe('Payment Link', () => {
     render(<PaymentLink />, {
       initialState: {
         session: {
-          user: { isOrgAxis: true },
+          user: { isOrgAxis: true, findTag: jest.fn(() => false) },
           org: {
             custom_code: 'rzp',
           },
@@ -94,6 +94,15 @@ describe('Payment Link', () => {
     renderApp();
     await waitFor(() => {
       expect(screen.getByText('Send Payment Links Faster with the Mobile App')).toBeInTheDocument();
+    });
+  });
+
+  test('should not load mobile pop up for i18n orgs', async () => {
+    renderApp({ props: {}, state: { findTag: () => true } });
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Send Payment Links Faster with the Mobile App'),
+      ).not.toBeInTheDocument();
     });
   });
 });

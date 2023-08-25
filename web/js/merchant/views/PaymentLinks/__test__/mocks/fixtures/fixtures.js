@@ -81,6 +81,7 @@ export const paymentLinkStoreConfiguration = {
   isPLBatchUploadEnabled: jest.fn(mockFn),
   isPaymentLinkBatchEnabledForSellerAppRole: jest.fn(() => true),
   isPaymentlinksV2Enabled: true,
+  findTag: jest.fn(() => false),
 };
 
 export const defaultProps = {

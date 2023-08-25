@@ -70,4 +70,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   FundAccount: 'i18_hide_fund_account',
   Order: 'i18_hide_order',
   Payment: 'i18_hide_payment',
+  HideRzpAppPopup: 'i18_hide_rzp_app_popup',
 };

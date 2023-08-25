@@ -3,6 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
 
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
@@ -205,6 +206,7 @@ class PaymentLinksContainer extends React.Component {
         </ErrorBoundary>
 
         {this.state.showPopup &&
+          !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.HideRzpAppPopup) &&
           activation_status === 'activated' &&
           (role === 'owner' || role === 'admin' || role === 'manager' || role === 'operations') &&
           this.showMobilePopup()}
