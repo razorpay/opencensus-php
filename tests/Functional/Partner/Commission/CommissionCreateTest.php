@@ -372,6 +372,44 @@ class CommissionCreateTest extends TestCase
     }
 
     /**
+     * Test bulk commission reversal incase of full refund
+     */
+    public function testBulkImplicitCommissionFullRefund()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        // make request for refund for the payment
+        $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
+
+        $response = $this->bulkReverseCommissionForRefund($payment['id'], $payment['amount']);
+        $refundCommissions = $this->getCommissionsBySourceId('RandomRefundId')->toArray();
+        $this->assertCount(1, $refundCommissions);
+
+        // credit in commission should be equal to debit in refund commission
+        $this->assertEquals($commissions[0]['credit'], $refundCommissions[1]['debit']);
+    }
+
+    /**
      * Test commission reversal incase of partial refund
      */
     public function testImplicitCommissionPartialRefund()
@@ -584,6 +622,39 @@ class CommissionCreateTest extends TestCase
             $this->mockSplitzTreatment($input, $output);
         }
         $this->ba->scroogeAuth();
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    private function bulkReverseCommissionForRefund(string $paymentId, string $amount, bool $withExperiment = true)
+    {
+        $request = [
+            'url' => '/commissions/payment/refund/bulk',
+            'method' => 'post',
+            'content' => [
+                'refunds' => [[
+                    'refund_amount' => $amount,
+                    'payment_id'    => substr($paymentId, 4),
+                    'refund_id'     => 'RandomRefundId',
+                ]]
+            ],
+        ];
+        $input = [
+            "experiment_id" => "MLi1iSjDQwvcnl",
+            "id"            => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        if($withExperiment)
+        {
+            $this->mockSplitzTreatment($input, $output);
+        }
+        $this->ba->privateAuth();
         return $this->makeRequestAndGetContent($request);
     }
 

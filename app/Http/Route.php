@@ -3223,6 +3223,7 @@ class Route
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
         'commissions_reversal_for_refund'          => ['post',     'commissions/payment/refund',                     'CommissionController@reverseCommissionForRefund'                   ],
+        'bulk_commissions_reversal_for_refund'     => ['post',     'commissions/payment/refund/bulk',                'CommissionController@bulkReverseCommissionForRefund'                   ],
 
 
         'commissions_invoice_fetch_all'            => ['get',      'commissions/invoice/fetch/bulk',                 'CommissionInvoiceController@fetchBulk'                             ],
@@ -4745,6 +4746,7 @@ class Route
         'internal_migrate_reseller_to_aggregator',
         'internal_migrate_aggregator_to_reseller',
         'partner_remove_switch_merchant_access',
+        'bulk_commissions_reversal_for_refund',
         'qr_configs_create',
         'qr_configs_fetch',
         'qr_configs_delete',

@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Models\Partner\Commission\Core as CommissionCore;
 
@@ -58,6 +59,41 @@ class Service extends Base\Service
         $this->core()->reverseCommissionForRefund($paymentId, $refundId, $refundAmount);
         return ['success' => true];
     }
+
+    /**
+     * This route is used to refund commissions in bulk,
+     * currently this is a private auth route being used for migration.
+     *
+     * @param array $input
+     *
+     * @return array[]
+     */
+    public function bulkReverseCommissionForRefund(array $input)
+    {
+        $successIds =[];
+        $failedIds = [];
+        forEach($input['refunds'] as $refund)
+        {
+            $paymentId    = $refund[Constants::PAYMENT_ID];
+            $refundId     = $refund[Constants::REFUND_ID];
+            $refundAmount = $refund[Constants::REFUND_AMOUNT];
+            try
+            {
+                $this->core()->reverseCommissionForRefund($paymentId, $refundId, $refundAmount);
+                $successIds[] = $refundId;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e,Trace::ERROR, TraceCode::BULK_COMMISSION_FOR_REFUND_PUSH_ERROR,[
+                    'refundId' => $refundId
+                ]);
+                $failedIds[] = $refundId;
+            }
+        }
+
+        return ['success_ids' => $successIds, 'failed_ids' => $failedIds];
+    }
+
     public function captureByPartner(string $partnerId): int
     {
         $partner = $this->repo->merchant->findOrFailPublic($partnerId);
