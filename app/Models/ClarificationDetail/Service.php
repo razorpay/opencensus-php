@@ -72,9 +72,24 @@ class Service extends Base\Service
 
             if ($shouldMerchantOnboardViaPGOS === true) {
 
-                $pgosInput['clarification_reasons'] = $input['clarification_reasons'];
+                $pgosInput[DEntity::CLARIFICATION_REASONS] = $input[DEntity::CLARIFICATION_REASONS];
                 $pgosInput['merchant_id'] = $merchantId;
                 $pgosInput['admin_email'] = $this->app['basicauth']->getAdmin()->getEmail();
+
+                foreach ($pgosInput[DEntity::CLARIFICATION_REASONS] as &$clarificationReason)
+                {
+                    if(isset($clarificationReason[Constants::FIELD_DETAILS]) === true)
+                    {
+                        foreach ($clarificationReason[Constants::FIELD_DETAILS] as $key => $value)
+                        {
+                            if(empty($value) === true)
+                            {
+                                // setting this because proto doesn't allow null values for string
+                                $clarificationReason[Constants::FIELD_DETAILS][$key] = "NOT_AVAILABLE";
+                            }
+                        }
+                    }
+                }
 
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
 

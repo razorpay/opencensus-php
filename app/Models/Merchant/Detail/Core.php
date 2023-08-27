@@ -505,9 +505,18 @@ class Core extends Base\Core
             // If activation status changes to under_review and previous activation status is
             // Needs Clarification, then it means merchant has responded to Needs Clarification.
             // If merchant is NC responded then we want to trigger activation workflow
+            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
+
+            $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [
+                "oldActivationStatus"  => $oldActivationStatus,
+                "newActivationStatus"  => $merchantDetails->getActivationStatus(),
+            ]);
+
             if ($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()) === true)
             {
-                $this->triggerNeedsClarificationRespondedWorkflow($merchant, $merchantDetails);
+                // We are explicitly setting maker type as merchant since this request is coming from pgos
+                // therefore merchantAuth is not set. Setting it explicitly will ensure maker type is set as merchant
+                $this->triggerNeedsClarificationRespondedWorkflow($merchant, $merchantDetails, MakerType::MERCHANT);
             }
         }
 
@@ -1042,7 +1051,7 @@ class Core extends Base\Core
         return $latestStatusData;
     }
 
-    private function triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails)
+    private function triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails, $makerType = null)
     {
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
@@ -1084,6 +1093,11 @@ class Core extends Base\Core
             ->setEntity($merchant->merchantDetail->getEntity())
             ->setOriginal($oldMerchantDetails)
             ->setDirty($merchant->merchantDetail);
+
+        if (empty($makerType) === false)
+        {
+            $this->app['workflow']->setWorkflowMakerType($makerType);
+        }
 
         try
         {
