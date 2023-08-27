@@ -144,4 +144,24 @@ class NotifyData
             'external_trace_id' => '',
         ];
     }
+
+    public function payu($entities) {
+        return [
+            "data" => [
+                "_id"=> null,
+                "action"=> "MANDATE_PRE_DEBIT",
+                "afa_status"=> "na",
+                "invoice_id"=> "invoice_1",
+                "invoice_status"=> "unpaid",
+                "mandate_status"=> 1,
+                "message"=> "Invoice Created Successfully",
+                "notify_action"=> $entities['notify_action'],
+                "status"=> "pre_debit_notification_successful"
+            ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+    }
 }

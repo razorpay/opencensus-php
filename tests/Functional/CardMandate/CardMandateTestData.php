@@ -388,6 +388,17 @@ return [
         ],
     ],
 
+    'testPayuCreateCardMandateAutoPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateCardMandateAutoPaymentDuplicateNotificationDeliveryCallback' => [
         'request' => [
             'content' => [
@@ -425,6 +436,45 @@ return [
         ],
     ],
     'testCreateRupaySICardMandatePaymentWithAuthLink' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'amount'      => 50000,
+                'receipt'     => '00000000000001',
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'card',
+                    'max_amount' => 123400,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'amount'       => 50000,
+                'currency'     => 'INR',
+                'type'         => 'link',
+            ],
+        ],
+    ],
+    'testCreatePayuCardMandatePaymentWithAuthLink' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',
             'method'  => 'post',

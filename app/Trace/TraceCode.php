@@ -6778,6 +6778,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_MANDATE_PAYMENT_SUBSEQUENT_REPORT                = 'CARD_MANDATE_PAYMENT_SUBSEQUENT_REPORT';
     const CARD_RECURRING_METRIC_PUSH_FAILED                     = 'CARD_RECURRING_METRIC_PUSH_FAILED';
     const CARD_MANDATE_SIHUB_TOKEN_UPDATE_FAILED                = 'CARD_MANDATE_SIHUB_TOKEN_UPDATE_FAILED';
+    const OPTIMIZER_CARD_MANDATE_TERMINAL_LOG                   = 'OPTIMIZER_CARD_MANDATE_TERMINAL_LOG';
 
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';

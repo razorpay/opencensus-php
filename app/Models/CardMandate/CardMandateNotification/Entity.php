@@ -206,6 +206,10 @@ class Entity extends Base\PublicEntity
             {
                 $time->addDay()->addHours(12)->addMinutes(5);
             }
+            else if ($mandateHub === MandateHubs\MandateHubs::PAYU_HUB){
+                $time->addDay()->addMinutes(5);
+                //$time->addDays(5);
+            }
             else {
                 $time->addDay()->addMinutes(5);
             }

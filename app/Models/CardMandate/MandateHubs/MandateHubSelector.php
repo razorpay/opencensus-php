@@ -31,7 +31,7 @@ class MandateHubSelector extends Base\Core
             case MandateHubs::BILLDESK_SIHUB:
                 return (new BillDeskSIHub\BillDeskSIHub);
             case MandateHubs::PAYU_HUB:
-                return (new PayuHub\PayuHub);
+                return (new OptimizerHubs\PayuHub\PayuHub);
             default:
                 return (new MandateHQ\MandateHQ);
         }

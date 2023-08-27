@@ -2072,9 +2072,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY      => Action::PAY_VERIFY,
             ],
             Payment\Gateway::PAYU => [
-                Action::PAY_INIT      => null,
-                Action::PAY_VERIFY    => null,
-                Action::VERIFY        => null,
+                Action::PAY_INIT       => null,
+                Action::PAY_VERIFY     => null,
+                Action::VERIFY         => null,
+                Action::CHECK_BIN      => null,
+                Action::MANDATE_VERIFY => null,
             ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT   => null,
@@ -2203,9 +2205,6 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY          => null,
                 Action::MANDATE_REVOKE      => null,
                 Action::UPDATE_TOKEN        => null,
-            ],
-            Payment\Gateway::PAYU => [
-                Action::CHECK_BIN => null
             ],
             Payment\Gateway::OPTIMIZER_RAZORPAY => [
                 Action::PAY_INIT      => null,
@@ -2359,9 +2358,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND   => null,
             ],
             Payment\Gateway::PAYU => [
-                Action::PAY_INIT      => null,
-                Action::PAY_VERIFY    => null,
-                Action::VERIFY        => null,
+                Action::PAY_INIT       => null,
+                Action::PAY_VERIFY     => null,
+                Action::VERIFY         => null,
+                Action::CHECK_BIN      => null,
+                Action::MANDATE_VERIFY => null,
             ],
             Payment\Gateway::CRED       =>  [
                 Action::PAY_INIT        => null,
@@ -3699,15 +3700,4 @@ class Gateway extends Base\Gateway
         return $res;
     }
 
-    // Gets BIN information from gateway. Requires, payment, terminal and card entity.
-    // Takes gateway from payment.gateway, IIN from card.iin, and terminal secrets
-    public function checkBin($input): array
-    {
-        parent::action($input, Action::CHECK_BIN);
-
-        list($response) = $this->sendMozartRequestAndGetResponse($input, TraceCode::GATEWAY_CHECK_BIN_REQUEST,
-            TraceCode::GATEWAY_CHECK_BIN_RESPONSE, true);
-
-        return $response;
-    }
 }

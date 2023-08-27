@@ -13,28 +13,32 @@ class CardPaymentService extends BaseCardPaymentService
     {
         return $content;
     }
-    
+
     public function action(string $gateway, string $action, array $input): array
     {
         if ($action === 'fail') {
             $this->throwServiceErrorException(new BaseException('timed out or something'));
         }
-        
+
         if ($action === 'authorize' && $gateway === 'payu') {
+            if ($input['payment']['recurring_type'] === 'auto'){
+                // auto recurring payments are s2s, so returning callback mock
+                return $this->payS2sMock($input);
+            }
             return $this->payuAuthorizeMock($input);
         }
-        
+
         if ($action === 'callback' && $gateway === 'payu') {
             return $this->payuCallbackMock($input);
         }
-        
+
         if ($action === 'authorize_failed' && $gateway === 'payu') {
             return $this->payuVerifyMock($input);
         }
-        
+
         return $input;
     }
-    
+
     protected function payuAuthorizeMock(array $input)
     {
         return [
@@ -68,7 +72,7 @@ class CardPaymentService extends BaseCardPaymentService
             "status_code" => 200
         ];
     }
-    
+
     protected function payuCallbackMock(array $input)
     {
         return [
@@ -91,7 +95,24 @@ class CardPaymentService extends BaseCardPaymentService
             "status_code" => 200
         ];
     }
-    
+
+    protected function payS2sMock(array $input)
+    {
+        return [
+            "data" =>
+                [
+                    "acquirer" => [
+                        "reference2" => "",
+                    ]
+                ],
+            "payment" => [
+                "two_factor_auth" => "unknown",
+            ],
+            "success" => true,
+            "status_code" => 200
+        ];
+    }
+
     protected function payuVerifyMock(array $input)
     {
         return [
@@ -144,6 +165,7 @@ class CardPaymentService extends BaseCardPaymentService
                 Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
                 Constants::NETWORK_TRANSACTION_ID    => '0392166726767771',
                 Constants::GATEWAY_REFERENCE_ID2     => '6584842357886332606090',
+                Constants::GATEWAY_REFERENCE_ID1     => '123456789',
             ];
 
             $response = [];

@@ -2863,5 +2863,119 @@ class CardMandateTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('captured', $payment->getStatus());
     }
+
+    public function testCreatePayuCardMandatePaymentWithAuthLink()
+    {
+
+        $this->ba->proxyAuth();
+
+        // will create subscription registration based on testdata
+        $this->startTest();
+        // fetch order created by subscription registration
+        $order = $this->getDbLastEntity('order');
+
+        $terminal = $this->fixtures->create('terminal:payu_card_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        // Set the order created by subscription registration
+        $request['content']['order_id'] = $order->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setMockRazorxTreatment(['allow_optimizer_card_mandate_hub' => 'on']);
+
+        // Mock/CardPaymentService will be used. As per that gateway_reference_id1 is 123456789
+        $this->enableCpsConfig();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertEquals('payu', $payment->getGateway());
+        $this->assertNotNull($payment->getTokenId());
+
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals(123400, $token->getMaxAmount());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('payu', $cardMandate->getMandateHub());
+        $this->assertEquals('123456789', $cardMandate->getMandateId());
+        $this->assertEquals(123400, $cardMandate->getMaxAmount());
+
+        $this->fixtures->merchant->removeFeatures(['raas', 'allow_force_terminal_id']);
+        $this->disbaleCpsConfig();
+    }
+
+    public function testPayuCreateCardMandateAutoPayment()
+    {
+        $this->enableCpsConfig();
+
+        $this->testCreatePayuCardMandatePaymentWithAuthLink();
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('invoice_1', $cardMandateNotification->notification_id);
+        $this->assertNotNull($cardMandateNotification->reminder_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
+        $this->ba->reminderAppAuth();
+        $this->enableCpsConfig();
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->disbaleCpsConfig();
+    }
+
+
 }
 

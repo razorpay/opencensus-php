@@ -13,42 +13,54 @@ use RZP\Models\CardMandate;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\Feature;
+use RZP\Models\CardMandate\MandateHubs\OptimizerHubs;
 
 class MandateHubTerminalSelector extends Base\Core
 {
 
-    Use OptimizerHubSelector;
+    Use OptimizerHubs\OptimizerHubSelector;
 
     public function GetTerminalForPayment(Payment\Entity $payment, CardMandate\Entity $cardMandate)
     {
 
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
 
-            // We are enabling for select merchants based oon razorx
-            $variant = $this->app['razorx']->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::ALLOW_OPTIMIZER_CARD_MANDATE_HUB,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on')
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
-            }
-
-            // since Optimizer payment can go through RZP or external gateway, it is imperative to first select the
-            // payment authorization terminal, and then choose the corresponding mandate-hub
-            // As of Mar 2023, payment authorization terminal is selected before card mandate creation.
-            if ($payment->terminal == null) {
-
-                // TODO : explore if payment authorization terminal selection can be invoked here, if it is null
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
-            }
-
-            // For external gateways return optimizer specific mandate hub terminal. For RZP gateway optimizer payment,
-            // continue to regular mandate hub selection
+            // If gateway is not among optimizer card gateways, it should go via regular mandate hub selection
             if (in_array($payment->terminal->getGateway(), Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true)) {
-                return $this->GetOptimizerTerminal($payment, $cardMandate);
+
+                // We are enabling for select merchants based oon razorx
+                $variant = $this->app['razorx']->getTreatment(
+                    $payment->getMerchantId(),
+                    RazorxTreatment::ALLOW_OPTIMIZER_CARD_MANDATE_HUB,
+                    $this->mode
+                );
+
+                if (strtolower($variant) !== 'on')
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
+                }
+
+                // since Optimizer payment can go through RZP or external gateway, it is imperative to first select the
+                // payment authorization terminal, and then choose the corresponding mandate-hub
+                // As of Mar 2023, payment authorization terminal is selected before card mandate creation.
+                if ($payment->terminal == null) {
+                    // TODO : explore if payment authorization terminal selection can be invoked here, if it is null
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
+                }
+
+                // Return Optimizer hub accordingly
+                $finalTerminal = $this->GetOptimizerTerminal($payment, $cardMandate);
+
+                $this->trace->info(
+                    TraceCode::OPTIMIZER_CARD_MANDATE_TERMINAL_LOG,
+                    [
+                        'hub_terminal_id'     => $finalTerminal->getId(),
+                        'payment_id'          => $payment->getId(),
+                        'merchant_id'         => $payment->getMerchantId(),
+                    ]
+                );
+
+                return $finalTerminal;
             }
 
         }

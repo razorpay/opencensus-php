@@ -161,6 +161,21 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateRevokeObj, Action::MANDATE_REVOKE);
     }
 
+    public function mandateVerify($input)
+    {
+        $mandateVerifyObj = new MandateVerifyData();
+
+        return $this->processMockResponse($input, $mandateVerifyObj, Action::MANDATE_VERIFY);
+    }
+
+    public function checkBin($input)
+    {
+        $checkBinObj = new CheckBinData();
+
+        return $this->processMockResponse($input, $checkBinObj, Action::CHECK_BIN);
+
+    }
+
     public function callbackDecryption($input)
     {
         $callbackDecryptionObj = new CallbackDecryption();

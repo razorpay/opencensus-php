@@ -399,6 +399,9 @@ class Core extends Base\Core
 
         if ($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB) {
             $time->addDay();
+        } else if($cardMandate->getMandateHub() === MandateHubs\MandateHubs::PAYU_HUB) {
+            // as per payu docs it is 48 hrs before. But 24hrs should be fine for card mandates
+            $time->addDay();
         } else {
             if ($input[Payment\Entity::AMOUNT] > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
                 $time->addDays(3);

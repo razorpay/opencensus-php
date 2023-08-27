@@ -7908,8 +7908,41 @@ class Processor
 
         $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
 
-        if (isset($lateAuthConfig) === true)
-        {
+        if ($payment->hasSubscription() === true) {
+            // For subscriptions capture has been handled separately by subscriptions team
+            $optimizerAutoCaptureResponse['should_auto_capture'] = false;
+
+            $optimizerAutoCaptureResponse['reason'] = Constants::SUBSCRIPTION_PAYMENT;
+        } else if ($payment->isApiBasedEmandateAsyncPayment() === true) {
+            // For PayU, in case of registration payment,
+            // token confirmation will be sent via webhooks.
+            // Cannot auto capture until we know final status of token.
+            // For some banks, they will let us know the status in sync,
+            // for others they will give the final status in T+2 days via webhooks.
+            //
+            // In case of debit payment, final confirmation is received from webhooks.
+
+            $optimizerAutoCaptureResponse['should_auto_capture'] = false;
+
+            $optimizerAutoCaptureResponse['reason'] = Constants::API_BASED_EMANDATE_ASYNC_PAYMENT;
+
+        } else if ($payment->isCardMandateRecurringInitialPayment() === true) {
+            // For card mandate recurring initial payments, there is no point in not auto-capturing,
+            // customer will already get sms that standing instruction is created. So we have to auto-capture no matter
+            // how late it is.
+
+            $optimizerAutoCaptureResponse['should_auto_capture'] = true;
+
+            $optimizerAutoCaptureResponse['reason'] = Constants::OPTIMIZER_CARD_RECURRING_INITIAL_REGISTRATION_PAYMENT;
+
+        } else if ($payment->isCardAutoRecurring() === true) {
+            // For card recurring auto debits, we should auto capture irrespective of any late auth config.
+            // Because the call is s2s, no callbacks involved
+
+            $optimizerAutoCaptureResponse['should_auto_capture'] = true;
+
+            $optimizerAutoCaptureResponse['reason'] = Constants::OPTIMIZER_CARD_RECURRING_AUTO_DEBIT_PAYMENT;
+        } else if (isset($lateAuthConfig) === true) {
             $captureValue = $lateAuthConfig['capture'];
 
             $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
@@ -7929,20 +7962,19 @@ class Processor
             }
         }
 
-         if (empty($optimizerAutoCaptureResponse) === false)
-         {
-             $this->trace->info(
-                 TraceCode::OPTIMIZER_CAPTURE_SETTINGS_OVERRIDE,
-                 [
-                     'payment_id'                   => $payment->getId(),
-                     'merchant_id'                  => $payment->getMerchantId(),
-                     'optimizer_capture_response'   => $optimizerAutoCaptureResponse,
-                     'pg_capture_response'          => $captureResponse,
-                 ]);
+        if (empty($optimizerAutoCaptureResponse) === false) {
+            $this->trace->info(
+                TraceCode::OPTIMIZER_CAPTURE_SETTINGS_OVERRIDE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'merchant_id' => $payment->getMerchantId(),
+                    'optimizer_capture_response' => $optimizerAutoCaptureResponse,
+                    'pg_capture_response' => $captureResponse,
+                ]);
 
-             return $optimizerAutoCaptureResponse;
+            return $optimizerAutoCaptureResponse;
 
-         }
+        }
 
         return $captureResponse;
 

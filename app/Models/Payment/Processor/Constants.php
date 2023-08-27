@@ -111,6 +111,10 @@ class Constants
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';
     const OPTIMIZER_AUTO_CAPTURE_TIMEOUT_EXCEEDED   = 'Optimizer Auto Capture timeout exceeded';
 
+    const OPTIMIZER_CARD_RECURRING_AUTO_DEBIT_PAYMENT            = 'Optimizer Card Recurring Auto Debit Payment';
+    const OPTIMIZER_CARD_RECURRING_INITIAL_REGISTRATION_PAYMENT  = 'Optimizer Card Recurring Initial Registration Payment';
+
+
     // default time out for upi and card subsequent payment
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO = 2160;
 

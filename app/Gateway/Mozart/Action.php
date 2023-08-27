@@ -66,4 +66,6 @@ class Action
     const CHECK_BIN             = 'check_bin';
 
     const VALIDATE_VPA          = 'validate_vpa';
+
+    const MANDATE_VERIFY        = 'mandate_verify';
 }

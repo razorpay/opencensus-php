@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\CardMandate\MandateHubs;
+namespace RZP\Models\CardMandate\MandateHubs\OptimizerHubs;
 
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
@@ -34,16 +34,16 @@ trait OptimizerHubSelector
     // Checks if Payu supports recurring on BIN/IIN
     public function IsRecurringSupportedPayu(Payment\Entity $payment, CardMandate\Entity $cardMandate)
     {
-        $input['payment']['gateway'] = $payment->getGateway();
-        $input['terminal'] = $payment->terminal;
-        $input['card']['iin'] = $payment->card->iinRelation->getIin();
+        $input[Constants::PAYMENT][Constants::GATEWAY] = $payment->getGateway();
+        $input[Constants::TERMINAL] = $payment->terminal;
+        $input[Constants::CARD][Constants::IIN] = $payment->card->iinRelation->getIin();
+        $input[Constants::IS_OPTIMIZER_CARD_MANDATE] = true;
 
         $response = $this->app['gateway']->call(Entity::MOZART,
             Payment\Action::CHECK_BIN, $input, $this->mode);
 
-        if (empty($response['data']) == false && empty($response['data']['bin_data']) == false &&
-            empty($response['data']['bin_data']['is_si_supported']) == false) {
-            $result = $response['data']['bin_data']['is_si_supported'];
+        if (empty($response[Constants::DATA][Constants::BIN_DATA][Constants::IS_SI_SUPPORTED]) == false) {
+            $result = $response[Constants::DATA][Constants::BIN_DATA][Constants::IS_SI_SUPPORTED];
             if ($result == 1) {
                 return true;
             }
