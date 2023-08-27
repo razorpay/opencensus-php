@@ -130,9 +130,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     // timeout in seconds
     const PATH_TIMEOUT_MAP = [
-        self::MERCHANT_ACTIVATION_SAVE      => 10,
+        self::MERCHANT_ACTIVATION_SAVE      => 15,
         self::MERCHANT_SIGN_UP              => 10,
-        self::MERCHANT_DOCUMENT_UPLOAD      => 10,
+        self::MERCHANT_DOCUMENT_UPLOAD      => 15,
         self::MERCHANT_DOCUMENT_DELETE      => 10,
         self::GET_MERCHANT_BMC_RESPONSE     => 10,
         self::SAVE_MERCHANT_BMC_RESPONSE    => 10,
@@ -159,7 +159,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->setDefaultTimeout(10);
+        $this->setDefaultTimeout(15);
 
         $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
 

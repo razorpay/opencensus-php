@@ -34,6 +34,11 @@ class WebsiteDetailTransformer extends Base\Transformer
                 "column" => 'app_urls.playstore_url'
             ]
         ],
+        'metadata.social_media_urls' => [
+            [
+                "column" => 'website_details.social_media_urls'
+            ]
+        ],
     ];
 
     public function __construct()

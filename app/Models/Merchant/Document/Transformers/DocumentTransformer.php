@@ -49,6 +49,11 @@ class DocumentTransformer extends Base\Transformer
                 "column" => 'upload_by_admin_id',
             ],
         ],
+        'metadata' => [
+            [
+                "column" => 'metadata',
+            ],
+        ]
     ];
 
     public function __construct()
