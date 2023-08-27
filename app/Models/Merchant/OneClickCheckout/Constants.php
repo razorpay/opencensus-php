@@ -42,7 +42,8 @@ class Constants
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
     const ONE_CC_COUPON_ENGINE             = "onc_cc_coupon_engine";
-
+    // Settings and workflows defined for retargeting engine.
+    const RETARGETING_SETTINGS             = "retargeting_settings";
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -170,6 +171,7 @@ class Constants
         self::COD_ENGINE,
         self::ONE_CC_PREPAY_COD_CONVERSION,
         self::ONE_CC_COUPON_ENGINE,
+        self::RETARGETING_SETTINGS,
     ];
 
     /**

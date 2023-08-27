@@ -59,4 +59,7 @@ class Type {
 
     //address sorting config
     const ONE_CC_ADDRESS_SORT_METHOD             = 'one_cc_address_sort_method';
+
+    // Settings and workflows defined for retargeting engine.
+    const RETARGETING_SETTINGS = "retargeting_settings";
 }

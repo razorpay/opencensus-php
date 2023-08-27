@@ -1027,6 +1027,15 @@ class Service extends Base\Service
                 $result[$key] = $value;
             }
         }
+
+        // Add retargeting settings if available. This is used by Magic Checkout Service
+        // to send whatsapp retargeting messages to customers.
+        if (in_array(Constants::RETARGETING_SETTINGS, $requestedKeys) === true)
+        {
+            $retargetingSettings = $this->getRetargetingSettings();
+            $result = array_merge($result, $retargetingSettings);
+        }
+
         return $result;
     }
 
@@ -1371,5 +1380,16 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    protected function getRetargetingSettings(): array
+    {
+        $settings = $this->merchant->get1ccConfig(Type::RETARGETING_SETTINGS);
+        $resp = null;
+        if ($settings !== null)
+        {
+            $resp = $settings->getValueJson();
+        }
+        return ['retargeting_settings' => $resp];
     }
 }
