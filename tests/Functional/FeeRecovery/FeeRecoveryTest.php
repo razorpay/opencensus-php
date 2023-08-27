@@ -692,6 +692,58 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($feeRecovery['type'], FeeRecovery\Type::DEBIT);
     }
 
+    public function testCreateFeeRecoveryPayoutForAsyncPayoutProcessingEnabledMerchant()
+    {
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
+        // Create first payout
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        $balanceId = $this->balance->getId();
+
+        $startTime = Carbon::create(2020, 1, 1, null, null, null)->getTimestamp();
+
+        $endTime   = Carbon::create(2020, 1, 8, null, null, null)->getTimestamp();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $balanceId,
+            'from'          => $startTime,
+            'to'            => $endTime,
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC_LP]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('create_request_submitted', $feeRecoveryPayout['internal_status']);
+
+        $this->assertNull($feeRecoveryPayout['create_request_submitted_at']);
+
+        $this->assertEquals('rzp_fees', $feeRecoveryPayout['purpose']);
+
+        $this->assertEquals('created', $feeRecoveryPayout['internal_status']);
+    }
+
     public function testFeeRecoveryPayoutCronNextAndLastRunUpdate()
     {
         Queue::fake();

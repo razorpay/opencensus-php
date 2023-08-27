@@ -86,6 +86,26 @@ return [
         ],
     ],
 
+    'testCreateFeeRecoveryPayoutForAsyncPayoutProcessingEnabledMerchant' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 590,
+                'currency'        => 'INR',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'processing',
+                'mode'            => 'IFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
     'testFeeRecoveryPayoutCron' => [
         'request'  => [
             'url'    => '/payouts/fee_recovery/process',

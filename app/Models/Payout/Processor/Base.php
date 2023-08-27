@@ -301,7 +301,8 @@ class Base extends BaseCore
                 return $payout;
             }
 
-            if ($payout->getQueuePayoutCreateRequest() === true)
+            if (($payout->getQueuePayoutCreateRequest() === true) and
+                ($payout->getPurpose() !== Payout\Purpose::RZP_FEES))
             {
                 $this->dispatchForPreCreatedPayouts($payout);
 
