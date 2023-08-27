@@ -201,7 +201,7 @@ class Base extends Core
         self::NETBANKING_CSB           => ['noreply@csb.co.in', 'donotreply@csb.co.in'],
         self::NETBANKING_CORPORATION   => ['ncbsfeba@corpbank.co.in'],
         self::NETBANKING_VIJAYA        => [], //TODO: add this value when shared post UAT
-        self::NETBANKING_BOB           => ['billpay@bankofbaroda.com'],
+        self::NETBANKING_BOB           => [],
         self::NETBANKING_HDFC          => [],
         self::NETBANKING_SBI           => ['donotreply.inb@sbi.co.in', "donotreply.inb@alerts.sbi.co.in", "kalpit.jain@razorpay.com"],
         self::NETBANKING_KVB           => ['atmcashtally@kvbmail.com', 'lakshmim@kvbmail.com'],
