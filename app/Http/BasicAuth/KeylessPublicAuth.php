@@ -179,19 +179,19 @@ final class KeylessPublicAuth
         $entityClass = E::getEntityClass($entity);
         $entityId    = $entityClass::verifyIdAndSilentlyStripSign($signedId);
 
-        if ($entity === E::ORDER)
+        if ($entity === E::ORDER || $entity === E::PAYMENT)
         {
             try
             {
-                $order = $this->repo->order->connection(Mode::LIVE)->findOrFail($entityId);
+                $entityData = $this->repo->$entity->connection(Mode::LIVE)->findOrFail($entityId);
 
-                return [Mode::LIVE, $order->merchant];
+                return [Mode::LIVE, $entityData->merchant];
             }
             catch (\Throwable $e)
             {
-                $order = $this->repo->order->connection(Mode::TEST)->findOrFail($entityId);
+                $entityData = $this->repo->$entity->connection(Mode::TEST)->findOrFail($entityId);
 
-                return [Mode::TEST, $order->merchant];
+                return [Mode::TEST, $entityData->merchant];
             }
         }
 
