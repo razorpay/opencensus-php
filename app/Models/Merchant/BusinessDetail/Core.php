@@ -291,6 +291,8 @@ class Core extends Base\Core
                 {
                     unset($data["merchant_id"]);
 
+                    $data[Entity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $data[Entity::WEBSITE_DETAILS]);
+
                     $businessDetail->edit($data);
 
                     $this->repo->saveOrFail($businessDetail);
