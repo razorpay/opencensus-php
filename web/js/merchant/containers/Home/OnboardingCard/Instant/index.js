@@ -11,6 +11,7 @@ import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import OnboardingPreview from 'assets/onboarding.svg';
 
 import ActivationStatusCard from './ActivationStatus';
 import ActivationStatusCardOld from './Activationstatus-old';
@@ -242,7 +243,14 @@ export default class OnboardingCardInstant extends Component {
             <div className="onboarding-illustration-top">
               <Image src={ImgTopBg} alt="Top" isWebP />
             </div>
-            <div className="onboarding-illustration" />
+            <div class="onboarding-illustration">
+              <img
+                src={OnboardingPreview}
+                alt="onboarding"
+                // eslint-disable-next-line react/no-unknown-property
+                fetchpriority="high"
+              />
+            </div>
             <div className="onboarding-illustration-bottom">
               <Image src={ImgBottomBg} alt="Bottom" isWebP />
             </div>

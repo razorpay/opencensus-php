@@ -233,7 +233,13 @@ export default class ProfileDropdown extends Component {
                     );
                   }}
                 >
-                  <img src={RTBUserIconBg} className="rtb-user-bg-img" alt="trust badge" />
+                  <img
+                    src={RTBUserIconBg}
+                    className="rtb-user-bg-img"
+                    alt="trust badge"
+                    // eslint-disable-next-line react/no-unknown-property
+                    fetchpriority="high"
+                  />
                   <i className="rtb-nav-icon" />
                   Hey, Trusted Business
                 </span>

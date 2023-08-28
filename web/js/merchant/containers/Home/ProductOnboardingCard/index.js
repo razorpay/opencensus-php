@@ -128,7 +128,11 @@ const ProductOnboardingCard = ({
           <img src={BottomBgImage} />
         </div>
         <div className="illustration-right">
-          <img src={OverviewImage} />
+          <img
+            src={OverviewImage}
+            // eslint-disable-next-line react/no-unknown-property
+            fetchpriority="high"
+          />
         </div>
         <p className="title">
           Congratulations {user.contact_name}! You can start collecting payments

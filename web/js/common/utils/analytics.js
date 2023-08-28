@@ -34,6 +34,7 @@ export const sendToLumberjack = ({ eventName, properties = {} }) => {
     headers: {
       'Content-Type': 'application/json',
     },
+    priority: 'low',
   }).catch((error) => {
     errorService.captureError(error, {
       tags: {
@@ -323,6 +324,7 @@ export const capturePrometheusMetric = ({ name, labels = {} }) => {
           accept: 'application/json',
           'Content-Type': 'text/plain',
         },
+        priority: 'low',
       }).catch(() => {
         // do nothing
       });

@@ -8,6 +8,7 @@ import ActivationStep from './ActivationStep';
 import Integration from './Integration';
 import { onBoardingItems, LIVE_MODE } from './data';
 import { trackWelcomeCTAClick, trackCloseOnboarding } from './ga';
+import OnboardingPreview from 'assets/onboarding.svg';
 
 @connect((state) => ({ ...state.session, config: state.config.config }))
 export default class OnboardingCard extends Component {
@@ -154,7 +155,14 @@ export default class OnboardingCard extends Component {
         <div className={`onboarding-card-wrapper-content${isFirstStep ? ' first-step' : ''}`}>
           <div class="media onboarding-card">
             {FirstStep}
-            <div class="onboarding-illustration" />
+            <div class="onboarding-illustration">
+              <img
+                src={OnboardingPreview}
+                alt="onboarding"
+                // eslint-disable-next-line react/no-unknown-property
+                fetchpriority="high"
+              />
+            </div>
             {(isFirstStep || (integrated && activated)) && (
               <a
                 onClick={isFirstStep ? this.gotoNextStep : (e) => this.closeOnboarding(e, true)}
