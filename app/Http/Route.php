@@ -678,6 +678,7 @@ class Route
         'fts_dashboard_bulk_status_get'                     => ['post',     'fts/dashboard/fund_transfer_status/bulk_get',                      'FTSController@getBulkStatus'                                       ],
         'fts_dashboard_new_channel_health_stats'            => ['get',      'fts/dashboard/new_channel_health_stats',                           'FTSController@getNewChannelHealthStats'                            ],
         'fts_dashboard_trigger_health_status'               => ['get',      'fts/dashboard/trigger_health_status',                              'FTSController@getTriggerHealthStatus'                              ],
+        'fts_dashboard_update_test_transaction_status'      => ['patch',    'fts/dashboard/test_transaction/status',                            'FTSController@updateTestTransactionStatus'                         ],
         'fts_dashboard_sa_mappings_create'                  => ['post',     'fts/dashboard/source_account_mappings',                            'FTSController@createSourceAccountMappings'                         ],
         'fts_dashboard_sa_mappings_delete'                  => ['delete',   'fts/dashboard/source_account_mappings',                            'FTSController@deleteSourceAccountMappings'                         ],
         'fts_dashboard_direct_account_routing_rules_get'    => ['get',      'fts/dashboard/direct_account_routing_rules',                       'FTSController@getDirectAccountRoutingRules'                        ],
@@ -8197,6 +8198,7 @@ class Route
         'delete_merchant_options_admin',
         'fts_dashboard_new_channel_health_stats',
         'fts_dashboard_trigger_health_status',
+        'fts_dashboard_update_test_transaction_status',
 
         //relay routes
         'relay_get_apps',
@@ -9691,6 +9693,7 @@ class Route
         'fts_dashboard_fetch_account_balance'               => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_new_channel_health_stats'            => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_trigger_health_status'               => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_update_test_transaction_status'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_sa_mappings_create'                  => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_sa_mappings_delete'                  => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_direct_account_routing_rules_create' => Permission::FTS_ROUTING_RULES_UPDATE,
@@ -13105,6 +13108,7 @@ class Route
             'fts_dashboard_bulk_status_get',
             'fts_dashboard_new_channel_health_stats',
             'fts_dashboard_trigger_health_status',
+            'fts_dashboard_update_test_transaction_status',
             'fts_dashboard_fund_transfer_check_status',
             'fts_dashboard_fund_transfer_status_bulk',
             'fts_dashboard_fund_transfer_update',

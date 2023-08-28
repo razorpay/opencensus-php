@@ -1558,6 +1558,16 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function updateTestTransactionStatus(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_UPDATE_TEST_TRANSACTION_STATUS,
+            Requests::PATCH,
+            $input);
+    }
+
     public function createSourceAccountMappings(array $input)
     {
         $this->setAdminHeader();

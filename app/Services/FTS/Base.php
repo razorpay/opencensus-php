@@ -128,6 +128,8 @@ class Base
 
     const FTS_TRIGGER_HEALTH_STATUS    = '/routing/trigger_health_status';
 
+    const FTS_UPDATE_TEST_TRANSACTION_STATUS   = '/channel_health_events/test_transaction/status';
+
     const FTS_FAIL_FAST_STATUS_MANUAL_UPDATE = '/channel_health_events/fail_fast_status/manual_update';
 
     const FTS_KEY_VALUE_STORE_LOGS_GET_URL = '/key_value_store/logs';

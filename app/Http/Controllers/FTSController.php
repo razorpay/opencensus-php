@@ -85,6 +85,13 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateTestTransactionStatus()
+    {
+        $response = $this->app['fts_fund_transfer']->getTriggerStatus($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createSourceAccountMappings()
     {
         $response = $this->app['fts_fund_transfer']->createSourceAccountMappings($this->input);
