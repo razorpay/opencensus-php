@@ -15,4 +15,7 @@ final class Metric
     const ENTITY_ORIGIN_CREATE_FROM_PAYMENT_PUBLIC_KEY = 'create_entity_origin_from_payment_public_key_total';
 
     const ENTITY_ORIGIN_CREATE_FROM_ORDER_PUBLIC_KEY = 'create_entity_origin_from_order_public_key_total';
+
+    const ENTITY_ORIGIN_OWNER_CACHE_HIT_TOTAL  = 'entity_origin_owner_cache_hit_total';
+    const ENTITY_ORIGIN_OWNER_CACHE_MISS_TOTAL = 'entity_origin_owner_cache_miss_total';
 }

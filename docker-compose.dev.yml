@@ -80,6 +80,8 @@ services:
       SECURE_REDIS_HOST: api_cache
       THROTTLE_REDIS_HOST: api-redis-cluster
       THROTTLE_REDIS_PORT: 7000
+      ENTITY_ORIGIN_CACHE_REDIS_HOST: api-redis-cluster
+      ENTITY_ORIGIN_CACHE_REDIS_PORT: 7000
       QUEUE_REDIS_HOST: api_cache
       CACHE_DRIVER: redis
       SECURE_CACHE_DRIVER: redis

@@ -21,6 +21,15 @@ class Core extends Base\Core
     const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})$/';
     const OAUTH_KEY_REGEX   = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14})$/';
 
+    protected $redis = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->redis = $this->app['redis']->connection('entity_origin_redis');
+    }
+
     /**
      * Origin entity can be an instance of Merchant entity or an Oauth application
      *
@@ -455,5 +464,68 @@ class Core extends Base\Core
             return null;
         }
 
+    }
+
+    public function getOriginForEntity(string $entityType, string $entityId) : ?string
+    {
+        $originId = $this->getEntityOriginFromCache($entityType, $entityId);
+
+        if (!empty($originId))
+        {
+            $this->trace->info(TraceCode::ENTITY_ORIGIN_FETCHED_FROM_CACHE, [
+                'entityType'        => $entityType,
+                'entityId'          => $entityId,
+                'origin_id'     => $originId,
+            ]);
+
+            $this->trace->count(Metric::ENTITY_ORIGIN_OWNER_CACHE_HIT_TOTAL);
+
+            return $originId;
+        }
+
+        $this->trace->count(Metric::ENTITY_ORIGIN_OWNER_CACHE_MISS_TOTAL);
+
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId($entityType, $entityId);
+
+        $this->trace->info(TraceCode::ENTITY_ORIGIN_FETCHED_FROM_DB, [
+            'entityType'        => $entityType,
+            'entityId'          => $entityId,
+            'origin_id'         => $originId,
+        ]);
+
+        $cachedValue = $this->getEntityOriginIdToBeCached($entityOrigin);
+
+        $this->updateEntityOriginInCache($entityType, $entityId, $cachedValue);
+
+        return $cachedValue;
+    }
+
+    private function getEntityOriginIdToBeCached(?Entity $entityOrigin) : string
+    {
+        return optional($entityOrigin)->getOriginId() ?? "NONE";
+    }
+
+    private function getEntityOriginFromCache(string $entityType, string $entityId)
+    {
+        $key = $this->getEntityOriginCacheKey($entityType, $entityId);
+
+        return $this->redis->get($key);
+    }
+
+    private function updateEntityOriginInCache(string $entityType, string $entityId, string $originId)
+    {
+        $key = $this->getEntityOriginCacheKey($entityType, $entityId);
+
+        $this->redis->set($key, $originId, 'EX' ,$this->getTTLInSeconds());
+    }
+
+    private function getEntityOriginCacheKey(string $entityType, string $entityId) : string
+    {
+        return Constants::ENTITY_ORIGIN_REDIS_KEY . $entityType . '_' . $entityId;
+    }
+
+    private function getTTLInSeconds() : int
+    {
+        return Constants::ENTITY_ORIGIN_CACHE_TTL_IN_DAYS * 24 * 60 * 60;
     }
 }

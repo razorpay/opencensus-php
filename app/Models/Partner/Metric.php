@@ -93,4 +93,7 @@ final class Metric
 
     const PARTNER_KYC_REQUEST_EMAIL_FAILED   = 'partner_kyc_request_email_failed';
     const PARTNER_KYC_REQUEST_SMS_FAILED   = 'partner_kyc_request_sms_failed';
+
+    const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
+    const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
 }

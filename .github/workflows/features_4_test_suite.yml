@@ -63,6 +63,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
@@ -190,6 +192,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
@@ -317,6 +321,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
@@ -444,6 +450,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
