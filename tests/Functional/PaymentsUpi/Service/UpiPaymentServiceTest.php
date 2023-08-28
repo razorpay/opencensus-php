@@ -237,7 +237,7 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment['description'] = 'create_collect_success';
 
-        $payment['upi']['vpa_token'] = $response['vpa_token'];
+        $payment['vpa_token'] = $response['vpa_token'];
 
 
         $this->doAuthPaymentViaAjaxRoute($payment);

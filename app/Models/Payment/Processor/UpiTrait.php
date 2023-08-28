@@ -145,6 +145,14 @@ trait UpiTrait
 
             $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
         }
+        else if (isset($input[Payment\Entity::VPA_TOKEN]) === true)
+        {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] = $this->getVpaFromEncryptedVpaIfApplicable($input[Payment\Entity::VPA_TOKEN]);
+
+            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+
+            unset($input[Payment\Entity::VPA_TOKEN]);
+        }
 
 
         // New flow needs to use the UPI block, which was first utilising the `_`  meta block
