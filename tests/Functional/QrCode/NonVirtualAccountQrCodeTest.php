@@ -2304,6 +2304,324 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(450, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
     }
 
+    public function testQrCodePricingForPPIOnUPI(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 150, // 150 base points i.e. 1.50%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $ppiOnUPIPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantPPIOnUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'wallet',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 300, // 300 base points i.e. 3.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('terminal:dedicated_sharp_terminal');
+
+        $this->fixtures->create('pricing', $ppiOnUPIPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1',  Account::TEST_ACCOUNT);
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentWithPPIPayerAccountType'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 1000;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->assertEquals(3540, $payment->getFee());
+        $this->assertEquals(540, $payment->getTax());
+
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(3000, $feeBreakup[0]['amount']); // 2.0% of 100000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(540, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
+    }
+
+    public function testQrCodePricingForWalletOnUPI(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 150, // 150 base points i.e. 1.50%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $ppiOnUPIPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantPPIOnUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'wallet',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 300, // 300 base points i.e. 3.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('terminal:dedicated_sharp_terminal');
+
+        $this->fixtures->create('pricing', $ppiOnUPIPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1',  Account::TEST_ACCOUNT);
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentWithWalletPayerAccountType'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 1000;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->assertEquals(3540, $payment->getFee());
+        $this->assertEquals(540, $payment->getTax());
+
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(3000, $feeBreakup[0]['amount']); // 2.0% of 100000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(540, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
+    }
+
+
+    public function testQrCodePricingForPPIOnUPIWithoutSplitz(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 150, // 150 base points i.e. 1.50%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $ppiOnUPIPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantPPIOnUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'wallet',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 300, // 300 base points i.e. 3.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "off"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('terminal:dedicated_sharp_terminal');
+
+        $this->fixtures->create('pricing', $ppiOnUPIPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1',  Account::TEST_ACCOUNT);
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentWithPPIPayerAccountType'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 1000;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals(1770, $payment->getFee());
+        $this->assertEquals(270, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(1500, $feeBreakup[0]['amount']); // 1.50% of 100000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(270, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
+    }
+
     public function testQrCodePricingForCreditCardWithoutSplitz(): void
     {
         $upiPricingPlan = [
