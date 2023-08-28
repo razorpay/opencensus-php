@@ -4070,6 +4070,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GROWTH_REQUEST                                        = 'GROWTH_REQUEST';
     const GROWTH_REQUEST_FAILED                                 = 'GROWTH_REQUEST_FAILED';
     const GROWTH_ADMIN_REQUEST                                  = 'GROWTH_ADMIN_REQUEST';
+    const GROWTH_TRANSACTION_CREATE_REQUEST                     = 'GROWTH_TRANSACTION_CREATE_REQUEST';
+    const GROWTH_TRANSACTION_CREATE_FAILED                      = 'GROWTH_TRANSACTION_CREATE_FAILED';
+    const GROWTH_TRANSACTION_CREATED                            = 'GROWTH_TRANSACTION_CREATED';
+
     const PARTNERSHIPS_REQUEST                                  = 'PARTNERSHIPS_REQUEST';
     const PARTNERSHIPS_REQUEST_ERROR                            = 'PARTNERSHIPS_REQUEST_ERROR';
     const PRTS_PARTNER_MIGRATION_REQUEST_ERROR                  = 'PRTS_PARTNER_MIGRATION_REQUEST_ERROR';

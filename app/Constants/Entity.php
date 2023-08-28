@@ -609,6 +609,8 @@ class Entity
     const INSTALLMENT                    = 'installment';
     const CHARGE                         = 'charge';
 
+    const BUNDLE_FEE                     = 'bundle_fee';
+
     const PAYMENTS_NBPLUS_PAYMENTS     = 'payments_nbplus.payments';
     const PAYMENTS_NBPLUS_NETBANKING   = 'payments_nbplus.netbanking';
     const NBPLUS_EMANDATE_REGISTRATION = 'payments_nbplus.emandate_registration';
@@ -1421,6 +1423,7 @@ class Entity
         self::INTEREST_WAIVER   => \RZP\Models\CapitalTransaction::class,
         self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
+        self::BUNDLE_FEE        => \RZP\Models\Growth\BundleFee::class,
 
         self::USER_DEVICE_DETAIL              => \RZP\Models\DeviceDetail::class,
         self::APP_ATTRIBUTION_DETAIL          => \RZP\Models\DeviceDetail\Attribution::class,

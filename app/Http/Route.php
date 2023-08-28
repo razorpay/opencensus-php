@@ -3026,6 +3026,7 @@ class Route
         // growth service internal routes
         'growth_pricing_bundle_email'              => ['post',     'growth/pricing_bundle/send_email',         'GrowthInternalController@sendPricingBundleEmail'                         ],
         'growth_pricing_bundle_add_amount_credits' => ['post',     'growth/pricing_bundle/add_amount_credits', 'GrowthInternalController@addAmountCredits'                         ],
+        'growth_pricing_bundle_create_transaction' => ['post',     'growth/pricing_bundle/internal_transaction', 'GrowthInternalController@createBundleFeeTransaction'],
 
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
@@ -5273,6 +5274,7 @@ class Route
         // growth routes
         'growth_pricing_bundle_email',
         'growth_pricing_bundle_add_amount_credits',
+        'growth_pricing_bundle_create_transaction',
 
 
         // cron for generating merchant report
@@ -16198,6 +16200,7 @@ class Route
         'growth_internal' => [
             'growth_pricing_bundle_email',
             'growth_pricing_bundle_add_amount_credits',
+            'growth_pricing_bundle_create_transaction',
         ],
 
         'affordability' => [

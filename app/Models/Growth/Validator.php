@@ -19,4 +19,13 @@ class Validator extends Base\Validator
         Constants::AMOUNT => 'required|integer',
         Constants::EXPIRED_AT => 'required|integer'
     ];
+
+    protected static $createInternalTransactionRules = [
+        Constants::MERCHANT_ID   => 'required|string|size:14',
+        Constants::TRANSACTOR_ID => 'required|string',
+        Constants::AMOUNT        => 'required|integer',
+        Constants::JOURNAL_ID    => 'required|string|size:14',
+        Constants::CURRENCY      => 'required|string',
+        Constants::IS_REVERSAL   => 'sometimes|boolean',
+    ];
 }
