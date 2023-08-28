@@ -718,12 +718,7 @@ class Entity extends Base\PublicEntity
 
     public function isOlamoneyEnabled()
     {
-        /*
-         Disabling ola money
-        */
-
-        //return $this->getAttribute(self::OLAMONEY);
-        return false;
+        return $this->getAttribute(self::OLAMONEY);
     }
 
     public function isPhonepeswitchEnabled()

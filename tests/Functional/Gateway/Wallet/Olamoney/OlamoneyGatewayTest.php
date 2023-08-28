@@ -29,7 +29,7 @@ class OlamoneyGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->markTestSkipped();
+        //$this->markTestSkipped();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 

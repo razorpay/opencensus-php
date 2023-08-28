@@ -983,7 +983,8 @@ class MerchantTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayNotHasKey('olamoney', $response['methods']['wallet']);
+        //Enabling OlaMoneyWallet
+        //$this->assertArrayNotHasKey('olamoney', $response['methods']['wallet']);
     }
 
     public function testRollDemoKey()

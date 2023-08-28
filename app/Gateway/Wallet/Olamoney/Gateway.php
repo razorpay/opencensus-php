@@ -105,7 +105,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $this->eligibility($input);
+        //Disabling olamoney eligibility check in payment flow.
+        //$this->eligibility($input);
 
         if ($this->version !== 'v2')
         {

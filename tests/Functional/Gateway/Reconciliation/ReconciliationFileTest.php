@@ -3618,7 +3618,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testOlamoneyReconPaymentFile()
     {
-        $this->markTestSkipped();
+        //$this->markTestSkipped();
 
         $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
@@ -3648,7 +3648,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testOlamoneyReconRefundFile()
     {
-        $this->markTestSkipped();
+        //$this->markTestSkipped();
         $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
@@ -5331,7 +5331,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus();
     }
 
-    // For three decimal currencies, multiplier used in converting 
+    // For three decimal currencies, multiplier used in converting
     // gateway amount from major to minor units is 1000.
     // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1691734829278479?thread_ts=1679426954.344399&cid=C01LK94TC69
     public function testHitachiReconDCCPaymentFileKWD()
@@ -5445,7 +5445,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    // For three decimal currencies, multiplier used in converting 
+    // For three decimal currencies, multiplier used in converting
     // gateway amount from major to minor units is 1000.
     // Slack: https://razorpay.slack.com/archives/C01LK94TC69/p1691734829278479?thread_ts=1679426954.344399&cid=C01LK94TC69
     public function testHitachiReconDCCOverMCCPaymentFileKWD()
