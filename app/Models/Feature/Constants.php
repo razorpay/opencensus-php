@@ -1890,6 +1890,9 @@ class Constants
 
     const ONE_CC_SHOPIFY_DRAFT_ORDER = 'one_cc_draft_order';
 
+    /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
+    const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1949,7 +1952,8 @@ class Constants
         self::RAZORPAY_WALLET,
         self::WALLET_PAYTM_AUTO_DEBIT,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
-        self::ONE_CC_ENABLE_NECTOR_COINS
+        self::ONE_CC_ENABLE_NECTOR_COINS,
+        self::REMOVE_RAZORPAY_BRANDING,
     ];
 
     const ONE_CC_FEATURES = [
@@ -1985,6 +1989,10 @@ class Constants
         self::DISABLE_TRUECALLER_LOGIN_SDK,
         self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN,
         self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN,
+    ];
+
+    const TURBO_UPI_FEATURES = [
+        self::REMOVE_RAZORPAY_BRANDING,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2615,6 +2623,7 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
         self::ONE_CC_ENABLE_NECTOR_COINS       => true,
+        self::REMOVE_RAZORPAY_BRANDING         => true,
     ];
 
     // Entity type constants

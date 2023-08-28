@@ -10251,6 +10251,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_CREATION         = 'SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_CREATION';
     const SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION       = 'SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION';
 
+    const FAILED_TO_FETCH_CONFIGS_FROM_DCS                       = 'FAILED_TO_FETCH_CONFIGS_FROM_DCS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

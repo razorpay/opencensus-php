@@ -25,6 +25,8 @@ class Constants
     const DashboardCaptchaEntityId = "ALL";
     const CustomUDFFlagConfig = "CustomUDFFlagConfig";
 
+    const UpiInAppDisplayControls = "upi_in_app_display_controls";
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -35,7 +37,8 @@ class Constants
         self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
         self::DisableCaptcha                 => "rzp/platform/dashboard/authentication/Captcha",
         self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
-        self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig"
+        self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig",
+        self::UpiInAppDisplayControls        => "rzp/pg/merchant/upi/in_app/DisplayControls",
     ];
 
 }

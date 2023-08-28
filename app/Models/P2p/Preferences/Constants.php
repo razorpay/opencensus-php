@@ -4,7 +4,9 @@ namespace RZP\Models\P2p\Preferences;
 
 class Constants
 {
-    const MERCHANT = 'merchant';
+    const MERCHANT     = 'merchant';
+    const FEATURES     = 'features';
+    const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
     private static array $popularBanksListInProd = [
         [

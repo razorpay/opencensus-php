@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Preferences;
 
 use Monolog\Logger;
 use RZP\Models\Order;
+use RZP\Constants\Mode;
 use RZP\Models\P2p\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Device;
@@ -12,8 +13,10 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Models\BankAccount as BankAccount;
 use RZP\Exception\P2p\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Customer\Entity as CustomerEntity;
+use RZP\Services\Dcs\Configurations as DcsConfig;
 
 /**
  *
@@ -43,6 +46,7 @@ class Processor extends Base\Processor
         }
 
         $this->setMerchantInfoInResponse($preferencesResponse);
+        $this->setMerchantFeaturesInResponse($preferencesResponse);
 
         // if order id and customer id are empty
         if(isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
@@ -222,7 +226,7 @@ class Processor extends Base\Processor
 
         return $formattedNumber;
     }
-        
+
     private function setMerchantInfoInResponse(&$response)
     {
         try
@@ -259,6 +263,32 @@ class Processor extends Base\Processor
                 $exception,
                 Logger::ERROR,
                 TraceCode::MERCHANT_INFO_SET_FAILED_IN_TURBO_PREFERENCES_RESPONSE
+            );
+        }
+    }
+
+    private function setMerchantFeaturesInResponse(&$preferencesResponse)
+    {
+        $key     = DcsConfig\Constants::UpiInAppDisplayControls;
+        $fields  = Feature::TURBO_UPI_FEATURES;
+
+        try
+        {
+            $mode       = app('rzp.mode') ?? Mode::LIVE;
+            $merchantId = $this->context()->getMerchant()->getId();
+
+            $preferencesResponse[Constants::FEATURES] = app('dcs_config_service')->fetchConfiguration($key, $merchantId, $fields, $mode);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace()->traceException(
+                $ex,
+                TraceCode::FAILED_TO_FETCH_CONFIGS_FROM_DCS,
+                Logger::ERROR,
+                [
+                    Constants::MERCHANT_ID => $merchantId ?? null,
+                    'mode'                 => $mode
+                ]
             );
         }
     }

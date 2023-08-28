@@ -11018,12 +11018,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da"
+                "reference": "edb35b29220f25c193c8b84584bd89426db0961b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da",
-                "reference": "fabbfc3169f6efd2c9cb7fcb3ba9db391ac5c9da",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/edb35b29220f25c193c8b84584bd89426db0961b",
+                "reference": "edb35b29220f25c193c8b84584bd89426db0961b",
                 "shasum": ""
             },
             "require": {
@@ -11049,7 +11049,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-08-16T10:39:22+00:00"
+            "time": "2023-08-22T13:22:28+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
