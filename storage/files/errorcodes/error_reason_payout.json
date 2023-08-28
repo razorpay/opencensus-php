@@ -10,14 +10,21 @@
     "failed": {
       "source": "beneficiary_bank",
       "reason": "beneficiary_bank_rejected",
-      "description": "Technical issue at beneficiary bank. Please retry after 30 mins."
+      "description": "Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    }
+  },
+  "TXN_REJECTED_BENE_BANK_RETRIABLE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Payout failed due to a technical issue at the beneficiary bank. Please retry after 30 min."
     }
   },
   "INVALID_ACCOUNT_NUMBER": {
     "failed": {
       "source": "business",
-      "reason": "bank_account_invalid",
-      "description": "Payout failed due to invalid beneficiary account details."
+      "reason": "beneficiary_account_invalid",
+      "description": "Payout failed due to invalid beneficiary account number."
     }
   },
   "BBANK_OFFLINE": {
@@ -29,9 +36,44 @@
   },
   "FAILURE": {
     "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at the partner bank due to a technical issue. Please retry."
+    }
+  },
+  "MERCHANT_INSUFFICIENT_FUND": {
+    "failed": {
+      "source": "business",
+      "reason": "insufficient_funds",
+      "description": "Payout failed due to insufficient funds in the bank account."
+    }
+  },
+  "BBANK_TECHNICAL_FAILURE": {
+    "failed": {
       "source": "beneficiary_bank",
-      "reason": "beneficiary_bank_failure",
-      "description": "Payout failed at beneficiary bank due to technical issue. Please retry."
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    }
+  },
+  "FTS_CHANNEL_AUTH_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PSP_OFFLINE_PENDING": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_psp_offline",
+      "description": "Beneficiary PSP systems are offline. Please retry after 30 min."
+    }
+  },
+  "CUSTOMER_DOES_NOT_EXIST": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_beneficiary",
+      "description": "Customer account does not exist with the wallet provider for the given phone number."
     }
   },
   "FROZEN_ACCOUNT": {
@@ -56,8 +98,8 @@
     },
     "failed": {
       "source": "gateway",
-      "reason": "gateway_timeout",
-      "description": "Payout timed out at partner bank. Please retry after 30 min."
+      "reason": "gateway_technical_error",
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry."
     }
   },
   "REQUEST_NOT_FOUND_RETRIABLE": {
@@ -133,14 +175,14 @@
     "failed": {
       "source": "gateway",
       "reason": "gateway_technical_error",
-      "description": "Payout failed at partner bank. Please retry after 30 min."
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
     }
   },
   "AUTHORIZATION_FAILED_RETRIABLE": {
     "failed": {
       "source": "gateway",
       "reason": "gateway_technical_error",
-      "description": "Payout failed at partner bank. Please retry after 30 min."
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
     }
   },
   "CLOSED_ACCOUNT": {
@@ -196,7 +238,7 @@
     "failed": {
       "source": "beneficiary_bank",
       "reason": "invalid_ifsc_code",
-      "description": "Payout failed as the IFSC code is invalid. Please change the IFSC code and retry."
+      "description": "Payout failed as the IFSC code is invalid. Please correct the IFSC code and retry."
     }
   },
   "VERIFICATION_FAILED": {
@@ -217,7 +259,7 @@
     "failed": {
       "source": "gateway",
       "reason": "gateway_technical_error",
-      "description": "Payout failed at partner bank. Please retry after 30 min."
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
     }
   },
   "TXN_TIMEOUT_PENDING": {
@@ -232,6 +274,13 @@
       "source": "gateway",
       "reason": "gateway_technical_error",
       "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "AUTHENTICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
     }
   },
   "BENE_AUTHENTICATION_FAILED": {
@@ -308,6 +357,11 @@
     }
   },
   "RETURNED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    },
     "reversed": {
       "source": "beneficiary_bank",
       "reason": "beneficiary_bank_failure",
@@ -414,7 +468,7 @@
     "failed": {
       "source": "beneficiary_bank",
       "reason": "beneficiary_bank_offline",
-      "description": "Beneficiary bank systems are offline, please retry after 30 min."
+      "description": "Temporary technical issue between NPCI and the beneficiary bank. Please retry after 30 min."
     }
   },
   "BBANK_GATEWAY_THROTTLED_FAILURE": {

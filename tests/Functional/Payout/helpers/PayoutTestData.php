@@ -15388,7 +15388,7 @@ return [
                     'error'  => [
                         'source' => 'beneficiary_bank',
                         'reason' =>  'beneficiary_bank_rejected',
-                        'description' => 'Technical issue at beneficiary bank. Please retry after 30 mins.'
+                        'description' => 'Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min.'
                     ]
                 ],
             ],

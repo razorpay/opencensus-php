@@ -14772,9 +14772,9 @@ class RblBankingAccountStatementTest extends TestCase
                         'status' => 'reversed',
                         'failure_reason' => 'REVERSAL',
                         'status_details'  => [
-                            'source' => 'beneficiary_bank',
-                            'reason' =>  'beneficiary_bank_failure',
-                            'description' => 'Payout failed at beneficiary bank due to technical issue. Please retry.'
+                            'source' => 'gateway',
+                            'reason' =>  'gateway_technical_error',
+                            'description' => 'Payout failed at the partner bank due to a technical issue. Please retry.'
                         ]
                     ],
                 ],
