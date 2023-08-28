@@ -1603,21 +1603,7 @@ trait UpiRecurring
 
         $variant = strtolower($variant);
 
-        // if razorx is on for 100% traffic
-        if ($variant === 'on100')
-        {
-            return true;
-        }
-
-        $redisKey = "upi_autopay_debit_retry_" . $paymentId . "_" . $merchantId;
-        $redisVal = $app['redis']->get($redisKey);
-
-        if($redisVal === "1")
-        {
-            return true;
-        }
-
-        if($variant === 'on' and $upi !== null and $upi['gateway_data']['ano'] === 1)
+        if($variant === 'on')
         {
             $app['trace']->info(
                 TraceCode::UPI_RECURRING_DEBIT_RETRY,
@@ -1625,8 +1611,6 @@ trait UpiRecurring
                     'payment_id' => $paymentId,
                     'merchant_id' => $merchantId,
                 ]);
-            $ttl = 50 * 60 * 60; // 50 hours in seconds
-            $app['redis']->set($redisKey, true, 'ex', $ttl, 'nx');
             return true;
         }
 
