@@ -9321,7 +9321,7 @@ class Route
 
         'shield_rules_get_multiple'                   => Permission::VIEW_SHIELD_RULE,
         'shield_rules_get'                            => Permission::VIEW_SHIELD_RULE,
-        'shield_params_calculate'                     => Permission::VIEW_SHIELD_RULE,
+        'shield_params_calculate'                     => Permission::VIEW_ALL_ENTITY,
         'shield_params_create'                        => Permission::CREATE_SHIELD_PARAMETER,
         'shield_params_delete'                        => Permission::DELETE_SHIELD_PARAMETER,
         'shield_rules_create'                         => Permission::CREATE_SHIELD_RULE,

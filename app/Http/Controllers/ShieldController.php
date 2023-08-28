@@ -71,6 +71,9 @@ class ShieldController extends Controller
 
     const SHARED_MERCHANT_ID = '100000razorpay';
 
+    /**
+     * @throws \Throwable
+     */
     public function proxyRequest()
     {
         $routeName = Request::route()->getName();
@@ -166,20 +169,12 @@ class ShieldController extends Controller
             $existingPayload = $this->app['shield']->sendRequestV2ForWorkflow($requestUri, 'GET', []);
         }
 
-        if($routeName === self::RULES_CREATE_ROUTE)
-        {
-             $this->app['shield']->sendRequestV2ForWorkflow(self::VALIDATE_RULE_EXPRESSION_URI, 'POST', $payload);
-        }
-
-        if($routeName === self::RULES_UPDATE_ROUTE && isset($payload['expression']) === true)
-        {
-            $this->app['shield']->sendRequestV2ForWorkflow(self::VALIDATE_RULE_EXPRESSION_URI, 'POST', $payload);
-        }
-
         if (empty($payload) === true)
         {
             $payload = [];
         }
+
+        $this->validatePayload($routeName, $requestUri, $payload);
 
         $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_REQUEST_INITIATED, [
             'url'    => $requestUri,
@@ -323,5 +318,16 @@ class ShieldController extends Controller
         ]);
 
         return $externalEntityId;
+    }
+
+    protected function validatePayload($routeName, $routeUri, $payload)
+    {
+        if($routeName === self::RULES_CREATE_ROUTE ||
+           ($routeName === self::RULES_UPDATE_ROUTE && isset($payload['expression']) === true))
+        {
+            $payload["merchant_id"] = Request::route()->parameters()['merchant_id'] ?? self::SHARED_MERCHANT_ID;
+
+            $this->app['shield']->sendRequestV2ForWorkflow(self::VALIDATE_RULE_EXPRESSION_URI, 'POST', $payload);
+        }
     }
 }
