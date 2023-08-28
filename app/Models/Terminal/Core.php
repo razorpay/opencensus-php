@@ -323,7 +323,7 @@ class Core extends Base\Core
 
         $terminal->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync,TerminalConstants::SYNC_INSTRUMENTS => true]);
 
         if ($variantFlag === "reassign_merchant")
         {
@@ -875,7 +875,7 @@ class Core extends Base\Core
                  ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
         }
 
-        $syncInstruments = false;
+        $syncInstruments = $option[TerminalConstants::SYNC_INSTRUMENTS];
         if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL) )
         {
             $syncInstruments = true;
@@ -965,7 +965,8 @@ class Core extends Base\Core
         }
         else
         {
-            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service']]);
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service'],
+                TerminalConstants::SYNC_INSTRUMENTS => true]);
         }
 
         return $this->getWalletsForTerminal($terminal);

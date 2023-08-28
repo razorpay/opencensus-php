@@ -26,6 +26,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Admin\Admin\Service as AdminService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
 
 class TerminalsService
 {
@@ -526,6 +527,7 @@ class TerminalsService
             self::CURRENCY      =>  $currency,
             self::IDENTIFIERS   =>  $identifiers,
             self::FEATURES      =>  $features,
+            TerminalConstants::SYNC_INSTRUMENTS => true,
         ];
         try
         {

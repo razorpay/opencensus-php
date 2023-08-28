@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Batch\Entity;
 use RZP\Exception\BaseException;
 use RZP\Models\Batch\Processor\AESCrypto;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
 
 class TerminalCreation extends Base
 {
@@ -131,6 +132,8 @@ class TerminalCreation extends Base
             Terminal\Entity::STATUS                     => empty($status) ? "activated" : $status,
             Terminal\Entity::CAPABILITY                 => $capability,
             Terminal\Entity::PLAN_NAME                  => $plan_name,
+            TerminalConstants::SYNC_INSTRUMENTS         => true
+
         ];
 
         // Unsetting empty or null values

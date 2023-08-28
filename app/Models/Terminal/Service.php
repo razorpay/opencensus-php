@@ -763,6 +763,7 @@ class Service extends Base\Service
                         $option = [
                             'sync_with_terminals_service' => $variantFlag !== 'on',
                             'bulk_update' => true,
+                            Constants::SYNC_INSTRUMENTS => true,
                         ];
 
                         $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList, $option);
