@@ -210,7 +210,7 @@ class Service extends Base\Service
         $org = $this->repo->org->findOrFailByHostname($hostname);
 
         $enabledFeatures = $org->getEnabledFeatures();
-
+        $configurations = $org -> getConfigurations();
         $org = $org->toArrayPublic();
 
         $org['features'] = $enabledFeatures;
@@ -218,6 +218,7 @@ class Service extends Base\Service
         // find a way to fix this
         $org['hostname'] = $hostname;
 
+        $org["configurations"] =$configurations;
         return $org;
     }
     public function delete(string $id)

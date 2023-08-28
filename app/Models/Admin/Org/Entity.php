@@ -9,6 +9,8 @@ use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Trace\TraceCode;
 
 class Entity extends Base\Entity
@@ -454,6 +456,20 @@ class Entity extends Base\Entity
     public function getCheckoutLogo()
     {
         return $this->getAttribute(self::CHECKOUT_LOGO_URL);
+    }
+
+    public function addCaptchaConfigurations(): array
+    {
+        $dcsConfigService = app('dcs_config_service');
+        return $dcsConfigService -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->mode);
+    }
+
+    public function getConfigurations(): array
+    {
+        $configurations=[];
+
+        // add captcha configurations
+        return array_merge($configurations, $this->addCaptchaConfigurations());
     }
 
     /**

@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Admin;
 
 use RZP\Models\Feature\Constants;
+use RZP\Models\Admin\Org as adminOrg;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Settlements;
@@ -527,6 +530,29 @@ class OrgTest extends TestCase
 
         $result = $this->startTest();
         $this->assertEquals(['disable_announcements'], $result['features']);
+    }
+
+    public function testConfigurationsForOrg()
+    {
+        // set disable_captcha as true
+        $this->mockDcsService(true);
+        $configurations = (new adminOrg\Entity) -> getConfigurations();
+        $this->assertEquals($configurations[DcsConstants::DisableCaptcha], true);
+
+
+        // set disable_captcha as false
+        $this->mockDcsService(false);
+        $configurations = (new adminOrg\Entity) -> getConfigurations();
+        $this->assertEquals($configurations[DcsConstants::DisableCaptcha], false);
+    }
+
+    public function mockDcsService($captchaConfigValue)
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([DcsConstants::DisableCaptcha => $captchaConfigValue]);
     }
 
     // Test for an exception
