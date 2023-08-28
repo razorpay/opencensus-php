@@ -13,7 +13,10 @@ import {
 } from './mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as analytics from 'common/utils/analytics';
-import { fetchReferralsHandler } from './mocks/once-handlers';
+import {
+  createSubmerchantInviteSuccessHandler,
+  fetchReferralsHandler,
+} from './mocks/once-handlers';
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
 // TODO : covered only Capital use case, have to cover others later
@@ -195,6 +198,8 @@ describe('AddMerchant', () => {
     jest.setTimeout(10000);
     const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
     isPartner.mockImplementation((type) => type === 'reseller');
+    server.use(createSubmerchantInviteSuccessHandler());
+
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
     const merchantBox = screen.getByText('Razorpay Payments');
     await userEvent.click(merchantBox);
@@ -210,8 +215,6 @@ describe('AddMerchant', () => {
 
     const sendButton = screen.getByRole('button', { name: 'Send Invite' });
     await userEvent.click(sendButton);
-
-    createSubmerchantInviteSpy.mockImplementation(() => ({ success: true }));
 
     expect(createSubmerchantInviteSpy).toHaveBeenCalledWith({
       name,

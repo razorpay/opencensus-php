@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import SubMerchantKycStatusLabel from '../SubMerchantKycStatusLabel';
-import '@testing-library/jest-dom/extend-expect';
 import moment from 'moment';
+
+import SubMerchantKycStatusLabel from 'merchant/views/PartnerDashboard/SubMerchant/components/SubMerchantKycStatusLabel';
+import '@testing-library/jest-dom/extend-expect';
 
 describe('<SubMerchantKycStatusLabel />', () => {
   test("Partner didn't request SubM", () => {

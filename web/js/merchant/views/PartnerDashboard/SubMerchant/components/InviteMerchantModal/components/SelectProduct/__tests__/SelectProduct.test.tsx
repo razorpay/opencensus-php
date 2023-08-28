@@ -55,6 +55,11 @@ describe('SelectProduct', () => {
     await userEvent.click(screen.getByText('RazorpayX'));
     // Call parent's setProductType prop
     expect(defaultProps.setProductType).toHaveBeenCalledWith(PRODUCT_TYPE.X);
+    await userEvent.click(screen.getByText('Razorpay Payments'));
+    expect(defaultProps.setProductType).toHaveBeenCalledWith(PRODUCT_TYPE.PG);
+    await userEvent.click(screen.getByText('Line of credit'));
+    expect(defaultProps.setProductType).toHaveBeenCalledWith(PRODUCT_TYPE.CAPITAL);
+
     await userEvent.click(screen.getByText('Next'));
     expect(defaultProps.onNextClick).toHaveBeenCalled();
   });

@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
 
-import { merchantFetch } from 'merchant/utils/ajax';
 import { ShowNotificationType } from 'common/typings';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const useReferralLinks = ({
   showNotification,

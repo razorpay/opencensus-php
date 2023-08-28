@@ -1,11 +1,12 @@
 import React from 'react';
-import { render, screen, userEvent, waitFor, server } from 'test-utils';
 import { rest } from 'msw';
-import SingleAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleAddMerchant';
-import { submerchantWithKYCAccess } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+
 import { getInitialUserOrgState } from 'common/tests/utils';
+import { submerchantWithKYCAccess } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import SingleAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleAddMerchant';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, userEvent, waitFor, server } from 'test-utils';
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 // import * as submerchantsActions from 'merchant/reducers/submerchant';
 // const createSubmerchantAction = jest.spyOn(submerchantsActions, 'create');
@@ -22,6 +23,7 @@ const defaultProps = {
 const defaultUserExtra = {
   id: 'K0KQSNE7BypZ5VE',
   isPartner,
+  isPartnershipsInviteFlowEnabled: true,
 };
 const defaultOrgExtra = {};
 describe('SingleAddMerchant', () => {
@@ -80,7 +82,7 @@ describe('SingleAddMerchant', () => {
   };
   test('should correctly render typical add merchant flow', async () => {
     useCreateSuccessHandler();
-    renderApp({}, { userExtra: { isPartnershipsInviteFlowEnabled: true } });
+    renderApp();
 
     const { email } = await fillFormEssentials();
     const contact_no = '9123123123';
@@ -100,6 +102,28 @@ describe('SingleAddMerchant', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(email)).toBeInTheDocument();
     expect(screen.getByText(`+91-${contact_no}`)).toBeInTheDocument();
+  });
+
+  test('should show success notification for non-reseller partners on submitting', async () => {
+    useCreateSuccessHandler();
+    isPartner.mockImplementation((type) => type !== 'reseller');
+    renderApp();
+
+    await fillFormEssentials();
+    await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
+
+    // Check that we moved to next step
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+    });
+    expect(defaultProps.onAddSuccess).toHaveBeenCalled();
+    expect(defaultProps.onDismiss).toHaveBeenCalled();
+
+    // success notification contents
+    expect(showNotificationSpy).toHaveBeenCalledWith({
+      type: 'success',
+      message: 'Submerchant created successfully',
+    });
   });
 
   test('should show notification on api error in sending an invite', async () => {

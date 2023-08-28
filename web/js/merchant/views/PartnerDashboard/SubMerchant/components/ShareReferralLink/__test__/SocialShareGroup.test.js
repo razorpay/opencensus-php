@@ -5,7 +5,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { render, screen, userEvent } from 'test-utils';
 
 const defaultProps = {
-  referralUrl: 'pgReferralLink',
+  referralUrl: 'https://rzp.io/i/6cxEuFXr',
   inviteFlow: 'SHARE_REFERRAL_LINK',
   productType: PRODUCT_TYPE.PG,
   isKycAssistedSelected: null,
@@ -33,15 +33,36 @@ describe('SocialShareGroup', () => {
     expect(screen.getByText('Or Share via')).toBeVisible();
   });
 
-  test('should open a window on clicking share via image', async () => {
+  test('should open a window on clicking share via fb', async () => {
     windowOpenSpy.mockImplementation(() => {});
     render(<SocialShareGroup {...defaultProps} />, {});
     const image = screen.getByAltText('share via fb');
     await userEvent.click(image);
     expect(windowOpenSpy).toHaveBeenCalledWith(
-      `https://www.facebook.com/sharer/sharer.php?u=pgReferralLink&quote=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes.`,
+      `https://www.facebook.com/sharer/sharer.php?u=https://rzp.io/i/6cxEuFXr&quote=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes.`,
       'facebook-share',
       'width=550,height=235',
+    );
+  });
+  test('should open a window on clicking share via twitter', async () => {
+    windowOpenSpy.mockImplementation(() => {});
+    render(<SocialShareGroup {...defaultProps} />, {});
+    const image = screen.getByAltText('share via twitter');
+    await userEvent.click(image);
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      `https://twitter.com/share?url=https://rzp.io/i/6cxEuFXr&text=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes.`,
+      'twitter-share',
+      'width=550,height=235',
+    );
+  });
+
+  test('should open a window on clicking share via whatsapp', async () => {
+    windowOpenSpy.mockImplementation(() => {});
+    render(<SocialShareGroup {...defaultProps} />, {});
+    const image = screen.getByAltText('share via whatsapp');
+    await userEvent.click(image);
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      `https://api.whatsapp.com/send?text=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes. https://rzp.io/i/6cxEuFXr`,
     );
   });
 });

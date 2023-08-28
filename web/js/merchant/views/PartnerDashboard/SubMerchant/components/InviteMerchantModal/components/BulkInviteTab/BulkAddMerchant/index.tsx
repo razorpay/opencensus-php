@@ -12,7 +12,6 @@ type BulkAddMerchantProps = {
   onDismiss: () => void;
   onAddSuccess?: () => void;
 };
-
 const BulkAddMerchant = ({ productType, ...props }: BulkAddMerchantProps): JSX.Element => {
   let Component = BulkAddMerchantPG;
   switch (productType) {

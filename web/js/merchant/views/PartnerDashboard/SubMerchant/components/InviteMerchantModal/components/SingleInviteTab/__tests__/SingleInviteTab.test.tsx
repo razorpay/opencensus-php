@@ -1,15 +1,30 @@
 import React from 'react';
-import { render, screen, userEvent, waitFor } from 'test-utils';
-import SingleInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab';
+
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
+import SingleInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab';
+import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, server, userEvent, waitFor } from 'test-utils';
+import {
+  createSubmerchantInviteErrorHandler,
+  createSubmerchantInviteSuccessHandler,
+} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
+
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const getHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'getHasSelectedKycAccess');
 const setHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'setHasSelectedKycAccess');
 const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
+const trackEmailFlowCTAClickedSpy = jest.spyOn(analytics, 'trackEmailFlowCTAClicked');
+const trackInviteFlowFieldEditStartedSpy = jest.spyOn(analytics, 'trackInviteFlowFieldEditStarted');
+const trackInviteFlowGenericErrorSpy = jest.spyOn(analytics, 'trackInviteFlowGenericError');
+const trackInviteFlowSuccessfulInviteSpy = jest.spyOn(analytics, 'trackInviteFlowSuccessfulInvite');
+const trackInviteFlowValidationErrorSpy = jest.spyOn(analytics, 'trackInviteFlowValidationError');
+const trackSubmerchantReferViaEmailSpy = jest.spyOn(analytics, 'trackSubmerchantReferViaEmail');
+const trackInviteFlowOptOutFormSpy = jest.spyOn(analytics, 'trackInviteFlowOptOutForm');
 
 const isPartner = jest.fn();
 isPartner.mockImplementation((type) => type === 'reseller');
@@ -41,7 +56,7 @@ describe('SingleInviteTab', () => {
     jest.clearAllMocks();
   });
   beforeEach(() => {
-    createSubmerchantInviteSpy.mockImplementation(() => Promise.resolve({ success: true }));
+    server.use(createSubmerchantInviteSuccessHandler());
   });
 
   const fillFormEssentials = async () => {
@@ -74,20 +89,14 @@ describe('SingleInviteTab', () => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
     });
     expect(defaultProps.onAddSuccess).toHaveBeenCalled();
-    // TODO v2: track events test
-    // expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
-    //   expect.objectContaining({
-    //     objectName: 'Partner Submerchant Refer Via Email',
-    //   }),
-    // );
+    expect(trackInviteFlowSuccessfulInviteSpy).toHaveBeenCalled();
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 
   test('should show notification on api error in sending an invite', async () => {
     const message = 'Something went wrong';
-    createSubmerchantInviteSpy.mockImplementation(() =>
-      Promise.reject({ success: false, errors: [message] }),
-    );
+    server.use(createSubmerchantInviteErrorHandler(message));
+
     renderApp();
     await fillFormEssentials();
     await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
@@ -95,6 +104,42 @@ describe('SingleInviteTab', () => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
     });
     expect(showNotificationSpy).toHaveBeenCalledWith({ message, type: 'error' });
+  });
+
+  test('should fire correct ARD events', async () => {
+    getHasSelectedKycAccessSpy.mockImplementation(() => null);
+    const productType = PRODUCT_TYPE.CAPITAL;
+    const message = 'Something went wrong';
+    server.use(createSubmerchantInviteErrorHandler(message));
+    renderApp({ productType });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(trackInviteFlowValidationErrorSpy).toHaveBeenCalled();
+
+    // Check back button
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(defaultProps.onInviteTabsBackClick).toHaveBeenCalled();
+
+    await fillFormEssentials();
+    expect(trackInviteFlowFieldEditStartedSpy).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
+    expect(trackInviteFlowValidationErrorSpy).toHaveBeenCalled();
+    await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
+    expect(trackEmailFlowCTAClickedSpy).toHaveBeenCalledWith({
+      ctaClicked: 'Send Invite',
+      productType,
+    });
+    expect(trackSubmerchantReferViaEmailSpy).toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+    });
+    expect(showNotificationSpy).toHaveBeenCalledWith({ message, type: 'error' });
+    expect(trackInviteFlowGenericErrorSpy).toHaveBeenCalled();
   });
 
   test('should show ftux opt-in success screen on selecting yes in kyc access', async () => {
@@ -124,8 +169,9 @@ describe('SingleInviteTab', () => {
 
   test('should show ftux opt-out form on success screen on selecting no in kyc access', async () => {
     getHasSelectedKycAccessSpy.mockImplementation(() => null);
-
-    renderApp();
+    const productType = PRODUCT_TYPE.PG;
+    const inviteFlow = INVITE_TAB_TYPES.SINGLE_INVITE;
+    renderApp({ productType });
     await fillFormEssentials();
 
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
@@ -140,9 +186,18 @@ describe('SingleInviteTab', () => {
     expect(setHasSelectedKycAccessSpy).toHaveBeenCalledWith(false);
     expect(defaultProps.setShowHeaderAndTabs).toHaveBeenCalledWith(false);
 
-    expect(screen.getByText('Before you finish, we have something to ask')).toBeInTheDocument();
+    // expect(screen.getByText('Before you finish, we have something to ask')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Something else'));
+    const customReason = 'Test';
+    await userEvent.type(screen.getByPlaceholderText('Elaborate on your reasons'), customReason);
 
     await userEvent.click(screen.getByRole('button', { name: 'Submit & Close' }));
+    expect(trackInviteFlowOptOutFormSpy).toHaveBeenCalledWith({
+      productType,
+      inviteFlow,
+      radioValue: 'something_else',
+      customReason,
+    });
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 

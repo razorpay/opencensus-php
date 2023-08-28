@@ -1,12 +1,14 @@
 import React from 'react';
-import { render, screen, userEvent, server, waitFor } from 'test-utils';
-import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
 import { getInitialUserOrgState } from 'common/tests/utils';
+import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { rest } from 'msw';
-
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { fileUploadResponse } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import { render, screen, userEvent, waitFor } from 'test-utils';
+import {
+  useCreateBatchSuccessHandler,
+  useCreateBatchErrorHandler,
+  useValidateBatchSuccessHandler,
+} from './mocks/once-handlers';
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
@@ -48,7 +50,7 @@ const defaultUserExtra = {
   isPartner,
 };
 const defaultOrgExtra = {};
-describe('BulkAddMerchant', () => {
+describe('BulkAddMerchantPG', () => {
   const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
     const session = getInitialUserOrgState({
       isRzpOrg,
@@ -71,57 +73,10 @@ describe('BulkAddMerchant', () => {
     await userEvent.upload(uploadButton, file);
   };
 
-  const useValidateBatchSuccessHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches/validate', (req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status_code: 200,
-            success: true,
-            data: fileUploadResponse,
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
-
-  const useCreateBatchSuccessHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches', (req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status_code: 200,
-            success: true,
-            data: { status: 'success' },
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
-
-  const useCreateBatchErrorHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches', (req, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
-            status_code: 400,
-            success: true,
-            data: ['error'],
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
   test('should upload submerchants successfully after uploading file and clicking on invite', async () => {
     useValidateBatchSuccessHandler();
     useCreateBatchSuccessHandler();
-    renderApp();
+    renderApp({ productType: PRODUCT_TYPE.PG });
     await userUploadFile();
 
     await waitFor(() => {
@@ -142,13 +97,9 @@ describe('BulkAddMerchant', () => {
   test('should show error notification if invite API fails after uploading file and clicking on invite', async () => {
     useValidateBatchSuccessHandler();
     useCreateBatchErrorHandler();
-    renderApp();
+    renderApp({ productType: PRODUCT_TYPE.PG });
     await userUploadFile();
-    await waitFor(() => {
-      expect(screen.getByText('2 contacts have been identified.')).toBeInTheDocument();
-    });
     await userEvent.click(screen.getByRole('button', { name: 'Invite 2 contacts' }));
-
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
     });

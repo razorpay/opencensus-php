@@ -1,12 +1,12 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, userEvent } from 'common/services/test/test-utils';
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { referralData } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
-
 import * as analytics from 'common/utils/analytics';
+import { referralData } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
 
@@ -38,7 +38,6 @@ describe('ShareReferralLink', () => {
     );
   };
 
-  // Note: Skippnig for now: div for Line of Credit is rendering but test matcher is unable to detect it in dom!
   test('should render ShareReferralLink for capital with props', () => {
     renderApp({
       product: PRODUCT_TYPE.CAPITAL,
@@ -48,6 +47,19 @@ describe('ShareReferralLink', () => {
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
     expect(
       screen.getByText('Refer merchants to Capital products like Line of Credit'),
+    ).toBeInTheDocument();
+  });
+
+  test('should render ShareReferralLink for X with props', () => {
+    renderApp({
+      product: PRODUCT_TYPE.X,
+    });
+    expect(screen.getByText('RazorpayX')).toBeInTheDocument();
+    expect(screen.getByText(referralData.banking.url)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Refer merchants to RazorpayX products like Current account to process payouts',
+      ),
     ).toBeInTheDocument();
   });
 

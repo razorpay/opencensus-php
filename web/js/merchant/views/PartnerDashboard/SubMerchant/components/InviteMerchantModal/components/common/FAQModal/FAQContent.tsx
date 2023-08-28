@@ -25,6 +25,11 @@ const RowTextItem = ({ children }) => {
     </Text>
   );
 };
+
+export const titlesForTracking = {
+  WHY_ASSIST: 'Why should I assist my client with their KYC?',
+  WHAT_TO_DO: 'What will I have to do to perform their KYC?',
+};
 type FAQContentProps = {
   noTopMargin?: boolean;
   inviteFlow: string;
@@ -35,10 +40,6 @@ const FAQContent = ({
   inviteFlow,
   productType,
 }: FAQContentProps): JSX.Element => {
-  const titlesForTracking = {
-    WHY_ASSIST: 'Why should I assist my client with their KYC?',
-    WHAT_TO_DO: 'What will I have to do to perform their KYC?',
-  };
   const onTitleClick = ({ expandedIndex, message }) => {
     if (expandedIndex !== -1) {
       trackInviteFlowCommonCtaClicked({

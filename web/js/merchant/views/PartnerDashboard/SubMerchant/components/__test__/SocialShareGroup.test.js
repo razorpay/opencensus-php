@@ -6,7 +6,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 // TODO: only basic render test added, other tests can be added later.
 
 const defaultProps = {
-  referralUrl: 'pgReferralLink',
+  referralUrl: 'https://rzp.io/i/6cxEuFXr',
   tracking: { trackEvent: jest.fn() },
   product: PRODUCT_TYPE.PG,
   source: 'source',
@@ -40,7 +40,7 @@ describe('SocialShareGroup', () => {
     const image = screen.getByAltText('share via fb');
     await userEvent.click(image);
     expect(windowOpenSpy).toHaveBeenCalledWith(
-      `https://www.facebook.com/sharer/sharer.php?u=pgReferralLink&quote=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes.`,
+      `https://www.facebook.com/sharer/sharer.php?u=https://rzp.io/i/6cxEuFXr&quote=%22Sign%20up%20on%20Razorpay!%22%3A%20Start%20using%20a%20wide%20range%20of%20Razorpay's%20payment%20solutions%20and%20unlock%20growth%20for%20your%20business%20with%20just%20a%20few%20clicks.%20Go%20live%20in%20less%20than%2010%20minutes.`,
       'facebook-share',
       'width=550,height=235',
     );
