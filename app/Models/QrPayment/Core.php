@@ -27,6 +27,8 @@ class Core extends Base\Core
 
     public function processPayment($gatewayResponse, $terminal, $qrPaymentRequest)
     {
+        $timeStarted = microtime(true);
+
         $input = $this->getQrPaymentInputParams($gatewayResponse['qr_data']);
 
         $errorMessage = null;
@@ -103,8 +105,10 @@ class Core extends Base\Core
 
             $isSharedTerminalPayment = $terminal->isShared();
 
+            $processingTime = (microtime(true) - $timeStarted) * 1000;
+
             (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage,
-                                                    $requestSource, $isSharedTerminalPayment);
+                                                    $requestSource, $isSharedTerminalPayment, $processingTime);
         }
 
         return $valid;

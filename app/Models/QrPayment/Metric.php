@@ -11,6 +11,7 @@ class Metric extends Base\Core
 {
     const QR_CODE_V2_PAYMENT_PROCESS = 'qr_code_v2_payment_process';
     const QR_CODE_V2_PAYMENT_ES_SYNC = 'qr_code_v2_payment_es_sync';
+    const QR_CODE_V2_PAYMENT_LATENCY = 'qr_code_v2_payment_latency';
 
     const LABEL_MERCHANT_ID          = 'merchant_id';
     const LABEL_METHOD               = 'method';
@@ -40,7 +41,7 @@ class Metric extends Base\Core
     }
 
     public function pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource,
-                                            $isSharedTerminalPayment)
+                                            $isSharedTerminalPayment, $processingTime)
     {
         $dimensions = $this->getDefaultDimensions($requestSource);
 
@@ -54,10 +55,11 @@ class Metric extends Base\Core
             self::LABEL_SHARED_TERMINAL => $isSharedTerminalPayment,
         ];
 
-        $this->trace->count(
-            Metric::QR_CODE_V2_PAYMENT_PROCESS,
-            array_merge($customDimensions, $dimensions)
-        );
+        $metricDimensions = array_merge($customDimensions, $dimensions);
+
+        $this->trace->count(Metric::QR_CODE_V2_PAYMENT_PROCESS, $metricDimensions);
+
+        $this->trace->histogram(self::QR_CODE_V2_PAYMENT_LATENCY, (int)$processingTime, $metricDimensions);
     }
 
     public function pushQrV2PaymentsESSyncMetrics($errorMessage)
