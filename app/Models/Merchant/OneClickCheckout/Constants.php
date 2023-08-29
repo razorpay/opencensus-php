@@ -181,6 +181,10 @@ class Constants
      *
      * @var string[]
      */
+    const WOOC_SPECIFIC_CONFIGS = [
+        self::COD_ENGINE,
+    ];
+
     const CONFIG_CUM_FEATURE_FLAGS = [
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_GA_ANALYTICS,
@@ -236,6 +240,11 @@ class Constants
         self::SHOP_ID,
         self::MANUAL_CONTROL_COD_ORDER,
         self::DOMAIN_URL,
+    ];
+
+    const GENERIC_RESETTABLE_CONFIGS = [
+        self::COD_ENGINE,
+        self::COD_ENGINE_TYPE,
     ];
 
     const NATIVE_RESETTABLE_CONFIGS = [

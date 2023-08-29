@@ -312,6 +312,9 @@ class Service extends Base\Service
                     if (in_array($key, Constants::GIFT_CARD_CONFIGS) === true && $updatePlatform !== Constants::NATIVE) {
                         $this->add1ccConfigFlags($input, $key);
                     }
+                    if (in_array($key, Constants::WOOC_SPECIFIC_CONFIGS) === true && $updatePlatform == Constants::WOOCOMMERCE) {
+                        $this->add1ccConfigFlags($input, $key);
+                    }
                 }
 
                 if (isset($input[Type::DOMAIN_URL])) {
@@ -321,7 +324,7 @@ class Service extends Base\Service
                     );
                 }
 
-                if (isset($input[Constants::COD_ENGINE_TYPE]) && $updatePlatform === Constants::SHOPIFY) {
+                if (isset($input[Constants::COD_ENGINE_TYPE]) && ($updatePlatform === Constants::SHOPIFY || $updatePlatform === Constants::WOOCOMMERCE)) {
                     (new Core)->associateMerchant1ccConfig(
                         Constants::COD_ENGINE_TYPE,
                         $input[Constants::COD_ENGINE_TYPE]
@@ -509,11 +512,11 @@ class Service extends Base\Service
             $domainUrl = $domainUrlConfig->getValue();
         }
 
+        $codEngineTypeConfig = $this->merchant->get1ccConfig(Constants::COD_ENGINE_TYPE);
+        $codEngineType = $codEngineTypeConfig !== null ? $codEngineTypeConfig->getValue() : null;
+
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
-            $codEngineTypeConfig = $this->merchant->get1ccConfig(Constants::COD_ENGINE_TYPE);
-            $codEngineType = $codEngineTypeConfig !== null ? $codEngineTypeConfig->getValue() : null;
-
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
                 $this->merchant->getId(),
                 Constants::SHOPIFY,
@@ -586,6 +589,18 @@ class Service extends Base\Service
             "platform"        => $merchantPlatform,
             "coupon_config"   => $couponConfig
         ];
+
+        if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::WOOCOMMERCE)
+        {
+            $result[Constants::COD_ENGINE_TYPE] = $codEngineType;
+
+            foreach ($configFlagsResponse as $config => $value) {
+            if (in_array($config, Constants::WOOC_SPECIFIC_CONFIGS) === true) {
+                    $result[$config] = $value;
+                }
+            }
+            
+        }
 
         if ($merchantPlatform === Constants::NATIVE)
         {
@@ -697,6 +712,10 @@ class Service extends Base\Service
             return true;
         }
         if (in_array($config, Constants::GIFT_CARD_CONFIGS) === true)
+        {
+            return true;
+        }
+        if (in_array($config, Constants::GENERIC_RESETTABLE_CONFIGS) === true)
         {
             return true;
         }
