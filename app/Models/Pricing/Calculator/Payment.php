@@ -853,7 +853,9 @@ class Payment extends Base
 
                 $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
-                if ($isExpEnabled === true  && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
+                $merchant = $this->entity->merchant;
+
+                if ($merchant?->org->getId() === Org\Entity::RAZORPAY_ORG_ID && $pricing->isTypePricing() && $isExpEnabled === true && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
                     $card = $this->getCardDetails();
 
                     $payment_details = $this->getPaymentDetails();
