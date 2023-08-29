@@ -242,9 +242,10 @@ class Repository extends BaseRepository
         $commission->source()->associate($payment);
     }
 
-    public function findBySourceIdAndCommissionType(string $sourceId, string $commissionType = Type::IMPLICIT)
+    public function findBySourceIdSourceTypeAndCommissionType(string $sourceId, string $sourceType, string $commissionType = Type::IMPLICIT)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::SOURCE_ID, $sourceId)
                     ->where(Entity::TYPE, $commissionType)
                     ->first();

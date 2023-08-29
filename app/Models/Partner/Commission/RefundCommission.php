@@ -30,7 +30,7 @@ class RefundCommission extends Core
     public function createReversalCommissionForRefund(): void
     {
         $this->refundedPayment = $this->repo->payment->find($this->paymentId);
-        $commission = $this->repo->commission->findBySourceIdAndCommissionType($this->refundedPayment->getId());
+        $commission = $this->repo->commission->findBySourceIdSourceTypeAndCommissionType($this->refundedPayment->getId(), Constants::PAYMENT);
 
         $this->refundCommission = $this->buildRefundCommission($commission);
 

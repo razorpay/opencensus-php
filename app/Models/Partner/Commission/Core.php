@@ -71,8 +71,8 @@ class Core extends Base\Core
      */
     public function isValidForCommissionRefund(string $paymentId, string $refundId): bool
     {
-        $commission = $this->repo->commission->findBySourceIdAndCommissionType($paymentId);
-        $refundedCommission = $this->repo->commission->findBySourceIdAndCommissionType($refundId);
+        $commission = $this->repo->commission->findBySourceIdSourceTypeAndCommissionType($paymentId,Constants::PAYMENT);
+        $refundedCommission = $this->repo->commission->findBySourceIdSourceTypeAndCommissionType($refundId, Constants::REFUND);
 
         if (empty($commission) == true or empty($refundedCommission) == false)
         {
