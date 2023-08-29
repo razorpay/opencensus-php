@@ -279,7 +279,7 @@ class Base
         $code = $response[self::CODE];
         $body = $response[self::BODY];
 
-        if (in_array($code, [200, 400, 401, 500], true) === false)
+        if (in_array($code, [200, 400, 401, 404, 500], true) === false)
         {
             throw new Exception\RuntimeException(
                 'Unexpected response code received from Settlements.',
