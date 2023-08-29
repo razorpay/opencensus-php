@@ -62,6 +62,48 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateBatchMerchantUploadMIQSuccess_OnlyDS()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $permission = $this->fixtures->create('permission', ['name' => PName::MERCHANT_BULK_UPLOAD_MIQ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::ORG_PROGRAM_DS_CHECK,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $roleOfAdmin->permissions()->attach($permission->getId());
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateBatchMerchantUploadMIQFailed_OnlyDS()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $permission = $this->fixtures->create('permission', ['name' => PName::MERCHANT_BULK_UPLOAD_MIQ]);
+
+        $roleOfAdmin->permissions()->attach($permission->getId());
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['error']);
+    }
+
     public function testCreateBatchMerchantUploadMIQInvalidPermission()
     {
         // validate permission for batch create
@@ -185,6 +227,32 @@ class MerchantUploadMiqBatchTest extends TestCase
 
     }
 
+    public function testCreateMerchantSuccess_OnlyDS()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::ORG_PROGRAM_DS_CHECK,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+    }
     protected function getDefaultFileEntries(): array
     {
         return [

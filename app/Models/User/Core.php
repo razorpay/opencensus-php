@@ -65,6 +65,7 @@ use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\SubVirtualAccount\Constants as SubVaConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
@@ -538,6 +539,8 @@ class Core extends Base\Core
 
         unset($input['token_data']);
 
+        unset($input[UConstants::ONLY_DS_UPLOAD_MIQ]);
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
@@ -552,6 +555,13 @@ class Core extends Base\Core
     //block pg merchants signup
     public function validateAccountCreation(array $input)
     {
+        // Allow Only DS user/merchant creation via UPLOAD MIQ flow.
+        if(empty($input[UConstants::ONLY_DS_UPLOAD_MIQ]) === false and
+            $input[UConstants::ONLY_DS_UPLOAD_MIQ] === true)
+        {
+            return;
+        }
+
         $merchantToken = $input[AdminLead\Constants::TOKEN_DATA];
 
         if ($merchantToken !== null)

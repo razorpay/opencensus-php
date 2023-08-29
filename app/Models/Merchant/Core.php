@@ -131,6 +131,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\Ledger\ReverseShadow\ReserveBalanceLoading;
 use RZP\Models\Typeform\Core as TypeformCore;
 use RZP\Models\Typeform\Constants as TypeformConstant;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 
 class Core extends Base\Core
@@ -228,6 +229,8 @@ class Core extends Base\Core
         $tokenData=$merchantDetailInputData['token_data'];
 
         unset($merchantDetailInputData['token_data']);
+
+        unset($input[UConstants::ONLY_DS_UPLOAD_MIQ]);
 
         $merchant = (new Merchant\Entity)->build($input);
 

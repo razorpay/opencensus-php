@@ -559,6 +559,12 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
+    protected static array $merchantUploadMiqCreateRules = [
+        Entity::TYPE        => 'required|in:merchant_upload_miq',
+        Entity::FILE        => 'required|file|max:1000' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $subMerchantConfigRules = [
         ME::AUTO_SUBMIT               => 'filled|boolean',
         ME::INSTANTLY_ACTIVATE        => 'filled|boolean',
@@ -2708,6 +2714,24 @@ class Validator extends Base\Validator
                         "User does not have required permission to perform dedupe"
                     );
                 }
+            }
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function validateMerchantUploadBatch(Admin\Admin\Entity $admin, array $input): void
+    {
+        if(isset($input['config']['is_ds_merchant']) === true && $input['config']['is_ds_merchant'] === '1')
+        {
+            if($admin->org->isFeatureEnabled(Feature::ORG_PROGRAM_DS_CHECK) === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED ,
+                    null,
+                    "The admin does not have the required configurations to onboard the DS merchant"
+                );
             }
         }
     }

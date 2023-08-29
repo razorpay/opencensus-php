@@ -46,6 +46,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
+        $this->validateBatchCreate($input);
+
         $this->validateAdminRoleIfApplicable($input);
 
         $this->validatePermissionForBatchType($input);
@@ -101,6 +103,24 @@ class Core extends Base\Core
         if ($auth->isAdminAuth() === true)
         {
             (new Validator)->validateAdminRoleIfApplicable($auth->getAdmin(), $input[Entity::TYPE]);
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function validateBatchCreate($input): void
+    {
+        $auth = $this->app['basicauth'];
+
+        if($auth->isAdminAuth() === true)
+        {
+            $batchType = $input[Entity::TYPE];
+
+            if($batchType === Type::MERCHANT_UPLOAD_MIQ)
+            {
+                (new Validator)->validateMerchantUploadBatch($auth->getAdmin(), $input);
+            }
         }
     }
 

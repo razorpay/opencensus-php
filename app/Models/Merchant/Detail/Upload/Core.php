@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -22,6 +23,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 
 class Core extends Base\Core
 {
@@ -121,10 +123,11 @@ class Core extends Base\Core
 
             $merchant = $this->repo->transactionOnLiveAndTest(function () use ($processedEntry, $parser, &$entry)
             {
-                $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME]);
+                $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
+                    $processedEntry[UConstants::IS_DS_MERCHANT]);
 
                 $merchant = $this->createMerchant($user, $processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
-                    $processedEntry[MerchantEntity::ORG_ID]);
+                    $processedEntry[MerchantEntity::ORG_ID], $processedEntry[UConstants::IS_DS_MERCHANT]);
 
                 $feeBearer = $parser->getMerchantFeeBearerType($processedEntry);
 
@@ -134,6 +137,12 @@ class Core extends Base\Core
                 {
                     throw new Exception\RuntimeException("Failed to create merchant", null,
                         null, ErrorCode::SERVER_ERROR);
+                }
+
+                // Add only_ds feature only to merchant, if the 'is_ds_merchant' field is set.
+                if($processedEntry[UConstants::IS_DS_MERCHANT] === '1')
+                {
+                    $this->addOnlyDSRelevantFeatures($merchant->getId());
                 }
 
                 $entry[Header::MIQ_OUT_MERCHANT_ID] = $merchant->getId();
@@ -148,14 +157,8 @@ class Core extends Base\Core
 
                 $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $websiteDetails);
 
-                // The Aadhaar linked status will be validated before form submission if it is set to 1 for Aadhaar linkage.
-                // However, as this is not applicable for the banking merchant, hence setting it to 0.
-                //
                 // The activation form milestone is set to L2 as here we are submitting the KYC form.
                 $submitData = [
-                    Entity::STAKEHOLDER => [
-                        Stakeholder\Entity::AADHAAR_LINKED => 0,
-                    ],
                     DetailEntity::ACTIVATION_FORM_MILESTONE => "L2",
                     DetailEntity::SUBMIT => '1',
                 ];
@@ -230,7 +233,7 @@ class Core extends Base\Core
         });
     }
 
-    protected function createUser(string $email, string $businessName)
+    protected function createUser(string $email, string $businessName, string $onlyDs = null)
     {
         $confirm_token = gen_uuid();
 
@@ -245,16 +248,30 @@ class Core extends Base\Core
             'name'                  => $businessName
         ];
 
+        // If the create request is for the only DS merchant, then set the only_ds_upload_miq field in the input.
+        // It's required to unblock the user creation at the core layer.
+        if($onlyDs == 1)
+        {
+            $userInput[UConstants::ONLY_DS_UPLOAD_MIQ] = true;
+        }
+
         return $this->userService->create($userInput);
     }
 
-    protected function createMerchant($user, string $email, string $businessName, string $orgId = null)
+    protected function createMerchant($user, string $email, string $businessName, string $orgId = null, string $onlyDs = null)
     {
         $merchantInput = [
             'name'  => $businessName,
             'email' => $email,
             'org_id'=> $orgId ?? $this->auth->getOrgId()
         ];
+
+        // If the create request is for the only DS merchant, then set the only_ds_upload_miq field in the input.
+        // It's required to unblock the merchant creation at the core layer.
+        if($onlyDs == 1)
+        {
+            $merchantInput[UConstants::ONLY_DS_UPLOAD_MIQ] = true;
+        }
 
         $merchantData = $this->userService->createMerchantFromUser($merchantInput, $user, '', false, [], false);
 
@@ -283,5 +300,23 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($merchant);
+    }
+
+    /**
+     * Add required feature flags for only DS merchant onboarding.
+     *
+     * @param string $merchantId
+     * @return void
+     */
+    public function addOnlyDSRelevantFeatures(string $merchantId): void
+    {
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchantId,
+            Feature\Entity::ENTITY_TYPE => 'merchant',
+            Feature\Entity::NAMES       => [Feature\Constants::ONLY_DS],
+            Feature\Entity::SHOULD_SYNC => false
+        ];
+
+        (new Feature\Service)->addFeatures($featureParams);
     }
 }

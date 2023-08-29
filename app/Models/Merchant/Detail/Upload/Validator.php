@@ -98,6 +98,7 @@ class Validator extends Base\Validator
         Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:4|max:120',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
         Merchant\Entity::ORG_ID                      => 'required',
+        UConstants::IS_DS_MERCHANT                   => 'sometimes',
     ];
 
     /**

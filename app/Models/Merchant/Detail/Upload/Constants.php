@@ -58,4 +58,10 @@ class Constants
     const PRICING_METHOD_TYPE         = 'pricing_method_type';
     const PRICING_NETWORK             = 'pricing_network';
     const PRICING_METHOD_SUBTYPE      = 'pricing_method_subtype';
+
+    /**
+     * Constants for only DS merchant MIQ.
+     */
+    const IS_DS_MERCHANT    = "is_ds_merchant";
+    const ONLY_DS_UPLOAD_MIQ = "only_ds_upload_miq";
 }
