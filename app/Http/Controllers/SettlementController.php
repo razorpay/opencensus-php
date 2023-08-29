@@ -368,6 +368,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function internalMerchantConfigGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalMerchantConfigGet($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function merchantConfigCreate()
     {
         $input = Request::all();

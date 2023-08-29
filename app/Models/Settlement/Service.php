@@ -1393,6 +1393,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigGet($input);
     }
 
+    public function internalMerchantConfigGet(array $input) : array
+    {
+        return app('settlements_api')->merchantConfigGet($input);
+    }
+
     public function settlementTimelineModalGet(array $input) : array
     {
         return app('settlements_merchant_dashboard')->settlementTimelineModalGet($input);

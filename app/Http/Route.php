@@ -862,6 +862,7 @@ class Route
         'admin_website_section_action'             => ['post',     'merchant/{id}/website/section/action',          'MerchantController@postAdminSectionAction'                                ],
         'admin_website_section_save'               => ['post',     'merchant/{id}/website/section',                 'MerchantController@saveAdminWebsiteSection'                                ],
         'admin_website_section_fetch'              => ['get',      'merchant/{id}/website/section',                 'MerchantController@getAdminWebsiteSection'                                ],
+        'website_section_fetch_internal'           => ['get',      'internal/merchant/{id}/website/section',        'MerchantController@getAdminWebsiteSection'                                ],
 
         'merchant_consents_admin_fetch'            => ['get',       'merchant/consents/{mid}',                      'MerchantController@getMerchantConsents'                            ],
         'merchant_consents_save'                   => ['post',      'merchant/consents',                            'MerchantController@saveMerchantConsents'                           ],
@@ -999,7 +1000,7 @@ class Route
         //settlement service proxy routes
         'setl_admin_fetch'                         => ['post',     'admin/settlements/dashboard/fetch',              'SettlementController@serviceFetch'                                 ],
         'setl_admin_fetch_multiple'                => ['post',     'admin/settlements/dashboard/fetch_multiple',     'SettlementController@serviceFetchMultiple'                         ],
-        'setl_merchant_config_get_internal'        => ['post',     'internal/settlements/merchant_config/get',       'SettlementController@merchantConfigGet'                            ],
+        'setl_merchant_config_get_internal'        => ['post',     'internal/settlements/merchant_config/get',       'SettlementController@internalMerchantConfigGet'                            ],
         'setl_merchant_config_get_admin'           => ['post',     'admin/settlements/merchant_config/get',          'SettlementController@merchantConfigGet'                            ],
         'setl_merchant_config_get'                 => ['post',     'settlements/merchant_config/get',                'SettlementController@merchantConfigGet'                            ],
         'setl_merchant_config_create'              => ['post',     'settlements/merchant_config/create',             'SettlementController@merchantConfigCreate'                         ],
@@ -5179,6 +5180,7 @@ class Route
         'merchant_document_upload_internal',
         'merchant_activation_clarifications_save_internal',
         'merchant_activation_clarifications_fetch_internal',
+        'website_section_fetch_internal',
         'merchant_activation_change_log_internal',
         'merchant_nc_revamp_eligibility_internal',
         'dcc_invoice_generation_cron',
@@ -16073,6 +16075,7 @@ class Route
             'merchant_nc_revamp_eligibility_internal',
             'merchant_document_upload_internal',
             'payment_fetch_by_id_internal',
+            'website_section_fetch_internal',
         ],
 
         'cmma' => [
