@@ -42,7 +42,7 @@ class CalculatorV2 extends Calculator
      *
      * @return int[]
      */
-    protected function getCommissionComponents(int $commissionFee, int $commissionTax): array
+    protected function getCommissionFeeTax(int $commissionFee, int $commissionTax): array
     {
         if ($this->shouldCreditGst === false)
         {

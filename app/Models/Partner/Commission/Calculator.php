@@ -246,6 +246,16 @@ class Calculator extends Base\Core
     }
 
     /**
+     * Returns the list of commission_component entities created
+     *
+     * @return array
+     */
+    public function getCommissionComponents(): array
+    {
+        return $this->commissionComponents;
+    }
+
+    /**
      * @return int
      */
     public function getMerchantFee(): int
@@ -744,7 +754,7 @@ class Calculator extends Base\Core
 
         }
 
-        list($commissionFee, $commissionTax) = $this->getCommissionComponents($commissionFee, $commissionTax);
+        list($commissionFee, $commissionTax) = $this->getCommissionFeeTax($commissionFee, $commissionTax);
 
         // update tax fee split to new commission tax as this will be stored as fee breakup
         $taxFeeSplit = $feeSplit->filter(function ($split)
@@ -933,7 +943,7 @@ class Calculator extends Base\Core
 
         list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
 
-        list($commissionFee, $commissionTax) = $this->getCommissionComponents($commissionFee, $commissionTax);
+        list($commissionFee, $commissionTax) = $this->getCommissionFeeTax($commissionFee, $commissionTax);
 
         $payload = [
             Entity::FEE         => $commissionFee,
@@ -959,7 +969,7 @@ class Calculator extends Base\Core
         $this->addCommissionComponent($commissionComponent);
     }
 
-    protected function getCommissionComponents(int $commissionFee, int $commissionTax): array
+    protected function getCommissionFeeTax(int $commissionFee, int $commissionTax): array
     {
 
         if ($this->shouldCreditGst() === false)

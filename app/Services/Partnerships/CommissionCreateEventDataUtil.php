@@ -21,12 +21,14 @@ class CommissionCreateEventDataUtil
      *
      * @return array
      */
-    public static function getPayloadForCommissionCreate(array $commissions, PaymentEntity $payment): array
+    public static function getPayloadForCommissionCreate(array $commissions, array $components, PaymentEntity $payment): array
     {
         $commissionsPayload = [];
-        foreach ($commissions as $commission)
+        foreach ($commissions as $index => $commission)
         {
-            $commissionsPayload[] = $commission->toArrayPublic();
+            $payload = $commission->attributesToArray();
+            $payload['commission_component'] = $components[$index]->attributesToArray();
+            $commissionsPayload[] = $payload;
         }
 
         $publicKey = self::getPaymentPublicKey($payment);
@@ -34,13 +36,14 @@ class CommissionCreateEventDataUtil
         $order = [
             'id'             => optional($payment->order)->getId(),
             'public_key'     => $publicKey,
-            'application_id' => (new EntityOriginCore())->getOriginEntityFromPublicKey($publicKey)
+            'application_id' => (new EntityOriginCore())->getOriginIDFromPublicKey($publicKey)
         ];
 
         return [
             // For now, we will be going with all the payment entity attributes. But only few of the attributes are needed for commission create
             'payment'          => [
-                'id' => $payment->getId()
+                'id' => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId()
             ],
             'order'            => $order,
             // commissions data will be optional when we start reverse shadow phase. Current this data is used for preserving ids and for parity check

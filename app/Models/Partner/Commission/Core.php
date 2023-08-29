@@ -171,7 +171,7 @@ class Core extends Base\Core
 
         $calculator->calculateAndSaveCommission();
 
-        return $calculator->getCommissions();
+        return [$calculator->getCommissions(), $calculator->getCommissionComponents()];
     }
 
 

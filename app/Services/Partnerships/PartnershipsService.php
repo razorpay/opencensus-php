@@ -388,7 +388,7 @@ class PartnershipsService extends Base\Service
      *
      * @return  void
      */
-    public function createCommissionShadowPhase(array $commissions, PaymentEntity $payment): void
+    public function createCommissionShadowPhase(array $commissions, array $components, PaymentEntity $payment): void
     {
         try
         {
@@ -397,11 +397,12 @@ class PartnershipsService extends Base\Service
                 return;
             }
 
-            $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $payment);
+            $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $components, $payment);
 
             \Event::dispatch(new TransactionalClosureEvent(function() use ($payload) {
                 // Job will be dispatched only after the transaction commits.
-                $this->pushRawJob($payload, self::COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY);
+                // and after a delay of 5 seconds
+                $this->pushJobWithDelay($payload, self::COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY, 5);
 
                 $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_create', 'success' => true]);
             }));
@@ -527,6 +528,24 @@ class PartnershipsService extends Base\Service
 
     /**
      * Pushes the job to the SQS queue based on the queue config key and connection.
+     * @param array $data
+     * @param string $queueConfigKey
+     * @param int $waitTime delay in seconds
+     *
+     * @return  string
+     */
+    public function pushJobWithDelay(array $data, string $queueConfigKey, int $waitTime): string
+    {
+        $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
+        $connection = $this->getQueueConnection();
+
+        return $this->app['queue']->connection($connection)->later(
+            $waitTime, "Create Commission Queue Push", json_encode($data), $queueName
+        );
+    }
+
+    /**
+     * Pushes the job to the SQS queue based on the queue config key and connection.
      * @param   $data
      * @param   $queueConfigKey
      *
@@ -637,7 +656,7 @@ class PartnershipsService extends Base\Service
         {
             $this->mode = $mode;
         }
-        $url = $this->getBaseUrl() . $path;
+        $url = $this->getBaseUrl($this->mode) . $path;
 
         $headers = [];
 
@@ -653,7 +672,7 @@ class PartnershipsService extends Base\Service
 
         $jwt = null;
         if ($this->skipPassport === false) {
-            $jwt = $this->auth->getPassportJwt($this->getBaseUrl());
+            $jwt = $this->auth->getPassportJwt($this->getBaseUrl($this->mode));
         }
         if ($jwt == null) {
             $options['auth'] = [$this->key, $this->secret];
@@ -671,17 +690,15 @@ class PartnershipsService extends Base\Service
         ];
     }
 
-    private function getBaseUrl(): string
+    private function getBaseUrl($mode = Mode::LIVE): string
     {
-        // returning live url for now as entities are not sync in live and test mode
-        return $this->baseLiveUrl;
-        //if($this->mode === Mode::LIVE) {
-        //    return $this->baseLiveUrl;
-        //}
-        //else
-        //{
-        //    return $this->baseTestUrl;
-        //}
+        if($mode === Mode::LIVE) {
+            return $this->baseLiveUrl;
+        }
+        else
+        {
+            return $this->baseTestUrl;
+        }
     }
 
     protected function parseAndReturnResponse($res)

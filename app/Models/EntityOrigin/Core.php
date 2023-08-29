@@ -428,6 +428,37 @@ class Core extends Base\Core
     {
         try
         {
+            $applicationId = $this->getOriginIDFromPublicKey($publicKey);
+
+            return  $applicationId !== null ? (new OAuthApp\Repository)->findOrFail($applicationId) : null;
+        }
+        catch (\Throwable $e)
+        {
+            // Should not fail even if the origin extraction from public key is failed.
+            $this->trace->critical(TraceCode::SET_ORIGIN_FROM_PUBLIC_KEY_FAILED,
+                [
+                    'message'           => $e->getMessage(),
+                    'publicKey'         => $publicKey,
+                    'stack_trace'       => $e->getTraceAsString(),
+                ]
+            );
+
+            return null;
+        }
+
+    }
+
+    /**
+     * Extracts the origin ID (the applicationID) from public key
+     *
+     * @param string $publicKey
+     *
+     * @return string|null
+     */
+    public function getOriginIDFromPublicKey(string $publicKey): string|null
+    {
+        try
+        {
             // public key will be in format of rzp_mode_partner_clientID-acc_accountId in case of partner auth
             // and rzp_mode_oauth_clientID in case of oauth
             $publicKey = explode('-', $publicKey)[0];
@@ -439,7 +470,7 @@ class Core extends Base\Core
             if (preg_match(self::PARTNER_KEY_REGEX, $publicKey) === 1)
             {
                 $applicationId = (new OAuthClient\Repository)->getClientByIdAndEnv($keyId, ClientAuthCreds::$clientModes[$this->mode])
-                                                             ->getApplicationId();
+                    ->getApplicationId();
             }
             else if (preg_match(self::OAUTH_KEY_REGEX, $publicKey) === 1)
             {
@@ -448,7 +479,7 @@ class Core extends Base\Core
                 $applicationId = $token->getClient()->getApplicationId();
             }
 
-            return  $applicationId !== null ? (new OAuthApp\Repository)->findOrFail($applicationId) : null;
+            return  $applicationId;
         }
         catch (\Throwable $e)
         {
