@@ -683,6 +683,8 @@ class BasicAuth
      */
     public function checkAndSetAccountId(string $accountId = null)
     {
+        // set source of account id to metrics
+        app('request.ctx')->setAccountIdSource();
         $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
         if (empty($accountId) === true)
@@ -2320,6 +2322,12 @@ class BasicAuth
         return (($this->isPrivateAuth() === true) and ($this->isProxyAuth() === false));
     }
 
+    public function isStrictPublicAuth()
+    {
+        return (($this->isPublicAuth() === true) and ($this->isKeylessPublicAuth() === false) and
+            (in_array(app('router')->currentRouteName(), Route::$publicCallback, true) === false));
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
@@ -3311,7 +3319,8 @@ class BasicAuth
         // json_decode and json_encode will convert the object to associative array in full depth recursively
         // there will not be any error since we verified passport is valid already
         // this will not cause any performance impact as the passport does not have too many nested objects
-        $this->passport = json_decode(json_encode($passport), true);
+        // api passport array contains all keys as snake case, hence match the same.
+        $this->passport = $this->transformKeysToSnakeCase(json_decode(json_encode($passport), true));
     }
 
     /**
@@ -3323,6 +3332,23 @@ class BasicAuth
     }
 
     /**
+     * converts array keys to snake case recursively
+     * @param array $array
+     * @return array
+     */
+    protected function transformKeysToSnakeCase(array $array) {
+        foreach ($array as $key => $value){
+            unset($array[$key]); // unset old key
+            $newKey = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', ltrim($key, '!')));
+            $array[$newKey] = $value; // add new key
+            if (is_array($value)) {
+                $array[$newKey] = $this->transformKeysToSnakeCase($value);
+            }
+        }
+        return $array;
+    }
+
+/**
      * Sets passport's mode.
      * @param string $mode
      */

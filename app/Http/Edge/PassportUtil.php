@@ -180,15 +180,7 @@ class PassportUtil
 
         // passport should be used only for identified requests, identified will be true for both private and public auth
         // unidentified or invalid requests should be terminated at edge itself
-        // log any unidentified request which is not terminated at Edge still
-        if ($this->passport->identified === false) {
-            $this->trace->info(TraceCode::PASSPORT_UNIDENTIFIED_REQUEST, [
-                'route'    => $this->route,
-                'passport' => $this->passport
-            ]);
-        }
-
-        // validate if the request has a passport attached to it and claims are valid
+        // validate if passport should be used for the request and claims are valid
         return ( ($passportUsable === true) && ($this->passport->identified === true) && ($this->validatePassport() === true) );
     }
 
@@ -428,6 +420,20 @@ class PassportUtil
         return !empty($this->passport->additionalIdentities[self::CUSTOMER][0]->id) ?
             $this->passport->additionalIdentities[self::CUSTOMER][0]->id :
             '';
+    }
+
+    /**
+     * Removes request key from query and request body params
+     * Required by payment create validators, to remove certain keys from request params
+     *
+     * @param string $key
+     * @return void
+     */
+    public function removeRequestKey(string $key)
+    {
+        // will not return any error if not found
+        $this->app['request']->query->remove($key);
+        $this->app['request']->request->remove($key);
     }
 
     //putting this check as there are several mismatches reported for consumer id.

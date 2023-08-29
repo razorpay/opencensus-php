@@ -46,6 +46,8 @@ return [
             'roles' => [
                 'oauth::scope::read_only',
             ],
+            'impersonation' => null,
+            'additional_identities' => null
         ],
     ],
 
@@ -156,6 +158,8 @@ return [
             'roles' => [
                 'oauth::scope::read_only',
             ],
+            'impersonation' => null,
+            'additional_identities' => null
         ],
     ],
 
@@ -197,6 +201,8 @@ return [
             'roles' => [
                 'oauth::scope::dummy.read'
             ],
+            'impersonation' => null,
+            'additional_identities' => null
         ],
     ],
 
@@ -670,6 +676,8 @@ return [
             'roles' => [
                 'oauth::scope::rx_read_write',
             ],
+            'impersonation' => null,
+            'additional_identities' => null
         ],
     ],
 

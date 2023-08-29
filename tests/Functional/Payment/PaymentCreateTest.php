@@ -13,11 +13,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factory;
-use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 use RZP\Constants\Mode;
 use RZP\Services\EsClient;
 use RZP\Models\Card\Network;
-use RZP\Models\Address\Type;
 use RZP\Models\Card\Repository;
 use RZP\Models\NetbankingConfig;
 use RZP\Error\PublicErrorDescription;
@@ -60,11 +58,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Admin\Service as AdminService;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService as RtoPredictionService;
-use Illuminate\Http\Response;
 
 class PaymentCreateTest extends TestCase
 {
@@ -76,7 +71,6 @@ class PaymentCreateTest extends TestCase
     use InvoiceTestTrait;
     use TerminalTrait;
     use HeimdallTrait;
-    use GeneratesTestPassportJwts;
     use PaymentsUpiTrait;
 
 

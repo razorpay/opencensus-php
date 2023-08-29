@@ -502,6 +502,10 @@ class PostAuthenticateTest extends TestCase
             $trace->shouldReceive('count')->times(1);
             $trace->shouldReceive('warning')->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
         }
+        if ($passport->identified === false)
+        {
+            $trace->shouldReceive('info')->once()->with(TraceCode::PASSPORT_UNIDENTIFIED_REQUEST, Mockery::type('array'));
+        }
 
         (new PostAuthenticate)->handle(true, $request);
         $this->assertSame($reqCtx->passportAttrsMismatch, $expectedMismatch);
@@ -1067,6 +1071,12 @@ class PostAuthenticateTest extends TestCase
         if (empty($passport))
         {
             $trace->shouldReceive('warning')->once()->with(TraceCode::PASSPORT_NOT_FOUND, Mockery::type('array'));
+            $trace->shouldReceive('info')->once()->with(TraceCode::PASSPORT_NOT_SET, Mockery::type('array'));
+        }
+        else {
+            if ($passport->identified === false) {
+                $trace->shouldReceive('info')->once()->with(TraceCode::PASSPORT_UNIDENTIFIED_REQUEST, Mockery::type('array'));
+            }
         }
 
         (new PostAuthenticate)->handle($authenticated, $request);

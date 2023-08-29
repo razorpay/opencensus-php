@@ -8,14 +8,12 @@ use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Builder;
-use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Address\AddressConsent1cc\Entity as AddressConsent1ccEntity;
 use RZP\Models\Address\Entity as AddressEntity;
 use RZP\Models\Address\Type;
 use RZP\Models\Customer\CustomerConsent1cc\Entity as CustomerConsent1ccEntity;
-use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
@@ -35,7 +33,6 @@ class CustomerTest extends TestCase
     use AttemptTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
-    use GeneratesTestPassportJwts;
 
     protected function setUp(): void
     {

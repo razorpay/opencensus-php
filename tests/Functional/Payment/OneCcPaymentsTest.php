@@ -15,7 +15,6 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 
 class OneCcPaymentsTest extends TestCase
 {
@@ -27,7 +26,6 @@ class OneCcPaymentsTest extends TestCase
     use InvoiceTestTrait;
     use TerminalTrait;
     use HeimdallTrait;
-    use GeneratesTestPassportJwts;
     use PaymentsUpiTrait;
 
     protected function setUp(): void

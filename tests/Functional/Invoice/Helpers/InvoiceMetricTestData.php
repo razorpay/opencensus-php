@@ -50,9 +50,13 @@ return [
         'rzp_auth'              =>  'private',
         'rzp_internal_app_name' =>  'none',
         'rzp_auth_flow_type'    =>  'key',
-        'has_passport'          =>  false,
+        'has_passport'          =>  true,
         'rzp_product'           =>  'primary',
         'rzp_key_source'        =>  'none',
+        'rzp_account_id_source' =>  'none',
+        'rzp_team'              =>  'unknown_unknown',
+        'host'                  =>  'api.razorpay.com',
+        'rzp_latency_group'     =>  'low'
     ],
 
     'testCreateInvoiceAndAssertMetricsSentExpectedMetricTags' => [
@@ -66,8 +70,12 @@ return [
         'rzp_auth'              =>  'private',
         'rzp_internal_app_name' =>  'none',
         'rzp_auth_flow_type'    =>  'key',
-        'has_passport'          =>  false,
+        'has_passport'          =>  true,
         'rzp_product'           =>  'primary',
         'rzp_key_source'        =>  'none',
+        'rzp_account_id_source' =>  'none',
+        'rzp_team'              =>  'unknown_unknown',
+        'host'                  =>  'api.razorpay.com',
+        'rzp_latency_group'     =>  'low'
     ],
 ];

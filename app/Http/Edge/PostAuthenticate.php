@@ -164,6 +164,29 @@ final class PostAuthenticate
             return;
         }
 
+
+        // passport should be present for all requests, log otherwise
+        // unsupported auth schemes at edge will have empty passport
+        // log only for private auth and public auth for now to avoid unsupported auth schemes at edge
+        if ($this->isPrivateAuth() || $this->isPartnerAuth() || $this->isPublicAuth() || $this->isOAuth()) {
+            if (empty($this->reqCtx->passport)) {
+                $this->trace->info(TraceCode::PASSPORT_NOT_SET, [
+                    'route' => app('router')->currentRouteName()
+                ]);
+            }
+            else {
+                // passport should be used only for identified requests, identified will be true for both private and public auth
+                // unidentified or invalid requests should be terminated at edge itself
+                // log any unidentified request which is not terminated at Edge still
+                if ($this->reqCtx->passport->identified === false) {
+                    $this->trace->info(TraceCode::PASSPORT_UNIDENTIFIED_REQUEST, [
+                        'route' => app('router')->currentRouteName(),
+                        'passport' => $this->reqCtx->passport
+                    ]);
+                }
+            }
+        }
+
         $passport = & $this->reqCtx->passport;
         $fromEdge = ($passport !== null);
 

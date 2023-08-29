@@ -207,6 +207,8 @@ class PassportUtilTest extends TestCase
 
         $passportUtil = new PassportUtil($passport);
         $this->assertSame($passportUtil->getAccountId(), '1000000000000');
+        // removes account id from request
+        $this->assertEmpty($this->app['request']->input('account_id'));
     }
 
     /**

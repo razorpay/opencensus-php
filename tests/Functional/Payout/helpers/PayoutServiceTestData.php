@@ -1184,6 +1184,8 @@ return [
             'roles'         => [
                 'oauth::scope::rx_read_write',
             ],
+            'impersonation' => null,
+            'additional_identities' => null
         ],
     ],
 

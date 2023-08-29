@@ -20,6 +20,7 @@ use RZP\Constants\Product;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -35,7 +36,7 @@ class BasicAuthTest extends TestCase
     use PartnerTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
-    use GeneratesTestPassportJwts;
+    use PassportTrait;
 
     /**
      * @var string passport jwks host

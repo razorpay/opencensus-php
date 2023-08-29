@@ -114,6 +114,7 @@ class PassportAuthTest extends TestCase
         $this->runRequestResponseFlow($testData);
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
         $this->assertBaValues('TheTestAuthKey', '100000Razorpay', 'rzp_test_TheTestAuthKey-acc_100000Razorpay', KeyAuthCreds::class, '100000Razorpay');
+        self::assertEmpty($this->app['request']->input('account_id'));
     }
 
     public function testPartnerAuth()
@@ -153,6 +154,7 @@ class PassportAuthTest extends TestCase
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
         $this->assertBaValues($client->getId(), '100000Razorpay', $publickey, ClientAuthCreds::class, '100000Razorpay',
             Mode::TEST, true, '10000000000000', $client->getApplicationId(), $client->getApplicationId());
+        self::assertEmpty($this->app['request']->input('account_id'));
     }
 
     public function testOauth()
@@ -173,7 +175,7 @@ class PassportAuthTest extends TestCase
             'owner_type' => 'merchant',
             'owner_id' => '10000000000000',
             'user_id' => '20000000000000',
-            'env' => 'test'
+            'env' => 'dev'
         ];
 
         $roles = ['oauth::scope::read_only'];
@@ -214,7 +216,7 @@ class PassportAuthTest extends TestCase
             'owner_type' => 'merchant',
             'owner_id' => '10000000000000',
             'user_id' => '20000000000000',
-            'env' => Mode::TEST
+            'env' => 'dev'
         ];
 
         $roles = ['oauth::scope::read_only'];
@@ -328,7 +330,7 @@ class PassportAuthTest extends TestCase
             'owner_type' => 'merchant',
             'owner_id' => '10000000000000',
             'user_id' => '20000000000000',
-            'env' => Mode::LIVE
+            'env' => 'prod'
         ];
 
         $roles = ['oauth::scope::read_only'];
@@ -369,7 +371,7 @@ class PassportAuthTest extends TestCase
             'owner_type' => 'merchant',
             'owner_id' => '10000000000000',
             'user_id' => '20000000000000',
-            'env' => Mode::LIVE
+            'env' => 'prod'
         ];
 
         $roles = ['oauth::scope::read_only'];
@@ -439,7 +441,7 @@ class PassportAuthTest extends TestCase
             'owner_type' => 'merchant',
             'owner_id' => '10000000000000',
             'user_id' => '20000000000000',
-            'env' => Mode::TEST
+            'env' => 'dev'
         ];
 
         $roles = ['oauth::scope::read_only'];
@@ -538,6 +540,7 @@ class PassportAuthTest extends TestCase
         $this->ba->publicAuth($username);
         $response = $this->makeRequestAndGetContent($testData['request']);
         $this->assertArrayHasKey('HDFC',$response);
+        self::assertEmpty($this->app['request']->input('account_id'));
     }
 
     public function testPublicMerchantAuthWithImpersonation()
@@ -555,5 +558,27 @@ class PassportAuthTest extends TestCase
         $this->ba->publicAuth('rzp_test_TheTestAuthKey');
         $response = $this->makeRequestAndGetContent($testData['request']);
         $this->assertArrayHasKey('razorpay_payment_id',$response);
+        self::assertEmpty($this->app['request']->input('account_id'));
+    }
+
+    // key active at Edge but expired at API due to sync delays
+    public function testMerchantAuthWithKeyExpiredOnAPI()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['badRequestFlowData'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED;
+        $testData['response']['status_code'] = 401;
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() - 12000]);
+
+        $this->runRequestResponseFlow($testData);
+        self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues( 'TheTestAuthKey', null, '', KeyAuthCreds::class);
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 120000]);
     }
 }

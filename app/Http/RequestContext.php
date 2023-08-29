@@ -94,6 +94,11 @@ final class RequestContext
      */
     protected $keySource;
 
+    /**
+     * @var string
+     */
+    protected $accountIdSource;
+
     //
     // In one request some (and not all) of below identifiers are set. Further
     // in throttle core logic we construct throttle key using the one available.
@@ -238,6 +243,11 @@ final class RequestContext
         return $this->keySource;
     }
 
+    public function getAccountIdSource()
+    {
+        return $this->accountIdSource;
+    }
+
     public function getKeyWithoutPrefix()
     {
         return $this->keyWithoutPrefix;
@@ -354,6 +364,21 @@ final class RequestContext
         }
         else if (!empty($this->request->getUser()) === true) {
             $this->keySource = BasicAuth::AUTH_HEADER;
+        }
+    }
+
+    public function setAccountIdSource()
+    {
+        if (!empty($this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT))) {
+            $this->accountIdSource = BasicAuth::AUTH_HEADER;
+        }
+        else if (!empty($this->request->query('account_id')) === true)
+        {
+            $this->accountIdSource = BasicAuth::QUERY_PARAM;
+        }
+        else if (!empty($this->request->input('account_id')) === true)
+        {
+            $this->accountIdSource = BasicAuth::BODY_PARAM;
         }
     }
 

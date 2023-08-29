@@ -2426,8 +2426,14 @@ trait PaymentTrait
     {
         $this->checkAndSetUrl($request);
 
+        // if shouldAddPassportJwt is not set already assume passport to be used
+        // any function directly calling sendRequest in PaymentTrait are requests with 200 status code
+        // hence use passport by default for such requests, this will be further filtered in the parent method makeRequestParent
+        // for any non 200 assertions on test case use the parent function directly
+        if (! isset($this->shouldAddPassportJwt)) {
+            $this->shouldAddPassportJwt = true;
+        }
         $response = $this->makeRequestParent($request);
-
 
         $url = $request['url'];
 

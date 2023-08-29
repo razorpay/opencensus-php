@@ -7,7 +7,6 @@ use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
-
 class Authorization
 {
     protected $test;
@@ -25,7 +24,7 @@ class Authorization
     protected $bearerHeaders;
     protected $adminHeaders = [];
     protected $adminProxyHeaders;
-    protected $proxyHeaders;
+    protected $proxyHeaders = [];
     protected $merchant;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
@@ -38,6 +37,14 @@ class Authorization
 
     protected $defaultDashboardHostname = 'dashboard.razorpay.in';
     protected $defaultAccountId         = 'acc_10000000000001';
+
+    public $partnerMerchantId;
+    public $oauthTokenEntity;
+
+    const DEFAULT_TEST_KEY = 'rzp_test_TheTestAuthKey';
+    const DEFAULT_LIVE_KEY = 'rzp_live_TheLiveAuthKey';
+    const MERCHANT         = 'merchant';
+    const PARTNER          = 'partner';
 
     public function __construct($test)
     {
@@ -52,6 +59,13 @@ class Authorization
      */
     public function basicAuth($user = null, $pwd = null)
     {
+        // if the key contains merchant id (10000000000000) then it is proxy auth
+        // some tests are not using proxy auth function but directly this, hence handle it here to miss any
+        $keyRegex = '/^rzp_(test|live)_10000000000000$/';
+        if (preg_match($keyRegex, $user, $matches) === 1) {
+            $this->proxy = true;
+        }
+
         $this->auth = [
             'PHP_AUTH_USER' => $user,
             'PHP_AUTH_PW'   => $pwd
@@ -76,6 +90,16 @@ class Authorization
         $this->bearerHeaders = [
             'Authorization' => 'Bearer ' . $accessToken
         ];
+    }
+
+    public function setOauthTokenEntity($token)
+    {
+        $this->oauthTokenEntity = $token;
+    }
+
+    public function getOauthTokenEntity()
+    {
+        return $this->oauthTokenEntity;
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '', $hostName = null)
@@ -605,6 +629,16 @@ class Authorization
         $this->basicAuth($key, $secret);
     }
 
+    public function setPartnerMerchantId($id)
+    {
+        $this->partnerMerchantId = $id;
+    }
+
+    public function getPartnerMerchantId()
+    {
+        return $this->partnerMerchantId;
+    }
+
     public function adminAuth($mode = 'test', $token = null, $orgId = null, $hostName = null, string $crossOrgId = null)
     {
         $appAuthCaller = 'appAuth' . studly_case($mode);
@@ -943,6 +977,10 @@ class Authorization
         return $headers;
     }
 
+    public function getAccountId() {
+        return empty($this->account) ? '' : $this->account;
+    }
+
     /**
      * Sets admin headers.
      *
@@ -970,7 +1008,7 @@ class Authorization
 
     public function getKey()
     {
-        return $this->auth['PHP_AUTH_USER'];
+        return empty($this->auth['PHP_AUTH_USER']) ? '' : $this->auth['PHP_AUTH_USER'];
     }
 
     public function getSecret()

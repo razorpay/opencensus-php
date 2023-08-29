@@ -159,6 +159,7 @@ trait PartnerTrait
         string $partnerId = '10000000000000',
         string $partnerType = 'fully_managed')
     {
+        $this->ba->setPartnerMerchantId($partnerId);
         $attributes = array_merge($attributes, ['merchant_id' => $partnerId, 'partner_type' => $partnerType]);
 
         $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);

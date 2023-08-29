@@ -4,13 +4,18 @@ namespace RZP\Tests\Functional;
 
 use Closure;
 use Requests;
+use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
 {
     use EntityFetchTrait;
     use CustomAssertions;
+    use PassportTrait;
+
+    public $shouldAddPassportJwt;
 
     /**
      * Auths a payment & tests it is correctly done
@@ -32,6 +37,7 @@ trait RequestResponseFlowTrait
             }
             else
             {
+                $this->shouldAddPassportJwt = (empty($data['response']['content']['error']) && empty($data['exception']));
                 $response = $this->sendRequest($data['request']);
             }
         }
@@ -323,6 +329,16 @@ trait RequestResponseFlowTrait
         if (empty($request['headers']) === false)
         {
             $request['server'] += $this->transformHeadersToServerVars($request['headers']);
+        }
+
+        // add passportJWT to request if not present already, only for tests with 200 status codes
+        // i.e, tests without any expected error or exception based on request data
+        if (empty($request['server']['HTTP_X-Passport-JWT-V1']) && $this->shouldAddPassportJwt) {
+            // only for private auth and bearer auth for now
+            // TODO: add public auth
+            if (($this->ba->isPrivateAuth() && !$this->ba->isProxyAuth()) || $this->ba->isBearerAuth()) {
+                $request['server'] += $this->transformHeadersToServerVars($this->getPassportJwtHeader($request));
+            }
         }
 
         /**

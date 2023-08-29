@@ -28,7 +28,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->at(15))
+        $mock->expects($this->exactly(14))
             ->method('count')
             ->withConsecutive(
                 [
@@ -54,6 +54,32 @@ class InvoiceMetricTest extends TestCase
                     1,
                     [
                         'version' => 'v1',
+                        'entity'  => 'key',
+                        'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'cache_writes_total',
+                    1,
+                    [
+                        'version' => 'v1',
+                        'entity'  => 'key',
+                        'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'account_service_check_exclusion_flow_result',
+                    1,
+                    [
+                        'routeOrWorkerName' => 'invoice_fetch_multiple',
+                        'isExclusionFlow'  => true
+                    ],
+                ],
+                [
+                    'cache_misses_total',
+                    1,
+                    [
+                        'version' => 'v1',
                         'entity'  => 'merchant',
                         'type'    => 'query_cache',
                     ],
@@ -65,6 +91,26 @@ class InvoiceMetricTest extends TestCase
                         'version' => 'v1',
                         'entity'  => 'merchant',
                         'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'entity_retrieved',
+                    1,
+                    [
+                        'entity' => 'merchant',
+                        'rzp_internal_app_name'  => 'none',
+                        'route'    => 'invoice_fetch_multiple',
+                        'async_job_name' => ""
+                    ],
+                ],
+                [
+                    'authenticated_using_passport_total',
+                    1,
+                    [
+                        'route'    => 'invoice_fetch_multiple',
+                        'passport_auth' => true,
+                        'passport_auth_type' => 'merchant_auth_without_impersonation',
+                        'host' => 'api.razorpay.com'
                     ],
                 ],
                 [
@@ -86,21 +132,28 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
+                    'dcs_feature_fetch_total',
+                    1,
+                    [
+                        'feature_name' => 'many',
+                        'mode'  => 'test',
+                        'function'    => 'getDcsEnabledFeatures',
+                    ],
+                ],
+                [
+                    'sdk_usage',
+                    1,
+                    [
+                        'user_agent' => 'Razorpay-not-sdk',
+                    ],
+                ],
+                [
                     'http_requests_total',
                     1,
                     $expectedHttpMetricTags,
                 ]);
 
-        $mock->expects($this->at(0))
-            ->method('histogram')
-            ->withConsecutive(
-                [
-                    'middleware_decode_passport_duration_ms',
-                    $this->greaterThanOrEqual(0),
-                    ['route' => 'invoice_fetch_multiple'],
-                ]);
-
-        $mock->expects($this->at(2))
+        $mock->expects($this->at(4))
             ->method('histogram')
             ->withConsecutive(
                 [
@@ -112,10 +165,11 @@ class InvoiceMetricTest extends TestCase
                         'auth'   => 'private',
                         'proxy'  => false,
                         'bearer' => false,
+                        'auth_flow_type' => 'key'
                     ],
                 ]);
 
-        $mock->expects($this->at(3))
+        $mock->expects($this->at(5))
             ->method('histogram')
             ->withConsecutive(
                 [
@@ -133,16 +187,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->at(0))
-            ->method('histogram')
-            ->withConsecutive(
-                [
-                    'middleware_decode_passport_duration_ms',
-                    $this->greaterThanOrEqual(0),
-                    ['route' => 'invoice_create'],
-                ]);
-
-        $mock->expects($this->at(2))
+        $mock->expects($this->at(4))
             ->method('histogram')
             ->withConsecutive(
                 [
@@ -154,10 +199,11 @@ class InvoiceMetricTest extends TestCase
                         'auth'   => 'private',
                         'proxy'  => false,
                         'bearer' => false,
+                        'auth_flow_type' => 'key'
                     ],
                 ]);
 
-        $mock->expects($this->at(3))
+        $mock->expects($this->at(5))
             ->method('histogram')
             ->withConsecutive(
                 [

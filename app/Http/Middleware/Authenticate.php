@@ -55,7 +55,7 @@ class Authenticate
     const APP_MERCHANT_ID      = 'app_merchant_id';
     const PASSPORT_CONSUMER_ID = 'passport_consumer_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
-
+    const ACCOUNT_ID_SOURCE    = 'account_id_source';
 
     /**
      * Application instance
@@ -438,6 +438,25 @@ class Authenticate
             $res->headers->set(Header::X_PASSPORT_ATTRS_MISMATCH, (int) $reqCtx->passportAttrsMismatch);
         }
 
+        // add all relevant details in one log on authenticate middleware
+        // log only for private auth and public auth for now
+        // proxy auth also sets type as private hence ignore it
+        // isKeylessPublicAuth checks for public auth by itself
+        if ($this->ba->isStrictPrivateAuth() || $this->ba->isStrictPublicAuth()) {
+            $this->trace->info(TraceCode::RESPONSE_STATUS_AT_AUTH_MIDDLEWARE, [
+                self::PUBLIC_KEY          => $this->ba->getPublicKey(),
+                self::MERCHANT_ID         => $this->ba->getMerchantId(),
+                self::PARTNER_MERCHANT_ID => $this->ba->getPartnerMerchantId(),
+                self::ACCOUNT_ID          => $this->ba->getAccountId(),
+                self::ROUTE               => $this->router->currentRouteName(),
+                self::PASSPORT_AUTH       => $this->requestContext->shouldAuthenticateUsingPassport,
+                self::STATUS              => $res->getStatusCode(),
+                self::AUTH                => $this->ba->getAuthType(),
+                self::AUTH_FLOW           => $this->app['request.ctx']->getAuthFlowType(),
+                self::ACCOUNT_ID_SOURCE   => $this->app['request.ctx']->getAccountIdSource()
+            ]);
+        }
+
         return $res;
     }
 
@@ -463,12 +482,22 @@ class Authenticate
         // get last 14 chars to get key id
         $this->ba->authCreds->creds[self::KEY_ID] = substr($this->passport->credential->username, -14);
 
-        // ideally no business logic should need key entity
+        // ideally no business logic should need key entity, will be set only for merchant auth
         // TODO: remove setting key entity object
-        $this->ba->setKeyEntityFromKeyId(false);
+        if (! $this->isPartnerAuth) {
+            $error = $this->ba->setKeyEntityFromKeyId(false);
+            if ($error !== null) {
+                return $error;
+            }
+        }
 
         $this->ba->authCreds->setPublicKey($this->passport->credential->publicKey);
         $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
+        // set source of account id to metrics
+        app('request.ctx')->setAccountIdSource();
+        // remove account id from request params, does not throw any exception if not present
+        // fails payment create validators otherwise
+        $this->passportUtil->removeRequestKey(self::ACCOUNT_ID);
 
         $this->ba->setMerchantById($this->passport->consumer->id);
 
@@ -524,6 +553,11 @@ class Authenticate
         }
 
         $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
+        // set source of account id to metrics
+        app('request.ctx')->setAccountIdSource();
+        // remove account id from request params, does not throw any exception if not present
+        // fails payment create validators otherwise
+        $this->passportUtil->removeRequestKey(self::ACCOUNT_ID);
 
         // this flow is required for non pure platform partners who use oauth (Client Credentials mostly).
         $error = $this->passportUtil->handleAccountAuthIfApplicable();

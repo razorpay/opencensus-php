@@ -97,13 +97,7 @@ class DecodePassportJwt
             }
         }
 
-        // passport should be present for all requests, log otherwise
-        if (empty($this->reqCtx->passport)) {
-            $this->trace->info(TraceCode::PASSPORT_NOT_SET, [
-                'route' => $this->router->currentRouteName()
-            ]);
-        }
-        else {
+        if (! empty($this->reqCtx->passport)) {
             $passportUtil = new PassportUtil($this->reqCtx->passport);
             $this->reqCtx->passportUtil = $passportUtil;
             $this->reqCtx->shouldAuthenticateUsingPassport = $passportUtil->shouldAuthenticateUsingPassport($request);

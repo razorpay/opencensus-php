@@ -156,6 +156,8 @@ trait OAuthTrait
 
         $accessToken = Token\Entity::factory()->create($attributes);
 
+        $this->ba->setOauthTokenEntity($accessToken);
+
         $jwt = (new OAuthTestHelper)->getJWT($accessToken);
 
         return $jwt;
