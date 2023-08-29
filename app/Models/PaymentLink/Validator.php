@@ -989,7 +989,7 @@ class Validator extends Base\Validator
 
         // Non International accounts should not create PL in other currencies.
         if ((($merchant->convertOnApi() === null) and
-            ($currency !== Currency::INR)) or
+            ($currency !== $merchant->getCurrency())) or
             (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
         {
             throw new BadRequestException(

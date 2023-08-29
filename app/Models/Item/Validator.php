@@ -281,7 +281,7 @@ class Validator extends Base\Validator
         $international = $merchant->isInternational();
 
         if ((($merchant->convertOnApi() === null) and
-            ($currency !== Currency::INR)) or
+            ($currency !== $merchant->getCurrency())) or
             (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
         {
             throw new BadRequestException(

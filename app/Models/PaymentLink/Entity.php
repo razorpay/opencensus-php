@@ -577,6 +577,10 @@ class Entity extends Base\PublicEntity
         return Order\ProductType::PAYMENT_BUTTON;
     }
 
+    public static function paymentLinkEntityProductTypes(){
+        return [Order\ProductType::PAYMENT_PAGE, Order\ProductType::PAYMENT_HANDLE, Order\ProductType::PAYMENT_BUTTON];
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);

@@ -16,6 +16,7 @@ use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -2488,7 +2489,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function hasPaymentLink(): bool
     {
-        return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+        if($this->isAttributeNotNull(self::PAYMENT_LINK_ID) ||
+            ($this->hasOrder() && $this->order->getProductId() != null && in_array($this->order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
+         {
+            return true;
+         }
+
+        return false;
     }
 
     public function hasTerminal()
@@ -2498,7 +2505,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getPaymentLinkId()
     {
-        return $this->getAttribute(self::PAYMENT_LINK_ID);
+        if($this->isAttributeNotNull(self::PAYMENT_LINK_ID)){
+            return $this->getAttribute(self::PAYMENT_LINK_ID);
+        }
+
+        if($this->hasOrder() && $this->order->getProductId() != null && in_array($this->order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())){
+            return $this->order->getProductId();
+        }
+
+        return null;
     }
 
     public function hasReceiver()
