@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE          = 'entity_type';
     const ENTITY_ID            = 'entity_id';
     const REJECTION_REASONS    = 'rejection_reasons';
+    const UPDATED_BY           = 'updated_by';
 
     protected static $sign = 'state';
 
@@ -29,6 +30,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::NAME,
         self::CREATED_AT,
+        self::UPDATED_BY
     ];
 
     protected $visible = [
@@ -42,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::UPDATED_BY
     ];
 
     protected $public = [
@@ -55,11 +58,20 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::UPDATED_BY
     ];
 
     protected $publicSetters = [
         self::ADMIN_ID,
         self::ACTION_ID,
+    ];
+
+    protected $defaults = [
+        self::UPDATED_BY => null
+    ];
+
+    protected $casts = [
+        self::UPDATED_BY => 'string'
     ];
 
     public function admin()
@@ -119,4 +131,15 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::CREATED_AT, $createdAt);
     }
+
+    public function setUpdatedBy(string $metadata)
+    {
+        $this->setAttribute(self::UPDATED_BY, $metadata);
+    }
+
+    public function getUpdatedBy()
+    {
+        $this->getAttribute(self::UPDATED_BY);
+    }
+
 }

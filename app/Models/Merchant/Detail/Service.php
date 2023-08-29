@@ -209,6 +209,20 @@ class Service extends Base\Service
 
         $response = $this->core->createResponse($merchantDetails);
 
+        $this->getAdditionalMerchantDetailsData($merchantDetails, $response);
+
+        $partnerActivation = (new Partner\Core())->getPartnerActivation($this->merchant);
+
+        if (!empty($partnerActivation))
+        {
+            $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
+        }
+
+        return $response;
+    }
+
+    public function getAdditionalMerchantDetailsData(Entity $merchantDetails, array &$response)
+    {
         $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
             $this->merchant->getId(),
             Constant::WEBSITE_POLICY,
@@ -220,14 +234,21 @@ class Service extends Base\Service
             $response['website_policy_verification_status'] = $websitePolicy->getStatus();
         }
 
-        $partnerActivation = (new Partner\Core())->getPartnerActivation($this->merchant);
+        /*
+        We need to send FE status of both the end states of the merchants as of now KQU and activated, we
+        are here concerned with the latest final state of the merchant
 
-        if (!empty($partnerActivation))
+        In case of old merchants where we do not have information stored in the metadata regarding the activation status
+        we will store null in status change agent
+
+        */
+
+        $merchantStateDetails = $this->repo->state->fetchByEntityIdAndState($merchantDetails->getId(), $merchantDetails->getActivationStatus());
+
+        if (empty($merchantStateDetails) === false)
         {
-            $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
+            $response['status_change_agent'] = $merchantStateDetails[0][StateChangeEntity::UPDATED_BY] ?? null;
         }
-
-        return $response;
     }
 
     public function getMerchantMethodsCore()

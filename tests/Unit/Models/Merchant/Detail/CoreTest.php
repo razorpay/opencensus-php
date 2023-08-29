@@ -6233,6 +6233,93 @@ class CoreTest extends TestCase
 
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
 
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $agent = $actionState['updated_by'];
+
+        $this->assertEquals('system', $agent);
+
+        $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
+    }
+
+    public function testUpdateActivationStatusFromURToKQUByAdmin()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(false);
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantDetails->getMerchantId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+
+        $this->app->instance('basicauth', $basicAuthMock);
+
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $agent = $actionState['updated_by'];
+
+        $this->assertEquals('admin', $agent);
+
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
     }
 
@@ -6440,7 +6527,88 @@ class CoreTest extends TestCase
 
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
 
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
+    public function testUpdateActivationStatusFromKQUToActivatedByAdmin()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantDetails->getMerchantId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+
+        $this->app->instance('basicauth', $basicAuthMock);
+
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy =  $actionState['updated_by'];
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('admin', $statusChangedBy);
     }
 
     public function testUpdateActivationStatusFromKQUToActivatedOthersCategory()

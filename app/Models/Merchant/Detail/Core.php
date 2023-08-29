@@ -3895,6 +3895,13 @@ class Core extends Base\Core
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
             ];
 
+            if ($this->mcore->isRegularMerchant($merchant) === true)
+            {
+                $workflowMaker = ($this->app['basicauth']->isAdminAuth() === true) ? 'admin' : 'system';
+
+                $stateData[State\Entity::UPDATED_BY] = $workflowMaker;
+            }
+
             $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $merchantDetails);
 
             if (empty($rejectionReasons) === false)

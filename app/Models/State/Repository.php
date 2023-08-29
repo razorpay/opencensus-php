@@ -159,6 +159,8 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
                     ->where(Entity::NAME, '=', $name)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->limit(1)
                     ->get();
     }
 }

@@ -41,6 +41,9 @@ class CreateActionState extends Migration
             $table->char(State::USER_ID, User::ID_LENGTH)
                   ->nullable();
 
+            $table->enum(State::UPDATED_BY, ['admin','system'])
+                ->nullable();
+
             $table->char(State::NAME, 255);
 
             $table->integer(State::CREATED_AT);

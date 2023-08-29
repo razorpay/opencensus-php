@@ -7176,3 +7176,6 @@ ALTER TABLE payment_page_records
 
 ALTER TABLE subscription_registrations
     ADD frequency varchar(30) DEFAULT NULL,
+
+ALTER TABLE action_state
+    ADD COLUMN `updated_by` enum('admin','system') DEFAULT NULL;
