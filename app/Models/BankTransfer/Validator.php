@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         'Data.0.messageType'                => 'required|string',
         'Data.0.amount'                     => 'required|string',
         'Data.0.UTRNumber'                  => 'required|string',
-        'Data.0.beneficiaryAccountNumber'   => 'required|string|alpha_num',
+        'Data.0.beneficiaryAccountNumber'   => 'required|string|min:16|alpha_num',
         'Data.0.senderIFSC'                 => 'nullable|string',
         'Data.0.senderAccountNumber'        => 'nullable|string',
         'Data.0.senderName'                 => 'nullable|string',

@@ -1212,4 +1212,19 @@ class UpiTransferTest extends TestCase
         );
 
     }
+
+    public function testUpiTransferWithShortMerchantTranId()
+    {
+        // UPI Transfer fails as merchantTrainId is less than minimum
+        $this->processUpiTransfer(__FUNCTION__, false);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertNull($payment);
+        $this->assertNull($upiTransfer);
+        $this->assertNull($upi);
+    }
+
 }

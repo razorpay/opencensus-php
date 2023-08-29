@@ -2162,7 +2162,7 @@ class Gateway extends Base\Gateway
 
         // icici will send merchant_tran_id in format vpatr e.g. payto000011112223333ref123
         // vpa of length 20 will be extracted, remaining part will be tr
-        $vpa = substr($input[Fields::MERCHANT_TRAN_ID], 0, self::VPA_LENGTH);
+        $vpa = $this->getVpaFromMerchantTranId($input);
 
         $transactionReference = substr($input[Fields::MERCHANT_TRAN_ID], self::VPA_LENGTH);
 
@@ -2192,6 +2192,39 @@ class Gateway extends Base\Gateway
             'callback_data'     => $input,
             'upi_transfer_data' => $upiTransferData
         ];
+    }
+
+    /**
+     * Get vpa from merchantTranId
+     * @param $input
+     * @return string|void
+     * @throws Exception\GatewayErrorException
+     */
+    protected function getVpaFromMerchantTranId($input)
+    {
+        $this->trace->info(TraceCode::GATEWAY_VALIDATE_VPA_FORMAT,
+            [
+                'encrypted'  => false,
+                'gateway'    => $this->gateway,
+            ]);
+
+        // Check merchantTranId length is not less than 20.
+        $merchantTranId = $input[Fields::MERCHANT_TRAN_ID];
+
+        if (strlen($merchantTranId) < self::VPA_LENGTH || !ctype_alnum($merchantTranId)) {
+
+            $errorMessage = 'Invalid VPA Format, VPA should be at least 20 characters and alphanumeric';
+
+            throw new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode('ZH'),
+                ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+                gatewayErrorDesc: $errorMessage
+            );
+        }
+
+        $vpa = substr($merchantTranId, 0, self::VPA_LENGTH);
+
+        return $vpa;
     }
 
     /**
