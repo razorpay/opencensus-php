@@ -182,6 +182,17 @@ class Service extends Base\Service
 
         $merchantId = $merchantId ?? $this->ba->getMerchantId();
 
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Throwable $exception)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID
+            );
+        }
+
         // send the request to merchant onboarding service
         // this should not affect the current flow, hence wrapped in try catch
         try
@@ -189,8 +200,6 @@ class Service extends Base\Service
             $payload = [
                 "merchant_id" => $merchantId
             ];
-
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             $pgosNCProxyController = new NeedsClarificationProxyController();
 
