@@ -41,6 +41,8 @@ class Tracing
             // used by checkout-service
             'merchant_methods_offers_checkout_internal',
             'payments_downtime',
+            'customer_fetch_internal_for_checkout',
+            'customer_fetch_tokens_internal',
 
             // used by capital-cards service
             'user_fetch',
