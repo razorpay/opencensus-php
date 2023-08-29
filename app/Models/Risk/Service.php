@@ -10,6 +10,7 @@ use RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
@@ -66,7 +67,15 @@ class Service extends Base\Service
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
-        (new Validator)->validateInput('grievance_post_input', $input);
+        $variant = $this->app['razorx']->getTreatment($this->app['request']->getId(), RazorxTreatment::DESCRIPTION_FIELD_CUSTOMER_FLAG, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            (new Validator)->validateInput('grievance_post_input_with_description', $input);
+        }
+        else
+        {
+            (new Validator)->validateInput('grievance_post_input', $input);
+        }
 
         $this->validateCaptcha($input['captcha_id']);
 

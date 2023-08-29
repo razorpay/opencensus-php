@@ -127,6 +127,7 @@ class Core extends Base\Core
                 'contact_no'             => $input['contact_no'] ?? "",
                 'name'                   => $input['name'] ?? "",
                 'comments'               => $input['comments'] ?? "",
+                'description'            => $input['description'] ?? "",
                 'apps_exempt_risk_check' => ($merchantAppsExemptFromRiskCheck === true ? '1' : '0'),
             ],
             'event_timestamp' => (string) Carbon::now()->getTimestamp(),

@@ -184,6 +184,8 @@ class Constants
 
     const FD_TICKET_ID_KEY          = 'fd_ticket_id';
     const WORKFLOW_ACTION_INPUT_KEY = 'workflow_action_input';
+    const WORKFLOW_COMMENT_KEY      = 'workflow_comment';
+    const WORKFLOW_INPUT_DETAILS_TPL = 'WORKFLOW_INPUT_DETAILS: %s';
 
     const RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT = 'RAS NC Outbound email freshdesk ticket url: https://razorpay-ind.freshdesk.com/a/tickets/%s'; //hardcoding url as its the only instance being used
     const RAS_NC_WORKFLOW_CACHE_KEY                         = 'ras_nc_workflow_key_%s';

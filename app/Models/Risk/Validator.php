@@ -36,6 +36,17 @@ class Validator extends Base\Validator
         'source'     => 'required|in:customer_email,hosted,txn_confirm_mail',
     ];
 
+    protected static $grievancePostInputWithDescriptionRules = [
+        'email_id'      => 'required|email',
+        'contact_no'    => 'sometimes|nullable|contact_syntax',
+        'name'          => 'sometimes|string|max:50|nullable',
+        'comments'      => 'required|string|max:2048',
+        'description'   => 'required_if:comments,Others|string|max:2048',
+        'entity_id'     => 'required|public_id',
+        'captcha_id'    => 'required|string',
+        'source'        => 'required|in:customer_email,hosted,txn_confirm_mail',
+    ];
+
     protected function validateFraudType(string $attribute, string $value)
     {
         if (Type::isValidType($value) === false)

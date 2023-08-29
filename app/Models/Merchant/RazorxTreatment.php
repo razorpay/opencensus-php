@@ -727,6 +727,9 @@ final class RazorxTreatment
 
     const RBL_CA_USE_NEW_STATE_MACHINE = 'rbl_ca_use_new_state_machine';
 
+    // Experiment to start enabling the description field during customer grieviance flow
+    const DESCRIPTION_FIELD_CUSTOMER_FLAG = 'desc_customer_flag';
+
     // Experiment to migrate disputes routes from API to disputes service
     const DISPUTES_DECOMP = 'disputes_decomp';
 

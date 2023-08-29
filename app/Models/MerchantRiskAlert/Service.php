@@ -897,11 +897,26 @@ class Service extends Base\Service
         return true;
     }
 
+    private function addWorkflowInputDetailsCommentIfApplicable(string $workflowActionId, $workflowActionInput)
+    {
+        if (isset($workflowActionInput[Constants::WORKFLOW_COMMENT_KEY]) === false || $workflowActionInput[Constants::WORKFLOW_COMMENT_KEY] == "")
+        {
+            return;
+        }
+
+        (new Comment\Service())->createForWorkflowAction([
+            Comment\Entity::COMMENT  =>
+                sprintf(Constants::WORKFLOW_INPUT_DETAILS_TPL, json_encode($workflowActionInput[Constants::WORKFLOW_COMMENT_KEY])),
+        ], $workflowActionId, $this->getMaker());
+    }
+
     private function postProcessOnSuccessfulWfActionCreation(string $workflowActionId, array $additionalData)
     {
         try
         {
             $workflowActionInput = $additionalData[Constants::WORKFLOW_ACTION_INPUT_KEY];
+
+            $this->addWorkflowInputDetailsCommentIfApplicable($workflowActionId, $workflowActionInput);
 
             $rasTriggerReason = $this->getRasTriggerReasonFromPayload($workflowActionInput);
 
