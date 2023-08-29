@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function run_tests {
-  XDEBUG_MODE=coverage php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M -d pcov.directory=/app --testsuite "$TEST_SUITE_NAME" --debug --verbose  --coverage-clover clover.xml
+  XDEBUG_MODE=coverage php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M -d pcov.directory=/app --testsuite "$TEST_SUITE_NAME" --debug --verbose --coverage-clover clover.xml
 }
 
 function push_to_sonar {

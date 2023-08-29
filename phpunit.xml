@@ -375,6 +375,30 @@
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
             <file>./tests/Functional/Merchant/AccountTest.php</file>
         </testsuite>
+        <testsuite name="Route Transfer Test Suite">
+            <file>./tests/Functional/Transfer/TransferTest.php</file>
+        </testsuite>
+        <testsuite name="Route Transfer With Existing Email Test Suite">
+            <file>./tests/Functional/Transfer/TransferTestLAWIthExistingEmailTest.php</file>
+        </testsuite>
+        <testsuite name="Route Transfer With Negative Balance Test Suite">
+            <file>./tests/Functional/Transfer/TransferWithNegativeBalanceTest.php</file>
+        </testsuite>
+        <testsuite name="Route Payment Marketplace Transfer Test Suite">
+            <file>./tests/Functional/Payment/Transfers/PaymentMarketplaceTransferTest.php</file>
+            <file>./tests/Functional/Payment/Transfers/PaymentMarketplaceTransferLAWithExistingEmailTest.php</file>
+        </testsuite>
+        <testsuite name="Route Payment Marketplace Refund Test Suite">
+            <file>./tests/Functional/Payment/Transfers/PaymentMarketplaceRefundTest.php</file>
+            <file>./tests/Functional/Payment/Transfers/PaymentMarketplaceRefundLAWithExistingEmailTest.php</file>
+        </testsuite>
+        <testsuite name="Route Payment Wallet Transfer Test Suite">
+            <file>./tests/Functional/Payment/Transfers/PaymentWalletTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Route Order Transfer Test Suite">
+            <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
+            <file>./tests/Functional/Order/Transfer/OrderTransferTestLAWithExistingEmailTest.php</file>
+        </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
         </testsuite>
