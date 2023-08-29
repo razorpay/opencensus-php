@@ -49,7 +49,7 @@ class Service
     public function sendRequest(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . '/v1/dcs/config/set',
+            'url'     => $this->getBaseUrl() . $this->getDcsConfigSetPath(),
             'method'  => 'POST',
             'content' => $input,
             'headers' => $this->getDefaultHeaders()
@@ -65,6 +65,15 @@ class Service
         $mode = $this->mode;
         $service = $this->service;
         return $this->config[$service][$mode]['url'];
+    }
+
+    protected function getDcsConfigSetPath(): string {
+        $baseUrl = $this->getBaseUrl();
+        if (str_ends_with($baseUrl, '/v1')) {
+            return '/dcs/config/set';
+        }
+
+        return '/v1/dcs/config/set';
     }
 
     protected function getRequestHooks()

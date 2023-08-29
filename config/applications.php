@@ -1276,6 +1276,18 @@ return [
                 'secret' => env('REPORTING_PASSWORD'),
             ],
         ],
+        'smart_routing' => [
+            'live'=>[
+                'url'    => env('SMART_ROUTING_URL'),
+                'username' => env('SMART_ROUTING_USERNAME'),
+                'secret' => env('SMART_ROUTING_PASSWORD')
+            ],
+            'test'=>[
+                'url'    => env('SMART_ROUTING_URL'),
+                'username' => env('SMART_ROUTING_USERNAME'),
+                'secret' => env('SMART_ROUTING_PASSWORD')
+            ],
+        ],
     ],
 
     'automation' => [

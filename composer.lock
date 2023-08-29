@@ -11057,12 +11057,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "da6dac07b30c109facb9428e9be24794bd509f6a"
+                "reference": "c0f5f5ebb5ace0b6a886d90a7d8595cce00422da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/da6dac07b30c109facb9428e9be24794bd509f6a",
-                "reference": "da6dac07b30c109facb9428e9be24794bd509f6a",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/c0f5f5ebb5ace0b6a886d90a7d8595cce00422da",
+                "reference": "c0f5f5ebb5ace0b6a886d90a7d8595cce00422da",
                 "shasum": ""
             },
             "require": {
@@ -11109,7 +11109,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-07-28T09:04:16+00:00"
+            "time": "2023-08-04T04:51:02+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",

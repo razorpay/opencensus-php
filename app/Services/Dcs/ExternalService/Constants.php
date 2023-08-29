@@ -41,5 +41,6 @@ class Constants
         "rzp/pg/org/care/TicketCreation" => "care",
         "rzp/platform/merchant/reporting/CustomReports" => "reporting",
         "rzp/platform/org/reporting/CustomReports" => "reporting",
+        "rzp/pg/merchant/router/CostBasedRouting"  => "smart_routing"
     ];
 }

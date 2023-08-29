@@ -222,6 +222,13 @@ class Constants
 
     const CorporateBankingEnabled = 'corporate_banking_enabled';
 
+    // router service dcs features
+    const SrSensitive = 'sr_sensitive';
+    const SrSensitiveBucket1 = 'sr_sensitive_bucket_1';
+    const SrSensitiveBucket2 = 'sr_sensitive_bucket_2';
+    const SrSensitiveBucket3 = 'sr_sensitive_bucket_3';
+    const SrSensitiveBucket4 = 'sr_sensitive_bucket_4';
+
     const RemoveRazorpayBranding = 'remove_rzp_branding';
 
     public static $validDcsKeys = [];
@@ -431,6 +438,12 @@ class Constants
         self::DisablePreMagicOrderIngestion => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCEnablePluginDiscount => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCShopifyDraftOrder => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::SrSensitive => 'rzp/pg/merchant/router/CostBasedRouting',
+        self::SrSensitiveBucket1 => 'rzp/pg/merchant/router/CostBasedRouting',
+        self::SrSensitiveBucket2 => 'rzp/pg/merchant/router/CostBasedRouting',
+        self::SrSensitiveBucket3 => 'rzp/pg/merchant/router/CostBasedRouting',
+        self::SrSensitiveBucket4 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
     ];
@@ -653,6 +666,11 @@ class Constants
         APIFeaturesConstants::ONE_CC_ENABLE_PLUGIN_DISCOUNT                 => self::OneCCEnablePluginDiscount,
         APIFeaturesConstants::ONE_CC_SHOPIFY_DRAFT_ORDER                    => self::OneCCShopifyDraftOrder,
         APIFeaturesConstants::ONE_CC_ENABLE_NECTOR_COINS                    => self::OneCcEnableNectorCoins,
+        APIFeaturesConstants::SR_SENSITIVE                                  => self::SrSensitive,
+        APIFeaturesConstants::SR_SENSITIVE_BUCKET_1                         => self::SrSensitiveBucket1,
+        APIFeaturesConstants::SR_SENSITIVE_BUCKET_2                         => self::SrSensitiveBucket2,
+        APIFeaturesConstants::SR_SENSITIVE_BUCKET_3                         => self::SrSensitiveBucket3,
+        APIFeaturesConstants::SR_SENSITIVE_BUCKET_4                         => self::SrSensitiveBucket4,
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                      => self::RemoveRazorpayBranding,
     ];
 
