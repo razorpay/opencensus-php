@@ -1,8 +1,10 @@
 import React from 'react';
-import MobileNumber from 'newAuth/signup/components/PartnerSignup/components/SignupForm/components/MobileNumber';
-import { render, screen, userEvent, waitFor } from 'test-utils';
-import * as trackWithSegment from 'newAuth/trackEvents';
+
+import { STEPS } from 'newAuth/signup/Constants';
 import { mockUserRegisterOtpError } from 'newAuth/signup/components/PartnerSignup/__test__/mocks/once-handlers';
+import MobileNumber from 'newAuth/signup/components/PartnerSignup/components/SignupForm/components/MobileNumber';
+import * as trackWithSegment from 'newAuth/trackEvents';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 // TODO: detailed tests to be covered later, only basic ones added for now.
 
@@ -33,6 +35,13 @@ describe('MobileNumber', () => {
     await userEvent.click(screen.getByText(/Get Started/i));
     await waitFor(() => {
       expect(setStep).toHaveBeenCalled();
+      expect(setStep).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    const setStepFunction = setStep.mock.calls[0][0];
+    await waitFor(() => {
+      // 3 is basically the verify mobile number screen
+      expect(setStepFunction(STEPS.MOBILE_NUMBER)).toBe(STEPS.MOBILE_VERIFICATION);
     });
   });
 

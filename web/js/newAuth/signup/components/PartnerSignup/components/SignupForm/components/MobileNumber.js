@@ -1,17 +1,14 @@
+import React, { useEffect, useState } from 'react';
 import { TextInput } from '@razorpay/blade/components';
-import whatsappLogo from 'assets/app-store/partner-logos/whatsapp.png';
-import { Modal, ModalBody } from 'common/components/Modal';
 import { Formik } from 'formik';
 import isEmpty from 'lodash/isEmpty';
-import { registerMobileOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
-import { mobileNumberSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
-import { trackWithSegment } from 'newAuth/trackEvents';
-import { redirectToLogIn } from 'newAuth/utils';
-import React, { useEffect, useState } from 'react';
-import ErrorModal from './ErrorScreens/ErrorModal';
-import StepFooter from './StepFooter';
 
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import whatsappLogo from 'assets/app-store/partner-logos/whatsapp.png';
+import { mobileNumberSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
+import { registerMobileOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
+import { trackWithSegment } from 'newAuth/trackEvents';
+
+import StepFooter from './StepFooter';
 import {
   StyledCheckboxWrapper,
   StyledForm,
@@ -29,12 +26,9 @@ const MobileNumber = ({
   isSendWhatsapp,
   setIsSendWhatsapp,
   setOtpVerifyToken,
-  closeModal,
   showNotification,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [errorCode, setErrorCode] = useState(null);
 
   useEffect(() => {
     trackWithSegment({
@@ -58,7 +52,7 @@ const MobileNumber = ({
       .then(({ data }) => {
         setIsLoading(false);
         setOtpVerifyToken(data?.token);
-        setStep((step) => step + 1);
+        setStep((step) => step + 2);
       })
       .catch((err) => {
         setIsLoading(false);
@@ -74,8 +68,7 @@ const MobileNumber = ({
           },
         });
         if (error_code === 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS') {
-          setErrorCode('mobile_already_exists');
-          setShowError(true);
+          setStep(STEPS.WELCOME_BACK);
         } else
           showNotification({
             type: 'error',
@@ -110,10 +103,6 @@ const MobileNumber = ({
   };
   const noop = () => {};
 
-  const onModalClose = () => {
-    setShowError(false);
-    closeModal();
-  };
   return (
     <Formik initialValues={{}} validationSchema={mobileNumberSchema} onSubmit={noop}>
       {(formikProps) => (
@@ -160,25 +149,6 @@ const MobileNumber = ({
             onClick={() => onCTAClick(formikProps)}
             disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.values.mobileNumber)}
           />
-          <Modal
-            bottomsheet={isMobileAndTablet()}
-            isOpen={showError}
-            bottomSheetHeight="250px"
-            onClose={onModalClose}
-          >
-            <ModalBody>
-              {errorCode === 'mobile_already_exists' && (
-                <ErrorModal
-                  title="Mobile Number is already Registered"
-                  description="This mobile number is already registered. you can either Log in to continue to your account or Try signing-up with another mobile number"
-                  primaryLabel="Log In"
-                  primaryButtonClick={redirectToLogIn}
-                  secondaryLabel="Try another way"
-                  secondaryButtonClick={onModalClose}
-                />
-              )}
-            </ModalBody>
-          </Modal>
         </StyledForm>
       )}
     </Formik>

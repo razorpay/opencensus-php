@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+
+import { STEPS, STEP_TO_PROGRESS_WIDTH } from 'newAuth/signup/Constants';
+
+import BusinessTypeSelection from './components/BusinessTypeSelection';
+import ContactInfo from './components/ContactInfo';
+import EmailVerification from './components/EmailVerification';
 import MobileNumber from './components/MobileNumber';
 import MobileVerification from './components/MobileVerification';
-import ContactInfo from './components/ContactInfo';
-import BusinessTypeSelection from './components/BusinessTypeSelection';
 import PartnerTypeSelection from './components/PartnerTypeSelection';
-import EmailVerification from './components/EmailVerification';
-import { STEPS, STEP_TO_PROGRESS_WIDTH } from 'newAuth/signup/Constants';
+import WelcomeBack from './components/WelcomeBack';
 import {
   StyledFormWrap,
   StyledFormContentWrap,
@@ -16,6 +19,7 @@ import {
 
 const {
   MOBILE_NUMBER,
+  WELCOME_BACK,
   MOBILE_VERIFICATION,
   CONTACT_INFO,
   BUSINESS_TYPE_SELECTION,
@@ -59,6 +63,13 @@ const SignupForm = ({
               setOtpVerifyToken={setOtpVerifyToken}
               setStep={setStep}
               showNotification={showNotification}
+            />
+          )}
+          {step === WELCOME_BACK && (
+            <WelcomeBack
+              mobileNumber={mobileNumber}
+              setMobileNumber={setMobileNumber}
+              setStep={setStep}
             />
           )}
           {step === MOBILE_VERIFICATION && (

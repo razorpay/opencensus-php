@@ -27,6 +27,7 @@
   "include": [
     "typings/**/*",
     "js/newAuth/signin/types.d.ts",
+    "js/newAuth/**/*",
     "js/merchant/views/TermsAndCondition",
     "js/merchant/views/referral",
     "js/merchant/views/onboarding",

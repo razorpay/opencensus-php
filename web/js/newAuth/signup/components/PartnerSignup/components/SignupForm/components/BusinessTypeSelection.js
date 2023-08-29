@@ -131,7 +131,7 @@ const BusinessTypeSelection = ({
     <Formik initialValues={{}} validationSchema={businessTypeSelectionSchema} onSubmit={noop}>
       {(formikProps) => (
         <StyledForm onChange={formikProps.handleChange}>
-          <StyledStepWrapper $marginBottom="5%">
+          <StyledStepWrapper>
             <StyledTitle onClick={closeModal}>Select Business Type</StyledTitle>
             <StyledSubtitle>Pick only one that applies to your business</StyledSubtitle>
             {!unregistered || !registered ? (

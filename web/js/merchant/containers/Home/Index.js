@@ -1073,9 +1073,38 @@ export default class HomeContainer extends Component {
 
     const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
 
+    // if existing merchant or partner is coming via partner sign up page
+    const isExistingMerchantPartnerComingFromPartnerSignUpPage = getItem('partner_intent');
+
+    // We want to redirect the existing partner to dashboard if they are coming from
+    // partner sign up page and partner_type is not null
+    const shouldRedirectToPartnerDashboard = this.props.user?.isPartner();
+    if (isExistingMerchantPartnerComingFromPartnerSignUpPage && shouldRedirectToPartnerDashboard) {
+      removeItem('partner_intent');
+      this.props.history.push('/partners');
+    }
+
+    // we want to by default show the explore partner program modal if partner_type is null
+    if (user.isPartnerIntent() && isExistingMerchantPartnerComingFromPartnerSignUpPage) {
+      removeItem('partner_intent');
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: <PartnerOnbr disableClose={true} />,
+        className: this.state.isMobile
+          ? 'partner-onboarding-popup mobile-app-popup'
+          : 'partner-onboarding-popup',
+      });
+    }
+
     const showPartnerExplore = location?.search === '?partnerExplore=true';
 
-    if ((user.isPartnerIntent() && !isPartnerOnBoardingModalShown) || showPartnerExplore) {
+    if (
+      (user.isPartnerIntent() &&
+        !isPartnerOnBoardingModalShown &&
+        !isExistingMerchantPartnerComingFromPartnerSignUpPage) ||
+      showPartnerExplore
+    ) {
       setItem(this.partnerOnBoardingToken, true);
       this.props.openModal({
         size: 'xlarge',
