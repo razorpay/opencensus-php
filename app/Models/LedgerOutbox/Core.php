@@ -555,6 +555,7 @@ class Core extends Base\Core
 
         $merchantId = (count($ledgerEntries) > 0) ? $ledgerEntries[0]["merchant_id"] : "";
 
+        //TODO: This needs to be fixed
         $this->merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $transactorInfo = $this->determineTransactionType($transactorPublicId);
@@ -729,12 +730,12 @@ class Core extends Base\Core
                     return $txn;
                 }
 
-                [$balance, $sendReserveBalanceMail] = (new Balance\Core())->createOrFetchReserveBalance($this->merchant,
+                [$balance, $sendReserveBalanceMail] = (new Balance\Core())->createOrFetchReserveBalance($adjustment->merchant,
                     Type::RESERVE_PRIMARY, $this->mode);
 
                 if ($sendReserveBalanceMail === true)
                 {
-                    (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($this->merchant, $balance);
+                    (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($adjustment->merchant, $balance);
                 }
 
                 $adjustment->balance()->associate($balance);
