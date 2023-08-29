@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Utils;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Http\Request\Requests;
@@ -11,6 +13,7 @@ use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Order\OrderMeta\Order1cc\Fields as OrderOneCCFields;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 
 /**
  * Common util functions for 1cc
@@ -184,5 +187,46 @@ class CommonUtils extends Base\Core
         }
 
     }
+
+    public function fillExperimentData(
+        string $experimentEntityId,
+        string $experimentIdVariable,
+        array $requestData
+    )
+    {
+        $expData = [
+            'id'            => $experimentEntityId,
+            'experiment_id' => $this->app['config']->get($experimentIdVariable),
+            'request_data'  => json_encode($requestData),
+        ];
+
+        return $expData;
+    }
+
+    public function isTaxesExpEnabled(): bool
+    {
+        $isTaxExpEnabled = false;
+        $taxEnableExpInput = $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_enable_shopify_taxes_experiment_id',
+            ['merchant_id' => $this->merchant->getId()]
+        );
+
+        try {
+            $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment($taxEnableExpInput);
+            $isTaxExpEnabled = ($expResult['variant'] === 'test');
+        } catch (\Throwable $e) {
+            $this->trace->error(
+                TraceCode::MAGIC_SPLITZ_ERROR,
+                [
+                    'type'         => 'isTaxExpEnabledExpError',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
+            $isTaxExpEnabled = false;
+        }
+        return $isTaxExpEnabled;
+    }
+
 
 }

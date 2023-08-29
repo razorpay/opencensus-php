@@ -302,7 +302,9 @@ class Service extends Base\Service
 
                 $statusCode = $res['status_code'];
 
-                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false) {
+                $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
+
+                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false && $isTaxExpEnabled === true) {
                     $taxDetails = $decodedResponse['tax_details'];
                     unset($decodedResponse['tax_details']);
                 }
@@ -492,7 +494,9 @@ class Service extends Base\Service
 
                 $statusCode = $res['status_code'];
 
-                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false) {
+                $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
+
+                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false && $isTaxExpEnabled === true) {
                     $taxDetails = $decodedResponse['tax_details'];
                 }
 

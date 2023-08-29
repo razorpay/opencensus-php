@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 use App;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Merchant\OneClickCheckout\Constants as OneClickCheckoutConstants;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use Throwable;
@@ -1610,13 +1611,20 @@ class Core extends Base\Core
             $codFeeApplied = $rzpOrder['cod_fee'];
         }
 
+
+        $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
+
         if($body['taxes_included'] === true)
         {
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
-        else
+        else if($isTaxExpEnabled === true)
         {
             $discountAmountPaise = $rzpOrder['line_items_total'] + ($totalTax*100) + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        }
+        else
+        {
+            $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
 
         if($nectorCoinsResponse['applied'] === false)
@@ -1811,30 +1819,6 @@ class Core extends Base\Core
 
                 $body['note_attributes'] = $noteAttributes;
             }
-        }
-
-        $isTaxExpEnabled = false;
-
-        $taxEnableExpInput = $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.magic_enable_shopify_taxes_experiment_id',
-            ['merchant_id' => $this->merchant->getId()]
-        );
-
-        try {
-
-            $isTaxExpEnabled = $this->getExperimentResponse($taxEnableExpInput, 'test');
-
-        } catch (\Throwable $e) {
-
-            $this->trace->error(
-                TraceCode::MAGIC_SPLITZ_ERROR,
-                [
-                    'type'         => 'isTaxExpEnabledExpError',
-                    'errorMessage' => $e->getMessage()
-                ]
-            );
-            $isTaxExpEnabled = false;
         }
 
         $taxLineRequired = false;

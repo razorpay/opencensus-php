@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\ShippingInfo;
 
 use RZP\Http\Controllers\MagicCheckoutController;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client as MagicCheckoutServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\StateMap;
@@ -247,7 +248,9 @@ class Service extends Base\Service
                 $isDigitalProduct = $decodedResponse['is_digital_product'];
                 unset($decodedResponse['is_digital_product']);
 
-                if (empty($decodedResponse['tax_details']) === false) {
+                $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
+
+                if (empty($decodedResponse['tax_details']) === false && $isTaxExpEnabled === true) {
                     $taxDetails = $decodedResponse['tax_details'];
                     unset($decodedResponse['tax_details']);
                 }
