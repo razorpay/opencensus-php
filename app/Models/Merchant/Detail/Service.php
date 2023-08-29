@@ -2212,7 +2212,9 @@ class Service extends Base\Service
                 if($flag === true)
                 {
                     $referralInput = $this->getReferralInput($referral);
-                    $this->applyReferralPartner($merchant, $referralInput);
+
+                    // Note: Passing $isSignUpFlow as false, since the parent function applyReferralIfApplicable() is always called for signIn flows only
+                    $this->applyReferralPartner($merchant, $referralInput, false);
 
                     $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
 
@@ -2330,7 +2332,7 @@ class Service extends Base\Service
      * @param        $subMerchant
      * @param array  $input
      */
-    public function applyReferralPartner($subMerchant, array $input)
+    public function applyReferralPartner($subMerchant, array $input, bool $isSignUpFlow = true)
     {
         $refCode         = $input['referral_code'];
         $requestProduct  = $input['request_product'] ?? Product::PRIMARY;
@@ -2379,10 +2381,10 @@ class Service extends Base\Service
             $mappingInput = [
                 'partner_id'     => $partnerId,
                 'source'         => PartnerConstants::REFERRAL,
-                'actual_product' => $referralProduct ?? Product::PRIMARY
+                'actual_product' => $actualReferralProduct ?? $referralProduct ?? Product::PRIMARY
             ];
 
-            $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
+            $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct, $isSignUpFlow);
         }
     }
 
@@ -2398,7 +2400,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    private function applyPartnerSubMerchantMapping($subMerchant, $input, $product)
+    private function applyPartnerSubMerchantMapping($subMerchant, $input, $product, bool $isSignUpFlow)
     {
         $partnerId = $input[Merchant\Constants::PARTNER_ID];
 
@@ -2440,7 +2442,7 @@ class Service extends Base\Service
                                                      $partner, null, $partnerLinkingData);
         }
 
-        $isSignUpFlow = \Request::all()[Merchant\Constants::PHANTOM_SIGNUP] ?? true;
+        $isSignUpFlow = \Request::all()[Merchant\Constants::PHANTOM_SIGNUP] ?? ($isSignUpFlow);
 
         if ($isSignUpFlow)
         {

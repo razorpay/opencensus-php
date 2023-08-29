@@ -287,6 +287,8 @@ class Validator extends Base\Validator
      */
     private function validatePartnerInputForPurePlatformPartner(?array &$input, bool $checkPhantomExp = false)
     {
+        $app = App::getFacadeRoot();
+
         if (!isset($input[Constants::APPLICATION_ID]))
         {
             return;
@@ -307,7 +309,16 @@ class Validator extends Base\Validator
 
         if ($checkPhantomExp === true)
         {
-            Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+            // To update/get partner_config via merchant dashboard UI configurator and via Phantom onboarding flow,
+            // we have different whitelisting experiments
+            if($app['basicauth']->isProxyAuth() === true)
+            {
+                Merchant\PhantomUtility::validatePhantomConfigurationEnabledForPurePlatformPartner($partner->getId());
+            }
+            else if($app['request.ctx']->isDashboardGuest() === true)
+            {
+                Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+            }
         }
 
         unset($input[Constants::APPLICATION_ID]);

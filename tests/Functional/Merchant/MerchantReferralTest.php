@@ -501,8 +501,8 @@ class MerchantReferralTest extends OAuthTestCase
         $bankingReferralUrl = $this->config['applications.banking_service_url']
                               . '/auth/signup?referral_code='
                               . $bankingReferral->getReferralCode();
-        $capitalReferralUrl = $this->config['applications.banking_service_url']
-                              . '/auth/signup?referral_code='
+        $capitalReferralUrl = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP
+                              . '?referral_code='
                               . $capitalReferral->getReferralCode()
                               . '&intent=capital_loc_emi';
 

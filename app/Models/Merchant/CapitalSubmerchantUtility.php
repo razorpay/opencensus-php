@@ -363,33 +363,6 @@ class CapitalSubmerchantUtility
         return $isExpEnabled;
     }
 
-    /**
-     * New referral link flow is kept behind this experiment
-     *
-     * @param string $partnerId
-     *
-     * @return bool
-     */
-    public function isGenerateNewCapitalReferralLinkExpEnabled(string $partnerId): bool
-    {
-        $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $this->app['config']->get('app.capital_partner_new_referral_link_experiment_id'),
-        ];
-
-        $isExpEnabled = $this->merchantCore()->isSplitzExperimentEnable($properties, 'enable');
-
-        $this->trace->info(
-            TraceCode::CAPITAL_PARTNER_NEW_REFERRAL_EXPERIMENT,
-            [
-                "properties" => $properties,
-                "enabled"    => $isExpEnabled,
-            ]
-        );
-
-        return $isExpEnabled;
-    }
-
     public function canPartnerAddFeatureForSubmerchant(array $featureNames, string $partnerId): bool
     {
         if (empty(array_diff($featureNames, self::PARTNER_CAN_ADD_SUBMERCHANT_FEATURE)) === false)

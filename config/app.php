@@ -616,13 +616,13 @@ return array(
 
     'partner_submerchant_oauth_onboarding' => env('PARTNER_SUBMERCHANT_OAUTH_ONBOARDING'),
 
+    'partner_oauth_app_config_experiement_id' => env('PARTNER_OAUTH_APP_CONFIG_EXPERIEMENT_ID'),
+
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
 
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
-
-    'capital_partner_new_referral_link_experiment_id' => env('CAPITAL_PARTNER_NEW_REFERRAL_LINK_EXPERIMENT_ID'),
 
     'capital_invite_existing_merchant_via_batch_experiment_id' => env('CAPITAL_INVITE_EXISTING_MERCHANT_VIA_BATCH_EXPERIMENT_ID'),
 
