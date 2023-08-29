@@ -175,16 +175,14 @@ class SettlementServiceMigration
     const MIGRATION_BLACKLISTED_MIDS = [
 
         //internal mids
-        '9KmKJncCnrvko6','EegSBrCa8CXW0U','9KmLPrgmHhqjri','9KmPH3HU8XjHrq', '9KmMiCZ2rN1Bms','EegSCHnAG28ZRB',
-        'EOriM2QWvzSBrO','EOs9InFtjbiVjv','CIHACFS1pQkdpF','HBnQvKYDg8X7dE',
-
+        '9KmKJncCnrvko6','9KmLPrgmHhqjri','9KmPH3HU8XjHrq', '9KmMiCZ2rN1Bms',
     ];
 
     // Keep this list updated.
     // Reference -- app/Models/Settlement/NodalAccount.php
     const INTER_NODAL_API_MIDS = [
         //inter-nodal API mids (LIVE & TEST)
-        '9KmKJncCnrvko6','9LAQrNwLUOthh5','9KmLPrgmHhqjri','9KmHswlZnMMR7I','9KmPH3HU8XjHrq','9KmMiCZ2rN1Bms',
+        '9KmKJncCnrvko6','9KmLPrgmHhqjri','9KmPH3HU8XjHrq','9KmMiCZ2rN1Bms',
         '10000000000000','10000000000009',  // MIDs belong to UTs
     ];
 
