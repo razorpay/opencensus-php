@@ -271,14 +271,21 @@ class PGRouter
      *
      * @return array
      */
-    public function paymentCancel(string $id, string $merchantId, bool $throwExceptionOnFailure = false): array
+    public function paymentCancel(string $id, string $merchantId, array $input, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterPaymentCancel, $id);
 
         if (empty($merchantId) === false)
         {
-            $url .= '?merchant_id='.$merchantId;
+            $input['merchant_id'] = $merchantId;
         }
+
+        if (empty($input) === false)
+        {
+            $url .= "?".http_build_query($input);
+        }
+
+        $url = urldecode($url);
 
         $this->currentEndPoint = self::PGRouterPaymentCancel;
 

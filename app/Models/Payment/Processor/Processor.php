@@ -5325,7 +5325,7 @@ class Processor
 
         if ($payment->isExternal() === true)
         {
-            return $this->app['pg_router']->paymentCancel($id, $this->merchant->getId(), true);
+            return $this->app['pg_router']->paymentCancel($id, $this->merchant->getId(), $input, true);
         }
 
         $diff = time() - $payment->getCreatedAt();
