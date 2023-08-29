@@ -357,6 +357,7 @@ class Gateway
         self::WALLET_FREECHARGE,
         self::WALLET_BAJAJ,
         self::SHARP,
+        self::PAYTM,
     ];
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [

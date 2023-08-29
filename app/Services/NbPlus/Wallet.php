@@ -133,6 +133,9 @@ class Wallet extends Service
             case Action::AUTHORIZE_FAILED:
                 $returnData = $this->processAuthorizeFailedFlow($response);
                 break;
+            case Action::REFRESH_TOKEN:
+                $returnData = $this->getRefreshTokenResponseData($response);
+                break;
             default:
                 throw new Exception\InvalidArgumentException(
                     'Not a valid action',
@@ -232,5 +235,12 @@ class Wallet extends Service
 
         return $this->getAcquirerData($response);
 
+    }
+
+    //------------------------------------REFRESH_TOKEN-----------------------------------------------------
+
+    protected function getRefreshTokenResponseData($response)
+    {
+        return  $this->getTokenData($response);
     }
 }

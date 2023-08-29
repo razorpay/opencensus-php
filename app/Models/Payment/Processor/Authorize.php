@@ -3361,8 +3361,10 @@ trait Authorize
 
     protected function associateWalletTokenIfApplicable(Payment\Entity $payment ,array & $gatewayInput )
     {
+        $isOptimizerPowerWallet = $payment->isOptimizerWalletLinkAndPaySupported($gatewayInput);
+
         if (($payment->getGlobalCustomerId() !== null) and
-            ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) or $payment->isOptimizerWalletLinkAndPaySupported($gatewayInput)))
+            ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) or $isOptimizerPowerWallet ))
         {
             $terminalId = $payment->getTerminalId();
             $wallet = $payment->getWallet();
@@ -3372,6 +3374,29 @@ trait Authorize
 
             if (($token !== null) and (($token->getExpiredAt() === null) or ($token->getExpiredAt() > time())))
             {
+                $payment->globalToken()->associate($token);
+            }
+
+            if ($isOptimizerPowerWallet and $token !== null and ($token->getExpiredAt() !== null and $token->getExpiredAt() < time()))
+            {
+                $gatewayInput['payment'] = $payment->toArrayGateway();
+
+                $gatewayInput['payment']['created_at'] =Carbon::now()->getTimestamp();
+
+                $gatewayInput['token']=$token;
+
+                $gatewayInput['customer'] = $this->repo->customer->getGlobalCustomerForPayment($payment);
+
+                $data= $this->callGatewayFunction(\RZP\Services\NbPlus\Action::REFRESH_TOKEN, $gatewayInput);
+
+                if ($data== null){
+                    return;
+                }
+
+                $token = $this->createOrUpdateToken($gatewayInput, $data);
+
+                $this->associateMerchantToOptimizerLinkAndPayWalletTokens($token,$payment);
+
                 $payment->globalToken()->associate($token);
             }
         }

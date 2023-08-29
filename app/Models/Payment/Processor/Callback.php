@@ -751,8 +751,7 @@ trait Callback
             $this->callGatewayFunction(Payment\Action::CHECK_BALANCE, $input);
         }
         else if ((Payment\Gateway::canRunOtpFlowViaNbPlus($input['payment'])) and
-            (isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp') and
+            ((isset($input['gateway']['type']) and $input['gateway']['type'] === 'otp') or $this->payment->isOptimizerWalletLinkAndPaySupported($input)) and
             $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE)
         {
             $this->validateCallbackInputIfApplicable($input);
@@ -850,31 +849,7 @@ trait Callback
 
             $input['payment']['otp_count'] = $input['payment']['otp_count']==null ? 0 : $payment->getOtpCount();
 
-            if($input['customer']==null)
-            {
-                $contact = $this->parseContact($input['payment']['contact'])->format();
-
-                $customer = $this->repo->customer->findByContactAndMerchant(
-                    $contact,$this->repo->merchant->getSharedAccount());
-
-                if ($customer === null)
-                {
-                    $customerAttributes = array(
-                        'contact' => $contact,
-                        'email'   => $input['payment']['email']
-                    );
-
-                    $customer = (new Customer\Core)
-                        ->createGlobalCustomer($customerAttributes);
-                }
-                $input['payment']['global_customer_id']= $customer->getId();
-            }
-            else
-            {
-                $customer= $input['customer'];
-
-                $input['payment']['global_customer_id']= $customer->getId();
-            }
+            $this->setGlobalCustomerIdForOptimizerLinkAndPayPayments($input);
         }
     }
 

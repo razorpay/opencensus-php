@@ -10000,4 +10000,41 @@ class Processor
             $token->merchant()->associate($merchant);
         }
     }
+
+    /** setGlobalCustomerIdForOptimizerLinkAndPayPayments() sets the
+     * global customer id in gateway input , for debit call of auto debit wallets
+     * customer id is needed so if customer is null a new customer is created and set
+     * in gateway input
+     * @param $gatewayInput
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
+     */
+    public function setGlobalCustomerIdForOptimizerLinkAndPayPayments(&$gatewayInput): void
+    {
+
+        if($gatewayInput['customer'] == null)
+        {
+            $contact = $this->parseContact($gatewayInput['payment']['contact'])->format();
+
+            $customer = $this->repo->customer->findByContactAndMerchant(
+                $contact,$this->repo->merchant->getSharedAccount());
+
+            if ($customer === null)
+            {
+                $customerAttributes = array(
+                    'contact' => $contact,
+                    'email'   => $gatewayInput['payment']['email']
+                );
+
+                $customer = (new Customer\Core)
+                    ->createGlobalCustomer($customerAttributes);
+            }
+        }
+        else
+        {
+            $customer= $gatewayInput['customer'];
+        }
+
+        $gatewayInput['payment']['global_customer_id']= $customer->getId();
+    }
 }

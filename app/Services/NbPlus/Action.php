@@ -19,6 +19,7 @@ class Action
     const OTP_RESEND             = 'otp_resend';
     const TOPUP                  = 'topup';
     const INTENT                 = 'intent';
+    const REFRESH_TOKEN          = 'refresh_token';
 
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
@@ -34,6 +35,7 @@ class Action
         self::OTP_RESEND,
         self::CALLBACK_OTP_SUBMIT,
         self::TOPUP,
+        self::REFRESH_TOKEN,
     ];
 
     const PAYMENTS_SUPPORTED_ACTIONS = [

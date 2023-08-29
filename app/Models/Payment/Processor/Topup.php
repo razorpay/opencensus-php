@@ -6,6 +6,7 @@ use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Exception;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 
@@ -73,7 +74,7 @@ trait Topup
         //
 
         if (($gateway !== Payment\Gateway::SHARP) and
-            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY]) === false) and
+            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM]) === false) and
             ($payment->getGlobalCustomerId() === null))
         {
             throw new Exception\LogicException(
@@ -81,7 +82,7 @@ trait Topup
         }
 
         if (($gateway !== Payment\Gateway::SHARP) and
-            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY]) === false) and
+            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM]) === false) and
             ($payment->getGlobalTokenId() === null))
         {
             throw new Exception\BadRequestException(
@@ -99,6 +100,12 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->isOptimizerWalletLinkAndPaySupported())
+        {
+            $gatewayInput['gateway'][PaymentConstants::OPTIMIZER_AUTO_DEBIT_WALLET] = true;
+            $this->setGlobalCustomerIdForOptimizerLinkAndPayPayments($gatewayInput);
+        }
 
         if ($payment->getGlobalTokenId() !== null)
         {
