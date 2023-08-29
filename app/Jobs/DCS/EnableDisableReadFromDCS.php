@@ -155,7 +155,7 @@ class EnableDisableReadFromDCS extends Job
                 {
                     if (isset($updatedValue['merchant'][$merchantFeature]) === true)
                     {
-                        unset($updatedValue[['merchant'][$merchantFeature]]);
+                        unset($updatedValue['merchant'][$merchantFeature]);
                     }
                 }
                 if (empty($updatedValue['merchant']) === true)

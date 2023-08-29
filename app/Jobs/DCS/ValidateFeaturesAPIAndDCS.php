@@ -8,9 +8,9 @@ use RZP\Base\RuntimeManager;
 use RZP\Jobs\Job;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
-use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Services\Dcs\Features\Type;
+use RZP\Services\Dcs\Features\Utility;
 use RZP\Trace\TraceCode;
 
 class ValidateFeaturesAPIAndDCS extends Job
@@ -44,9 +44,9 @@ class ValidateFeaturesAPIAndDCS extends Job
 
         try
         {
-            $assignApi = isset($this->input['assign_api']) === true ? $this->input['assign_api'] : false;
+            $assignApiDiffToDcs = isset($this->input['assign_api_diff_to_dcs']) === true ? $this->input['assign_api_diff_to_dcs'] : false;
 
-            $assignDcs = isset($this->input['assign_dcs']) === true ? $this->input['assign_dcs'] : false;
+            $assignDcsDiffToApi = isset($this->input['assign_dcs_diff_to_api']) === true ? $this->input['assign_api_diff_to_dcs'] : false;
 
             if (isset($this->input['feature_name']) === true)
             {
@@ -62,12 +62,17 @@ class ValidateFeaturesAPIAndDCS extends Job
 
             // Validate for Org features
             if (key_exists(Type::ORG, $dcsReadEnabledFeatures) === true) {
-                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::ORG], Type::ORG, $assignApi, $assignDcs);
+                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::ORG], Type::ORG, $assignApiDiffToDcs, $assignDcsDiffToApi);
             }
 
             // Validate for Merchant features
             if (key_exists(Type::MERCHANT, $dcsReadEnabledFeatures) === true) {
-                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::MERCHANT], Type::MERCHANT, $assignApi, $assignDcs);
+                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::MERCHANT], Type::MERCHANT, $assignApiDiffToDcs, $assignDcsDiffToApi);
+            }
+
+            // Validate for Merchant features
+            if (key_exists(Type::APPLICATION, $dcsReadEnabledFeatures) === true) {
+                $this->validateEntityIdsForFeature($dcsReadEnabledFeatures[Type::APPLICATION], Type::APPLICATION, $assignApiDiffToDcs, $assignDcsDiffToApi);
             }
         }
         catch(\Throwable $e)
@@ -87,11 +92,11 @@ class ValidateFeaturesAPIAndDCS extends Job
     /**
      * @param array $dcsReadEnabledFeatures
      * @param string $entityType
-     * @param bool $assignApi
-     * @param bool $assignDcs
+     * @param bool $assignApiDiffToDcs
+     * @param bool $assignDcsDiffToApi
      * @return void
      */
-    public function validateEntityIdsForFeature(array $dcsReadEnabledFeatures, string $entityType, bool $assignApi, bool $assignDcs): void
+    public function validateEntityIdsForFeature(array $dcsReadEnabledFeatures, string $entityType, bool $assignApiDiffToDcs, bool $assignDcsDiffToApi): void
     {
 
         $dcs = App::getFacadeRoot()['dcs'];
@@ -141,7 +146,7 @@ class ValidateFeaturesAPIAndDCS extends Job
                 'dcs_diff' => $dcsDiff
             ]);
 
-            if ($assignApi === true)
+            if ($assignApiDiffToDcs === true)
             {
                 // no need to check via client so hardcoding the variant.
                 $variant = 'on_direct_dcs_rs';
@@ -158,34 +163,104 @@ class ValidateFeaturesAPIAndDCS extends Job
                 ]);
             }
 
-            if ($assignDcs === true)
+            if ($assignDcsDiffToApi === true)
             {
-
-                $successfulMerchant = [];
-                foreach ($dcsDiff as $key => $entityId)
+                $adminService = new AdminService;
+                $key = Utility::getRandomPrefix() . '_' . ConfigKey::DCS_READ_WHITELISTED_FEATURES;
+                $dcsReadEnabledFeatures = $adminService->getConfigKey(
+                    ['key' => $key]);
+                if (empty($dcsReadEnabledFeatures) === false)
                 {
-                    $featureParam = [
-                        Entity::ENTITY_TYPE => $entityType,
-                        Entity::ENTITY_ID   => $entityId,
-                        Entity::NAME        => $feature,
-                    ];
-
-                    $core = new Core();
-                    try
+                    $dcsReadEnabledFeaturesByEntityType = $dcsReadEnabledFeatures[$entityType];
+                    // Assign to API if read enable is true
+                    if (isset($dcsReadEnabledFeaturesByEntityType[$feature]) === true)
                     {
-                        //change here
-                        $core->create($featureParam);
-                        $successfulMerchant[] = $entityId;
+                        $this->assignToAPI($dcsDiff, $entityType, $feature);
                     }
-                    catch (\Exception $e)
+                    else
                     {
-                        $this->trace->traceException($e, Trace::ERROR, TraceCode::DCS_FEATURE_API_SYNC_FAILED);
+                        $this->removeFromDcs($dcsDiff, $feature, $entityType);
                     }
                 }
-                $this->trace->info(TraceCode::DCS_FEATURE_API_SYNC_SUCCESSFUL, [
-                    "entity_id"   =>  $successfulMerchant
-                ]);
+
             }
         }
+    }
+
+    /**
+     * @param array $dcsDiff
+     * @param string $entityType
+     * @param int|string $feature
+     * @return void
+     */
+    public function assignToAPI(array $dcsDiff, string $entityType, int|string $feature): void
+    {
+        $successfulMerchant = [];
+        foreach ($dcsDiff as $key => $entityId)
+        {
+            $featureParam = [
+                Entity::ENTITY_TYPE => $entityType,
+                Entity::ENTITY_ID => $entityId,
+                Entity::NAME => $feature,
+            ];
+
+            try
+            {
+                $feature = (new Entity)->build($featureParam);
+                $this->repoManager->feature->addFeatureInAPi($feature);
+                $successfulMerchant[] = $entityId;
+            }
+            catch (\Exception|\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::DCS_FEATURE_API_SYNC_FAILED);
+            }
+        }
+        $this->trace->info(TraceCode::DCS_FEATURE_API_SYNC_SUCCESSFUL, [
+            "entity_id" => $successfulMerchant
+        ]);
+    }
+
+    /**
+     * @param array $dcsDiff
+     * @param int|string $feature
+     * @param string $entityType
+     * @return void
+     */
+    public function removeFromDcs(array $dcsDiff, int|string $feature, string $entityType): void
+    {
+        $success = [];
+        $fail = [];
+        try
+        {
+            foreach ($dcsDiff as $key => $entityId)
+            {
+                $data = [
+                    Entity::NAME => $feature,
+                    Entity::ENTITY_ID => $entityId,
+                    Entity::ENTITY_TYPE => $entityType,
+                ];
+
+                $entity = (new Entity)->build($data);
+                $entity->setEntityId($entityId);
+                $entity->setEntityType($entityType);
+                app('dcs')->editFeature($entity, 'on_direct_dcs_rs', false, $this->mode);
+                $success[] = $entityId;
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::DCS_EDIT_FEATURE_MERCHANT_JOB_FAILED,
+                [
+
+                ]);
+            $fail[] = $entityId;
+        }
+        $this->trace->info(TraceCode::DCS_FEATURE_API_SYNC_SUCCESSFUL, [
+            "success" => $success,
+            "fail" => $fail
+        ]);
     }
 }

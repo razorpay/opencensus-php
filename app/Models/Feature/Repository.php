@@ -410,6 +410,22 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * Only needed for sync if not present in API but present in DCS
+     * @throws \Throwable
+     */
+    public function addFeatureInAPi(Entity $feature)
+    {
+        try
+        {
+            $this->repo->saveOrFail($feature);
+        }
+        catch (\Throwable $e)
+        {
+            throw $e;
+        }
+    }
+
     public function deleteAndSyncIfApplicableOrFail(Entity $feature, bool $shouldSync)
     {
         $entityType = $feature->getEntityType();
