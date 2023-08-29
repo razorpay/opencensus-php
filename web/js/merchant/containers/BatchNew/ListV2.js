@@ -32,13 +32,16 @@ const batchStatus = {
 class BatchList extends ListContainer {
   constructor(props) {
     super(props);
+    const { batchType, user } = props;
+    const isBatchPaymentPage = batchType === BATCH_TYPE;
     const isVisible =
-      props.user?.isAllowedView('payment_links_batch_uploads') &&
-      props.user.isPLBatchUploadEnabled &&
-      (!props.user.isSellerAppRole || props.user.isPaymentLinkBatchEnabledForSellerAppRole);
+      user?.isAllowedView('payment_links_batch_uploads') &&
+      user.isPLBatchUploadEnabled &&
+      !isBatchPaymentPage &&
+      (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole);
     this.state = {
       tabsData: [
-        { title: 'Payment Links', url: '/paymentlinks' },
+        { title: 'Payment Links', url: '/paymentlinks', hidden: isBatchPaymentPage },
         {
           title: 'Batch Uploads',
           url: '/paymentlinks/batchuploads',

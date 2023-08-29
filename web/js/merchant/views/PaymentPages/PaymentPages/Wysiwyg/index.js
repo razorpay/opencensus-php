@@ -1,42 +1,24 @@
 /* eslint-disable react/no-unsafe */
 import React, { Suspense } from 'react';
+import { Spinner } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import Loader from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/Loader';
-import lazy from 'merchant/routes/LazyLoader';
-import Svelte from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Svelte';
-import DetailsSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection';
-import FormSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection';
-import TemplatesMask from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates';
-import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
-import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
-import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
-import Header from 'merchant/views/PaymentPages/PaymentPages/components/Header';
-import MobileActionButtons from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/MobileActionButtons';
 
-import {
-  createPaymentPage,
-  editPaymentPage,
-  setReceiptDetails,
-} from 'merchant/views/PaymentPages/PaymentPages/model';
-import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-import { isMobileDevice } from 'merchant/components/Home/data';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import debounce from 'common/utils/debounce';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
-
 import {
   autoPrefixUrls,
   getURLQueryParams,
   i18CurrencyConversionFromCommonUnitToMinorUnit,
   classList,
 } from 'common/utils/rzp-utils';
-
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { fetchPaymentPageBatches } from 'merchant/reducers/batches';
 import {
   initDefaultFormItems,
   fetchPaymentPage,
@@ -50,32 +32,49 @@ import {
   setShiprocketModal,
   updateMagicData,
 } from 'merchant/reducers/wysiwyg';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-// TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
+import lazy from 'merchant/routes/LazyLoader';
+import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import DetailsSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection';
+import FormSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection';
+import {
+  convertSinglePriceFieldToMandatory,
+  isFormItemOfTypeAmount,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import {
   validateUISchema,
   SHIPROCKET_FORM_ITEMS,
   checkIsMagicCheckoutField,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
-import {
-  trackWYSIWYGCloseIntent,
-  trackConfirmWYSIWYGCloseIntent,
-} from 'merchant/views/PaymentPages/PaymentPages/ga';
-import {
-  convertSinglePriceFieldToMandatory,
-  isFormItemOfTypeAmount,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
-
-import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
-import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import Svelte from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Svelte';
+import TemplatesMask from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates';
+import Loader from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/Loader';
+import MobileActionButtons from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/MobileActionButtons';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import Header from 'merchant/views/PaymentPages/PaymentPages/components/Header';
+import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
+import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
+import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
+import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
 import {
   BATCH_PAYMENT_PAGES_BASE_URL,
   SEC_REF_ID,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import {
+  trackWYSIWYGCloseIntent,
+  trackConfirmWYSIWYGCloseIntent,
+} from 'merchant/views/PaymentPages/PaymentPages/ga';
+import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import {
+  createPaymentPage,
+  editPaymentPage,
+  setReceiptDetails,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+// TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 
 const MagicCheckoutEnabledModal = lazy(() =>
   import(
@@ -131,6 +130,7 @@ const ERROR = {
     setSettingsModal,
     setShiprocketModal,
     updateMagicData,
+    fetchPaymentPageBatches,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
@@ -157,6 +157,36 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     isBatchPaymentPages:
       this.props.isBatchPaymentPages ||
       this.searchQuery?.type === PAYMENT_PAGES_TYPES.batch_payment_page,
+    isBatchesLoading: false,
+    isPIDSIDLabelDisabled: false, // Batch payment page => Edit flow => Disable PID & SID if batch upload has been attempted on the page.
+  };
+
+  getPaymentPageBatches = async (id) => {
+    try {
+      this.setState({
+        isBatchesLoading: true,
+      });
+      const params = {
+        skip: '0',
+        count: '1',
+      };
+      const response = await this.props.fetchPaymentPageBatches({ id, params });
+      if (response?.data?.count > 0) {
+        this.setState({
+          isPIDSIDLabelDisabled: true,
+          isBatchesLoading: false,
+        });
+      }
+    } catch (err) {
+      showNotification({
+        type: 'error',
+        message: err.errors?.join('. '),
+      });
+    } finally {
+      this.setState({
+        isBatchesLoading: false,
+      });
+    }
   };
 
   UNSAFE_componentWillMount() {
@@ -308,6 +338,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentDidMount() {
     const { initDefaultFormItems, id, user, updateTemplateType, tracking, isWebView } = this.props;
+    const { isBatchPaymentPages } = this.state;
     const isEditExistingId = !!id;
     // if create flow & storefront enabled, then preselect the empty template
     if (!isEditExistingId && user.isPaymentPageStorefrontEnabled) {
@@ -349,6 +380,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     //dispatching event to tell mobile app to hide header in creation flow
     isWebView && dispatchWebViewEvent({ eventType: 'HIDE_HEADER' });
+
+    // Batch payment page => Edit flow => Disable PID & SID if batch upload has been attempted on the page.
+    if (isBatchPaymentPages && id) {
+      this.getPaymentPageBatches(id);
+    }
   }
 
   componentWillUnmount() {
@@ -407,8 +443,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   initSubApps = () => {
     const { user } = this.props;
-    const { isBatchPaymentPages } = this.state;
-
+    const { isBatchPaymentPages, isPIDSIDLabelDisabled } = this.state;
     ReactDOM.render(
       <DetailsSection
         supportEmailRef={this.supportEmailRef}
@@ -421,6 +456,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       <FormSection
         hideDynamicPriceField={user.hideDynamicPriceFieldPP}
         isBatchPaymentPages={isBatchPaymentPages}
+        isPIDSIDLabelDisabled={isPIDSIDLabelDisabled}
       />,
       document.getElementById('form-section'),
     );
@@ -1216,6 +1252,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       magicFeeRule,
       isMagicCheckoutEnabled,
       isBatchPaymentPages,
+      isBatchesLoading,
     } = this.state;
 
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS, magicCheckout } = this.props;
@@ -1234,7 +1271,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const isShiprocket =
       paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1';
 
-    let isAllowedToSubmit, actionBtns, themeColor, content;
+    let isAllowedToSubmit, actionBtns, themeColor;
+    //Show the loader instead of a blank screen while calling the API.
+    let content = (
+      <div className="page-center">
+        <Spinner testID="payment-page-spinner" size="xlarge" />
+      </div>
+    );
 
     const merchantData = {
       name: this.props.user.billing_label || this.props.user.name,
@@ -1242,7 +1285,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         this.props.config.brand_color || this.props.org.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
     };
-
     if (paymentPageEntity) {
       isAllowedToSubmit = paymentPageEntity.title;
 
@@ -1335,7 +1377,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           </div>
         );
       }
-    } else if (isPageReady) {
+    } else if (isPageReady && !isBatchesLoading) {
       content = (
         <React.Fragment>
           {onSvelteAppMount && !user.logo_url && <MerchantLogoTooltip />}

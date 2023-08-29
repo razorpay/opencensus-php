@@ -73,32 +73,40 @@ describe('View', () => {
     expect(getByText(notifyEl, SEC_REF_ID_MAX_ERROR));
   });
 
-  test('should be able edit and to select the field as secondary reference id', async () => {
+  test('should be able to select email & phone as as secondary reference id and their label should be disabled', async () => {
     renderApp({
       props: { isBatchPaymentPages: true },
       initialState: {
         wysiwyg: {
           ...defaultState.wysiwyg,
-          FORM_ITEMS: [FIXED_FIELDS.email],
+          FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone],
         },
       },
     });
 
     // Click on email field.
     await userEvent.click(screen.getByTestId(FIXED_FIELDS.email.title));
+    // Label should be there
+    expect(screen.getByPlaceholderText('Enter field label')).toBeInTheDocument();
+    // Label should be disabled
+    expect(screen.getByTestId('Email--title')).toBeDisabled();
     // Open additional options.
     await userEvent.click(screen.getByTestId('dropdown-trigger'));
     // Select the option.
     await userEvent.click(screen.getByText('Select as Secondary Reference ID'));
     // Save the field.
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-    // Click on email field.
-    await userEvent.click(screen.getByTestId(FIXED_FIELDS.email.title));
-    // Edit the email title.
-    await userEvent.type(screen.getByPlaceholderText('Enter field label'), ' Title Edit');
+    // Click on phone field.
+    await userEvent.click(screen.getByTestId(FIXED_FIELDS.phone.title));
+    // Label should be there
+    expect(screen.getByPlaceholderText('Enter field label')).toBeInTheDocument();
+    // Label should be disabled
+    expect(screen.getByTestId('Phone--title')).toBeDisabled();
+    // Open additional options.
+    await userEvent.click(screen.getByTestId('dropdown-trigger'));
+    // Select the option.
+    await userEvent.click(screen.getByText('Select as Secondary Reference ID'));
     // Save the field.
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-
-    expect(screen.getByTestId('Email Title Edit')).toBeInTheDocument();
   });
 });

@@ -1,13 +1,14 @@
-import store from 'merchant/store';
 import { set, merge } from 'common/utils/immutable';
 import { getActionName, makeActionCollectionReducer } from 'merchant/reducers/collection';
+import store from 'merchant/store';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 import {
   makeEntityReducer,
   entityFetchPendingState,
   entityFetchErrorState,
 } from 'merchant_common/reducers/entity';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const REFUND = 'REFUND_BATCHS';
 const VIRTUAL_ACCOUNT_BATCHS = 'VIRTUAL_ACCOUNT_BATCHS';
@@ -381,7 +382,8 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
     return fetchBatchAjax(id).then((batchData) => {
       if (batchData) {
         const batchType = batchData.batch.type;
-        const isBatchTypePaymentlinksV2 = batchType === 'payment_link_v2';
+        const isBatchTypePaymentlinksV2 =
+          batchType === 'payment_link_v2' || batchType === BATCH_TYPE;
 
         const promises = [];
 

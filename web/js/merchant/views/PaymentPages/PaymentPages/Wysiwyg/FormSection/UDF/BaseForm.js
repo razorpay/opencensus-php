@@ -148,7 +148,8 @@ export default class BaseForm extends React.PureComponent {
     return (
       <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
         <Input.TextareaAutoResize
-          class="Input--title"
+          className="Input--title"
+          data-testid={`${field.title}--title`}
           name="title"
           defaultValue={field.title}
           maxLength="60"

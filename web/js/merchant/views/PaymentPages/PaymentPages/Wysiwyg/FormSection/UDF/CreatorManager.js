@@ -1,11 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
-import BaseForm from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/BaseForm';
+
 import Alert from 'common/new-ui/Alert';
 import Button from 'common/new-ui/Button';
 import { setSettingsModal } from 'merchant/reducers/wysiwyg';
+import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
+import BaseForm from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/BaseForm';
+import { SEC_REF_ID } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { getAlertMsg } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+
 import { FIXED_FIELDS } from './helpers/preAddedFields';
 
 export default function CreatorManager(WrappedDisplayFieldComponent) {
@@ -46,6 +49,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
         isShiprocket,
         showPayerNamePP,
         isBatchPaymentPages,
+        isPIDSIDLabelDisabled,
         ...restProps
       } = this.props;
 
@@ -74,7 +78,11 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
 
         if (isBatchPaymentPages) {
           // Primary reference id field
-          if (field?.name === FIXED_FIELDS.primaryRefId.name) {
+          const isPrimary = field?.name === FIXED_FIELDS.primaryRefId.name;
+          // Secondary reference id field
+          const isSecondary = field?.name?.includes(SEC_REF_ID);
+
+          if (isPrimary) {
             isFieldDeletable = false;
             isFieldForcedRequired = true;
             isPrimaryField = true;
@@ -85,10 +93,19 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
             isFieldDeletable = false;
             isFieldForcedRequired = true;
           }
-
-          if (field?.name === 'email' || field?.name === 'phone') {
+          // Create/Edit flow - Restrict title modification of Email & Phone
+          if (
+            field?.title === FIXED_FIELDS.email.title ||
+            field?.title === FIXED_FIELDS.phone.title
+          ) {
             isFieldDeletable = false;
             isFieldForcedRequired = false;
+            isLabelDisabled = true;
+          }
+
+          // Edit Flow - Restrict title modification of PID & SID(s) once page is published and if batch upload has been attempted on the page.
+          if ((isPrimary || isSecondary) && isPIDSIDLabelDisabled) {
+            isLabelDisabled = true;
           }
         }
       }

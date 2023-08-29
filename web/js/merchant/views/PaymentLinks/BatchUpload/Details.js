@@ -1,24 +1,25 @@
 import { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
+import Button from 'common/new-ui/Button';
+import BatchStats from 'common/ui/StatsTable';
+import DataTable from 'common/ui/Table/DataTable';
+import Time from 'common/ui/Time';
+import ListToggler from 'common/ui/Toggler/ListToggler';
+import { amount, status } from 'common/ui/item/pair';
+import { pluralize } from 'common/utils/rzp-utils';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { BatchUploadStatusLabel, InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import BatchDetails from 'merchant/containers/BatchNew/Details';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   fetchPaymentLinkBatchesDetails as fetchBatchDetails,
   cancelPaymentLinkBatch,
 } from 'merchant/reducers/batches';
+import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { pluralize } from 'common/utils/rzp-utils';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import BatchStats from 'common/ui/StatsTable';
-import Button from 'common/new-ui/Button';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import DataTable from 'common/ui/Table/DataTable';
-import ListToggler from 'common/ui/Toggler/ListToggler';
-import Time from 'common/ui/Time';
-import { amount, status } from 'common/ui/item/pair';
-import { BatchUploadStatusLabel, InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import track from './track';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
@@ -30,8 +31,8 @@ const paymentLinkEmail = {
 
 const renderBatchDetails = (props) => {
   const { batch, stats, paymentlinks } = props;
-
-  const isBatchTypePaymentlinksV2 = batch.type === 'payment_link_v2';
+  const { type } = batch;
+  const isBatchTypePaymentlinksV2 = type === 'payment_link_v2' || type === BATCH_TYPE;
 
   const statsTable = isBatchTypePaymentlinksV2
     ? getStatsTableForPLV2(stats, batch ? batch.processed_count : null)

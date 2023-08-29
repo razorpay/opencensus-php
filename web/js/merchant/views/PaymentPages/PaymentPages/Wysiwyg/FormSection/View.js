@@ -56,6 +56,7 @@ class SortableFormItemsList extends React.Component {
       showPayerNamePP,
       isBatchPaymentPages,
       countryCode,
+      isPIDSIDLabelDisabled,
     } = this.props;
 
     // disable sorting in mobile view
@@ -100,6 +101,7 @@ class SortableFormItemsList extends React.Component {
                 showPayerNamePP={showPayerNamePP}
                 isBatchPaymentPages={isBatchPaymentPages}
                 countryCode={countryCode}
+                isPIDSIDLabelDisabled={isPIDSIDLabelDisabled}
               />
             );
           }
@@ -328,6 +330,7 @@ export default class View extends React.Component {
       user,
       org,
       isBatchPaymentPages,
+      isPIDSIDLabelDisabled,
     } = this.props;
     let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
 
@@ -402,6 +405,7 @@ export default class View extends React.Component {
           }
           showPayerNamePP={user?.showPayerNamePP}
           isBatchPaymentPages={isBatchPaymentPages}
+          isPIDSIDLabelDisabled={isPIDSIDLabelDisabled}
         />
 
         {this.props.isShiprocketOpened && <div class="shiprocket-blank-preview" />}
