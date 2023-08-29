@@ -498,7 +498,9 @@ class Core extends Base\Core
                 return Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM],
                     function() use ($merchant, $input, $originProduct)
                     {
-                        return $this->submitActivationForm($merchant, $input, $originProduct);
+                        $orgId = $merchant->getOrgId();
+
+                        return $this->submitActivationForm($merchant, $input, $originProduct, $orgId);
                     });
             });
 
@@ -1315,7 +1317,7 @@ class Core extends Base\Core
         }
     }
 
-    public function submitActivationForm(Merchant\Entity $merchant, array $input = null, string $originProduct = Product::PRIMARY)
+    public function submitActivationForm(Merchant\Entity $merchant, array $input = null, string $originProduct = Product::PRIMARY, $orgId = null)
     {
         $startTime = microtime(true);
 
@@ -1342,7 +1344,7 @@ class Core extends Base\Core
 
         if ($isRiskyMerchant === true)
         {
-            $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
+            $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action, $orgId);
 
             // If Risk fails then we have to remove no-doc change status to Nc, make optional doc to mandatory. Ignore activation flow
             if ($merchant->isNoDocOnboardingEnabled() === true)
@@ -2136,13 +2138,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function handleFlowForRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
+    protected function handleFlowForRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action, $orgId = null)
     {
         if ($merchantDetails->getActivationFormMilestone() !== DetailConstants::L1_SUBMISSION)
         {
             if ($action !== DeDupe\Constants::RAS_SIGNUP_LOCK)
             {
-                $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+                $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails, $orgId);
             }
 
             if (empty($action) === false)
@@ -2200,10 +2202,10 @@ class Core extends Base\Core
             $merchant, $properties, SegmentEvent::DEDUPE);
     }
 
-    protected function triggerWorkflowFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    protected function triggerWorkflowFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $orgId = null)
     {
         $actions = (new ActionCore)->fetchOpenActionOnEntityOperationWithPermissionList(
-            $merchant->getId(), 'merchant_detail', [Permission\Name::IMPERSONATING_MERCHANT_DEDUPE]);
+            $merchant->getId(), 'merchant_detail', [Permission\Name::IMPERSONATING_MERCHANT_DEDUPE], $orgId);
         $actions = $actions->toArray();
 
         if (empty($actions) === false)

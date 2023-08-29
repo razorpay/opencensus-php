@@ -45,13 +45,13 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
 
     // timeout in seconds
     const PATH_TIMEOUT_MAP  = [
-        self:: MERCHANT_ACTIVATION_CLARIFICATION_FETCH                  => 10,
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE                  => 10,
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_FETCH_ADMIN           => 10,
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN            => 10,
-        self:: MERCHANT_NC_REVAMP_ELIGIBILITY                           => 10,
-        self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN                     => 10,
-        self:: MERCHANT_UPDATE_CLARIFICATIONS                           => 10,
+        self:: MERCHANT_ACTIVATION_CLARIFICATION_FETCH                  => 15,
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE                  => 15,
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_FETCH_ADMIN           => 15,
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN            => 15,
+        self:: MERCHANT_NC_REVAMP_ELIGIBILITY                           => 15,
+        self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN                     => 15,
+        self:: MERCHANT_UPDATE_CLARIFICATIONS                           => 15,
     ];
 
     public function __construct()
@@ -64,7 +64,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->setDefaultTimeout(10);
+        $this->setDefaultTimeout(15);
 
         $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
 
