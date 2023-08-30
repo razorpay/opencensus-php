@@ -10,7 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Mock\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\TestCase;
-use RZP\Jobs\MerchantFirsDocumentsZip;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Services\UfhService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -440,7 +440,7 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $this->assertEquals(true,$content['success']);
 
-        Queue::assertPushed(MerchantFirsDocumentsZip::class);
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
 
     }
 
@@ -488,7 +488,7 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $this->assertEquals(true,$content['success']);
 
-        Queue::assertPushed(MerchantFirsDocumentsZip::class, 0);
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 0);
 
     }
 
@@ -556,7 +556,7 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $this->assertEquals(true,$content['success']);
 
-        Queue::assertPushed(MerchantFirsDocumentsZip::class);
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
 
     }
 

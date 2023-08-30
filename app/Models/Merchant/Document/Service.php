@@ -24,7 +24,7 @@ use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Trace\Tracer;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Jobs\MerchantFirsDocumentsZip;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use function Doctrine\Common\Cache\Psr6\get;
 use RZP\Models\Merchant\Document\Constants as DocumentConstants;
 use Razorpay\Trace\Logger as Trace;
@@ -542,6 +542,7 @@ class Service extends Base\Service
             foreach ($input['merchant_ids'] as $merchantId)
             {
                 $payload = [
+                    'action'        => CrossBorderCommonUseCases::ZIP_FIRS_DOCUMENTS,
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
@@ -550,7 +551,7 @@ class Service extends Base\Service
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
+                CrossBorderCommonUseCases::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
 
                 $iterationNumber++;
 
@@ -617,6 +618,7 @@ class Service extends Base\Service
                 }
 
                 $payload = [
+                    'action'        => CrossBorderCommonUseCases::ZIP_FIRS_DOCUMENTS,
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
@@ -625,7 +627,7 @@ class Service extends Base\Service
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
+                CrossBorderCommonUseCases::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
 
                 $iterationNumber++;
 

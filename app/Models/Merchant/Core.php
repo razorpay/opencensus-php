@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PartnerMigrationAuditJob;
-use RZP\Jobs\CrossBorderCommonUseCases;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use Razorpay\OAuth\Client\Repository as OAuthRepo;
 use \WpOrg\Requests\Exception as RequestsException;
 

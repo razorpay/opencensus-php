@@ -8,7 +8,6 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Timezone;
-use RZP\Jobs\MerchantFirsDocumentsZip;
 use RZP\Services\UfhService;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;

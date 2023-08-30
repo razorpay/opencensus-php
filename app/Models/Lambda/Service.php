@@ -11,7 +11,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Exception;
 use RZP\Exception\ServerErrorException;
-use RZP\Jobs\MerchantCrossborderEmail;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
@@ -409,9 +409,9 @@ class Service extends Base\Service
             $filetypeAndFileExtension = trim($filetypeAndFileExtension);
             list($fileType, $fileExtension) = explode('.',$filetypeAndFileExtension);
 
-            if($fromMonth !== $toMonth || $fromYear !== $toYear || $fileExtension !== 'pdf' || 
+            if($fromMonth !== $toMonth || $fromYear !== $toYear || $fileExtension !== 'pdf' ||
                 !($fileType === self::FIRSTDATA_SUMMARY_FIRS_TYPE || $fileType === self::FIRSTDATA_DETAIL_FIRS_TYPE))
-            { 
+            {
                 $this->trace->info(TraceCode::INVALID_FIRSTDATA_FIRS_FILE,[
                     'filename' => $filename
                 ]);
@@ -421,7 +421,7 @@ class Service extends Base\Service
             }
 
             $gatewayMerchantId = trim($gatewayMerchantId);
-            
+
             // 33 is added as prefix before storing for all TIDs.
             $gatewayMerchantId = "33" . substr($gatewayMerchantId,7,8);
             $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantIDAll($gatewayMerchantId);
@@ -434,7 +434,7 @@ class Service extends Base\Service
             {
                 $type = self::FIRS_FIRSTDATA_FILE;
             }
-            
+
             if ($fileType == self::FIRSTDATA_SUMMARY_FIRS_TYPE)
             {
                 $type = self::FIRS_FIRSTDATA_SUMMARY_FILE;
@@ -948,7 +948,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function triggerFIRSAvailableNotification($document, $mode) 
+    protected function triggerFIRSAvailableNotification($document, $mode)
     {
         try
         {
@@ -960,10 +960,10 @@ class Service extends Base\Service
 
             $data = [
                 'document_id' => $document->getId(),
-                'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                'action'      => CrossBorderCommonUseCases::FIRS_AVAILABLE_NOTIFICATION,
                 'mode'        => $this->app['rzp.mode'],
             ];
-            
+
             $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
                 [
                     'data' => $data,
@@ -971,7 +971,7 @@ class Service extends Base\Service
             );
 
             // adding delay of 1 to 10 minutes to distribute load
-            MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+            CrossBorderCommonUseCases::dispatch($data)->delay(rand(60,1000) % 601);
 
         }
         catch (\Exception $ex)

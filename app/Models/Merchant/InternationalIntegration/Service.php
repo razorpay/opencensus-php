@@ -10,7 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
-use RZP\Jobs\CrossBorderCommonUseCases;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base;
 use RZP\Models\GenericDocument\ResponseHelper;
 use RZP\Models\Merchant\Entity as MEntity;
@@ -22,7 +22,6 @@ use RZP\Models\Payment\Processor\App;
 use RZP\Services\Reminders;
 use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\MerchantCrossborderEmail;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InternationalIntegration\Emerchantpay\EmerchantpayApmRequestFile;
@@ -227,7 +226,7 @@ class Service extends Base\Service
         {
             $requestedPaymentMethods = $this->createEmerchantPayRequestedTerminals($merchant->getId(), $requestedApm);
             $this->setEmerchantpayInstrumentsRequested($merchant->getId(), $mii, $requestedPaymentMethods, 'terminal_request_sent');
-            
+
             $splitzProperties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.emerchantpay_maf_generation_via_sqs_experiement_id'),
@@ -699,13 +698,13 @@ class Service extends Base\Service
 
                 $data = [
                     'merchant_id' => $mii[Entity::MERCHANT_ID],
-                    'action'      => MerchantCrossborderEmail::OPGSP_IMPORT_INVOICE_REMINDER,
+                    'action'      => CrossBorderCommonUseCases::OPGSP_IMPORT_INVOICE_REMINDER,
                     // this is required when someone wants to manually trigger the cron
                     // default is 15 days.
                     'prev_days' => $input['prev_days'] ?? null,
                 ];
 
-                MerchantCrossborderEmail::dispatch($data)->delay(rand(60, 1000) % 601);
+                CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
             }
         }
         catch (\Throwable $e)

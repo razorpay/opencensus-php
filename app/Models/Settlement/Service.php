@@ -507,12 +507,12 @@ class Service extends Base\Service
                 {
                     $data = [
                         'merchant_id' => $merchantId,
-                        'action' => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT_BULK,
+                        'action' => Jobs\CrossBorder\CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT_BULK,
                         // this is required when someone wants to manually trigger the cron
                         // default is 15 days.
                         'prev_days' => $input['prev_days'] ?? null,
                     ];
-                    Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                    Jobs\CrossBorder\CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
                 }
             }
 
@@ -548,13 +548,13 @@ class Service extends Base\Service
             {
                 $data = [
                     'merchant_id' => $mii[MIIEntity::MERCHANT_ID],
-                    'action'      => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
+                    'action'      => Jobs\CrossBorder\CrossBorderCommonUseCases::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
                     'send_file'   => $input['send_file'] ?? false,
                     'from'        => $input['from'] ?? null,
                     'to'          => $input['to'] ?? null,
                 ];
 
-                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                Jobs\CrossBorder\CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
             }
 
             $response['success'] = true;
@@ -589,12 +589,12 @@ class Service extends Base\Service
             {
                 $data = [
                     'merchant_id' => $mii[MIIEntity::MERCHANT_ID],
-                    'action'      => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_SEND_INVOICES,
+                    'action'      => Jobs\CrossBorder\CrossBorderCommonUseCases::OPGSP_IMPORT_SEND_INVOICES,
                     'from'        => $input['from'] ?? null,
                     'to'          => $input['to'] ?? null,
                 ];
 
-                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                Jobs\CrossBorder\CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
             }
 
             $response['success'] = true;

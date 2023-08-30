@@ -6,7 +6,7 @@ use File;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Country;
 use RZP\Constants\Entity as E;
-use RZP\Jobs\PaymentEInvoice;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
@@ -249,11 +249,12 @@ class DccEInvoiceCore extends Core
     public function dispatchForInvoice($referenceId, $referenceType)
     {
         $data = [
+            'action' => CrossBorderCommonUseCases::GENERATE_DCC_E_INVOICE,
             Constants::REFERENCE_ID => $referenceId,
             Constants::REFERENCE_TYPE => $referenceType,
             Constants::MODE => $this->mode,
         ];
-        PaymentEInvoice::dispatch($data)->delay(rand(60,1000) % 601);
+        CrossBorderCommonUseCases::dispatch($data)->delay(rand(60,1000) % 601);
 
         $this->trace->info(TraceCode::DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCHED, [
             'data' => $data,

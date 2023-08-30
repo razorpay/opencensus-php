@@ -8,7 +8,6 @@ use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Jobs\CrossBorderCommonUseCases;
 use RZP\Models\Merchant\Attribute\Type;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Attribute\Service;

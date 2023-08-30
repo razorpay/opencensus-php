@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Document;
@@ -181,7 +182,7 @@ class MerchantFirsDocumentsZip extends Job
                 }
                 $data = [
                     'document_id' => $document->getId(),
-                    'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                    'action'      => CrossBorderCommonUseCases::FIRS_AVAILABLE_NOTIFICATION,
                     'mode'        => $this->app['rzp.mode'],
                 ];
                 $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
@@ -190,7 +191,7 @@ class MerchantFirsDocumentsZip extends Job
                     ]
                 );
                 // adding delay of 10 to 15 minutes for the ZIP creation
-                MerchantCrossborderEmail::dispatch($data)->delay(600 + rand(0, 1000) % 301);
+                CrossBorderCommonUseCases::dispatch($data)->delay(600 + rand(0, 1000) % 301);
             }
             catch (\Exception $ex)
             {

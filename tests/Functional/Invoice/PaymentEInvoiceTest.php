@@ -7,7 +7,7 @@ use Queue;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
-use RZP\Jobs\PaymentEInvoice;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Invoice\Constants;
@@ -253,7 +253,7 @@ class PaymentEInvoiceTest extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertEquals(true, $content['success']);
-        Queue::assertPushed(PaymentEInvoice::class);
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
     }
 
     // invocation of cron to handle yesterday's failed invoices
@@ -270,7 +270,7 @@ class PaymentEInvoiceTest extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertEquals(true, $content['success']);
-        Queue::assertPushed(PaymentEInvoice::class);
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
     }
 
     // invocation of cron to without any failed invoices to process
@@ -287,7 +287,7 @@ class PaymentEInvoiceTest extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertEquals(true, $content['success']);
-        Queue::assertNotPushed(PaymentEInvoice::class);
+        Queue::assertNotPushed(CrossBorderCommonUseCases::class);
     }
 
     // utility method to invoke worker
@@ -301,9 +301,10 @@ class PaymentEInvoiceTest extends TestCase
             Constants::REFERENCE_ID => $referenceType == Constants::PAYMENT_FLOW ? $this->payment->getId() : $this->refund->getId(),
             Constants::REFERENCE_TYPE => $referenceType,
             Constants::MODE         => Mode::TEST,
+            'action' => CrossBorderCommonUseCases::GENERATE_DCC_E_INVOICE,
         ];
 
-        (new PaymentEInvoice($payload))->handle();
+        (new CrossBorderCommonUseCases($payload))->handle();
 
         return $this->getLastEntity(E::INVOICE, true);
     }

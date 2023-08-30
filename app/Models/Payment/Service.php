@@ -9,7 +9,7 @@ use Crypt;
 use Config;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
-use RZP\Jobs\CrossBorderCommonUseCases;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
@@ -6871,13 +6871,13 @@ class Service extends Base\Service
                     ]
                 );
                 $payload = [
-                    'action' => Jobs\CrossBorderCommonUseCases::CREATE_INVOICE_VERIFICATION_WORKFLOW,
+                    'action' => CrossBorderCommonUseCases::CREATE_INVOICE_VERIFICATION_WORKFLOW,
                     'body' => $body,
                     'merchant_id' => $payment->getMerchantId(),
                     'payment_id' => $payment->getId(),
                     'priority' => $workflowPriority,
                 ];
-                Jobs\CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
+                CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
             }
         }
     }
@@ -6987,11 +6987,11 @@ class Service extends Base\Service
 
                 $data = [
                     'merchant_id'   => $merchant->getId(),
-                    'action'        => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+                    'action'        => CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
                     'payment_id'    => $id
                 ];
 
-                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
 
                 return true;
             },
@@ -7071,11 +7071,11 @@ class Service extends Base\Service
 
                 $data = [
                     'merchant_id'   => $merchant->getId(),
-                    'action'        => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+                    'action'        => CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
                     'payment_id'    => $paymentDocument[InvoiceEntity::ENTITY_ID],
                 ];
 
-                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
 
                 return true;
 

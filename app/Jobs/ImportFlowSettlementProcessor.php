@@ -20,6 +20,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settlement\Processor\OPGSPImportICICI\Processor as OpgspIciciProcessor;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 
 class ImportFlowSettlementProcessor extends Job
@@ -290,10 +291,10 @@ class ImportFlowSettlementProcessor extends Job
                 'merchant_id'   => $merchantId,
                 'payment_id'    => $transaction[TransactionEntity::ENTITY_ID],
                 'hscode'        => $hscode,
-                'action'        => ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+                'action'        => CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
             ];
 
-            ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+            CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
         }
     }
 

@@ -17,7 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\Tracer;
 use Symfony\Component\HttpFoundation\File\File;
-use RZP\Jobs\CrossBorderCommonUseCases;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 use RZP\Exception;
 use RZP\Constants;
@@ -954,7 +954,7 @@ class Service extends Base\Service
 
         // IEC code required for some purpose codes
         // https://razorpay.slack.com/archives/C024U3B04LD/p1689314331594219?thread_ts=1688468005.859769&cid=C024U3B04LD
-        if ((in_array($this->merchant->getPurposeCode(), PurposeCodeList::IEC_REQUIRED) === true) and 
+        if ((in_array($this->merchant->getPurposeCode(), PurposeCodeList::IEC_REQUIRED) === true) and
             (empty($this->merchant->getIecCode()) === true))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE, null,
