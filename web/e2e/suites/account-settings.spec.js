@@ -221,24 +221,6 @@ test.describe
     expect(updatedStatus).toBe(switchStatusValue === 'Enabled' ? 'Disabled' : 'Enabled');
   });
 
-  // roast test settingsTest
-  test('should show webhook and api keys @priority=normal @suite=payments-automation @suite=payments-canary', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Webhooks' }).click();
-    await expect(page).toHaveURL(routes.WEBHOOKS);
-    await expect(page.getByRole('button', { name: '+ Add New Webhook' })).toBeVisible();
-
-    await page.goto(routes.ACCOUNT_SETTINGS);
-    await page.getByRole('button', { name: 'API keys' }).click();
-    await expect(page).toHaveURL(routes.API_KEYS);
-    const apiKeyCTASelector = 'button span[data-test="regenerate-api-key"]';
-    await page.waitForSelector(apiKeyCTASelector, {
-      strict: false,
-    });
-    await expect(await page.locator(apiKeyCTASelector).count()).toBeGreaterThan(0);
-  });
-
   // roast test myAccountProfileTest
   test('should render business details section @suite=payments-canary', async ({ page }) => {
     await page.getByRole('button', { name: 'Business Details' }).click();

@@ -5,6 +5,7 @@ const StorageStatePath = {
   EMAIL_TEST_LOGIN_STATE: `${BASE_PATH}/desktop-test-mode-login.json`,
   EMAIL_LIVE_LOGIN_STATE: `${BASE_PATH}/desktop-live-mode-login.json`,
   TRANSACTIONS_LOGIN_STATE: `${BASE_PATH}/desktop-transactions-login.json`,
+  SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
   MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
@@ -49,6 +50,12 @@ const EmailCredentials = [
     username: ENV.EMAIL_TRANSACTIONS_USERNAME,
     password: ENV.EMAIL_TRANSACTIONS_PASSWORD,
     storagePath: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+  },
+  {
+    type: 'desktop-settlement-login.json',
+    username: ENV.EMAIL_SETTLEMENT_USERNAME,
+    password: ENV.EMAIL_SETTLEMENT_PASSWORD,
+    storagePath: StorageStatePath.SETTLEMENTS_LOGIN_STATE,
   },
 ];
 

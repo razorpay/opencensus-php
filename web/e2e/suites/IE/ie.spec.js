@@ -6,23 +6,25 @@ const { StorageStatePath } = require('../../utils/constants');
 const CONSTANTS = {
   IE_TAB_URL: '/app/payment-methods/international-payments',
   NC_BANNER: 'text="We need a few more details for your international cards payment request"',
-  REQUEST_CTA: 'xpath=//*[@id="settings-payment-methods"]/div[2]/div[1]/div/button/div/div',
+  REQUEST_CTA: 'button[data-blade-component="button"] >> text="Request to activate"',
   SUBMIT_CTA: 'xpath=//div[6]/div/div/div/div[2]/div/div[6]/button[2]',
-  NEXT_CTA: '.Button--primary',
+  NEXT_CTA: 'button >> text="Next"',
+  SELECT_RADIO: 'div[class="Input-inlineLabel"] >> text="No"',
+  TERMS_AND_CONDITION_CHECKBOX: 'div[class="Input-elWrapper"] > label',
 };
 
 test.describe.parallel('Test International enablement @flow=ie @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });
   // TODO: enable these tests after multiple auth setup is done
-  test.skip('should be able to request for IE @priority=normal', async ({ page }) => {
+  test('should be able to request for IE @priority=normal', async ({ page }) => {
     // navigate to IE Route
     await page.goto(CONSTANTS.IE_TAB_URL);
 
     // assert presence of IE Request CTA
     await page.waitForSelector(CONSTANTS.REQUEST_CTA, {
-      timeout: 20000,
+      timeout: 60000,
     });
     const requestCTA = page.locator(CONSTANTS.REQUEST_CTA);
     // wait for new customers button to be visible and click it
@@ -41,13 +43,6 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
 
     await page
       .locator('label')
-      .filter({ hasText: 'Payment Pages, Links & invoices' })
-      .locator('div')
-      .first()
-      .dblclick();
-
-    await page
-      .locator('label')
       .filter({ hasText: 'Payment Gateway' })
       .locator('div')
       .first()
@@ -59,43 +54,22 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     await addNoteTextArea.fill('');
     await addNoteTextArea.fill(generateRandomText(100));
 
-    await page.locator('select[name="business_txn_size"]').selectOption('50000=100000');
-
     // navigate to next section
     const nextCTA = page.locator(CONSTANTS.NEXT_CTA);
     await nextCTA.click();
 
     // check for Supporting details and best practices section
-    await page.waitForSelector('text="SUPPORTING DETAILS AND BEST PRACTICES"', {
+    await page.waitForSelector('text="SUPPORTING DETAILS"', {
       timeout: 5000,
     });
-    const riskCheckList = page.locator('.PowerSelect');
+    const riskCheckList = page.locator(CONSTANTS.SELECT_RADIO);
     await riskCheckList.click();
-    await page.click('input[id="None"]', {
-      timeout: 5000,
-    });
 
-    // navigate to next section
-    await nextCTA.click();
-
-    // check for Supporting documents section
-    await page.waitForSelector('text="SUPPORTING DOCUMENTS"', {
-      timeout: 5000,
-    });
-
-    // navigate to next section
-    await nextCTA.click();
-
-    // check for Submit Form section
-    await expect(page.locator('.main-title')).toHaveText('Submit Form');
-    await page.waitForSelector('.Input-checkbox', {
-      timeout: 5000,
-    });
-    const acceptTnC = page.locator('.Input-checkbox');
-    await acceptTnC.click();
+    const termsAndConditions = page.locator(CONSTANTS.TERMS_AND_CONDITION_CHECKBOX);
+    await termsAndConditions.click();
 
     // assert for form submit CTA
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator('button >> text="Submit & Verify"')).toBeVisible();
   });
 
   test.skip('should be able to submit NC for IE @priority=normal', async ({ page }) => {

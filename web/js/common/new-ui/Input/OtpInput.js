@@ -19,6 +19,7 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput, isFocuse
         handleInput(pos, e);
       }}
       ref={(input) => input && currentIndex == pos && isFocused && input.focus()}
+      data-testid={`otp-input-${pos}`}
     />
   );
 };

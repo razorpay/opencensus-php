@@ -124,7 +124,7 @@ export const getEntitySearchResultsRoutes = (searchQuery, key) => {
     PAYMENT_LINKS_URL: `/app/paymentlinks?short_url=${searchQuery}`,
     PAYMENT_PAGES_TITLE: `/app/paymentpages?title=${searchQuery}`,
     // QRCODE_STATUS: `/app/qr_codes?status=${searchQuery}`,
-    ACCOUNTS_EMAIL: `/app/route/accounts?email_id=${searchQuery}`,
+    ACCOUNTS_EMAIL: `/app/route/accounts?email=${searchQuery}`,
     REVERSALS_TRANSFER_ID: `/app/route/reversals?transfer_id=${searchQuery}`,
   };
 

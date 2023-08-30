@@ -38,3 +38,15 @@ export const hideCustomBannersFromState = async ({ page }) => {
     }
   });
 };
+
+export const switchMerchant = async ({ page, merchantToSwitch }) => {
+  const switchMerchantCta = await page.locator(COMMON_SELECTORS.switchMerchantAction, {
+    hasText: 'Switch Merchant',
+  });
+  await switchMerchantCta.click();
+
+  const SelectAndRedirectAction = await page.locator(COMMON_SELECTORS.merchantDropdownList, {
+    hasText: merchantToSwitch,
+  });
+  await SelectAndRedirectAction.click();
+};

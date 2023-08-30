@@ -1,21 +1,29 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath, routes } = require('../../utils/constants');
 
+const ELEMENT_CONFIG = {
+  LANDING_PATH_REGEXP:
+    /^\/app\/payment-methods(\/international-payments|\?instrument=international)?$/,
+  CTA_NAME: 'View International Methods',
+};
+
 test.describe
   .parallel('Test International Method banner on homepage @flow=ie @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   });
   // roast test verifyViewInternationalMethodsTest
-  test.skip('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
+  test('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
     page,
   }) => {
     await page.goto(routes.DASHBOARD);
 
     await page.waitForTimeout(5000);
 
-    const ieCTA = await page.getByRole('link', { name: 'View International Methods' });
+    const ieCTA = await page.getByRole('link', { name: ELEMENT_CONFIG.CTA_NAME });
     await expect(ieCTA).toBeVisible();
+
+    // redirect to international payments
     await ieCTA.click();
 
     // wait for redirection to complete based on whether IE Revamp is enabled or not
@@ -26,8 +34,6 @@ test.describe
     const fullPath = pathname + search + hash;
 
     // depending on IE Revamp Experiment status it could be either
-    expect(fullPath).toMatch(
-      /^\/app\/payment-methods(\/international-payments|\?instrument=international)?$/,
-    );
+    expect(fullPath).toMatch(ELEMENT_CONFIG.LANDING_PATH_REGEXP);
   });
 });
