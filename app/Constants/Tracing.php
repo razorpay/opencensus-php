@@ -34,16 +34,11 @@ class Tracing
             Route::$internalApps['pg_router'],
             Route::$internalApps['care'],
             Route::$internalApps['account_service'],
-            Route::$internalApps['payouts_service']
+            Route::$internalApps['payouts_service'],
+            Route::$internalApps['checkout_service']
         );
 
         return array_merge($routesToInclude, [
-            // used by checkout-service
-            'merchant_methods_offers_checkout_internal',
-            'payments_downtime',
-            'customer_fetch_internal_for_checkout',
-            'customer_fetch_tokens_internal',
-
             // used by capital-cards service
             'user_fetch',
             'capital_cards_service',
