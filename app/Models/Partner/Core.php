@@ -36,6 +36,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
@@ -1687,6 +1688,42 @@ class Core extends Detail\Core
 
             (new DeviceDetail\Core)->createDeviceDetail($ddInput);
         }
+    }
+
+
+    /**
+     * This function is used to add extra properties to the events that we are sending from api monolith to lumberjack/segment
+     *
+     * @param Merchant\Entity|null $merchant
+     *
+     * @return array
+     */
+    public function getPartnerDomainProperties(?Merchant\Entity $merchant): array
+    {
+        if(empty($merchant) == true)
+        {
+            return [];
+        }
+
+        $partnerDomainProperties = [];
+
+        try
+        {
+            $partnerDomainProperties['isSubmerchant'] = (new AccessMap\Core())->isSubMerchant($merchant->getId());
+            // the following condition would mean that the requester is partner and the ba merchant is subM
+            // The below details will be set in BusinessAuth for partner_auth / oauth / proxy_auth with subM header
+            if ($this->app['basicauth']->isPartnerImpersonationRequest())
+            {
+                $partnerDomainProperties['partnerImpersonation'] = true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+            $this->trace->count(PartnerMetrics::PARTNER_DOMAIN_BUILD_EVENT_PROPERTIES_FAILURE);
+        }
+
+        return $partnerDomainProperties;
     }
 
     private function buildMerchantDetailsArray(Merchant\Entity $merchant): array

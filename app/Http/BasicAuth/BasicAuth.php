@@ -3429,6 +3429,27 @@ class BasicAuth
     }
 
     /**
+     * This function would return true when the request is made by partner on-behalf of subM.
+     * This could be done by partner using partner_auth, oauth, proxy_auth with X-Razorpay-Account header
+     * @return bool
+     */
+    public function isPartnerImpersonationRequest(): bool
+    {
+        $impersonation = false;
+
+        $claims = $this->getPassportImpersonationClaims();
+
+        if(empty($claims) === false)
+        {
+            $impersonationType = $claims['type'];
+
+            return ($impersonationType === self::PASSPORT_IMPERSONATION_TYPE_PARTNER);
+        }
+
+        return $impersonation;
+    }
+
+    /**
      * Returns consumer claims registered on passport.
      * @return array | null
      */

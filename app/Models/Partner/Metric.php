@@ -68,6 +68,8 @@ final class Metric
     const MERCHANT_ACCESS_MAP_SYNC_FAILED                 = 'merchant_access_map_sync_failed';
 
 
+    const PARTNER_DOMAIN_BUILD_EVENT_PROPERTIES_FAILURE = 'partner_domain_build_event_properties_failure';
+
     const PARTNER_MIGRATION_AUDIT_JOB_FAILURE_TOTAL   = 'partner_migration_audit_job_failure_total';
 
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';

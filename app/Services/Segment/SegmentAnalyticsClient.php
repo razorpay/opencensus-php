@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use Respect\Validation\Rules\Even;
 use RZP\Constants\Timezone;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -53,6 +54,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
         try
         {
             $properties += $this->getMerchantProperties($merchant);
+
+            $properties += (new Partner\Core())->getPartnerDomainProperties($merchant);
 
             $eventData = [
                 'type'      => 'identify',
@@ -99,6 +102,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 'event_action'                  => $eventName,
                 'gclid'                         => $gclid,
             ];
+
+            $properties += (new Partner\Core())->getPartnerDomainProperties($merchant);
 
             if ($this->isFacebookPlatformEvent($eventName))
             {
