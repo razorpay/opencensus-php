@@ -61,13 +61,6 @@ class Bob extends Base
 
             $issuerPlanId = $emiPlan->getIssuerPlanId();
 
-            $acquirer = '';
-
-            if (empty($emiPayment->terminal->getGatewayAcquirer()) === false)
-            {
-                $acquirer = Payment\Gateway::getAcquirerName($emiPayment->terminal->getGatewayAcquirer());
-            }
-
             $principalAmount = $emiPayment->getAmount()/100;
 
             $emiAmount = $this->getEmiAmount($principalAmount, $emiPercent, $emiTenure);
