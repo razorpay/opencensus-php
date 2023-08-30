@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Kafka;
 
 use App;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Metric;
 use RZP\Models\EntityOrigin\Core;
@@ -54,6 +55,8 @@ class PartnerWebhookEventHandlerJob extends Job
 
             return;
         }
+
+        $this->setModeFromPayload($input);
 
         try
         {
@@ -129,5 +132,21 @@ class PartnerWebhookEventHandlerJob extends Job
         ];
 
         return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function setModeFromPayload(array $payload)
+    {
+        $app = App::getFacadeRoot();
+
+        $this->mode = $this->getModeFromPayload($payload);
+
+        $app['basicauth']->setMode($this->mode);
+    }
+
+    private function getModeFromPayload(array $payload) : string
+    {
+        $service = $payload['event']['service'] ?? "";
+
+        return str_contains($service, Mode::TEST) ? Mode::TEST : Mode::LIVE;
     }
 }

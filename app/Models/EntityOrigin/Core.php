@@ -516,7 +516,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::ENTITY_ORIGIN_OWNER_CACHE_MISS_TOTAL);
 
-        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId($entityType, $entityId);
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityIdOnReadReplica($entityType, $entityId);
 
         $this->trace->info(TraceCode::ENTITY_ORIGIN_FETCHED_FROM_DB, [
             'entityType'        => $entityType,
@@ -552,7 +552,7 @@ class Core extends Base\Core
 
     private function getEntityOriginCacheKey(string $entityType, string $entityId) : string
     {
-        return Constants::ENTITY_ORIGIN_REDIS_KEY . $entityType . '_' . $entityId;
+        return Constants::ENTITY_ORIGIN_REDIS_KEY . $this->mode . '_' . $entityType . '_' . $entityId;
     }
 
     private function getTTLInSeconds() : int

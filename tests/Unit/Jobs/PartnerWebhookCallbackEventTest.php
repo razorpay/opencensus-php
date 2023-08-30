@@ -5,8 +5,10 @@ namespace Unit\Jobs;
 use Cache;
 use Redis;
 use Mockery;
+use RZP\Constants\Mode;
 use Tests\Unit\TestCase;
 use RZP\Services\KafkaMessageProcessor;
+use RZP\Jobs\Kafka\PartnerWebhookEventHandlerJob;
 
 class PartnerWebhookCallbackEventTest extends TestCase
 {
@@ -46,11 +48,11 @@ class PartnerWebhookCallbackEventTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->andReturn($this->entityOriginRepoMock);
 
-        $this->entityOriginRepoMock->shouldReceive('fetchByEntityTypeAndEntityId')->andReturn($this->entityOriginMock);
+        $this->entityOriginRepoMock->shouldReceive('fetchByEntityTypeAndEntityIdOnReadReplica')->andReturn($this->entityOriginMock);
 
         $this->entityOriginMock->shouldReceive('getOriginId')->andReturn('JGXV2m2t9xhTQy');
 
-        $key = 'entity_origin_redis_key_' . $event['entity_type'] . '_' . $event['entity_id'];
+        $key = 'entity_origin_redis_key_live' . $event['entity_type'] . '_' . $event['entity_id'];
 
         $this->redisMock->expects($this->exactly(1))->method('get')->with($key)->will($this->returnValue(null));
 
@@ -74,13 +76,13 @@ class PartnerWebhookCallbackEventTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->andReturn($this->entityOriginRepoMock);
 
-        $key = 'entity_origin_redis_key_' . $event['entity_type'] . '_' . $event['entity_id'];
+        $key = 'entity_origin_redis_key_live' . $event['entity_type'] . '_' . $event['entity_id'];
 
         $this->redisMock->expects($this->exactly(1))->method('get')->with($key)->will($this->returnValue(null));
 
         $this->redisMock->expects($this->exactly(1))->method('set')->with($key, 'NONE', 'EX', 172800)->will($this->returnValue(true));
 
-        $this->entityOriginRepoMock->shouldReceive('fetchByEntityTypeAndEntityId')->andReturn(null);
+        $this->entityOriginRepoMock->shouldReceive('fetchByEntityTypeAndEntityIdOnReadReplica')->andReturn(null);
 
         $this->storkMock->shouldNotReceive('request');
 
@@ -95,13 +97,13 @@ class PartnerWebhookCallbackEventTest extends TestCase
 
         $this->repoMock->shouldReceive('resetConnectionAttributes');
 
-        $key = 'entity_origin_redis_key_' . $event['entity_type'] . '_' . $event['entity_id'];
+        $key = 'entity_origin_redis_key_live' . $event['entity_type'] . '_' . $event['entity_id'];
 
         $this->redisMock->expects($this->exactly(1))->method('get')->with($key)->will($this->returnValue('JGXV2m2t9xhTQy'));
 
         $this->redisMock->expects($this->exactly(0))->method('set');
 
-        $this->entityOriginRepoMock->shouldNotReceive('fetchByEntityTypeAndEntityId');
+        $this->entityOriginRepoMock->shouldNotReceive('fetchByEntityTypeAndEntityIdOnReadReplica');
 
         $this->storkMock
             ->shouldReceive('request')
@@ -121,19 +123,86 @@ class PartnerWebhookCallbackEventTest extends TestCase
 
         $this->mockCache();
 
-        $key = 'entity_origin_redis_key_' . $event['entity_type'] . '_' . $event['entity_id'];
+        $key = 'entity_origin_redis_key_live' . $event['entity_type'] . '_' . $event['entity_id'];
 
         $this->redisMock->expects($this->exactly(1))->method('get')->with($key)->will($this->returnValue("NONE"));
 
         $this->redisMock->expects($this->exactly(0))->method('set');
 
-        $this->entityOriginRepoMock->shouldNotReceive('fetchByEntityTypeAndEntityId');
+        $this->entityOriginRepoMock->shouldNotReceive('fetchByEntityTypeAndEntityIdOnReadReplica');
 
         $this->storkMock->shouldNotReceive('request');
 
         $response = (new KafkaMessageProcessor())->process(KafkaMessageProcessor::PARTNER_WEBHOOK_CALLBACK_EVENTS, $event, 'live');
 
         $this->assertTrue($response);
+    }
+
+    public function testPartnerWebhookEventHandlerWithEntityOwner()
+    {
+        $event = $this->getDummyEventDataFromStork();
+
+        $this->repoMock->shouldReceive('resetConnectionAttributes');
+
+        $this->repoMock->shouldReceive('driver')->andReturn($this->entityOriginRepoMock);
+
+        $this->entityOriginRepoMock->shouldReceive('fetchByEntityTypeAndEntityIdOnReadReplica')->andReturn($this->entityOriginMock);
+
+        $this->entityOriginMock->shouldReceive('getOriginId')->andReturn('JGXV2m2t9xhTQy');
+
+        $key = 'entity_origin_redis_key_live' . $event['entity_type'] . '_' . $event['entity_id'];
+
+        $this->redisMock->expects($this->exactly(1))->method('get')->with($key)->will($this->returnValue(null));
+
+        $this->redisMock->expects($this->exactly(1))->method('set')->with($key, 'JGXV2m2t9xhTQy', 'EX', 172800)->will($this->returnValue(true));
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->once()
+            ->andReturn(new \WpOrg\Requests\Response());
+
+        $handler = new PartnerWebhookEventHandlerJob($event, Mode::TEST);
+
+        $handler->handle();
+
+        $this->assertEquals(Mode::LIVE, $handler->getMode());
+    }
+
+    public function testModeSetFromPayloadWithLiveMode()
+    {
+        $input = $this->getDummyEventDataFromStork();
+
+        $handler = new PartnerWebhookEventHandlerJob($input, Mode::TEST);
+
+        $handler->setModeFromPayload($input);
+
+        $this->assertEquals(Mode::LIVE, $handler->getMode());
+    }
+
+    public function testModeSetFromPayloadWithTestMode()
+    {
+        $input = $this->getDummyEventDataFromStork();
+
+        $input['event']['service'] = 'beta-api-test';
+
+        $handler = new PartnerWebhookEventHandlerJob($input, Mode::LIVE);
+
+        $handler->setModeFromPayload($input);
+
+        $this->assertEquals(Mode::TEST, $handler->getMode());
+    }
+
+    public function testModeSetFromPayloadWithNoMode()
+    {
+        $input = $this->getDummyEventDataFromStork();
+
+        $input['event']['service'] = 'beta-api';
+
+        $handler = new PartnerWebhookEventHandlerJob($input, Mode::LIVE);
+
+        $handler->setModeFromPayload($input);
+
+        $this->assertEquals(Mode::LIVE, $handler->getMode());
     }
 
     public function mockCache()
