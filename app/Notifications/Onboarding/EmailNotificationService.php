@@ -59,6 +59,20 @@ class EmailNotificationService extends BaseNotificationService
             return;
         }
 
+        $extraData = $this->args[Constants::PARAMS] ?? [];
+
+        $clarifications = [];
+
+        foreach ($extraData['clarification_details'] as $key=>$value)
+        {
+            $clarifications[]= [
+                'key'      => $key,
+                'value'    => $value,
+            ];
+        }
+
+        $extraData ['clarification_details'] = $clarifications;
+
         foreach ($partners as $partner)
         {
 //            if (empty($partner->getEmail()) === true)
@@ -78,6 +92,8 @@ class EmailNotificationService extends BaseNotificationService
                 ],
                 DEConstants::ORG => $org->toArray(),
             ];
+
+            $payload = array_merge($payload, $extraData);
 
             try {
                 $email = new PartnerSubmerchantOnboardingEmail($payload, $this->getTemplateMessage(), $this->getTemplateSubject());

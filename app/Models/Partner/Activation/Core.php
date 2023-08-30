@@ -519,9 +519,7 @@ class Core extends Base\Core
                 {
                     $partnerActivation->setLocked(false);
 
-                    $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
-                    $this->sendNeedsClarificationSms($merchant);
-                    $this->sendNeedsClarificationWhatsappCommunication($merchant, $partnerActivation);
+                    $this->sendNeedsClarificationEvents($merchant, $partnerActivation);
                 }
             }
 
@@ -549,6 +547,24 @@ class Core extends Base\Core
         });
 
         return $partnerActivation->toArrayPublic();
+    }
+
+    /**
+     * This function checks whether partner communications are enabled  and sends notifications to the partner
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $partnerActivation
+     */
+    protected function sendNeedsClarificationEvents(Merchant\Entity $merchant, Entity $partnerActivation)
+    {
+        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
+        if ($partnerKycCommEnabled === true)
+        {
+            $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
+            $this->sendNeedsClarificationSms($merchant);
+            $this->sendNeedsClarificationWhatsappCommunication($merchant, $partnerActivation);
+        }
     }
 
     /**
@@ -639,14 +655,6 @@ class Core extends Base\Core
      */
     private function sendNeedsClarificationEmail(Merchant\Entity $merchant, Entity $partnerActivation)
     {
-        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
-
-        if ($partnerKycCommEnabled !== true)
-        {
-            return;
-        }
-
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $clarificationCore = new Detail\NeedsClarification\Core();
@@ -697,12 +705,33 @@ class Core extends Base\Core
 
         $whatsappTemplateName = Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME;
 
-        $whatappTemplate = Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE;
+        $whatsappTemplate = Constants::PARTNER_ACTIVATION_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE;
+
+        $clarifications = [];
+
+        if (array_key_exists('fields', $clarificationReasons))
+        {
+            foreach ($clarificationReasons['fields'] as $metaData)
+            {
+                $clarifications ['display_name']       = $metaData['display_name'];
+                $clarifications ['reason_description'] = $metaData['reason_description'];
+            }
+        }
+        else
+        {
+            foreach ($clarificationReasons['documents'] as $metaData)
+            {
+                $clarifications ['display_name']       = $metaData['display_name'];
+                $clarifications ['reason_description'] = $metaData['reason_description'];
+            }
+        }
 
         $params = [
             'name'            => $merchant->getName(),
-            'clarifications'  => $clarificationReasons,
+            'clarifications'  => $clarifications,
         ];
+
+        $whatsappTemplate =  view($whatsappTemplate, $params)->render();
 
         $whatsAppPayload = [
             'ownerId'            => $merchant->getId(),
@@ -715,7 +744,7 @@ class Core extends Base\Core
 
         (new Stork)->sendWhatsappMessage(
             $this->mode,
-            $whatappTemplate,
+            $whatsappTemplate,
             $contactMobile,
             $whatsAppPayload
         );
@@ -769,6 +798,8 @@ class Core extends Base\Core
             'name'          => $merchant->getName(),
             'id'            => $merchant->getId(),
         ];
+
+        $whatappTemplate =  view($whatappTemplate, $params)->render();
 
         $whatsAppPayload = [
             'ownerId'       => $merchant->getId(),

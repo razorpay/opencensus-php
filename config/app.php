@@ -399,6 +399,8 @@ return array(
 
     'send_sms_whatsapp_partner_submerchant_onboarding_events' => env('SEND_SMS_WHATSAPP_PARTNER_SUBMERCHANT_ONBOARDING_EVENTS'),
 
+    'send_partner_submerchant_needs_clarification_communications' => env('SEND_PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION_COMMUNICATIONS'),
+
     'send_commission_invoice_reminders_exp_id' => env('SEND_COMMISSION_INVOICE_REMINDERS_EXP_ID'),
 
     'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),

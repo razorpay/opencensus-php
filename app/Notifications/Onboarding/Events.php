@@ -11,6 +11,13 @@ class Events
 {
     const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
     const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
+
+    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
+
+    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE';
+
+    const PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE  = 'PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE';
+
     const NC_COUNT_1_PAYMENTS_NOT_LIVE                  = 'NC_COUNT_1_PAYMENTS_NOT_LIVE';
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
@@ -117,7 +124,8 @@ class Events
     ];
 
     const SMS_TEMPLATES_CUSTOM_NAMESPACES = [
-        self::PARTNER_ADDED_SUBMERCHANT => 'partnerships',
+        self::PARTNER_ADDED_SUBMERCHANT               => 'partnerships',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION => 'partnerships-experience',
     ];
 
     const SMS_TEMPLATES_SPLITZ_EXPERIMENTS = [
@@ -126,7 +134,7 @@ class Events
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
-        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'send_partner_submerchant_needs_clarification_communications',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
@@ -180,6 +188,10 @@ class Events
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'whatsapp_partnerships_partner_submerchant_payments_enable',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'whatsapp_partnerships_partner_submerchant_registered_settlements_enable',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'whatsapp_partnerships_partner_submerchant_unregistered_settlements_payments_enable',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'whatsapp_partnerships_partner_submerchant_nc_count_onboarding_pause',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_live_settlements_live',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_not_live',
+
     ];
 
     const WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS = [
@@ -192,6 +204,9 @@ class Events
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                => 'send_partner_submerchant_needs_clarification_communications',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE   => 'send_partner_submerchant_needs_clarification_communications',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                 => 'send_partner_submerchant_needs_clarification_communications',
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
@@ -244,6 +259,9 @@ class Events
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED => 'app/partners',
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED => 'app/partners',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED    => 'app/partners',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
     ];
 
     // blade templates
@@ -293,6 +311,9 @@ class Events
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'whatsapp.merchant.onboarding.partner_submerchant_payments_enabled',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'whatsapp.merchant.onboarding.partner_submerchant_registered_settlements_enabled',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'whatsapp.merchant.onboarding.partner_submerchant_registered_settlements_enabled',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'whatsapp.merchant.onboarding.partner_submerchant_nc_count_onboarding_pause',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'whatsapp.merchant.onboarding.partner_submerchant_nc_count_payments_live_settlements_live',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'whatsapp.merchant.onboarding.partner_submerchant_nc_count_payments_not_live',
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
         self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',
@@ -339,6 +360,10 @@ class Events
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'partner.submerchant.onboarding.unregistered_settlements_enabled',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'partner.submerchant.onboarding.registered_settlements_enabled',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'partner.submerchant.onboarding.payments_enabled',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'partner.submerchant.onboarding.nc_count_onboarding_pause',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'partner.submerchant.onboarding.nc_count_payments_live_settlements_live',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'partner.submerchant.onboarding.nc_count_payments_not_live',
+
     ];
 
     const EMAIL_SUBJECTS = [
@@ -379,6 +404,9 @@ class Events
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'Your affiliate {merchantName}\'s KYC is approved',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'Your affiliate {merchantName} can now accept payments via Razorpay',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'Your affiliate {merchantName} can now accept payments via Razorpay',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => '[Action required] Few more details required to complete your client {id} verification.',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => '[Action required] Few more details required to complete your client {id} verification.',
+        self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => '[Action required] Few more details required to complete your client {id} verification.',
     ];
 
 

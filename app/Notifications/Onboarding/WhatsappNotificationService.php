@@ -43,8 +43,6 @@ class WhatsappNotificationService extends BaseNotificationService
 
         if ($isExperimentEnabled === true)
         {
-
-            $templateMessage = $this->getTemplateMessage();
             $payload         = $this->getPayload();
 
             if (strpos($this->event, Events::PARTNER_EVENTS_PREFIX) === 0)
@@ -99,6 +97,10 @@ class WhatsappNotificationService extends BaseNotificationService
                     {
                         continue;
                     }
+                    $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], ['partnerName' => $partner->getName()]);
+                    $template = Events::WHATSAPP_TEMPLATES_NEW[$this->event];
+
+                    $templateMessage =  view($template, $payload[Constants::PARAMS])->render();
 
                     $response = $this->app['stork_service']->sendWhatsappMessage(
                         $this->mode,
@@ -118,6 +120,7 @@ class WhatsappNotificationService extends BaseNotificationService
             }
             else
             {
+                $templateMessage = $this->getTemplateMessage();
                 // Send to submerchant
                 $response = $this->app['stork_service']->sendWhatsappMessage(
                     $this->mode,

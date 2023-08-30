@@ -22,6 +22,7 @@ class PartnerSubmerchantOnboardingEmail extends Mailable
 
     public function addSubject() {
       $this->subject = str_replace("{merchantName}",$this->data['merchant']['name'], $this->subject);
+      $this->subject = str_replace("{id}",$this->data['merchant']['id'], $this->subject);
       return $this;
     }
 

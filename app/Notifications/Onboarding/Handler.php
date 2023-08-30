@@ -81,6 +81,10 @@ class Handler extends BaseHandler
         Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+
+        Events::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE               => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE              => [Channel::EMAIL, Channel::WHATSAPP],
     ];
 
     private $activationStatus;
@@ -170,6 +174,8 @@ class Handler extends BaseHandler
             {
                 array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
 
+                array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+
             }
             else
             {
@@ -177,6 +183,7 @@ class Handler extends BaseHandler
                 {
                     array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
 
+                    array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE);
                 }
                 else
                 {
@@ -187,12 +194,14 @@ class Handler extends BaseHandler
                         {
                             array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_NOT_LIVE);
 
+                            array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE);
                         }
                         // merchant new communications while onboarding is paused
                         else
                         {
                             array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_ONBOARDING_PAUSE : Events::NC_COUNT_2_ONBOARDING_PAUSE);
 
+                            array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE);
                         }
 
                     }
@@ -203,7 +212,6 @@ class Handler extends BaseHandler
         {
             array_push($events, Events::NEEDS_CLARIFICATION);
         }
-        array_push($events, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION);
 
         $this->args[MConstants::PARAMS]['clarification_details'] = $clarificationDetails;
 
