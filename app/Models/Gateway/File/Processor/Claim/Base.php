@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
@@ -88,12 +89,19 @@ class Base extends BaseProcessor
 
     protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
+        $startTime = microtime(true);
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $claims = $this->repo->payment->fetchPaymentsWithStatus(
             $begin,
             $end,
             static::GATEWAY,
             $statuses
         );
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE, [
+            'query_time' => get_diff_in_millisecond($startTime)
+        ]);
 
         return $claims;
     }
@@ -103,11 +111,19 @@ class Base extends BaseProcessor
         $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
         $end   = Carbon::createFromTimestamp($end)->addDay()->timestamp;
 
+        $startTime = microtime(true);
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $claims = $this->repo->payment
                              ->fetchReconciledPaymentsForGateway($begin,
                                                                 $end,
                                                                 static::GATEWAY,
                                                                 $statuses);
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE, [
+            'query_time' => get_diff_in_millisecond($startTime)
+        ]);
+
         return $claims;
     }
 
