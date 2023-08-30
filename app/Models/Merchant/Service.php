@@ -3065,7 +3065,8 @@ class Service extends Base\Service
 
         if(($this->app['basicauth']->isAdminAuth() === false) and
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
-            $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true))
+            $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
+            $merchant->isLRSEducationFlowEnabled() === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
 
