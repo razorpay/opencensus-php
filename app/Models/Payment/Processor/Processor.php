@@ -3802,6 +3802,7 @@ class Processor
             $data['currency'] = $payment->getCurrency();
             $data['fee_bearer']= $payment->getFeeBearer();
             $data['fee_split']= $feeSplit;
+            $data['fee_model'] = $this->merchant->getFeeModel();
             return $data;
         }
 
@@ -3844,6 +3845,7 @@ class Processor
             'currency'        => $payment->getCurrency(),
             'fee_bearer'      => $payment->getFeeBearer(),
             'fee_split'       => $feeSplit,
+            'fee_model'       => $this->merchant->getFeeModel(),
         ];
 
         //Adding extra fields for response in case of
