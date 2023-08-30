@@ -319,6 +319,7 @@ class PublicErrorDescription
     const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_DISABLED                           = 'The merchant receipt emails are already disabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
+    const BAD_REQUEST_RISK_FEATURE_ALREADY_ENABLED                              = 'Feature already enabled';
     const BAD_REQUEST_INVALID_WORKFLOW_TYPE                                     = 'Merchant workflow type is not supported';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';

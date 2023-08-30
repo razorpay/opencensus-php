@@ -14,6 +14,12 @@ class Validator extends Base\Validator
         Constants::RISK_ATTRIBUTES  => 'required|',
     ];
 
+    protected static $createRiskActionConstructiveFeaturesRules                        = [
+        'merchant_id'               => 'required|string|size:14',
+        Constants::ACTION           => 'required|string|in:' . Constants::RISK_ACTIONS_CSV,
+        Constants::RISK_ATTRIBUTES  => 'sometimes|',
+    ];
+
     protected static $createRiskActionInternalRules                    = [
         'merchant_id'               => 'required|string|size:14',
         Constants::ACTION           => 'required|string|in:' . Constants::RISK_ACTIONS_CSV,
@@ -50,6 +56,12 @@ class Validator extends Base\Validator
 
     protected static $createEnableInternationalRiskAttributesRules = [
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'required|array',
+    ];
+
+    protected static $createEnableFeaturesRiskAttributesRules = [
+        Constants::RISK_REASON           => 'required|string',
+        Constants::RISK_SUB_REASON       => 'required|string',
+        Constants::RISK_SOURCE           => 'required|string|in:' . Constants::RISK_SOURCES_CSV,
     ];
 
     public function validateRiskReasonAndSubReason($riskReason, $riskSubReason)

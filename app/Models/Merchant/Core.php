@@ -2850,6 +2850,17 @@ class Core extends Base\Core
             (new Validator())->validateRiskPermissionForAction($merchant, $action, $adminEntity);
         }
 
+        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_FEATURES) === true)
+        {
+            (new Feature\Core)->create([
+                Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                Feature\Entity::NAME            => RiskActionConstants::ACTIONS_FEATURES_MAP[$action]
+            ], $shouldSync = true);
+
+            return $merchant;
+        }
+
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;

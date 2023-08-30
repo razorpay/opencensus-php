@@ -61,6 +61,14 @@ class Core extends Base\Core
             case MerchantAction::DISABLE_INTERNATIONAL:
                 $validator->validateDisableInternational();
                 break;
+            case MerchantAction::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS:
+            case MerchantAction::ENABLE_ES_ON_DEMAND:
+            case MerchantAction::ENABLE_PAYOUT:
+            case MerchantAction::ENABLE_DIRECT_TRANSFER:
+            case MerchantAction::ENABLE_MARKETPLACE:
+                $validator->validateRiskFeatureEnabled(Constants::ACTIONS_FEATURES_MAP[$action]);
+                break;
+
         }
     }
 
@@ -93,6 +101,13 @@ class Core extends Base\Core
 
     public function validateRiskAttributes(array $input)
     {
+        // assuming that this is already validated at the bulk merchant action layer
+        $riskAction = $input['action'];
+
+        if (in_array($riskAction, Constants::CONSTRUCTIVE_FEATURES)) {
+            return;
+        }
+
         if(isset($input[Constants::RISK_ATTRIBUTES]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -107,9 +122,6 @@ class Core extends Base\Core
                 'Risk Attributes provided is malformed', null, $input);
         }
 
-        // assuming that this is already validated at the bulk merchant action layer
-        $riskAction = $input['action'];
-
         if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
         {
             (new Validator())->validateInput(
@@ -118,7 +130,13 @@ class Core extends Base\Core
         }
         else
         {
-            if ($riskAction == Action::ENABLE_INTERNATIONAL)
+            if ($riskAction == Action::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS)
+            {
+                (new Validator())->validateInput(
+                    Constants::CREATE_ENABLE_FEATURES_RISK_ATTRIBUTES,
+                    $riskAttributes);
+            }
+            else if ($riskAction == Action::ENABLE_INTERNATIONAL)
             {
                 (new Validator())->validateInput(
                     Constants::CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR,
@@ -157,6 +175,10 @@ class Core extends Base\Core
             $merchantDetails = $merchant->merchantDetail;
 
             $this->validateMerchantForAction($riskAction, $merchant);
+
+            if (in_array($riskAction, Constants::CONSTRUCTIVE_FEATURES)) {
+                $input[Constants::RISK_ATTRIBUTES] = [];
+            }
 
             $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
 

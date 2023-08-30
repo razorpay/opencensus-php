@@ -19,6 +19,11 @@ class Action
     const DISABLE_RECEIPT_EMAILS                  = 'disable_receipt_emails';
     const ENABLE_INTERNATIONAL                    = 'enable_international';
     const DISABLE_INTERNATIONAL                   = 'disable_international';
+    const ENABLE_ACCEPT_ONLY_3DS_PAYMENTS         = 'enable_accept_only_3ds_payments';
+    const ENABLE_ES_ON_DEMAND                     = 'enable_es_on_demand';
+    const ENABLE_PAYOUT                           = 'enable_payout';
+    const ENABLE_DIRECT_TRANSFER                  = 'enable_direct_transfer';
+    const ENABLE_MARKETPLACE                      = 'enable_marketplace';
     const UPDATED                                 = 'updated';
     const SUBMITTED                               = 'submitted';
     const ACTIVATION_PROGRESS                     = 'activation_progress';
@@ -47,6 +52,14 @@ class Action
         self::RELEASE_FUNDS,
         self::LIVE_DISABLE,
         self::LIVE_ENABLE,
+    ];
+
+    const RISK_ACTIONS_LIST_FOR_FEATURES = [
+        self::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS,
+        self::ENABLE_ES_ON_DEMAND,
+        self::ENABLE_PAYOUT,
+        self::ENABLE_DIRECT_TRANSFER,
+        self::ENABLE_MARKETPLACE,
     ];
 
 

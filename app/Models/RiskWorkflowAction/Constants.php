@@ -3,6 +3,7 @@
 namespace RZP\Models\RiskWorkflowAction;
 
 use RZP\Models\Merchant\Action;
+use RZP\Models\Feature\Constants as FeatureConstant;
 
 class Constants
 {
@@ -153,6 +154,21 @@ class Constants
         ]
     ];
 
+    const ACTIONS_FEATURES_MAP = [
+        Action::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS => FeatureConstant::ACCEPT_ONLY_3DS_PAYMENTS,
+        Action::ENABLE_ES_ON_DEMAND             => FeatureConstant::ES_ON_DEMAND,
+        Action::ENABLE_PAYOUT                   => FeatureConstant::PAYOUT,
+        Action::ENABLE_MARKETPLACE              => FeatureConstant::MARKETPLACE,
+        Action::ENABLE_DIRECT_TRANSFER          => FeatureConstant::DIRECT_TRANSFER,
+    ];
+
+    const CONSTRUCTIVE_FEATURES = [
+        Action::ENABLE_ES_ON_DEMAND,
+        Action::ENABLE_PAYOUT,
+        Action::ENABLE_MARKETPLACE,
+        Action::ENABLE_DIRECT_TRANSFER,
+    ];
+
     // Risk tags
     const RISK_TAG_RISK_REVIEW_SUSPEND          = 'risk_review_suspend';
     const RISK_TAG_RISK_REVIEW_ONHOLD           = 'risk_review_onhold';
@@ -212,6 +228,11 @@ class Constants
         Action::RELEASE_FUNDS . ',' .
         Action::DISABLE_INTERNATIONAL . ',' .
         Action::ENABLE_INTERNATIONAL . ',' .
+        Action::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS . ',' .
+        Action::ENABLE_ES_ON_DEMAND . ',' .
+        Action::ENABLE_MARKETPLACE . ',' .
+        Action::ENABLE_DIRECT_TRANSFER . ',' .
+        Action::ENABLE_PAYOUT . ',' .
         Action::LIVE_ENABLE;
 
     const RISK_SOURCE_PREFIX      = 'risk_source_';
@@ -232,6 +253,7 @@ class Constants
     const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR             = 'create_constructive_risk_attributes';
     const CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR     = 'create_enable_international_risk_attributes';
     const CREATE_DISABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR    = 'create_disable_international_risk_attributes';
+    const CREATE_ENABLE_FEATURES_RISK_ATTRIBUTES                    = 'create_enable_features_risk_attributes';
 
     // Risk workflow statuses
     const EXECUTED    = 'EXECUTED';

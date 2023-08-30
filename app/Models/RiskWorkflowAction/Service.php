@@ -170,7 +170,15 @@ class Service extends Base\Service
 
     public function createRiskWorkflowAction($input)
     {
-        (new Validator())->validateInput('create_risk_action', $input);
+        if (isset($input[Constants::ACTION]) && (in_array($input[Constants::ACTION], Constants::CONSTRUCTIVE_FEATURES)))
+        {
+            (new Validator())->validateInput('create_risk_action_constructive_features', $input);
+        }
+        else
+        {
+            (new Validator())->validateInput('create_risk_action', $input);
+        }
+
 
         (new Core())->validateRiskAttributes($input);
 

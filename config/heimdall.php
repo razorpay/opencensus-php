@@ -338,6 +338,11 @@ return [
             Permission::EDIT_MERCHANT_RISK_ATTRIBUTES       => '',
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
+            Permission::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS     => '',
+            Permission::ENABLE_ES_ON_DEMAND                 => '',
+            Permission::ENABLE_PAYOUT                       => '',
+            Permission::ENABLE_DIRECT_TRANSFER              => '',
+            Permission::ENABLE_MARKETPLACE                  => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
             Permission::VIEW_TERMINAL                       =>  [
                 'description' => 'Ability to view a terminal',

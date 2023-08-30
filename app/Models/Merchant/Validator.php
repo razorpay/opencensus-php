@@ -2225,6 +2225,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateRiskFeatureEnabled(string $featureName)
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isFeatureEnabled($featureName) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RISK_FEATURE_ALREADY_ENABLED);
+        }
+
+    }
+
     /**
      * Throw an error if the merchant is already a partner
      *

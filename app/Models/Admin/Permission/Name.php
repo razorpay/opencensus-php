@@ -67,6 +67,11 @@ class Name
     const EDIT_MERCHANT_DISABLE_LIVE          = 'edit_merchant_disable_live';
     const EDIT_MERCHANT_ENABLE_INTERNATIONAL  = 'edit_merchant_enable_international';
     const EDIT_MERCHANT_DISABLE_INTERNATIONAL = 'edit_merchant_disable_international';
+    const ENABLE_ACCEPT_ONLY_3DS_PAYMENTS     = 'enable_accept_only_3ds_payments';
+    const ENABLE_ES_ON_DEMAND                 = 'enable_es_on_demand';
+    const ENABLE_PAYOUT                       = 'enable_payout';
+    const ENABLE_DIRECT_TRANSFER              = 'enable_direct_transfer';
+    const ENABLE_MARKETPLACE                  = 'enable_marketplace';
     const EDIT_MERCHANT_ARCHIVE               = 'edit_merchant_archive';
     const EDIT_MERCHANT_UNARCHIVE             = 'edit_merchant_unarchive';
     const EDIT_MERCHANT_SUSPEND               = 'edit_merchant_suspend';
@@ -1167,6 +1172,11 @@ class Name
         Merchant\Action::DISABLE_RECEIPT_EMAILS             => self::EDIT_MERCHANT_DISABLE_RECEIPT,
         Merchant\Action::ENABLE_INTERNATIONAL               => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
         Merchant\Action::DISABLE_INTERNATIONAL              => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
+        Merchant\Action::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS    => self::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS,
+        Merchant\Action::ENABLE_ES_ON_DEMAND                => self::ENABLE_ES_ON_DEMAND,
+        Merchant\Action::ENABLE_PAYOUT                      => self::ENABLE_PAYOUT,
+        Merchant\Action::ENABLE_DIRECT_TRANSFER             => self::ENABLE_DIRECT_TRANSFER,
+        Merchant\Action::ENABLE_MARKETPLACE                 => self::ENABLE_MARKETPLACE,
         Merchant\Action::FORCE_ACTIVATE                     => self::EDIT_MERCHANT_FORCE_ACTIVATION,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_AUTHORIZED => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_CAPTURED   => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT
