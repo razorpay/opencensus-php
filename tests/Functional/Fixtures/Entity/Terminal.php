@@ -5636,4 +5636,25 @@ class Terminal extends Base
         ];
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createHdfcEmiTerminal()
+    {
+        $attributes = [
+            'id'                    => 'djfksjfksjfdkj',
+            'merchant_id'           => Account::SHARED_ACCOUNT,
+            'gateway'               => Gateway::HDFC,
+            'gateway_acquirer'      => 'hdfc',
+            'emi'                   => '1',
+            'shared'                => '1',
+            'emi_duration'          => 9,
+            'gateway_merchant_id'   => 'test_merchant_emi',
+            'gateway_terminal_id'   => 'shared_terminal_hdfc',
+            'gateway_terminal_password' => \Illuminate\Support\Facades\Crypt::encrypt('demo_account_hdfc_terminal_pass'),
+            'recurring'             => 1,
+            'created_at'            => time(),
+            'updated_at'            => time(),
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

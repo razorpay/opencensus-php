@@ -957,6 +957,37 @@ EOT;
         return $query->get();
     }
 
+    public function fetchNoCostEmiCapturedPaymentsForMerchant($from, $to, $mid)
+    {
+        $paymentData = $this->dbColumn('*');
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+        $paymentIdCol = $this->dbColumn(Entity::ID);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $entityOfferTable = $this->repo->entity_offer->getTableName();
+        $entityOfferEntityIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
+        $entityOfferEntityTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
+        $entityOfferOfferIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
+        $entityOfferOfferTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_OFFER_TYPE);
+
+        $offerTable = $this->repo->offer->getTableName();
+        $offerEntityIdCol = $this->repo->offer->dbColumn(UniqueIdEntity::ID);
+        $emiSubventionCol = $this->repo->offer->dbColumn(Offer\Entity::EMI_SUBVENTION);
+
+        $query =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+            ->join($offerTable, $entityOfferOfferIdCol, '=', $offerEntityIdCol)
+            ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+            ->where($entityOfferOfferTypeCol, '=', EntityName::OFFER)
+            ->where($emiSubventionCol, '=', true)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where($merchantIdCol, '=', $mid)
+            ->where($paymentStatus, '=', Status::CAPTURED)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->select($paymentData);
+        return $query->get();
+    }
+
     public function fetchEmiPaymentsOfCobrandingPartnerWithRelationsBetween($from, $to, $cobrandingPartner, $relations)
     {
         (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);

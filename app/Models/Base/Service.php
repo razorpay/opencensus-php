@@ -7,6 +7,7 @@ use RZP\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
+use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 
@@ -15,9 +16,9 @@ class Service
     /**
      * The application instance.
      *
-     * @var Illuminate\Foundation\Application
+     * @var Application
      */
-    protected $app;
+    protected Application $app;
 
     /**
      * Test/Live mode

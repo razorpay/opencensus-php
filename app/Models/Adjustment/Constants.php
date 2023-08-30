@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Adjustment;
 
-use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 
 class Constants
 {
@@ -30,4 +30,14 @@ class Constants
 
         return self::$createRequestTraceCodeMap[$source];
     }
+
+    public static array $merchantMapForCustomAdjustments = [
+        '10000000000000' => '100DemoAccount', // used for unit test
+        '7LAuMvKMcy7s0f' => 'KgIs6yuCiDxhbB',
+    ];
+
+    public static array $merchantMapForAdjustmentsDescription = [
+        '10000000000000' => 'test adjustment creation _', // used for unit test
+        '7LAuMvKMcy7s0f' => 'PB NC EMI adjustment _',
+    ];
 }

@@ -1060,6 +1060,8 @@ class Route
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
         'adj_transaction_create'                   => ['post',     'adjustments/transaction_create',                 'AdjustmentController@adjustmentsTransactionCreate'                          ],
+        // adj_custom_create_cron is used to create adjustments for offer amount. Currently used for adjusting offers created for NC-EMI
+        'adj_custom_create_cron'                   => ['post',     'adjustments/create/cron',                        'AdjustmentController@createCustomAdjustments'                      ],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                        => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                  => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -6143,6 +6145,8 @@ class Route
         'ca_check_fund_management_payout_cron',
 
         'dispute_bulk_create_internal',
+
+        'adj_custom_create_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -15371,6 +15375,8 @@ class Route
             //Order Outbox
             'order_outbox_retry',
             'order_outbox_partition_cron',
+
+            'adj_custom_create_cron',
         ],
 
         'subscriptions' => [

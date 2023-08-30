@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Exception;
 
 class AdjustmentController extends Controller
 {
@@ -91,5 +90,12 @@ class AdjustmentController extends Controller
         $data = $this->service()->createAdjustmentInTransaction($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function createCustomAdjustments()
+    {
+        $data = $this->service()->createCustomAdjustments($this->input);
+
+        return ApiResponse::json($data->toArrayWithItems());
     }
 }

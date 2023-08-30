@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY      => 'required|in:INR,MYR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
+        Entity::ENTITY_TYPE   => 'sometimes|string|custom'
     ];
 
     protected static $subBankingBalanceAdjustmentCreateRules = [
@@ -197,5 +198,13 @@ class Validator extends Base\Validator
     protected function validateChannel($attribute, $channel)
     {
         SettlementChannel::validate($channel);
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateEntityType($attribute, $entityType): void
+    {
+        ConstantEntity::validateIsEntity($entityType);
     }
 }

@@ -211,6 +211,55 @@ class Payment extends Base
         return $payment;
     }
 
+    public function createEMIAuthorized(array $attributes = array())
+    {
+        $now = Carbon::now()->getTimestamp();
+
+        $defaultValues = [
+            'amount'         => 219150,
+            'bank'           => 'HDFC',
+            'status'         => 'authorized',
+            'gateway'        => 'sharp',
+            'method'         => 'emi',
+            'terminal_id'    => 'djfksjfksjfdkj',
+            'transaction_id' => null,
+            'created_at'     => $now - 10,
+            'updated_at'     => $now - 5,
+            'authorized_at'  => $now - 5
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
+
+        $payment->saveOrFail();
+
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    public function createEmiCaptured(array $attributes = array())
+    {
+        $payment = $this->createEMIAuthorized($attributes);
+
+        $payment['captured_at'] = $payment['authorized_at'] + 10;
+        $payment['auto_captured'] = true;
+        $payment['gateway_captured'] = true;
+
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
+        $txn->saveOrFail();
+
+        $payment->setStatus('captured');
+        $payment->saveOrFail();
+
+        return $payment;
+    }
 
     public function createUpiCaptured(array $attributes = array())
     {

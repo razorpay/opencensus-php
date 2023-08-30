@@ -1,6 +1,9 @@
 <?php
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Adjustment\Validator;
@@ -256,6 +259,40 @@ return [
                         'success'           => true,
                         'idempotency_key'   => 'batch_100abc000abc01',
                         'balance'           => 5000,
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testCreateAdjustmentViaCron' => [
+        'request' => [
+            'url' => '/adjustments/create/cron',
+            'method' => 'POST',
+            'content' => [
+                'mids' => [
+                    '10000000000000',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'      => 'adjustment',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                        'channel'     => 'axis',
+                        'description' => 'test adjustment creation _' . Carbon::yesterday(Timezone::IST)->toDateString()
+                    ],
+                    [
+                        'entity'      => 'adjustment',
+                        'amount'      => -100000,
+                        'currency'    => 'INR',
+                        'channel'     => 'axis',
+                        'description' => 'test adjustment creation _' . Carbon::yesterday(Timezone::IST)->toDateString()
                     ],
                 ],
             ],

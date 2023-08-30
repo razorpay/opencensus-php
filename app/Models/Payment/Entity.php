@@ -3316,6 +3316,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function hasEmiOffer(): bool
+    {
+        if (($this->isEmi() === true) and ($this->hasOrder() === true))
+        {
+            $order = $this->order;
+
+            if ($order->hasOffers() === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isDisputed(): bool
     {
         return $this->getAttribute(self::DISPUTED);

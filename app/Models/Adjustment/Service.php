@@ -2,16 +2,23 @@
 
 namespace RZP\Models\Adjustment;
 
+use Carbon\Carbon;
+
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Base\PublicCollection;
 use RZP\Constants as DefaultConstants;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Ledger\Constants as LedgerConstants;
@@ -319,5 +326,85 @@ class Service extends Base\Service
         ]);
 
         return $adjustment->toArrayPublic();
+    }
+
+    public function createCustomAdjustments($input): Base\Collection
+    {
+        $midMap = array_intersect_key(Adjustment\Constants::$merchantMapForCustomAdjustments, array_flip($input['mids']));
+
+        $collection = new PublicCollection();
+
+        foreach ($midMap as $mid => $subMid)
+        {
+            $merchant = $this->repo->merchant->findOrFail($mid);
+
+            $day  = Carbon::yesterday(Timezone::IST); // todo: fix the timestamp acc to merchant setl settings
+            $from = $day->startOfDay()->timestamp;
+            $to   = $day->endOfDay()->timestamp;
+
+            $description = Adjustment\Constants::$merchantMapForAdjustmentsDescription[$mid] . $day->toDateString();
+
+            // check if adjustment is created for the day via other process or in-case duplicate request from cron.
+            $adjustmentExists = $this->repo->adjustment->findAdjustmentByDescription($description, $mid);
+
+            if ($adjustmentExists === true)
+            {
+                $this->trace->info(TraceCode::ADJUSTMENT_ALREADY_EXISTS, [
+                    "merchant_id" => $mid,
+                    "description" => $description
+                ]);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC,
+                    null,["description" => $description]);
+            }
+
+            $payments = $this->repo->payment->fetchNoCostEmiCapturedPaymentsForMerchant($from, $to, $mid);
+
+            $adjAmount = 0;
+
+            foreach ($payments as $payment)
+            {
+                $orderAmount   = $payment->order->getAmount();
+                $paymentAmount = $payment->getAmount();
+
+                $adjAmount += $orderAmount - $paymentAmount;
+            }
+
+            if (($adjAmount <= 0) || ($merchant->isPostpaid() === false))
+            {
+                continue;
+            }
+
+            $posAdjPayload = [
+                Entity::MERCHANT_ID => $mid,
+                Entity::AMOUNT      => $adjAmount,
+                Entity::CURRENCY    => Currency::INR,
+                Entity::ENTITY_TYPE => DefaultConstants\Entity::OFFER,
+                Entity::DESCRIPTION => $description,
+            ];
+
+            $negAdjPayload = [
+                Entity::MERCHANT_ID => $subMid,
+                Entity::AMOUNT      => 0 - $adjAmount,
+                Entity::CURRENCY    => Currency::INR,
+                Entity::ENTITY_TYPE => DefaultConstants\Entity::OFFER,
+                Entity::DESCRIPTION => $description,
+            ];
+
+            $this->trace->info(TraceCode::BULK_ADJUSTMENT_CREATE_REQUEST, [$posAdjPayload, $negAdjPayload]);
+
+            $response = $this->repo->transaction(function () use ($negAdjPayload, $posAdjPayload) {
+                $adj1 = $this->addAdjustment($posAdjPayload);
+                $adj2 = $this->addAdjustment($negAdjPayload);
+                return [$adj1, $adj2];
+            });
+
+            foreach ($response as $arr)
+            {
+                $collection->push($arr);
+            }
+        }
+
+        return $collection;
     }
 }

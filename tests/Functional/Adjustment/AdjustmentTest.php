@@ -3,15 +3,19 @@
 namespace RZP\Tests\Functional\Adjustment;
 
 use Mail;
+use Carbon\Carbon;
 
 use Queue;
 use RZP\Jobs\Transactions;
 use RZP\Models\Feature;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Adjustment\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Transaction\Adjustment;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\Banking\YesbankLoadViaAdjustment;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -578,6 +582,112 @@ class AdjustmentTest extends TestCase
         $this->ba->batchAppAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateAdjustmentViaCron()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->setFeeModel('postpaid');
+
+        $midBalance = $this->getDbEntityById('balance', Account::TEST_ACCOUNT);
+        $subMidBalance = $this->getDbEntityById('balance', Account::DEMO_ACCOUNT);
+        $this->assertEquals(1000000, $midBalance['balance']);
+        $this->assertEquals(1000000, $subMidBalance['balance']);
+
+        $this->fixtures->create('terminal:hdfc_emi_terminal');
+        $this->fixtures->create('emi_plan:default_emi_plans');
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'              => 'HDFC',
+            'payment_network'     => null,
+            'payment_method_type' => 'credit'
+        ]);
+        $order = $this->fixtures->order->createWithOffers($offer,
+            [
+                'force_offer' => true,
+                'amount'      => 319150,
+            ]);
+        $card = $this->fixtures->card->createHdfcDebitEmiCard();
+
+        // payment-1: with order consisting of offer on whitelisted mid, should be included for adjustments
+        $payment = $this->fixtures->create('payment:emi_captured',
+            [
+                'order_id'      => $order['id'],
+                'emi_plan_id'   => '10101010101010',
+                'card_id'       => $card['id'],
+                'authorized_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+                'captured_at'   => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
+
+        $this->fixtures->create('entity_offer', [
+            'entity_id'         => $payment->getId(),
+            'entity_type'       => 'payment',
+            'entity_offer_type' => 'offer',
+            'offer_id'          => $offer['id'],
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer,
+            [
+                'merchant_id' => Account::DEMO_ACCOUNT,
+                'force_offer' => true,
+                'amount'      => 319150,
+            ]);
+
+        // payment-2: with order consisting of offer for non-whitelisted mid, should not be included for adjustments
+        $this->fixtures->create('payment:emi_captured',
+            [
+                'merchant_id'   => Account::DEMO_ACCOUNT,
+                'order_id'      => $order['id'],
+                'emi_plan_id'   => '10101010101010',
+                'card_id'       => $card['id'],
+                'authorized_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+                'captured_at'   => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        // payment-3: payment with order without offer, should not be included for adjustments
+        $this->fixtures->create('payment:emi_captured',
+            [
+                'order_id'      => $order['id'],
+                'emi_plan_id'   => '10101010101010',
+                'card_id'       => $card['id'],
+                'authorized_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+                'captured_at'   => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
+
+        // payment-4: payment without order, should not be included for adjustments
+        $this->fixtures->create('payment:emi_captured',
+            [
+                'emi_plan_id'   => '10101010101010',
+                'card_id'       => $card['id'],
+                'authorized_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+                'captured_at'   => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
+
+        // payment-5: NB payment, should not be included for adjustments.
+        $this->fixtures->create('payment:netbanking_captured',
+            [
+                'created_at'    => Carbon::yesterday(Timezone::IST)->timestamp,
+                'authorized_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+                'captured_at'   => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        // retrying the adjustment creation should throw error as it leads to duplicate adjustment creation.
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $this->startTest($this->testData['testCreateAdjustmentViaCron']);
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.',
+        );
+
+        $this->assertEquals(1100000, $midBalance->reload()['balance']);
+        $this->assertEquals(900000, $subMidBalance->reload()['balance']);
     }
 
     private function createFixtures(string $id = null)
