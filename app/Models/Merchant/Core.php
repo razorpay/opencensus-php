@@ -7836,13 +7836,9 @@ class Core extends Base\Core
 
     public function isShowReceiverTypeFeatureEnabled(Entity $merchant) : bool
     {
-        if ($merchant->isRazorpayOrgId() === true )
+        if(($merchant->isFeatureEnabled(Feature\Constants::SHOW_PAYMENT_RECEIVER_TYPE)) === true)
         {
-            if(($merchant->isFeatureEnabled(Feature\Constants::SHOW_PAYMENT_RECEIVER_TYPE)) === true)
-            {
-                return true;
-            }
-            return false;
+            return true;
         }
 
         return $this->isOrgFeatureEnabled($merchant, Feature\Constants::SHOW_PAYMENT_RECEIVER_TYPE);
