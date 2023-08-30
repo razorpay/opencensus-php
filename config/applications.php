@@ -1332,7 +1332,9 @@ return [
         'dashboard_timeout' => env('TERMINAL_SERVICE_ADMIN_DASHBOARD_TIMEOUT', 5),
         'associate_terminals_from_ts' => env('ASSOCIATE_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'associate_terminals_from_ts_timeout' => env('ASSOCIATE_TERMINALS_TIMEOUT',0.25),
-        'proxy_calls_retry_attempt' => env('TERMINAL_PROXY_CALL_RETRY_ATTEMPT',1)
+        'proxy_calls_retry_attempt' => env('TERMINAL_PROXY_CALL_RETRY_ATTEMPT',1),
+        'gatewaytoken_associate_terminals_from_ts' => env('GATEWAYTOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
+        'token_associate_terminals_from_ts' => env('TOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
     ],
 
     'financial_data_service' => [

@@ -602,6 +602,57 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::GATEWAY_TOKEN] ?? null;
     }
 
+    public function getTerminalAttribute()
+    {
+        $terminal = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminal = $this->getRelation('terminal');
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $app = \App::getFacadeRoot();
+
+        $rampUpTerminalsTraffic = $app['config']->get('applications.terminals_service.token_associate_terminals_from_ts');
+
+        if(!(new Terminal\Repository)->canMerchantFetchTerminalsFromTS($this->getId(),$rampUpTerminalsTraffic))
+        {
+
+            $terminal = $this->terminal()->first();
+
+            if (empty($terminal) === false)
+            {
+                (new Terminal\Service())->pushTerminalReadMetrics( "Token",false);
+
+                $this->terminal()->associate($terminal);
+
+                return $terminal;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        if (empty($this->getAttribute(self::TERMINAL_ID)))
+        {
+            return null;
+        }
+
+        $terminal = (new Terminal\Repository)->fetchTerminalsToAssociate("Token",$this->getAttribute(self::TERMINAL_ID),false);
+
+        $this->terminal()->associate($terminal);
+
+        return $terminal;
+
+    }
+
     public function getGatewayToken2()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN2);

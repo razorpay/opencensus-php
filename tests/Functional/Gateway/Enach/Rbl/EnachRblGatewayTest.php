@@ -33,6 +33,8 @@ use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Terminal;
 
 class EnachRblGatewayTest extends TestCase
 {
@@ -41,6 +43,7 @@ class EnachRblGatewayTest extends TestCase
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
+    use TestsMetrics;
 
     protected function setUp(): void
     {
@@ -857,6 +860,9 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDebitFileReconciliation()
     {
+        //Test Token Terminals Service Terminals Fetch
+        $this->testTokenTerminalsOverrideTest(100,true);
+
         $payment = $this->makeDebitPayment();
 
         $fileStatuses = [
@@ -1060,6 +1066,10 @@ class EnachRblGatewayTest extends TestCase
     // enach_rbl refund migrated to scrooge
     public function testDebitFileReconciliationRefund()
     {
+
+        //Test Token API Terminals Fetch
+        $this->testTokenTerminalsOverrideTest(0,false);
+
         $payment = $this->makeDebitPayment();
 
         $fileStatuses = [
@@ -1880,5 +1890,48 @@ class EnachRblGatewayTest extends TestCase
                 unset($request['content']['status']);
             }
         }, 'esigner_digio');
+    }
+
+    private function testTokenTerminalsOverrideTest($rampupTraffic, $fetchFromTs)
+    {
+        $this->app['config']->set('applications.terminals_service.token_associate_terminals_from_ts',$rampupTraffic);
+
+        $metricCaptured = true;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $metricNameToCapture = Terminal\Metric::TERMINAL_RETRIEVED;
+
+        $expectedMetricData = [
+            'entity' => 'Token',
+            'fetch_from_ts' => $fetchFromTs,
+        ];
+
+        $closure = function($metricName, $times, $actualMetricData) use ($expectedMetricData, & $metricCaptured, $metricNameToCapture) {
+            $actual   = ['metric_name' => $metricName, 'metric_data' => $actualMetricData];
+            $expected = ['metric_name' => $metricNameToCapture, 'metric_data' => $expectedMetricData];
+            $this->validateTerminalMetricData($metricNameToCapture, $expected, $actual, $metricCaptured);
+        };
+
+        $metricsMock->method('count')
+            ->will($this->returnCallback($closure));
+
+    }
+
+    private function validateTerminalMetricData(string $metricName, array $expectedMetricData, array $actualMetricData, bool &$passed)
+    {
+        $actualMetricName = $actualMetricData['metric_name'];
+
+        if ($actualMetricName !== $metricName)
+        {
+            return;
+        }
+
+        if($actualMetricData['metric_data']['entity'] == 'Token')
+        {
+            $this->assertArraySelectiveEquals($expectedMetricData, $actualMetricData);
+        }
+
+        $passed = true;
     }
 }

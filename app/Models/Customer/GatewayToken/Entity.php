@@ -118,4 +118,56 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Setters --------------------
+
+    public function getTerminalAttribute()
+    {
+        $terminal = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminal = $this->getRelation('terminal');
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $app = \App::getFacadeRoot();
+
+        $rampUpTerminalsTraffic = $app['config']->get('applications.terminals_service.gatewaytoken_associate_terminals_from_ts');
+
+        if(!(new Terminal\Repository)->canMerchantFetchTerminalsFromTS($this->getId(),$rampUpTerminalsTraffic))
+        {
+
+            $terminal = $this->terminal()->first();
+
+            if (empty($terminal) === false)
+            {
+                (new Terminal\Service())->pushTerminalReadMetrics( "GatewayToken",false);
+
+                $this->terminal()->associate($terminal);
+
+                return $terminal;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        if (empty($this->getAttribute(self::TERMINAL_ID)))
+        {
+            return null;
+        }
+
+        $terminal = (new Terminal\Repository)->fetchTerminalsToAssociate("GatewayToken",$this->getAttribute(self::TERMINAL_ID));
+
+        $this->terminal()->associate($terminal);
+
+        return $terminal;
+
+    }
+
 }

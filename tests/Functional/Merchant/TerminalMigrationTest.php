@@ -6,6 +6,8 @@ use Mockery;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Http\Request\Requests;
@@ -3140,4 +3142,84 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals(1, $payments['count']);
     }
+
+
+    public function testTerminalServiceFetchTSOnGatewayTokenOverride()
+    {
+        $this->app['config']->set('applications.terminals_service.gatewaytoken_associate_terminals_from_ts',100);
+
+        $metricCaptured = true;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->mockAndCaptureCountMetric(
+            Terminal\Metric::TERMINAL_RETRIEVED,
+            $metricsMock,
+            $metricCaptured,
+            [
+                'entity'=>'GatewayToken',
+                'fetch_from_ts' => true,
+                'route_name' => 'payment_create_recurring'
+            ]
+        );
+
+        $this->doS2SPaymentWithTokenTerminalFetch();
+
+    }
+
+    public function testAPIServiceOnGatewayTokenOverride()
+    {
+        $this->app['config']->set('applications.terminals_service.gatewaytoken_associate_terminals_from_ts',0);
+
+        $metricCaptured = true;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->mockAndCaptureCountMetric(
+            Terminal\Metric::TERMINAL_RETRIEVED,
+            $metricsMock,
+            $metricCaptured,
+            [
+                'entity'=>'GatewayToken',
+                'fetch_from_ts' => false,
+                'route_name' => 'payment_create_recurring'
+            ]
+        );
+
+        $this->doS2SPaymentWithTokenTerminalFetch();
+
+    }
+
+    private function doS2SPaymentWithTokenTerminalFetch()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment[Payment::TOKEN] = '10000cardtoken';
+
+        unset($payment[Payment::CARD]);
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $this->fixtures->base->editEntity('card', '100000000lcard', ['type' => 'credit']);
+
+        $this->fixtures->base->editEntity('token', '100000custcard',
+            [
+                'recurring'   => true,
+                'terminal_id' => '1000CybrsTrmnl',
+                'recurring_status' => 'confirmed',
+            ]);
+
+        $this->fixtures->create('gateway_token',
+            [
+                'token_id' => '100000custcard',
+                'terminal_id' => '1000CybrsTrmnl'
+            ]);
+
+        $this->doS2SRecurringPayment($payment);
+    }
+
 }

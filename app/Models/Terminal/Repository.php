@@ -2704,7 +2704,7 @@ class Repository extends Base\Repository
     /**
      * @throws \Throwable
      */
-    public function fetchTerminalsToAssociate(string $entity,string $terminalId): Terminal\Entity
+    public function fetchTerminalsToAssociate(string $entity,string $terminalId,$withTrashed = true): Terminal\Entity
     {
         $app = App::getFacadeRoot();
 
@@ -2722,7 +2722,7 @@ class Repository extends Base\Repository
 
             $timeout = $app['config']->get('applications.terminals_service.associate_terminals_from_ts_timeout');
 
-            $terminal = $this->getById($terminalId, true, true, $timeout);
+            $terminal = $this->getById($terminalId, $withTrashed, true, $timeout);
 
             $duration = millitime() - $start;
 
@@ -2742,6 +2742,41 @@ class Repository extends Base\Repository
 
             throw $ex;
         }
+    }
+
+    public function canMerchantFetchTerminalsFromTS($id, $rampUpTerminalsTraffic): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        if($id === null)
+        {
+            return false;
+        }
+
+        if($rampUpTerminalsTraffic == 0)
+        {
+            return false;
+        }
+        else if($rampUpTerminalsTraffic == 100)
+        {
+            return true;
+        }
+        else
+        {
+
+            $hash = abs(crc32($id)) % 100;
+
+            if($hash < $rampUpTerminalsTraffic)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
     }
 
 }
