@@ -2491,35 +2491,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
     }
 
-    public function testBankTransferRblWithCommasInAmount()
-    {
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
-
-        $this->ba->directAuth();
-
-        $this->startTest($testData);
-
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-
-        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
-        $this->assertEquals(343946, $bankTransfer['amount']);
-
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals(343946, $payment['amount']);
-        $this->assertEquals('bt_rbl', $payment['gateway']);
-
-        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
-        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
-    }
     public function testBankTransferRblUnexpected()
     {
         $testData = $this->testData[__FUNCTION__];
 
         $account = $this->getRblVaBankAccount();
 
-        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND12345678901234';
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND123';
 
         $this->ba->directAuth();
 
@@ -2574,7 +2552,7 @@ class BankTransferTest extends TestCase
 
         $this->getRblVaBankAccount();
 
-        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND12345678901234';
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = 'RAND123';
 
         $this->ba->directAuth();
 
@@ -2672,7 +2650,8 @@ class BankTransferTest extends TestCase
      */
     public function testRblBankTransferWithShortPayeeAccount()
     {
-        $testData = $this->testData[__FUNCTION__];
+        $testData = $this->testData['testBankTransferRbl'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '222333004335048';
 
         $this->startTest($testData);
     }

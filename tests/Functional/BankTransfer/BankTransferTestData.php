@@ -238,44 +238,6 @@ return [
         ]
     ],
 
-    'testBankTransferRblWithCommasInAmount' => [
-        'request' => [
-            'url'     => '/ecollect/validate/rbl/test',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
-            ],
-            'content' => [
-                'ServiceName' => 'VirtualAccount',
-                'Action' => 'VirtualAccountTransaction',
-                'Data' =>  [
-                    [
-                        'messageType'               => 'ft',
-                        'amount'                    => '3,439.46',
-                        'UTRNumber'                 => 'CMS480098890',
-                        'senderIFSC'                => 'ICIC0000104',
-                        'senderAccountNumber'       => '010405000010',
-                        'senderAccountType'         => 'Current Account',
-                        'senderName'                => 'CREDIT CARD OPERATIONS',
-                        'beneficiaryAccountType'    => 'Current Account',
-                        'beneficiaryAccountNumber'  => '00010469876543210',
-                        'creditDate'                => '13-10-2016 1929',
-                        'creditAccountNumber'       => '409000404030',
-                        'corporateCode'             => 'CAFLT',
-                        'clientCodeMaster'          => '02405',
-                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
-                    ],
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'Status'    => 'Success',
-            ],
-            'status_code' => 200,
-        ]
-    ],
-
     'testBankTransferRblUnexpected' => [
         'request' => [
             'url'     => '/ecollect/validate/rbl/test',
@@ -325,7 +287,7 @@ return [
         'sender_acct_type'              =>  'Current Account',
         'sender_acct_name'              =>  'ENTERPRISES',
         'benef_acct_type'               =>  'Current Account',
-        'benef_acct_number'             =>  'RAND12345678901234',
+        'benef_acct_number'             =>  'RAND123',
         'benef_name'                    =>  '',
         'credit_date'                   =>  '08-03-2020 221042',
         'credit_acct_number'            =>  409000863333,
@@ -347,44 +309,6 @@ return [
                     [
                         'messageType'               => 'IMPS',
                         'beneficiaryAccountNumber'  => '',
-                        'beneficiaryAccountType'    => 'Current Account',
-                        'senderName'                => 'BharatPe',
-                        'senderAccountNumber'       => '123412341234',
-                        'senderIFSC'                => 'SBIN0000002',
-                        'senderAccountType'         => 'Current Account',
-                        'amount'                    => '100.50',
-                        'senderInformation'         => '',
-                        'UTRNumber'                 => '12345ABCDE01',
-                        'creditDate'                => '14-02-2020 201500',
-                        'creditAccountNumber'       => '409000694314',
-                        'corporateCode'             => 'RAZORPAY',
-                        'clientCodeMaster'          => '',
-                    ],
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'Status'    => 'Failure.',
-            ],
-            'status_code' => 400,
-        ],
-    ],
-
-    'testRblBankTransferWithShortPayeeAccount' => [
-        'request' => [
-            'url'     => '/ecollect/validate/rbl/test',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
-            ],
-            'content' => [
-                'ServiceName' => 'VirtualAccount',
-                'Action' => 'VirtualAccountTransaction',
-                'Data' =>  [
-                    [
-                        'messageType'               => 'IMPS',
-                        'beneficiaryAccountNumber'  => '222333004335048',
                         'beneficiaryAccountType'    => 'Current Account',
                         'senderName'                => 'BharatPe',
                         'senderAccountNumber'       => '123412341234',

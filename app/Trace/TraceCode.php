@@ -1969,8 +1969,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VALIDATE_VPA_REQUEST                          = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE                         = 'GATEWAY_VALIDATE_VPA_RESPONSE';
 
-    const GATEWAY_VALIDATE_VPA_FORMAT                           = 'GATEWAY_VALIDATE_VPA_FORMAT';
-
     const SETCRONJOB_CALLBACK                                   = 'SETCRONJOB_CALLBACK';
 
     const SCHEDULE_RESOLUTION_INITIATED                         = 'SCHEDULE_RESOLUTION_INITIATED';

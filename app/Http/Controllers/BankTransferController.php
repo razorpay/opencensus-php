@@ -414,11 +414,6 @@ class BankTransferController extends Controller
         $provider  = Provider::RBL;
         $payeeIfsc = Provider::IFSC[Provider::RBL];
 
-        // strip any comma(,) in amount value
-        $amount = str_replace(',', '', $data['amount']);
-        $amount = number_format($amount, 2, '.', '');
-
-
         if (substr($data['beneficiaryAccountNumber'], 0, 5) === 'VAJSW')
         {
             $provider  = Provider::RBL_JSW;
@@ -435,7 +430,7 @@ class BankTransferController extends Controller
                             'mode'           => $mode,
                             'transaction_id' => $utr,
                             'time'           => $time,
-                            'amount'         => $amount,
+                            'amount'         => number_format($data['amount'], 2, '.', ''),
                             'description'    => $data['senderInformation'] ?? null,
                             'narration'      => $data['UTRNumber'],
                        ],
