@@ -5,9 +5,6 @@ namespace RZP\Models\Partner\Commission;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Metric;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Models\Payment\Processor\Refund as RefundTrait;
 use RZP\Jobs\CommissionCapture;
 
 class RefundCommission extends Core
@@ -29,7 +26,8 @@ class RefundCommission extends Core
 
     public function createReversalCommissionForRefund(): void
     {
-        $this->refundedPayment = $this->repo->payment->find($this->paymentId);
+        $this->refundedPayment = $this->repo->payment->findOrFail($this->paymentId);
+
         $commission = $this->repo->commission->findBySourceIdSourceTypeAndCommissionType($this->refundedPayment->getId(), Constants::PAYMENT);
 
         $this->refundCommission = $this->buildRefundCommission($commission);
