@@ -155,9 +155,11 @@ export default class ProviderDetails extends Component {
                     </div>
                   ) : null}
 
-                  <TPVDetails tpv={upiFeatures?.tpv} />
-
-                  <TPVDetails tpv={netbankingFeatures?.tpv} />
+                  {upiFeatures?.tpv ? (
+                    <TPVDetails tpv={upiFeatures?.tpv} />
+                  ) : netbankingFeatures?.tpv ? (
+                    <TPVDetails tpv={netbankingFeatures?.tpv} />
+                  ) : null}
 
                   {seamlessOptionExist && (
                     <div className="list-group details-row-container">

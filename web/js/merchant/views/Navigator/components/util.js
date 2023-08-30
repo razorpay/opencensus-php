@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+
 import { Operand } from 'merchant/views/Navigator/models/Operand';
 
 export const operators = [
@@ -1027,6 +1028,31 @@ export const parameters = [
       },
     },
     type: 'numeric',
+  },
+  {
+    name: 'Recurring',
+    value: '$payment.recurring',
+    description: 'Card Recurring',
+    id: 11,
+    values: [
+      {
+        value: 'true',
+      },
+      {
+        value: 'false',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'boolean',
   },
   ...customIdentifierParameter,
   ...emiDurationParameter,

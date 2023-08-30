@@ -3,6 +3,7 @@ import qs from 'query-string';
 import { connect } from 'react-redux';
 import { withRouter, Link, Redirect } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
+import { compose, bindActionCreators } from 'redux';
 
 import Spinner from 'common/ui/Spinner';
 import { deepClone } from 'common/utils/rzp-utils';
@@ -32,18 +33,7 @@ import FullPageCoverHeader from './FullPageCoverHeader';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
 import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 
-@withRouter
-@connect(
-  (state) => {
-    const { session, navigator } = state;
-    return {
-      user: session?.user,
-      activeProviders: navigator?.terminalProviders,
-    };
-  },
-  { openModal, closeModal, showNotification },
-)
-export default class AddProvider extends React.Component {
+class AddProvider extends React.Component {
   state = {
     redirect: null,
     provider: deepClone(INIT_PROVIDER_STATE),
@@ -106,11 +96,16 @@ export default class AddProvider extends React.Component {
 
       if (provider) {
         const { Gateway, Gateway_details } = provider;
+        const paymentMethods = Gateway_details?.['Payment Methods'] ?? [];
+        const hasNBMethod = paymentMethods.includes('netbanking');
+        const hasUPIMethod = paymentMethods.includes('upi');
 
-        if (HAS_UPI_FEATURES.includes(Gateway)) {
+        if (hasUPIMethod && HAS_UPI_FEATURES.includes(Gateway)) {
           provider.Gateway_details.TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
-        } else if (HAS_NETBANKING_FEATURES.includes(Gateway)) {
+        } else if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(Gateway)) {
           provider.Gateway_details.TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
+        } else {
+          provider.Gateway_details.TPV = 0;
         }
 
         this.setState({
@@ -513,19 +508,25 @@ export default class AddProvider extends React.Component {
     const { provider, isEdit, selectedProvider } = this.state;
     const { closeModal, history, showNotification } = this.props;
 
-    const Gateway_details = provider?.Gateway_details || {};
+    const Gateway_details = { ...provider?.Gateway_details };
+    const paymentMethods = Gateway_details?.['Payment Methods'] ?? [];
+    const hasNBMethod = paymentMethods.includes('netbanking');
+    const hasUPIMethod = paymentMethods.includes('upi');
+    const tpv = Number(Gateway_details?.TPV) ?? 0;
 
     if (Gateway_details.hasOwnProperty('TPV')) {
-      const tpv = Number(Gateway_details?.TPV) ?? 0;
-
-      if (HAS_UPI_FEATURES.includes(selectedProvider)) {
+      if (hasUPIMethod && HAS_UPI_FEATURES.includes(selectedProvider)) {
         const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
-
         Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
-      } else if (HAS_NETBANKING_FEATURES.includes(selectedProvider)) {
-        const netBanking = Gateway_details?.[NETBANKING_FEATURES] || {};
+      } else {
+        delete Gateway_details[UPI_FEATURES];
+      }
 
-        Gateway_details[NETBANKING_FEATURES] = { ...netBanking, tpv };
+      if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(selectedProvider)) {
+        const netBankingFeatures = Gateway_details?.[NETBANKING_FEATURES] || {};
+        Gateway_details[NETBANKING_FEATURES] = { ...netBankingFeatures, tpv };
+      } else {
+        delete Gateway_details[NETBANKING_FEATURES];
       }
 
       delete Gateway_details?.TPV;
@@ -834,3 +835,17 @@ export default class AddProvider extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  const { session, navigator } = state;
+  return {
+    user: session?.user,
+    activeProviders: navigator?.terminalProviders,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ openModal, closeModal, showNotification }, dispatch);
+};
+
+export default compose(withRouter, connect(mapStateToProps, mapDispatchToProps))(AddProvider);
