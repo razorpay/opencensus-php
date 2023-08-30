@@ -19,6 +19,12 @@ class PaymentsCrossBorderClient
     const X_INTERNAL_APP      = 'X-Internal-App';
 
     const PAYMENTS_CROSS_BORDER = 'PaymentsCrossBorder';
+    //get document url
+    const GET_DOCUMENTS = 'v1/documents';
+
+    const PAYMENTS_CROSS_BORDER_URLS = [
+        "GET_DOCUMENTS" => self::GET_DOCUMENTS
+    ];
 
     protected $client;
 
@@ -116,5 +122,20 @@ class PaymentsCrossBorderClient
         ]);
 
         return $responseArray;
+    }
+
+    public function getDocuments($input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['GET_DOCUMENTS'];
+
+        try {
+            return $this->makeRequest($url, 'GET', $input);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR,[
+                'error' => $e,
+            ]);
+
+            throw $e;
+        }
     }
 }

@@ -378,6 +378,30 @@ return [
         ],
     ],
 
+    'testFetchFIRSDocumentsAmex' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchFIRSDocumentsAmexWithError' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
     'testFetchFIRSDocumentsUploadedOnFirstDayOfMonth' => [
         'request'  => [
             'url'       => '/merchant/firs?month=%s&year=%s',

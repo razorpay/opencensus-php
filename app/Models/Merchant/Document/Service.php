@@ -26,6 +26,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MerchantFirsDocumentsZip;
 use function Doctrine\Common\Cache\Psr6\get;
+use RZP\Models\Merchant\Document\Constants as DocumentConstants;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -404,6 +406,37 @@ class Service extends Base\Service
                 Entity::CREATED_AT      => $document->getCreatedAt(),
             ];
             array_push($documentMetaData,$documentResponse);
+        }
+
+        try {
+            // Fetch Internal FIRS Documents
+            $internalFirsDocumentInput = array(
+                "merchantId"=> $merchantId,
+                "month"     => $input['month'],
+                "year"      => $input['year'],
+                "type"      => DocumentConstants::FIRS_INTERNAL_AMEX_DOCUMENT_TYPE
+            );
+
+            $internalFirsDocuments =  $this->app['payments-cross-border']->getDocuments($internalFirsDocumentInput);
+            if (!empty($internalFirsDocuments) && isset($internalFirsDocuments['items'])) {
+                // For Zip Files Check Status Before Sending Documents to FE
+                foreach ($internalFirsDocuments['items'] as $internalFirsDocument) {
+                    $internalFirsDocumentResponse = [
+                        Entity::ID              => $internalFirsDocument['id'],
+                        Entity::DOCUMENT_TYPE   => $internalFirsDocument['document_type'],
+                        Entity::MERCHANT_ID     => $internalFirsDocument['entity_id'],
+                        Entity::FILE_STORE_ID   => $internalFirsDocument['file_id'],
+                        Entity::CREATED_AT      => $internalFirsDocument['created_at'],
+                    ];
+                    array_push($documentMetaData,$internalFirsDocumentResponse);
+                }
+            }
+
+        } catch (\Exception $e) {
+            // trace the error and move to next piece of code
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR,  [
+                'merchantId'    => $merchantId,
+            ]);
         }
 
         return $documentMetaData;

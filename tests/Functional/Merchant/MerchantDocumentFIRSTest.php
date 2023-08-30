@@ -6,6 +6,9 @@ use Queue;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Mock\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\MerchantFirsDocumentsZip;
 use RZP\Services\UfhService;
@@ -61,6 +64,71 @@ class MerchantDocumentFIRSTest Extends TestCase
         $this->assertEquals('firs_file',$content[0]['document_type']);
         $this->assertEquals('firs_file',$content[1]['document_type']);
 
+    }
+
+    public function testFetchFIRSDocumentsAmex()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['getDocuments'])
+            ->getMock();
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+
+        $pxbServiceMock->method("getDocuments")
+            ->willReturn([
+                "items" => [
+                    [
+                        "id" => "CCOhinUeUsT8HN",
+                        "document_type" => "firs_internal_amex_file",
+                        "file_id" => "MQlRFCy5mrJDQT",
+                        "entity_id" => "CCOhinUeUsT8HN",
+                        "document_date" => "1692194209",
+                        "created_at" => "1692194209"
+                    ]
+                ],
+                "success" => true
+            ]);
+
+        $response = $this->sendRequest($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(1,$content);
+        $this->assertEquals('firs_internal_amex_file',$content[0]['document_type']);
+
+    }
+
+    public function testFetchFIRSDocumentsAmexWithError()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['url'] = sprintf($request['url'], 6,2023);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['getDocuments'])
+            ->getMock();
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+
+        $pxbServiceMock->method("getDocuments")
+            ->willThrowException(
+                new BadRequestException(
+                    ErrorCode::SERVER_ERROR)
+            );
+
+        $response = $this->sendRequest($request);
+        $content = $this->getJsonContentFromResponse($response);
+        $this->assertCount(0,$content);
     }
 
     public function testFetchFIRSDocumentsUploadedOnFirstDayOfMonth()

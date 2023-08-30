@@ -16,4 +16,9 @@ class PaymentsCrossBorderClient
         return $res;
     }
 
+    public function getDocuments($input)
+    {
+        return $this->response;
+    }
+
 }

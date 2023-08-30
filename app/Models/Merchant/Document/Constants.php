@@ -33,4 +33,6 @@ class Constants
     const CONTENT_DISPOSITION        = 'Content-Disposition';
     const CONTENT_DISPOSITION_INLINE = 'inline';
     const SIGNED_URL                 = 'signed_url';
+
+    const FIRS_INTERNAL_AMEX_DOCUMENT_TYPE = 'firs_internal_amex_file';
 }
