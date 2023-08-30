@@ -1199,4 +1199,9 @@ export const COUNTRY_CODES = [
     dial_code: '+998',
     code: 'UZ',
   },
+  {
+    name: 'Kosovo',
+    dial_code: '+383',
+    code: 'XK',
+  },
 ];

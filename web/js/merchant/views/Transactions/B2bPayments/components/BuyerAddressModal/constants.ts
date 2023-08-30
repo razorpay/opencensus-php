@@ -259,4 +259,5 @@ export const ALLOWED_COUNTRIES = [
   'DE',
   'OM',
   'ZM',
+  'XK',
 ];
