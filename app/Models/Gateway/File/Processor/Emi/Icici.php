@@ -110,6 +110,11 @@ class Icici extends Base
 
         foreach ($input['items'] as $emiPayment)
         {
+                if ($emiPayment->terminal->isOptimizer())
+                {
+                    continue;
+                }
+
                 $emiPlan = $emiPayment->emiPlan;
 
                 $principalAmount = $emiPayment->getAmount() / 100;

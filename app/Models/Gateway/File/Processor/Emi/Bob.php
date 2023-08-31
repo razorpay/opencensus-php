@@ -47,6 +47,11 @@ class Bob extends Base
 
         foreach ($data['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+
             $emiTenure = $emiPayment->emiPlan['duration'];
 
             $merchant = $emiPayment->merchant;
