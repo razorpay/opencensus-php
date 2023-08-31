@@ -25,6 +25,14 @@ class GetConsentDocumentsByOwnerIdRequest extends \Google\Protobuf\Internal\Mess
      * Generated from protobuf field <code>.platform.bvs.consentdocumentmanager.v2.Page page = 3;</code>
      */
     protected $page = null;
+    /**
+     * Generated from protobuf field <code>string partner_id = 4;</code>
+     */
+    protected $partner_id = '';
+    /**
+     * Generated from protobuf field <code>string application_id = 5;</code>
+     */
+    protected $application_id = '';
 
     /**
      * Constructor.
@@ -35,6 +43,8 @@ class GetConsentDocumentsByOwnerIdRequest extends \Google\Protobuf\Internal\Mess
      *     @type string $owner_id
      *     @type string $platform
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\Page $page
+     *     @type string $partner_id
+     *     @type string $application_id
      * }
      */
     public function __construct($data = NULL) {
@@ -114,6 +124,50 @@ class GetConsentDocumentsByOwnerIdRequest extends \Google\Protobuf\Internal\Mess
     {
         GPBUtil::checkMessage($var, \Platform\Bvs\Consentdocumentmanager\V2\Page::class);
         $this->page = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 4;</code>
+     * @return string
+     */
+    public function getPartnerId()
+    {
+        return $this->partner_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPartnerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->partner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 5;</code>
+     * @return string
+     */
+    public function getApplicationId()
+    {
+        return $this->application_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setApplicationId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->application_id = $var;
 
         return $this;
     }

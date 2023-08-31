@@ -125,7 +125,7 @@ class CapturePartnershipConsents extends Job
 
             $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
-            $data = $detailService->getDocumentsDetails($input);
+            $data = $detailService->getDocumentsDetails($input, $merchant);
 
             $documents_detail = [];
             foreach ($data as $document_detail)

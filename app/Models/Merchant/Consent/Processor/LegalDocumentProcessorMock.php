@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Consent\Processor;
 
-
+use App;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use Platform\Bvs\Legaldocumentmanager\V1\LegalDocumentsManagerResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
@@ -22,7 +22,31 @@ class LegalDocumentProcessorMock extends LegalDocumentProcessor
 
         $response->setId(DEConstants::DUMMY_REQUEST_ID);
 
-        $response->setStatus(DEConstants::INITIATED);
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.send.notification'];
+
+        if  ($mock === true)
+        {
+            $actualSendSMSData = $input[ DEConstants::NOTIFICATION_DETAILS]['send_sms'];
+            $actualSendEmailData = $input[ DEConstants::NOTIFICATION_DETAILS]['send_email'];
+
+            $expectedSendSMSData = true;
+            $expectedSendEmailData = true;
+
+            if ($actualSendSMSData !== $expectedSendSMSData or $actualSendEmailData !== $expectedSendEmailData)
+            {
+                $response->setStatus(DEConstants::FAILED);
+            }
+            else
+            {
+                $response->setStatus(DEConstants::INITIATED);
+            }
+        }
+        else
+        {
+            $response->setStatus(DEConstants::INITIATED);
+        }
 
         return new LegalDocumentBaseResponse($response);
     }

@@ -493,6 +493,7 @@ return array(
     'merchant_activation_manual_override'                   => env('MERCHANT_ACTIVATION_MANUAL_OVERRIDE'),
     'merchant_activation_ineligible'                        => env('MERCHANT_ACTIVATION_INELIGIBLE'),
     'merchant_consent_v2'                                   => env('MERCHANT_CONSENT_V2'),
+    'merchant_consent_v2_notification'                      => env('MERCHANT_CONSENT_V2_NOTIFICATION'),
     'merchant_consent_privacy_template_id'                  => env('MERCHANT_CONSENT_PRIVACY_TEMPLATE_ID'),
     'merchant_consent_terms_template_id'                    => env('MERCHANT_CONSENT_TERMS_TEMPLATE_ID'),
     'partner_invoice_auto_approval_exp_id'                  => env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),

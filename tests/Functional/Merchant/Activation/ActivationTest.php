@@ -5531,6 +5531,38 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('initiated', $consentDetail['status']);
     }
 
+    public function testSendNotificationEnableForL2Consents()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.send.notification', false);
+
+        $merchantId = '1cXSLlUU8V9sXa';
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+
+        $this->assertEquals('initiated', $consentDetail['status']);
+    }
 
     public function testConsentDetails()
     {
@@ -5546,7 +5578,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantConsents = \DB::connection('test')->select("select * from merchant_consents where merchant_id = '$merchantId'ORDER BY created_at DESC LIMIT 3 ");
 
-        $values = ["L2_Privacy Policy","L2_Terms and Conditions"];
+        $values = ["L2_Privacy Policy","L2_Terms of Service"];
 
         $expectedConsents = [];
 

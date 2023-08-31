@@ -21,6 +21,7 @@ use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
+use RZP\Models\Merchant\Consent\Core as ConsentCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
 use RZP\Models\BankingAccount\Activation\Detail\Entity as BankingAccountActivationEntity;
@@ -611,52 +612,49 @@ class Core extends Base\Core
             'response'   => $payload
         ]);
 
-        $documentsDetail = $payload[Constants::DOCUMENTS_DETAIL];
+        $documentDetails = $payload[Constants::DOCUMENTS_DETAIL];
 
-        foreach ($documentsDetail as $documentDetail)
+        $merchantConsents = $this->repo->merchant_consents->getConsentDetailsForRequestId($id);
+
+        if (empty($merchantConsents) === true)
         {
-            $status = $documentDetail['status'];
+            return;
+        }
 
-            $merchantConsentDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $documentDetail['type']);
-
-            $this->trace->info(TraceCode::PROCESS_MERCHANT_CONSENTS, [
-                'request_id'      => $id,
-                'consent_details' => $merchantConsentDetail
-            ]);
-
-            if (empty($merchantConsentDetail) === true)
+        foreach ($merchantConsents as $merchantConsent)
+        {
+            foreach ($documentDetails as $documentDetail)
             {
-                continue;
-            }
-
-            $input = [
-                'status'     => $status,
-                'updated_at' => Carbon::now()->getTimestamp(),
-                'metadata'   => (new Consent\Core())->mergeJson($merchantConsentDetail['metadata'], ['ufh_file_id' => $documentDetail['ufh_file_id']])
-            ];
-
-            try
-            {
-                $merchantConsentDetail->edit($input, 'edit');
-
-                $this->repo->merchant_consents->saveOrFail($merchantConsentDetail);
-            }
-            catch (\Throwable $e)
-            {
-                throw new LogicException($e->getMessage(), $e->getCode());
-            }
-            finally
-            {
-                $retryCount = $merchantConsentDetail->retry_count;
-
-                $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
-                    'merchant_id' => $merchantConsentDetail->merchant_id,
-                    'count'       => $retryCount
-                ]);
-
-                if ($retryCount === self::MAX_RETRY_COUNT)
+                if (empty($documentDetail['type']) === false and empty($merchantConsent['consent_for']) === false
+                    and str_contains(strtolower($merchantConsent['consent_for']), strtolower($documentDetail['type'])))
                 {
-                    $this->trace->count(Constants::CONSENT_RETRY_JOB_FAILURE);
+                    $input = [
+                        'status'     => $documentDetail['status'],
+                        'updated_at' => Carbon::now()->getTimestamp(),
+                        'metadata'   => (new ConsentCore())->mergeJson($merchantConsent['metadata'], ['ufh_file_id' => $documentDetail['ufh_file_id']])
+                    ];
+
+                    try
+                    {
+                        (new ConsentCore())->updateConsentDetails($merchantConsent, $input);
+                    }
+                    finally
+                    {
+                        $retryCount = $merchantConsent['retry_count'];
+
+                        $status = $merchantConsent['status'];
+
+                        $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
+                            'merchant_id' => $merchantConsent['merchant_id'],
+                            'count'       => $retryCount,
+                            'status'      => $status
+                        ]);
+
+                        if ($retryCount === self::MAX_RETRY_COUNT and $status !== Consent\Constants::SUCCESS)
+                        {
+                            $this->trace->count(Constants::CONSENT_RETRY_JOB_FAILURE);
+                        }
+                    }
                 }
             }
         }

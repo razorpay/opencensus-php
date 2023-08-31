@@ -112,7 +112,7 @@ class ConsentDocumentsBaseService extends Base\Service
 
             $this->merchantDetailService->storeConsents($merchant->getId(), $consentDetails, $merchant->primaryOwner()->getId());
 
-            $consentDocumentDetails = $this->merchantDetailService->getDocumentsDetails($consentDetails);
+            $consentDocumentDetails = $this->merchantDetailService->getDocumentsDetails($consentDetails, $merchant);
 
             $legalDocumentsInput = [
                 DEConstants::DOCUMENTS_DETAIL                   => $consentDocumentDetails,

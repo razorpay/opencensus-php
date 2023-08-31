@@ -17,10 +17,10 @@ class CreateConsentDocuments
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Ë
+ƒ
 Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.proto&platform.bvs.consentdocumentmanager.v2"!
 ClientDetails
-platform (	"•
+platform (	"Å
 OwnerDetails
 owner_id (	
 
@@ -30,7 +30,13 @@ ip_address (	
 acceptance_timestamp (
 signatory_name (	
 contact_number (	
-email (	"B
+email (	
+
+partner_id (	
+partner_name	 (	
+application_id
+ (	
+application_name (	"B
 ConsentDocumentRequestDetails
 type (	
 template_id (	"Ú

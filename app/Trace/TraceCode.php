@@ -41,6 +41,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_CONSENT_SUCCESS                     = 'FETCH_CONSENT_SUCCESS';
     const MERCHANT_WEBSITE_DETAILS                  = 'MERCHANT_WEBSITE_DETAILS';
     const FETCH_DOCUMENTS_DETAILS                   = 'FETCH_DOCUMENTS_DETAILS';
+    const SEND_CONSENTS_USER_NOT_FOUND              = 'SEND_CONSENTS_USER_NOT_FOUND';
 
     const CAPTURE_CONSENT_ERROR                     = 'CAPTURE_CONSENT_ERROR';
     const CAPTURE_CONSENT_ASYNC_JOB                 = 'CAPTURE_CONSENT_ASYNC_JOB';

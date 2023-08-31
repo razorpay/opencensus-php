@@ -17,15 +17,18 @@ class GetConsentDocuments
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         $pool->internalAddGeneratedFile(
             '
-³
+ß
 Bplatform/bvs/consentdocumentmanager/v2/get_consent_documents.proto&platform.bvs.consentdocumentmanager.v2"(
 GetConsentDocumentsRequest
 
-id (	"…
+id (	"±
 #GetConsentDocumentsByOwnerIdRequest
 owner_id (	
 platform (	:
-page (2,.platform.bvs.consentdocumentmanager.v2.Page"a
+page (2,.platform.bvs.consentdocumentmanager.v2.Page
+
+partner_id (	
+application_id (	"a
 Page,
 number (2.google.protobuf.UInt32Value+
 limit (2.google.protobuf.UInt32ValueB(Z&platform/bvs/consentdocumentmanager/v2bproto3'

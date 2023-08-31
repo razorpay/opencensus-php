@@ -33,7 +33,8 @@ class Validator extends Base\Validator
         Entity::STATUS      => 'sometimes|string|nullable|in:success,failed,pending,initiated',
         Entity::METADATA    => 'sometimes|array',
         Entity::UPDATED_AT  => 'sometimes',
-        Entity::RETRY_COUNT => 'sometimes|integer'
+        Entity::RETRY_COUNT => 'sometimes|integer',
+        Entity::CONSENT_FOR => 'sometimes|string|in:' . Constants::CONSENT_KEYS,
 
     ];
 }

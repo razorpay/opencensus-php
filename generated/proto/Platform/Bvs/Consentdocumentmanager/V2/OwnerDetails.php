@@ -41,6 +41,22 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string email = 7;</code>
      */
     protected $email = '';
+    /**
+     * Generated from protobuf field <code>string partner_id = 8;</code>
+     */
+    protected $partner_id = '';
+    /**
+     * Generated from protobuf field <code>string partner_name = 9;</code>
+     */
+    protected $partner_name = '';
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     */
+    protected $application_id = '';
+    /**
+     * Generated from protobuf field <code>string application_name = 11;</code>
+     */
+    protected $application_name = '';
 
     /**
      * Constructor.
@@ -55,6 +71,10 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      *     @type string $signatory_name
      *     @type string $contact_number
      *     @type string $email
+     *     @type string $partner_id
+     *     @type string $partner_name
+     *     @type string $application_id
+     *     @type string $application_name
      * }
      */
     public function __construct($data = NULL) {
@@ -212,6 +232,94 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->email = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 8;</code>
+     * @return string
+     */
+    public function getPartnerId()
+    {
+        return $this->partner_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 8;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPartnerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->partner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_name = 9;</code>
+     * @return string
+     */
+    public function getPartnerName()
+    {
+        return $this->partner_name;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_name = 9;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPartnerName($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->partner_name = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     * @return string
+     */
+    public function getApplicationId()
+    {
+        return $this->application_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setApplicationId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->application_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_name = 11;</code>
+     * @return string
+     */
+    public function getApplicationName()
+    {
+        return $this->application_name;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_name = 11;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setApplicationName($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->application_name = $var;
 
         return $this;
     }

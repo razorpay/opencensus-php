@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\DB;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Consent\Processor\Factory;
@@ -139,9 +140,7 @@ class Core extends Base\Core
         {
             try
             {
-                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
-
-                $this->app['basicauth']->setMerchant($this->merchant);
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
 
                 $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants(
                                                                                 $merchantId,
@@ -161,13 +160,17 @@ class Core extends Base\Core
 
                     $documents_detail = (new DetailService())->getDocumentsDetails(
                                                                     $consentDetails,
+                                                                    $merchant,
                                                                  $isExpEnabled,
-                                                                 $mapConsentUrlToFileContent);
+                                                                 $mapConsentUrlToFileContent, true);
+
+                    $notificationDetail = ($isExpEnabled === true) ?  (new DetailService())->getNotificationDetails($merchant, $consentDetailForMerchant['created_at']) : null;
 
                     $legalDocumentsInput = [
                         DEConstants::DOCUMENTS_DETAIL               => $documents_detail,
                         DEConstants::IP_ADDRESS                     => $consentDetailForMerchant['metadata']['ip_address'],
                         DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP => $consentDetailForMerchant['created_at'],
+                        DEConstants::NOTIFICATION_DETAILS           => $notificationDetail
                     ];
 
                     $processor = (new Factory())->getLegalDocumentProcessor();
@@ -192,6 +195,14 @@ class Core extends Base\Core
                         'retry_count' => $merchantConsentDetail->retry_count + 1
                     ];
 
+                    //We are changing terms and conditions to Terms of service for L2 consents for regular merchants.
+                    // This is to update older consents with the new name.
+                    if ($consentDetailForMerchant['consent_for'] === ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::TERMS_AND_CONDITIONS
+                        and $documents_detail[0]['type'] === ConsentConstant::TERMS_OF_SERVICE)
+                    {
+                        $input['consent_for'] = ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::TERMS_OF_SERVICE;
+                    }
+
                     $this->updateConsentDetails($merchantConsentDetail, $input);
                 }
             }
@@ -201,7 +212,7 @@ class Core extends Base\Core
                     TraceCode::RETRY_LEGAL_DOCUMENT_SAVE_CRON_FAILED,
                     [
                         'message'     => $e->getMessage(),
-                        'merchant_id' => $this->merchant->getId(),
+                        'merchant_id' => $merchantId,
                     ]
                 );
             }
@@ -214,7 +225,7 @@ class Core extends Base\Core
         {
             $this->mutex->acquireAndRelease(
 
-                $merchantConsentDetail->id,
+                $merchantConsentDetail['id'],
 
                 function() use ($merchantConsentDetail, $input) {
 
@@ -239,6 +250,7 @@ class Core extends Base\Core
      * @param string $merchantId
      *
      * @return array
+     * @throws ServerErrorException
      */
     public function getMerchantConsents(string $merchantId)
     {
@@ -277,6 +289,8 @@ class Core extends Base\Core
                 catch (\Throwable $e)
                 {
                     $this->trace->traceException($e);
+
+                    throw new ServerErrorException($e->getMessage(), $e->getCode());
                 }
             }
 
@@ -327,7 +341,7 @@ class Core extends Base\Core
         $isExpEnabled = (new DetailService())->isMerchantConsentV2ExperimentEnabled($merchant->getId());
 
         $legalDocumentsInput = [
-            DEConstants::DOCUMENTS_DETAIL  => (new DetailService())->getDocumentsDetails($documentsDetail, $isExpEnabled),
+            DEConstants::DOCUMENTS_DETAIL  => (new DetailService())->getDocumentsDetails($documentsDetail, $merchant, $isExpEnabled),
         ];
 
         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();

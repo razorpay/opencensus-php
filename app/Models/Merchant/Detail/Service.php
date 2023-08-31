@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use App;
 use Config;
+use DateTime;
 use DOMDocument;
 use RZP\Http\RequestHeader;
 use RZP\lib\TemplateEngine;
@@ -571,9 +572,10 @@ class Service extends Base\Service
                     ]);
                 }
 
-                try {
+                try
+                {
                     //if legal documents are not present already, store them in database
-                    if($this->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_L2) === false)
+                    if ($this->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_L2) === false)
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                             'merchant_id' => $merchantId,
@@ -590,10 +592,13 @@ class Service extends Base\Service
 
                         $isExpEnabled = $this->isMerchantConsentV2ExperimentEnabled($merchantId);
 
-                        $documentDetail = $this->getDocumentsDetails($input, $isExpEnabled);
+                        $documentDetail = $this->getDocumentsDetails($input, $merchant, $isExpEnabled);
+
+                        $notificationDetail = ($isExpEnabled === true) ? $this->getNotificationDetails($merchant) : null;
 
                         $legalDocumentsInput = [
-                            DEConstants::DOCUMENTS_DETAIL => $documentDetail
+                            DEConstants::DOCUMENTS_DETAIL     => $documentDetail,
+                            DEConstants::NOTIFICATION_DETAILS => $notificationDetail
                         ];
 
                         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
@@ -4185,7 +4190,7 @@ class Service extends Base\Service
         // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
         try
         {
-            $documentsDetail = $this->getDocumentsDetails($input);
+            $documentsDetail = $this->getDocumentsDetails($input, $merchant);
 
             $legalDocumentsInput = [
                 DEConstants::DOCUMENTS_DETAIL => $documentsDetail
@@ -4251,11 +4256,14 @@ class Service extends Base\Service
 
     /**
      * @param $input
+     * @param $merchant
      * @param bool $isExpEnabled
      * @param array $mapConsentUrlToFileContent
+     * @param bool $isConsentRetried
      * @return array
      */
-    public function getDocumentsDetails($input, bool &$isExpEnabled = false, array &$mapConsentUrlToFileContent = []): array
+    public function getDocumentsDetails($input, $merchant, bool &$isExpEnabled = false, array &$mapConsentUrlToFileContent = [],
+                                        bool $isConsentRetried = false): array
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
@@ -4265,12 +4273,13 @@ class Service extends Base\Service
 
         foreach ($documentDetailsInput as $documentDetailInput)
         {
-            $templateID = $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
-                ?? $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
+            $templateID = ($isConsentRetried === true) ? $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
+                : $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
 
             if (empty($templateID) === true)
             {
                 $isTemplateIDEmpty = true;
+                break;
             }
         }
 
@@ -4293,8 +4302,15 @@ class Service extends Base\Service
             }
             else
             {
-                $templateID = $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
-                    ?? $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
+                if ((new Merchant\Core)->isRegularMerchant($merchant) === true)
+                {
+                    $consentData = ConsentConstant::VALID_LEGAL_DOC[$consentType];
+
+                    $consentType = $consentData[ConsentConstant::DOC_NAME] ?? $consentType;
+                }
+
+                $templateID = ($isConsentRetried === true) ? $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
+                    : $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
 
                 $document_detail = [
                     "type"           =>  $consentType,
@@ -4408,7 +4424,9 @@ class Service extends Base\Service
     {
         $this->storeConsents($merchantId, $input);
 
-        $documents_detail = $this->getDocumentsDetails($input);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $documents_detail = $this->getDocumentsDetails($input, $merchant);
 
         $legalDocumentsInput[DEConstants::DOCUMENTS_DETAIL] = $documents_detail;
 
@@ -4530,13 +4548,124 @@ class Service extends Base\Service
         {
             $documentDetailsInput = &$input[DEConstants::DOCUMENTS_DETAIL];
 
-            foreach ($documentDetailsInput as $key => $document)
+            foreach ($documentDetailsInput as $key => &$document)
             {
                 if ($document['type'] === ConsentConstant::SERVICE_AGREEMENT)
                 {
                     unset($documentDetailsInput[$key]);
                 }
+
+                if ($document['type'] === ConsentConstant::TERMS_AND_CONDITIONS)
+                {
+                    $document['type'] = ConsentConstant::TERMS_OF_SERVICE;
+                }
             }
         }
+    }
+
+    public function isConsentNotificationExperimentEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.merchant_consent_v2_notification')
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'live');
+
+        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS_EXPT, [
+            '$isExpEnabled' => $isExpEnabled,
+            '$properties'   => $properties
+        ]);
+
+        return $isExpEnabled;
+    }
+
+    public function getNotificationDetails($merchant, $acceptanceTimestamp = null)
+    {
+        $isExpEnabled = $this->isConsentNotificationExperimentEnabled($merchant->getId());
+
+        if((new Merchant\Core)->isRegularMerchant($merchant) === false or $isExpEnabled === false)
+        {
+            return [
+                'send_email'    => false,
+                'send_sms'      => false,
+            ];
+        }
+
+        $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
+
+        try
+        {
+            $user = $this->repo->user->getUserFromId($userId);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_CONSENTS_USER_NOT_FOUND, [
+                'message' => 'Could not find user details to send consents'
+            ]);
+        }
+
+        $send_email = (empty($user) === false) ? $user['email_verified'] : false;
+
+        $send_sms = (empty($user) === false and $send_email === false) ? $user['contact_mobile_verified'] : false;
+
+        $email_details = ($send_email === true) ? $this->getEmailDetails($acceptanceTimestamp) : null;
+
+        $sms_details = ($send_sms === true) ? $this->getSmsDetails() : null;
+
+        return [
+            'send_email'    => $send_email,
+            'send_sms'      => $send_sms,
+            'email_details' => $email_details,
+            'sms_details'   => $sms_details
+        ];
+    }
+
+    private function getEmailDetails($acceptanceTimestamp = null)
+    {
+        $ownerName = $this->merchant->merchantDetail->getBusinessName();
+
+        $acceptanceTimestamp = $acceptanceTimestamp ?? Carbon::now()->getTimestamp();
+
+        $dateTime = new DateTime("@$acceptanceTimestamp");
+
+        $formattedDateTime = $dateTime->format('Y-m-d H:i:s');
+
+        return [
+            "owner_id"              =>  $this->merchant->getMerchantId(),
+            "owner_type"            => "merchant",
+            "org_id"                =>  $this->merchant->getOrgId(),
+            "template_name"         => "email.payments_consent.terms_and_privacy",
+            "template_namespace"    => "payments_onboarding",
+            "service"               => "api",
+            "from"                  =>  [
+                "address" => "no-reply@razorpay.com",
+                "name"    => "Razorpay"
+            ],
+            "params"                =>  [
+                "ownerName" => $ownerName,
+                "acceptance_timestamp" => $formattedDateTime,
+            ],
+            "to"                    =>  [
+                "address"   => $this->merchant->getEmail(),
+                "name"      => $ownerName
+            ],
+            "subject"               => "Razorpay: Our Terms of Service and Privacy Policy"
+        ];
+    }
+
+    private function getSmsDetails()
+    {
+        return [
+            "owner_id"              =>  $this->merchant->getMerchantId(),
+            "owner_type"            => "merchant",
+            "org_id"                =>  $this->merchant->getOrgId(),
+            "template_name"         => "sms.bvs.consent_docs",
+            "template_namespace"    => "platform",
+            "service"               => "api",
+            "sender"                => "Razorpay",
+            'destination'           => $this->merchant->merchantDetail->getContactMobile(),
+            "language"              => "english"
+        ];
     }
 }

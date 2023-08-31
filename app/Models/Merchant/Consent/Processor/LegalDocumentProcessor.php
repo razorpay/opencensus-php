@@ -67,13 +67,17 @@ class LegalDocumentProcessor implements Processor
 
     /**
      * @param array|null $input
-     * @param string $platform
-     * @param bool $isExpEnabled
+     * @param string     $platform
+     * @param bool       $isExpEnabled
+     * @param array|null $notificationDetails
+     *
      * @return LegalDocumentBaseResponse|ConsentDocumentBaseResponse
      */
-    public function processLegalDocuments(array $input = null, string $platform = 'pg',bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
+    public function processLegalDocuments(array $input = null, string $platform = 'pg', bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
     {
         $documents_detail = $input[DEConstants::DOCUMENTS_DETAIL];
+
+        $notificationDetails = $input[DEConstants::NOTIFICATION_DETAILS];
 
         // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
         $signatory_name = $platform === 'rx' ? $this->merchant->getName() : ($this->merchant->merchantDetail->getPromoterPanName())??($this->merchant->getName());
@@ -95,38 +99,12 @@ class LegalDocumentProcessor implements Processor
             "email"                => $this->merchant->getEmail(),
         ];
 
-        // TODO: Register email template & update $emailDetails
-        $emailDetails = [
-            "owner_id"              =>  $this->merchant->getMerchantId(),
-            "owner_type"            => "merchant",
-            "org_id"                =>  $this->merchant->getOrgId(),
-            "template_name"         => "user.consent.email.documents",
-            "template_namespace"    => "pg",
-            "service"               => "api",
-            "from"                  =>  [
-                                            "address" => "no-reply@razorpay.com",
-                                            "name"    => "Razorpay"
-                                        ],
-            "params"                =>  [
-                                            "ownerName" => $ownerName,
-                                        ],
-            "to"                    =>  [
-                                            "address"   => $this->merchant->getEmail(),
-                                            "name"      => $ownerName
-                                        ],
-            "cc"                    => [],
-            "bcc"                   => [],
-            "reply_to"              => [],
-            "subject"               => "Consent Documents"
-        ];
-
-        // send_email is hardcoded to false, since it would be enabled in another PR
         $body = [
-            "client_details"        =>  ['platform' => $platform],
-            "owner_details"         =>  $ownerDetails,
-            "documents_detail"      =>  $documents_detail,
-            "send_email"            =>  false,
-            "email_details"         =>  $emailDetails
+            "client_details"        => ['platform' => $platform],
+            "owner_details"         => $ownerDetails,
+            "documents_detail"      => $documents_detail,
+            "send_email"            => $notificationDetails['send_email'],
+            "send_sms"              => $notificationDetails['send_sms']
         ];
 
         if ($isExpEnabled === false)
@@ -142,6 +120,16 @@ class LegalDocumentProcessor implements Processor
         }
         else
         {
+            if (isset($notificationDetails['send_email']) === true and $notificationDetails['send_email'] === true)
+            {
+                $body["email_details"] = $notificationDetails["email_details"] ?? null;
+            }
+
+            if (isset($notificationDetails['send_sms']) === true and $notificationDetails['send_sms'] === true)
+            {
+                $body["sms_details"] = $notificationDetails["sms_details"] ?? null;
+            }
+
             $response = app('bvs_legal_document_manager')->createLegalDocumentV2($body, $this->merchant);
 
             $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS_V2, [

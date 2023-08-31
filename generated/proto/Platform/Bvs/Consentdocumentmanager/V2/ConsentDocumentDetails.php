@@ -45,6 +45,14 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string platform = 8;</code>
      */
     protected $platform = '';
+    /**
+     * Generated from protobuf field <code>string partner_id = 9;</code>
+     */
+    protected $partner_id = '';
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     */
+    protected $application_id = '';
 
     /**
      * Constructor.
@@ -60,6 +68,8 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
      *     @type string $owner_id
      *     @type string $client_id
      *     @type string $platform
+     *     @type string $partner_id
+     *     @type string $application_id
      * }
      */
     public function __construct($data = NULL) {
@@ -239,6 +249,50 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->platform = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 9;</code>
+     * @return string
+     */
+    public function getPartnerId()
+    {
+        return $this->partner_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string partner_id = 9;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPartnerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->partner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     * @return string
+     */
+    public function getApplicationId()
+    {
+        return $this->application_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string application_id = 10;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setApplicationId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->application_id = $var;
 
         return $this;
     }

@@ -79,10 +79,10 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
      *     @type string $template_name
      *     @type string $template_namespace
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\Email $from
-     *     @type \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $to
-     *     @type \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $cc
-     *     @type \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $bcc
-     *     @type \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $reply_to
+     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $to
+     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $cc
+     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $bcc
+     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $reply_to
      *     @type \Google\Protobuf\Struct $params
      *     @type string $subject
      * }
@@ -267,7 +267,7 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.Email to = 8;</code>
-     * @param \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setTo($var)
@@ -289,7 +289,7 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.Email cc = 9;</code>
-     * @param \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setCc($var)
@@ -311,7 +311,7 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.Email bcc = 10;</code>
-     * @param \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setBcc($var)
@@ -333,7 +333,7 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.Email reply_to = 11;</code>
-     * @param \Platform\Bvs\Consentdocumentmanager\V2\Email[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReplyTo($var)

@@ -19,8 +19,9 @@ class ConsentDocumentsManagerApi
         \GPBMetadata\Platform\Bvs\Consentdocumentmanager\V2\GetConsentDocuments::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Ô	
-Jplatform/bvs/consentdocumentmanager/v2/consent_documents_manager_api.proto&platform.bvs.consentdocumentmanager.v2Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.protoBplatform/bvs/consentdocumentmanager/v2/get_consent_documents.proto"´
+€
+
+Jplatform/bvs/consentdocumentmanager/v2/consent_documents_manager_api.proto&platform.bvs.consentdocumentmanager.v2Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.protoBplatform/bvs/consentdocumentmanager/v2/get_consent_documents.proto"à
 ConsentDocumentDetails
 type (	
 ufh_file_id (	
@@ -30,7 +31,11 @@ Jplatform/bvs/consentdocumentmanager/v2/consent_documents_manager_api.proto&pla
 error_code (	
 owner_id (	
 	client_id (	
-platform (	"Ä
+platform (	
+
+partner_id	 (	
+application_id
+ (	"Ä
 ConsentDocumentsManagerResponse
 
 id (	

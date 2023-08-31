@@ -50,7 +50,7 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\OwnerDetails $owner_details
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\ClientDetails $client_details
-     *     @type \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails[]|\Google\Protobuf\Internal\RepeatedField $documents_detail
+     *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails>|\Google\Protobuf\Internal\RepeatedField $documents_detail
      *     @type bool $send_email
      *     @type \Platform\Bvs\Consentdocumentmanager\V2\EmailDetails $email_details
      *     @type bool $send_sms
@@ -137,7 +137,7 @@ class CreateConsentDocumentsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.ConsentDocumentRequestDetails documents_detail = 3;</code>
-     * @param \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentRequestDetails>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setDocumentsDetail($var)

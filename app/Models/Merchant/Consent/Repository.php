@@ -82,12 +82,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getConsentDetailsForRequestId($requestId, $consentFor)
+    public function getConsentDetailsForRequestId($requestId)
     {
         return $this->newQuery()
                     ->where(Entity::REQUEST_ID, '=', $requestId)
-                    ->where(Entity::CONSENT_FOR, '=', $consentFor)
-                    ->first();
+                    ->get();
     }
 
     public function fetchMerchantConsentDetails($merchantId, $type)

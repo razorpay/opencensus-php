@@ -46,6 +46,7 @@ class Constants
 
     const VALID_LEGAL_DOC_L2 = [
         'L2_Terms and Conditions',
+        'L2_Terms of Service',
         'L2_Service Agreement',
         'L2_Privacy Policy',
         'L2_terms',
@@ -77,7 +78,8 @@ class Constants
                          self::WEBSITE . '_' . self::SHIPPING . ',' .
                          self::VALID_LEGAL_DOC_KEYS;
 
-    const VALID_LEGAL_DOC_KEYS = 'L2_Terms and Conditions' . ',' .
+    const VALID_LEGAL_DOC_KEYS = 'L2_Terms of Service' . ',' .
+                                 'L2_Terms and Conditions' . ',' .
                                  'L2_Service Agreement' . ',' .
                                  'L2_Privacy Policy' . ',' .
                                  'L2_terms' . ',' .
@@ -98,15 +100,23 @@ class Constants
                                  self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
+        'L2_Terms of Service'                      => [
+            self::DOC_NAME  => 'Terms of Service',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
         'L2_Terms and Conditions'                      => [
+            self::DOC_NAME  => 'Terms of Service',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
         'L2_Service Agreement'                         => [
+            self::DOC_NAME  => 'Service Agreement',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
         'L2_Privacy Policy'                            => [
+            self::DOC_NAME  => 'Privacy Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
@@ -187,5 +197,13 @@ class Constants
 
     const PARTNER_AUTH_TERMS   = 'PartnerAuth_Terms & Conditions';
 
-    const SERVICE_AGREEMENT    = 'Service Agreement';
+    const SERVICE_AGREEMENT = 'Service Agreement';
+
+    const TERMS_AND_CONDITIONS = 'Terms and Conditions';
+
+    const L2_MILESTONE  = 'L2';
+
+    const TERMS_OF_SERVICE = 'Terms of Service';
+
+    const DOC_NAME = 'document_name';
 }

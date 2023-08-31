@@ -258,12 +258,16 @@ class BvsLegalDocumentManagerClient extends BaseClient
 
         $emailDetails = $this->createEmailDetailsV2($legalDocument['email_details']);
 
+        $smsDetails = $this->createSmsDetailsV2($legalDocument['sms_details']);
+
         return new consentDocumentManagerV2\CreateConsentDocumentsRequest([
             'owner_details'     => $ownerDetails,
             'client_details'    => $clientDetails,
             'documents_detail'  => $documentDetail,
             'send_email'        => $legalDocument['send_email'],
-            'email_details'     => $emailDetails
+            'email_details'     => $emailDetails,
+            'send_sms'          => $legalDocument['send_sms'],
+            'sms_details'       => $smsDetails
         ]);
     }
 
@@ -362,21 +366,6 @@ class BvsLegalDocumentManagerClient extends BaseClient
             'address'   => $emailDetails['to']['address']
         ]);
 
-        $setEmailCc = new consentDocumentManagerV2\Email([
-            'name'      => $emailDetails['cc']['name'],
-            'address'   => $emailDetails['cc']['address']
-        ]);
-
-        $setEmailBcc = new consentDocumentManagerV2\Email([
-            'name'      => $emailDetails['bcc']['name'],
-            'address'   => $emailDetails['bcc']['address']
-        ]);
-
-        $setEmailReplyTo = new consentDocumentManagerV2\Email([
-            'name'      => $emailDetails['reply_to']['name'],
-            'address'   => $emailDetails['reply_to']['address']
-        ]);
-
         $params = $emailDetails['params'] ?? [];
 
         return new consentDocumentManagerV2\EmailDetails([
@@ -388,12 +377,23 @@ class BvsLegalDocumentManagerClient extends BaseClient
             'template_namespace'   => $emailDetails['template_namespace'],
             'from'                 => $setEmailFrom,
             'to'                   => [$setEmailTo],
-            'cc'                   => [$setEmailCc],
-            'bcc'                  => [$setEmailBcc],
-            'reply_to'             => [$setEmailReplyTo],
             'params'               => get_Protobuf_Struct($params),
             'subject'              => $emailDetails['subject']
         ]);
+    }
+
+    private function createSmsDetailsV2($smsDetails): consentDocumentManagerV2\SmsDetails
+    {
+        return new consentDocumentManagerV2\SmsDetails([
+                                                           'owner_id'           => $smsDetails['owner_id'],
+                                                           'owner_type'         => $smsDetails['owner_type'],
+                                                           'org_id'             => $smsDetails['org_id'],
+                                                           'template_name'      => $smsDetails['template_name'],
+                                                           'template_namespace' => $smsDetails['template_namespace'],
+                                                           'service'            => $smsDetails['service'],
+                                                           'sender'             => $smsDetails['sender'],
+                                                           'destination'        => $smsDetails['destination'],
+                                                           'language'           => $smsDetails['language']]);
     }
 
     public function getLegalDocumentsByOwnerId(array $requestBody): legalDocumentManagerV1\LegalDocumentsManagerResponse
