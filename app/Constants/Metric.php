@@ -90,6 +90,7 @@ class Metric
     const LABEL_RZP_ACCOUNT_ID_SOURCE           = 'rzp_account_id_source';
     const LABEL_RZP_TEAM                        = 'rzp_team';
     const LABEL_RZP_LATENCY_GROUP               = 'rzp_latency_group';
+    const LABEL_RZP_PAYMENT_METHOD              = 'rzp_payment_method';
     const LABEL_ASYNC_JOB_CONNECTION            = 'async_job_connection';
     const LABEL_ASYNC_JOB_QUEUE                 = 'async_job_queue';
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';

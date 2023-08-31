@@ -168,6 +168,12 @@ final class RequestContext
     protected $user2FaVerified;
 
     /**
+     * payment method, eg: upi, cards, nb
+     * @var string
+     */
+    protected $paymentMethod;
+
+    /**
      * To check if request context is already initialized or not.
      * @var null|string
      */
@@ -296,6 +302,11 @@ final class RequestContext
     public function getUserId()
     {
         return $this->userId;
+    }
+
+    public function getPaymentMethod()
+    {
+        return $this->paymentMethod;
     }
 
     public function isDashboard(): bool
@@ -705,6 +716,11 @@ final class RequestContext
         }
 
         return false;
+    }
+
+    public function setPaymentMethod($paymentMethod)
+    {
+        $this->paymentMethod = $paymentMethod;
     }
 
     /**

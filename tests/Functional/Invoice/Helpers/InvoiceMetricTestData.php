@@ -56,7 +56,8 @@ return [
         'rzp_account_id_source' =>  'none',
         'rzp_team'              =>  'unknown_unknown',
         'host'                  =>  'api.razorpay.com',
-        'rzp_latency_group'     =>  'low'
+        'rzp_latency_group'     =>  'low',
+        'rzp_payment_method'    => 'none',
     ],
 
     'testCreateInvoiceAndAssertMetricsSentExpectedMetricTags' => [
@@ -76,6 +77,7 @@ return [
         'rzp_account_id_source' =>  'none',
         'rzp_team'              =>  'unknown_unknown',
         'host'                  =>  'api.razorpay.com',
-        'rzp_latency_group'     =>  'low'
+        'rzp_latency_group'     =>  'low',
+        'rzp_payment_method'    => 'none',
     ],
 ];

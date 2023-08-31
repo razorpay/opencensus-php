@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Support\Arr;
+use RZP\Http\RequestContext;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Contracts\Container\Container;
@@ -321,6 +322,8 @@ class Handler extends ExceptionHandler
     protected function gatewayExceptionHandler(GatewayErrorException $exception)
     {
         $data = $exception->getData();
+
+        $this->setPaymentMethodInRequestContext($data);
 
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {
@@ -731,5 +734,25 @@ class Handler extends ExceptionHandler
 
             return false;
         }
+    }
+
+    /**
+     * Setting payment method in the RequestContext by extracting it from the exception in case of gateway error,
+     * this will allow the Throttle middleware to emit payment method as a dimension
+     *
+     * @param $data
+     * @return void
+     */
+    protected function setPaymentMethodInRequestContext($data)
+    {
+        if (empty($data['method']) === true)
+        {
+            return;
+        }
+
+        /** @var RequestContext $requestCtx */
+        $requestCtx = app('request.ctx');
+
+        $requestCtx->setPaymentMethod($data['method']);
     }
 }

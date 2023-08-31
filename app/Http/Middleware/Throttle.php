@@ -102,6 +102,7 @@ final class Throttle
             Metric::LABEL_RZP_TEAM              => RouteTeamMap::getTeamNamesForRoute($request->route()->getName()),
             Metric::LABEL_HOST                  => $request->getHttpHost() ?? Metric::LABEL_NONE_VALUE,
             Metric::LABEL_RZP_LATENCY_GROUP     => RouteLatencyGroup::getLatencyGroupForRoute($request->route()->getName()),
+            Metric::LABEL_RZP_PAYMENT_METHOD    => $requestCtx->getPaymentMethod() ?: Metric::LABEL_NONE_VALUE,
         ];
     }
 
