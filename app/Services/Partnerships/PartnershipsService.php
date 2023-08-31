@@ -485,6 +485,57 @@ class PartnershipsService extends Base\Service
         }
     }
 
+    public function createSubMSignupSource(string $partnerId, string $merchantId, string $product)
+    {
+        try
+        {
+            $signupSourcePayload = [
+                'partner_id'  => $partnerId,
+                'merchant_id' => $merchantId,
+                'product'     => $product,
+            ];
+            $jobPayload = [
+                'payload'     => json_encode($signupSourcePayload),
+                'event_name'  => 'CREATE_SIGN_UP_SOURCE',
+            ];
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+                try
+                {
+                    // Job will be dispatched only after the transaction commits.
+                    $this->trace->info(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHING,
+                        [
+                            'mode'     => $this->mode,
+                            'payload'  => $jobPayload,
+                        ]
+                    );
+                    $messageId = $this->pushRawJob($jobPayload, 'prts_common');
+                    $this->trace->info(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHED, [
+                        'payload'   => $jobPayload,
+                        'messageId' => $messageId
+                    ]);
+                    $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> true]);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->error(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHING_ERROR, [
+                        'error'   => $ex->getMessage(),
+                        'payload' => $jobPayload,
+                     ]);
+                    $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
+             }
+            }));
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHING_ERROR, [
+               'error'      => $ex->getMessage(),
+               'partner_id' => $partnerId,
+               'merchant_id'=> $merchantId,
+            ]);
+            $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
+        }
+    }
+
     private function isDualWriteExpEnabled(Entity $commission): bool
     {
         $properties = [

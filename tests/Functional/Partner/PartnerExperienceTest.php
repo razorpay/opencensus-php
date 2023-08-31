@@ -44,6 +44,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 
 class PartnerExperienceTest extends OAuthTestCase
@@ -3872,5 +3873,57 @@ class PartnerExperienceTest extends OAuthTestCase
                                         ]);
         $this->assertNull($accessMap);
 
+    }
+
+    // The test case checks if create signup source method is called for phantom source
+    public function testUserRegisterWithMobileThroughPhantomWithAppId()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+        $this->mockDcsFetchConfiguration();
+
+        $this->mockPartnershipsServiceTreatment([], [], 'createSubMSignupSource');
+
+        $testData = &$this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $this->createPartner('aggregator');
+
+        $testData['request']['content']['source_app_id'] = '8ckeirnw84ifke';
+
+        $testData['request']['content']['source'] = 'phantom';
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function mockDcsFetchConfiguration() {
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app['dcs_config_service']
+             ->method('fetchConfiguration')
+             ->willReturn([
+                 "disable_captcha" => true
+             ]);
     }
 }

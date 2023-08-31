@@ -588,8 +588,6 @@ return array(
 
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),
 
-    'submerchant_signup_referral_linking_exp_id' => env('SUBMERCHANT_SIGNUP_REFERRAL_LINKING_EXP_ID'),
-
     'route_partnership_v1_guards_exp_id' => env('ROUTE_PARTNERSHIP_V1_GUARD_EXP_ID'),
 
     'skip_avs_on_3ds_experiment_id' => env('SKIP_AVS_CHECK_ON_3DS_EXPERIMENT_ID'),

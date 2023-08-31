@@ -75,6 +75,8 @@ final class Metric
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';
 
     const PRTS_COMMISSION_INVOICE_PUSH                = 'prts_commission_invoice_push';
+    const PRTS_CREATE_SIGNUP_SOURCE_PUSH              = 'prts_create_signup_source_push';
+
     // PRTS service metrics and dimensions
     const PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH = 'prts_commissions_shadow_phase_event_dispatch';
 

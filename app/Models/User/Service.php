@@ -34,6 +34,7 @@ use RZP\Models\User\Constants;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Partner;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -41,6 +42,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -642,12 +644,14 @@ class Service extends Base\Service
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::checkIfPhantomOnBoardingFlow($input);
 
         $partnerReferralCode = $input['partner_referral_code'] ??'';
+        $sourceAppId         = $input['source_app_id'] ?? '';
 
         unset($input['partner_referral_code']);
+        unset($input['source_app_id']);
 
         $verifySuccess = $this->core->verifySignupOtp($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode) {
+        $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId) {
 
             if ($verifySuccess === true) {
 
@@ -802,6 +806,7 @@ class Service extends Base\Service
                 $signupMethod = Constants::OTP;
                 $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
                 $this->processReferralCode($merchantData['id'], $partnerReferralCode);
+                $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId);
                 $response = $data;
             }
         });
@@ -825,18 +830,10 @@ class Service extends Base\Service
             {
                 return;
             }
+            // dispatch create_signup_source
+            $product = $this->auth->getRequestOriginProduct();
+            $this->app->partnerships->createSubMSignupSource($referral->getMerchantId(), $merchantId, $product);
 
-            $properties = [
-                'id'            => $referral->getMerchantId(),
-                'experiment_id' => $this->app['config']->get('app.submerchant_signup_referral_linking_exp_id'),
-            ];
-
-            $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isExpEnabled == false)
-            {
-                return;
-            }
             $detailService = (new Merchant\Detail\Service());
 
             $referralInput = $detailService->getReferralInput($referral);
@@ -860,6 +857,32 @@ class Service extends Base\Service
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL);
         }
     }
+
+    private function createSignupSourceForPhantom(bool $isPhantomOnboardingFlow, string $sourceAppId)
+    {
+        try
+        {
+            if ($isPhantomOnboardingFlow && empty($sourceAppId) == false)
+            {
+                // dispatch create_signup_source
+                $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
+                $product     = $this->auth->getRequestOriginProduct();
+
+                $this->app->partnerships->createSubMSignupSource($merchantApp[0][Merchant\Constants::MERCHANT_ID], $merchantData['id'], $product);
+            }
+        } catch(\Exception $e)
+        {
+            $this->trace->traceException($e,
+                                         Logger::ERROR,
+                                         TraceCode::CREATE_SIGNUP_SOURCE_FAILURE,
+                                         [
+                                             'sourceAppId'  => $sourceAppId,
+                                             'message'      => 'Error occurred while creating signup source'
+                                         ]);
+            $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
+        }
+    }
+
 
     protected function pushSegmentSignupEvent($userId, $customProperties)
     {
