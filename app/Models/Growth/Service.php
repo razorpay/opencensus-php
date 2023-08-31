@@ -108,6 +108,8 @@ class Service extends Base\Service
             case Constants::PLAN_UPDATED:
                 $mail = new PricingBundle\PlanUpdated($data);
                 break;
+            default:
+                $mail = new PricingBundle\Email($data, $input);
         }
         Mail::send($mail);
 

@@ -20,10 +20,13 @@ class Constants
     const IS_REVERSAL = 'is_reversal';
     const CAMPAIGN_NAME = "campaign_name";
     const EXPIRED_AT = "expired_at";
+    const TEMPLATE_NAME = "template_name";
+    const EMAIL_SUBJECT = "subject";
 
     // pricing bundle email types
     const PAYMENT_SUCCESS = 'payment_success';
     const PAYMENT_FAILURE = 'payment_failure';
     const WELCOME = 'welcome';
     const PLAN_UPDATED = 'plan_updated';
+    const DEFAULT_TYPE = 'default';
 }
