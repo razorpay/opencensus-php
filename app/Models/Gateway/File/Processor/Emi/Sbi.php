@@ -46,6 +46,12 @@ class Sbi extends Base
     // 24 hours = 24 * 60 * 60 = 86400
     const REDIS_KEY_TTL = 86400;
 
+    // Starting from this date (29/08/2023), SKU ID will be generated using SKU_PREFIX_V2(GG0003).
+    // Hence will be sending the same if creation date of the terminal is after this
+    const SKU_V2_START_TIMESTAMP =  1693247400; // 29/08/2023 00:00:00
+
+    const SKU_PREFIX_V1 = 'GG0001';
+    const SKU_PREFIX_V2 = 'GG0003';
     // redis key format: emi:sbi_emi_ref_no_<payment_id>
     const REDIS_KEY_FMT = 'emi:sbi_emi_ref_no_%s';
 
@@ -277,11 +283,11 @@ class Sbi extends Base
 
                     $rate = $emiPlan->getRate() / 100;
 
-                $tenure = $emiPlan->getDuration();
+                    $tenure = $emiPlan->getDuration();
 
-                $processingFees = self::PROCESSING_FEES[$tenure];
+                    $processingFees = self::PROCESSING_FEES[$tenure];
 
-                $businessName = $this->getBusinessName($merchantDetail);
+                    $businessName = $this->getBusinessName($merchantDetail);
 
                     $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
@@ -290,6 +296,14 @@ class Sbi extends Base
                     if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
                     {
                         $card = $emiPayment->token->card;
+                    }
+
+                    $skuPrefix = self::SKU_PREFIX_V1;
+
+                    if ($this->isTerminalWhitelisted($terminal[Terminal\Entity::ID]) or
+                        $this->isTerminalWithV2Sku($terminal))
+                    {
+                        $skuPrefix = self::SKU_PREFIX_V2;
                     }
 
                 $body[] =
@@ -312,7 +326,7 @@ class Sbi extends Base
                     '0' .
                     self::PROCESSING_FEES_FLAG[$tenure] .
                     $this->numpad($processingFees, 7) .
-                    $this->strpad('GG0001' . substr($mid, -4), 20) .
+                    $this->strpad($skuPrefix . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
                     $this->numpad($emiAmount, 17) .
                     $this->strpad('', 108);
@@ -359,6 +373,46 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function isTerminalWithV2Sku($terminal): bool
+    {
+        return $terminal[Terminal\Entity::CREATED_AT] > self::SKU_V2_START_TIMESTAMP;
+    }
+
+    protected function isTerminalWhitelisted($terminalId): bool {
+
+        try {
+            $properties = [
+                "id" => $terminalId,
+                "experiment_id" => $this->app['config']->get('app.sbi_sku_v2_migration_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'tid' => $terminalId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variables = $response['response']['variant']['variables'];
+
+            foreach ($variables as $variable) {
+
+                if ($variable['key'] == "result" && $variable['value'] == "on")
+                {
+                    return true;
+                }
+
+            }
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SBI_SKU_V2_MIGRATION_SPLITZ_ERROR
+            );
+        }
+        return false;
     }
 
     protected function getBusinessName($merchantDetails)

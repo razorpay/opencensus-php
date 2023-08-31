@@ -697,4 +697,6 @@ return array(
     'dispute_merchant_emails_initiate_experiment_id' => env('DISPUTE_MERCHANT_EMAILS_INITIATE_EXPERIMENT_ID'),
 
     'transaction_isolation_for_webhooks_experiment_id' => env('TRANSACTION_ISOLATION_FOR_WEBHOOKS_EXP_ID'),
+
+    'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
 );
