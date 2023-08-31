@@ -140,12 +140,15 @@ class Service extends Base\Service
 
         }
 
-        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        if (isset($emiOptions[IFSC::SBIN]) === true or isset($emiPlansFormatted[IFSC::SBIN]) === true)
         {
-            // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
-            unset($emiOptions[IFSC::SBIN]);
+            if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+            {
+                // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
+                unset($emiOptions[IFSC::SBIN]);
 
-            unset($emiPlansFormatted[IFSC::SBIN]);
+                unset($emiPlansFormatted[IFSC::SBIN]);
+            }    
         }
 
         return [
