@@ -166,7 +166,7 @@ class Core extends Base\Core
 
         if ($calculator->shouldCreateCommission() === false)
         {
-            return [];
+            return [[], []];
         }
 
         $calculator->calculateAndSaveCommission();
