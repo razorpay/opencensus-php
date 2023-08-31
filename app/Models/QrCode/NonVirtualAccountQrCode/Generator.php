@@ -254,12 +254,21 @@ class Generator extends QrCode\Generator
                     }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
-                throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
-                                              ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
-                                              null,
-                                              null);
+                $this->trace->traceException($ex,
+                                             Trace::ERROR,
+                                             TraceCode::ICICI_QR_API_REF_ID_GENERATION_FAILED,
+                                             [
+                                                 'qr_code' => $qrCode->getId(),
+                                             ]
+                );
+
+                throw new Exception\ServerErrorException('QrCode creation failed due to error at bank or wallet gateway',
+                                                         ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
+                                                         null,
+                                                         $ex,
+                );
             }
         }
 
