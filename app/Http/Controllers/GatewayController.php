@@ -2110,10 +2110,12 @@ class GatewayController extends Controller
 
     public function callbackPayerUPIAxisOlive()
     {
-        $input = Request::all();
+        $input   = Request::all();
+        $content = Request::getContent();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_PAYER_CALLBACK, [
-            'input'    => $input,
+            'input'   => $input,
+            'content' => $content
         ]);
 
         return [
