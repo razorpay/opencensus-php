@@ -311,19 +311,6 @@ class Plan extends PublicCollection
         return false;
     }
 
-    public function hasWalletReceiver()
-    {
-        foreach ($this->items as $rule)
-        {
-            if ($rule->getReceiverType() === PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_WALLET)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function hasVpaReceiver()
     {
         foreach ($this->items as $rule)

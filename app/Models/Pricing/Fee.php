@@ -46,7 +46,6 @@ class Fee extends Base\Core
     const DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID = 'F3HF3mQrxjvSnm';
     const DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID = 'L4teuQy3rngjPm';
     const DEFAULT_CC_ON_UPI_PLAN_ID            = 'Lwxtwg54MYaNTw';
-    const DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID   = 'Lwxtwg54MYaNTw';
 
     public function __construct()
     {
@@ -358,13 +357,6 @@ class Fee extends Base\Core
                 $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CC_ON_UPI_PLAN_ID);
 
                 $pricingPlan = $pricingPlan->merge($ccOnUPIPricing);
-        }
-
-        if ($pricingPlan->hasWalletReceiver() === false)
-        {
-            $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
-
-            $pricingPlan = $pricingPlan->merge($ppiWalletOnUPIPricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)

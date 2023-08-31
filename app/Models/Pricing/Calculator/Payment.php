@@ -560,15 +560,6 @@ class Payment extends Base
             }
         }
 
-        if ($payment->isPPIOnUpi()=== true)
-        {
-            if ($payment->checkIfPPIOnUPIPricingSplitzExperimentEnabled() === true)
-            {
-                $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_WALLET;
-            }
-        }
-
-
         $filters1 = [
             [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
         ];
