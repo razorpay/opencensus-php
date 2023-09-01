@@ -1,16 +1,19 @@
-import RefundsListContainer from 'merchant/views/Transactions/Refunds/List';
-import { render, fireEvent, waitFor, screen } from 'test-utils';
 import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
-import { fetchRefunds } from 'merchant/reducers/collection';
+
 import { analyticsTrack } from 'common/utils/analytics';
-import { MockListPayload } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 import * as RzpUtils from 'common/utils/rzp-utils';
+import { fetchRefunds } from 'merchant/reducers/collection';
+import { storeWithInitialState } from 'merchant/store';
+import RefundsListContainer from 'merchant/views/Transactions/Refunds/List';
+import { MockListPayload } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
+import { render, fireEvent, waitFor, screen } from 'test-utils';
 
 jest.mock('merchant/reducers/collection', () => ({
   ...jest.requireActual('merchant/reducers/collection'),
   fetchRefunds: jest.fn(),
 }));
+
+jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
 
 fetchRefunds.mockReturnValue({
   type: 'REFUNDS_FETCH',
@@ -114,6 +117,8 @@ describe('Refunds - List Component', () => {
             failureReason: mockError,
             location: 'refunds',
             count: '25',
+            from: '',
+            to: '',
           },
         });
       });

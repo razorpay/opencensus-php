@@ -1,14 +1,17 @@
-import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
-import { render, screen, fireEvent } from 'test-utils';
 import { Provider } from 'react-redux';
+
 import { storeWithInitialState } from 'merchant/store';
 import { refundFilterInitState } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
+import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
+import { render, screen, fireEvent } from 'test-utils';
 
 const mockTrack = jest.fn();
 
 jest.mock('merchant/views/Transactions/AnalyticsTrack', () => ({
   handleChangeTrack: (_type) => (data) => mockTrack(data),
 }));
+
+jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
 
 const onSubmitMock = jest.fn();
 const onSearchAnalyticsMock = jest.fn();
@@ -39,7 +42,7 @@ describe('Refunds - RefundListFilter Component', () => {
   test('should render filter fields labels', () => {
     render(<App />);
     // asserting for field labels to be present
-    ['Refund Id', 'Payment Id', 'Status', 'Notes', 'Count'].forEach((fieldLabel) => {
+    ['Refund Id', 'Duration', 'Payment Id', 'Status', 'Notes', 'Count'].forEach((fieldLabel) => {
       expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
   });

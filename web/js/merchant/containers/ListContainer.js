@@ -1,9 +1,9 @@
 // core
 import { Component } from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 
 // utils
-import moment from 'moment';
 import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
 
@@ -84,9 +84,12 @@ export default class ListContainer extends Component {
     params = this.removeBlacklistedParams(params);
 
     // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
-    const isPathIncluded = ['/payments', '/payments/b2b-exports', '/payments/invoices'].includes(
-      this.props.location.pathname,
-    );
+    const isPathIncluded = [
+      '/payments',
+      '/payments/b2b-exports',
+      '/payments/invoices',
+      '/refunds',
+    ].includes(this.props.location.pathname);
     if (isPathIncluded && !params?.from && !params?.to) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
@@ -134,7 +137,7 @@ export default class ListContainer extends Component {
       // @ts-nocheck
       this.fetchList(params);
     } else if (this.props.fetchAll || this.fetchEntityList) {
-      const adjustedParams = Object.assign({}, params);
+      const adjustedParams = { ...params };
       if (adjustedParams?.txn_receiver_type) {
         adjustedParams.notes = adjustedParams.txn_receiver_type;
       }
