@@ -222,6 +222,9 @@ class Constants
 
     const CorporateBankingEnabled = 'corporate_banking_enabled';
 
+    //debit card tpv feature
+    const DebitCardValidation = 'debit_card_validation';
+
     // router service dcs features
     const SrSensitive = 'sr_sensitive';
     const SrSensitiveBucket1 = 'sr_sensitive_bucket_1';
@@ -439,6 +442,7 @@ class Constants
         self::OneCCEnablePluginDiscount => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCShopifyDraftOrder => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::DebitCardValidation   => 'rzp/pg/merchant/cards/tpv/AccountValidation',
         self::SrSensitive => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket1 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket2 => 'rzp/pg/merchant/router/CostBasedRouting',
@@ -666,6 +670,7 @@ class Constants
         APIFeaturesConstants::ONE_CC_ENABLE_PLUGIN_DISCOUNT                 => self::OneCCEnablePluginDiscount,
         APIFeaturesConstants::ONE_CC_SHOPIFY_DRAFT_ORDER                    => self::OneCCShopifyDraftOrder,
         APIFeaturesConstants::ONE_CC_ENABLE_NECTOR_COINS                    => self::OneCcEnableNectorCoins,
+        APIFeaturesConstants::DEBIT_CARD_VALIDATION                         => self::DebitCardValidation,
         APIFeaturesConstants::SR_SENSITIVE                                  => self::SrSensitive,
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_1                         => self::SrSensitiveBucket1,
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_2                         => self::SrSensitiveBucket2,
@@ -709,6 +714,7 @@ class Constants
         self::PersonalisationV3Disabled => 'direct',
         self::DirectDebitViaTokenBatch => 'direct',
         self::EnableSettlementByCurrency => 'direct',
+        self::DebitCardValidation   => 'direct',
         self::RemoveRazorpayBranding => 'direct',
     ];
 

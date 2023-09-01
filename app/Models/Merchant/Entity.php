@@ -3979,6 +3979,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE_BILLDESK_SIHUB);
     }
 
+    public function isDebitCardValidationEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DEBIT_CARD_VALIDATION);
+    }
+
     public function isFieldHasValue($field): bool
     {
         if (!empty($field))

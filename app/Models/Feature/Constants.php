@@ -1893,6 +1893,11 @@ class Constants
     /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
     const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
 
+    /**
+     * Feature flag to enable merchants for debit card third party validation
+     */
+    const DEBIT_CARD_VALIDATION = 'debit_card_validation';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2623,6 +2628,7 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
         self::ONE_CC_ENABLE_NECTOR_COINS       => true,
+        self::DEBIT_CARD_VALIDATION            => true,
         self::REMOVE_RAZORPAY_BRANDING         => true,
     ];
 
