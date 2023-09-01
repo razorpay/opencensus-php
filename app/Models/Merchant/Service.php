@@ -1896,8 +1896,6 @@ class Service extends Base\Service
 
             $response['country_code'] = $this->merchant->getCountry();
 
-            $response['currency_code'] = $this->merchant->getCurrency();
-
             $response['time_zone'] = $this->merchant->getTimeZone();
 
             if ($supportDetails !== null)
@@ -1911,6 +1909,8 @@ class Service extends Base\Service
         }
 
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);
+
+        $response['currency_code'] = $this->merchant->getCurrency();
 
         return $response;
     }
@@ -8043,7 +8043,7 @@ class Service extends Base\Service
                 if ($merchant->getHasKeyAccess() === false)
                 {
                     $merchant->setHasKeyAccess(true);
-                    
+
                     $this->repo->saveOrFail($merchant);
                 }
             }
