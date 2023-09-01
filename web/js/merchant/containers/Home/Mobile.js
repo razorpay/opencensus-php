@@ -49,6 +49,9 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
+import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import DateRangeTooltip from './DateRangeTooltip';
+
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
@@ -407,7 +410,10 @@ class AnalyticsMobile extends Component {
           {...(this.state.enableSticky ? { stickWhen: 0 } : { disableSticky: true })}
         >
           <Header className="clearfix" title="" showMode={false}>
-            <div id="analytics-daterange-picker" className="date-range-container">
+            <div
+              id="analytics-daterange-picker"
+              className="date-range-container date-range-tooltip-container"
+            >
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={onDatesChange}
@@ -426,7 +432,9 @@ class AnalyticsMobile extends Component {
                       : 57
                     : 0
                 }
+                isOutsideRange={IsOutsideDateRangeForHPAnalytics}
               />
+              <DateRangeTooltip />
             </div>
           </Header>
         </Sticky>

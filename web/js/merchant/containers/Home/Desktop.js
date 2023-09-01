@@ -95,6 +95,8 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import lazy from 'merchant/routes/LazyLoader';
+import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import DateRangeTooltip from './DateRangeTooltip';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -867,13 +869,18 @@ class AnalyticsDesktop extends Component {
 
         {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
         <Header className="clearfix" title="" showMode={false}>
-          <div id="analytics-daterange-picker" className="pull-left date-range-container">
+          <div
+            id="analytics-daterange-picker"
+            className="pull-left date-range-container date-range-tooltip-container"
+          >
             <DateRangePicker
               presets={dateRangePresets}
               onDatesChange={onDatesChange}
               defaultPreset={defaultPreset}
               onSelectPreset={trackPresetChange}
+              isOutsideRange={IsOutsideDateRangeForHPAnalytics}
             />
+            <DateRangeTooltip />
           </div>
 
           <ShowWhen
