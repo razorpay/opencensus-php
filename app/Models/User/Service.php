@@ -806,7 +806,7 @@ class Service extends Base\Service
                 $signupMethod = Constants::OTP;
                 $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
                 $this->processReferralCode($merchantData['id'], $partnerReferralCode);
-                $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId);
+                $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
                 $response = $data;
             }
         });
@@ -858,7 +858,7 @@ class Service extends Base\Service
         }
     }
 
-    private function createSignupSourceForPhantom(bool $isPhantomOnboardingFlow, string $sourceAppId)
+    private function createSignupSourceForPhantom(bool $isPhantomOnboardingFlow, string $sourceAppId, string $merchantId)
     {
         try
         {
@@ -868,7 +868,7 @@ class Service extends Base\Service
                 $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
                 $product     = $this->auth->getRequestOriginProduct();
 
-                $this->app->partnerships->createSubMSignupSource($merchantApp[0][Merchant\Constants::MERCHANT_ID], $merchantData['id'], $product);
+                $this->app->partnerships->createSubMSignupSource($merchantApp[0][Merchant\Constants::MERCHANT_ID], $merchantId, $product);
             }
         } catch(\Exception $e)
         {
@@ -879,7 +879,7 @@ class Service extends Base\Service
                                              'sourceAppId'  => $sourceAppId,
                                              'message'      => 'Error occurred while creating signup source'
                                          ]);
-            $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
+            $this->trace->count(Partner\Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
         }
     }
 
