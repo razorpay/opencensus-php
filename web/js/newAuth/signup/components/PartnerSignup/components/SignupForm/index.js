@@ -49,7 +49,12 @@ const SignupForm = ({
       <StyledFormContentWrap>
         {showHeader && (
           <StyledProgressBarContainer>
-            <StyledProgressBarSkill $progress={STEP_TO_PROGRESS_WIDTH[step]} />
+            {step !== WELCOME_BACK && (
+              <StyledProgressBarSkill
+                className="signup-progress"
+                $progress={STEP_TO_PROGRESS_WIDTH[step]}
+              />
+            )}
           </StyledProgressBarContainer>
         )}
         <StyledFormContent>

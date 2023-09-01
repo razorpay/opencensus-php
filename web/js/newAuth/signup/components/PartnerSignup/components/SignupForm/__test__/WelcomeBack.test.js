@@ -43,4 +43,12 @@ describe('WelcomeBack', () => {
       expect(setStepFunction(STEPS.WELCOME_BACK)).toBe(STEPS.MOBILE_NUMBER);
     });
   });
+
+  test('should not show progress bar', () => {
+    const setStep = jest.fn();
+    const { container } = renderApp({ setStep });
+
+    const progressBar = container.querySelector('signup-progress');
+    expect(progressBar).not.toBeInTheDocument();
+  });
 });
