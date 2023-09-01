@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Website;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
+use RZP\Trace\TraceCode;
 
 class ViewSerializer extends Base\Core
 {
@@ -143,6 +144,46 @@ class ViewSerializer extends Base\Core
         return optional($key)->getPublicKey($this->mode);
     }
 
+
+    protected function isBrandColorHexEnabled(string $mid): bool
+    {
+        $experimentName = 'pp_brand_color_hex';
+
+        $isPpBrandColorHexEnabled = $this->getSplitzResponse($mid, $experimentName);
+
+        return $isPpBrandColorHexEnabled === 'on';
+    }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName): string
+    {
+        $response = [];
+
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return array_get($response, 'response.variant.variables.0.value', '');
+    }
+
     protected function serializeMerchantForHosted(): array
     {
         $mode = $this->mode ?? Mode::LIVE;
@@ -170,7 +211,9 @@ class ViewSerializer extends Base\Core
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
-            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
+            'brand_color'      => $this->isBrandColorHexEnabled($this->merchant->getId())
+                                    ? $this->merchant->getBrandColorOrOrgPreference()
+                                    : get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => 'control',
             'optimised_web_vitals'=> $lcpOptimised,

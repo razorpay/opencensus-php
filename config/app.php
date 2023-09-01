@@ -700,4 +700,6 @@ return array(
     'transaction_isolation_for_webhooks_experiment_id' => env('TRANSACTION_ISOLATION_FOR_WEBHOOKS_EXP_ID'),
 
     'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
+
+    'pp_brand_color_hex' => env('PP_BRAND_COLOR_HEX'),
 );
