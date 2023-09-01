@@ -15,12 +15,15 @@ const sourceType = {
 
 const totalCommission = {
   title: 'Total Earning',
-  value: (item) => (
-    <Amount
-      currency={item.currency}
-      value={item.source_type === 'payment' ? item.credit : item.debit}
-      testId={`amount-${item.id}`}
-    />
+  value: ({ currency, source_type, credit, debit, id }) => (
+    <>
+      {source_type === 'payment' ? null : '- '}
+      <Amount
+        currency={currency}
+        value={source_type === 'payment' ? credit : debit}
+        testId={`amount-${id}`}
+      />
+    </>
   ),
 };
 

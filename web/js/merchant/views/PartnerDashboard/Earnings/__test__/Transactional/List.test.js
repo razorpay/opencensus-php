@@ -1,10 +1,11 @@
 import React from 'react';
+
 import 'react-dates/initialize';
 import { render, screen, waitFor } from 'common/services/test/test-utils';
-import EarningsTransactionalList from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
-import { mockCommisionsListOnceForCurlec } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/once-handlers';
-import { REQUEST_EPOCH_APRIL_2023 } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/fixtures';
 import { getInitialUserOrgState } from 'common/tests/utils';
+import { REQUEST_EPOCH_APRIL_2023 } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/fixtures';
+import { mockCommisionsListOnceForCurlec } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/once-handlers';
+import EarningsTransactionalList from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
 
 const defaultProps = {
   location: {
@@ -31,6 +32,10 @@ describe('test suite for Earnings List', () => {
       expect(screen.getByTestId('amount-comm_G8vny1PSg5hY5Q')).toHaveTextContent('₹ 0.01');
       expect(screen.getByText('Dec 4, 2020')).toBeInTheDocument();
     });
+    // Check for negative refund amount
+    expect(screen.getByTestId('amount-comm_MWDbnTWLqZrpMV').closest('td')).toHaveTextContent(
+      '- ₹ 5.90₹ - ₹ (INR)',
+    );
   });
 
   test('should render transactional earnings for curlec', async () => {
