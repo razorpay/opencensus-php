@@ -14,10 +14,12 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import ModalHeader from './components/ModalCommon/ModalHeader';
 import SelectProduct from './components/SelectProduct';
 import { INVITE_MERCHANT_STEPS } from './constants';
+import { ConditionalModalFooter } from './components/ModalCommon/ModalFooter';
 
 const InviteMerchantTabs = lazy(
   () => import(/* webpackChunkName: "InviteMerchantTabs" */ './components/InviteMerchantTabs'),
 );
+
 const { SELECT_PRODUCT, INVITE_TABS } = INVITE_MERCHANT_STEPS;
 
 const getModalHeaderText = (
@@ -65,6 +67,7 @@ const InviteMerchantModal = ({
   const [selectedProductType, setProductType] = useState<string | null>(null);
   const [selectedStep, setCurrentStep] = useState<string | null>(null);
   const [shouldShowHeaderAndTabs, setShowHeaderAndTabs] = useState(true);
+  const [shouldShowFooter, setShouldShowFooter] = useState(true);
 
   // Note: we need the defaults outside useState because the component may not remount.
   const productType = selectedProductType || initialProductType;
@@ -92,6 +95,7 @@ const InviteMerchantModal = ({
       {/* // Note: zIndex for sidenav in the dashboard is 1111 */}
       <Modal zIndex={1112} isOpen={isOpen} onDismiss={onDismiss} size="small">
         <ModalBody>
+          {/* Note: Current ModalHeader from blade doesn't support hiding the divider */}
           <ModalHeader
             modalTitle={shouldShowHeaderAndTabs ? modalTitle : ''}
             onDismiss={onDismiss}
@@ -115,10 +119,17 @@ const InviteMerchantModal = ({
                 onAddSuccess={onAddSuccess}
                 setShowHeaderAndTabs={setShowHeaderAndTabs}
                 onInviteTabsBackClick={onInviteTabsBackClick}
+                setShouldShowFooter={setShouldShowFooter}
               />
             </SuspenseWithLoader>
           ) : null}
         </ModalBody>
+        <ConditionalModalFooter
+          shouldShowFooter={shouldShowFooter}
+          // Note: these two props are needed to bypass Blade Modal's children validation check
+          mdxType="modal-footer"
+          originalType={{ componentId: 'modal-footer' }}
+        />
       </Modal>
     </ErrorBoundary>
   );

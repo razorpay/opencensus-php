@@ -10,6 +10,7 @@ const defaultProps = {
   productType: PRODUCT_TYPE.PG,
   shouldShowHeaderAndTabs: true,
   setShowHeaderAndTabs: jest.fn(),
+  setShouldShowFooter: jest.fn(),
   onInviteTabsBackClick: jest.fn(),
   onDismiss: jest.fn(),
 };

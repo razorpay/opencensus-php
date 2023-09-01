@@ -19,6 +19,7 @@ interface PublicLinksTabProps {
 }
 const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps): JSX.Element => {
   const inviteFlow = INVITE_TAB_TYPES.PUBLIC_LINK;
+  const [shouldShowAlert, setShouldShowAlert] = useState(false);
 
   // Formik hooks and Validation
   const { data: referralData, isLoading } = useReferralLinks({ showNotification });
@@ -26,7 +27,8 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
 
-  const [shouldShowAlert, setShouldShowAlert] = useState(false);
+  let initialSelectedValue = hasSelectedKycAccess === null ? '' : 'yes';
+  if (hasSelectedKycAccess === false) initialSelectedValue = 'no';
 
   if (isLoading)
     return (
@@ -67,9 +69,7 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
       >
         {easyAccessUrl ? (
           <ClientAssistOptions
-            initialValue={
-              hasSelectedKycAccess === null || hasSelectedKycAccess === true ? 'yes' : 'no'
-            }
+            initialValue={initialSelectedValue}
             inviteFlow={inviteFlow}
             productType={productType}
             referralUrl={referralUrl}

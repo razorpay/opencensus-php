@@ -46,7 +46,9 @@ describe('PublicLinksTab', () => {
     });
     expect(screen.getByText('New update')).toBeInTheDocument();
     expect(screen.queryByText(referralData[PRODUCT_TYPE.PG].url)).not.toBeInTheDocument();
-    expect(screen.getByText(referralData[PRODUCT_TYPE.PG].easy_kyc_access_url)).toBeInTheDocument();
+    expect(
+      screen.queryByText(referralData[PRODUCT_TYPE.PG].easy_kyc_access_url),
+    ).not.toBeInTheDocument();
     await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
     expect(screen.getByText(referralData[PRODUCT_TYPE.PG].easy_kyc_access_url)).toBeInTheDocument();
     await userEvent.click(screen.getByText('No, my client will perform KYC on their own'));

@@ -374,37 +374,6 @@ class ProductSubMerchantsList extends ListContainer {
     );
   };
 
-  clickableId = (isPurePlatform) => ({
-    ...id,
-    value: (item) => (
-      <Link
-        to={`/partners/submerchants/${item.id}`}
-        onClick={() =>
-          this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
-            submerchantId: item.id,
-          })
-        }
-      >
-        {item.id}
-      </Link>
-    ),
-    ...(isPurePlatform && {
-      value: (item) => (
-        <Link
-          to={`/partners/submerchants/${item.id}/${item.application.id}`}
-          onClick={() =>
-            this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
-              submerchantId: item.id,
-              applicationId: item.application.id,
-            })
-          }
-        >
-          {item.id}
-        </Link>
-      ),
-    }),
-  });
-
   name = (isPurePlatform) => ({
     ...submerchantColumn,
     value: (item) => (
@@ -738,9 +707,9 @@ class ProductSubMerchantsList extends ListContainer {
     }
 
     const getResellerInviteFlowColumnsForRZP = () => [
-      this.clickableId(user.isPartner('pure_platform')),
-      mobileAndEmail,
       this.name(user.isPartner('pure_platform')),
+      id,
+      mobileAndEmail,
       ...appIdColumn,
       activationStatus,
       this.actions,

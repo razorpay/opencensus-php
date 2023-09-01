@@ -14,10 +14,10 @@ import SingleAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/compo
 import { trackInviteFlowModalLoaded } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 import { INVITE_TAB_TYPES } from './constants';
 import { StyledMerchantTabs } from './styled';
-import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 const { SINGLE_INVITE, BULK_UPLOAD, PUBLIC_LINK } = INVITE_TAB_TYPES;
 
@@ -25,6 +25,7 @@ type InviteMerchantTabsProps = {
   user: User;
   shouldShowHeaderAndTabs: boolean;
   setShowHeaderAndTabs: (args: boolean) => void;
+  setShouldShowFooter: (args: boolean) => void;
   onInviteTabsBackClick: () => void;
   onDismiss: () => void;
   onAddSuccess?: () => void;
@@ -35,6 +36,7 @@ const InviteMerchantTabs = ({
   productType,
   shouldShowHeaderAndTabs,
   setShowHeaderAndTabs,
+  setShouldShowFooter,
   onInviteTabsBackClick,
   onDismiss,
   onAddSuccess,
@@ -43,6 +45,7 @@ const InviteMerchantTabs = ({
   const { isEasierAccessToSubmerchantKycEnabled } = usePartnerDashboardExperiments();
   useEffect(() => {
     setShowHeaderAndTabs(true);
+    setShouldShowFooter(activeTabId !== PUBLIC_LINK);
   }, [activeTabId]);
 
   useEffect(() => {
