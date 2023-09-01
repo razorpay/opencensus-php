@@ -964,10 +964,10 @@ class Processor extends Base\Core
         // charge from the Merchant
 
         $amount = ($bankingPayoutsFees - $bankingPayoutsTax) + ($bankingFAVsFees - $bankingFAVsTax);
+        $tax = $bankingPayoutsTax + $bankingFAVsTax;
 
         return [
-            // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
-            Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
+            Entity::TAX     => $tax, // Updating to remove the mismatch in tax invoice and fee deducted
             Entity::AMOUNT  => $amount
         ];
     }
@@ -998,10 +998,10 @@ class Processor extends Base\Core
         // charge from the Merchant
 
         $amount = ($reversalFees - $reversalTax) + ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
+        $tax = $reversalTax + $bankingFailedPayoutsTax;
 
         return [
-            // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
-            Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
+            Entity::TAX     => $tax, // Updating to remove the mismatch in tax invoice and fee deducted
             Entity::AMOUNT  => $amount
         ];
     }
