@@ -182,7 +182,6 @@ final class MerchantExclusionFlows
         'RZP_Jobs_EsSync' => true,
         'rzp_jobs_gstinvalidation' => true,
         'RZP_Jobs_MerchantFirsDocuments' => true,
-        'rzp_jobs_merchantfirsdocumentszip' => true,
         'RZP_Jobs_MerchantHoldFundsSync' => true,
         'RZP_Jobs_ProductConfig_AutoUpdateMerchantProducts' => true,
         'rzp_jobs_segmentrequestjob' => true,
