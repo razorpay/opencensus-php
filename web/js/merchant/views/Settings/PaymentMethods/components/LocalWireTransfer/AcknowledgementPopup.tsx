@@ -1,35 +1,59 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import React, { useMemo, useState } from 'react';
+import {
+  Button,
+  Box,
+  List,
+  ListItem,
+  Text,
+  Link,
+  ExternalLinkIcon,
+} from '@razorpay/blade/components';
+import { connect, ConnectedProps } from 'react-redux';
+import { bindActionCreators, Dispatch } from 'redux';
 
-//redux actions
-import { closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { activateAccount } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
-
-//analytics
+import Input from 'common/new-ui/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import {
+  activateAccountError,
+  activateAccountPending,
+  activateAccountSuccess,
+} from 'merchant/reducers/b2bExports/actions';
 import {
   trackActivateClick,
   trackAccountActivated,
   trackAccountError,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
+import {
+  VA_USD,
+  REQUEST_ACCOUNT_TYPE,
+  ACTIVATION_POPUP_CONTENT,
+  B2B_EXPORTS_TNC_LINK,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import { activateAccount } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
+import { AcknowledgementPopupProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-//utils
-import { PopupPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
-import { VA_USD } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+const mapDispatchToProps = (dispatch: Dispatch) =>
+  bindActionCreators(
+    {
+      showNotification,
+      closeModal,
+      activateAccountError,
+      activateAccountPending,
+      activateAccountSuccess,
+    },
+    dispatch,
+  );
 
-//components
-import ModalHeader from 'common/ui/ModalHeader';
-import Input from 'common/new-ui/Input';
-import { Button } from '@razorpay/blade/components';
+const connector = connect(null, mapDispatchToProps);
 
-const AcknowledgementPopup: React.FC<PopupPropsInterface> = ({
-  showNotification,
-  closeModal,
-  activateAccount,
-}) => {
+const AcknowledgementPopup: React.FC<
+  AcknowledgementPopupProps<ConnectedProps<typeof connector>>
+> = ({ account = VA_USD, showTnC = true, showNotification, closeModal }) => {
   const [isChecked, setIsChecked] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
+  const popupContent = useMemo(() => ACTIVATION_POPUP_CONTENT[account], [account]);
 
   //functions
   const onChange = ({ target }) => {
@@ -41,12 +65,22 @@ const AcknowledgementPopup: React.FC<PopupPropsInterface> = ({
    */
   const onRequest = async () => {
     try {
-      trackActivateClick(VA_USD);
+      const isTnCAccepted = showTnC && isChecked;
+
+      trackActivateClick(account, isTnCAccepted);
       setIsLoading(true);
-      const response: any = await activateAccount(VA_USD, 1); // eslint-disable-line
+      activateAccountPending({ type: REQUEST_ACCOUNT_TYPE[account], va_currency: account });
+
+      const response = await activateAccount(account, isTnCAccepted ? 1 : 0);
+
       setIsLoading(false);
+      activateAccountSuccess({
+        type: REQUEST_ACCOUNT_TYPE[account],
+        response: response?.data ?? [],
+      });
+
       if (response?.success) {
-        trackAccountActivated(VA_USD);
+        trackAccountActivated(account);
         closeModal();
         showNotification({
           type: 'success',
@@ -55,53 +89,54 @@ const AcknowledgementPopup: React.FC<PopupPropsInterface> = ({
       }
     } catch ({ errors }) {
       const error = Array.isArray(errors) ? errors[0] : errors;
-      trackAccountError(error, VA_USD);
+      trackAccountError(error, account);
       setIsLoading(false);
       showNotification({
         type: 'error',
         message: error,
       });
+      activateAccountError({ type: REQUEST_ACCOUNT_TYPE[account], errors });
     }
   };
 
   return (
     <div className="b2b-acknowledgement-popup">
-      <ModalHeader title="Request for USD currency bank account" onCloseClick={closeModal} />
+      <ModalHeader title={popupContent.title} onCloseClick={closeModal} />
       <div className="modal-body">
-        <p>
-          You will be able to accept USD payments via ACH bank transfer with your local currency
-          bank account
-        </p>
-        <div className="checkbox-wrapper">
-          <Input.Check checked={isChecked} onChange={onChange} autoRender />
-          <span>
-            I agree to the{' '}
-            <a
-              className="text-primary"
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://razorpay.com/terms/local-bank-transfer"
-            >
-              Terms and Conditions
-              <i className="i i-external-link" />
-            </a>
-          </span>
-        </div>
-        <Button
-          variant="primary"
-          isLoading={isLoading}
-          isDisabled={!isChecked}
-          isFullWidth
-          onClick={onRequest}
-        >
-          Activate Now
-        </Button>
+        <Text>{popupContent.description}</Text>
+
+        <List>
+          {popupContent.faqs.map((item) => (
+            <ListItem key={item}>{item}</ListItem>
+          ))}
+        </List>
+
+        {showTnC ? (
+          <div className="checkbox-wrapper">
+            <Input.Check checked={isChecked} onChange={onChange} autoRender />
+            <span>
+              I agree to the{' '}
+              <Link
+                target="_blank"
+                rel="noopener noreferrer"
+                href={B2B_EXPORTS_TNC_LINK}
+                icon={ExternalLinkIcon}
+                iconPosition="right"
+              >
+                Terms and Conditions
+              </Link>
+            </span>
+          </div>
+        ) : null}
+
+        <Box marginTop="spacing.4">
+          <Button isLoading={isLoading} isDisabled={!isChecked} isFullWidth onClick={onRequest}>
+            Activate Now
+          </Button>
+        </Box>
       </div>
     </div>
   );
 };
 
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ showNotification, closeModal, activateAccount }, dispatch);
-
-export default connect(null, mapDispatchToProps)(AcknowledgementPopup);
+export default connector(AcknowledgementPopup);

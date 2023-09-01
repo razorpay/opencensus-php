@@ -1,36 +1,28 @@
-import {
-  activateAccountError,
-  activateAccountPending,
-  activateAccountSuccess,
-} from 'merchant/reducers/b2bExports/actions';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ActivateAccountResponseType } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
-import { Dispatch } from 'redux';
 
-export const activateAccount =
-  (va_currency: string, accept_b2b_tnc = 0, type = 'localBankTranfer') =>
-  async (dispatch: Dispatch): Promise<ActivateAccountResponseType> => {
-    try {
-      dispatch(activateAccountPending({ type, va_currency }));
-      const response: ActivateAccountResponseType = await merchantFetch({
-        url: 'international/virtual_accounts',
-        method: 'post',
-        data: { accept_b2b_tnc, va_currency },
-      });
-      dispatch(activateAccountSuccess({ type, response: response?.data ?? [] }));
-      return response;
-    } catch (error) {
-      let errors: string[] = [];
+export const activateAccount = async (
+  va_currency: string,
+  accept_b2b_tnc = 0,
+): Promise<ActivateAccountResponseType> => {
+  try {
+    const response: ActivateAccountResponseType = await merchantFetch({
+      url: 'international/virtual_accounts',
+      method: 'post',
+      data: { accept_b2b_tnc, va_currency },
+    });
+    return response;
+  } catch (error) {
+    let errors: string[] = [];
 
-      if (error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors)) {
-        errors = error.errors;
-      } else if (error instanceof Error) {
-        errors = [error.message];
-      } else {
-        errors = ['Something went wrong. Please try again later.'];
-      }
-
-      dispatch(activateAccountError({ type, errors }));
-      throw error;
+    if (error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors)) {
+      errors = error.errors;
+    } else if (error instanceof Error) {
+      errors = [error.message];
+    } else {
+      errors = ['Something went wrong. Please try again later.'];
     }
-  };
+
+    throw errors;
+  }
+};

@@ -1,16 +1,14 @@
-import { render, screen, waitFor, userEvent } from 'test-utils';
-import { getLeafListData } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
-
-import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
-
-import * as modalActions from 'merchant_common/reducers/modals';
-import * as b2bActions from 'merchant/reducers/b2bExports/actions';
-import * as notifications from 'merchant_common/reducers/notifications';
-import * as services from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
-
 import { titleCase } from 'common/utils/rzp-utils';
-
+import * as b2bActions from 'merchant/reducers/b2bExports/actions';
 import SwiftBankTransfer from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SwiftBankTransfer';
+import {
+  getLeafListData,
+  getAccounts,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
+import * as services from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
+import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
+import * as modalActions from 'merchant_common/reducers/modals';
+import { render, screen, userEvent } from 'test-utils';
 
 jest.mock('merchant/reducers/b2bExports/actions', () => ({
   fetchB2bAccounts: jest.fn(() => (dispatch) => {
@@ -111,9 +109,8 @@ describe('When SwiftBankTransfer is shown for the first time', () => {
 });
 
 describe('When all required info is available for SWIFT account creation', () => {
-  const showNotification = jest.spyOn(notifications, 'showNotification');
-
   const leafList = getLeafListData(GREYED, 'SWIFT');
+  const openModal = jest.spyOn(modalActions, 'openModal');
 
   test('When accounts have not been created and request button is clicked', async () => {
     services.activateAccount.mockImplementation(() => (dispatch) => {
@@ -135,16 +132,29 @@ describe('When all required info is available for SWIFT account creation', () =>
     const requestButton = screen.getByText('Request');
     await userEvent.click(requestButton);
 
-    await waitFor(() => expect(services.activateAccount).toHaveBeenCalled());
-    expect(services.activateAccount).toHaveBeenCalledWith('SWIFT', 0, 'intBankTransfer');
-
-    expect(showNotification).toHaveBeenCalledWith({
-      type: 'success',
-      message: 'Accounts have been successfully created!',
-    });
+    expect(openModal).toHaveBeenCalled();
   });
 
-  test('When accounts creation fails, with multiple errors', async () => {
+  test('should open modal when requested for USD virtual account', async () => {
+    renderComponent(
+      { leafList },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+        b2bExportsAccounts: {
+          data: getAccounts(),
+          isLoading: false,
+        },
+      },
+    );
+
+    const requestButton = screen.getByText('Request');
+    await userEvent.click(requestButton);
+
+    expect(openModal).toHaveBeenCalled();
+  });
+
+  test('should open modal if account creation failed with multiple errors', async () => {
     const errors = ['Something went wrong. Please try again later', 'Status 400'];
 
     services.activateAccount.mockImplementation(() => (dispatch) => {
@@ -166,15 +176,10 @@ describe('When all required info is available for SWIFT account creation', () =>
     const requestButton = screen.getByText('Request');
     await userEvent.click(requestButton);
 
-    await waitFor(() =>
-      expect(showNotification).toHaveBeenCalledWith({
-        type: 'error',
-        message: errors[0],
-      }),
-    );
+    expect(openModal).toHaveBeenCalled();
   });
 
-  test('When accounts creation fails, with single error', async () => {
+  test('should open modal if account creation failed with one error', async () => {
     const error = 'Something went wrong. Please try again later';
 
     services.activateAccount.mockImplementation(() => (dispatch) => {
@@ -196,11 +201,6 @@ describe('When all required info is available for SWIFT account creation', () =>
     const requestButton = screen.getByText('Request');
     await userEvent.click(requestButton);
 
-    await waitFor(() =>
-      expect(showNotification).toHaveBeenCalledWith({
-        type: 'error',
-        message: error,
-      }),
-    );
+    expect(openModal).toHaveBeenCalled();
   });
 });

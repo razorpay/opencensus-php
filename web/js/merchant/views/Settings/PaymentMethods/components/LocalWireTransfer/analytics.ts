@@ -36,12 +36,12 @@ export const trackTandCPopupOpened = (): void => {
   });
 };
 
-export const trackActivateClick = (account: string): void => {
+export const trackActivateClick = (account: string, isTnCAccepted = true): void => {
   track({
     objectName: `b2b accounts ${account} activation popup`,
     actionName: 'clicked',
     properties: {
-      isTermsAndConditionsAccepted: true,
+      isTermsAndConditionsAccepted: isTnCAccepted,
       activateClicked: true,
       isActivated: false,
     },

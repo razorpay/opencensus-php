@@ -68,11 +68,15 @@ export interface LocalWireTransferPropsInterface {
   data: unknown;
 }
 
-export interface PopupPropsInterface {
-  showNotification: (payload: { type: string; message: unknown }) => void;
-  closeModal: () => void;
-  activateAccount: (va_currency: string, accept_b2b_tnc?: number, type?: string) => void;
+enum Account {
+  USD = 'USD',
+  SWIFT = 'SWIFT',
 }
+
+export type AcknowledgementPopupProps<ReduxProps> = {
+  account?: Account;
+  showTnC?: boolean;
+} & ReduxProps;
 
 export interface TogglePropsInterface {
   isOpen: boolean | string;

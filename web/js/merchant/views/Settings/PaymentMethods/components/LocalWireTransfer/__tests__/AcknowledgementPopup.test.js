@@ -1,20 +1,40 @@
-import { render, screen, userEvent, waitFor } from 'test-utils';
-
 import AcknowledgementPopup from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/AcknowledgementPopup';
-
-import * as services from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
 import {
-  activateAccountError,
-  activateAccountPending,
-  activateAccountSuccess,
-} from 'merchant/reducers/b2bExports/actions';
+  VA_USD,
+  VA_SWIFT,
+  ACTIVATION_POPUP_CONTENT,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import * as services from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
 import * as modalActions from 'merchant_common/reducers/modals';
 import * as notifications from 'merchant_common/reducers/notifications';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 jest.mock('merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services');
 
 const renderComponent = (props = {}) => {
   return render(<AcknowledgementPopup {...props} />);
+};
+
+const activateAccountSuccess = () => {
+  services.activateAccount.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ success: true });
+        });
+      }),
+  );
+};
+
+const activateAccountFailure = (errors) => {
+  services.activateAccount.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        setTimeout(() => {
+          reject({ errors, success: false });
+        });
+      }),
+  );
 };
 
 describe('Acknowledgement Popup flow', () => {
@@ -26,8 +46,12 @@ describe('Acknowledgement Popup flow', () => {
     showNotification.mockClear();
   });
 
-  test('button should get disabled when checkbox is unchecked', async () => {
+  test('should disable activate button if checkbox is unchecked', async () => {
     renderComponent();
+
+    const content = ACTIVATION_POPUP_CONTENT[VA_USD];
+
+    expect(screen.queryByText(content.title)).toBeInTheDocument();
 
     //checkbox should be unchecked
     expect(screen.getByRole('checkbox')).toBeChecked();
@@ -44,16 +68,8 @@ describe('Acknowledgement Popup flow', () => {
     expect(services.activateAccount).not.toHaveBeenCalled();
   });
 
-  test('modal should close when api request results in an success', async () => {
-    services.activateAccount.mockImplementation(() => (dispatch) => {
-      dispatch(activateAccountPending({ type: 'localBankTransfer', va_currency: 'ach' }));
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          dispatch(activateAccountSuccess({ type: 'localBankTransfer', response: null }));
-          resolve({ success: true });
-        });
-      });
-    });
+  test('should close the modal when api request results in an success', async () => {
+    activateAccountSuccess();
 
     renderComponent();
 
@@ -69,18 +85,10 @@ describe('Acknowledgement Popup flow', () => {
     });
   });
 
-  test('modal should not close when api request results in an list of errors', async () => {
+  test('should not close the modal when api request results in an list of errors', async () => {
     const errors = ['Something went wrong. Please try again later', 'Status 400'];
 
-    services.activateAccount.mockImplementation(() => (dispatch) => {
-      dispatch(activateAccountPending({ type: 'localBankTransfer', va_currency: 'ach' }));
-      return new Promise((_, reject) => {
-        setTimeout(() => {
-          dispatch(activateAccountError({ type: 'localBankTransfer', error: { errors } }));
-          reject({ errors });
-        });
-      });
-    });
+    activateAccountFailure(errors);
 
     renderComponent();
 
@@ -96,18 +104,10 @@ describe('Acknowledgement Popup flow', () => {
     });
   });
 
-  test('modal should not close when api request results in an single error', async () => {
+  test('should not close the modal when api request results in an single error', async () => {
     const error = 'Something went wrong. Please try again later';
 
-    services.activateAccount.mockImplementation(() => (dispatch) => {
-      dispatch(activateAccountPending({ type: 'localBankTransfer', va_currency: 'ach' }));
-      return new Promise((_, reject) => {
-        setTimeout(() => {
-          dispatch(activateAccountError({ type: 'localBankTransfer', error: { errors: error } }));
-          reject({ errors: error });
-        });
-      });
-    });
+    activateAccountFailure(error);
 
     renderComponent();
 
@@ -121,5 +121,66 @@ describe('Acknowledgement Popup flow', () => {
       type: 'error',
       message: error,
     });
+  });
+
+  test('should render SWIFT account with terms and condition checkbox', async () => {
+    renderComponent({
+      account: VA_SWIFT,
+    });
+
+    const content = ACTIVATION_POPUP_CONTENT[VA_SWIFT];
+
+    expect(screen.queryByRole('checkbox')).toBeInTheDocument();
+    expect(screen.queryByText('Activate Now')).toBeInTheDocument();
+    expect(screen.queryByText(content.title)).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Activate Now'));
+    expect(services.activateAccount).toHaveBeenCalledWith(VA_SWIFT, 1);
+  });
+
+  test('should not render Terms and conditions checkbox if showTnC is false', async () => {
+    renderComponent({
+      account: VA_SWIFT,
+      showTnC: false,
+    });
+
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText('Activate Now'));
+    expect(services.activateAccount).toHaveBeenCalledWith(VA_SWIFT, 0);
+  });
+
+  test('should show notification when api request results in an list of errors', async () => {
+    const errors = ['Something went wrong. Please try again later', 'Status 400'];
+
+    activateAccountFailure(errors);
+
+    renderComponent();
+
+    await userEvent.click(screen.getByText('Activate Now'));
+    expect(services.activateAccount).toHaveBeenCalledWith(VA_USD, 1);
+
+    await waitFor(() =>
+      expect(showNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: errors[0],
+      }),
+    );
+  });
+
+  test('should show notification when api request results in an one error', async () => {
+    const error = 'Something went wrong. Please try again later';
+
+    activateAccountFailure(error);
+
+    renderComponent();
+
+    await userEvent.click(screen.getByText('Activate Now'));
+    expect(services.activateAccount).toHaveBeenCalledWith(VA_USD, 1);
+
+    await waitFor(() =>
+      expect(showNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: error,
+      }),
+    );
   });
 });
