@@ -5,6 +5,7 @@ namespace RZP\Mail\Merchant;
 use Symfony\Component\Mime\Email;
 
 use RZP\Models\User;
+use RZP\Models\Merchant;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
@@ -88,11 +89,15 @@ class CreateSubMerchantAffiliate extends Mailable
 
     protected function addMailData()
     {
+        $isExpEnabled = (new Merchant\Service())->isSubmerchantOnboardingResumeExperimentEnabled($this->aggregator['id']);
+
         $data = [
             'merchant'           => $this->aggregator,
             'subMerchant'        => $this->subMerchant,
             'token'              => $this->token,
             'org'                => $this->org,
+            'activationDuration' => Detail::ACTIVATION_DURATION,
+            'onboardingResumed'  => $isExpEnabled,
         ];
 
         $this->with($data);

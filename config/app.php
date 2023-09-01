@@ -617,6 +617,8 @@ return array(
 
     'partner_oauth_app_config_experiement_id' => env('PARTNER_OAUTH_APP_CONFIG_EXPERIEMENT_ID'),
 
+    'submerchant_onboarding_resume_experiment_id' => env('SUBMERCHANT_ONBOARDING_RESUME_EXPERIMENT_ID'),
+
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),

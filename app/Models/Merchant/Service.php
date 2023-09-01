@@ -1361,6 +1361,18 @@ class Service extends Base\Service
         }
     }
 
+    public function isSubmerchantOnboardingResumeExperimentEnabled(string $partnerId)
+    {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $app['config']->get('app.submerchant_onboarding_resume_experiment_id')
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
     /**
      * Send an SMS to sub-merchant when added via partner dashboard for X or Capital
      *
