@@ -13124,7 +13124,7 @@ trait Authorize
 
             $variant = $response['response']['variant']['name'] ?? '';
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
             if ($variant === 'variant_on')
             {

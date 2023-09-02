@@ -186,10 +186,10 @@ class Core extends Base\Core
             // if public key is not found in payment check for public key in order.
             if( $entity->getEntityName() === E::PAYMENT && $entity->getPublicKey() != null)
             {
-                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY, [
-                    'payment_id'  => $entity->getId(),
-                    'method'      => $entity->getMethod()
-                ]);
+//                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY, [
+//                    'payment_id'  => $entity->getId(),
+//                    'method'      => $entity->getMethod()
+//                ]);
                 $dimensions = array('Method' => $entity->getMethod());
                 $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FROM_PAYMENT_PUBLIC_KEY, $dimensions);
                 $originEntity = $this->getOriginEntityFromPublicKey($entity->getPublicKey());

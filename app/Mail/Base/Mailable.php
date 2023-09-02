@@ -149,11 +149,11 @@ class Mailable extends BaseMailable
 
                 $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
 
-                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
-                    'email'    => $toEmailHash,
-                    'mailable' => get_class($this),
-                    'view'     => $this->view,
-                    ]);
+//                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
+//                    'email'    => $toEmailHash,
+//                    'mailable' => get_class($this),
+//                    'view'     => $this->view,
+//                    ]);
 
                 $shouldSendEmailViaStork = Tracer::inSpan(['name' => HyperTrace::MAILABLE_SHOULD_SEND_VIA_STORK], function () {
                     return $this->shouldSendEmailViaStork();
@@ -165,11 +165,11 @@ class Mailable extends BaseMailable
                     $eventProperties['email_driver'] = 'stork';
                     // we can override any base param by adding the param in `getParamsForStork()`
                     $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
-                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
-                                 [
-                                     'template_name' => $paramsPayload['template_name'] ?? '',
-                                     'view'          => $this->view,
-                                 ]);
+//                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
+//                                 [
+//                                     'template_name' => $paramsPayload['template_name'] ?? '',
+//                                     'view'          => $this->view,
+//                                 ]);
 
                     try
                     {
@@ -248,13 +248,13 @@ class Mailable extends BaseMailable
                     $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
                 }
 
-                $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
-                    [
-                        'email' => $toEmailHash,
-                        'message_id' => $msgID,
-                        'mailable' => get_class($this)
-                    ]
-                );
+//                $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
+//                    [
+//                        'email' => $toEmailHash,
+//                        'message_id' => $msgID,
+//                        'mailable' => get_class($this)
+//                    ]
+//                );
             }
             catch (\Throwable $e)
             {
@@ -698,7 +698,7 @@ class Mailable extends BaseMailable
         // on merchant context in the flow and not based on the recipient
         if (empty($merchant) === true)
         {
-            $trace->info(TraceCode::NO_MERCHANT_CONTEXT_MAIL, ['mail' => $class]);
+//            $trace->info(TraceCode::NO_MERCHANT_CONTEXT_MAIL, ['mail' => $class]);
 
             return true;
         }

@@ -236,13 +236,13 @@ class FeatureAccess
 
         $merchantFeatures = $this->addPartnerFeaturesToMerchantIfApplicable($merchantFeatures);
 
-        $this->trace->info(
-            TraceCode::MERCHANT_FEATURE_ACCESS_DB,
-            [
-                "merchant_features" => $merchantFeatures,
-                "route_features"    => $routeFeatures,
-            ]
-        );
+//        $this->trace->info(
+//            TraceCode::MERCHANT_FEATURE_ACCESS_DB,
+//            [
+//                "merchant_features" => $merchantFeatures,
+//                "route_features"    => $routeFeatures,
+//            ]
+//        );
 
         return array_intersect($routeFeatures, $merchantFeatures);
     }

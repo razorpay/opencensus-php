@@ -32,7 +32,7 @@ class Facade extends BaseFacade
 
             if (empty($orgKey) === true)
             {
-                self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
+//                self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
 
                 return parent::encrypt($data, $serialize);
             }
@@ -45,7 +45,7 @@ class Facade extends BaseFacade
         }
 
         // If $shouldUseByok is false, use default encryption
-        self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
+//        self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
 
         return parent::encrypt($data, $serialize);
     }
@@ -208,7 +208,7 @@ class Facade extends BaseFacade
 
     protected static function getOrgKeyFromOrgId($orgId)
     {
-        self::traceInfo(TraceCode::BYOK_GETTING_ORG_KEY_FROM_ORG_ID, ['org_id' => $orgId]);
+//        self::traceInfo(TraceCode::BYOK_GETTING_ORG_KEY_FROM_ORG_ID, ['org_id' => $orgId]);
 
         $configKey = 'app.byok_nonrzp_orgs_encryption_keys.encryption_key_' . $orgId;
 

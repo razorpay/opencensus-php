@@ -92,10 +92,10 @@ trait Vpa
             }
             try
             {
-                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_VALIDATE_VPA,
-                    [
-                        'route' => $this->app['api.route']->getCurrentRouteName()
-                    ]);
+//                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_VALIDATE_VPA,
+//                    [
+//                        'route' => $this->app['api.route']->getCurrentRouteName()
+//                    ]);
 
                 $response = $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA,
                     $input,

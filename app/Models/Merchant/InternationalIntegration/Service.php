@@ -726,7 +726,7 @@ class Service extends Base\Service
 
             $variant = $response['response']['variant']['name'] ?? null;
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
             if ($variant === $checkVariant)
             {

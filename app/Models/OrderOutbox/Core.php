@@ -38,14 +38,14 @@ class Core extends Base\Core
 
         $entries = $this->repo->order_outbox->fetchOldOutboxEntriesForRetry($limit, $startTimestamp, $endTimestamp);
 
-        $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
-            [
-                Constants::OUBTOX_ENTRIES_COUNT     => count($entries),
-                'start_time'                        => $startTimestamp,
-                'end_time'                          => $endTimestamp,
-                'limit'                             => $limit,
-            ]
-        );
+//        $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
+//            [
+//                Constants::OUBTOX_ENTRIES_COUNT     => count($entries),
+//                'start_time'                        => $startTimestamp,
+//                'end_time'                          => $endTimestamp,
+//                'limit'                             => $limit,
+//            ]
+//        );
 
         foreach ($entries as $entry)
         {
@@ -130,13 +130,13 @@ class Core extends Base\Core
                 $outboxEntries = $this->repo->order_outbox->fetchByOrderIdAndCreatedAt(
                     $orderId, $orderOutbox->getCreatedAt());
 
-                $this->trace->info(
-                    TraceCode::ORDER_OUTBOX_FETCH,
-                    [
-                        Constants::OUBTOX_ENTRIES_COUNT     => count($outboxEntries),
-                        Constants::ORDER_OUTBOX             => $orderOutbox
-                    ]
-                );
+//                $this->trace->info(
+//                    TraceCode::ORDER_OUTBOX_FETCH,
+//                    [
+//                        Constants::OUBTOX_ENTRIES_COUNT     => count($outboxEntries),
+//                        Constants::ORDER_OUTBOX             => $orderOutbox
+//                    ]
+//                );
 
                 foreach ($outboxEntries as $entry)
                 {

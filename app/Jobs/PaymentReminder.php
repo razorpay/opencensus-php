@@ -48,10 +48,10 @@ class PaymentReminder extends Job
 
             (new KafkaProducer($topic, $msg, $producerKey))->Produce();
 
-            $this->trace->info(
-                TraceCode::REMINDER_KAFKA_PUSH_SUCCESSFUL,[
-                'input'          => $this->input
-            ]);
+//            $this->trace->info(
+//                TraceCode::REMINDER_KAFKA_PUSH_SUCCESSFUL,[
+//                'input'          => $this->input
+//            ]);
 
             $this->delete();
         }

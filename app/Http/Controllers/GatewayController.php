@@ -1922,12 +1922,12 @@ class GatewayController extends Controller
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
             $feature, $mode, 3);
 
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-            'gateway' => $gateway,
-            'variant' => $variant,
-            'mode'    => $mode,
-            'feature' => $feature,
-        ]);
+//        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
+//            'gateway' => $gateway,
+//            'variant' => $variant,
+//            'mode'    => $mode,
+//            'feature' => $feature,
+//        ]);
 
         if ($variant === $gateway)
         {

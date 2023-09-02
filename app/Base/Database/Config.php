@@ -322,12 +322,12 @@ class Config
             $jobName = app('worker.ctx')->getJobName();
 
             if (in_array($jobName, $excludedWorkerLogs) === false) {
-                $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
-                    'type'              => $type,
-                    'proxy_sql_config'  => $proxysqlConfig,
-                    'user'              => $user,
-                    'job_name'          => $jobName,
-                ]);
+//                $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
+//                    'type'              => $type,
+//                    'proxy_sql_config'  => $proxysqlConfig,
+//                    'user'              => $user,
+//                    'job_name'          => $jobName,
+//                ]);
             }
         }
     }

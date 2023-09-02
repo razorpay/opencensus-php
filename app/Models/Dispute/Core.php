@@ -2329,11 +2329,11 @@ class Core extends Base\Core
                 'experiment_id' => $experimentId,
             ]);
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                'merchant_id'   => $merchantId,
-                'experiment_id' => $experimentId,
-                'result'        => $response
-            ]);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+//                'merchant_id'   => $merchantId,
+//                'experiment_id' => $experimentId,
+//                'result'        => $response
+//            ]);
         }
         catch (\Throwable $e)
         {

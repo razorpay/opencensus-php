@@ -208,18 +208,18 @@ class Base
         }
         else
         {
-            $this->trace->info(TraceCode::FTS_REQUEST, [
-                'url'       => $this->baseUrl . $endpoint,
-                'method'    => $method,
-                'headers'   => $this->headers,
-                'content'   => (new Redaction())->redactData($data)
-            ]);
+//            $this->trace->info(TraceCode::FTS_REQUEST, [
+//                'url'       => $this->baseUrl . $endpoint,
+//                'method'    => $method,
+//                'headers'   => $this->headers,
+//                'content'   => (new Redaction())->redactData($data)
+//            ]);
             $response = $this->sendFtsRequest($request);
         }
 
-        $this->trace->info(TraceCode::FTS_RESPONSE, [
-            'response' => (new Redaction())->redactData(json_decode($response->body, true))
-        ]);
+//        $this->trace->info(TraceCode::FTS_RESPONSE, [
+//            'response' => (new Redaction())->redactData(json_decode($response->body, true))
+//        ]);
 
         if ($response->status_code === 409)
         {

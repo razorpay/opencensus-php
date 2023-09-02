@@ -37,11 +37,11 @@ class OrderUpdateByOutbox extends Job
 
             $orderOutbox = (new OrderOutbox\Repository)->findOrFail($this->orderOutboxId);
 
-            $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
-                [
-                    OrderOutbox\Constants::ORDER_OUTBOX         => $orderOutbox
-                ]
-            );
+//            $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
+//                [
+//                    OrderOutbox\Constants::ORDER_OUTBOX         => $orderOutbox
+//                ]
+//            );
 
             $this->mutex->acquireAndRelease(
                 $orderOutbox->getOrderId() . OrderOutbox\Constants::ORDER_UPDATE_MUTEX,

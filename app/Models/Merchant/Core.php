@@ -642,7 +642,7 @@ class Core extends Base\Core
 
             $variant = $response['response']['variant']['name'] ?? null;
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
             if ($variant === "enabled")
             {
@@ -9304,7 +9304,7 @@ class Core extends Base\Core
 
             $variant = $response['response']['variant']['name'] ?? null;
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
             if ($variant === $checkVariant)
             {

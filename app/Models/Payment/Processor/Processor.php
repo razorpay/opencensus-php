@@ -4480,15 +4480,15 @@ class Processor
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
             $feature, $this->mode, 3, $requestOptions);
 
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
-        [
-            'payment_id'    => $payment->getId(),
-            'variant'       => $variant,
-            'gateway'       => $payment->getGateway(),
-            'feature'       => $feature,
-            'mode'          => $this->mode,
-            'merchant_id'   => $payment->getMerchantId(),
-        ]);
+//        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
+//        [
+//            'payment_id'    => $payment->getId(),
+//            'variant'       => $variant,
+//            'gateway'       => $payment->getGateway(),
+//            'feature'       => $feature,
+//            'mode'          => $this->mode,
+//            'merchant_id'   => $payment->getMerchantId(),
+//        ]);
 
         return $variant;
     }
@@ -4591,7 +4591,7 @@ class Processor
 
             $variant = $response['response']['variant']['name'] ?? '';
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
             if ($variant === 'variant_on')
             {

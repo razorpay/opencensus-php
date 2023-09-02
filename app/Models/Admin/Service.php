@@ -1806,10 +1806,10 @@ class Service extends Base\Service
         $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 
-        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
-            'variant' => $variant,
-            'experiment' => $experiment,
-        ]);
+//        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
+//            'variant' => $variant,
+//            'experiment' => $experiment,
+//        ]);
 
         return ($variant === 'on');
     }

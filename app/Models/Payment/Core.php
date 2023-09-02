@@ -497,13 +497,13 @@ class Core extends Base\Core
      */
     public function pushToKafka($payment, mixed $topic, array $message, string $producerKey, $startTime): void
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_KAFKA_PUSH_VIA_SQS,
-            [
-                'payment_id' => $payment->getId(),
-                'topic'      => $topic,
-            ]
-        );
+//        $this->trace->info(
+//            TraceCode::PAYMENT_KAFKA_PUSH_VIA_SQS,
+//            [
+//                'payment_id' => $payment->getId(),
+//                'topic'      => $topic,
+//            ]
+//        );
 
         PaymentReminder::dispatch([
             'topic' => $topic,

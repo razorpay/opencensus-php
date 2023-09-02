@@ -142,7 +142,7 @@ class Service extends Base\Service
 
         if ($routeToPGRouter === true)
         {
-            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
+//            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
 
             $this->modifyBankAccountRequestFromOldFormat($input);
 

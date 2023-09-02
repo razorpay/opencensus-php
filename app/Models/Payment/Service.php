@@ -5166,12 +5166,12 @@ class Service extends Base\Service
             {
                 $result = (new Verify())->verifyPaymentNewRoute($payment, $filter);
 
-                $this->trace->info(
-                    TraceCode::VERIFY_NEW_ROUTE_RESULT,
-                    [
-                        'payment_id' => $id,
-                        'result'     => $result,
-                    ]);
+//                $this->trace->info(
+//                    TraceCode::VERIFY_NEW_ROUTE_RESULT,
+//                    [
+//                        'payment_id' => $id,
+//                        'result'     => $result,
+//                    ]);
 
                 if (($payment->getStatus() === Payment\Status::CAPTURED) or
                     ($payment->getStatus() === Payment\Status::AUTHORIZED))

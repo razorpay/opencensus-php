@@ -287,12 +287,12 @@ class SmartRouting
 
         while (true)
         {
-            $this->trace->info(
-                TraceCode::SMART_ROUTING_RETRY,
-                [
-                    'retry_count' => $retryCount,
-                    'payment_id'  => $payment_id
-                ]);
+//            $this->trace->info(
+//                TraceCode::SMART_ROUTING_RETRY,
+//                [
+//                    'retry_count' => $retryCount,
+//                    'payment_id'  => $payment_id
+//                ]);
 
             try
             {

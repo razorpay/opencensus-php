@@ -49,9 +49,9 @@ class KafkaProducerClient
 
         $endTime = get_diff_in_millisecond($startTime);
 
-        $app['trace']->info(TraceCode::KAFKA_PRODUCER_FLUSH_TIME,
-                            ['kafka_flush_time' => $endTime]
-        );
+//        $app['trace']->info(TraceCode::KAFKA_PRODUCER_FLUSH_TIME,
+//                            ['kafka_flush_time' => $endTime]
+//        );
 
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result)
         {

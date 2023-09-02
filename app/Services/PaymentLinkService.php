@@ -289,7 +289,7 @@ class PaymentLinkService
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
+//        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
 
         $response = [
             'url'     => $url,
@@ -331,7 +331,7 @@ class PaymentLinkService
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
+//        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
 
         $params = [
             'url'     => $url,

@@ -50,7 +50,7 @@ class Core extends Base\Core
 
         if ($routeToPGRouter === true)
         {
-            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
+//            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
 
             $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
 
@@ -649,11 +649,11 @@ class Core extends Base\Core
     {
         $orderOutbox = $this->repo->order_outbox->fetchByOrderId($order->getId());
 
-        $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
-            [
-                OrderOutboxConstants::ORDER_OUTBOX         => $orderOutbox
-            ]
-        );
+//        $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
+//            [
+//                OrderOutboxConstants::ORDER_OUTBOX         => $orderOutbox
+//            ]
+//        );
 
         if (empty($orderOutbox) === false)
         {
