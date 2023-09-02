@@ -501,9 +501,13 @@ class Authenticate
 
         $this->ba->setMerchantById($this->passport->consumer->id);
 
-        $error = $this->passportUtil->doMissingChecksAtEdge();
-        if ($error !== null) {
-            throw $error;
+        // do not check merchant activated status of parent merchant for partner auth
+        // since partner's access to live mode doesn't matter while accessing sub merchant resources.
+        if (! $this->isPartnerAuth) {
+            $error = $this->passportUtil->doMissingChecksAtEdge();
+            if ($error !== null) {
+                throw $error;
+            }
         }
 
         // will not throw any error as account id existence is already verified by edge

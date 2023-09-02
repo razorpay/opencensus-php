@@ -312,6 +312,32 @@ class PassportAuthTest extends TestCase
         $this->assertBaValues($client->getId(), '100000Razorpay', $publickey, ClientAuthCreds::class, '100000Razorpay', Mode::LIVE, true, '10000000000000');
     }
 
+    public function testPartnerAuthParentMerchantNotActivated()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('prod');
+
+        $this->fixtures->on(Mode::LIVE)->create('key', ['id' => $client->getId(), 'merchant_id' => '10000000000000']);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_access_map', ['entity_id'   => $client->getApplicationId(), 'merchant_id' => '100000Razorpay']);
+        $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['activated' => false]);
+        $this->fixtures->on(Mode::LIVE)->edit('merchant', '100000Razorpay', ['activated' => true]);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'partner'];
+        $username = "rzp_live_partner_" . $client->getId();
+        $publickey = $username . "-acc_100000Razorpay";
+        $credential = ['username' => $username, 'public_key' => $publickey];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::LIVE, $impersonation);
+
+        $testData = $this->testData['validPassportFlowData'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $this->runRequestResponseFlow($testData);
+        self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues($client->getId(), '100000Razorpay', $publickey, ClientAuthCreds::class,
+            '100000Razorpay', Mode::LIVE, true, '10000000000000', $client->getApplicationId(), $client->getApplicationId());
+    }
+
     public function testOauthMerchantActivationOnLiveMode()
     {
         [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport(['mode' => Mode::LIVE]);
