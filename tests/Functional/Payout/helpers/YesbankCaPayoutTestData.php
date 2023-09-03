@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 
 return [
 
@@ -506,6 +507,39 @@ return [
                     'abc' => 'xyz',
                 ],
             ],
+        ],
+    ],
+
+    'testCreatePayoutForUPIModeDirectAccountWithDCSServiceUnavailable' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => '',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_DCS_SERVICE_PAYOUT_MODE_CONFIG_FETCH_FAILURE,
+            'message'             => 'Direct accounts payout mode config fetch from dcs service is failing.',
         ],
     ],
 ];

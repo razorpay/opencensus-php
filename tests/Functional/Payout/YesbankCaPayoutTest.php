@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -1760,5 +1762,60 @@ class YesbankCaPayoutTest extends TestCase
         $this->assertEquals($expectedStatus, $payout->getStatus());
 
         $this->assertEquals('UPI', $payout->getMode());
+    }
+
+    public function testCreatePayoutForUPIModeDirectAccountWithDCSServiceUnavailable()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yesbank@upi',
+                ]
+            ]];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'yesbank'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'yesbank');
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app['dcs_config_service']
+            ->method('fetchConfiguration')
+            ->willThrowException(new ServerErrorException(
+                'error',
+                ErrorCode::SERVER_ERROR_DCS_SERVICE_PAYOUT_MODE_CONFIG_FETCH_FAILURE
+            ));
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 }

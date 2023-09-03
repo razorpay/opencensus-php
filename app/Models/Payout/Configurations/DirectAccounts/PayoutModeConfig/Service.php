@@ -3,8 +3,11 @@
 namespace RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Entity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\ServerErrorException;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 
 class Service extends Base\Service
@@ -156,6 +159,13 @@ class Service extends Base\Service
                 TraceCode::DIRECT_ACCOUNTS_PAYOUT_MODE_CONFIG_FETCH_REQUEST_FAILED,
                 [
                     'merchant_id' => $merchantId,
+                ]);
+
+            throw new ServerErrorException(
+                'Direct accounts payout mode config fetch from dcs service is failing.',
+                ErrorCode::SERVER_ERROR_DCS_SERVICE_PAYOUT_MODE_CONFIG_FETCH_FAILURE,
+                [
+                    Entity::MERCHANT_ID => $merchantId,
                 ]);
         }
 
