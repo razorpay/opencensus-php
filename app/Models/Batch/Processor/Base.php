@@ -1531,10 +1531,13 @@ class Base extends BaseModel\Core
         if ((empty($diff) === true) or
             ($diff === [Batch\Header::NOTES]) or
             ($diff === [Batch\Header::SPEED]) or
-            ($diff === [Batch\Header::NOTES, Batch\Header::SPEED]))
+            ($diff === [Batch\Header::RECEIPT]) or
+            (empty(array_diff($diff, [Batch\Header::RECEIPT, Batch\Header::NOTES]))) or
+            (empty(array_diff($diff, [Batch\Header::SPEED, Batch\Header::NOTES]))) or
+            (empty(array_diff($diff, [Batch\Header::RECEIPT, Batch\Header::SPEED]))) or
+            (empty(array_diff($diff, [Batch\Header::RECEIPT, Batch\Header::NOTES, Batch\Header::SPEED]))))
         {
             array_shift($rows);
-
             $headings = $firstRow;
         }
         //
@@ -1544,7 +1547,7 @@ class Base extends BaseModel\Core
         //
         else
         {
-            $headings = array_diff($headings, [Batch\Header::NOTES, Batch\Header::SPEED]);
+            $headings = array_diff($headings, [Batch\Header::RECEIPT, Batch\Header::NOTES, Batch\Header::SPEED]);
         }
 
         return $headings;

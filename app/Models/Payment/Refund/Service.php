@@ -91,6 +91,7 @@ class Service extends Base\Service
             $tracePayload =[
                 Entity::PAYMENT_ID => $input[Entity::PAYMENT_ID],
                 Entity::AMOUNT     => $input[Entity::AMOUNT],
+                Entity::RECEIPT    => $input[Entity::RECEIPT],
             ];
 
             $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);

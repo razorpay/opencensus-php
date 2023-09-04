@@ -64,6 +64,7 @@ class Header
     const REFUND_ACCOUNT_NUMBER     = 'Account Number';
     const REFUND_IFSC               = 'IFSC';
     const REFUND_TRANSFER_MODE      = 'Transfer Mode';
+    const RECEIPT                   = 'Receipt';
 
     //
     // RawAddress Headers
@@ -1914,6 +1915,7 @@ class Header
             self::INPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::RECEIPT,
                 self::NOTES,
                 self::SPEED
             ],
@@ -1921,6 +1923,7 @@ class Header
             self::OUTPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::RECEIPT,
                 self::NOTES,
                 self::REFUND_ID,
                 self::REFUNDED_AMOUNT,
@@ -5454,6 +5457,17 @@ class Header
             (in_array(self::SPEED, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::SPEED;
+        }
+
+        //
+        // RECEIPT is also optional. See ^above comments about Notes;
+        // RECEIPT is optional for batch type refunds.
+        //
+        if (($type === Type::REFUND) and
+            (in_array(self::RECEIPT, $expectedHeaders, true) === true) and
+            (in_array(self::RECEIPT, $actualHeaders, true) === false))
+        {
+            $actualHeaders[] = self::RECEIPT;
         }
 
         //
