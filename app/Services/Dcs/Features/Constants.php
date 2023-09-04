@@ -234,11 +234,14 @@ class Constants
 
     const RemoveRazorpayBranding = 'remove_rzp_branding';
 
+    const RestrictOnePaymentOnOneOrder = 'restrict_one_payment_on_one_order';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
      */
     public static $featureToDCSKeyMapping = [
+        self::RestrictOnePaymentOnOneOrder => 'rzp/pg/merchant/payments/banking_program/AttemptCustomisation',
         self::OneCcEnabled => "rzp/pg/merchant/checkout/magic/GlobalControls",
         self::OneCcDualCheckout => "rzp/pg/merchant/checkout/magic/GlobalControls",
         self::OneCcMerchantDashboard => "rzp/pg/merchant/checkout/magic/Dashboard",
@@ -468,6 +471,7 @@ class Constants
      * This is required for migrating features.
      */
     public static array $apiFeatureNameToDCSFeatureName = [
+        APIFeaturesConstants::ONE_ORDER_ONE_PAYMENT                         => self::RestrictOnePaymentOnOneOrder,
         self::PassCustomUdfFss                                              => self::PassCustomUdfFss,
         self::RefundEnabled                                                 => self::RefundEnabled,
         self::DisableAutoRefund                                             => self::DisableAutoRefund,

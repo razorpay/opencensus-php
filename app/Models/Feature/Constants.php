@@ -212,6 +212,8 @@ class Constants
      */
     const DYNAMIC_CURRENCY_CONVERSION_CYBS = 'dcc_cybs';
 
+    const ONE_ORDER_ONE_PAYMENT = 'one_order_one_payment';
+
     /**
      * Feature flag used to display modified checkout UI in terms of Dynamic Currency Conversion related disclosures,
      * defined by card-networks.
@@ -2610,6 +2612,7 @@ class Constants
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
+        self::ONE_ORDER_ONE_PAYMENT           => true,
         self::ORG_ADMIN_PASSWORD_RESET        => true,
         self::FEE_PAGE_TIMEOUT_CUSTOM         => true,
         self::SILENT_REFUND_LATE_AUTH         => true,
