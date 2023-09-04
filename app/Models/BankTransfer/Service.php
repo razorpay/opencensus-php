@@ -952,6 +952,21 @@ class Service extends Base\Service
                         ]);
         }
 
+        // List as per: https://razorpay.atlassian.net/browse/CB-1864
+        // Slack: https://razorpay.slack.com/archives/C024U3B04LD/p1692271580539599?thread_ts=1692271525.102929&cid=C024U3B04LD
+        // 
+        if (in_array($this->merchant->getCategory(), BankTransferConstants::BLACKLISTED_MCC_FOR_CURRENCY_CLOUD) === true)
+        {
+            $merchantMcc = $this->merchant->getCategory() ?? '';
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "Currently, we do not support ACH and SWIFT account for the MCC " . $merchantMcc
+            );
+        }
+
         // IEC code required for some purpose codes
         // https://razorpay.slack.com/archives/C024U3B04LD/p1689314331594219?thread_ts=1688468005.859769&cid=C024U3B04LD
         if ((in_array($this->merchant->getPurposeCode(), PurposeCodeList::IEC_REQUIRED) === true) and

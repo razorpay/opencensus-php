@@ -79,6 +79,18 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
                         [
                             'purpose_code' => PurposeCodeList::P1004,
+                            'category' => '5813'
+                            ,
+                        ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'category' => '8211',
                         ]);
 
         $response = $this->sendRequest($request);
@@ -148,6 +160,17 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
                         [
                             'purpose_code' => PurposeCodeList::P1004,
+                            'category' => '5813',
+                        ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'category' => '8211',
                         ]);
 
         $this->sendRequest($request);
@@ -229,6 +252,17 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
                         [
                             'purpose_code' => PurposeCodeList::P1004,
+                            'category' => '5813',
+                        ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'category' => '8211',
                         ]);
 
         $this->sendRequest($request);
@@ -290,6 +324,17 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
                         [
                             'purpose_code' => PurposeCodeList::P1004,
+                            'category' => '5813',
+                        ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'category' => '8211',
                         ]);
 
         $response = $this->startTest();
@@ -318,6 +363,17 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
                         [
                             'purpose_code' => PurposeCodeList::P1004,
+                            'category' => '5813',
+                        ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+            {
+                $this->sendRequest($request);
+            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+                        [
+                            'category' => '8211',
                         ]);
 
         $response = $this->startTest();

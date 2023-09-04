@@ -27,4 +27,25 @@ class Constants
         "authorised"            => 'in_progress',
         "deleted"               => 'failed'
     ];
+
+    const ALCOHOL                       = '5813';
+    const GAMBLING                      = '7995';
+    const OUTBOUND_TELEMARKTING         = '5966';
+    const PAWN_SHOPS                    = '5933';
+    const POLITCAL_ORGANIZATIONS        = '8651';
+    const PRECIOUS_STONES_AND_METALS    = '5094';
+    const SEEDS_OR_PLANTS               = '5193';
+    const TOBACCO                       = '5993';
+
+    // List as per: https://razorpay.atlassian.net/browse/CB-1864
+    const BLACKLISTED_MCC_FOR_CURRENCY_CLOUD = [
+        self::ALCOHOL,
+        self::GAMBLING,
+        self::OUTBOUND_TELEMARKTING,
+        self::PAWN_SHOPS,
+        self::POLITCAL_ORGANIZATIONS,
+        self::PRECIOUS_STONES_AND_METALS,
+        self::SEEDS_OR_PLANTS,
+        self::TOBACCO,
+    ];
 }
