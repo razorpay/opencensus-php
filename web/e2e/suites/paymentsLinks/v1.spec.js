@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { routes, StorageStatePath } from '../../utils/constants';
+
 import { paymentLinksUIData } from './constants';
 import {
   cancelPLCreated,
@@ -14,6 +14,7 @@ import {
   verifyPaymentHistory,
 } from './utils';
 import { expectSuccessNotification, switchToTestMode } from '../../utils';
+import { routes, StorageStatePath } from '../../utils/constants';
 import { COMMON_SELECTORS } from '../../utils/selectors';
 
 const SELECTORS = {

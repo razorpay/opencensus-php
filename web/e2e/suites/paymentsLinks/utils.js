@@ -1,5 +1,6 @@
-import { expectSuccessNotification, fillExpiry, generateRandomText } from '../../utils';
 import { expect } from '@playwright/test';
+
+import { expectSuccessNotification, fillExpiry, generateRandomText } from '../../utils';
 import { COMMON_SELECTORS } from '../../utils/selectors';
 
 const SELECTORS = {
@@ -39,7 +40,7 @@ export const createPaymentLink = async ({ page, productData, type }) => {
     if (upiLink) {
       await page.getByText(/UPI Payment Link/).click();
     } else {
-      await page.getByText(/Standard Payment Link/).click();
+      await page.locator('.TemplateCard-details >> text="Standard Payment Link"').click();
     }
   }
 

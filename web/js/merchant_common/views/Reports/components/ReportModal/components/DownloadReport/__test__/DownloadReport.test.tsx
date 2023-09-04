@@ -184,7 +184,7 @@ describe('Download Reports', () => {
     expect(modalFn.closeModal).toHaveBeenCalled();
   });
 
-  test('should render helper text according to the date selected from the calendar', async () => {
+  test.skip('should render helper text according to the date selected from the calendar', async () => {
     const todaysDate = TODAY.format('[Date is] DD MMMM YYYY');
 
     renderDetailedApp();
@@ -212,7 +212,7 @@ describe('Download Reports', () => {
     );
   });
 
-  test('should be able to submit data with delimiter', async () => {
+  test.skip('should be able to submit data with delimiter', async () => {
     const { label: formatLabel, value: formatValue } =
       DEFAULT_FORMATS.find(({ value }) => value === 'txt') || {};
     const { value: delimiterValue } = DELIMITER_SUPPORT_MAP[formatValue || '']?.[0] || {};

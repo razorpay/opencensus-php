@@ -1,10 +1,35 @@
 const { test, expect } = require('@playwright/test');
+
 const { StorageStatePath, routes } = require('../../utils/constants');
 
 const ELEMENT_CONFIG = {
   LANDING_PATH_REGEXP:
     /^\/app\/payment-methods(\/international-payments|\?instrument=international)?$/,
   CTA_NAME: 'View International Methods',
+  KYC_MODAL: 'h1 >> text="KYC Submitted"',
+  CLOSE_MODAL: 'span[class="Modal-close  "] >> text="×"',
+};
+
+const removeKYCSubmittedModal = async ({ page }) => {
+  let KycModal;
+  try {
+    // Check for kyc submitted modal using modal selector
+    KycModal = await page.waitForSelector(ELEMENT_CONFIG.KYC_MODAL, {
+      timeout: 5000,
+    });
+  } catch (err) {
+    // if no verificationPopup then proceed to next step
+    KycModal = null;
+  }
+  if (KycModal) {
+    // fetching close button cta
+    const submitVerification = await page.waitForSelector(ELEMENT_CONFIG.CLOSE_MODAL, {
+      timeout: 5000,
+    });
+
+    // closing kyc modal
+    await submitVerification.click();
+  }
 };
 
 test.describe
@@ -20,7 +45,9 @@ test.describe
 
     await page.waitForTimeout(5000);
 
-    const ieCTA = await page.getByRole('link', { name: ELEMENT_CONFIG.CTA_NAME });
+    await removeKYCSubmittedModal({ page });
+
+    const ieCTA = page.getByRole('link', { name: ELEMENT_CONFIG.CTA_NAME });
     await expect(ieCTA).toBeVisible();
 
     // redirect to international payments

@@ -13,7 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
-
 env:
   APP_NAME: dashboard
   HOME: /actions-runner/_work
@@ -117,10 +116,15 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
 
+      - name: Update devstack.json with prod commits
+        run: yarn run add-prod-commits
+
       - name: E2E Test Webhook
         run: yarn test:e2e-infra
         env:
           COMMIT_ID: ${{ env.COMMIT_ID }}
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.event.repository.name }}
+          # Required DEVSTACK_CONFIG_PATH, After upgarding universe test version which supports devstack config path
+          # DEVSTACK_CONFIG_PATH: ./e2e/devstackConfig/devstack.json
           JOB_URL: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e"

@@ -46,7 +46,7 @@ const getRandomCustomerData = () => {
   };
 };
 
-const expectSuccessNotification = async ({ page, notificationText }) => {
+export const expectSuccessNotification = async ({ page, notificationText }) => {
   await expect(
     await page.locator(COMMON_SELECTORS.successNotification, {
       hasText: notificationText,
@@ -82,8 +82,25 @@ const generateDataForPaymentLink = () => {
   };
 };
 
-const switchToTestMode = async ({ page }) => {
+const skipKYCModal = async ({ page }) => {
+  let kycButton, closeButton;
+  try {
+    kycButton = await page.waitForSelector('text="Submit KYC details"');
+    closeButton = await page.waitForSelector('.Modal-container--welcome-modal .Modal-close');
+  } catch (error) {
+    // Element not found within the specified timeout
+    // Handle the error or perform alternative actions
+  }
+
+  if (kycButton) {
+    await closeButton.click();
+    await page.waitForTimeout(1000);
+  }
+};
+
+export const switchToTestMode = async ({ page }) => {
   await page.goto(routes.DASHBOARD);
+  await skipKYCModal({ page });
   let modeSwitchToggle;
   try {
     modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle', {
@@ -171,7 +188,7 @@ const getNextDate = async ({ page, offset }) => {
   return date;
 };
 
-const fillExpiry = async ({ page, expire_by }) => {
+export const fillExpiry = async ({ page, expire_by }) => {
   await page.getByPlaceholder('DD-MM-YYYY').click();
   await page.waitForSelector('.rc-calendar-table');
   const dateToSelect = await getNextDate({ page, offset: expire_by });
@@ -195,4 +212,5 @@ module.exports = {
   hideSearchFTUXBannerByLocalStorage,
   getNextDate,
   fillExpiry,
+  skipKYCModal,
 };

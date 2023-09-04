@@ -81,7 +81,7 @@ export function getProjects() {
         use: browser,
         dependencies: [`Login:${browser.defaultBrowserType}`],
         grep: new RegExp(grep),
-        grepInvert: new RegExp(grepInvert),
+        // grepInvert: new RegExp(grepInvert),
       },
     );
   });

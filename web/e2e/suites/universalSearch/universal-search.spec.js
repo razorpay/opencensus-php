@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { generateRandomText } from '../../utils';
-import { routes, StorageStatePath } from '../../utils/constants';
+
 import {
   COPY_TEXTS,
   SEARCH_TERMS_WITH_EXPECTED_RESULTS,
@@ -9,6 +8,8 @@ import {
   getEntitySearchResultsRoutes,
 } from './constants';
 import { assertSearchResults, getSearchResultsEl } from './utils';
+import { generateRandomText } from '../../utils';
+import { routes, StorageStatePath } from '../../utils/constants';
 
 test.describe.parallel('Test universal search @flow=universal-search @project=payments', () => {
   test.use({
@@ -129,7 +130,8 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
   });
 });
 
-test.describe.parallel('Test universal search @flow=universal-entity-search', () => {
+test.describe
+  .parallel('Test universal search @flow=universal-entity-search @project=payments', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });

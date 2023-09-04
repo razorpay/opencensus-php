@@ -1,7 +1,5 @@
 import { test } from '@playwright/test';
-import { switchToTestMode } from '../../utils';
-import { routes, StorageStatePath } from '../../utils/constants';
-import { COMMON_SELECTORS } from '../../utils/selectors';
+
 import { paymentLinksUIData } from './constants';
 import {
   cancelPLCreated,
@@ -16,6 +14,9 @@ import {
   verifyPaymentHistory,
   verifyPLCreated,
 } from './utils';
+import { switchToTestMode } from '../../utils';
+import { routes, StorageStatePath } from '../../utils/constants';
+import { COMMON_SELECTORS } from '../../utils/selectors';
 
 test.setTimeout(2 * 60 * 1000);
 test.describe

@@ -40,7 +40,8 @@
     "test:e2e:auth": "cd web && yarn test:e2e:auth",
     "test:e2e:payments-automation": "cd web && yarn test:e2e:payments-automation",
     "test:e2e:flow": "bash run-e2e.sh",
-    "test:e2e-infra": "cd web && yarn test:e2e-infra"
+    "test:e2e-infra": "cd web && yarn test:e2e-infra",
+    "add-prod-commits": "node ./web/e2e/utils/addProdCommits.js"
   },
   "devDependencies": {
     "@actions/core": "1.2.6",
