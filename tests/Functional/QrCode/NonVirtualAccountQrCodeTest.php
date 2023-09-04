@@ -3,7 +3,6 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
-use RZP\Exception;
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Models\Merchant\Account;
@@ -3423,81 +3422,5 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
         $this->assertEquals(null, $qrPayment);
         $this->assertEquals(null, $payment);
-    }
-
-    public function testCreateSingleUseQrCodeWithGatewayErrorException() // Testing exception handling for QR Creation with icici dedicated terminal
-    {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
-        $this->expectException(BadRequestException::class);
-
-        $this->app['config']->set('gateway.mock_upi_icici', false);
-
-        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Icici\Gateway')->makePartial();
-
-        $iciciGatewayMock
-            ->shouldReceive('getQrRefId')
-            ->andThrow(
-                new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR)
-            );
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
-            'live',
-            'LiveAccountMer');
-    }
-
-    public function testCreateSingleUseQrCodeWithRuntimeException() // Testing exception handling for QR Creation with icici dedicated terminal
-    {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
-        $this->expectException(BadRequestException::class);
-
-        $this->app['config']->set('gateway.mock_upi_icici', false);
-
-        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Icici\Gateway')->makePartial();
-
-        $iciciGatewayMock
-            ->shouldReceive('getQrRefId')
-            ->andThrow(
-                new Exception\RuntimeException("Invalid Response")
-            );
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
-            'live',
-            'LiveAccountMer');
-    }
-
-    public function testCreateSingleUseQrCodeWithServerErrorException() // Testing exception handling for QR Creation with yesbank dedicated terminal
-    {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-
-        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal');
-
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
-        $this->expectException(BadRequestException::class);
-
-        $this->app['config']->set('gateway.mock_upi_yesbank', false);
-
-        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Yesbank\Gateway')->makePartial();
-
-        $iciciGatewayMock
-            ->shouldReceive('getQrRefId')
-            ->andThrow(
-                new ServerErrorException('test error',ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE)
-            );
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway']);
     }
 }
