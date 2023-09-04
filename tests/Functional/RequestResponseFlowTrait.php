@@ -333,7 +333,7 @@ trait RequestResponseFlowTrait
 
         // add passportJWT to request if not present already, only for tests with 200 status codes
         // i.e, tests without any expected error or exception based on request data
-        if (empty($request['server']['HTTP_X-Passport-JWT-V1']) && $this->shouldAddPassportJwt) {
+        if (empty($request['server']['HTTP_X-Passport-JWT-V1']) && empty($request['server']['HTTP_X-PASSPORT-USABLE']) && $this->shouldAddPassportJwt) {
             // only for private auth and bearer auth for now
             // TODO: add public auth
             if (($this->ba->isPrivateAuth() && !$this->ba->isProxyAuth()) || $this->ba->isBearerAuth()) {

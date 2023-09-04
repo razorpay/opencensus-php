@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Request\Edge;
 
 use Exception;
 use Razorpay\Edge\Passport;
+use Razorpay\Edge\Passport\OAuthClaims;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\KeyAuthCreds;
 use RZP\Tests\TestCase;
@@ -74,7 +75,7 @@ class PassportUtilTest extends TestCase
         $passport->impersonation->consumer->id = 'merchant_id';
         $passport->impersonation->consumer->type = 'merchant';
 
-        $passport->oauth = new Passport\OauthClaims;
+        $passport->oauth = new OauthClaims;
         $passport->oauth->appId = 'oauth_application_id';
         $passport->oauth->clientId = 'oauth_client_id';
         $passport->oauth->accessTokenId = 'oauth_access_token_id';

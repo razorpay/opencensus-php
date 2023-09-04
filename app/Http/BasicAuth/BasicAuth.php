@@ -600,7 +600,7 @@ class BasicAuth
 
         // there can be race conditions due to sync delay between API and Edge
         // so if the key is expired at API but active at Edge we log and exit with 401
-        if (($notExpired === false) && (! empty($key->getExpiredAt()))) {
+        if (($notExpired === false) && (! empty($key->getExpiredAt())) && ($key->getExpiredAt() <= time())) {
             $this->trace->info(TraceCode::PASSPORT_API_KEY_EXPIRED, [
                 'key_id' => $keyId,
                 'route'  => $this->route->getCurrentRouteName(),
@@ -3526,7 +3526,9 @@ class BasicAuth
         // Appends custom claims.
         foreach ($this->getPassport() as $key => $value)
         {
-            $builder->withClaim($key, $value);
+            if (! is_null($value)) {
+                $builder->withClaim($key, $value);
+            }
         }
 
         return $builder->getToken(new JWTSigner\Rsa\Sha256, $privateKey)->toString();

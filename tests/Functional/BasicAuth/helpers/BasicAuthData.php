@@ -712,6 +712,10 @@ return [
                 'username'   => 'rzp_test_TheTestAuthKey',
                 'public_key' => 'rzp_test_TheTestAuthKey',
             ],
+            'impersonation' => null,
+            'oauth' => null,
+            'roles' => null,
+            'additional_identities' => null,
         ],
     ],
 
@@ -758,6 +762,10 @@ return [
                 'username'   => 'rzp_test_TheTestAuthKey',
                 'public_key' => 'rzp_test_TheTestAuthKey',
             ],
+            'impersonation' => null,
+            'oauth' => null,
+            'roles' => null,
+            'additional_identities' => null,
         ],
     ],
 
@@ -1561,6 +1569,10 @@ return [
                 'username'   => 'rzp_test_TheTestAuthKey',
                 'public_key' => 'rzp_test_TheTestAuthKey',
             ],
+            'impersonation' => null,
+            'oauth' => null,
+            'roles' => null,
+            'additional_identities' => null,
         ],
     ],
 

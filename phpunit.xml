@@ -92,7 +92,6 @@
             <directory>./tests/Functional/Beam/</directory>
         </testsuite>
         <testsuite name="Application-3 Test Suite">
-            <directory>./tests/Functional/Authz/</directory>
             <directory>./tests/Functional/Consumer/</directory>
             <directory>./tests/Functional/TrustedBadge/</directory>
             <directory>./tests/Functional/Modules/</directory>
@@ -102,10 +101,8 @@
             <directory>./tests/Functional/Helpers/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
             <directory>./tests/Functional/Offline/</directory>
-            <directory>./tests/Functional/BasicAuth/</directory>
             <directory>./tests/Functional/Store/</directory>
             <directory>./tests/Functional/Splitz/</directory>
-            <directory>./tests/Functional/PassportAuth/</directory>
         </testsuite>
         <testsuite name="Features-1 Test Suite">
             <directory>./tests/Functional/FileStore/</directory>
@@ -252,6 +249,7 @@
             <exclude>./tests/Unit/Models/Merchant/AutoKyc/</exclude>
             <exclude>./tests/Unit/Models/Merchant/BusinessDetail/</exclude>
             <exclude>./tests/Unit/Models/Merchant/Bvs/</exclude>
+            <exclude>./tests/Unit/Request/Edge/</exclude>
         </testsuite>
         <testsuite name="Feature-6 Test Suite">
             <directory>./tests/Functional/TaxPayments/</directory>
@@ -555,7 +553,6 @@
         <testsuite name="Platform Test Suite">
             <directory>./tests/Functional/Key/</directory>
             <directory>./tests/Functional/Mailgun/</directory>
-            <directory>./tests/Functional/OAuth/</directory>
             <directory>./tests/Functional/Reminders/</directory>
             <directory>./tests/Functional/RazorX/</directory>
             <directory>./tests/Functional/Schedule/</directory>
@@ -572,6 +569,16 @@
             <file>./tests/Functional/Merchant/ShippingInfoTest.php</file>
             <file>./tests/Functional/Payment/OneCcPaymentsTest.php</file>
             <file>./tests/Functional/Payment/OneCCShopifyCreateOrderTest.php</file>
+        </testsuite>
+        <testsuite name="Auth Test Suite">
+            <directory>./tests/Functional/OAuth/</directory>
+            <directory>./tests/Unit/Request/Edge/</directory>
+            <directory>./tests/Functional/BasicAuth/</directory>
+            <directory>./tests/Functional/PassportAuth/</directory>
+            <directory>./tests/Functional/Authz/</directory>
+            <exclude>./tests/Functional/OAuth/OAuthAppMerchantMapTest.php</exclude>
+            <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
+            <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
         </testsuite>
     </testsuites>
     <listeners>

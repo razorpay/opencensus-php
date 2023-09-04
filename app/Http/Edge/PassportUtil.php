@@ -148,7 +148,8 @@ class PassportUtil
             // if any of the values doesnt exist or not set then passport should not be used
             if (! empty($errors)) {
                 $this->trace->info(TraceCode::PASSPORT_ATTRS_MISSING, [
-                    'errors'    => $errors,
+                    'errors' => $errors,
+                    'route'  => $this->route
                 ]);
                 return false;
             }

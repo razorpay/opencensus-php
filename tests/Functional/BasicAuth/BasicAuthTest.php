@@ -1174,6 +1174,9 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth();
 
         $testData = $this->testData['testCreateOrderWithAccId'];
+        // set passport usage to false intentionally to test old basic auth flow
+        // otherwise this will go to passport auth flow which will skip the check for which this test is for
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
 
         $this->makeRequestAndCatchException(
             function() use ($testData)
@@ -1205,6 +1208,9 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
 
         $testData = $this->testData['testMerchantAuthWithImpersonationForNonWhitelisted'];
+        // set passport usage to false intentionally to test old basic auth flow
+        // otherwise this will go to passport auth flow which will skip the check for which this test is for
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
 
         $this->makeRequestAndCatchException(
             function() use ($testData)
@@ -1227,6 +1233,9 @@ class BasicAuthTest extends TestCase
         $this->testData['testMerchantAuthWithImpersonationForNonWhitelisted']['request']['url'] = '/refunds';
 
         $testData=$this->testData['testMerchantAuthWithImpersonationForNonWhitelisted'];
+        // set passport usage to false intentionally to test old basic auth flow
+        // otherwise this will go to passport auth flow which will skip the check for which this test is for
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
 
         $this->makeRequestAndCatchException(
             function() use ($testData)
@@ -1250,6 +1259,9 @@ class BasicAuthTest extends TestCase
         $this->testData['testOrderEditWithAccId']['request']['url'] = '/orders/' . $order['id'];
 
         $testData = $this->testData['testOrderEditWithAccId'];
+        // set passport usage to false intentionally to test old basic auth flow
+        // otherwise this will go to passport auth flow which will skip the check for which this test is for
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
 
         $this->makeRequestAndCatchException(
             function() use ($testData)
