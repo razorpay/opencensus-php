@@ -38,10 +38,15 @@ export const fetchPLRemindersList = (id) => {
     url,
   });
 };
+
 export const fetchPaymentLinkV2Details = (paymentLinkId) => {
   return merchantFetch({
     url: `payment_links/${paymentLinkId}`,
   });
+};
+
+export const fetchPaymentLinkCustomFields = () => {
+  return merchantFetch('payment_links/configuration/custom_fields');
 };
 
 export const fetchPaymentLinkDetails = (paymentLinkId) => {
@@ -76,7 +81,7 @@ export const fetchPaymentLinkDetails = (paymentLinkId) => {
 
               return transformPLDetails_NewToOld(paymentLink);
             })
-            .catch((err) => {
+            .catch(() => {
               return transformPLDetails_NewToOld(paymentLink);
             });
         }
@@ -87,7 +92,7 @@ export const fetchPaymentLinkDetails = (paymentLinkId) => {
       return resp;
     });
   } else {
-    let paymentlink = new Invoice();
+    const paymentlink = new Invoice();
 
     payload = paymentlink
       .fetch(paymentLinkId, {}, { expand: ['payments', 'user', 'reminder_status'] })
@@ -108,7 +113,7 @@ export const fetchPaymentLinkDetails = (paymentLinkId) => {
 
                 return paymentLink;
               })
-              .catch((err) => {
+              .catch(() => {
                 return paymentLink;
               });
           }
@@ -144,7 +149,7 @@ export const notifyCustomer = (paymentLink, medium) => {
       return resp;
     });
   } else {
-    let _paymentlink = new Invoice(paymentLink);
+    const _paymentlink = new Invoice(paymentLink);
 
     payload = _paymentlink.notify(medium);
   }
@@ -173,7 +178,7 @@ export const cancelPaymentLink = (paymentLink) => {
       return resp.data;
     });
   } else {
-    let _paymentLink = new Invoice(paymentLink);
+    const _paymentLink = new Invoice(paymentLink);
 
     payload = _paymentLink.cancel();
   }
@@ -184,7 +189,7 @@ export const cancelPaymentLink = (paymentLink) => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   paymentlink: {
     customer_details: {},
@@ -195,7 +200,7 @@ let initialState = {
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default function reducer(state = initialState, action) {
   switch (action.type) {
     case `${PL_FETCH}::PENDING`:
       return set(state, 'loading', true);

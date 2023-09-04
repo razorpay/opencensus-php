@@ -1,7 +1,9 @@
+import isEmpty from 'lodash/isEmpty';
+import QueryString from 'query-string';
+
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import { getItem } from 'common/utils/localStorage';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
-import isEmpty from 'lodash/isEmpty';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -18,7 +20,6 @@ import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import ajax from 'merchant/utils/ajax';
 import { AffordabilityFeaturesFlag } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/data';
 import { filterByArray as filterByAffordabilityFlags } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/helper';
-import QueryString from 'query-string';
 
 export const ORG_CUSTOM_CODE_MAP = {
   RAZORPAY: 'rzp',
@@ -2078,6 +2079,10 @@ export default class User {
 
   get isSrAdminEnabled() {
     return getSplitzExperimentVariant('success_rate_admin')?.variables?.result === 'on';
+  }
+
+  get isDynamicPlOffset() {
+    return this.isFeatureEnabled('dynamic_pl_offset');
   }
 
   get isOmniChannelMerchant() {

@@ -6,11 +6,13 @@ import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
-import BaseForm from './Forms/BaseForm';
-import StandardForm from './Forms/StandardForm';
-import UPIForm from './Forms/UPIForm';
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
+import {
+  getURLQueryParams,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+} from 'common/utils/rzp-utils';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
@@ -18,18 +20,25 @@ import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
 import { saveOnboarding } from 'merchant/reducers/onboarding';
 import { updateFeatures } from 'merchant/reducers/config';
 import { updateUserFeatures } from 'merchant/reducers/session';
-import { fetchPaymentLinkV2Details } from 'merchant/reducers/paymentlinks/details';
+import {
+  fetchPaymentLinkV2Details,
+  fetchPaymentLinkCustomFields,
+} from 'merchant/reducers/paymentlinks/details';
 import { luminateRow } from 'merchant/reducers/app';
 import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/model';
 import {
-  getURLQueryParams,
-  i18CurrencyConversionFromMinorUnitToCommonUnit,
-  i18CurrencyConversionFromCommonUnitToMinorUnit,
-} from 'common/utils/rzp-utils';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import track from './track';
-import { showPayerNamePL, showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
+  showPayerNamePL,
+  showNoExpiryPL,
+  showDynamicFields,
+} from 'merchant/views/PaymentLinks/utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+
+import { CUSTOM_FIELDS } from './constants';
+import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
+import BaseForm from './Forms/BaseForm';
+import StandardForm from './Forms/StandardForm';
+import UPIForm from './Forms/UPIForm';
+import track from './track';
 
 const PAYMENT_LINKS_TYPES = {
   BASE: 'base',
@@ -122,6 +131,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
       formData: {
         currency: props.user.merchant.currency,
       },
+      dynamicFields: [],
     };
   }
 
@@ -137,16 +147,11 @@ export default class PaymentLinkCreateV2 extends React.Component {
   componentDidMount() {
     this.prepareDataForPaymentLinkCreation()
       .then(() => {
-        this.setState(
-          {
-            isLoading: false,
-          },
-          () => {
-            if (this.isIntentDuplicate && this.state.formData.notes) {
-              this.onChangeNotes(this.state.formData.notes);
-            }
-          },
-        );
+        this.setState({ isLoading: false }, () => {
+          if (this.isIntentDuplicate && this.state.formData.notes) {
+            this.onChangeNotes(this.state.formData.notes);
+          }
+        });
       })
       .catch(() => {
         // TODO: Handle Error case
@@ -157,23 +162,45 @@ export default class PaymentLinkCreateV2 extends React.Component {
   }
 
   prepareDataForPaymentLinkCreation() {
-    const promiseList = [];
+    const { location, fetchReminders, reminders, fetchRemindersMerchantConfigs } = this.props;
 
-    const searchQuery = getURLQueryParams(this.props.location.search);
+    const promiseList = [];
+    const searchQuery = getURLQueryParams(location.search);
+
     if (searchQuery.duplicate_id) {
       promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
     }
 
-    if (!this.props.reminders.reminders.items.length) {
-      promiseList.push(this.props.fetchReminders());
+    if (!reminders.reminders.items.length) {
+      promiseList.push(fetchReminders());
     }
 
-    if (!this.props.reminders.merchant_config.items.length) {
-      promiseList.push(this.props.fetchRemindersMerchantConfigs());
+    if (!reminders.merchant_config.items.length) {
+      promiseList.push(fetchRemindersMerchantConfigs());
     }
 
-    return Promise.all(promiseList);
+    if (showDynamicFields()) {
+      promiseList.push(this.fetchDynamicFields());
+    }
+
+    return Promise.allSettled(promiseList);
   }
+
+  fetchDynamicFields = async () => {
+    try {
+      const res = await fetchPaymentLinkCustomFields();
+      const fields = res?.data?.configurations || [];
+
+      if (fields.length > 0) {
+        this.setState({ dynamicFields: fields });
+      }
+    } catch (error) {
+      this.props.showNotification({
+        type: 'error',
+        message: error?.errors?.join(' '),
+      });
+    }
+  };
 
   // Duplicate Payment Link
   fetchIfIntentDuplicate = (duplicatePLId) => {
@@ -339,8 +366,10 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
   // eslint-disable-next-line consistent-return
   onFieldChange = (event) => {
-    const fieldValue = event.target.value;
-    const fieldName = event.target.name;
+    const { value, name, id } = event.target;
+
+    const fieldValue = value;
+    const fieldName = name;
 
     const isInvalidField = !fieldName || fieldName.indexOf('notes[') > -1;
     if (isInvalidField) return true;
@@ -349,21 +378,25 @@ export default class PaymentLinkCreateV2 extends React.Component {
       // some case is breaking in UI , TODO need to check and remove this
       // eslint-disable-next-line react/no-access-state-in-setstate
       ...this.state.formData,
-      [fieldName]: fieldValue,
     };
 
-    const isChecked = !!event.target.value;
+    const isChecked = !!value;
+
     if (fieldName === 'contact') {
       formData.sms_notify = isChecked ? '1' : '0';
       document.querySelector(`[name=sms_notify]`).checked = isChecked;
+      formData[fieldName] = fieldValue;
     } else if (fieldName === 'email') {
       formData.email_notify = isChecked ? '1' : '0';
       document.querySelector(`[name=email_notify]`).checked = isChecked;
+      formData[fieldName] = fieldValue;
+    } else if (id.includes(CUSTOM_FIELDS)) {
+      formData[CUSTOM_FIELDS] = { ...(formData[CUSTOM_FIELDS] || {}), [fieldName]: fieldValue };
+    } else {
+      formData[fieldName] = fieldValue;
     }
 
-    this.setState({
-      formData,
-    });
+    this.setState({ formData });
   };
 
   // Get confirmation before user closes the creation form
@@ -421,7 +454,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
   render() {
     const { props, state } = this;
-    const { linkType } = state;
+    const { linkType, dynamicFields } = state;
     const { user } = props;
     const { merchant } = user;
 
@@ -463,8 +496,8 @@ export default class PaymentLinkCreateV2 extends React.Component {
             onChangeNotes={this.onChangeNotes}
             isMobileResolution={props.isMobileResolution}
             history={props.history}
-            showPayerName={showPayerNamePL()}
             contactPlaceholder={CONTACT_PLACEHOLDER[merchant.country_code]}
+            dynamicFields={dynamicFields}
           />
         )}
       </div>

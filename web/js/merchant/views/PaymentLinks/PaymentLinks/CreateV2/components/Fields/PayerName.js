@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
 
-const PayerName = ({ defaultValue, required }) => (
+const PayerName = ({ defaultValue, required, disabled }) => (
   <Input
     name="name"
     label="Payer Name"
@@ -9,6 +9,7 @@ const PayerName = ({ defaultValue, required }) => (
     labelClass="Input-label pb-8"
     defaultValue={defaultValue}
     required={required}
+    disabled={disabled}
   />
 );
 

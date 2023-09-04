@@ -1,23 +1,25 @@
 import { Fragment } from 'react';
+import { Link } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import ProductWrapper from 'common/ui/ProductWrapper';
 import { compose, bindActionCreators } from 'redux';
-import DataTable from 'common/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
-import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-import { luminateRow } from 'merchant/reducers/app';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { batchDownload } from 'merchant/reducers/batches';
+
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import DataTable from 'common/ui/Table/DataTable';
+import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
+import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
+import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { DocLink } from 'merchant/components/DocsLink';
-import Spinner from 'common/ui/Spinner';
-import track from './track';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ListContainer from 'merchant/containers/ListContainer';
+import { luminateRow } from 'merchant/reducers/app';
+import { batchDownload } from 'merchant/reducers/batches';
 import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+import track from './track';
 
 const batchStatus = {
   ...status,
@@ -93,9 +95,13 @@ class BatchList extends ListContainer {
     this.props.gaEvents.trackGoToLinks('Batch Uploads');
   }
 
-  downloadSampleFile = () => {
-    this.props.gaEvents.trackSampleFileDownload('From List View');
+  downloadSampleFile = (e) => {
+    const { onSampleFileDownload = () => {}, gaEvents } = this.props;
+
+    gaEvents.trackSampleFileDownload('From List View');
     track.downloadSample(this.props.batchType);
+
+    onSampleFileDownload(e);
   };
 
   trackViewDocumentation = () => {
@@ -116,14 +122,12 @@ class BatchList extends ListContainer {
       onSearchAnalytics = () => {},
       trackPagination,
       showUploadForAdminOrOwner = false,
-      batchType,
-      onSampleFileDownload,
-      isPaymentPageDetailsLoading,
       propsTabData = [],
+      isSampleFileLoading,
+      shouldShowSampleDownloadBtn = false,
     } = this.props;
     const { user } = session;
     const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
-    const showDownloadSampleFile = sampleUrl && batchType !== BATCH_TYPE;
     const { tabsData } = this.state;
     const tabData = propsTabData?.length > 0 ? propsTabData : tabsData;
 
@@ -132,23 +136,20 @@ class BatchList extends ListContainer {
         tabsData={tabData}
         extra={
           <>
-            <ShowWhen additionalCondition={() => showDownloadSampleFile}>
+            <ShowWhen additionalCondition={() => sampleUrl}>
               <a class="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
                 Download Sample File
               </a>
             </ShowWhen>
-            <ShowWhen additionalCondition={() => batchType === BATCH_TYPE}>
-              {isPaymentPageDetailsLoading ? (
-                <Spinner center />
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn-link hidden-xs"
-                  onClick={onSampleFileDownload}
-                >
-                  Download Sample File
-                </button>
-              )}
+            <ShowWhen additionalCondition={() => !sampleUrl && shouldShowSampleDownloadBtn}>
+              <Link
+                variant="button"
+                onClick={this.downloadSampleFile}
+                isDisabled={isSampleFileLoading}
+                accessibilityLabel="download-sample-file"
+              >
+                Download Sample File
+              </Link>
             </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}

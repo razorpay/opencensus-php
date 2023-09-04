@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
+import LazyLoad from 'react-lazyload';
 import Spinner from 'common/ui/Spinner';
 import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -34,6 +35,7 @@ import {
   SKIP_CARD_MANDATE_SUMMARY,
   MISSED_ORDER_PAYMENT_LINK,
   ACCOUNT_SETTINGS,
+  DYNAMIC_FIELDS_PL,
 } from './deeplink-constants';
 import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
@@ -47,7 +49,9 @@ import {
   isWhatsappNotificationEnabled,
   isSmsNotificationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
 import LoaderDots from 'common/ui/LoaderDots';
+import DynamicFieldsPl from './dynamicFieldsPl';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -514,6 +518,14 @@ class CongfigurationContainer extends Component {
               <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
                 <ToggleSetting {...skipCardMandateSummaryProps} />
               </IntoView>
+            </ShowWhen>
+
+            <ShowWhen additionalCondition={() => showDynamicFields()}>
+              <LazyLoad height={300} offset={50} once>
+                <IntoView hashedWith={DYNAMIC_FIELDS_PL}>
+                  <DynamicFieldsPl />
+                </IntoView>
+              </LazyLoad>
             </ShowWhen>
           </div>
         )}

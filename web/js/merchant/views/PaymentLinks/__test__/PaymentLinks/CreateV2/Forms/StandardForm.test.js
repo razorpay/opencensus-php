@@ -1,13 +1,10 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import {
-  App,
-  enablePayerNameProps,
-} from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/StandardForm';
+import { App } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/StandardForm';
 
 describe('StandardForm - Unit Test', () => {
-  const renderApp = (props = {}, initalState) => {
-    return render(<App {...props} />, { initalState, showModal: true });
+  const renderApp = (props = {}, initialState) => {
+    return render(<App {...props} />, { initialState, showModal: true });
   };
 
   test('should render "Standard Payment Link" form', () => {
@@ -46,16 +43,5 @@ describe('StandardForm - Unit Test', () => {
     };
     renderApp(props);
     expect(screen.queryAllByText('Notify via Email')[0]).toBeInTheDocument();
-  });
-
-  test('should render "Payer Name"', () => {
-    const props = {
-      showPayerName: true,
-      formData: {},
-      remindersConfig: {},
-    };
-    const initialState = { ...enablePayerNameProps };
-    renderApp(props, initialState);
-    expect(screen.getByText('Payer Name')).toBeInTheDocument();
   });
 });

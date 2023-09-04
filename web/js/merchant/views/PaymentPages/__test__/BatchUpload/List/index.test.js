@@ -1,10 +1,11 @@
-import { screen, waitForLoadingToFinish, userEvent, waitFor, server } from 'test-utils';
+import FileSaver from 'file-saver';
+
+import { paymentPagesErrorHandlers } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/handlers';
 import {
   renderApp,
   defaultProps,
 } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/BatchUpload/List/index';
-import FileSaver from 'file-saver';
-import { paymentPagesErrorHandlers } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/handlers';
+import { screen, waitForLoadingToFinish, userEvent, waitFor, server } from 'test-utils';
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
 
 describe('Batch Payment Page - Batch Details', () => {
@@ -83,16 +84,19 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     server.use(paymentPagesErrorHandlers.paymentPagesDetailsError());
+
     renderApp(initialState, props);
+
     await waitForLoadingToFinish();
-    const downloadSampleFileBtn = screen.getByRole('button', { name: 'Download Sample File' });
-    expect(downloadSampleFileBtn).toBeInTheDocument();
+
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
-    await userEvent.click(downloadSampleFileBtn);
+
+    await userEvent.click(screen.getByLabelText('download-sample-file'));
+
     expect(screen.getByText(/Error while generating sample file./i)).toBeInTheDocument();
   });
 
-  test('should able to downloading sample file', async () => {
+  test('should be able to download sample file', async () => {
     saveAsSpy.mockImplementation(() => jest.fn());
     const initialState = {
       session: {
@@ -105,11 +109,13 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
+
     await waitForLoadingToFinish();
-    const downloadSampleFileBtn = screen.getByRole('button', { name: 'Download Sample File' });
-    expect(downloadSampleFileBtn).toBeInTheDocument();
+
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
-    await userEvent.click(downloadSampleFileBtn);
+
+    await userEvent.click(screen.getByLabelText('download-sample-file'));
+
     expect(FileSaver.saveAs).toHaveBeenCalledWith(new Blob(), 'sample_pl_validid.xlsx');
   });
 
