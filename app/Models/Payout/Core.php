@@ -1293,7 +1293,8 @@ class Core extends Base\Core
             $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
             $lastId        = $payout->getStatusDetailsId();
 
-            if ($statusDetails !== null)
+            if (($statusDetails !== null) and
+                (Status::isFinalState($payout->getStatus()) === false))
             {
                 if ($lastId !== null)
                 {
@@ -1321,7 +1322,8 @@ class Core extends Base\Core
             $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
             $lastId        = $payout->getStatusDetailsId();
 
-            if ($statusDetails !== null)
+            if (($statusDetails !== null) and
+                (Status::isFinalState($payout->getStatus()) === false))
             {
                 if ($lastId !== null)
                 {

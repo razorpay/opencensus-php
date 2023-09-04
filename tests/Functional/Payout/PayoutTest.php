@@ -25762,7 +25762,6 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-
     public function testStatusDetailsInPayoutUpdatedWebhookForPartnerBankPendingNEFTMode()
     {
         $payloadUpdatedOne = null;
@@ -25865,6 +25864,85 @@ class PayoutTest extends OAuthTestCase
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testStatusDetailsForAInitiatedWebhookForAFinalStatusPayout()
+    {
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \WpOrg\Requests\Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
+                'parameters' => [
+                    'processed_by_time' => '',
+                ],
+            ],
+        ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('payout_bank_processing', $statusDetails['reason']);
+        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time', $statusDetails['description']);
+
+        $payoutUpdatedEventData = $this->testData['testStatusDetailsInPayoutUpdatedWebhookForPayoutProcessing'];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+
+        $this->fixtures->edit('payout', $payout->getId(), ['status' => 'failed']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
+                'parameters' => [
+                    'processed_by_time' => '',
+                ],
+            ],
+        ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('payout_bank_processing', $statusDetails['reason']);
+        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time', $statusDetails['description']);
+
+        $payoutStatusDetails = $this->getDbEntities('payouts_status_details');
+        $this->assertEquals(1, count($payoutStatusDetails));
     }
 
     public function testStatusDetailsInPayoutUpdatedWebhookForNullCase()
