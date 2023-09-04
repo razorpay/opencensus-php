@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -88,14 +88,6 @@ function SettingsView({
     });
   };
 
-  const options = useMemo(() => {
-    // only show basic settings for wooc stores
-    if (platform === PLATFORMS.WOOCOMMERCE) {
-      return [SETTINGS_OPTIONS[0]];
-    }
-    return SETTINGS_OPTIONS;
-  }, [platform]);
-
   return (
     <div className="settings-view" data-testid="settings-view">
       <div className="cod-setting-item">
@@ -108,7 +100,7 @@ function SettingsView({
           value={engine || {}}
           size="small"
           name="engine"
-          options={options}
+          options={SETTINGS_OPTIONS}
           onChange={onSettingTypeChange}
           className="settings-select"
         />

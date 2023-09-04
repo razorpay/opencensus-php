@@ -138,7 +138,7 @@ const ProductsModal = ({
       >
         <InfiniteLoader<Product>
           isCursorBased
-          pageSize={250}
+          pageSize={100}
           url="1cc/shipping/cod/item/category/search/products"
           rowRenderer={(item) => (
             <ProductItem

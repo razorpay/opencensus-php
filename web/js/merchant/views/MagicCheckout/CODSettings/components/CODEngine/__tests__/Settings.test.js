@@ -62,22 +62,4 @@ describe('Setting view', () => {
     expect(screen.queryByText('Advanced')).toBeInTheDocument();
     expect(options.length).toBe(2);
   });
-  // TODO - remove later
-  test('should render settings with basic for wooc in dropdown', () => {
-    const state = {
-      ...initState,
-      magic_settings: {
-        ...initState.magic_settings,
-        platform: 'woocommerce',
-        cod_engine: true,
-        cod_engine_type: 'slab-charge',
-      },
-    };
-    render(<App state={state} />);
-    const SettingsView = screen.getByText('Type of setting');
-    expect(SettingsView).toBeInTheDocument();
-    const options = screen.getAllByRole('option');
-    expect(screen.queryByText('Advanced')).not.toBeInTheDocument();
-    expect(options.length).toBe(1);
-  });
 });
