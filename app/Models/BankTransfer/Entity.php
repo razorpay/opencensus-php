@@ -563,6 +563,11 @@ class Entity extends Base\PublicEntity
         return $this->requestSource;
     }
 
+    public function getTransactionIdViaAttribute()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setExpected(bool $expected)

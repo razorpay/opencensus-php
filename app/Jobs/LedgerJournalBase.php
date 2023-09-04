@@ -50,6 +50,8 @@ class LedgerJournalBase extends Job
     const TRANSACTOR_ID          = "transactor_id";
     const TRANSACTOR_EVENT       = "transactor_event";
 
+    const IS_DUPLICATE = "is_duplicate";
+
     public function __construct(string $mode, array $payload)
     {
         parent::__construct($mode);
@@ -119,7 +121,7 @@ class LedgerJournalBase extends Job
                 TraceCode::LEDGER_JOURNAL_QUEUE_JOB_DECODED,
                 $traceData);
 
-            // check if dual write already happened
+            // check if dual write already happened via createTransactionInLedgerReverseShadowFlow
             $apiTransaction = $this->repoManager->transaction->find($this->ledgerResponse['id']);
             if ($apiTransaction != null)
             {
@@ -134,15 +136,29 @@ class LedgerJournalBase extends Job
             switch ($entityName)
             {
                 case Entity::BANK_TRANSFER :
-                    $response = (new BankTransferCore())
-                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
-
+                    if ($skipTransactionCreation === true)
+                    {
+                        $response = (new BankTransferCore())
+                            ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
+                    else
+                    {
+                        $response = (new BankTransferCore())
+                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
                     break;
 
                 case Entity::ADJUSTMENT :
-                    $response = (new AdjustmentCore())
-                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
-
+                    if ($skipTransactionCreation === true)
+                    {
+                        $response = (new AdjustmentCore())
+                            ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
+                    else
+                    {
+                        $response = (new AdjustmentCore())
+                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
                     break;
 
                 case Entity::PAYOUT :
@@ -172,19 +188,34 @@ class LedgerJournalBase extends Job
                         $response = (new ReversalCore)
                             ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
                     }
-
                     break;
 
                 case Entity::CREDIT_TRANSFER :
-                    $response = (new CreditTransferCore())
-                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
-
+                    if ($skipTransactionCreation === true)
+                    {
+                        $response = (new CreditTransferCore())
+                            ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
+                    else
+                    {
+                        $response = (new CreditTransferCore())
+                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
                     break;
 
                 case Entity::FUND_ACCOUNT_VALIDATION :
-                    if (strpos($transactorEvent, Ledger\FundAccountValidation::FAV_INITIATED) !== false) {
-                        $response = (new FavCore)
-                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    if (strpos($transactorEvent, Ledger\FundAccountValidation::FAV_INITIATED) !== false)
+                    {
+                        if ($skipTransactionCreation === true)
+                        {
+                            $response = (new FavCore)
+                                ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                        }
+                        else
+                        {
+                            $response = (new FavCore)
+                                ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                        }
                     }
                     break;
 
@@ -194,6 +225,13 @@ class LedgerJournalBase extends Job
                         TraceCode::LEDGER_JOURNAL_QUEUE_JOB_ENTITY_NAME_NOT_SUPPORTED,
                         $traceData
                     );
+            }
+
+            // Duplicate request encountered during updateBalanceAndTransactionIDInLedgerReverseShadowFlow
+            if (isset($response[self::IS_DUPLICATE]) === true)
+            {
+                $this->delete();
+                return;
             }
 
             $this->trace->info(

@@ -20,6 +20,7 @@ use RZP\Jobs\QueuedCreditTransferRequests;
 use RZP\Models\Transaction\Core as TxnCore;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Transaction\Processor\CreditTransfer as CreditTransferTxnProcessor;
@@ -32,6 +33,8 @@ class Core extends Base\Core
     protected $mutex;
 
     const CREDIT_TRANSFER_MUTEX_LOCK_TIMEOUT = 180;
+
+    const IS_DUPLICATE = "is_duplicate";
 
     public function __construct()
     {
@@ -438,6 +441,72 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * This function will perform the following tasks after successful journal creation on CLS for RX reverse shadow merchants
+     * update the merchant balance, update the transaction id in the credit transfer entity, save fee breakup entity,
+     * push api.transaction.created event
+     * @param string $entityId
+     * @param array $ledgerResponse
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $creditTransfer = $this->repo->credit_transfer->find($entityId);
+
+        if (self::shouldCreditTransferGoThroughLedgerReverseShadowFlow($creditTransfer) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $creditTransfer->getMerchantId()]);
+        }
+
+        $journalId = $ledgerResponse[Entity::ID];
+
+        // Check if worker is processing duplicate request
+        if ($this->isTransactionIdUpdated($creditTransfer, $journalId) === true)
+        {
+            return [
+                self::IS_DUPLICATE => true
+            ];
+        }
+
+        $merchantId = $ledgerResponse[LedgerConstants::LEDGER_ENTRY][0][Entity::MERCHANT_ID];;
+        $newBalance = Ledger\CreditTransfer::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $this->mutex->acquireAndRelease('ct_' . $entityId,
+            function() use ($creditTransfer, $entityId, $journalId, $merchantId, $newBalance)
+            {
+                $creditTransfer->reload();
+
+                if ($this->isTransactionIdUpdated($creditTransfer, $journalId) === true)
+                {
+                    return [
+                        self::IS_DUPLICATE => true
+                    ];
+                }
+
+                $this->repo->transaction(function() use ($creditTransfer, $entityId, $journalId, $newBalance)
+                {
+                    (new CreditTransferTxnProcessor($creditTransfer))->updateBalanceForLedgerReverseShadow($entityId, $journalId, $newBalance);
+
+                    $creditTransfer->setTransactionId($journalId);
+                    $this->repo->saveOrFail($creditTransfer);
+                });
+
+                // dispatch event for txn created
+                (new Transaction\Core())->dispatchEventForLedgerTransactionCreated($journalId, $merchantId);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity' => $entityId,
+            'txn'    => $journalId,
+        ];
+    }
+
     public static function shouldCreditTransferGoThroughLedgerReverseShadowFlow(Entity $creditTransfer)
     {
         if (($creditTransfer->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
@@ -603,5 +672,20 @@ class Core extends Base\Core
 
             $creditTransfer->payerUser()->associate($payerUser);
         }
+    }
+
+    // Function to check if the entity's transaction id field has been updated
+    protected function isTransactionIdUpdated($creditTransfer, $journalId)
+    {
+        if (empty($creditTransfer->getTransactionId()) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                'id' => $journalId
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 }

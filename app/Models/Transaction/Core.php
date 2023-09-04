@@ -54,6 +54,7 @@ use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
+use RZP\Models\Transaction\Ledger\Core as TransactionLedgerCore;
 
 class Core extends Base\Core
 {
@@ -1955,9 +1956,54 @@ class Core extends Base\Core
         $this->app->events->dispatch('api.transaction.created', $txn);
     }
 
+    /**
+     * Dispatches webhook, sms and/or email for newly created transaction.
+     * This is a safe method i.e. it is not expected to throw any exceptions.
+     * Notifier and webhook dispatcher used here suppress and log exceptions if any.
+     *
+     * @param Entity $txn
+     */
+    public function dispatchEventForLedgerTransactionCreated(string $id, string $merchantId)
+    {
+        $txn = (new TransactionLedgerCore())->findByIdFromLedger($id, $merchantId);
+
+        if (empty($txn) === false)
+        {
+            (new Notifier($txn))->notify();
+
+            $this->app->events->dispatch('api.transaction.created', $txn);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_TRANSACTION_DISPATCH_SKIPPED,
+                [
+                    'id'    => $id
+                ]
+            );
+        }
+    }
+
     public function dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification(Entity $txn)
     {
         $this->app->events->dispatch('api.transaction.created', $txn);
+    }
+
+    public function dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification(string $id, string $merchantId)
+    {
+        $txn = (new TransactionLedgerCore())->findByIdFromLedger($id, $merchantId);
+
+        if (empty($txn) === false)
+        {
+            $this->app->events->dispatch('api.transaction.created', $txn);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_TRANSACTION_DISPATCH_SKIPPED,
+                [
+                    'id'    => $id
+                ]
+            );
+        }
     }
 
     public function dispatchEventForTransactionUpdated(Entity $txn)
@@ -2030,8 +2076,13 @@ class Core extends Base\Core
         }
     }
 
-    // used to save fee details. Present use-case in the transaction dual write worker when transaction is not created,
-    // only fee details entity is created
+    /**
+     * This function will save the fee breakup entity without transaction entity association
+     * @param string $txnId
+     * @param string $entityId
+     * @param PublicCollection $feesSplit
+     * @throws Exception\LogicException
+     */
     public function saveFeeDetailsWithoutTransactionAssociation(string $txnId, string $entityId, PublicCollection $feesSplit)
     {
         if ($feesSplit->isEmpty() === true)

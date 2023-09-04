@@ -67,7 +67,8 @@ class Core extends Base\Core
                     'id' => $id,
                 ]);
 
-            throw $e;
+            // Suppressing the error and returning null in case of failures at Ledger (CLS) service
+            return null;
         }
 
         return $apiResponse;

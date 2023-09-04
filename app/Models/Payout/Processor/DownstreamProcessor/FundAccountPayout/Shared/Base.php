@@ -378,45 +378,33 @@ class Base extends FundAccountPayout\Base
     }
 
     /**
-     * @param $payout Entity
-     * @param $ledgerResponse
-     *
-     * @return mixed
-     * @throws LogicException
-     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * This function will update the merchant balance, save fee breakup entity
+     * @param $payout
+     * @param $entityId
+     * @param $txnId
+     * @param $newBalance
+     * @throws Exception\LogicException
      */
-    public function updateBalanceForLedgerReverseShadow($payout, $ledgerResponse)
+    public function updateBalanceForLedgerReverseShadow($payout, $entityId, $txnId, $newBalance)
     {
         $this->trace->info(
             TraceCode::BALANCE_UPDATE_FOR_LEDGER_REVERSE_SHADOW_BEGINS,
             [
-                'entity_id' => $payout->getPublicId(),
+                'entity_id' => $entityId,
             ]
         );
 
-        $newBalance = Ledger\Payout::getMerchantBalanceFromLedgerResponse($ledgerResponse);
-
         $feeSplit = (new PayoutTxnProcessor($payout))->updateBalanceForLedger($newBalance);
 
-        // if fee split is null, it may mean that a txn is already created
         if ($feeSplit !== null)
         {
-            (new TxnCore)->saveFeeDetailsWithoutTransactionAssociation($ledgerResponse[Entity::ID], $payout->getPublicId(), $feeSplit);
-
-            // TODO: This dispatch has to be moved to some other location once ledger becomes primary
-            // As we will stop the dual write to the transactions table
-            // If fee split is null, it means that duplicate txn was found
-            // so no dispatch necessary again.
-//            if ($payout->getIsPayoutService() === false)
-//            {
-//                $this->app->events->dispatch('api.transaction.created', $txn);
-//            }
+            (new TxnCore)->saveFeeDetailsWithoutTransactionAssociation($txnId, $entityId, $feeSplit);
         }
 
         $this->trace->info(
             TraceCode::BALANCE_FOR_LEDGER_REVERSE_SHADOW_UPDATED,
             [
-                'entity_id' => $payout->getPublicId(),
+                'entity_id' => $entityId,
             ]
         );
     }

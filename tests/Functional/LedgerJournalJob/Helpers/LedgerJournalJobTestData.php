@@ -113,6 +113,61 @@ return [
         ]
     ],
 
+    'testReversalTransactionIdUpdate' => [
+        'payload' => [
+            "id"                => "HNjsypA96SgJKJ",
+            "created_at"        => "1623848289",
+            "updated_at"        => "1632368730",
+            "amount"            => "130.000000",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => "rvrsl_SampleRvrslId3",
+            "transactor_event"  => "payout_reversed",
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "HNjsypHNXdSiei",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => "21200",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => ['X'],
+                    ],
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => "",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va_vendor'],
+                        'transactor'         => ['X'],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
     'testBankTransferTransactionCreation' => [
         'payload' => [
             "id"                => "HNjsypA96SgJKJ",
@@ -150,6 +205,61 @@ return [
                     "created_at"  => "1623848289",
                     "updated_at"  => "1623848289",
                     "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => "",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va_vendor'],
+                        'transactor'         => ['X'],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testBankTransferTransactionIdUpdate' => [
+        'payload' => [
+            "id"                => "HNjsypA96SgJKJ",
+            "created_at"        => "1623848289",
+            "updated_at"        => "1632368730",
+            "amount"            => "130.000000",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => "bt_SampleBnkTId13",
+            "transactor_event"  => "fund_loading_processed",
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "HNjsypHNXdSiei",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "10000000000000",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => "24500",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => ['X'],
+                    ],
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "10000000000000",
                     "journal_id"  => "HNjsypA96SgJKJ",
                     "account_id"  => "HN5AGgmKu0ki13",
                     "amount"      => "130.000000",
@@ -276,5 +386,60 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testCreditTransferTransactionIdUpdate' => [
+        'payload' => [
+            "id"                => "HNjsypA96SgJKJ",
+            "created_at"        => "1623848289",
+            "updated_at"        => "1632368730",
+            "amount"            => "130.000000",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => "ct_SampleCtTrfId3",
+            "transactor_event"  => "va_to_va_credit_processed",
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "HNjsypHNXdSiei",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "10000000000000",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => "21200",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => ['X'],
+                    ],
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "10000000000000",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => "",
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => ['bacc_sampleBankngId'],
+                        'fund_account_type'  => ['merchant_va_vendor'],
+                        'transactor'         => ['X'],
+                    ],
+                ]
+            ]
+        ]
+    ],
 ];

@@ -16,6 +16,7 @@ use RZP\Constants\Product;
 use RZP\Jobs\LedgerStatus;
 use RZP\Jobs\Transactions;
 use RZP\Models\FundAccount;
+use RZP\Models\Transaction;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Constants\HyperTrace;
@@ -48,6 +49,8 @@ class Core extends Base\Core
     const VALIDATION_UPDATE_MUTEX_RETRY_COUNT = 1;
 
     const FAV_QUEUE_FOR_FTS_MUTEX_LOCK_TIMEOUT = 180;
+
+    const IS_DUPLICATE = "is_duplicate";
 
     public function __construct()
     {
@@ -1163,6 +1166,85 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * This function will perform the following tasks after successful journal creation on CLS for RX reverse shadow merchants
+     * update the merchant balance, update the transaction id in the fav entity, save fee breakup entity,
+     * push api.transaction.created event
+     * @param string $entityId
+     * @param array $ledgerResponse
+     * @param PublicCollection|null $feeSplit
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse, PublicCollection $feeSplit = null)
+    {
+        $fav = $this->repo->fund_account_validation->find($entityId);
+
+        if(self::shouldFavGoThroughLedgerReverseShadowFlow($fav) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                ,ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $fav->getMerchantId()]);
+        }
+
+        if ($fav->getFundAccountType() === FundAccount\Type::VPA)
+        {
+            $this->trace->info(
+                TraceCode::LEDGER_TRANSACTIONS_QUEUE_VPA_BASED_FAV_NOT_ALLOWED,
+                [
+                    'fav_id' => $fav->getId(),
+                ]
+            );
+
+            return [
+                'entity_id' => $entityId,
+                'txn_id'    => null,
+            ];
+        }
+
+        $journalId = $ledgerResponse[Entity::ID];
+
+        // Check if worker is processing duplicate request
+        if ($this->isTransactionIdUpdated($fav, $journalId) === true)
+        {
+            return [
+                self::IS_DUPLICATE => true
+            ];
+        }
+
+        $processor = Processor\Factory::get($fav);
+        $newBalance = Transaction\Processor\Ledger\FundAccountValidation::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $this->mutex->acquireAndRelease('fav_'.$entityId,
+            function () use ($fav, $processor, $entityId, $journalId, $newBalance)
+            {
+                $fav->reload();
+
+                if ($this->isTransactionIdUpdated($fav, $journalId) === true)
+                {
+                    return [
+                        self::IS_DUPLICATE => true
+                    ];
+                }
+
+                $this->repo->transaction(function () use ($fav, $processor, $entityId, $journalId, $newBalance)
+                {
+                    $processor->updateBalanceForLedgerReverseShadow($entityId, $journalId, $newBalance);
+
+                    $fav->setTransactionId($journalId);
+                    $this->repo->saveOrFail($fav);
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $journalId,
+        ];
+    }
+
     public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
         if(empty($whitelistIds) === false)
@@ -1253,4 +1335,18 @@ class Core extends Base\Core
         }
     }
 
+    // Function to check if the entity's transaction id field has been updated
+    protected function isTransactionIdUpdated($fav, $journalId)
+    {
+        if (empty($fav->getTransactionIdViaAttribute()) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                'id' => $journalId
+            ]);
+
+            return true;
+        }
+
+        return false;
+    }
 }

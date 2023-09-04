@@ -178,6 +178,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
+    public function setTransactionId($id)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $id);
+    }
+
     public function setCreatedAt($createdAt)
     {
         $this->setAttribute(self::CREATED_AT, $createdAt);

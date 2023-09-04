@@ -83,6 +83,7 @@ use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Jobs\PartnerBankDowntimeHoldPayouts;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -90,6 +91,8 @@ use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Transaction\Core as TransactionCore;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -207,6 +210,8 @@ class Core extends Base\Core
     const CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY = 'ca_fund_management_payout_balance_config';
 
     const ACCOUNT_TYPE_DIRECT = 'direct';
+
+    const IS_DUPLICATE = "is_duplicate";
 
     /**
      * @var Mutex
@@ -7821,9 +7826,15 @@ class Core extends Base\Core
         ];
     }
 
-    // here we'll perform the following tasks - update the balance entity with the latest balance received from CLS,
-    // update the payout's txn_id from CLS response. Payout's txn_id need not be updated for the payouts created via payout microservice
-    // create fee breakup entity
+    /**
+     * This function will perform the following tasks after successful journal creation on CLS for RX reverse shadow merchants
+     * update the merchant balance, update the transaction id in the payout entity (API payouts), save fee breakup entity,
+     * push api.transaction.created event
+     * @param string $entityId
+     * @param array $ledgerResponse
+     * @return mixed
+     * @throws Exception\LogicException
+     */
     public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
         $isPayoutServicePayout = false;
@@ -7845,6 +7856,16 @@ class Core extends Base\Core
                 ['merchant_id' => $payout->getMerchantId()]);
         }
 
+        $journalId = $ledgerResponse[Entity::ID];
+
+        // Check if worker is processing duplicate request
+        if ($this->isTransactionIdUpdated($payout, $journalId) === true)
+        {
+            return [
+                self::IS_DUPLICATE => true
+            ];
+        }
+
         // Fixing fund account payout here for now
         // Since we are only exploring X balance based payouts
         // Customer wallet payouts and Merchant payouts are usually on PG balance
@@ -7858,27 +7879,39 @@ class Core extends Base\Core
 
         $subProcessor = $downstreamProcessor->getSubProcessorClass();
 
-        list($entityId, $txnId) = $this->mutex->acquireAndRelease('pout_' . $entityId,
-            function() use ($payout, $ledgerResponse, $subProcessor, $isPayoutServicePayout) {
+        $merchantId = $ledgerResponse[LedgerConstants::LEDGER_ENTRY][0][Entity::MERCHANT_ID];
+        $newBalance = Ledger\Payout::getMerchantBalanceFromLedgerResponse($ledgerResponse);
 
-                $payout->reload();
+        $this->mutex->acquireAndRelease('pout_' . $entityId,
+            function() use ($payout, $subProcessor, $isPayoutServicePayout, $entityId, $journalId, $merchantId, $newBalance)
+            {
+                if ($isPayoutServicePayout === false)
+                {
+                    $payout->reload();
+                }
 
-                return $this->repo->transaction(function() use ($ledgerResponse, $payout, $subProcessor, $isPayoutServicePayout) {
-                    $subProcessor->updateBalanceForLedgerReverseShadow($payout, $ledgerResponse);
+                if ($this->isTransactionIdUpdated($payout, $journalId) === true)
+                {
+                    return [
+                        self::IS_DUPLICATE => true
+                    ];
+                }
+
+                $this->repo->transaction(function() use ($payout, $subProcessor, $isPayoutServicePayout, $entityId, $journalId, $newBalance) {
+                    $subProcessor->updateBalanceForLedgerReverseShadow($payout, $entityId, $journalId, $newBalance);
 
                     // No need to update payout if it doesn't exists in api db. PS dual write will take care of it.
-                    if ($isPayoutServicePayout === true)
+                    if ($isPayoutServicePayout === false)
                     {
-                        return [$payout->getPublicId(), $ledgerResponse[Entity::ID]];
+                        $payout->setTransactionId($journalId);
+                        $this->repo->saveOrFail($payout);
                     }
-
-                    $payout->setTransactionId($ledgerResponse[Entity::ID]);
-                    // TODO: check if transaction type is being populated with correct value transaction/customer_transaction
-
-                    $this->repo->saveOrFail($payout);
-
-                    return [$payout->getPublicId(), $ledgerResponse[Entity::ID]];
                 });
+
+                if ($payout->getIsPayoutService() === false)
+                {
+                    (new TransactionCore())->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($journalId, $merchantId);
+                }
             },
             60,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
@@ -7887,7 +7920,7 @@ class Core extends Base\Core
 
         return [
             'entity_id' => $entityId,
-            'txn_id'    => $txnId
+            'txn_id'    => $journalId
         ];
     }
 
@@ -9975,5 +10008,20 @@ class Core extends Base\Core
                 'configKey'   => self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY,
                 'merchant_id' => $merchantId
             ]);
+    }
+
+    // Function to check if the entity's transaction id field has been updated
+    protected function isTransactionIdUpdated($payout, $journalId)
+    {
+        if (empty($payout->getTransactionId()) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                'id' => $journalId
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 }

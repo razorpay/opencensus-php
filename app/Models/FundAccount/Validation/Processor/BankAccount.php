@@ -505,6 +505,12 @@ class BankAccount extends Base
         return $txn;
     }
 
+    public function updateBalanceForLedgerReverseShadow($entityId, $txnId, $newBalance)
+    {
+        (new Transaction\Processor\FundAccountValidation($this->validation))
+            ->updateBalanceForLedgerReverseShadow($entityId, $txnId, $newBalance);
+    }
+
     // The function to push the FAV ID to the FAV queue for FTS
     protected function dispatchFavToQueue()
     {

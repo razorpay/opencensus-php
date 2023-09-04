@@ -285,6 +285,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setTransactionId($id)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $id);
+    }
+
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);

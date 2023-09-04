@@ -349,6 +349,23 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
+    public function dispatchEventForLedgerTransactionCreated(Base\PublicEntity $bankTransfer, string $txnId, string $merchantId)
+    {
+        if ($bankTransfer->isBalanceTypeBanking() === true)
+        {
+            $transactionCore = new Transaction\Core;
+
+            if ($this->isLiveMode() === true)
+            {
+                $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
+            }
+            else
+            {
+                $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
+            }
+        }
+    }
+
     protected function processPaymentForPg(Entity $bankTransfer)
     {
         assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');

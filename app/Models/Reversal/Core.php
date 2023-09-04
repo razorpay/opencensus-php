@@ -38,6 +38,7 @@ use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\Ledger\RouteReversalJournalEvents;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Transaction\Core as TransactionCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
@@ -54,6 +55,8 @@ class Core extends Base\Core
 
     // Payout Service Mutex Keys
     const REVERSAL_CREATION_PAYOUT_SERVICE = 'reversal_creation_payout_service_';
+
+    const IS_DUPLICATE = "is_duplicate";
 
     public function __construct()
     {
@@ -1606,9 +1609,15 @@ class Core extends Base\Core
         ];
     }
 
-    // here we'll perform the following tasks - update the balance entity with the latest balance received from CLS,
-    // update the reversal's txn_id from CLS response. Reversal's txn_id need not be updated for the reversals created via payout microservice
-    // create fee breakup entity
+    /**
+     * This function will perform the following tasks after successful journal creation on CLS for RX reverse shadow merchants
+     * update the merchant balance, update the transaction id in the reversal entity (API reversal), save fee breakup entity,
+     * push api.transaction.created event
+     * @param string $entityId
+     * @param array $ledgerResponse
+     * @return mixed
+     * @throws Exception\LogicException
+     */
     public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
         $isPayoutServiceReversal = false;
@@ -1636,26 +1645,49 @@ class Core extends Base\Core
                 ['merchant_id' => $reversal->getMerchantId()]);
         }
 
-        list($entityId, $txnId) = $this->app['api.mutex']->acquireAndRelease(
-            'rvrsl_'.$entityId,
-            function () use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
+        $journalId = $ledgerResponse[Entity::ID];
+
+        // Check if worker is processing duplicate request
+        if ($this->isTransactionIdUpdated($reversal, $journalId) === true)
+        {
+            return [
+                self::IS_DUPLICATE => true
+            ];
+        }
+
+        $merchantId = $ledgerResponse[LedgerConstants::LEDGER_ENTRY][0][Entity::MERCHANT_ID];;
+        $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $this->app['api.mutex']->acquireAndRelease('rvrsl_'.$entityId,
+            function () use ($reversal, $isPayoutServiceReversal, $entityId, $journalId, $merchantId, $newBalance)
             {
-                // No need to make a call to payout service again if reversal belongs there.
                 if ($isPayoutServiceReversal === false)
                 {
                     $reversal->reload();
                 }
 
-                return $this->repo->transaction(function() use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
+                if ($this->isTransactionIdUpdated($reversal, $journalId) === true)
                 {
-                    (new Transaction\Processor\Reversal($reversal))->updateBalanceForLedgerReverseShadow($reversal, $ledgerResponse);
+                    return [
+                        self::IS_DUPLICATE => true
+                    ];
+                }
 
-                    $reversal->setTransactionId($ledgerResponse[Entity::ID]);
+                $this->repo->transaction(function() use ($reversal, $isPayoutServiceReversal, $entityId, $journalId, $newBalance)
+                {
+                    (new Transaction\Processor\Reversal($reversal))->updateBalanceForLedgerReverseShadow($entityId, $journalId, $newBalance);
 
-                    $this->repo->saveOrFail($reversal);
-
-                    return [$reversal->getPublicId(), $ledgerResponse[Entity::ID]];
+                    if ($isPayoutServiceReversal === false)
+                    {
+                        $reversal->setTransactionId($journalId);
+                        $this->repo->saveOrFail($reversal);
+                    }
                 });
+
+                if (($reversal->getEntityType() === E::PAYOUT) && ($isPayoutServiceReversal === false))
+                {
+                    (new TransactionCore())->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($journalId, $merchantId);
+                }
             },
             60,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
@@ -1663,7 +1695,7 @@ class Core extends Base\Core
 
         return [
             'entity_id' => $entityId,
-            'txn_id'    => $txnId,
+            'txn_id'    => $journalId,
         ];
     }
 
@@ -1969,5 +2001,20 @@ class Core extends Base\Core
             ]);
 
         return $reversal;
+    }
+
+    // Function to check if the entity's transaction id field has been updated
+    protected function isTransactionIdUpdated($reversal, $journalId)
+    {
+        if (empty($reversal->getTransactionId()) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                'id' => $journalId
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 }

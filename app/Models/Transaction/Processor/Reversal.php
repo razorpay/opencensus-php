@@ -94,7 +94,12 @@ class Reversal extends Base
         return [$this->txn, $this->feesSplit];
     }
 
-    // dispatchForSettlementBucketing doesn't happen in this method since txn creation on API is removed
+    /**
+     * This function is responsible to update the merchant balance, set fee breakup entity
+     * @param $newBalance
+     * @return PublicCollection feeSplit
+     * @throws Exception\LogicException
+     */
     public function updateBalanceForLedger($newBalance)
     {
         // define fee split entity
@@ -123,38 +128,33 @@ class Reversal extends Base
         return $this->feesSplit;
     }
 
-    public function updateBalanceForLedgerReverseShadow($reversal, $ledgerResponse)
+    /**
+     * This function will update the merchant balance, save fee breakup entity
+     * @param $entityId
+     * @param $txnId
+     * @param $newBalance
+     * @throws Exception\LogicException
+     */
+    public function updateBalanceForLedgerReverseShadow($entityId, $txnId, $newBalance)
     {
         $this->trace->info(
             TraceCode::BALANCE_UPDATE_FOR_LEDGER_REVERSE_SHADOW_BEGINS,
             [
-                'entity_id' => $reversal->getPublicId(),
+                'entity_id' => $entityId,
             ]
         );
 
-        $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
-
         $feeSplit = $this->updateBalanceForLedger($newBalance);
 
-        // if fee split is null, it may mean that a txn is already created.
         if ($feeSplit !== null)
         {
-            (new Transaction\Core)->saveFeeDetailsWithoutTransactionAssociation($ledgerResponse[ReversalEntity::ID], $reversal->getPublicId(), $feeSplit);
-
-            // TODO: This dispatch has to be moved to some other location once ledger becomes primary
-            // As we will stop the dual write to the transactions table
-            // If fee split is null, it means that duplicate txn was found
-            // so no dispatch necessary again.
-//            if (($reversal->getEntityType() === E::PAYOUT) && ($isPayoutServiceReversal === false))
-//            {
-//                $this->app->events->dispatch('api.transaction.created', $reversal->transaction);
-//            }
+            (new Transaction\Core)->saveFeeDetailsWithoutTransactionAssociation($txnId, $entityId, $feeSplit);
         }
 
         $this->trace->info(
             TraceCode::BALANCE_FOR_LEDGER_REVERSE_SHADOW_UPDATED,
             [
-                'entity_id' => $reversal->getPublicId(),
+                'entity_id' => $entityId,
             ]
         );
     }

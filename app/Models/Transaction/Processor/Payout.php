@@ -116,7 +116,12 @@ class Payout extends Base
         return [$this->txn, $this->feesSplit];
     }
 
-    // dispatchForSettlementBucketing doesn't happen in this method since txn creation on API is removed
+    /**
+     * This function is responsible to update the merchant balance, set fee breakup entity
+     * @param $newBalance
+     * @return PublicCollection feeSplit
+     * @throws Exception\LogicException
+     */
     public function updateBalanceForLedger($newBalance)
     {
         // define fee split entity

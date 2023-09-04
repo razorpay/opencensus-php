@@ -380,6 +380,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getTransactionIdViaAttribute()
+    {
+        $this->getAttribute(self::TRANSACTION_ID);
+    }
+
     // ------------ Mocked Setters ---------
 
     public function setRemarks(string $value = null)

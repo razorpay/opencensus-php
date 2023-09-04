@@ -5,15 +5,19 @@ namespace RZP\Tests\Functional\LedgerJournalJob;
 use Mail;
 use Queue;
 use RZP\Models\Feature;
+use RZP\Services\RazorXClient;
 use RZP\Jobs\LedgerJournalTest;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Payout\DataMigration as PayoutDataMigration;
+use RZP\Models\CreditTransfer\Entity as CreditTransferEntity;
 
 class LedgerJournalJobTest extends TestCase
 {
@@ -230,6 +234,68 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('21200', $transaction->getBalance());
     }
 
+    public function testReversalTransactionIdUpdate()
+    {
+        $testData = &$this->testData[__FUNCTION__];
+
+        // ledger shadow experiment is NOT enabled
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger transaction dual write experiment is enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $testData['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $this->fixtures->create('payout', [
+            'id'              => 'SamplePoutId16',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+            'fund_account_id' => $this->fundAccount->getId(),
+        ]);
+
+        $this->fixtures->reversal->createReversalWithoutTransaction([
+            'id'              => 'SampleRvrslId3',
+            'entity_id'       => 'SamplePoutId16',
+            'entity_type'     => 'payout',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $this->fixtures->create('merchant', ['id' => 'HN59oOIDACOXt3']);
+
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        // assert reversal
+        $this->assertEquals('SampleRvrslId3', $reversal[ReversalEntity::ID]);
+        $this->assertEquals('HNjsypA96SgJKJ', $reversal->getTransactionId());
+    }
+
     public function testBankTransferTransactionCreation()
     {
         $balance = $this->getDbLastEntity('balance');
@@ -258,6 +324,56 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('SampleBnkTId12', $transaction->getEntityId());
         $this->assertEquals('bank_transfer', $transaction->getType());
         $this->assertEquals('24500', $transaction->getBalance());
+    }
+
+    public function testBankTransferTransactionIdUpdate()
+    {
+        $testData = &$this->testData[__FUNCTION__];
+
+        // ledger shadow experiment is NOT enabled
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger transaction dual write experiment is enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $testData['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->create('bank_transfer', [
+            'id'             => "SampleBnkTId13",
+            'utr'            => "2222",
+            'balance_id'     => $balance->getId(),
+            'merchant_id'    => '10000000000000'
+        ]);
+
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+
+        // assert bank transfer
+        $this->assertEquals('SampleBnkTId13', $bankTransfer[BankTransferEntity::ID]);
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfer->getTransactionIdViaAttribute());
     }
 
     public function testAdjustmentTransactionCreation()
@@ -325,5 +441,58 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('SampleCtTrfId2', $transaction->getEntityId());
         $this->assertEquals('credit_transfer', $transaction->getType());
         $this->assertEquals('21200', $transaction->getBalance());
+    }
+
+    public function testCreditTransferTransactionIdUpdate()
+    {
+        $testData = &$this->testData[__FUNCTION__];
+
+        // ledger shadow experiment is NOT enabled
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger transaction dual write experiment is enabled
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedgerResponse = $testData['payload'];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->andReturn([
+                'code' => 200,
+                'body' => $mockLedgerResponse,
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->create('credit_transfer', [
+            'id'             => 'SampleCtTrfId3',
+            'balance_id'     => $balance->getId(),
+            'amount'         => 100 ,
+            'merchant_id'    => '10000000000000',
+            'description'    => 'test credit transfer',
+            'entity_id'      => 'JGSxG6xVOuzDcp',
+            'entity_type'    => 'payout'
+        ]);
+
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        // assert credit transfer
+        $this->assertEquals('SampleCtTrfId3', $creditTransfer[CreditTransferEntity::ID]);
+        $this->assertEquals('HNjsypA96SgJKJ', $creditTransfer->getTransactionId());
     }
 }

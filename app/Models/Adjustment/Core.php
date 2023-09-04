@@ -27,6 +27,7 @@ use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Ledger\AdjustmentJournalEvents;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Settlement\Channel as BankingChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Transaction\Processor\Ledger\Adjustment as LedgerAdjustment;
@@ -39,6 +40,8 @@ class Core extends Base\Core
 {
     // input param for adjustment creation on capital collection balances.
     const BALANCE_ID = 'balance_id';
+
+    const IS_DUPLICATE = "is_duplicate";
 
     public function createAdjustment(array $input, Merchant\Entity $merchant, $payment=null): Entity
     {
@@ -1015,5 +1018,86 @@ class Core extends Base\Core
             'entity_id' => $entityId,
             'txn_id'    => $txnId
         ];
+    }
+
+    /**
+     * This function will perform the following tasks after successful journal creation on CLS for RX reverse shadow merchants
+     * update the merchant balance, update the transaction id in the adjustment entity, save fee breakup entity,
+     * push api.transaction.created event
+     * @param string $entityId
+     * @param array $ledgerResponse
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $adjustment = $this->repo->adjustment->find($entityId);
+
+        if ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $adjustment->getMerchantId()]);
+        }
+
+        $journalId = $ledgerResponse[Entity::ID];
+
+        // Check if worker is processing duplicate request
+        if ($this->isTransactionIdUpdated($adjustment, $journalId) === true)
+        {
+            return [
+                self::IS_DUPLICATE => true
+            ];
+        }
+
+        $merchantId = $ledgerResponse[LedgerConstants::LEDGER_ENTRY][0][Entity::MERCHANT_ID];
+        $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $this->app['api.mutex']->acquireAndRelease('adj_' . $entityId,
+            function () use ($adjustment, $entityId, $journalId, $merchantId, $newBalance)
+            {
+                $adjustment->reload();
+
+                if ($this->isTransactionIdUpdated($adjustment, $journalId) === true)
+                {
+                    return [
+                        self::IS_DUPLICATE => true
+                    ];
+                }
+
+                $this->repo->transaction(function() use ($adjustment, $entityId, $journalId, $newBalance)
+                {
+                    (new Transaction\Processor\Adjustment($adjustment))->updateBalanceForLedgerReverseShadow($entityId, $journalId, $newBalance);
+
+                    $adjustment->setTransactionId($journalId);
+                    $this->repo->saveOrFail($adjustment);
+                });
+
+                // dispatch event for ledger txn created
+                (new Transaction\Core)->dispatchEventForLedgerTransactionCreated($journalId, $merchantId);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $journalId
+        ];
+    }
+
+    // Function to check if the entity's transaction id field has been updated
+    protected function isTransactionIdUpdated($adjustment, $journalId)
+    {
+        if (empty($adjustment->getTransactionId()) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                'id' => $journalId
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 }
