@@ -141,7 +141,7 @@ const FooterCheckBox = ({ canSubmitL1Form, checkbox, setCheckBox }) => {
           className="text-primary"
           target="_blank"
           rel="noopener noreferrer"
-          href="https://razorpay.com/terms/"
+          href="https://razorpay.com/s/terms/partners"
         >
           Terms and Conditions
         </a>

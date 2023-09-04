@@ -1085,7 +1085,7 @@ export default class HomeContainer extends Component {
     }
 
     // we want to by default show the explore partner program modal if partner_type is null
-    if (user.isPartnerIntent() && isExistingMerchantPartnerComingFromPartnerSignUpPage) {
+    if (!shouldRedirectToPartnerDashboard && isExistingMerchantPartnerComingFromPartnerSignUpPage) {
       removeItem('partner_intent');
       this.props.openModal({
         size: 'xlarge',
