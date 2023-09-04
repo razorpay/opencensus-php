@@ -149,6 +149,13 @@ class Core extends Base\Core
 
         $config = $this->repo->partner_config->findOrFailPublic($id);
 
+        $validator = (new Validator());
+
+        if(empty($input[Entity::COMMISSIONS_ENABLED]) === false && $input[Entity::COMMISSIONS_ENABLED] == 1)
+        {
+            $validator->validateIfCommissionEnablingAllowed($config);
+        }
+
         $this->buildPartnerMetadata($config, $input);
 
         list($application, $submerchant) = $this->getEntitiesFromConfig($config);
@@ -156,8 +163,6 @@ class Core extends Base\Core
         $config->edit($input, 'edit');
 
         $partner = (new Merchant\Core)->getPartnerFromApp($application);
-
-        $validator = (new Validator());
 
         $validator->validatePolicyUrlInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
 

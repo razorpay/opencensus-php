@@ -295,6 +295,62 @@ return [
         ],
     ],
 
+    'testEditConfigExceptCommissionWhenCommissionDisabledConfigSet' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'default_plan_id'         => '10ZeroPricingP',
+                'implicit_plan_id'        => null,
+                'explicit_plan_id'        => null,
+                'implicit_expiry_at'      => null,
+                'has_gst_certificate'     => true,
+                'default_payment_methods' => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'               => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'               => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'         => '10ZeroPricingP',
+                'commissions_enabled'     => false,
+                'implicit_plan_id'        => null,
+                'explicit_plan_id'        => null,
+                'implicit_expiry_at'      => null,
+                'explicit_refund_fees'    => true,
+                'explicit_should_charge'  => false,
+                'commission_model'        => 'commission',
+                'tds_percentage'          => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'     => true,
+                'default_payment_methods' => []
+            ],
+        ],
+    ],
+
+    'testEnableCommissionsWhenCommissionDisabledConfigSet' => [
+        'request'   => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'         => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commissions_enabled'     => 1,
+                'commission_model'        => 'commission',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ENABLE_COMMISSION_NOT_ALLOWED,
+        ],
+    ],
+
     'testAddingConfigWithDefaultPaymentMethodsForPurePlatform' => [
         'request'   => [
             'url'     => '/partner_configs',

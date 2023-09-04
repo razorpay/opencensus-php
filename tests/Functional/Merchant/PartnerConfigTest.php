@@ -177,6 +177,88 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testEnableCommissionsWhenCommissionDisabledConfigSet()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER,
+            ]
+        );
+
+        $submerchantConfig[PartnerConfigConstants::COMMISSION_DISABLED][0] = [
+            'reason' => PartnerConfigConstants::LOC_INVITE_COMMISSION_DISABLED_REASON
+        ];
+
+        $partnerConfig = $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                   => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'          => 'merchant',
+                'entity_id'            => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'          => 'application',
+                'origin_id'            => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'  => 0,
+                'implicit_plan_id'     => '10ZeroPricingP',
+                'explicit_plan_id'     => '10ZeroPricingP',
+                'explicit_refund_fees' => 1,
+                'default_payment_methods' => null,
+                'sub_merchant_config'  => $submerchantConfig,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testEditConfigExceptCommissionWhenCommissionDisabledConfigSet()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER,
+            ]
+        );
+
+        $submerchantConfig[PartnerConfigConstants::COMMISSION_DISABLED][0] = [
+            'reason' => PartnerConfigConstants::LOC_INVITE_COMMISSION_DISABLED_REASON
+        ];
+
+        $partnerConfig = $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                   => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'          => 'merchant',
+                'entity_id'            => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'          => 'application',
+                'origin_id'            => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'  => 0,
+                'implicit_plan_id'     => '10ZeroPricingP',
+                'explicit_plan_id'     => '10ZeroPricingP',
+                'explicit_refund_fees' => 1,
+                'default_payment_methods' => null,
+                'sub_merchant_config'  => $submerchantConfig,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testAddingConfigWithIncorrectDefaultPaymentMethods()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);

@@ -2216,12 +2216,20 @@ class Service extends Base\Service
 
                 if($flag === true)
                 {
+                    $accessMaps = $this->repo->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $referral->getMerchantId());
+
                     $referralInput = $this->getReferralInput($referral);
 
                     // Note: Passing $isSignUpFlow as false, since the parent function applyReferralIfApplicable() is always called for signIn flows only
                     $this->applyReferralPartner($merchant, $referralInput, false);
 
                     $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+                    //Disable commissions only if merchant was not a sub-merchant for the partner before referral
+                    if($accessMaps->isEmpty() === true)
+                    {
+                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant->getId());
+                    }
 
                     (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
 

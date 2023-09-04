@@ -18,6 +18,11 @@ class Constants
     const VALUE                 = 'value';
     const MAX_PAYMENT_AMOUNT    = 'max_payment_amount';
     const GMV_LIMIT             = 'gmv_limit';
+
+    const COMMISSION_DISABLED   = 'commission_disabled';
+
+    const LOC_INVITE_COMMISSION_DISABLED_REASON = "Existing PG merchant invited for LOC product";
+
     const BUSINESS_TYPE         = 'business_type';
     const SET_FOR               = 'set_for';
     const NO_DOC_SUBMERCHANTS   = 'no_doc_submerchants';

@@ -6994,12 +6994,18 @@ class Service extends Base\Service
 
         $isExistingMerchantForCapital = false;
 
+        $isMerchantAlreadyLinkedToPartner = false;
+
         // For capital submerchant requests, we are allowing existing merchants to be linked to the partner. Hence we will skip account creation.
         if($actualProduct === Product::CAPITAL && empty($input['existing_merchant']) === false && $input['existing_merchant'] === true)
         {
             $subMerchant = (new CapitalSubmerchantUtility())->validateIfNonExistingCapitalSubmerchant($input[Entity::EMAIL], $merchant);
 
             $isExistingMerchantForCapital = true;
+
+            $accessMaps = $this->repo->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId($subMerchant->getId(), $merchant->getId());
+
+            $isMerchantAlreadyLinkedToPartner = $accessMaps->isNotEmpty();
 
             unset($input['existing_merchant']);
         }
@@ -7031,7 +7037,7 @@ class Service extends Base\Service
             });
 
 
-            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant, $isExistingMerchantForCapital, & $response) {
+            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant, $isExistingMerchantForCapital, $isMerchantAlreadyLinkedToPartner, & $response) {
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
                 $response['merchant_access_map'] = $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
@@ -7039,6 +7045,12 @@ class Service extends Base\Service
                 if($isExistingMerchantForCapital === true)
                 {
                     (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($merchant, $subMerchant->getId(), PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+
+                    //Disable commissions only if merchant was not a sub-merchant for the partner before invite
+                    if($isMerchantAlreadyLinkedToPartner === false)
+                    {
+                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($merchant, $subMerchant->getId());
+                    }
                 }
             });
         }

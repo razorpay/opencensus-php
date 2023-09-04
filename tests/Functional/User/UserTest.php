@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\User;
 
 use DB;
 use App;
-use Illuminate\Support\Facades\Bus;
 use Mail;
 use Hash;
 use Queue;
@@ -43,7 +42,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\PublicErrorCode;
 use RZP\Services\SalesForceClient;
-use RZP\Jobs\SubMerchantTaggingJob;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
@@ -65,6 +63,7 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\User\Constants as UserConstants;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -2496,6 +2495,111 @@ class UserTest extends TestCase
         $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
 
         $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $partnerConfig = $this->getDbEntity('partner_config',
+            [
+                'entity_id' => $merchant->getId()
+            ], 'test')
+            ->toArray();
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $expectedSubmerchantConfig[PartnerConfig\Constants::COMMISSION_DISABLED][0] = [
+            'reason' => PartnerConfig\Constants::LOC_INVITE_COMMISSION_DISABLED_REASON
+        ];
+
+        $this->assertSame($expectedSubmerchantConfig , $partnerConfig['sub_merchant_config'] );
+
+        $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
+    }
+
+    public function testVerifyCapitalReferralInviteExistingSubmerchant()
+    {
+        $testData = & $this->testData['testVerifyCapitalReferralDuringMobileLogin'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->enableRazorXTreatmentForRazorX();
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'contact_mobile' => '9012345678',
+            'contact_mobile_verified'  => true
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+        $this->fixtures->create('referrals', ["product" => 'capital']);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant->getId(),
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => '10000000000000',
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => '10000000000000',
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId()
+            ], 'test')
+            ->toArray();
+
+        $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
+
+        $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $partnerConfig = $this->getDbEntity('partner_config',
+            [
+                'entity_id' => $merchant->getId()
+            ], 'test');
+
+        $this->assertNull($partnerConfig);
 
         $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
     }

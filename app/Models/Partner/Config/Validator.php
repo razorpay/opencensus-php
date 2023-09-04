@@ -9,6 +9,7 @@ use RZP\Models\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Exception\BadRequestException;
 use Razorpay\OAuth\Application as OAuthApp;
 
 class Validator extends Base\Validator
@@ -258,6 +259,43 @@ class Validator extends Base\Validator
         }
 
         (new Partner\Validator())->validateIfRoutePartnershipsFeatureEnabled($partner, $config->getEntityId());
+    }
+
+    /**
+     * This validator stops admin to enable commissions for a submerchant-application config,
+     * based on if "commission_disabled" key in sub_merchant_config is defined.
+     *
+     * @throws BadRequestException
+     */
+    public function validateIfCommissionEnablingAllowed(Entity $config)
+    {
+        if($config->getEntityType() === Constants::APPLICATION)
+        {
+            return;
+        }
+
+        $submerchantConfig = $config->getSubMerchantConfig();
+
+        if(empty($submerchantConfig) === false)
+        {
+            if(is_string($submerchantConfig) === true)
+            {
+                $submerchantConfig = json_decode($submerchantConfig, true);
+            }
+
+            if(array_key_exists(Constants::COMMISSION_DISABLED,$submerchantConfig) === true and
+                empty($submerchantConfig[Constants::COMMISSION_DISABLED]) === false)
+            {
+                $commissionDisabledConfigReason = $submerchantConfig[Constants::COMMISSION_DISABLED][0]['reason'] ?? null;
+
+                if(empty($commissionDisabledConfigReason) === false
+                    and $commissionDisabledConfigReason === Constants::LOC_INVITE_COMMISSION_DISABLED_REASON)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ENABLE_COMMISSION_NOT_ALLOWED,
+                        null, ['reason' => $commissionDisabledConfigReason]);
+                }
+            }
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
+use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -27,6 +28,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -209,6 +211,46 @@ class CapitalSubmerchantUtility
             );
 
             throw $ex;
+        }
+    }
+
+    /**
+     * create partner_config entry for the submerchant to disable commissions
+     * and create/update sub_merchant_config which notifies why we disabled commissions
+     */
+    public function createPartnerConfigForExistingMerchantsInvitedForLOC(Merchant\Entity $partner, string $submerchantId)
+    {
+        try
+        {
+            $defaultConfig = (new Partner\Core())->getPartnerDefaultConfig($partner);
+
+            $defaultConfig[PartnerConfig\Entity::COMMISSIONS_ENABLED] = false;
+
+            $submerchantConfig[PartnerConfig\Constants::COMMISSION_DISABLED][0] = [
+                'reason' => PartnerConfig\Constants::LOC_INVITE_COMMISSION_DISABLED_REASON
+            ];
+
+            $partnerConfigInput = [
+                'submerchant_id'        => $submerchantId,
+                'sub_merchant_config'   => $submerchantConfig,
+            ];
+
+            $partnerConfigInput = array_merge($defaultConfig, $partnerConfigInput);
+
+            (new PartnerConfig\Service())->create($partnerConfigInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::CAPITAL_SUBMERCHANT_PARTNER_CONFIG_CREATE_FAILED,
+                [
+                    'partner_id'     => $partner->getId(),
+                    'submerchant_id' => $submerchantId
+                ]
+            );
+
+            $this->trace->count(Metric::SUBMERCHANT_LOC_INVITE_PARTNER_CONFIG_CREATE_FAILURE);
         }
     }
 
