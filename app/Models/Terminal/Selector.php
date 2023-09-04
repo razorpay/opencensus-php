@@ -1247,10 +1247,9 @@ class Selector extends Base\Core
             return true;
         }
 
-        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false
-            && $payment[Entity::METHOD] === Method::NETBANKING)
+        if (!$this->repo->terminal->isTestEnv() && $payment[Entity::METHOD] !== Method::CARD)
         {
-            return true;
+            return false;
         }
 
         $merchantId = $payment->getMerchantId();
