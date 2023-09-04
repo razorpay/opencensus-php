@@ -100,7 +100,8 @@ class Service extends Base
             {
                 $this->handleDcsFeatures($entity, $isAssignment, $mode);
             }
-            elseif (key_exists($dcsFeatureName, array_merge(DcsConstants::$dcsNewMerchantFeatures, DcsConstants::$dcsNewOrgFeatures)) === true)
+            elseif ((in_array($this->app->environment(), ['testing', 'testing_docker', 'production']) === true) and
+                    (key_exists($dcsFeatureName, array_merge(DcsConstants::$dcsNewMerchantFeatures, DcsConstants::$dcsNewOrgFeatures)) === true))
             {
                 $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
                     ErrorCode::BAD_REQUEST_DCS_DISABLED,
@@ -375,7 +376,6 @@ class Service extends Base
                 $this->cache->set($cacheKey, [], 30);
                 return $response;
             }
-
 
             $enabled_features = $this->fetchByEntityIdAndFeatureNames($entityId, array_keys($dcsFeatures), $mode,
                 true, $entityType, true);

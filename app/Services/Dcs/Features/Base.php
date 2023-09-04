@@ -98,6 +98,7 @@ class Base
             ->setMock($this->config['mock'])
             ->setUserCreds($creds);
         $config->setMode($mode);
+        $config->setEnv($this->app['env']);
 
         if ($mode === Mode::LIVE)
         {
