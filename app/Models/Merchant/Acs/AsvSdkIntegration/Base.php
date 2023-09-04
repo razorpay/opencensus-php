@@ -11,14 +11,19 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
 use RZP\Http\RequestHeader;
+use RZP\Models\Base\Audit\Constants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 use RZP\Exception;
 use Razorpay\Asv\DbSource;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\EntityToProtoConverter\Factory;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\Factory as GetFieldsForEntityFromProtoFactory;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
 use RZP\Trace\TraceCode;
 use RZP\lib\AwsTraceIdExtractor;
+use RZP\Models\Base as BaseModel;
 
 class Base
 {
@@ -48,7 +53,6 @@ class Base
         $this->asvSdkClient = $app[Constant::ASV_SDK_CLIENT];
 
         $this->asvConfig = $app->config->get(ASVV2Constant::ASV_CONFIG);
-
     }
 
     /**
@@ -109,6 +113,47 @@ class Base
         return $requestMetadata;
     }
 
+    function getRequestMetaDataForSave(RequestMetadata|null $inputRequestMetadata = null) : RequestMetadata {
+
+        $requestMetaData = $this->getRequestMetaData($inputRequestMetadata);
+
+        $currentHeaders = $requestMetaData->getHeaders();
+
+        $saveHeaders = (new RequestHeadersHelper())->getRequestHeaders();
+
+        $headers = array_merge($currentHeaders, $saveHeaders);
+
+        $requestMetaData->setHeaders($headers);
+
+        return $requestMetaData;
+    }
+
+    function save(BaseModel\PublicEntity $entity, ?RequestMetadata $requestMetadata = null): void
+    {
+        try {
+
+            $requestProto = (Factory::
+            getEntityToProtoConvertor($entity))->toSaveProtoRequest();
+
+            [$response, $err] = $this->getAsvSdkClient()->getWriteService()->save(
+              $requestProto,
+              $this->getRequestMetaDataForSave($requestMetadata)
+            );
+
+            if ($err !== null) {
+                $this->handleError($err);
+            }
+
+            $fieldFromProtoHelper = GetFieldsForEntityFromProtoFactory::getEntityToProtoConvertor($entity, $response);
+
+            $entity->setCreatedAt($fieldFromProtoHelper->getCreatedAt());
+            $entity->setUpdatedAt($fieldFromProtoHelper->getUpdatedAt());
+        } catch (\Throwable $e) {
+            // rethrow the errors depending upon the handling required
+            // for example if there is some DB error, we should throw it ahead.
+            // if it is ASV timeout we need to ensure that requests now go to db.
+        }
+    }
 
     /**
      * @throws BadRequestException
@@ -203,4 +248,5 @@ class Base
             return $this->getLatestByMerchantId($id, $requestMetadata);
         };
     }
+
 }

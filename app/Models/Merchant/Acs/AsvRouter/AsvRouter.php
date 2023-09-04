@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\AsvRouter;
 use App;
 use phpDocumentor\Reflection\Types\Self_;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Constants\Metric;
@@ -201,6 +202,27 @@ class AsvRouter
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
             return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            return false;
+        }
+    }
+
+    public function shouldRouteSaveRequestToAccountService($repoClass, $functionName, $id): bool
+    {
+        try {
+            if(AsvMaps\WriteEnabledOnAsv::checkIfWriteEnabled($repoClass, $functionName) === false) {
+                return false;
+            }
+
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
+
+            return $this->spitzHelper->isSplitzOnForWriteByExperimentName(
+                $experimentName,
+                $id,
+                $this->getRouteOrJobName()
+            );
+        } catch (\Throwable $e) {
+
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
         }

@@ -5,6 +5,9 @@ namespace RZP\Models\Base;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -28,6 +31,17 @@ trait RepositoryUpdateTestAndLive
         $this->validateInstanceIsOfCurrentEntity($entity);
 
         $this->validateIdGenerated($entity);
+
+        /*
+         *
+         * TODO: Uncomment this code once ASV is ready to handle the requests.
+        // Route Request to ASV, rest of the handling is done by ASV, and through events.
+        if ($this->shouldRouteRequestToAccountService($entity, $options, FunctionConstant::SAVE_OR_FAIL))
+        {
+            $this->saveOnAccountService($entity);;
+            return;
+        }
+        */
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
@@ -370,4 +384,34 @@ trait RepositoryUpdateTestAndLive
 
         return $shouldSync;
     }
+
+//
+//    TODO: Uncomment this code once ASV is ready to handle the requests.
+//    protected function shouldRouteRequestToAccountService($entity, $options, $function) {
+//        try {
+//            if($options !== []){
+//                // TODO: log the error and return false, also add a alert on corologix.
+//                return false;
+//            }
+//
+//            return (new AsvRouter())->shouldRouteSaveRequestToAccountService(
+//                $this::class, $function, $entity->getId()
+//            );
+//
+//        } catch (\Throwable $th) {
+//            //TODO: log the error and return false
+//            return false;
+//        }
+//
+//    }
+//
+//    protected function saveOnAccountService($entity) {
+//        try {
+//            $asvSdkIntegration = new AsvSdkIntegration();
+//            $asvSdkIntegration->save($entity);
+//        } catch (\Throwable $th) {
+//            // TODO: log and throw the exception with DB ERROR
+//            throw $th;
+//        }
+//    }
 }

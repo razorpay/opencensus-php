@@ -2316,7 +2316,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
     public function registerInvoicePdfGenerator()
     {
-        $this->app->singleton('invoice_pdf_generator', function($app) 
+        $this->app->singleton('invoice_pdf_generator', function($app)
         {
             return new Merchant\Invoice\PdfGenerator();
         });

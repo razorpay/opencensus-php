@@ -12,4 +12,7 @@ final class FunctionConstant
     const GET_BY_ID = 'GET_BY_ID';
 
     const GET_BY_STAKEHOLDER_ID = 'GET_BY_STAKEHOLDER_ID';
+
+    const SAVE_OR_FAIL = 'SAVE_OR_FAIL';
+    const DELETE_OR_FAIL =  'DELETE_OR_FAIL';
 }

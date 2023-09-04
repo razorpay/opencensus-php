@@ -13,6 +13,20 @@ class Constant
 
     const TRACE   = 'trace';
 
+    const X_AUTH_TYPE                       = "X-Auth-Type";
+
+    const X_APP_NAME                        = "X-App-Name";
+
+    const X_IP                              = "X-IP";
+
+    const X_ACTOR_ID                        = "X-Actor-ID";
+
+    const X_ACTOR_TYPE                      = "X-Actor-Type";
+
+    const ACTOR_TYPE_ADMIN = 'admin';
+
+    const ACTOR_TYPE_USER  = 'user';
+
     // timeouts
     const TIMEOUT_500MS = 500000;
 
