@@ -18,4 +18,6 @@ final class Metric
 
     const ENTITY_ORIGIN_OWNER_CACHE_HIT_TOTAL  = 'entity_origin_owner_cache_hit_total';
     const ENTITY_ORIGIN_OWNER_CACHE_MISS_TOTAL = 'entity_origin_owner_cache_miss_total';
+
+    const ENTITY_ORIGIN_OWNER_MASTER_QUERY_TOTAL = 'entity_origin_owner_master_query_total';
 }

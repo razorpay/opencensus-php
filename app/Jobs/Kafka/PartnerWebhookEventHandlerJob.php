@@ -60,11 +60,13 @@ class PartnerWebhookEventHandlerJob extends Job
 
         try
         {
-            $isExpEnabled = $this->isTransactionIsolationExpEnabledForPartnerApp($input[EntityOriginConstants::APPLICATION_ID]);
+            $partnerId = $this->getPartnerIdFromAppId($input[EntityOriginConstants::APPLICATION_ID]);
+
+            $isExpEnabled = $this->isTransactionIsolationExpEnabledForPartnerApp($partnerId);
 
             if ($isExpEnabled)
             {
-                $applicationId = (new Core())->getOriginForEntity($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID]);
+                $applicationId = (new Core())->getOriginForEntity($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID], $partnerId);
 
                 if (!empty($applicationId) && $applicationId === $input[EntityOriginConstants::APPLICATION_ID])
                 {
@@ -120,14 +122,19 @@ class PartnerWebhookEventHandlerJob extends Job
         return $event;
     }
 
-    private function isTransactionIsolationExpEnabledForPartnerApp(string $applicationId) : bool
+    private function getPartnerIdFromAppId(string $applicationId) : string
+    {
+        $application = $this->repoManager->merchant_application->fetchMerchantApplication($applicationId, MerchantConstants::APPLICATION_ID);
+
+        return $application->get(0)->getMerchantId();
+    }
+
+    private function isTransactionIsolationExpEnabledForPartnerApp(string $partnerId) : bool
     {
         $app = App::getFacadeRoot();
 
-        $application = $this->repoManager->merchant_application->fetchMerchantApplication($applicationId, MerchantConstants::APPLICATION_ID);
-
         $properties = [
-            'id' => $application->get(0)->getMerchantId(),
+            'id' => $partnerId,
             'experiment_id' => $app['config']->get('app.transaction_isolation_for_webhooks_experiment_id')
         ];
 
@@ -138,9 +145,14 @@ class PartnerWebhookEventHandlerJob extends Job
     {
         $app = App::getFacadeRoot();
 
-        $this->mode = $this->getModeFromPayload($payload);
+        $currentMode = $this->getModeFromPayload($payload);
 
-        $app['basicauth']->setMode($this->mode);
+        if ($this->mode != $currentMode)
+        {
+            $app['basicauth']->setModeAndDbConnection($currentMode);
+
+            $this->mode = $currentMode;
+        }
     }
 
     private function getModeFromPayload(array $payload) : string

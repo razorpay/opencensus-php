@@ -15,6 +15,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Http\BasicAuth\ClientAuthCreds;
 use Razorpay\OAuth\Client as OAuthClient;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Core extends Base\Core
 {
@@ -497,7 +498,7 @@ class Core extends Base\Core
 
     }
 
-    public function getOriginForEntity(string $entityType, string $entityId) : ?string
+    public function getOriginForEntity(string $entityType, string $entityId, string $partnerId) : ?string
     {
         $originId = $this->getEntityOriginFromCache($entityType, $entityId);
 
@@ -518,6 +519,23 @@ class Core extends Base\Core
 
         $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityIdOnReadReplica($entityType, $entityId);
 
+        if (empty($entityOrigin))
+        {
+            $this->trace->info(TraceCode::ENTITY_ORIGIN_NOT_FOUND_IN_REPLICA_DB, [
+                'entityType'        => $entityType,
+                'entityId'          => $entityId,
+                'mode'              => $this->mode,
+                'partnerId'         => $partnerId,
+            ]);
+
+            if ($this->isFallbackQueryExpEnabledOnPartner($partnerId))
+            {
+                $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId($entityType, $entityId);
+
+                $this->trace->count(Metric::ENTITY_ORIGIN_OWNER_MASTER_QUERY_TOTAL);
+            }
+        }
+
         $this->trace->info(TraceCode::ENTITY_ORIGIN_FETCHED_FROM_DB, [
             'entityType'        => $entityType,
             'entityId'          => $entityId,
@@ -529,6 +547,16 @@ class Core extends Base\Core
         $this->updateEntityOriginInCache($entityType, $entityId, $cachedValue);
 
         return $cachedValue;
+    }
+
+    private function isFallbackQueryExpEnabledOnPartner(string $partnerId) : bool
+    {
+        $properties = [
+            'id' => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.transaction_isolation_fallback_query_experiment_id')
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private function getEntityOriginIdToBeCached(?Entity $entityOrigin) : string
