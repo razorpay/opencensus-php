@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Event;
 
+use Illuminate\Support\Facades\Queue;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
@@ -1432,6 +1434,7 @@ class MethodsTest extends TestCase
 
     public function testEnableTrustlyForMerchant()
     {
+        Queue::fake();
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
@@ -1455,7 +1458,38 @@ class MethodsTest extends TestCase
         $merchantMethods = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(1, $merchantMethods['apps']['trustly']);
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
     }
+
+    public function testDisableTrustlyForMerchant()
+    {
+        Queue::fake();
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'trustly'  => 0,
+                ],
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $merchantMethods = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $merchantMethods['apps']['trustly']);
+        Queue::assertNotPushed(CrossBorderCommonUseCases::class);
+    }
+
 
     public function testEnablePoliForMerchant()
     {

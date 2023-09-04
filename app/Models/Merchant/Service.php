@@ -35,6 +35,7 @@ use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\RazorxTreatment as Experiment;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Batch as BatchModel;
@@ -12539,6 +12540,52 @@ class Service extends Base\Service
         $preferencesResponse = $this->app['checkout_service']->getCheckoutPreferencesFromCheckoutService($input);
 
         return $preferencesResponse->getOriginalContent();
+    }
+
+    public function isOpgspEnabled($merchantId): bool
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($merchant->isInternational() === false)
+        {
+            return false;
+        }
+
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+            $merchantId, CE::CURRENCY_CLOUD);
+        if (isset($mii) === true)
+        {
+            return true;
+        }
+
+        $methods = $merchant->methods;
+        if (isset($methods) === true)
+        {
+            $enabledAppsMap = $methods->getApps();
+            $emerchantPayApps = AppMethod::$supportedApps[AppMethod::EMERCHANTPAY];
+            foreach ($emerchantPayApps as $app)
+            {
+                if ($enabledAppsMap[$app] === 1)
+                {
+                    return true;
+                }
+            }
+        }
+
+        $terminals = $this->repo->terminal->fetch([
+            'gateway' => 'checkout_dot_com',
+            'enabled' => true
+        ]);
+        foreach ($terminals as $terminal)
+        {
+            $subMerchants = $terminal->merchants();
+            $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
+            if (in_array($merchant->getId(), $subMerchantsIds))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

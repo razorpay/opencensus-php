@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Config;
 
 use RZP\Exception;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -14,6 +15,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\Fee;
@@ -147,6 +149,24 @@ class Core extends Base\Core
         if (empty($input) === true)
         {
             return $methods->toArray();
+        }
+
+        if (isset($input[Methods\Entity::APPS]))
+        {
+            $emerchantPayApps = AppMethod::$supportedApps[AppMethod::EMERCHANTPAY];
+            foreach ($emerchantPayApps as $app)
+            {
+                if($input[Methods\Entity::APPS][$app] === '1')
+                {
+                    $payload = [
+                        'mode' => $this->mode,
+                        'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                        'merchant_id' => $merchant->getId()
+                    ];
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+                    break;
+                }
+            }
         }
 
         // Setup workflow

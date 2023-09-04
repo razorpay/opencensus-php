@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
@@ -262,6 +263,16 @@ class Core extends Base\Core
                 'merchant_id'      => $merchantId,
                 'merchant_id_list' => $subMerchantsIds,
             ]);
+
+        if ($terminal->getGateway() === Gateway::CHECKOUT_DOT_COM)
+        {
+            $payload = [
+                'mode' => $this->mode,
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchantId
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+        }
 
         return $terminal;
     }

@@ -207,6 +207,8 @@ class Core extends Base\Core
 
         $this->checkAuthTypeIfApplicable($feature);
 
+        $this->checkMerchantIsOpgspEnabled($feature);
+
         $this->checkCollectionsAuthTypeForCreationIfApplicable($feature);
 
         Tracer::inspan(['name' => HyperTrace::SAVE_AND_SYNC_FEATURE], function () use ($feature, $assignedFeatureNames, $shouldSync) {
@@ -1192,6 +1194,29 @@ class Core extends Base\Core
             );
         }
 
+    }
+
+    private function checkMerchantIsOpgspEnabled($feature)
+    {
+        if ($feature->getEntityType() !== Constants::MERCHANT ||
+            in_array($feature->getName(), Feature::EARLY_SETTLEMENT_FEATURES) === false ||
+            $this->app['basicauth']->isAdminAuth() === false
+        )
+        {
+            return;
+        }
+        $isOpgspMerchant = (new Merchant\Service())->isOpgspEnabled($feature->getEntityId());
+
+        if  ($isOpgspMerchant)
+        {
+            $this->trace->info(TraceCode::ES_FEATURE_ASSIGMENT_FAILED, [
+                'merchant_id' => $feature->getEntityId(),
+                'feature' => $feature
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ES_FEATURE_CREATE_FAILED
+            );
+        }
     }
 
     /**

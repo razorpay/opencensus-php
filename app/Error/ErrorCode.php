@@ -3011,7 +3011,7 @@ class ErrorCode
     const BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST                     = 'BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST';
     const BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE                   = 'BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED                               = 'BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED';
-
+    const BAD_REQUEST_ES_FEATURE_CREATE_FAILED                                      = 'BAD_REQUEST_ES_FEATURE_CREATE_FAILED';
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

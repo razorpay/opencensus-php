@@ -3904,4 +3904,12 @@ class Constants
         self::ROUTE_PARTNERSHIPS,
         self::SUBM_MANUAL_SETTLEMENT
     ];
+
+    const EARLY_SETTLEMENT_FEATURES = [
+        self::ES_ON_DEMAND,
+        self::ES_AUTOMATIC,
+        self::ES_AUTOMATIC_RESTRICTED,
+        self::ES_AUTOMATIC_THREE_PM,
+        self::ES_ON_DEMAND_RESTRICTED,
+    ];
 }

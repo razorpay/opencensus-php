@@ -1094,6 +1094,12 @@ class Service extends Base\Service
             },20,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
+            $payload = [
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchantId
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId,Constants\Entity::CURRENCY_CLOUD);
     }
 

@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
+use RZP\Models\Feature;
 use RZP\Models\Invoice\Status;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Entity as E;
@@ -20,6 +21,7 @@ use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Invoice\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\EsDisabledNotify;
 use RZP\Models\Invoice\DccEInvoiceCore;
 use RZP\Mail\Merchant as MerchantEmail;
 use RZP\Models\Merchant\HsCode\HsCodeList;
@@ -73,6 +75,8 @@ class CrossBorderCommonUseCases extends Job
     const MERCHANT_ONBOARD_NETWORK = 'MERCHANT_ONBOARD_NETWORK';
     const EMERCHANTPAY_ONBOARDING_VIA_MAF = 'EMERCHANTPAY_ONBOARDING_VIA_MAF';
     const CREATE_INVOICE_VERIFICATION_WORKFLOW = 'CREATE_INVOICE_VERIFICATION_WORKFLOW';
+
+    const DISABLE_ON_DEMAND_SETTLEMENT = 'DISABLE_ON_DEMAND_SETTLEMENT';
     /**
      * @var string
      */
@@ -182,6 +186,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::ZIP_FIRS_DOCUMENTS:
                     $this->zipFIRS();
+                    break;
+                case self::DISABLE_ON_DEMAND_SETTLEMENT:
+                    $this->disableODSForOpgspMerchant($this->payload['mode'],$this->payload['merchant_id']);
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -877,5 +884,46 @@ class CrossBorderCommonUseCases extends Job
         $eInvoiceCore->updateStatusAndError($paymentEInvoice, Status::FAILED, $errorCode);
 
         $this->checkRetry();
+    }
+
+    private function disableODSForOpgspMerchant($mode, $merchantId)
+    {
+        if ($mode === Mode::TEST)
+        {
+            return;
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $isFeatureDisabled = false;
+        $featuresDisabled = [];
+
+        foreach (Feature\Constants::EARLY_SETTLEMENT_FEATURES as $feature)
+        {
+            if ($merchant->isFeatureEnabled($feature))
+            {
+                (new Feature\Service)->deleteEntityFeature(
+                    Feature\Type::ACCOUNTS, $merchant->getId(), $feature, ['should_sync' => true]
+                );
+                $isFeatureDisabled = true;
+                $featuresDisabled = $feature;
+            }
+        }
+
+        if ($isFeatureDisabled)
+        {
+            $payload = [
+                'merchant_name' => $merchant->getName(),
+                'email' => $merchant->getEmail(),
+                'org_id' => $merchant->getOrgId(),
+            ];
+
+            $mail = new EsDisabledNotify($payload);
+            Mail::send($mail);
+
+            $this->trace->info(TraceCode::ES_FEATURE_FLAG_DISABLED, [
+                'merchant_id' => $merchantId,
+                'features_disabled' => $featuresDisabled,
+            ]);
+        }
     }
 }
