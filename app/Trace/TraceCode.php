@@ -3523,6 +3523,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_OTP_SMS_VALIDATION_FAILURE                     = 'VERIFY_OTP_SMS_VALIDATION_FAILURE';
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
     const USER_CHECK_HAS_PASSWORD_ACTION                        = 'USER_CHECK_HAS_PASSWORD_ACTION';
+
+    const OTP_CONTEXT                                           = 'OTP_CONTEXT';
     const USER_SET_PASSWORD_ACTION                              = 'USER_SET_PASSWORD_ACTION';
     const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
     const SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT             = 'SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT';
@@ -4818,6 +4820,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINKS_API_ROUTE                                = 'PAYOUT_LINKS_API_ROUTE';
     const PAYOUT_LINKS_MS_ROUTE                                 = 'PAYOUT_LINKS_MS_ROUTE';
     const PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT         = 'PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT';
+
+    const XPERIENCE_SERVICE_ERROR_RESPONSE                      = 'XPERIENCE_SERVICE_ERROR_RESPONSE';
+    const XPERIENCE_SERVICE_REQUEST                             = 'XPERIENCE_SERVICE_REQUEST';
+    const XPERIENCE_SERVICE_RESPONSE                            = 'XPERIENCE_SERVICE_RESPONSE';
+    const XPERIENCE_SERVICE_ERROR                               = 'XPERIENCE_SERVICE_ERROR';
+    const XPERIENCE_SERVICE_SERVER_ERROR                        = 'XPERIENCE_SERVICE_SERVER_ERROR';
+    const XPERIENCE_SERVICE_CLIENT_ERROR                        = 'XPERIENCE_SERVICE_CLIENT_ERROR';
 
     // Payouts 2FA flow logs
     const PAYOUT_2FA_CREATE_REQUEST                             = 'PAYOUT_2FA_CREATE_REQUEST';
@@ -10238,7 +10247,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION       = 'SPLITZ_EXPERIMENT_BATCH_ASYNC_PROMISE_RESOLUTION';
 
     const BLOCK_LOGS_EXCEPTION                                  = 'BLOCK_LOGS_EXCEPTION';
-  
+
     const FAILED_TO_FETCH_CONFIGS_FROM_DCS                       = 'FAILED_TO_FETCH_CONFIGS_FROM_DCS';
 
     protected static $messages = [

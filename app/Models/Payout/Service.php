@@ -834,6 +834,11 @@ class Service extends Base\Service
         return $this->auth->isScroogeApp();
     }
 
+    public function isBatchApp(): bool
+    {
+        return $this->auth->isBatchApp();
+    }
+
     public function approveIciciCaFundAccountPayout(array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_ICICI_CA_APPROVE_REQUEST, ['input' => $input]);

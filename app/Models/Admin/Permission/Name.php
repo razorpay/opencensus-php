@@ -703,6 +703,9 @@ class Name
     const TALLY_PAYOUT_BULK_CREATE            = 'tally_payout_bulk_create';
     const UPDATE_MERCHANT_DETAILS             = 'update_merchant_details';
 
+    // xperience service
+    const MIGRATE_BULK_PAYOUTS           = 'migrate_bulk_payouts';
+
     // self serve workflow
     const SELF_SERVE_WORKFLOW_CONFIG     = 'self_serve_workflow_config';
 

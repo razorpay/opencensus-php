@@ -539,6 +539,11 @@ class Constants
     const SKIP_WF_AT_PAYOUTS            = 'skip_wf_at_payouts';
 
     /**
+     * Skips workflow when creating bulk payouts for Business Banking (RazorpayX)
+     */
+    const BULK_PAYOUT_WORKFLOW        = 'bulk_payout_workflow';
+
+    /**
      * new banking error response is enabled by the merchant.
      */
     const NEW_BANKING_ERROR             = 'new_banking_error';
@@ -2633,6 +2638,7 @@ class Constants
         self::ONE_CC_ENABLE_NECTOR_COINS       => true,
         self::DEBIT_CARD_VALIDATION            => true,
         self::REMOVE_RAZORPAY_BRANDING         => true,
+        self::BULK_PAYOUT_WORKFLOW            => true,
     ];
 
     // Entity type constants
@@ -3678,6 +3684,11 @@ class Constants
             'display_name'  => 'Feature to show refund pending status',
             'documentation' => ''
         ],
+        self::BULK_PAYOUT_WORKFLOW => [
+            'feature'       => self::BULK_PAYOUT_WORKFLOW,
+            'display_name'  => 'Razorpay X - Bulk Payout Workflows',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -3729,6 +3740,7 @@ class Constants
         DcsConstants::ShowEmailOnCheckout,
         DcsConstants::EmailOptionalOnCheckout,
         DcsConstants::AffordabilityWidgetSet,
+        self::BULK_PAYOUT_WORKFLOW,
     ];
 
     /*

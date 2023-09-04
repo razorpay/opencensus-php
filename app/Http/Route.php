@@ -1818,6 +1818,20 @@ class Route
 
         'payout_partner_bank_status'                => ['get',     'payouts/partner-bank/status',                           'PayoutController@getPartnerBankStatus'                  ],
 
+        // Xperience service routes
+        'bulk_payout_get'                          => ['get',   'xperience/bulk-payouts/{id}',               'XperienceController@getBulkPayoutById'                ],
+        'bulk_payouts_fetch_multiple'              => ['get',   'xperience/bulk-payouts',                    'XperienceController@getBulkPayouts'                   ],
+        'bulk_payouts_reject_owner'                => ['post',  'xperience/bulk-payouts/reject/owner',       'XperienceController@ownerBulkRejectBulkPayouts'       ],
+        'bulk_payouts_fetch_pending'               => ['post',  'xperience/bulk-payouts/pending',            'XperienceController@getPendingBulkPayouts'            ],
+        'bulk_payouts_bulk_approve'                => ['post',  'xperience/bulk-payouts/approve',            'XperienceController@approveBulkPayouts'               ],
+        'bulk_payouts_bulk_reject'                 => ['post',  'xperience/bulk-payouts/reject',             'XperienceController@rejectBulkPayouts'                ],
+        'bulk_payouts_meta_summary'                => ['get',   'xperience/bulk-payouts/_meta/summary',      'XperienceController@getBulkPayoutsMetaSummary'        ],
+        'bulk_payouts_workflow_summary'            => ['get',   'xperience/bulk-payouts/workflow/summary',   'XperienceController@workflowSummary'                  ],
+        'bulk_payout_validate'                     => ['post',  'xperience/bulk-payouts/validate',           'XperienceController@createBulkPayout'                 ],
+        'bulk_payout_fetch_rows'                   => ['get',   'xperience/bulk-payouts/{id}/rows',          'XperienceController@getBulkPayoutRows'                ],
+        'bulk_payout_process'                      => ['post',  'xperience/bulk-payouts/{id}/process',       'XperienceController@processBulkPayout'                ],
+        'bulk_payouts_migrate_admin'               => ['get',     'xperience/bulk-payouts/migrate',                 'XperienceController@migrateBulkPayouts'        ],
+
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
@@ -7317,6 +7331,19 @@ class Route
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
 
+        // Xperience service routes
+        'bulk_payout_get',
+        'bulk_payouts_fetch_multiple',
+        'bulk_payouts_reject_owner',
+        'bulk_payouts_fetch_pending',
+        'bulk_payouts_bulk_approve',
+        'bulk_payouts_bulk_reject',
+        'bulk_payouts_meta_summary',
+        'bulk_payout_validate',
+        'bulk_payout_fetch_rows',
+        'bulk_payout_process',
+        'bulk_payouts_workflow_summary',
+
         'payout_partner_bank_status',
 
         // Checkout Service Routes
@@ -8635,6 +8662,8 @@ class Route
         'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
 
+        // xperience admin routes
+        'bulk_payouts_migrate_admin',
 
         // Self serve workflow admin routes
         'workflow_config_create_admin',
@@ -10180,6 +10209,9 @@ class Route
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
         'get_non_3ds_details'                        => Permission::VIEW_ALL_WORKFLOW,
 
+        // xperience admin routes
+        'bulk_payouts_migrate_admin'                => Permission::MIGRATE_BULK_PAYOUTS,
+
         // Self serve workflow admin routes
         'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
@@ -10707,6 +10739,19 @@ class Route
         'fetch_pending_payouts_summary'             => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'fetch_pending_payout_links_summary'        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
+        // Xperience service routes
+        'bulk_payout_get'                           => Permission::VIEW_PAYOUT,
+        'bulk_payouts_fetch_multiple'               => Permission::VIEW_PAYOUT,
+        'bulk_payouts_reject_owner'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'bulk_payouts_fetch_pending'                => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'bulk_payouts_bulk_approve'                 => Permission::APPROVE_PAYOUT,
+        'bulk_payouts_bulk_reject'                  => Permission::REJECT_PAYOUT,
+        'bulk_payouts_meta_summary'                 => Permission::VIEW_PAYOUT,
+        'bulk_payout_validate'                      => Permission::CREATE_PAYOUT,
+        'bulk_payout_fetch_rows'                    => Permission::CREATE_PAYOUT,
+        'bulk_payout_process'                       => Permission::CREATE_PAYOUT,
+        'bulk_payouts_workflow_summary'             => Permission::APPROVE_PAYOUT,
+
         'payout_partner_bank_status'                  => Permission::CREATE_PAYOUT,
     ];
 
@@ -11028,6 +11073,10 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'xperience' => [
+            'merchant_fetch_internal_users',
+        ],
+
         'master_onboarding' => [
             'banking_account_service_common_serviceability_check',
             'banking_account_service_routes',
@@ -12585,6 +12634,19 @@ class Route
             'wallet_dashboard_proxy',
             'submerchant_partner_feature_check',
             'payout_partner_bank_status',
+
+            // Xperience service routes
+            'bulk_payout_get',
+            'bulk_payouts_fetch_multiple',
+            'bulk_payouts_reject_owner',
+            'bulk_payouts_fetch_pending',
+            'bulk_payouts_bulk_approve',
+            'bulk_payouts_bulk_reject',
+            'bulk_payouts_meta_summary',
+            'bulk_payout_validate',
+            'bulk_payout_fetch_rows',
+            'bulk_payout_process',
+            'bulk_payouts_workflow_summary',
         ],
 
         'admin_dashboard' => [
@@ -15012,7 +15074,18 @@ class Route
             'manual_downtime_fetch',
             'downtime_manual_resolve',
 
-            'submerchant_partner_feature_check'
+            'submerchant_partner_feature_check',
+
+            // Xperience service routes
+            // Adding only side-effect-free routes for admin dashboard
+            'bulk_payout_get',
+            'bulk_payouts_fetch_multiple',
+            'bulk_payouts_fetch_pending',
+            'bulk_payouts_meta_summary',
+            'bulk_payout_fetch_rows',
+            'bulk_payouts_workflow_summary',
+            // xperience admin routes
+            'bulk_payouts_migrate_admin',
         ],
 
         //
@@ -17380,7 +17453,20 @@ class Route
         'payout_links_bulk_reject_owner',
         'fetch_pending_payouts_summary',
         'fetch_pending_payout_links_summary',
-        'payout_partner_bank_status'
+        'payout_partner_bank_status',
+
+        // Xperience service routes
+        'bulk_payout_get',
+        'bulk_payouts_fetch_multiple',
+        'bulk_payouts_reject_owner',
+        'bulk_payouts_fetch_pending',
+        'bulk_payouts_bulk_approve',
+        'bulk_payouts_bulk_reject',
+        'bulk_payouts_meta_summary',
+        'bulk_payout_validate',
+        'bulk_payout_fetch_rows',
+        'bulk_payout_process',
+        'bulk_payouts_workflow_summary',
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

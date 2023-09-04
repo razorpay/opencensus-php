@@ -1022,6 +1022,12 @@ return [
         'timeout'                => env('PAYOUT_LINKS_URL_TIMEOUT_SECS', 25)
     ],
 
+    'xperience' => [
+        'url'                    => env('APP_XPERIENCE_URL', 'http://localhost:8000'),
+        'secret'                 => env('APP_XPERIENCE_SECRET'),
+        'timeout'                => env('XPERIENCE_URL_TIMEOUT_SECS', 25)
+    ],
+
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
     ],

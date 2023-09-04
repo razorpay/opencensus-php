@@ -175,6 +175,9 @@ class Otp extends Mailable
             case 'create_workflow_config':
                 $view = 'emails.user.otp_workflow_config';
                 break;
+            case 'approve_bulk_payouts':
+                $view = 'emails.user.otp_approve_bulk_payouts';
+                break;
             // Generic fall back template.
             default:
                 $view = 'emails.user.otp';

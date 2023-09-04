@@ -613,6 +613,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutLinks();
 
+        $this->registerXperience();
+
         $this->registerReminders();
 
         $this->registerNonBlockingHttp();
@@ -978,6 +980,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->bind('payout-links', function($app)
         {
             return new PayoutLinks($app);
+        });
+    }
+
+    protected function registerXperience()
+    {
+        $this->app->bind('xperience', function($app)
+        {
+            return new Xperience($app);
         });
     }
 

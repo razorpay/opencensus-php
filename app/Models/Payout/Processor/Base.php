@@ -2043,7 +2043,15 @@ class Base extends BaseCore
 
             return false;
         }
+        /**
+         * Skip is batch approval flow
+         */
+        if ((new Payout\Service())->isBatchApp() === true and (($skipWorkflow !== null) and ($skipWorkflow === true)))
+        {
+            $this->workflowFeature = Constants::BULK_PAYOUT_WORKFLOW;
 
+            return false;
+        }
         //
         // Skip workflow if:
         // test mode

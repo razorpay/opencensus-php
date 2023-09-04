@@ -149,7 +149,8 @@ class Constants
     // bulk payouts v2 constants
     const CREATE_PAYOUT_BATCH = 'create_payout_batch';
     const CREATE_PAYOUT_BATCH_V2 = 'create_payout_batch_v2';
-    const BATCH_FILE_ID = 'batch_file_id';
+    const APPROVE_BULK_PAYOUTS   = 'approve_bulk_payouts';
+    const BATCH_FILE_ID          = 'batch_file_id';
 
 
     public static $attributionList = [
@@ -473,7 +474,8 @@ class Constants
         self::CREATE_WORKFLOW_CONFIG,
         self::UPDATE_WORKFLOW_CONFIG,
         self::DELETE_WORKFLOW_CONFIG,
-        self::BULK_APPROVE_PAYOUT
+        self::BULK_APPROVE_PAYOUT,
+        self::APPROVE_BULK_PAYOUTS,
     ];
 
     const LOGIN_OTP_ACTION_V2                      = 'login_otp_v2';

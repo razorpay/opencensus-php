@@ -10,13 +10,14 @@ class WorkflowFeature
     const SKIP_FOR_INTERNAL_PAYOUT  = 'skip_for_internal_payout';
 
     const WORKFLOW_FEATURES = [
-        Constants::PAYOUT_WORKFLOWS           => 1,
-        Constants::SKIP_WF_AT_PAYOUTS         => 2,
-        Constants::SKIP_WORKFLOWS_FOR_API     => 3,
-        self::SKIP_FOR_INTERNAL_PAYOUT        => 4,
-        self::SKIP_FOR_PG_PAYOUT              => 5,
-        Constants::SKIP_WF_FOR_PAYROLL        => 6,
-        Constants::SKIP_WF_FOR_PAYOUT_LINK    => 7,
+        Constants::PAYOUT_WORKFLOWS        => 1,
+        Constants::SKIP_WF_AT_PAYOUTS      => 2,
+        Constants::SKIP_WORKFLOWS_FOR_API  => 3,
+        self::SKIP_FOR_INTERNAL_PAYOUT     => 4,
+        self::SKIP_FOR_PG_PAYOUT           => 5,
+        Constants::SKIP_WF_FOR_PAYROLL     => 6,
+        Constants::SKIP_WF_FOR_PAYOUT_LINK => 7,
+        Constants::BULK_PAYOUT_WORKFLOW    => 8,
     ];
 
     public static function getIntValueFromWorkflowFeature($feature)

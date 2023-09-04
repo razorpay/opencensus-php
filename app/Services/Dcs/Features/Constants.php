@@ -208,6 +208,7 @@ class Constants
     const OneCcMandatoryLogin = 'one_cc_mandatory_login';
     const DisablePreMagicOrderIngestion = 'disable_pre_magic_order_ingestion';
     const OneCcEnableNectorCoins = 'one_cc_enable_nector_coins';
+    const BulkPayoutWorkflow = 'bulk_payout_workflow';
 
     //reporting service features
     const SettlementReconReportWithNotes = 'settlement_recon_report_with_notes';
@@ -453,6 +454,7 @@ class Constants
         self::SrSensitiveBucket4 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
+        self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -681,6 +683,7 @@ class Constants
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_3                         => self::SrSensitiveBucket3,
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_4                         => self::SrSensitiveBucket4,
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                      => self::RemoveRazorpayBranding,
+        APIFeaturesConstants::BULK_PAYOUT_WORKFLOW                          => self::BulkPayoutWorkflow,
     ];
 
     /**

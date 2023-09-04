@@ -26,6 +26,7 @@ class BatchHelper
     // Different types of payout amounts used in bulk payouts
     const PAISE                    = 'paise';
     const RUPEES                   = 'rupees';
+    const SKIP_WORKFLOW            = 'skip_workflow';
 
     public static function getPayoutInput(
         array $entry,
@@ -46,7 +47,8 @@ class BatchHelper
             PayoutModel\Entity::FUND_ACCOUNT_ID => $fundAccount[FundAccount\Entity::ID],
             PayoutModel\Entity::MODE            => $entry[self::PAYOUT][self::MODE],
             PayoutModel\Entity::REFERENCE_ID    => $entry[self::PAYOUT][self::REFERENCE_ID],
-            // Notes is optional.
+            PayoutModel\Entity::SKIP_WORKFLOW   => $entry[self::PAYOUT][self::SKIP_WORKFLOW],
+        // Notes is optional.
             PayoutModel\Entity::NOTES           => $entry[self::NOTES] ?? [],
             PayoutModel\Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
         ];
@@ -70,7 +72,6 @@ class BatchHelper
         $input[PayoutModel\Entity::NOTES] = self::formatNotesInput($input[PayoutModel\Entity::NOTES]);
 
         $input[PayoutModel\Entity::ORIGIN] = PayoutModel\Entity::DASHBOARD;
-
         // Returns removing attributes with empty values.
         return array_filter($input);
     }

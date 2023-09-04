@@ -4592,6 +4592,12 @@ class Core extends Base\Core
                 $payload += $this->getExtraStorkPayloadForBulkPayoutAction($input);
                 break;
 
+            case Constants::APPROVE_BULK_PAYOUTS:
+                $payload += [
+                    'total_count'  => $input['total_count'],
+                    'total_amount' => $input['total_amount'],
+                ];
+                break;
         }
 
         return $payload;
@@ -5129,6 +5135,13 @@ class Core extends Base\Core
                 ];
             }
         }
+        else if ($action === Constants::APPROVE_BULK_PAYOUTS)
+        {
+            $payload += [
+                'total_count'  => $input['total_count'],
+                'total_amount' => $input['total_amount'],
+            ];
+        }
 
         return $payload;
     }
@@ -5195,6 +5208,12 @@ class Core extends Base\Core
             case Constants::DELETE_WORKFLOW_CONFIG:
                 $smsPayload['sender'] = 'RZPAYX';
                 $smsPayload['templateName'] = 'sms.user.otp_workflow_config_v2';
+                $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
+                break;
+
+            case Constants::APPROVE_BULK_PAYOUTS:
+                $smsPayload['sender'] = 'RZPAYX';
+                $smsPayload['templateName'] = 'sms.user.approve_bulk_payouts';
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;
         }
