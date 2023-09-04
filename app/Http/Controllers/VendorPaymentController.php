@@ -113,6 +113,11 @@ class VendorPaymentController extends Controller
         return ApiResponse::json(['success' => true]);
     }
 
+    public function getSignedUrl(string $entity, string $entityID)
+    {
+        return $this->service->getSignedUrl($this->ba->getMerchant(), $entity, $entityID);
+    }
+
     public function createVendorAdvance()
     {
         return $this->service->createVendorAdvance($this->ba->getMerchant(), $this->input, $this->ba->getUser());
@@ -121,6 +126,11 @@ class VendorPaymentController extends Controller
     public function getVendorAdvance(string $vendorAdvanceId)
     {
         return $this->service->getVendorAdvance($this->ba->getMerchant(), $vendorAdvanceId);
+    }
+
+    public function suggestAdvancesForLinking()
+    {
+        return $this->service->suggestAdvancesForLinking($this->ba->getMerchant(), $this->input);
     }
 
     public function listVendorAdvances()
@@ -427,5 +437,65 @@ class VendorPaymentController extends Controller
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
         $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS' );
+    }
+
+    public function suggestNextPurchaseOrderNumber()
+    {
+        return $this->service->suggestNextPurchaseOrderNumber($this->ba->getMerchant(), $this->input);
+    }
+
+    public function cancelPurchaseOrder(string $poId)
+    {
+        return $this->service->cancelPurchaseOrder($this->ba->getMerchant(), $this->ba->getUser(), $poId, $this->input);
+    }
+
+    public function closePurchaseOrder(string $poId)
+    {
+        return $this->service->closePurchaseOrder($this->ba->getMerchant(), $this->ba->getUser(), $poId, $this->input);
+    }
+
+    public function issuePurchaseOrder(string $poId)
+    {
+        return $this->service->issuePurchaseOrder($this->ba->getMerchant(), $this->ba->getUser(), $poId, $this->input);
+    }
+
+    public function createPurchaseOrder()
+    {
+        return $this->service->createPurchaseOrder($this->ba->getMerchant(), $this->ba->getUser(), $this->input);
+    }
+
+    public function getPurchaseOrder($poId)
+    {
+        return $this->service->getPurchaseOrder($this->ba->getMerchant(), $poId);
+    }
+
+    public function listPurchaseOrder()
+    {
+        return $this->service->listPurchaseOrder($this->ba->getMerchant(), $this->input);
+    }
+
+    public function editPurchaseOrder($poId)
+    {
+        return $this->service->editPurchaseOrder($this->ba->getMerchant(), $this->ba->getUser(), $poId, $this->input);
+    }
+
+    public function createAddress()
+    {
+        return $this->service->createAddress($this->ba->getMerchant(), $this->ba->getUser(), $this->input);
+    }
+
+    public function updateAddress(string $addressId)
+    {
+        return $this->service->updateAddress($this->ba->getMerchant(), $addressId, $this->input);
+    }
+
+    public function listAddress()
+    {
+        return $this->service->listAddress($this->ba->getMerchant(), $this->input);
+    }
+
+    public function unlinkPurchaseOrderFromInvoice(string $vpId)
+    {
+        return $this->service->unlinkPurchaseOrderFromInvoice($this->ba->getMerchant(), $this->ba->getUser(), $vpId, $this->input);
     }
 }

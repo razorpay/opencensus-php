@@ -944,4 +944,244 @@ return [
         ]
     ],
 
+    'testGetSignedUrl' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_11122222234456/signed-url',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'file_11128822234456',
+                'signed_url' => 'http://test.razorpay.com/vendor-payment-default/po',
+            ]
+        ]
+    ],
+
+    'testGetAdvancesSuggestionForLinking' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/vendor-advances/_meta/suggestion',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'vda_testDummyId'
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testIssuePurchaseOrder' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_dummyTestId/issue',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testClosePurchaseOrder' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_dummyTestId/close',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testCancelPurchaseOrder' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_dummyTestId/cancel',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testSuggestNextPurchaseOrderNumber' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/number/suggestion',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'prefix' => 'PO-',
+                'next_number' => '0001'
+            ]
+        ]
+    ],
+
+    'testCreateAddress' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/addresses',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'addr_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testListAddress' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/addresses',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'addr_testDummyId'
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testEditAddress' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/addresses/addr_testDummyId',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'addr_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testCreatePurchaseOrder' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'po_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testEditPurchaseOrder' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_dummyTestId',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'po_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testGetPurchaseOrder' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders/po_dummyTestId',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'po_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testListPurchaseOrder' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/purchase-orders',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'po_testDummyId'
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testUnlinkPurchaseOrderFromVp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/vdpm_1112222/unlink-po',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ]
 ];

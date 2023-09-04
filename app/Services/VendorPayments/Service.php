@@ -91,9 +91,26 @@ class Service
     const GET_TIMELINE_VIEW        = 'GetApprovalTimeline';
     const GET_LATEST_APPROVERS     = 'GetLatestApprovers';
 
-    const GET_VENDOR_ADVANCE     = 'GetVendorAdvance';
-    const CREATE_VENDOR_ADVANCE  = 'CreateVendorAdvance';
-    const LIST_VENDOR_ADVANCE    = 'ListVendorAdvance';
+    const GET_VENDOR_ADVANCE      = 'GetVendorAdvance';
+    const CREATE_VENDOR_ADVANCE   = 'CreateVendorAdvance';
+    const LIST_VENDOR_ADVANCE     = 'ListVendorAdvance';
+    const SUGGEST_VENDOR_ADVANCES = 'SuggestVendorAdvances';
+
+    const CREATE_PURCHASE_ORDER  = 'CreatePurchaseOrder';
+    const GET_PURCHASE_ORDER     = 'GetPurchaseOrder';
+    const LIST_PURCHASE_ORDER    = 'ListPurchaseOrder';
+    const EDIT_PURCHASE_ORDER    = 'EditPurchaseOrder';
+    const ISSUE_PURCHASE_ORDER   = 'IssuePurchaseOrder';
+    const CANCEL_PURCHASE_ORDER  = 'CancelPurchaseOrder';
+    const CLOSE_PURCHASE_ORDER   = 'ClosePurchaseOrder';
+    const SUGGEST_NEXT_PURCHASE_ORDER_NUMBER = 'SuggestNextPurchaseOrderNumber';
+    const UNLINK_PURCHASE_ORDER_FROM_INVOICE  = 'UnlinkPurchaseOrderFromInvoice';
+
+    const CREATE_ADDRESS        = 'CreateAddress';
+    const UPDATE_ADDRESS        = 'UpdateAddress';
+    const LIST_ADDRESS          = 'ListAddress';
+
+    const GET_SIGNED_URL  = 'GetSignedURL';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -276,6 +293,16 @@ class Service
         $result['users'] = $this->repo->user->findManyByPublicIds($userIds)->toArrayPublic();
     }
 
+    public function getSignedUrl(MerchantEntity $merchant, string $entity, string $entityID)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_SIGNED_URL);
+
+        $input['entity'] = $entity;
+        $input['entity_id'] =   $entityID;
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
     public function createVendorAdvance(MerchantEntity $merchant, array $input, Entity $user = null)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_VENDOR_ADVANCE);
@@ -295,6 +322,13 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_ADVANCE);
 
         $input = [self::ID => $vendorAdvanceId];
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function suggestAdvancesForLinking(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SUGGEST_VENDOR_ADVANCES);
 
         return $this->makeRequest($merchant, $url, $input);
     }
@@ -1046,6 +1080,115 @@ class Service
     public function getTimelineView(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TIMELINE_VIEW);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function issuePurchaseOrder(MerchantEntity $merchant, Entity $user, string $poId, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $input[self::ID] = $poId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ISSUE_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function closePurchaseOrder(MerchantEntity $merchant, Entity $user, string $poId, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $input[self::ID] = $poId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CLOSE_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function cancelPurchaseOrder(MerchantEntity $merchant, Entity $user, string $poId, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $input[self::ID] = $poId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function suggestNextPurchaseOrderNumber(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SUGGEST_NEXT_PURCHASE_ORDER_NUMBER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function createPurchaseOrder(MerchantEntity $merchant, Entity $user, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getPurchaseOrder(MerchantEntity $merchant, string $poId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_PURCHASE_ORDER);
+
+        $input[self::ID] = $poId;
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function listPurchaseOrder(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function editPurchaseOrder(MerchantEntity $merchant, Entity $user, string $poId, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+        $input[self::ID] = $poId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_PURCHASE_ORDER);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function createAddress(MerchantEntity $merchant, Entity $user, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_ADDRESS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function updateAddress(MerchantEntity $merchant, string $addressId, array $input)
+    {
+        $input[self::ID] = $addressId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_ADDRESS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function listAddress(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_ADDRESS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function unlinkPurchaseOrderFromInvoice(MerchantEntity $merchant, Entity $user, string $vpId, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $input[self::ID] = $vpId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UNLINK_PURCHASE_ORDER_FROM_INVOICE);
 
         return $this->makeRequest($merchant, $url, $input);
     }

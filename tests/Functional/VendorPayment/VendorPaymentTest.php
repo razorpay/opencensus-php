@@ -881,4 +881,259 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('listVendorAdvances');
     }
+
+    public function testGetSignedUrl()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getSignedUrl')->andReturn([
+            'file_id' => 'file_11128822234456',
+            'signed_url' => 'http://test.razorpay.com/vendor-payment-default/po',
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getSignedUrl');
+    }
+
+    public function testGetAdvancesSuggestionForLinking()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('suggestAdvancesForLinking')->andReturn([
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'vda_testDummyId'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('suggestAdvancesForLinking');
+    }
+
+    public function testIssuePurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('issuePurchaseOrder')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('issuePurchaseOrder');
+    }
+
+    public function testClosePurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('closePurchaseOrder')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('closePurchaseOrder');
+    }
+
+    public function testCancelPurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('cancelPurchaseOrder')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('cancelPurchaseOrder');
+    }
+
+    public function testSuggestNextPurchaseOrderNumber()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('suggestNextPurchaseOrderNumber')->andReturn([
+            'prefix' => 'PO-',
+            'next_number' => '0001'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('suggestNextPurchaseOrderNumber');
+    }
+
+    public function testCreateAddress()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createAddress')->andReturn([
+            'id' => 'addr_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createAddress');
+    }
+
+    public function testListAddress()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('listAddress')->andReturn([
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'addr_testDummyId'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listAddress');
+    }
+
+    public function testEditAddress()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('updateAddress')->andReturn([
+            'id' => 'addr_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('updateAddress');
+    }
+
+    public function testCreatePurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createPurchaseOrder')->andReturn([
+            'id' => 'po_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createPurchaseOrder');
+    }
+
+    public function testEditPurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('editPurchaseOrder')->andReturn([
+            'id' => 'po_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('editPurchaseOrder');
+    }
+
+    public function testGetPurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getPurchaseOrder')->andReturn([
+            'id' => 'po_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getPurchaseOrder');
+    }
+
+    public function testListPurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('listPurchaseOrder')->andReturn([
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'po_testDummyId'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listPurchaseOrder');
+    }
+
+    public function testUnlinkPurchaseOrderFromVp()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('unlinkPurchaseOrderFromInvoice')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('unlinkPurchaseOrderFromInvoice');
+    }
 }
