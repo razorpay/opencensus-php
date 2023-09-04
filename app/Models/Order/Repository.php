@@ -16,13 +16,13 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\Traits\ExternalCore;
-use RZP\Models\Base\Traits\ExternalRepo;
+use RZP\Models\Base\Traits\ExternalOrderRepo;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
-    use ExternalRepo, ExternalCore;
+    use ExternalOrderRepo, ExternalCore;
 
     protected $entity = 'order';
 

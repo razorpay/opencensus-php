@@ -104,9 +104,9 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
 
         $order = $this->createTpvOrder();
 
-        $this->expectException(BaseBadRequestValidationFailureException::class);
+        $this->expectException(\RZP\Exception\BadRequestException::class);
 
-        $this->expectExceptionMessage(orderEntity::stripDefaultSign($order[Entity::ID])."xyz is not a valid id");
+        $this->expectExceptionMessage("The id provided does not exist");
 
         $preferences = $this->getTurboPreferences($order[Entity::ID]."xyz", '');
     }

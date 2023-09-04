@@ -3,8 +3,9 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use RZP\Error\ErrorCode;
 use Throwable;
-
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
@@ -34,39 +35,31 @@ trait ArchivedCore
     /**
      * @throws Throwable
      */
-    public function findByPublicIdArchived($id, string $connectionType = null)
+    public function findByPublicIdArchived($id)
     {
-        try
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
+
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
         {
-            return parent::findByPublicId($id, $connectionType);
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function () use ($id) {
+                return parent::findByPublicId($id, ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
+
+            $entity->setArchived(true);
+
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
+
+            return $entity;
         }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
-            {
-                $this->tracePreQueryMetrics(__FUNCTION__);
-
-                $queryStartTime = millitime();
-
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id)
-                {
-                    return parent::findByPublicId($id,ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
-
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
-        }
+        $this->throwInvalidIdException($id);
     }
 
     /**
@@ -75,40 +68,32 @@ trait ArchivedCore
     public function findByPublicIdAndMerchantArchived(
         string $id,
         Merchant\Entity $merchant,
-        array $params = [],
-        string $connectionType = null): PublicEntity
+        array $params = [],): PublicEntity
     {
-        try
-        {
-            return parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
-        }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                $this->tracePreQueryMetrics(__FUNCTION__);
+                return parent::findByPublicIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
 
-                $queryStartTime = millitime();
+            $entity->setArchived(true);
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
-                {
-                    return parent::findByPublicIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
 
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
+            return $entity;
         }
+
+        $this->throwInvalidIdException($id);
     }
 
     /**
@@ -117,154 +102,125 @@ trait ArchivedCore
     public function findByIdAndMerchantArchived(
         string $id,
         Merchant\Entity $merchant,
-        array $params = [],
-        string $connectionType = null): PublicEntity
+        array $params = []): PublicEntity
     {
-        try
-        {
-            return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
-        }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                $this->tracePreQueryMetrics(__FUNCTION__);
+                return parent::findByIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
 
-                $queryStartTime = millitime();
+            $entity->setArchived(true);
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
-                {
-                    return parent::findByIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
 
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
+            return $entity;
         }
+
+        $this->throwInvalidIdException($id);
     }
 
     /**
      * @throws Throwable
      */
-    public function findByIdAndMerchantIdArchived($id, $merchantId, string $connectionType = null)
+    public function findByIdAndMerchantIdArchived($id, $merchantId)
     {
-        try
-        {
-            return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
-        }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchantId)
             {
-                $this->tracePreQueryMetrics(__FUNCTION__);
+                return parent::findByIdAndMerchantId($id, $merchantId, ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
 
-                $queryStartTime = millitime();
+            $entity->setArchived(true);
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchantId)
-                {
-                    return parent::findByIdAndMerchantId($id, $merchantId, ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
 
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
+            return $entity;
         }
+
+        $this->throwInvalidIdException($id);
     }
 
     /**
      * @throws Throwable
      */
-    public function findOrFailByPublicIdWithParamsArchived($id, array $params, string $connectionType = null): PublicEntity
+    public function findOrFailByPublicIdWithParamsArchived($id, array $params): PublicEntity
     {
-        try
-        {
-            return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
-        }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $params)
             {
-                $this->tracePreQueryMetrics(__FUNCTION__);
+                return parent::findOrFailByPublicIdWithParams($id, $params, ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
 
-                $queryStartTime = millitime();
+            $entity->setArchived(true);
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $params)
-                {
-                    return parent::findOrFailByPublicIdWithParams($id, $params, ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
 
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
+            return $entity;
         }
+
+        $this->throwInvalidIdException($id);
     }
 
     /**
      * @throws Throwable
      */
-    public function findOrFailPublicArchived($id, $columns = array('*'), string $connectionType = null)
+    public function findOrFailPublicArchived($id, $columns = array('*'))
     {
-        try
-        {
-            return parent::findOrFailPublic($id, $columns, $connectionType);
-        }
-        catch (Throwable $e)
-        {
-            $logData = [
-                'id'     => $id,
-                'caller' => __FUNCTION__,
-            ];
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                $this->tracePreQueryMetrics(__FUNCTION__);
+                return parent::findOrFailPublic($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
 
-                $queryStartTime = millitime();
+            $entity->setArchived(true);
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
-                {
-                    return parent::findOrFailPublic($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
-                });
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
 
-                $entity->setArchived(true);
-
-                $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
-
-                return $entity;
-            }
-
-            throw $e;
+            return $entity;
         }
+
+        $this->throwInvalidIdException($id);
     }
 
     /**
@@ -279,18 +235,16 @@ trait ArchivedCore
         catch (Throwable $e)
         {
             $logData = [
-                'id'     => $id,
+                'id' => $id,
                 'caller' => __FUNCTION__,
             ];
 
-            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
-            {
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true) {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
                 $queryStartTime = millitime();
 
-                $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
-                {
+                $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns) {
                     return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
                 });
 
@@ -300,9 +254,40 @@ trait ArchivedCore
 
                 return $entity;
             }
-
-            throw $e;
         }
+
+        $this->throwInvalidIdException($id);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function findOrFailOnlyArchived($id, $columns = array('*'))
+    {
+        $logData = [
+            'id'     => $id,
+            'caller' => __FUNCTION__,
+        ];
+
+        if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
+        {
+            $this->tracePreQueryMetrics(__FUNCTION__);
+
+            $queryStartTime = millitime();
+
+            $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
+            {
+                return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+            });
+
+            $entity->setArchived(true);
+
+            $this->tracePostQueryMetrics(__FUNCTION__, $entity, $queryStartTime);
+
+            return $entity;
+        }
+
+        $this->throwInvalidIdException($id);
     }
 
     private function isArchivalFallbackEnabledViaEnv(array $logData = []) : bool
@@ -378,5 +363,17 @@ trait ArchivedCore
         ]);
 
         $trace->histogram(Metric::ARCHIVED_ENTITY_FETCH_TIME_TAKEN, millitime() - $queryStartTime);
+    }
+
+    private function throwInvalidIdException($id)
+    {
+        $data = [
+            'model' => $this->entityName,
+            'attributes' => $id,
+            'operation' => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 }
