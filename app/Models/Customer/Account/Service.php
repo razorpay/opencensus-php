@@ -183,7 +183,18 @@ class Service extends Base\Service
         if ($tokens->isNotEmpty()) {
             $tokens = $tokenCore->filterTokensForCheckout($tokens);
 
-            $response['tokens'] = $tokens->toArrayPublic();
+            $tokens = $tokens->toArrayPublic();
+
+            // sending notes and card flows as empty object for empty values
+            // without this, php sends them as empty arrays
+            foreach ($tokens['items'] as $i => $token) {
+                if (isset($token['card'])) {
+                    $tokens['items'][$i]['card']['flows'] = (object)($token['card']['flows'] ?? []);
+                }
+                $tokens['items'][$i]['notes'] = (object)($token['notes'] ?? []);
+            }
+
+            $response['tokens'] = $tokens;
         }
 
         if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
@@ -719,6 +730,7 @@ class Service extends Base\Service
                 return ['saved' => true];
             }
 
+            // @ToDo: Remove this & all such checks when we stop using Laravel session for customers
             $sessionData = optional($this->app['request']->getSession())->all();
 
             $this->trace->info(
@@ -730,7 +742,11 @@ class Service extends Base\Service
 
             $key = $this->mode . '_checkcookie';
 
-            if (empty($sessionData[$key]) === true)
+            // Don't skip sending OTPs for Otp Verify V2 Flows as we now support
+            // logged in flows for browsers without cookies enabled.
+            $isOtpVerifyV2Flow = !empty($input['otp_verify_v2']) && $input['otp_verify_v2'] !== 'false';
+
+            if (!$isOtpVerifyV2Flow && empty($sessionData[$key]) === true)
             {
                 return $data;
             }
@@ -1396,7 +1412,7 @@ class Service extends Base\Service
         return false;
     }
 
-    
+
     /**
      * Calculates count of all merchant saved wallet tokens associated to the customer
      *
@@ -1415,21 +1431,23 @@ class Service extends Base\Service
 
         return count($tokens);
     }
-     
+
     public function getMagicCustomer()
     {
-        if(Session()->has($this->mode . '_app_token') === false)
+        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+        if (empty($globalCustomerId) && session()->has($this->mode . '_app_token') === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
-        $appToken = Session()->get($this->mode . '_app_token');
+        $appToken = session()->get($this->mode . '_app_token');
 
         list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
+            ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
             $this->merchant,
             true);
 
         return $customer;
-      } 
+    }
 }

@@ -570,6 +570,12 @@ return array(
 
     'checkout_service_preferences_splitz_experiment_id' => env('CHECKOUT_SERVICE_PREFERENCES_SPLITZ_EXPERIMENT_ID'),
 
+    'stop_session_redis_usage_on_customer_fetch_internal_experiment_id' => env('STOP_SESSION_REDIS_USAGE_ON_CUSTOMER_FETCH_INTERNAL_EXPERIMENT_ID'),
+
+    'stop_session_redis_usage_on_global_customer_find_or_create_experiment_id' => env('STOP_SESSION_REDIS_USAGE_ON_GLOBAL_CUSTOMER_FIND_OR_CREATE_EXPERIMENT_ID'),
+
+    'stop_session_redis_usage_on_all_other_routes_experiment_id' => env('STOP_SESSION_REDIS_USAGE_ON_ALL_OTHER_ROUTES_EXPERIMENT_ID'),
+
     'checkout_enable_otp_auto_read_and_auto_submit_splitz_experiment_id' => env('CHECKOUT_ENABLE_OTP_AUTO_READ_AND_AUTO_SUBMIT_SPLITZ_EXPERIMENT_ID'),
 
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
