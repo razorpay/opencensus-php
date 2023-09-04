@@ -59,6 +59,7 @@ return [
 
     'pii_fields' => [
         'aadhar_number'
-]
+],
 
+    'blocked_logging_routes' => env('BLOCKED_LOGGING_ROUTES', '')
 ];

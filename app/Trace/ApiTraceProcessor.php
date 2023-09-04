@@ -24,6 +24,8 @@ class ApiTraceProcessor
     // used to drop fields which won't change in subsequent logs for that request
     private bool $isFirstLog;
 
+    private array $blockedLogRoutes;
+
     //
     // This regex is copied from
     // https://adamcaudill.com/2011/10/20/masking-credit-cards-for-pci/
@@ -133,7 +135,15 @@ class ApiTraceProcessor
     public function __construct($app)
     {
         $this->app = $app;
+
         $this->isFirstLog = true;
+
+        $this->blockedLogRoutes = [];
+        $logRoutes = $this->app['config']->get('trace.blocked_logging_routes');
+        if ($logRoutes != '' or $logRoutes != null)
+        {
+            $this->blockedLogRoutes = explode(",", $logRoutes);
+        }
     }
 
     public function __invoke(array $record)
@@ -178,9 +188,19 @@ class ApiTraceProcessor
 
         $this->dropRecurringLogFields($record);
 
+        $this->addRouteName($record);
+
+        $this->blockLogs($record);
+
         $this->isFirstLog = false;
 
         return $record;
+    }
+
+    // adds route name
+    protected function addRouteName(& $record): void
+    {
+        $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
     }
 
     protected function addHighTierLogEntry(& $record): void
@@ -548,6 +568,36 @@ class ApiTraceProcessor
         }
     }
 
+    private function blockLogs(array &$record): void
+    {
+        // If this is an exception, a stack key is present in the context array
+        $isException = (
+            isset($record['context']['stack'])
+            or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA)
+            or (isset($record['code']) and $record['code'] === TraceCode::ERROR_EXCEPTION)
+        );
+
+        try
+        {
+            if ($isException === false)
+            {
+                $route = optional($this->app['router'])->currentRouteName();
+
+                if (in_array($route, $this->blockedLogRoutes, true))
+                {
+                    $record['tier'] = 'cx_log_blocked';
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BLOCK_LOGS_EXCEPTION
+            );
+        }
+    }
     // Drops recurring and superfluous log fields
     private function dropRecurringLogFields(array &$record): void
     {
