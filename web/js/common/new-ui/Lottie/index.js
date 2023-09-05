@@ -15,6 +15,7 @@ const CustomLottie = ({
   fromWhere,
   merchantId,
   eventListeners = [],
+  customProps,
 }) => {
   useEffect(() => {
     trackInitialRenderImpression?.(merchantId, fromWhere);
@@ -41,6 +42,7 @@ const CustomLottie = ({
           isStopped={isStopped ? isStopped : false}
           isClickToPauseDisabled={true}
           eventListeners={eventListeners}
+          {...customProps}
         />
       </div>
     </ErrorBoundary>

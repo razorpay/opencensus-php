@@ -124,8 +124,10 @@ class App extends Component {
       isPartnerKYCActivated: false,
       isFeedbackFormCreated: false,
       isWebView: false,
+      isShowFestiveAnimation: false,
     };
     this.handleResize = debounce(this.handleResize.bind(this), 200);
+    this.handleFestiveAnimeAction = this.handleFestiveAnimeAction.bind(this);
   }
 
   onIdle = () => {
@@ -532,6 +534,22 @@ class App extends Component {
     }
   }
 
+  handleFestiveAnimation() {
+    setTimeout(() => {
+      this.setState({
+        isShowFestiveAnimation: true,
+      });
+    }, 1500);
+  }
+
+  handleFestiveAnimeAction() {
+    if (this.state.isShowFestiveAnimation) {
+      this.setState({
+        isShowFestiveAnimation: false,
+      });
+    }
+  }
+
   createFeedbackForms() {
     this.setState({ isFeedbackFormCreated: true });
     this.fetchUser().then(({ data }) => {
@@ -591,6 +609,8 @@ class App extends Component {
           hidden,
         }).open();
       }
+
+      this.handleFestiveAnimation();
 
       if (getMobileDetect().isWebView()) {
         this.setState({ isWebView: true });
@@ -1201,6 +1221,8 @@ class App extends Component {
           org,
           mode,
           submerchantId,
+          isShowFestiveAnimation: this.state.isShowFestiveAnimation,
+          handleFestiveAnimeAction: this.handleFestiveAnimeAction,
         }}
       >
         {isTimeoutEnabled && (

@@ -74,6 +74,7 @@ import {
   isPaymentMethodEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
+import FestiveAnimation from './FestiveAnimation';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -1134,6 +1135,7 @@ export default class HomeContainer extends Component {
       !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc);
     return (
       <div class="react-root dashboard-home">
+        <FestiveAnimation isMobile={isMobile} user={user.user} />
         <ShowWhen
           additionalCondition={(user) =>
             !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)

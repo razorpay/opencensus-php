@@ -150,5 +150,27 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: ['/dashboard'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'Festive_Anime',
+          experimentId: {
+            beta: 'MWkQ2FycdHtU8S',
+            production: 'MWkSKmsQrMfKl1',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };
