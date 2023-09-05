@@ -36,7 +36,7 @@ app/Http/P2pRoute.php                                         @razorpay/spine-ed
 app/Models/Balance/FreePayout.php                      @razorpay/Payouts-core
 app/Models/BankingAccountStatement/                    @razorpay/Payouts-core
 app/Models/Card/                                       @razorpay/TechCards
-app/Models/Card/NetworkName.php                        @razorpay/TechOnlinePaymentsOnboarding
+app/Models/Card/NetworkName.php                        @razorpay/TechRulesRouting
 app/Models/Checkout/                                   @razorpay/checkout-backend-leads
 app/Models/Key/                                        @razorpay/spine-edge
 app/Models/Merchant/Checkout.php                       @razorpay/checkout-backend-leads
@@ -46,9 +46,9 @@ app/Models/Pricing/                                    @razorpay/pricing-team
 app/Models/Payout/                                     @razorpay/Payouts-core
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
 app/Models/Reversal/                                   @razorpay/Payouts-core
-app/Models/Terminal/Sorters/                           @razorpay/TechOnlinePaymentsOnboarding
-app/Models/Terminal/AuthSelector.php                   @razorpay/TechOnlinePaymentsOnboarding
-app/Models/Terminal/Selector.php                       @razorpay/TechOnlinePaymentsOnboarding
+app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
+app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
+app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
 app/Models/Transfer/                                   mohamed.safwan@razorpay.com
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
@@ -171,7 +171,7 @@ app/Models/Merchant/Store                          @razorpay/pg-onboarding-servi
 app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/Service.php             @razorpay/tech-banking
 app/Models/Merchant/Consent                        @razorpay/tech-banking
-app/Models/Merchant/Service.php                    @razorpay/tech-banking
+app/Models/Merchant/Service.php                    @razorpay/tech-banking    
 
 
 
