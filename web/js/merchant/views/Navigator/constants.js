@@ -65,7 +65,7 @@ export const HAS_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis', 'billd
 export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer'];
 
 /** Seamless option constants - Start **/
-export const SEAMLESS_PROVIDERS = ['paytm', 'payu'];
+export const SEAMLESS_PROVIDERS = ['paytm', 'payu', 'cashfree'];
 
 export const SEAMLESS_OPTIONS = [
   { label: 'Instant (beta)', value: true },
@@ -75,6 +75,7 @@ export const SEAMLESS_OPTIONS = [
 export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
   paytm: ['upi'],
   payu: ['emi', 'emandate'],
+  cashfree: ['card'],
 };
 
 export const SEAMLESS_CONTENT = {
@@ -226,6 +227,49 @@ export const SEAMLESS_CONTENT = {
       ),
       footerLink: null,
       footerText: null,
+    },
+  },
+  cashfree: {
+    disable: {
+      headerText: 'Enable Instant (beta)',
+      infoBlock: (
+        <div>
+          <p>
+            Go live with your Cashfree PG account instantly via &rsquo;Instant&rsquo; integration
+            mode.
+          </p>
+          <p>
+            This is a beta release and supports the following payment methods - UPI and Netbanking.
+          </p>
+        </div>
+      ),
+      buttonText: 'Prerequisites:',
+      listPoints: (
+        <ul>
+          <li>
+            Please ensure that all necessary methods have been enabled on your Cashfree account (eg:
+            UPI Intent)
+          </li>
+        </ul>
+      ),
+      notePoints: [
+        'Card & Wallet Payments via Cashfree PG are currently not supported on Instant onboarding. Please setup a rule to route all Card & Wallet payments to Razorpay PG.',
+      ],
+      footerLink: 'https://razorpay.com/docs/payments/optimizer/cashfree-instant',
+    },
+    enable: {
+      headerText: 'Enable Server-to-Server',
+      infoBlock: (
+        <div>
+          <p>Your Cashfree account should have the seamless option enabled to use optimizer.</p>
+        </div>
+      ),
+      buttonText: 'How to enable seamless option on Cashfree?',
+      listPoints: (
+        <ol>
+          <CommonPoints gatewayName="Cashfree" />
+        </ol>
+      ),
     },
   },
 };

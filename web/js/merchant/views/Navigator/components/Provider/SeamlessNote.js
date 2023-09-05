@@ -80,18 +80,18 @@ const SeamlessNote = (props) => {
     });
   };
 
+  const { headerText, infoBlock, buttonText, listPoints, notePoints, footerLink, footerText } =
+    SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent] || {};
+
   return (
     <div className="feedback-card">
       <div className={`enable-seamless-info-msg ${type}`}>
         <div className="seamless-header">
           <i className="i i-info-outline" />
-          <span>{SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.headerText}</span>
+          <span>{headerText}</span>
         </div>
         <div className="seamless-desc">
-          <InfoBlock
-            stringReplacer={{ gatewayName }}
-            list={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.infoBlock}
-          />
+          <InfoBlock stringReplacer={{ gatewayName }} list={infoBlock} />
         </div>
 
         <div className="seamless-how-to-block">
@@ -99,15 +99,26 @@ const SeamlessNote = (props) => {
             defaultOpen={true}
             deps={[seamlessDisabled]}
             stringReplacer={{ gatewayName }}
-            buttonText={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.buttonText}
-            listPoints={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.listPoints}
+            buttonText={buttonText}
+            listPoints={listPoints}
           />
 
-          {SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerLink ? (
+          {notePoints?.length > 0 ? (
+            <>
+              <h5 className="notes-header">Notes:</h5>
+              <ul>
+                {notePoints.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
+          {footerLink ? (
             <p className="for-more">
               <span>For more details. Please refer to this &nbsp;</span>
               <Link
-                href={SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerLink}
+                href={footerLink}
                 onClick={onAnchorClick}
                 icon={ArrowUpRightIcon}
                 iconPosition="right"
@@ -120,7 +131,7 @@ const SeamlessNote = (props) => {
               </Link>
             </p>
           ) : null}
-          {SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent]?.footerText}
+          {footerText}
         </div>
       </div>
     </div>
