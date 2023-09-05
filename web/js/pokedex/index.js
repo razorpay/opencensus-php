@@ -25,9 +25,10 @@ import Home from 'merchant/containers/Home/Index';
 
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
-
 import css from '../../css/merchant.styl';
 import fontconfig from '../../dashboard.font';
+import { BladeProvider } from '@razorpay/blade/components';
+import { paymentTheme } from '@razorpay/blade/tokens';
 
 import {
   SUCCESS_RATE,
@@ -165,16 +166,18 @@ class App extends Component {
 }
 
 render(
-  <ThemeProvider theme={theme}>
-    <Provider store={store}>
-      <Router>
-        <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
-          <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
-            <App />
-          </SplitzRoutesBasedService>
-        </SpiltzServiceProvider>
-      </Router>
-    </Provider>
-  </ThemeProvider>,
+  <BladeProvider themeTokens={paymentTheme}>
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <Router>
+          <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
+            <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
+              <App />
+            </SplitzRoutesBasedService>
+          </SpiltzServiceProvider>
+        </Router>
+      </Provider>
+    </ThemeProvider>
+  </BladeProvider>,
   document.getElementById('react-root'),
 );
