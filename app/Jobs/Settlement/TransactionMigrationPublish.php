@@ -4,6 +4,7 @@ namespace RZP\Jobs\Settlement;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Bucket\Core;
 
@@ -95,7 +96,7 @@ class TransactionMigrationPublish extends Job
         }
     }
 
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
         unset($this->opt['transaction_ids']);
 

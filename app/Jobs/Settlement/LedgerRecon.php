@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Balance\Type as Type;
 
@@ -421,7 +422,7 @@ class LedgerRecon extends Job
         app('settlements_api')->ledgerReconActiveMtuUpdate($mtuUpdateInput);
     }
 
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
         $this->trace->info(
             TraceCode::LEDGER_RECON_FOR_MERCHANT_BEGIN_JOB_TIMEOUT,

@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Invoice\Processor;
@@ -113,7 +114,7 @@ class MerchantInvoice extends Job
      * check no of attempts not exceeds max_allowed_attempts then
      * release the job back into the queue else delete from queue
      */
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
         if($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
         {

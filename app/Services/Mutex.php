@@ -84,19 +84,22 @@ class Mutex
     }
 
     /**
-     * Release the lock for the resource array provided
+     * Release the lock for the resource array provided irrespective of the nested mutex counter on the resource if
+     * $forceCleanupIgnoringRequestCount is passed as true. Only release each resource once if
+     * $forceCleanupIgnoringRequestCount as false, meaning if requestId_1 was the redis key value of the nested
+     * mutex resource, it would become requestId_0.
      *
      * @param array $resources Array of the resource
      *
      * @return void
      */
-    public function releaseMultiple($resources, $suffix = '')
+    public function releaseMultiple($resources, $suffix = '', $forceCleanupIgnoringRequestCount = false)
     {
         foreach ($resources as $resource)
         {
             $resourceWithSuffix = $resource . $suffix;
 
-            $this->release($resourceWithSuffix);
+            $this->release($resourceWithSuffix, $forceCleanupIgnoringRequestCount);
         }
     }
 
@@ -210,7 +213,7 @@ class Mutex
             // If acquired then get out of loop
             if ($acquired === true)
             {
-                $this->acquiredResources += [$resource => 1];
+                $this->acquiredResources[$resource] = ($this->acquiredResources[$resource] ?? 0) + 1;
 
                 break;
             }
@@ -232,25 +235,28 @@ class Mutex
     /**
      * Release the lock for the resource provided
      *
+     * if $forceCleanupIgnoringRequestCount is true here, we ignore the count of nested mutex and release the resource
+     * irrespective of the nested mutex count on it.
+     *
      * @param string $resource Name of the resource
      *
      * @return integer
      */
-    public function release($resource)
+    public function release($resource, $forceCleanupIgnoringRequestCount = false)
     {
+        $this->modifyAcquiredResources($resource, $forceCleanupIgnoringRequestCount);
+
         $this->appendPrefix($resource);
 
         try
         {
-            unset($this->acquiredResources[$resource]);
-
             $resourceValue = $this->redis->get($resource);
 
             $requestId = $this->getRequestIdWithoutCount($resourceValue);
 
             if ($requestId === $this->requestId)
             {
-                return $this->resetRequestResourceCount($resource, $resourceValue);
+                return $this->resetRequestResourceCount($resource, $resourceValue, $forceCleanupIgnoringRequestCount);
             }
         }
         catch (PredisException $e)
@@ -264,11 +270,44 @@ class Mutex
         return false;
     }
 
+    protected function modifyAcquiredResources($resource, $forceCleanupIgnoringRequestCount = false)
+    {
+        $acquiredRequestCount = $this->acquiredResources[$resource] ?? 0;
+
+        if (($forceCleanupIgnoringRequestCount === true) or
+            ($acquiredRequestCount <= 1))
+        {
+            unset($this->acquiredResources[$resource]);
+        }
+        else
+        {
+            $this->acquiredResources[$resource] -= 1;
+        }
+    }
+
+    /**
+     * @deprecated This function does not release resources inside acquiredResources variable.
+     * Please use forceReleaseAllAcquired() function instead.
+     */
     public function releaseAllAcquired()
     {
         foreach ($this->acquiredResources as $acquiredResource)
         {
             $this->release($acquiredResource);
+        }
+    }
+
+    /**
+     * This function releases all the resources that are acquired irrespective of the
+     * nested mutex counter on the resource.
+     *
+     * @return void
+     */
+    public function forceReleaseAllAcquired()
+    {
+        foreach ($this->acquiredResources as $resource => $resourceCount)
+        {
+            $this->release($resource, true);
         }
     }
 
@@ -415,16 +454,20 @@ class Mutex
      * Resets the resource count in current request id after release is called.
      * If release is called on resource which is not locked further, delete the resource from redis.
      *
+     * if $forceCleanupIgnoringRequestCount is true here, we ignore the count of nested mutex and set the request
+     * count to 0 which would delete the redis key storing the mutex.
+     *
      * @param $resource
      * @param $ttl
      * @param $requestId
+     *
      * @return int
      */
-    protected function resetRequestResourceCount($resource, $requestId)
+    protected function resetRequestResourceCount($resource, $requestId, $forceCleanupIgnoringRequestCount = false)
     {
         $requestIdArray = explode('_', $requestId);
 
-        $requestCount = $requestIdArray[1] ?? 0;
+        $requestCount = ($forceCleanupIgnoringRequestCount === true) ? 0 : ($requestIdArray[1] ?? 0);
 
         try
         {
@@ -444,6 +487,22 @@ class Mutex
 
                 $ttl = $this->redis->ttl($resource);
 
+                /**
+                 * In current implementation of nested mutex, lets assume a scenario in which we had taken
+                 * a lock on resource X twice by the same request. The timeouts for each of those mutexes are as follows,
+                 * Mutex count 1(M1) on X: 100s
+                 * Mutex count 2(M2) on X: 40s
+                 *
+                 * Now, when we acquire M2 we are overriding the ttl of M1 to 40s with a change of value.
+                 * Now while releasing the same mutex M2 we set the ttl back which can mean that it may be set to 0 or
+                 * even worse when M2 has expired. In the latter case ttl returns -2, and setting a mutex with negative ttl
+                 * will throw Predis exception.
+                 *
+                 * Hence to avoid this situation, M2 (timeout) should always be kept greater than M1(timeout) by the
+                 * estimated time taken by the process executed inside M2. So in this case, M2(timeout) should be >= 140s
+                 *
+                 * This is applicable for further counts of nested loops too.
+                 */
                 $this->redis->set($resource, $requestId, 'ex', $ttl, 'xx');
             }
         }

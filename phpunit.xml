@@ -178,6 +178,7 @@
             <directory>./tests/Functional/Setting/</directory>
             <directory>./tests/Functional/AppFramework/</directory>
             <directory>./tests/Functional/Pricing/</directory>
+            <file>./tests/Unit/Services/MutexTest.php</file>
         </testsuite>
         <testsuite name="Features-3-1 Test Suite">
             <directory>./tests/Functional/Payout/</directory>

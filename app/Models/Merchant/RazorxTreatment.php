@@ -526,6 +526,9 @@ final class RazorxTreatment
     //Experiment to choose gateway balance in case of CA flows
     const USE_GATEWAY_BALANCE = 'use_gateway_balance';
 
+    //Experiment to control graceful shutdown of queues by removing acquired mutex locks
+    const RELEASE_ALL_JOB_MUTEX_LOCKS = 'release_all_job_mutex_locks';
+
     // Experiment to use secure context for OTP generation
     const SECURE_OTP_CONTEXT = 'secure_otp_context';
 

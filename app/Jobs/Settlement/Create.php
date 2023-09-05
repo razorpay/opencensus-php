@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Metric;
 use RZP\Jobs\Transfers\TransferRecon;
@@ -363,7 +364,7 @@ class Create extends Job
      * if the queue job timeout being observed in the Job
      * ref: https://razorpay.slack.com/archives/C015MHZFY49/p1615276985000600
      */
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
         $this->trace->info(
             TraceCode::SETTLEMENT_CREATE_MESSAGE_DELETE,

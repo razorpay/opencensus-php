@@ -2743,6 +2743,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
     const QUEUE_JOB_TIMEOUT                                     = 'QUEUE_JOB_TIMEOUT';
 
+    const QUEUE_JOB_RELEASE_ALL                                 = 'QUEUE_JOB_RELEASE_ALL';
+
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';

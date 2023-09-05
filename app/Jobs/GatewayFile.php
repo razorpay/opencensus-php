@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\File;
+use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 
@@ -127,7 +128,7 @@ class GatewayFile extends Job
         $this->repoManager->saveOrFail($this->gatewayFile);
     }
 
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
         $this->resetGatewayFileState();
 

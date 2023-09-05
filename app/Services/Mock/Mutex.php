@@ -64,11 +64,14 @@ class Mutex extends BaseLock
     /**
      * Release the lock for the resource provided
      *
+     * if $forceCleanupIgnoringRequestCount is true here, we ignore the count of nested mutex and release the resource
+     * irrespective of the nested mutex count on it.
+     *
      * @param string $resource Name of the resource
      *
      * @return integer
      */
-    public function release($resource)
+    public function release($resource, $forceCleanupIgnoringRequestCount = false)
     {
         if ($this->cache->store('file')->get($resource) === $this->requestId)
         {

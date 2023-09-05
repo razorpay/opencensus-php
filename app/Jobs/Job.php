@@ -15,7 +15,9 @@ use RZP\Constants\Mode;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
+use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Job implements ShouldQueue
 {
@@ -302,7 +304,19 @@ class Job implements ShouldQueue
 
                 try
                 {
-                    $this->beforeJobKillCleanUp();
+                    $variant = $app->razorx->getTreatment(
+                        $this->getJobName(),
+                        RazorxTreatment::RELEASE_ALL_JOB_MUTEX_LOCKS,
+                        $this->mode ?? Mode::LIVE
+                    );
+
+                    $this->trace->info(TraceCode::QUEUE_JOB_RELEASE_ALL, [
+                        'job'     => $this->getJobName(),
+                        'variant' => $variant,
+                        'mode'    => $this->mode
+                    ]);
+
+                    $this->beforeJobKillCleanUp($variant);
                 }
                 catch (\Throwable $e)
                 {
@@ -329,9 +343,16 @@ class Job implements ShouldQueue
         }
     }
 
-    protected function beforeJobKillCleanUp()
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
-        $this->mutex->releaseAllAcquired();
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $this->mutex->forceReleaseAllAcquired();
+        }
+        else
+        {
+            $this->mutex->releaseAllAcquired();
+        }
     }
 
     /**
