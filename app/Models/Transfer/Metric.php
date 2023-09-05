@@ -29,6 +29,9 @@ class Metric extends Base\Core
     const SEMAPHORE_ACQUIRE_TIME_TAKEN             = 'semaphore_acquire_time_taken';
     const SEMAPHORE_ACQUIRE_FAILURE                = 'semaphore_acquire_failure';
     const MERCHANT_CATEGORY                        = 'merchant_category';
+    const MERCHANT_PLATFORM_FEE_FETCH_REQUEST      = 'merchant_platform_fee_fetch_request';
+    const MERCHANT_PLATFORM_FEE_FETCH_FAILURE      = 'merchant_platform_fee_fetch_failure';
+    const MERCHANT_PLATFORM_FEE_FETCH_TIME_IN_MS   = 'merchant_platform_fee_fetch_time_in_ms';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {

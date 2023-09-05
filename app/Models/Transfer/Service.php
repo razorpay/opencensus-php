@@ -1460,6 +1460,8 @@ class Service extends Base\Service
     {
         try
         {
+            $reqStartTime = microtime(true);
+
             $response = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $merchantId);
 
             if ($response['feature_enabled'] !== true)
@@ -1512,7 +1514,7 @@ class Service extends Base\Service
             ];
 
             $this->trace->info(
-                TraceCode::MERCHANT_MONTHLY_INVOICE_PLATFORM_FEE_FETCH,
+                TraceCode::MERCHANT_PLATFORM_FEE_FETCH,
                 [
                     'merchant_id'           => $merchantId,
                     'month'                 => $month,
@@ -1520,8 +1522,13 @@ class Service extends Base\Service
                     'begin_timestamp'       => $beginTimestamp,
                     'end_timestamp'         => $endTimestamp,
                     'platform_fee_details'  => $platformFeeDetails,
+                    'req_time_taken'        => get_diff_in_millisecond($reqStartTime)
                 ]
             );
+
+            $this->trace->count(Metric::MERCHANT_PLATFORM_FEE_FETCH_REQUEST);
+
+            $this->trace->histogram(Metric::MERCHANT_PLATFORM_FEE_FETCH_TIME_IN_MS, get_diff_in_millisecond($reqStartTime));
 
             return $platformFeeDetails;
         }
@@ -1530,7 +1537,7 @@ class Service extends Base\Service
             $this->trace->traceException(
                 $exception,
                 Logger::ERROR,
-                TraceCode::MERCHANT_MONTHLY_INVOICE_PLATFORM_FEE_FETCH_ERROR,
+                TraceCode::MERCHANT_PLATFORM_FEE_FETCH_ERROR,
                 [
                     'merchant_id'       => $merchantId,
                     'month'             => $month,
@@ -1539,6 +1546,8 @@ class Service extends Base\Service
                     'end_timestamp'     => $endTimestamp,
                 ]
             );
+
+            $this->trace->count(Metric::MERCHANT_PLATFORM_FEE_FETCH_FAILURE);
         }
 
         return null;
