@@ -271,6 +271,8 @@ class ErrorCode
     const GATEWAY_ERROR_NO_RECORDS_FOUND                                            = 'GATEWAY_ERROR_NO_RECORDS_FOUND';
     const GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION                                = 'GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION';
     const BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED                             = 'BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED';
+    const BAD_REQUEST_UPI_MANDATE_QR_TAMPERED                                       = 'BAD_REQUEST_UPI_MANDATE_QR_TAMPERED';
+    const BAD_REQUEST_UPI_MANDATE_INVALID_QR                                        = 'BAD_REQUEST_UPI_MANDATE_INVALID_QR';
 
     // UPI (NPCI) response codes mapping
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'GATEWAY_ERROR_TRANSACTION_PENDING';

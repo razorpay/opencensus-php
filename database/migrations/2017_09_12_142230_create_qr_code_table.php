@@ -57,6 +57,9 @@ class CreateQrCodeTable extends Migration
 
             $table->integer(QrCode::UPDATED_AT);
 
+            $table->json(QrCode::MANDATE_DETAILS)
+                ->nullable();
+
             $table->string(NonVaQrCode::NAME)
                   ->nullable();
 

@@ -18,6 +18,7 @@ class Constants
     const GATEWAY_STATUS_DESC   = 'gatewayStatusDesc';
     const PSP_STATUS_DESC       = 'pspStatusDesc';
     const QR_PAYMENT            = 'qrp';
+    const QR_ID                 = 'qrId';
     const PROMO_INTENT          = 'pri';
     const LAST_SUCCESSFUL_DEBIT = 'lsd';
     const COLLECT               = 'collect';

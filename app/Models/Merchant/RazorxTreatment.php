@@ -791,6 +791,9 @@ final class RazorxTreatment
     // Experiment to use UPI Autopay Promo Intent flow instead of normal checkout flow for authlinks
     const UPI_AUTOPAY_PROMOTIONAL_INTENT = 'upi_autopay_promotional_intent';
 
+    //Experiment to enable UPI Autopay Promotional QR Flow
+    const UPI_AUTOPAY_PROMOTIONAL_QR = 'upi_autopay_promotional_qr';
+
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT = 'partner_bank_on_hold_payout';
 

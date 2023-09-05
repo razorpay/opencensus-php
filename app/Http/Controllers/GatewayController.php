@@ -8,6 +8,8 @@ use Redirect;
 use ApiResponse;
 
 use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Models\Admin;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -18,8 +20,11 @@ use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
+use RZP\Models\Customer;
+use RZP\Models\QrPayment;
 use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -322,6 +327,39 @@ class GatewayController extends Controller
             (isset($input['upi_mandate']['status']) === true))
         {
             return $this->processMandateServerCallback($input, $gatewayDriver);
+        }
+
+        if((isset($input['requestInfo']['pgMerchantId']) === true) and
+            (isset($input['requestInfo']['pspRefNo']) === true) and
+            (str_contains($input['requestInfo']['pspRefNo'], 'recuQr') === true))
+        {
+            $variant = $this->app['razorx']->getTreatment($input['requestInfo']['pgMerchantId'],
+                RazorxTreatment::UPI_AUTOPAY_PROMOTIONAL_QR,
+                Mode::LIVE,
+                3);
+
+            if($variant === 'on')
+            {
+                try {
+
+                    $this->trace->info(TraceCode::UPI_MANDATE_PROMOTIONAL_QR_CALLBACK,
+                        [
+                            'callback' => $input,
+                        ]);
+
+                    $payment = $this->processUpiAutopayPromotionalQrPayment($input, $gatewayDriver, $gateway);
+
+                    $input['requestInfo']['pspRefNo'] = $payment->getId().'0create1';
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e, Logger::ERROR, TraceCode::UPI_MANDATE_PROMOTIONAL_QR_PAYMENT_CREATION_FAILED);
+
+                    return [
+                        'success' => false,
+                    ];
+                }
+            }
         }
 
         $routeName = $this->app['api.route']->getCurrentRouteName();
@@ -2106,6 +2144,149 @@ class GatewayController extends Controller
         }
 
         return $payment;
+    }
+
+    protected function processUpiAutopayPromotionalQrPayment($input, $gatewayDriver, $gateway)
+    {
+        try {
+            $customerDetails = [
+                Customer\Entity::NAME => $input['mandateDtls'][0]['payerName'],
+                Customer\Entity::CONTACT => $input['mandateDtls'][0]['remarks']
+            ];
+
+            $qrCodeId = substr($input['requestInfo']['pspRefNo'], 0, 14);
+
+            $qrCode = $this->app['repo']->qr_code->findByMerchantReference($qrCodeId);
+
+            if($qrCode === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPI_MANDATE_INVALID_QR);
+            }
+
+            $mandateDetails = json_decode($qrCode['mandate_details'], true);
+
+            $maxAmount = intval(round(floatval($input['mandateDtls'][0]['amount']) * 100));
+
+            if(isset($mandateDetails) === true)
+            {
+                if($mandateDetails['max_amount'] !== $maxAmount)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPI_MANDATE_QR_TAMPERED);
+                }
+            }
+
+            $mode = $this->app['repo']->qr_code->determineLiveOrTestModeByMerchantReference($qrCodeId);
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $merchant = $this->app['repo']->merchant->findOrFailPublic($qrCode['merchant_id']);
+            $this->app['basicauth']->setMerchant($merchant);
+
+            //create customer for qr callback
+            $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $merchant, false);
+
+            //create order and upi mandate entity.
+            $order = $this->createOrderAndUpiMandate($input, $qrCode, $customer, $mandateDetails);
+
+            return $this->createPayment($input, $qrCode, $order, $customer, $gatewayDriver, $merchant);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_MANDATE_PROMOTIONAL_QR_PAYMENT_CREATION_FAILED
+            );
+
+            throw $e;
+        }
+    }
+
+    protected function createPayment($input, $qrCode, $order, $customer, $gatewayDriver, $merchant)
+    {
+        $paymentInput = [
+            Payment\Entity::AMOUNT => $qrCode['amount'],
+            Payment\Entity::CURRENCY => 'INR',
+            Payment\Entity::CONTACT => $input['mandateDtls'][0]['remarks'],
+            Payment\Entity::ORDER_ID => 'order_'.$order->getId(),
+            Payment\Entity::CUSTOMER_ID => 'cust_'.$customer->getId(),
+            Payment\Entity::METHOD => Payment\Method::UPI,
+            Payment\Entity::RECURRING => 1,
+            Payment\Entity::UPI => [
+                Payment\UpiMetadata\Entity::FLOW => Payment\Flow::INTENT
+            ],
+            Payment\Entity::EMAIL => Payment\Entity::DUMMY_EMAIL,
+            Payment\Entity::NOTES => $qrCode->getNotes()->toArray()
+        ];
+
+        $terminal = $this->app['repo']->terminal->findByGatewayMerchantId($input['requestInfo']['pgMerchantId'], $gatewayDriver);
+
+        $input['callback_response'] = $input;
+        $input['isUpiAutopayQRPayment'] = true;
+        $input['selected_terminals_ids'] = [$terminal->getId()];
+
+        $payment = (new Payment\Processor\Processor($merchant))->process($paymentInput, $input);
+
+        $paymentId = $this->app['repo']->payment->verifyIdAndStripSign($payment['payment_id']);
+
+        return $this->app['repo']->payment->findOrFail($paymentId);
+    }
+
+    protected function createOrderAndUpiMandate($input, $qrCode, $customer, $mandateDetails)
+    {
+        $mandateExpiry = $this->getUpiMandateExpiryTimestamp($mandateDetails);
+
+        $startDate = $input['mandateDtls'][0]['startDate'];
+
+        $orderInput = [
+            Order\Entity::AMOUNT => $qrCode['amount'],
+            Order\Entity::CURRENCY => "INR",
+            Order\Entity::PAYMENT_CAPTURE => true,
+            Order\Entity::CUSTOMER_ID => 'cust_'.$customer->getId(),
+            Order\Entity::METHOD => "upi",
+            Order\Entity::TOKEN => [
+                Customer\Token\Entity::MAX_AMOUNT => intval(round(floatval($input['mandateDtls'][0]['amount']) * 100)),
+                Customer\Token\Entity::FREQUENCY => $mandateDetails['frequency'],
+                'start_at' => Carbon::createFromFormat('d M Y', $startDate , Timezone::IST)->timestamp,
+                'expire_at' => $mandateExpiry
+            ]
+        ];
+
+        $order = (new Order\Service)->createOrder($orderInput);
+
+        $upiMandate = $this->app['repo']->upi_mandate->findByOrderId($order->getId());
+
+        $upiMandateGatewayData = $upiMandate->getGatewayData();
+
+        $upiMandateGatewayData['qrId'] = $qrCode->getId();
+
+        $upiMandate->setGatewayData($upiMandateGatewayData);
+
+        $this->repo->saveOrFail($upiMandate);
+
+        return $order;
+    }
+
+    protected function getUpiMandateExpiryTimestamp($mandateDetails)
+    {
+        $duration = $mandateDetails['expiry']['duration'];
+
+        switch($mandateDetails['expiry']['period'])
+        {
+            case 'days':
+                return Carbon::now()->addDays($duration)->getTimestamp();
+
+            case 'months':
+                return Carbon::now()->addMonths($duration)->getTimestamp();
+
+            case 'weeks':
+                return Carbon::now()->addWeeks($duration)->getTimestamp();
+
+            case 'years':
+                return Carbon::now()->addYears($duration)->getTimestamp();
+        }
+
+        return null;
     }
 
     public function callbackPayerUPIAxisOlive()

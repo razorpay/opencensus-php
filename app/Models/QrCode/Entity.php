@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
     const NAME            = 'name';
     const NOTES           = 'notes';
     const CUSTOMER_ID     = 'customer_id';
+    const MANDATE_DETAILS = 'mandate_details';
 
     protected static $sign = 'qr';
 
@@ -74,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::CLOSE_BY,
         self::NAME,
         self::NOTES,
+        self::MANDATE_DETAILS,
     ];
 
     protected $defaults = [
@@ -96,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::NOTES,
         self::CUSTOMER_ID,
+        self::MANDATE_DETAILS,
     ];
 
     protected $public = [
@@ -111,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::NOTES,
         self::CUSTOMER_ID,
+        self::MANDATE_DETAILS,
     ];
 
     protected $casts = [
@@ -328,6 +332,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getMandateDetails()
+    {
+        return $this->getAttribute(self::MANDATE_DETAILS);
+    }
+
     public function getFormattedAmount()
     {
         $amount = $this->getAmount();
@@ -454,6 +463,11 @@ class Entity extends Base\PublicEntity
     public function setDescription(string $description)
     {
         $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
+    public function setMandateDetails($mandateDetails)
+    {
+        $this->setAttribute(self::MANDATE_DETAILS, $mandateDetails);
     }
 
     public function generateQrString()

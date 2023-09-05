@@ -8,6 +8,8 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\BharatQr;
+use RZP\Models\QrPayment;
 use RZP\Models\UpiMandate;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -21,12 +23,16 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PaymentsUpi\Vpa as Vpa;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Models\UpiMandate\Entity as Mandate;
+use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Gateway\Upi\Base\Constants as UpiConstants;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
 trait UpiRecurring
 {
+    /** @var NonVirtualAccountQrCode\Entity */
+    protected $qrCode;
+
     public function processRecurringDebitForUpi(Payment\Entity $payment)
     {
         try
@@ -789,6 +795,38 @@ trait UpiRecurring
                     );
                 }
             }
+
+            //update total payment count through QR code for promotional QR and create QR payment entity
+            if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
+            {
+                $upiMandateGatewayData = $upiMandate->getGatewayData();
+
+                if(isset($upiMandateGatewayData[UpiConstants::QR_ID]) === true)
+                {
+                    $qrCode = $this->app['repo']->qr_code->findByMerchantReference($upiMandateGatewayData[UpiConstants::QR_ID]);
+
+                    $this->qrCode = $qrCode;
+
+                    $this->qrCode->incrementTotalPaymentCount();
+
+                    $this->qrCode->incrementPaymentAmountReceived($payment->getAmount());
+
+                    $qrPayment = $this->createQrPayment($qrCode, $payment, $upiMandate, $data['upi']['vpa']);
+
+                    $qrPayment->payment()->associate($payment);
+
+                    $qrPayment->qrCode()->associate($qrCode);
+
+                    $this->repo->saveOrFail($qrPayment);
+
+                    $this->trace->info(TraceCode::UPI_MANDATE_QR_PAYMENT_CREATED,
+                        [
+                            'qr_payment' => $qrPayment->getId(),
+                            'qr_id'      => $qrCode->getId(),
+                            'rrn'        => $qrPayment->getProviderReferenceId()
+                        ]);
+                }
+            }
         }
 
         if(($upiMandate->getFrequency() !== UpiMandate\Frequency::AS_PRESENTED) and
@@ -844,6 +882,49 @@ trait UpiRecurring
 
         // Gateway is not marking the upi initial payment as authorized, thus we can not authorize the payment
         return true;
+    }
+
+    protected function createQrPayment($qrCode, $payment, $upiMandate, $vpa)
+    {
+        $qrInput = $this->getQrAutopayData($qrCode, $payment, $upiMandate, $vpa);
+
+        $qrPaymentInput = $this->getUpiAutopayQrPaymentInputParams($qrInput);
+
+        return (new QrPayment\Entity)->build($qrPaymentInput);
+    }
+
+    protected function getQrAutopayData($qrCode, $payment, $upiMandate, $vpa)
+    {
+        $input = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $payment->getAmount(),
+            BharatQr\GatewayResponseParams::VPA                   => $vpa,
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $qrCode->getId(),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $upiMandate['rrn'],
+            BharatQr\GatewayResponseParams::TRANSACTION_TIME      => $payment->getCreatedAt(),
+            BharatQr\GatewayResponseParams::GATEWAY               => $payment->getGateway()
+        ];
+
+        return $input;
+    }
+
+    protected function getUpiAutopayQrPaymentInputParams(array $gatewayInputQrData)
+    {
+        $input = [
+            QrPayment\Entity::PROVIDER_REFERENCE_ID => $gatewayInputQrData[BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID],
+            QrPayment\Entity::MERCHANT_REFERENCE    => $gatewayInputQrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE],
+            QrPayment\Entity::METHOD                => $gatewayInputQrData[BharatQr\GatewayResponseParams::METHOD],
+            QrPayment\Entity::AMOUNT                => $gatewayInputQrData[BharatQr\GatewayResponseParams::AMOUNT],
+            QrPayment\Entity::GATEWAY               => $gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY],
+            QrPayment\Entity::PAYER_VPA             => $gatewayInputQrData[BharatQr\GatewayResponseParams::VPA] ?? null,
+        ];
+
+        if (array_key_exists(QrPayment\Entity::TRANSACTION_TIME, $gatewayInputQrData))
+        {
+            $input[QrPayment\Entity::TRANSACTION_TIME] = $gatewayInputQrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME];
+        }
+
+        return $input;
     }
 
     /**
