@@ -8,7 +8,7 @@ import PaymentsListFilter from './PaymentsListFilter';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
 import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 // wrapper to trigger analytics event on click

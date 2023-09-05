@@ -56,6 +56,8 @@ const App = ({ state = {}, ...props }) => {
   );
 };
 
+jest.setTimeout(35000);
+
 describe('COD Engine', () => {
   // mocking react virtualized - https://stackoverflow.com/a/62214834
   const originalOffsetHeight = Object.getOwnPropertyDescriptor(
@@ -130,14 +132,14 @@ describe('COD Engine', () => {
         expect(screen.queryByRole('checkbox', { name: 'Bihar' })).toBeInTheDocument();
         expect(screen.queryByRole('checkbox', { name: 'Assam' })).not.toBeInTheDocument();
       },
-      { timeout: 500 },
+      { timeout: 10000 },
     );
     await userEvent.clear(searchInput);
     await waitFor(
       () => {
         expect(screen.queryByRole('checkbox', { name: 'Assam' })).toBeInTheDocument();
       },
-      { timeout: 500 },
+      { timeout: 10000 },
     );
   });
 

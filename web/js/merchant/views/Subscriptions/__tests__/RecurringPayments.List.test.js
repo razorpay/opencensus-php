@@ -14,8 +14,8 @@ import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import 'jest-location-mock';
 
 jest.mock('common/ui/HeaderAction', () => ({ children }) => <div>{children}</div>);
-jest.mock('merchant/views/Transactions/Payments/components/PaymentsListFilter', () => ({
-  ...jest.requireActual('merchant/views/Transactions/Payments/components/PaymentsListFilter'),
+jest.mock('merchant/views/Transactions/v1/Payments/components/PaymentsListFilter', () => ({
+  ...jest.requireActual('merchant/views/Transactions/v1/Payments/components/PaymentsListFilter'),
   __esModule: true,
   default: ({ onSubmit, onClearAnalytics }) => (
     <div>

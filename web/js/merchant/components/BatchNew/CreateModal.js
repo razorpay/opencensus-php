@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProcessingOptions from './ProcessingOptions';
 import { required } from 'common/utils/validators';
-import InstantRefundPricingTable from 'merchant/views/Transactions/Payments/components/InstantRefundPricingTable';
+import InstantRefundPricingTable from 'merchant/views/Transactions/v1/Payments/components/InstantRefundPricingTable';
 import { titleCase } from 'common/utils/rzp-utils';
 
 const getTableColumns = (entries) => {

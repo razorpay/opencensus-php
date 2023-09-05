@@ -6,7 +6,7 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 

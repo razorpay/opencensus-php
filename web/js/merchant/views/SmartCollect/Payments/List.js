@@ -9,10 +9,10 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
+import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
 import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collection';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 import { checkIfVirtualAccountRoute } from 'merchant/views/SmartCollect/utils';
 

@@ -38,8 +38,8 @@ jest.mock('common/services/tracking/segment', () => ({
   ...jest.requireActual('common/services/tracking/segment'),
   analyticsTrack: jest.fn(),
 }));
-jest.mock('merchant/views/Transactions/AnalyticsTrack', () => ({
-  ...jest.requireActual('merchant/views/Transactions/AnalyticsTrack'),
+jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
+  ...jest.requireActual('merchant/views/Transactions/v1/AnalyticsTrack'),
   selfServerTrack: jest.fn(),
   selfServeTrackResult: jest.fn(),
 }));
@@ -49,6 +49,10 @@ jest.mock('common/splitz', () => ({
   ...jest.requireActual('common/splitz'),
   useSplitzService: () => ({ abExperiments: {} }),
 }));
+// jest.mock('merchant/views/Transactions/v2/common/utils', () => ({
+//   ...jest.requireActual('merchant/views/Transactions/v2/common/utils'),
+//   isTransactionsV2Enabled: (_) => true,
+// }));
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());

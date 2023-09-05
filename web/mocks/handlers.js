@@ -1,5 +1,5 @@
 import { rest, graphql } from 'msw';
-import { paymentHandlers } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/handlers';
+import { paymentHandlers } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/handlers';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import * as PaymentsDB from 'merchant/views/onboarding/mobile/services/data/PaymentsDB';
 import * as WebsiteWorkflowDB from 'merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';

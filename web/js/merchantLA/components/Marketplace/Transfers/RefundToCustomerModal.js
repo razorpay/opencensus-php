@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
@@ -7,22 +8,22 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import ModalHeader from 'common/ui/ModalHeader';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance } from 'merchant/reducers/credits';
-import { reverseTransfer } from 'merchantLA/reducers/marketplace/transfer';
+import {
+  reverseTransfer,
+  fetchTransfer,
+  fetchReversals,
+} from 'merchantLA/reducers/marketplace/transfer';
 import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
 import {
   amountValidation,
   isPartialPayment,
   RefundType,
-} from 'merchant/views/Transactions/Payments/components/RefundModal';
-import {
-  fetchTransfer,
-  fetchReversals,
-} from 'merchantLA/reducers/marketplace/transfer';
+} from 'merchant/views/Transactions/v1/Payments/components/RefundModal';
 
 import { trackClickCreateRefund } from './ga';
 
 @connect(
-  state => {
+  (state) => {
     return {
       payment: {
         ...state.transfer.entity,
@@ -39,7 +40,7 @@ import { trackClickCreateRefund } from './ga';
     fetchTransfer,
     fetchCreditBalance,
     ...NotificationsActions,
-  }
+  },
 )
 export default class RefundToCustomerModal extends React.Component {
   static contextTypes = {
@@ -51,14 +52,12 @@ export default class RefundToCustomerModal extends React.Component {
     this.state = {
       isLoading: false,
       partial: false,
-      payable_amount: paiseToRupees(
-        props.payment.amount - props.payment.amount_reversed
-      ),
+      payable_amount: paiseToRupees(props.payment.amount - props.payment.amount_reversed),
       notes: [{}],
     };
   }
 
-  save = e => {
+  save = (e) => {
     e.preventDefault();
 
     this.context
@@ -78,13 +77,14 @@ export default class RefundToCustomerModal extends React.Component {
             return;
           }
 
-          const { payment, reverseTransfer } = this.props,
-            partial = isPartialPayment({ ...this.state, ...this.props }),
-            id = payment.id;
-          let transformedNotes = this.state.notes,
-            data = {
-              amount: rupeesToPaise(this.state.payable_amount),
-            };
+          const { payment, reverseTransfer } = this.props;
+          const partial = isPartialPayment({ ...this.state, ...this.props });
+          const id = payment.id;
+          const linked_account_notes = [];
+          let transformedNotes = this.state.notes;
+          let data = {
+            amount: rupeesToPaise(this.state.payable_amount),
+          };
 
           if (!partial) {
             data.amount = payment.amount - payment.amount_reversed;
@@ -94,6 +94,7 @@ export default class RefundToCustomerModal extends React.Component {
             transformedNotes = transformedNotes.reduce((result, current) => {
               result[current.key] = current.value;
               if (current.also_linked_account) {
+                // TODO : not sure why this is happening linked_account_notes is not there in the code itself.
                 linked_account_notes.push(current.key);
               }
               return result;
@@ -111,21 +112,19 @@ export default class RefundToCustomerModal extends React.Component {
             isLoading: true,
           });
 
+          // eslint-disable-next-line consistent-return
           return reverseTransfer(id, {
             ...data,
             customer_refund: true,
           })
-            .then(_ => {
+            .then((_) => {
               this.props.showNotification({
                 type: 'success',
                 message: 'Payment refunded',
                 closeTimeout: 5000,
               });
 
-              new Promise.all([
-                this.props.fetchTransfer(id),
-                this.props.fetchReversals(id),
-              ]);
+              Promise.all([this.props.fetchTransfer(id), this.props.fetchReversals(id)]);
 
               trackClickCreateRefund(`${partial ? 'partial' : 'full'} | Yes `);
 
@@ -148,37 +147,30 @@ export default class RefundToCustomerModal extends React.Component {
       })
       .catch(() => {
         trackClickCreateRefund(
-          `${
-            isPartialPayment({ ...this.state, ...this.props })
-              ? 'partial'
-              : 'full'
-          } | No `
+          `${isPartialPayment({ ...this.state, ...this.props }) ? 'partial' : 'full'} | No `,
         );
       });
   };
 
-  handleAmout = e => {
+  handleAmout = (e) => {
     this.setState({
       payable_amount: Number(e.target.value),
     });
   };
 
-  handleNotesChange = notes => {
+  handleNotesChange = (notes) => {
     this.setState({ notes });
   };
 
   render() {
-    const { payment } = this.props,
-      { isLoading, payable_amount } = this.state,
-      amountError = amountValidation({ ...this.state, ...this.props }),
-      partial = isPartialPayment({ ...this.state, ...this.props });
+    const { payment } = this.props;
+    const { isLoading, payable_amount } = this.state;
+    const amountError = amountValidation({ ...this.state, ...this.props });
+    const partial = isPartialPayment({ ...this.state, ...this.props });
 
     return (
       <div className="refund-to-customer-modal">
-        <ModalHeader
-          title="Refund to Customer"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Refund to Customer" onCloseClick={this.props.closeModal} />
         <div className="modal-body">
           <form class="entity-container" onSubmit={this.save}>
             <div class="form-group">
@@ -197,16 +189,14 @@ export default class RefundToCustomerModal extends React.Component {
                 </div>
               </div>
               {!!amountError ? (
-                <div class="InputField__ErrorText text-danger">
-                  {amountError}
-                </div>
+                <div class="InputField__ErrorText text-danger">{amountError}</div>
               ) : (
                 <small class="help-block">
                   This will be reflected as a{' '}
                   <b>
                     <RefundType partial={partial} /> reversal
-                  </b>.
-                  {!partial && <span>Change amount for a partial refund.</span>}
+                  </b>
+                  .{!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}
             </div>

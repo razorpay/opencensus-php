@@ -1,5 +1,6 @@
 import { matchPath } from 'react-router';
-import { ABVariant, ExperimentType, RouteMatchConfig, RouteObject } from './types';
+
+import { ABVariant, ExperimentType, RouteMatchConfig, RouteObject } from 'common/splitz/types';
 
 export const evaluatedExperimentParser = (
   evaluatedExperiment: Pick<ABVariant, 'experiment_id' | 'variables'>,
@@ -48,4 +49,8 @@ export const getBaseUrl = (urlString: string): string => {
   const host = url.host;
 
   return `${protocol}//${host}`;
+};
+
+export const isExperimentEnabled = (experiment: ExperimentType): boolean => {
+  return experiment?.variables?.result === 'on';
 };

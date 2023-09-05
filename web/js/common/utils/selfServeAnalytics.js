@@ -11,6 +11,7 @@ const instrumentAnalytics = ({
   selfServeAction,
   page,
   screen,
+  version,
   props = {},
 }) => {
   analyticsTrackWithUserInfo({
@@ -22,6 +23,7 @@ const instrumentAnalytics = ({
       page,
       screen,
       source: getDeviceSource(),
+      version,
       ...props,
     },
     toLumberjack,

@@ -1,4 +1,11 @@
+import React, { useEffect } from 'react';
 import { Alert, Box } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { useSplitzService } from 'common/splitz';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { fetchBreakupDetails as fetchBreakupDetailsAction } from 'merchant/reducers/settlements/details';
 import Breakup from 'merchant/views/Settlements/v3/components/Breakup';
 import DeductionsEntities from 'merchant/views/Settlements/v3/components/DeductionsEntities/DeductionsEntities';
@@ -8,12 +15,7 @@ import SettlementInfo from 'merchant/views/Settlements/v3/components/SettlementI
 import Timeline from 'merchant/views/Settlements/v3/components/Timeline';
 import { SettlementDetailViewInterface } from 'merchant/views/Settlements/v3/typings';
 import { getFailedAlert } from 'merchant/views/Settlements/v3/utils/settlementInfo';
-import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
+import { getSelfServeSuccessData } from 'merchant/views/Transactions/v1/utils';
 
 const SettlementDetailView = ({
   fetchBreakupDetails,
@@ -21,6 +23,7 @@ const SettlementDetailView = ({
   breakupDetails,
   settlement,
 }: SettlementDetailViewInterface): JSX.Element => {
+  const splitz = useSplitzService();
   useEffect(() => {
     fetchBreakupDetails({ id: settlementId });
   }, [settlementId]);
@@ -42,6 +45,7 @@ const SettlementDetailView = ({
     const selfServeSuccessData = getSelfServeSuccessData(
       'Settlement Details Fetched',
       'Settlement Details',
+      splitz,
     );
     selfServeTrackSuccess(selfServeSuccessData);
   }, [settlementId]);

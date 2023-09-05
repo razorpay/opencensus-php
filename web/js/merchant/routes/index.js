@@ -1,13 +1,13 @@
+import { isMobileResolution } from 'common/utils/rzp-utils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import store from 'merchant/store';
+import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
   matchDetail as matchDetailx,
   matchModal as matchModalx,
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
-import { isMobileResolution } from 'common/utils/rzp-utils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
-import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 import lazy from './LazyLoader';
 
@@ -70,13 +70,15 @@ const SubscriptionButtonCreate = lazy(() =>
   ),
 );
 const PaymentsDetails = lazy(() =>
-  import(/* webpackChunkName: "PaymentsDetails" */ 'merchant/views/Transactions/Payments/Details'),
+  import(
+    /* webpackChunkName: "PaymentsDetails" */ 'merchant/views/Transactions/v1/Payments/Details'
+  ),
 );
 const RefundDetails = lazy(() =>
-  import(/* webpackChunkName: "RefundsDetails" */ 'merchant/views/Transactions/Refunds/Details'),
+  import(/* webpackChunkName: "RefundsDetails" */ 'merchant/views/Transactions/v1/Refunds/Details'),
 );
 const OrderDetails = lazy(() =>
-  import(/* webpackChunkName: "OrdersDetails" */ 'merchant/views/Transactions/Orders/Details'),
+  import(/* webpackChunkName: "OrdersDetails" */ 'merchant/views/Transactions/v1/Orders/Details'),
 );
 
 const VirtualAccountDetails = lazy(() =>
@@ -138,7 +140,9 @@ const MarketplaceBatchDetails = lazy(() =>
   import(/* webpackChunkName: "ReversalsDetails" */ 'merchant/views/Marketplace/Batch/Details'),
 );
 const DisputeDetails = lazy(() =>
-  import(/* webpackChunkName: "DisputesDetails" */ 'merchant/views/Transactions/Disputes/Details'),
+  import(
+    /* webpackChunkName: "DisputesDetails" */ 'merchant/views/Transactions/v1/Disputes/Details'
+  ),
 );
 const SubmerchantDetails = lazy(() =>
   import(

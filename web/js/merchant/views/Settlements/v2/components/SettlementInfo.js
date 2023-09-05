@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
+import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import * as SettlementActions from 'merchant/reducers/settlements/details';
+import LoaderDots from 'common/ui/LoaderDots';
 import Spinner from 'common/ui/Spinner';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import Time from 'common/ui/Time';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+import * as SettlementActions from 'merchant/reducers/settlements/details';
 import {
   handleAnalytics,
   propertiesPayload,
 } from 'merchant/views/Settlements/Settlements/analytics';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
-import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
-import LoaderDots from 'common/ui/LoaderDots';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
+import { getSelfServeSuccessData } from 'merchant/views/Transactions/v1/utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const ORG_BANK_LABEL_NAME = {
   rzp: 'UTR',
@@ -35,7 +37,7 @@ const SettlementInfo = (props) => {
     fetchIsAdminAsMerchant,
     org,
   } = props;
-
+  const splitz = useSplitzService();
   const [state, setState] = useState({
     customSettlementLoading: false,
     adminAsMerchant: false,
@@ -110,6 +112,7 @@ const SettlementInfo = (props) => {
       const selfServeSuccessData = getSelfServeSuccessData(
         'Settlement Details Fetched',
         'Settlement Details',
+        splitz,
       );
       selfServeTrackSuccess(selfServeSuccessData);
     } catch (e) {

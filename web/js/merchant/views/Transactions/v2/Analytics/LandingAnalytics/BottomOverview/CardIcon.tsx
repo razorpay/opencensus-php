@@ -1,0 +1,22 @@
+import React from 'react';
+import { AlertTriangleIcon } from '@razorpay/blade/components';
+
+import FailedCardIcon from 'assets/transactions/failed-cross.svg';
+import RefundsCardIcon from 'assets/transactions/refund-card.svg';
+import { PaymentTypes } from 'merchant/views/Transactions/v2/Analytics/types';
+
+const CardIcon = ({ name }: { name: PaymentTypes }): JSX.Element | null => {
+  switch (name) {
+    case PaymentTypes.Refunds:
+      return <img src={RefundsCardIcon} alt="refund details" />;
+    case PaymentTypes.Disputes:
+      return <AlertTriangleIcon color="feedback.icon.negative.lowContrast" size="medium" />;
+    case PaymentTypes.Failed:
+      return <img src={FailedCardIcon} alt="failed payment details" />;
+    /* istanbul ignore next */
+    default:
+      return null;
+  }
+};
+
+export default CardIcon;

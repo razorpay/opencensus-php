@@ -1,0 +1,382 @@
+import React from 'react';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
+import { titleCase } from 'common/utils/rzp-utils';
+import { trackDetailsCopy } from 'merchant/views/Transactions/v2/common/tracking';
+import copyToClipboard from 'common/utils/copyToClipboard';
+import {
+  IPaymentDetails,
+  PaymentStatus,
+  IPaymentIdRefundDetail,
+  IBankTransfer,
+  DisputeStatus,
+} from './types';
+import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
+import { Theme, BadgeProps } from '@razorpay/blade/components';
+import Lottie from 'react-lottie';
+import AuthorizedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Authorized';
+import CapturedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Captured';
+import CreatedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Created';
+import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Failed';
+import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
+import moment from 'moment';
+
+export const shouldHideCapturePaymentAction = (
+  payment: IPaymentDetails,
+  bankTransfer: IBankTransfer | null,
+) => {
+  const method = payment?.method;
+  const isAccountClosed = bankTransfer?.virtual_account?.status === 'closed';
+  return method === 'bank_transfer' && isAccountClosed; //hideActions
+};
+
+export const isGatewaySupportingRefund = (payment: IPaymentDetails) =>
+  payment?.gateway_refund_support;
+
+export const isPaymentThroughSeamlessProviders = (payment: IPaymentDetails): boolean => {
+  return (
+    SEAMLESS_PROVIDERS.includes(payment?.optimizer_provider) && !payment?.gateway_refund_support
+  );
+};
+
+export const isPaymentEligibleForRefundAsPerStatus = (payment: IPaymentDetails): boolean => {
+  // these payments can't be refunded, only captured payments can be refunded
+  if (
+    [
+      PaymentStatus.CREATED,
+      PaymentStatus.AUTHORIZED,
+      PaymentStatus.FAILED,
+      PaymentStatus.REFUNDED,
+    ].includes(payment.status)
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+export const isPaymentEligibleForRefund = (
+  payment: IPaymentDetails,
+  user: Record<string, any>,
+): boolean => {
+  return (
+    payment?.method !== 'cod' &&
+    !isOrgFeatureExist('block_payment_refund') &&
+    user.isRefundAllowed &&
+    (user.isOrgAllowedFunctionality('card_refunds') ||
+      ['card', 'emi'].indexOf(payment?.method) === -1)
+  );
+};
+
+export const hasPaymentOpenNonFraudDisputes = (payment: IPaymentDetails) => {
+  const hasOpenNonFraudDisputes =
+    payment?.disputes?.items?.filter(
+      ({ status, phase }) =>
+        [DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW].indexOf(status) > -1 && phase !== 'fraud',
+    )?.length ?? 0;
+
+  if (hasOpenNonFraudDisputes) return true;
+
+  return false;
+};
+
+export const isIssueRefundDisabled = (payment: IPaymentDetails, user: Record<string, any>) => {
+  return (
+    !isGatewaySupportingRefund(payment) ||
+    !isPaymentEligibleForRefundAsPerStatus(payment) ||
+    hasPaymentOpenNonFraudDisputes(payment) ||
+    !isPaymentEligibleForRefund(payment, user) ||
+    isPaymentThroughSeamlessProviders(payment)
+  );
+};
+
+const getRefundTimestamp = (refund: IPaymentIdRefundDetail): number | null => {
+  switch (refund.status) {
+    case 'created':
+      return refund.created_at;
+    case 'processed':
+      return refund.processed_at;
+    default:
+      return null;
+  }
+};
+
+export const getSettlementTimelineData = (payment: IPaymentDetails): TimelineJourneyPoint[] => {
+  const settlement = payment?.transaction?.settlement;
+  const settlementTimelineData: TimelineJourneyPoint[] = [];
+
+  if (payment.transaction && settlement) {
+    const data: { status: string; timestamp: number | null } = { status: '', timestamp: null };
+    const settlementStatus = settlement.status;
+
+    switch (settlementStatus) {
+      case 'processed':
+        data.status = settlementStatus;
+        data.timestamp = payment?.transaction?.settled_at;
+        break;
+      case 'failed':
+        data.status = settlementStatus;
+        data.timestamp = null;
+        break;
+      default:
+        data.status = 'created';
+        data.timestamp = settlement?.created_at;
+        break;
+    }
+
+    settlementTimelineData.push({
+      id: `${settlement.id}`,
+      entity: 'Settlement',
+      status: data.status,
+      title: 'Settlement',
+      timestamp: data.timestamp,
+      metadata: {
+        statusInfo: titleCase(data.status),
+        amount: settlement.amount,
+        settlementId: settlement.id,
+      },
+    });
+  }
+
+  return settlementTimelineData;
+};
+
+export const getDisputesTimelineData = (payment): TimelineJourneyPoint[] => {
+  const disputesTimelineData: TimelineJourneyPoint[] = [];
+
+  if (payment && payment.disputes) {
+    payment.disputes.items.forEach((dispute) => {
+      disputesTimelineData.push({
+        id: `dispute_${dispute.id}`,
+        entity: 'Dispute',
+        status: dispute.status,
+        title: 'Dispute',
+        timestamp: dispute.created_at,
+        metadata: {
+          statusInfo: titleCase(dispute.status),
+          disputeId: dispute.id,
+        },
+      });
+    });
+  }
+
+  return disputesTimelineData;
+};
+
+export const getRefundsTimelineData = (
+  refunds: IPaymentIdRefundDetail[],
+): TimelineJourneyPoint[] => {
+  const refundTimelineData: TimelineJourneyPoint[] = [];
+
+  if (refunds.length > 0) {
+    refunds.forEach((refund) => {
+      refundTimelineData.push({
+        id: `refund_${refund.id}`,
+        entity: 'Refund',
+        status: refund.status,
+        title: 'Refund',
+        timestamp: getRefundTimestamp(refund),
+        metadata: {
+          statusInfo: titleCase(refund.status),
+          amount: refund.amount,
+          refundId: refund.id,
+          refund,
+        },
+      });
+    });
+  }
+
+  return refundTimelineData;
+};
+
+export const getPaymentTimelineData = (
+  payment: IPaymentDetails,
+  paymentEventsData,
+  bankTransferData: IBankTransfer | null,
+): TimelineJourneyPoint[] => {
+  const paymentIdTimelineData: TimelineJourneyPoint[] = [];
+
+  // obvious state
+  paymentIdTimelineData.push({
+    id: 1,
+    entity: 'Payment',
+    status: 'created',
+    title: 'Payment created',
+    timestamp: payment.created_at,
+    metadata: {},
+  });
+
+  if (payment.status === 'failed') {
+    paymentIdTimelineData.push({
+      id: 2,
+      entity: 'Payment',
+      status: 'failed',
+      title: 'Payment failed',
+      timestamp: null,
+      metadata: {
+        failureReason: payment?.error_description,
+      },
+    });
+  } else {
+    const isPaymentAuthorized = !!paymentEventsData.authorized_at;
+    const isPaymentCaptured = !!paymentEventsData.captured_at;
+
+    if (isPaymentAuthorized) {
+      paymentIdTimelineData.push({
+        id: 2,
+        entity: 'Payment',
+        status: 'authorized',
+        title: 'Payment authorized',
+        timestamp: paymentEventsData.authorized_at,
+        metadata: {
+          payment,
+        },
+      });
+      if (isPaymentCaptured) {
+        paymentIdTimelineData.push({
+          id: 2,
+          entity: 'Payment',
+          status: 'captured',
+          title: 'Payment captured',
+          timestamp: paymentEventsData.captured_at,
+          metadata: {
+            payment,
+          },
+        });
+      } else {
+        if (shouldHideCapturePaymentAction(payment, bankTransferData)) {
+          paymentIdTimelineData.push({
+            id: 2,
+            entity: 'Payment',
+            status: 'failed',
+            title: 'Payment failed',
+            timestamp: null,
+            metadata: {
+              payment,
+              failureReason: `This payment will be refunded within 72 hours`,
+            },
+          });
+
+          return paymentIdTimelineData;
+        }
+
+        paymentIdTimelineData.push({
+          id: 2,
+          entity: 'Payment',
+          status: 'not-captured',
+          title: 'Payment captured',
+          timestamp: null,
+          metadata: {
+            payment,
+          },
+        });
+      }
+    } else {
+      paymentIdTimelineData.push({
+        id: 2,
+        entity: 'Payment',
+        status: 'not-authorized',
+        title: 'Payment authorized',
+        timestamp: null,
+        metadata: {
+          payment,
+        },
+      });
+    }
+  }
+  return paymentIdTimelineData;
+};
+
+/**
+ *
+ * source: web/js/merchant/views/Transactions/v1/Payments/components/PaymentDetails.js
+ */
+export const shouldShowCapturePaymentButton = (
+  user,
+  journeyPoint: TimelineJourneyPoint,
+  bankTransfer: IBankTransfer,
+): boolean => {
+  const method = journeyPoint?.metadata?.payment?.method;
+
+  return (
+    user?.isAllowedEdit('payments') &&
+    method !== 'intl_bank_transfer' &&
+    !shouldHideCapturePaymentAction(journeyPoint?.metadata?.payment, bankTransfer)
+  );
+};
+
+export const getAmountColor = (type: string, theme: Theme): string => {
+  switch (type) {
+    case 'positive':
+      return `${theme.colors.feedback.text.positive.lowContrast}`;
+    case 'negative':
+      return `${theme.colors.feedback.text.negative.lowContrast}`;
+    default:
+      return `${theme.colors.surface.text.normal.lowContrast}`;
+  }
+};
+
+export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['variant'] => {
+  switch (status) {
+    case PaymentStatus.CREATED:
+      return 'notice';
+    case PaymentStatus.AUTHORIZED:
+      return 'neutral';
+    case PaymentStatus.CAPTURED:
+      return 'positive';
+    case PaymentStatus.FAILED:
+      return 'negative';
+    case PaymentStatus.REFUNDED:
+      return 'information';
+    default:
+      return 'neutral';
+  }
+};
+
+export const getBadgeIcon = (status: IPaymentDetails['status']): JSX.Element => {
+  let animationData = {};
+
+  switch (status) {
+    case PaymentStatus.CREATED:
+      animationData = CreatedAnimationData;
+      break;
+    case PaymentStatus.AUTHORIZED:
+      animationData = AuthorizedAnimationData;
+      break;
+    case PaymentStatus.CAPTURED:
+      animationData = CapturedAnimationData;
+      break;
+    case PaymentStatus.FAILED:
+      animationData = FailedAnimationData;
+      break;
+    case PaymentStatus.REFUNDED:
+      animationData = RefundAnimationData;
+      break;
+    default:
+      break;
+  }
+
+  const lottieDefaultOptions = {
+    loop: false,
+    autoplay: true,
+    animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice',
+    },
+  };
+
+  return <Lottie options={lottieDefaultOptions} />;
+};
+
+export const useTime = (timestamp: number): [string, string] => {
+  const [createdDay, createdTime] = moment.unix(timestamp).format('ddd MMM D,hh:mma').split(',');
+  return [createdDay, createdTime];
+};
+
+export const onCopy = (objectName, properties) => (id: string) => {
+  copyToClipboard(id);
+  trackDetailsCopy({
+    objectName,
+    properties,
+  });
+};

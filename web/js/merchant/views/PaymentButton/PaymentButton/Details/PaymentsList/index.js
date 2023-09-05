@@ -5,7 +5,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
-import { _paymentId } from 'merchant/views/Transactions/Payments/Utils';
+import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 const PaymentsTable = (props) => {

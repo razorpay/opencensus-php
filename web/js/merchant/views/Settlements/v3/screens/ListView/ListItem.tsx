@@ -10,7 +10,7 @@ import {
   StyledDivider,
   StyledSettlementRow,
 } from 'merchant/views/Settlements/v3/screens/ListView/styled';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { fetchBreakupDetails, isBreakupNew } from 'merchant/reducers/settlements/details';
 import Shimmer from 'common/components/Shimmer';

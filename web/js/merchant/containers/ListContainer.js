@@ -80,22 +80,26 @@ export default class ListContainer extends Component {
   }
 
   fetchAll = (params = {}, fetchFA) => {
+    const {
+      location: { pathname },
+    } = this.props;
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
 
     // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
     const isPathIncluded = [
       '/payments',
+      '/failed-payments',
       '/payments/b2b-exports',
       '/payments/invoices',
       '/refunds',
-    ].includes(this.props.location.pathname);
+    ].includes(pathname);
     if (isPathIncluded && !params?.from && !params?.to) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }
 
-    if (this.props.location.pathname === '/disputes' && !params?.from && !params?.to) {
+    if (pathname === '/disputes' && !params?.from && !params?.to) {
       params.from = moment().add(-90, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }
@@ -211,10 +215,17 @@ export default class ListContainer extends Component {
   };
 
   getDefaultPageParams() {
-    return {
+    const {
+      location: { pathname },
+    } = this.props;
+    const defaultProps = {
       skip: ListContainer.SKIP,
       count: ListContainer.COUNT,
     };
+    if (pathname === '/failed-payments') {
+      defaultProps.status = 'failed';
+    }
+    return defaultProps;
   }
 
   fetchEntityList(params) {

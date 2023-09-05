@@ -1,7 +1,14 @@
+import React, { Component, Suspense } from 'react';
+import qs from 'query-string';
+import { connect } from 'react-redux';
+import { NavLink, Redirect, Route, Switch, withRouter, matchPath } from 'react-router-dom';
+
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
+import { withSplitzService } from 'common/splitz';
 import Loader from 'common/ui/Loader';
 import MultiSlider from 'common/ui/MultiSlider';
+import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import Slider from 'common/ui/Slider';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -11,29 +18,26 @@ import {
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
-import { openSlider } from 'merchant_common/reducers/slider';
-import qs from 'query-string';
-import React, { Component, Suspense } from 'react';
-import { connect } from 'react-redux';
-import { NavLink, Redirect, Route, Switch, withRouter } from 'react-router-dom';
-import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
-import HandleIndex from './HandleIndex';
-import lazy from './LazyLoader';
-import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
   isTrustedBadgeAllowed,
   isPaymentMethodEnabled,
   isProfileViewAllowed,
   isConfigurationViewAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { openSlider } from 'merchant_common/reducers/slider';
+
+import HandleIndex from './HandleIndex';
+import lazy from './LazyLoader';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -257,6 +261,12 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
+const PaymentsDetailsV2 = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentsDetailsV2" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails'
+  ),
+);
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -286,9 +296,21 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     openSlider,
   },
 )
-export default class Content extends Component {
+class Content extends Component {
   setBaseLocation = (location) => {
-    const matchDetailsRoute = matchDetail(location.pathname);
+    const { splitz, user } = this.props;
+    const blacklistedDetailsRoutes = ['/payments/:id(pay_.+)', '/refunds/:id(rfnd_.+)'];
+    let matchDetailsRoute;
+    if (
+      isTransactionsV2Enabled(splitz, user) &&
+      blacklistedDetailsRoutes.some((route) =>
+        matchPath(location.pathname, { path: route, exact: true }),
+      )
+    ) {
+      matchDetailsRoute = null;
+    } else {
+      matchDetailsRoute = matchDetail(location.pathname);
+    }
     const matchModalsRoute = matchModal(location.pathname);
 
     if (matchDetailsRoute || matchModalsRoute) {
@@ -385,7 +407,7 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
-    const { fullPageView, user, mode } = this.props;
+    const { fullPageView, user, mode, splitz } = this.props;
 
     if (fullPageView) return fullPageView;
 
@@ -410,11 +432,29 @@ export default class Content extends Component {
             component={PartnerDashboard}
             additionalCondition={(user) => user.isPartner()}
           />
-
+          <ShowWhenRoute
+            path="/payments/:id(pay_.+)"
+            component={PaymentsDetailsV2}
+            additionalCondition={(user) =>
+              isTransactionsV2Enabled(splitz, user) && user.isAllowedView('payments')
+            }
+          />
           <ShowWhenRoute
             path="/payments"
             component={Transactions}
             additionalCondition={(user) => user.isAllowedView('payments')}
+          />
+          <ShowWhenRoute
+            path="/failed-payments"
+            component={Transactions}
+            additionalCondition={(user) => user.isAllowedView('payments')}
+          />
+          <ShowWhenRoute
+            path="/refunds/:id(rfnd_.+)"
+            component={PaymentsDetailsV2}
+            additionalCondition={(user) =>
+              isTransactionsV2Enabled(splitz, user) && user.isAllowedView('refunds')
+            }
           />
           <ShowWhenRoute
             path="/refunds"
@@ -1068,3 +1108,5 @@ export default class Content extends Component {
     );
   }
 }
+
+export default withSplitzService(Content);

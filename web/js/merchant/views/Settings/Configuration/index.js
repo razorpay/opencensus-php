@@ -16,7 +16,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { merchantFetch } from 'merchant/utils/ajax';
-import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
+import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
 import MissedOrderPaymentLink from './MissedOrderPaymentLink';
 import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';

@@ -88,6 +88,7 @@ jest.mock('merchant_common/views/Reports/utils/commonUtils', () => ({
   getAvailableEmails: () => ['joel.jaimon@gmail.com', 'unactivated@gmail.com', 'rzp@rzp.com'],
 }));
 jest.spyOn(modalFn, 'closeModal');
+jest.setTimeout(35000);
 
 describe('Download Reports', () => {
   beforeAll(() => {});

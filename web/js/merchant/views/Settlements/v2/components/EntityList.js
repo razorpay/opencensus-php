@@ -24,7 +24,7 @@ import {
   handleAnalytics,
   propertiesPayload,
 } from 'merchant/views/Settlements/Settlements/analytics';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const DEFAULT_SKIP = 0;

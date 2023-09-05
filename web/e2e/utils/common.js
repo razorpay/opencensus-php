@@ -1,4 +1,11 @@
+import { expect } from '@playwright/test';
+
 import { COMMON_SELECTORS } from './selectors';
+
+export async function navigateTo(page, path) {
+  await page.goto(path);
+  await expect(page).toHaveTitle(/Razorpay Dashboard/);
+}
 
 export const loginByMobile = async ({ page, mobile }) => {
   await page.click('input[type="text"]');

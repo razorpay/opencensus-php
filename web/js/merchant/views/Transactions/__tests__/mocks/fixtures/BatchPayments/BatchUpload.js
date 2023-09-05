@@ -1,4 +1,4 @@
-import BatchUploadContainer from 'merchant/views/Transactions/BatchPayments/BatchUpload';
+import BatchUploadContainer from 'merchant/views/Transactions/v1/BatchPayments/BatchUpload';
 
 export const merchantTokenPageDetails = {
   data: {

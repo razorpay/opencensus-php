@@ -12,7 +12,7 @@ import {
   getErrorMessage,
   getOptimizerFilters,
   getInitialGroupings,
-} from 'merchant/views/Transactions/SuccessRate/helper';
+} from 'merchant/views/Transactions/v1/SuccessRate/helper';
 import {
   DEFAULT_ACTIVE_TAB,
   DEFAULT_GROUP_BY,
@@ -26,13 +26,13 @@ import {
   NETBANKING,
   EMANDATE,
   METHOD_TYPES_MAP,
-} from 'merchant/views/Transactions/SuccessRate/constants';
+} from 'merchant/views/Transactions/v1/SuccessRate/constants';
 import {
   getSR,
   getResolvedDowntimes,
   getOngoingDowntimes,
   getMerchantError,
-} from 'merchant/views/Transactions/SuccessRate/service';
+} from 'merchant/views/Transactions/v1/SuccessRate/service';
 
 const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';

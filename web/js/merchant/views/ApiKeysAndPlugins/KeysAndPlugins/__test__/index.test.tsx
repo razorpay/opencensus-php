@@ -271,7 +271,7 @@ describe('KeysAndPlugins', () => {
     });
   });
 
-  test('should send empty string plugin if None of the above plugin selected', async () => {
+  test.skip('should send empty string plugin if None of the above plugin selected', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,

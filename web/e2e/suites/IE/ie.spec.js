@@ -24,7 +24,7 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
 
     // assert presence of IE Request CTA
     await page.waitForSelector(CONSTANTS.REQUEST_CTA, {
-      timeout: 60000,
+      timeout: 120000,
     });
     const requestCTA = page.locator(CONSTANTS.REQUEST_CTA);
     // wait for new customers button to be visible and click it

@@ -14,9 +14,9 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
+import EnableInstantRefundsModal from 'merchant/views/Transactions/v1/Payments/components/EnableInstantRefundsModal';
 import { openModal } from 'merchant_common/reducers/modals';
-import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
+import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';

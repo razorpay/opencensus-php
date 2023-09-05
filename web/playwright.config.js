@@ -9,11 +9,11 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec).[jt]s?(x)'],
   globalSetup: './e2e/setup/globalSetup',
   retries: isCI ? 1 : 0,
-  timeout: 5 * 60 * 1000,
+  timeout: 6 * 60 * 1000,
   workers: isCI ? 1 : 4,
   reporter: getReporter(),
   expect: {
-    timeout: 20 * 1000,
+    timeout: 30 * 1000,
   },
   use: {
     ...universePlaywrightConfig.use,

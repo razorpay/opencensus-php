@@ -3,7 +3,7 @@ import moment from 'moment';
 import Time from 'common/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import SettlementOverview from 'merchant/views/Transactions/Payments/components/SettlementOverview';
+import SettlementOverview from 'merchant/views/Transactions/v1/Payments/components/SettlementOverview';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';

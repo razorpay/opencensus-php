@@ -13,12 +13,12 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { truncatedString } from 'common/utils/rzp-utils';
-import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
+import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
 import { fetchQRCodesPayments as fetchAll } from 'merchant/reducers/collection';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import track from './track';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
 

@@ -1,7 +1,13 @@
 /* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
-import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'redux';
+import { reduxForm } from 'redux-form';
+
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   stringifyQueryParams,
   getURLQueryParams,
@@ -9,7 +15,18 @@ import {
   decodeSensitiveFields,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { withRouter } from 'react-router-dom';
+
+// Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
+export const isTransactionsV2Enabled = (splitz, user) => {
+  const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
+
+  if (!abExperiments?.Transactions_Revamp) return false;
+
+  if (user.isOrgCurlec) {
+    return false;
+  }
+  return isExperimentEnabled(abExperiments.Transactions_Revamp) && user.isOrgRZP;
+};
 
 const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 10;
 const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
@@ -81,7 +98,15 @@ class ListFilter extends Component {
 
   // update query params in url before search
   handleOnSubmit = (props) => {
-    const { date, provider, filtersToHideInQueryParams } = this.props;
+    const {
+      date,
+      provider,
+      filtersToHideInQueryParams,
+      user,
+      splitz,
+      history,
+      location: { pathname, hash, state },
+    } = this.props;
     props = encodeSensitiveFields(props);
     if (date) {
       props.from = date.from;
@@ -98,7 +123,7 @@ class ListFilter extends Component {
     }
 
     //remove these filters from query params
-    let queryParamsProps = Object.assign({}, props);
+    let queryParamsProps = { ...props };
     if (filtersToHideInQueryParams?.length) {
       queryParamsProps = Object.keys(queryParamsProps).reduce((result, key) => {
         if (!filtersToHideInQueryParams.includes(key)) {
@@ -108,11 +133,18 @@ class ListFilter extends Component {
       }, {});
     }
 
-    this.props.history.push({
-      pathname: this.props.location.pathname,
-      hash: this.props.location.hash,
+    const historyObject = {
+      pathname,
+      hash,
+      state,
       search: stringifyQueryParams(queryParamsProps),
-    });
+    };
+    if (isTransactionsV2Enabled(splitz, user)) {
+      history.replace(historyObject);
+    } else {
+      history.push(historyObject);
+    }
+
     this.props.onSearchAnalytics(props, stringifyQueryParams(queryParamsProps));
 
     return this.props.onSubmit(props);
@@ -120,12 +152,27 @@ class ListFilter extends Component {
 
   // update query params as empty for auto search in willReceiveProps
   resetForm = () => {
-    const { history, location, resetHandler, reset, onClearAnalytics, setProvider } = this.props;
+    const {
+      history,
+      location: { hash, state },
+      resetHandler,
+      reset,
+      onClearAnalytics,
+      setProvider,
+      user,
+      splitz,
+    } = this.props;
 
-    history.push({
+    const historyObject = {
       search: stringifyQueryParams({}),
-      hash: location.hash,
-    });
+      hash,
+      state,
+    };
+    if (isTransactionsV2Enabled(splitz, user)) {
+      history.replace(historyObject);
+    } else {
+      history.push(historyObject);
+    }
 
     if (resetHandler) {
       resetHandler();
@@ -189,4 +236,11 @@ ListFilter.defaultProps = {
   onClearAnalytics: () => {},
 };
 
-export default withRouter(reduxForm({})(ListFilter));
+export default compose(
+  withSplitzService,
+  withRouter,
+  connect((state) => ({
+    user: state.session.user,
+  })),
+  reduxForm({}),
+)(ListFilter);

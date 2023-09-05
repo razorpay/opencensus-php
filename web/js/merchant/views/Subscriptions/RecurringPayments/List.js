@@ -2,9 +2,10 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
-import PaymentListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
-import HeaderAction from 'common/ui/HeaderAction';
+import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
+import PaymentListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction'; // TODO: Remove this import , and use ProductWrapper instead of HeaderAction
 import DocsLink from 'merchant/components/DocsLink';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';

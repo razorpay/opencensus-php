@@ -15,7 +15,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import LoaderDots from 'common/ui/LoaderDots';
-import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
+import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/v1/utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
 

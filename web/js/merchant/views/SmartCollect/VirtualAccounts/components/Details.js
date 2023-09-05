@@ -24,7 +24,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 import { EditExpiry } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 const _paymentId = () => {

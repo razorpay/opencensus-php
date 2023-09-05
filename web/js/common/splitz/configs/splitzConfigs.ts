@@ -1,4 +1,16 @@
 import { SplitzInitConfig } from 'common/splitz/types';
+import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
+
+const {
+  PAYMENTS,
+  ORDERS,
+  FAILED_PAYMENTS,
+  DISPUTES,
+  SUCCESS_RATE,
+  REFUNDS,
+  BATCH_REFUNDS,
+  BATCH_REFUNDS_UPLOAD,
+} = TransactionsEntityRoute;
 
 // default = merchant(i.e product and partner) and linkedAccount dashboard.
 
@@ -94,6 +106,37 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'MNuYX8JifIAFCc',
             production: 'MNuWeZSwz01j8V',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: [
+        PAYMENTS,
+        ORDERS,
+        FAILED_PAYMENTS,
+        DISPUTES,
+        SUCCESS_RATE,
+        REFUNDS,
+        BATCH_REFUNDS,
+        BATCH_REFUNDS_UPLOAD,
+      ],
+      abExperiments: [
+        {
+          uniqueHashKey: 'Transactions_Revamp',
+          experimentId: {
+            beta: 'MPFDhXp1ooZQom',
+            production: 'MPFKF4K2JVFXa2',
           },
           defaultVariant: {
             name: 'variables',

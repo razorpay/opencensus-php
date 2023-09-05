@@ -36,6 +36,7 @@ const CountryCodeInput = ({
   onContactChange,
   onDialCodeChange,
   value,
+  showContactInput = true,
 }: CountryCodeInputPropsInterface): JSX.Element => {
   const dropdownMenuRef = useRef<HTMLDivElement>();
   // prettier-ignore
@@ -49,6 +50,7 @@ const CountryCodeInput = ({
   const [filter, setFilter] = useState('');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [searchResult, setResult] = useState(countryListData);
+  const chevronIcon = isDropdownVisible ? 'i-chevron-up' : ' i-chevron-down';
 
   const focusInput = () => {
     setDropdownVisible(true);
@@ -138,14 +140,16 @@ const CountryCodeInput = ({
             <span data-testid="dialCodeValue" className="dial-code">
               {countryData.value || ''}
             </span>
-            <i className="i i-chevron-down" />
+            <i className={`i ${chevronIcon}`} />
           </DropdownValue>
-          <input
-            data-testid="contactInput"
-            value={phoneNumber}
-            onChange={onPhoneInputChange}
-            type="tel"
-          />
+          {showContactInput ? (
+            <input
+              data-testid="contactInput"
+              value={phoneNumber}
+              onChange={onPhoneInputChange}
+              type="tel"
+            />
+          ) : null}
         </ValueContainer>
         {isDropdownVisible ? (
           <DropDownItems data-testid="dropdownItems">

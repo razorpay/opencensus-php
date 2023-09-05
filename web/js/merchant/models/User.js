@@ -1452,6 +1452,10 @@ export default class User {
     return this.isPaymentlinksV2Enabled;
   }
 
+  get isRefundPendingStatusEnabled() {
+    return this.isFeatureEnabled('refund_pending_status');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;

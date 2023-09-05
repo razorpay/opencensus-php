@@ -31,7 +31,7 @@ jest.mock('merchant/components/StatusLabel', () => ({
   DisputeStatusLabel: () => <div data-testid="dispute-status-label" />,
 }));
 
-jest.mock('merchant/views/Transactions/Payments/components/PaymentOptimizerProvider', () => ({
+jest.mock('merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider', () => ({
   __esModule: true,
   default: () => <div data-testid="payment-optimizer-provider" />,
 }));

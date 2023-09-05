@@ -23,7 +23,7 @@ import {
   getSelfServeDetailForSettlementDetails,
   sanitizeTabName,
 } from 'merchant/views/Settlements/v2/util';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';

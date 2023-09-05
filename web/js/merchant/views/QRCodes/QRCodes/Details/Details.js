@@ -14,7 +14,7 @@ import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
 import CustomerDetails from 'merchant/components/CustomerDetails';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { findBy } from 'common/utils/rzp-utils';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 const _paymentId = () => {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { fetchMarketplacePayments as fetchAll } from 'merchant/reducers/collection';
-import PaymentsList from 'merchant/views/Transactions/Payments/components/PaymentsList';
+import PaymentsList from 'merchant/views/Transactions/v1/Payments/components/PaymentsList';
 import { SelfServeActionPages } from 'common/constant/enums';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { navItems } from 'merchant/views/Marketplace/NavItems';

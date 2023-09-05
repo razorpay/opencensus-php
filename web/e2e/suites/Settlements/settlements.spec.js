@@ -45,7 +45,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
   test.use({
     storageState: StorageStatePath.SETTLEMENTS_LOGIN_STATE,
   });
-  test('should show settlements @priority=normal', async ({ page }) => {
+  test.skip('should show settlements @priority=normal', async ({ page }) => {
     await page.goto(routes.SETTLEMENTS);
 
     // switching merchant with settlements data

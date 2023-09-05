@@ -30,6 +30,14 @@ const routes = {
   CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
   BUSINESS_DETAILS: '/app/business-settings/business',
   PAYMENT_LINKS: '/app/paymentlinks',
+  PAYMENTS: 'app/payments',
+  DISPUTES: 'app/disputes',
+  FAILED_PAYMENTS: 'app/failed-payments',
+  ORDERS: 'app/orders',
+  REFUNDS: 'app/refunds',
+  BATCH_REFUNDS: 'app/refunds/batchuploads',
+  BATCH_REFUNDS_UPLOAD: 'app/refunds/batchupload',
+  SUCCESS_RATE: 'app/success-rate',
 };
 
 const EmailCredentials = [

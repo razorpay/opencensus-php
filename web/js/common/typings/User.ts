@@ -59,6 +59,9 @@ type Getters = {
   isPaymentPageFileUploadEnabled: boolean;
   isSodexoInstrumentEnabled: boolean;
   isSearchv2Phase1Enabled: boolean;
+  isRefundPendingStatusEnabled: boolean;
+  isOrgCurlec: boolean;
+  isOrgRZP: boolean;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipsInviteFlowEnabled: boolean;
 };

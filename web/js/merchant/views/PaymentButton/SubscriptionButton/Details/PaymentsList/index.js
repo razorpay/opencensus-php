@@ -8,7 +8,7 @@ import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/i
 import EntityTable from 'merchant/components/EntityTable';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
-import { _paymentId } from 'merchant/views/Transactions/Payments/Utils';
+import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 const PaymentsTable = (props) => {

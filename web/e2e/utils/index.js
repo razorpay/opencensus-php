@@ -85,8 +85,12 @@ const generateDataForPaymentLink = () => {
 const skipKYCModal = async ({ page }) => {
   let kycButton, closeButton;
   try {
-    kycButton = await page.waitForSelector('text="Submit KYC details"');
-    closeButton = await page.waitForSelector('.Modal-container--welcome-modal .Modal-close');
+    kycButton = await page.waitForSelector('text="Submit KYC details"', {
+      timeout: 5000,
+    });
+    closeButton = await page.waitForSelector('.Modal-container--welcome-modal .Modal-close', {
+      timeout: 5000,
+    });
   } catch (error) {
     // Element not found within the specified timeout
     // Handle the error or perform alternative actions

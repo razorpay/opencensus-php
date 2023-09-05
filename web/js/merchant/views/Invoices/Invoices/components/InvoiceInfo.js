@@ -4,7 +4,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Table from 'common/ui/Table/Index';
 import { paymentId, amount, createdAt } from 'common/ui/item/pair';
 import { SelfServeActionPages } from 'common/constant/enums';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 
 const notificationClassMap = {
   sent: 'text-success',

@@ -6,7 +6,7 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import DataTable from 'common/ui/Table/DataTable';
 import { paymentId as paymentIdCol, amount, paidOn } from 'common/ui/item/pair';
 import Time from 'common/ui/Time';
-import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
 

@@ -22,7 +22,7 @@ jest.mock('merchant/views/Settlements/v2/util', () => ({
   customSettlementEnabled: (user) => user.enableCustomSettlements,
 }));
 
-jest.mock('merchant/views/Transactions/Payments/components/PaymentOptimizerProvider', () => ({
+jest.mock('merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider', () => ({
   __esModule: true,
   default: () => <div data-testid="payment-optimizer-provider" />,
 }));
