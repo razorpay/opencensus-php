@@ -35,8 +35,6 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::GET_PREFERENCES, $input);
 
-        $preferencesResponse = null;
-
         $preferencesResponse =  array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
 
         if(isset($input[Entity::CUSTOMER_ID]) === true)
@@ -51,7 +49,7 @@ class Processor extends Base\Processor
         // if order id and customer id are empty
         if(isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
         {
-            return $preferencesResponse;
+            return $this->postProcess($preferencesResponse);
         }
 
         if(isset($input[Entity::CUSTOMER_ID]) === true)
@@ -68,6 +66,11 @@ class Processor extends Base\Processor
             $preferencesResponse[Entity::TPV] = $this->getTPVContents($input);
         }
 
+        return $this->postProcess($preferencesResponse);
+    }
+
+    protected function postProcess($preferencesResponse)
+    {
         $this->gatewayInput->put(Entity::PREFERENCES, $preferencesResponse);
 
         return $this->callGateway();
