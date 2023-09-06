@@ -393,6 +393,111 @@ class DisputeTest extends TestCase
         $this->assertEquals($expectedDataSent, $actualEntityDataSent);
     }
 
+    // test to verify dispute can be closed to 'Lost merchant debited' without money deduction for VAS merchants
+    public function testDisputeUpdateWithoutMoneyDeduction()
+    {
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $paymentId = $this->fixtures->create('payment:captured')->getPublicId();
+
+        $this->setUpFixtures(['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['block_dispute_autodebit']);
+
+        $this->ba->adminAuth();
+
+        $disputeId = $this->makeRequestAndGetContent([
+            'url'       => "/payments/{$paymentId}/disputes",
+            'method'    => 'post',
+            'content'   => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'reason_id'            => $reason['id'],
+            ],
+        ])['id'];
+
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        // updated status to "lost merchant debited' with skip_deduction = 1
+        $res = $this->makeRequestAndGetContent([
+            'url'        => '/disputes/' . $disputeId,
+            'method'     => 'post',
+            'content'    => [
+                'status'                =>  'lost',
+                'internal_status'       => 'lost_merchant_debited',
+                'skip_deduction'        => 1,
+            ],
+        ]);
+
+        $this->assertEquals($res['internal_status'], 'lost_merchant_debited');
+    }
+
+    public function testDisputeUpdateWithoutMoneyDeductionNegative()
+    {
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $paymentId = $this->fixtures->create('payment:captured')->getPublicId();
+
+        $this->setUpFixtures(['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['block_dispute_autodebit']);
+
+        $this->ba->adminAuth();
+
+        $disputeId = $this->makeRequestAndGetContent([
+            'url'       => "/payments/{$paymentId}/disputes",
+            'method'    => 'post',
+            'content'   => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'reason_id'            => $reason['id'],
+            ],
+        ])['id'];
+
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        // updated status to "lost merchant debited' with skip_deduction = 1
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $disputeId;
+
+        $this->startTest();
+
+    }
+
+
+    public function testDisputeCreateWithDeductAtOnseForVASMerchants()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->setUpFixtures(['merchant_id' => $merchantId]);
+
+        $this->fixtures->merchant->addFeatures(['block_dispute_autodebit']);
+
+        $this->startTest($testData);
+    }
+
     public function testDisputeCreateWithDeductAtOnsetMerchantValidationFailure()
     {
         $testData = $this->updateCreateTestData();

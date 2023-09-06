@@ -166,12 +166,18 @@ class Validator extends Base\Validator
     protected function validateMerchantForDisputeDeductAtOnset($input, $payment)
     {
         if ((isset($input[Entity::DEDUCT_AT_ONSET]) === false) or
-            ($input[Entity::DEDUCT_AT_ONSET]) === false)
+            (boolval($input[Entity::DEDUCT_AT_ONSET])) === false)
         {
             return;
         }
 
         $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_DISPUTE_AUTODEBIT) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct At Onset Dispute can not be created for BLOCK_DISPUTE_AUTODEBIT feature enable Merchant');
+        }
 
         if ($merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DEDUCT_DISPUTE) === true)
         {
@@ -483,6 +489,23 @@ class Validator extends Base\Validator
     {
         if ($this->entity->getDeductAtOnset() === true)
         {
+            return;
+        }
+
+        $merchant = $this->entity->merchant;
+
+        if (($merchant->isFeatureEnabled(Feature\Constants::BLOCK_DISPUTE_AUTODEBIT) === true)
+            and ($this->entity->getDeductAtOnset() === false)
+            and (isset($input[Entity::INTERNAL_STATUS]) === true)
+            and ($input[Entity::INTERNAL_STATUS] === InternalStatus::LOST_MERCHANT_DEBITED))
+        {
+            // skip deduction should be true for merchants with BLOCK_DISPUTE_AUTODEBIT flag
+            if ((isset($input[Entity::SKIP_DEDUCTION]) === false)
+                or (boolval($input[Entity::SKIP_DEDUCTION]) === false))
+            {
+                throw new BadRequestValidationFailureException('Skip deduction cannot be false for merchants with block_dispute_autodebit flag');
+            }
+
             return;
         }
 

@@ -294,6 +294,8 @@ class Constants
 
     const CUSTOM_REPORT_EXTENSIONS = 'custom_report_extensions';
 
+    const BLOCK_DISPUTE_AUTODEBIT = 'block_dispute_autodebit';
+
     const QC_INTIMATION_EMAIL = 'qc_intimation_email';
 
     /**
@@ -2585,6 +2587,7 @@ class Constants
         self::ADDITIONAL_ONBOARDING => true,
         self::HIDE_INSTRUMENT_REQUEST => true,
         self::CUSTOM_REPORT_EXTENSIONS => true,
+        self::BLOCK_DISPUTE_AUTODEBIT => true,
         self::QC_INTIMATION_EMAIL   => true,
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,

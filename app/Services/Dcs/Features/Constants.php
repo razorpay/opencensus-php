@@ -83,6 +83,7 @@ class Constants
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
     const HideInstrumentRequest = 'hide_instrument_request';
     const CustomReportExtensions = 'custom_report_extensions';
+    const BlockChargebackAdjustmentAutoDebit = 'block_chargeback_adjustment_auto_debit';
     const QualityCheckIntimationEmail = 'quality_check_intimation_email';
     const EnableAutomateIIR = 'default_instruments_enablement';
     const DisableAutomateIIR = 'automated_iir_request';
@@ -330,6 +331,7 @@ class Constants
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
         self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
         self::CustomReportExtensions => "rzp/pg/org/dashboard/banking_program/Reporting",
+        self::BlockChargebackAdjustmentAutoDebit => "rzp/pg/merchant/disputes/banking_program/Chargeback",
         self::QualityCheckIntimationEmail => "rzp/pg/org/communication/banking_program/MerchantCommunication",
         self::EnableAutomateIIR => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
         self::DisableAutomateIIR => "rzp/pg/merchant/admindashboard/banking_program/InstrumentRequest",
@@ -572,6 +574,7 @@ class Constants
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
         APIFeaturesConstants::HIDE_INSTRUMENT_REQUEST                       => self::HideInstrumentRequest,
         APIFeaturesConstants::CUSTOM_REPORT_EXTENSIONS                      => self::CustomReportExtensions,
+        APIFeaturesConstants::BLOCK_DISPUTE_AUTODEBIT                       => self::BlockChargebackAdjustmentAutoDebit,
         APIFeaturesConstants::QC_INTIMATION_EMAIL                           => self::QualityCheckIntimationEmail,
         APIFeaturesConstants::DISABLE_AUTOMATE_IIR                          => self::DisableAutomateIIR,
         APIFeaturesConstants::ORG_AUTOMATE_IIR                              => self::EnableAutomateIIR,

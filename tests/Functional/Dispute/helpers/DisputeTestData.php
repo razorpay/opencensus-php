@@ -415,6 +415,59 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithDeductAtOnseForVASMerchants' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Deduct At Onset Dispute can not be created for BLOCK_DISPUTE_AUTODEBIT feature enable Merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testDisputeUpdateWithoutMoneyDeductionNegative' => [
+        'request' => [
+            'url'        => '/disputes/' ,
+            'method'     => 'post',
+            'content'    => [
+                'status'                =>  'lost',
+                'internal_status'       => 'lost_merchant_debited',
+                'skip_deduction'        => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Skip deduction cannot be false for merchants with block_dispute_autodebit flag',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeCreateWithDeductAtOnsetGovernmentMerchantValidationFailure' => [
         'request' => [
             'method'  => 'post',
