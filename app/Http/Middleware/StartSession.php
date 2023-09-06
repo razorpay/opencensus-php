@@ -36,6 +36,35 @@ class StartSession extends BaseStartSession
     protected bool $isSessionPersistent = true;
 
     /**
+     * ToDo: Uncomment 1CC routes once we start customer session decomp. ramp-up on 1CC
+     *
+     * @var string[]
+     */
+    protected array $checkoutSessionRoutes = [
+        // '1cc_apply_gift_card' => true,
+        // '1cc_customer_truecaller_verify' => true,
+        // '1cc_remove_gift_card' => true,
+        // '1cc_shopify_checkout' => true,
+        // '1cc_shopify_order' => true,
+        'checkout_personalisation' => true,
+        // 'customer_create_global_address' => true,
+        // 'customer_edit_global_address' => true,
+        // 'customer_record_1cc_address_consent' => true,
+        // 'customer_record_1cc_address_consent_view' => true,
+        // 'customer_update_global' => true,
+        // 'merchant_coupon_validity' => true,
+        // 'offers_fetch_for_order' => true,
+        // 'order_update_customer_details_1cc' => true,
+        'payment_calculate_fees' => true,
+        'payment_create' => true,
+        'payment_create_ajax' => true,
+        'payment_create_checkout' => true,
+        'payment_create_fees' => true,
+        'payment_create_jsonp' => true,
+        // 'record_1cc_customer_consent' => true,
+    ];
+
+    /**
      * @inheritDoc
      */
     public function __construct(SessionManager $manager, callable $cacheFactoryResolver = null)
@@ -166,7 +195,9 @@ class StartSession extends BaseStartSession
             return false;
         }
 
-        if ($request->cookies->has('razorpay_api_session_v2')) {
+        $isCheckoutSessionRoute = $this->checkoutSessionRoutes[$routeName] ?? false;
+
+        if ($isCheckoutSessionRoute || $request->cookies->has('razorpay_api_session_v2')) {
             // Skip Saving to Redis if v2 session cookie is present in the
             // request as v2 sessions are now managed by checkout-service
             $variant = $this->getSplitzExperimentResult(
