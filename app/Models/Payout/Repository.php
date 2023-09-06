@@ -2932,8 +2932,14 @@ class Repository extends Base\Repository
             $createdAtStart = $createdAtStart - $queryParams['buffer'];
         }
 
+        $connectionType = $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        
+        return $this->newQueryWithConnection($connectionType)
                     ->whereBetween(Entity::CREATED_AT, [$createdAtStart, $createdAtEnd])
                     ->where(Entity::ID, '>', $id)
                     ->where(Entity::MERCHANT_ID, $merchantId)

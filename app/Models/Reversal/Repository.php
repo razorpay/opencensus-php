@@ -191,8 +191,15 @@ class Repository extends Base\Repository
 
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
-        
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+
+        $connectionType = $this->getPaymentFetchReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                      ->selectRaw($columns)
                     ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
                     ->merchantID($merchantId)
