@@ -12,6 +12,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Services\Mock\Stork;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
@@ -1564,5 +1565,68 @@ class WorkflowTest extends TestCase
                                   }
 
                               }) );
+    }
+
+    public function testPendingWebhookIsFiredOnStateCallbackForP2PApprovalEnabledMerchant()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_approval_via_oauth']);
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $payoutData = [
+            'id'          => 'Exag5ZpN5MWuBW',
+            'status'      => 'pending',
+            'balance_id'  => $balance->getId(),
+            'merchant_id' => '10000000000000',
+            'amount'      => 1,
+            'created_at'  => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'  => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ];
+
+        $this->fixtures->on('live')->create('payout', $payoutData);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id' => 'FSYpen1s24sSbs',
+                'entity_id'   => 'Exag5ZpN5MWuBW',
+                'entity_type' => 'payout',
+                'merchant_id' => '10000000000000',
+                'org_id'      => '100000razorpay',
+            ]);
+
+        $this->ba->workflowsAppAuth('live');
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/state/callback';
+
+        $isWebhookFired = false;
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock
+            ->shouldReceive('request')
+            ->once()
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on(function($arg) use (&$isWebhookFired) {
+                if ($arg['event']['name'] === "payout.pending")
+                {
+                    $isWebhookFired = true;
+                    $payload = json_decode($arg['event']['payload']);
+                    $this->assertNull($payload->payload->payout->entity->workflow_history);
+                }
+                return true;
+            }), 350);
+
+        $this->startTest();
+
+        $this->assertTrue($isWebhookFired);
     }
 }

@@ -2265,7 +2265,9 @@ class Entity extends Base\PublicEntity
         // Workflows are not enabled on test mode for now
         if ((app('rzp.mode') === Mode::TEST) or
             (($basicAuth->isStrictPrivateAuth() === true) and
-            ($basicAuth->isSlackApp() === false and $basicAuth->isAppleWatchApp() === false)))
+             ($basicAuth->isSlackApp() === false and $basicAuth->isAppleWatchApp() === false)) or
+            (($basicAuth->isWorkflowsServiceApp() === true) and
+             $this->merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 

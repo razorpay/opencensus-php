@@ -2766,9 +2766,16 @@ class Base extends BaseCore
 
         (new PayoutsStatusDetailsCore())->create($payout);
 
-        $this->app->events->dispatch('api.payout.pending', [$payout]);
-
         $this->workflowActivated = true;
+
+        $merchant = $payout->merchant;
+
+        if ($merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH))
+        {
+            return;
+        }
+
+        $this->app->events->dispatch('api.payout.pending', [$payout]);
     }
 
     // We don't want to save payout entity in API first and then at Payout

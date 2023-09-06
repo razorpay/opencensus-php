@@ -9,6 +9,7 @@ use Queue;
 use Redis;
 use Config;
 use Mockery;
+use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
 use Razorpay\Edge\Passport\Passport;
 
@@ -36259,6 +36260,22 @@ class PayoutTest extends OAuthTestCase
                                              Feature\Entity::NAME        => Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH
                                          ]);
 
+        $this->setupWorkflowForLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout['status']);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id' => 'FSYpen1s24sSbs',
+                'entity_id'   => substr($payout['id'], 5),
+                'entity_type' => 'payout',
+                'merchant_id' => '10000000000000',
+                'org_id'      => '100000razorpay',
+            ]);
+
         $webhookData = null;
 
         $this->mockServiceStorkRequest(
@@ -36268,11 +36285,11 @@ class PayoutTest extends OAuthTestCase
                 return new \WpOrg\Requests\Response();
             });
 
-        $this->setupWorkflowForLiveMode();
+        $this->ba->workflowsAppAuth('live');
 
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $testData = $this->testData["testWorkflowStateCallbackForPendingPayout"];
 
-        $this->assertEquals('pending', $payout['status']);
+        $this->startTest($testData);
 
         $this->assertNotNull($webhookData);
 
@@ -36639,6 +36656,40 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         Mail::assertNotQueued(BulkPayoutSummary::class);
+    }
+
+    public function testWebhookIsNotFiredOnCreationOfPendingPayoutForP2PApprovalEnabledMerchant()
+    {
+        $this->liveSetUp();
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_approval_via_oauth']);
+
+        $webhookFired = false;
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock
+            ->shouldReceive('request')
+            ->times(0)
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on(function($path, $payload) use (&$webhookFired) {
+                if ($payload['event']['name'] == "payout.pending")
+                {
+                    $webhookFired = true;
+                }
+
+                return new \WpOrg\Requests\Response();
+            }), 350);
+
+        $this->setupWorkflowForLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout['status']);
+        $this->assertFalse($webhookFired);
     }
 }
 

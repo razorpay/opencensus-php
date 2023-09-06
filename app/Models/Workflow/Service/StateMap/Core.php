@@ -15,6 +15,7 @@ use RZP\Services\PayoutService;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
 use RZP\Models\Payout\DualWrite\WorkflowEntityMap as WorkflowDualWrite;
@@ -60,15 +61,17 @@ class Core extends Base\Core
         {
             $workflowEntityMap = $this->getWorkflowEntityMap($input[Entity::REQUEST_WORKFLOW_ID]);
 
+            $response = null;
+
             if (($this->auth->isPayoutService() === true) ||
                 ($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
                                             $workflowEntityMap->getMerchantId()) === false))
             {
-                return $this->createStateMap($workflowEntityMap, $input);
+                $response = $this->createStateMap($workflowEntityMap, $input);
             }
             else
             {
-                return $this->mutex->acquireAndRelease(
+                $response = $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $workflowEntityMap->getEntityId(),
                     function() use ($workflowEntityMap, $input) {
                         $source = $workflowEntityMap->source()->first();
@@ -102,6 +105,22 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
                     PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
             }
+
+            if ($workflowEntityMap->getEntityType() === self::PAYOUT)
+            {
+                /** @var PayoutEntity $sourceEntity */
+                $sourceEntity = $workflowEntityMap->source()->first();
+
+                if ((empty($sourceEntity) === false) and
+                    ($sourceEntity->merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true) and
+                    ($input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_KEY] === 'role') and
+                    ($input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_VALUE] === 'owner'))
+                {
+                    $this->app->events->dispatch('api.payout.pending', [$sourceEntity]);
+                }
+            }
+
+            return $response;
         }
         catch (\Throwable $exception)
         {
