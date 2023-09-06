@@ -4196,7 +4196,7 @@ class Service extends Base\Service
         }
         catch (\Throwable $exception){}
 
-        $transaction = $payment->transaction;
+        $transaction = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
         if (($payment->hasBeenCaptured() === false) or
             (empty($transaction) === true))

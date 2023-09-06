@@ -1167,14 +1167,24 @@ trait Capture
                         'payment_id' => $payment->getId(),
                     ]);
 
-                $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
-                $this->processTransferIfApplicable($payment);
-
-                // dispatching txn data to new settlement service after updating credit and debit value
-                (new Transaction\Core)->dispatchForSettlementBucketing($txn);
             }
         });
+
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+        {
+            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+
+            $this->processTransferIfApplicable($payment);
+
+            // dispatching txn data to new settlement service after updating credit and debit value
+            (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+
+            if ($payment->isExternal() === true)
+            {
+                (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
+            }
+        }
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)

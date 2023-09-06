@@ -40,8 +40,7 @@ class Payment extends Base
 
         $this->repo->saveOrFail($this->txn);
 
-        if (($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) or
-            $this->source->isExternal() === true)
+        if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
         {
             $this->fillSettledAtInfo();
         }
@@ -197,8 +196,7 @@ class Payment extends Base
             $this->txn->setBalanceUpdated(true);
             return true;
         }
-        else if (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) and
-            ($this->source->isExternal() === false))
+        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
         {
             return false;
         }
@@ -224,8 +222,7 @@ class Payment extends Base
             return false;
         }
 
-        return (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
-            ($this->source->isExternal() === false));
+        return ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true);
     }
 
     protected function fillEmptyTxnFeesAndAmount()

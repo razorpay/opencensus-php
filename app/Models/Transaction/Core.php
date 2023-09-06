@@ -159,8 +159,7 @@ class Core extends Base\Core
         $shouldDispatchSettlementBucket = true;
 
         // We need not to dispatch for settlement if ASYNC_TXN_FILL_DETAILS is enabled and payment is processed in rearch
-        if((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
-            ($payment->isExternal() === false)))
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
         {
             $shouldDispatchSettlementBucket = false;
         }
@@ -214,11 +213,15 @@ class Core extends Base\Core
 
             $this->repo->transaction(function() use ($payment,$txn)
             {
-
                 $processor = new Processor($payment->merchant);
 
                 $processor->createPartnerCommission($payment);
             });
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
+            }
         }
         else if ($payment->getStatus() == "authorized")
         {
@@ -240,6 +243,18 @@ class Core extends Base\Core
                     'payment_id'     => $payment->getId(),
                     'transaction_id' => $txn->getId(),
                     'merchant_id'        => $merchant->getId(),
+                ]
+            );
+        }
+        else if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
+                ($payment->isCaptured() === true))
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_NOT_DISPATCHED_FOR_REARCH_ASYNC_TXN_MERCHANT,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'transaction_id' => $txn->getId(),
+                    'merchant_id'    => $merchant->getId(),
                 ]
             );
         }
