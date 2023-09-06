@@ -57,8 +57,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:500000000000', // max 500 cr
         Entity::PERCENT_RATE            => 'sometimes|integer|max:20000',
         Entity::FIXED_RATE              => 'sometimes|integer|max:2500000',
-        Entity::MIN_FEE                 => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::MIN_FEE                 => 'sometimes|integer|max:10000000',
+        Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:10000000',
         Entity::TYPE                    => 'sometimes|string|custom',
         Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
         Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
@@ -71,8 +71,8 @@ class Validator extends Base\Validator
     protected static $editPlanRuleRules = [
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:2500000',
-        Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::MIN_FEE             => 'sometimes|integer|max:10000000',
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:10000000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
         Entity::PROCURER            => 'sometimes',
         Entity::CHANNEL             => 'sometimes',
