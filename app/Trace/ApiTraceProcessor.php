@@ -25,6 +25,7 @@ class ApiTraceProcessor
     private bool $isFirstLog;
 
     private array $blockedLogRoutes;
+    private array $blockedLogTraces;
 
     //
     // This regex is copied from
@@ -139,6 +140,14 @@ class ApiTraceProcessor
         $this->isFirstLog = true;
 
         $this->blockedLogRoutes = [];
+        $this->blockedLogTraces = [];
+
+        $blockedTraces = $this->app['config']->get('trace.blocked_logging_traces');
+        if ($blockedTraces != '' or $blockedTraces != null)
+        {
+            $this->blockedLogTraces = explode(",", $blockedTraces);
+        }
+
         $logRoutes = $this->app['config']->get('trace.blocked_logging_routes');
         if ($logRoutes != '' or $logRoutes != null)
         {
@@ -594,7 +603,8 @@ class ApiTraceProcessor
             {
                 $route = optional($this->app['router'])->currentRouteName();
 
-                if (in_array($route, $this->blockedLogRoutes, true))
+                if (in_array($route, $this->blockedLogRoutes, true) or
+                    (isset($record['message']) and in_array($record['message'], $this->blockedLogTraces)))
                 {
                     $record['tier'] = 'cx_log_blocked';
                 }

@@ -61,5 +61,6 @@ return [
         'aadhar_number'
 ],
 
-    'blocked_logging_routes' => env('BLOCKED_LOGGING_ROUTES', '')
+    'blocked_logging_routes' => env('BLOCKED_LOGGING_ROUTES', ''),
+    'blocked_logging_traces' => env('BLOCKED_LOGGING_TRACES', '')
 ];
