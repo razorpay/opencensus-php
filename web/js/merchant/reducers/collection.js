@@ -58,16 +58,10 @@ export const fetchAll = (params, Entity, namespace) => {
   } else {
     entity = Entity;
   }
-  // TODO: Filter non-INR currencies temporarily (as Blade's Amount component doesn't support it)
-  const test = entity.fetchAll(params).then((res) => {
-    const newRes = { ...res };
-    newRes.data.items = newRes.data.items.filter((item) => item.currency === 'INR');
-    return newRes;
-  });
-  console.log('test', test);
+
   return {
     type: getActionName(namespace),
-    payload: test,
+    payload: entity.fetchAll(params),
   };
 };
 
