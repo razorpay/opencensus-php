@@ -19,7 +19,7 @@ export interface Products {
   tags: string[];
 }
 
-interface NavLinkData {
+export interface NavLinkData {
   section_name: string;
   section_id: string;
   product_options: Products[];
@@ -31,10 +31,15 @@ export interface NavItems {
   data: NavLinkData[];
 }
 
+interface Merchant {
+  id: string;
+}
+
 type ExtendedUser = {
   kyc_clarification_reasons: {
     nc_count: any;
   };
+  merchants: Record<string, Merchant>;
 };
 
 export interface SidebarPropsInterface extends RouteComponentProps {

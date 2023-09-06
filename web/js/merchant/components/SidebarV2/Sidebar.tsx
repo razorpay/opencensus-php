@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import NavLinkItem from './components/NavLinkItem';
+
+import { analyticsTrack } from 'common/utils/analytics';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
+import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
+import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
+import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
+import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
 import Divider from './components/Divider';
+import NavLinkItem from './components/NavLinkItem';
+import { Typo, Icon } from './components/NavLinkItem/styled';
 import NavLinkProduct from './components/NavLinkProduct';
 import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
-import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
-import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+
 import {
   RZP_LOGO_URL,
   ONBOARDING_STEPS_URL,
@@ -18,6 +26,7 @@ import {
   ACTIVATION_URL,
   EASY_DASHBOARD_NC_LANDING_URL,
 } from './constants/constants';
+import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
 import { getActiveTab, initializeRoutes } from './utils/href';
 import {
   SidebarContainer,
@@ -28,15 +37,10 @@ import {
   Navigation,
   ExternalLink,
 } from './styled';
-import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
-import { Typo, Icon } from './components/NavLinkItem/styled';
-import { Routes, SidebarPropsInterface } from './typings';
-import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
-import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
-import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
+
+import { NavLinkData, Routes, SidebarPropsInterface } from './typings';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { analyticsTrack } from 'common/utils/analytics';
 import { trackEvents } from 'merchant/reducers/trackEvents';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
@@ -45,7 +49,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     config,
     user,
     fetchLeftNavItems,
-    leftNavItems: { loading: isNavItemsLoading, data },
+    leftNavItems: { loading: isNavItemsLoading, data, error },
     org,
     isMobile,
     isTagsLoading,
@@ -58,14 +62,22 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const [activeTab, setActiveTab] = useState<string>('');
   const isExternalRedirect = org?.external_redirect_url_text && org?.external_redirect_url;
   const [isTwoSecondsTimeoutReached, setIsTwoSecondsTimeoutReached] = useState(false);
+  const [cachedLeftNavItems, setCacheLeftNavItems] = useState<NavLinkData[]>();
   const { signup_campaign } = (user?.user as Record<string, unknown>) ?? {};
   const isSignupWithEasyOnboarding = signup_campaign === EASY_ONBOARDING;
+  const merchant = user?.merchants?.[user?.current as string];
 
   useEffect(() => {
-    fetchLeftNavItems();
-    setTimeout(() => {
+    const leftNavItemsCache = getLeftNavItemsCache({ merchantId: merchant?.id });
+    if (!leftNavItemsCache) {
+      fetchLeftNavItems();
+      setTimeout(() => {
+        setIsTwoSecondsTimeoutReached(true);
+      }, 2000);
+    } else {
       setIsTwoSecondsTimeoutReached(true);
-    }, 2000);
+      setCacheLeftNavItems(leftNavItemsCache);
+    }
   }, []);
 
   const handleActivationClick = () => {
@@ -122,6 +134,12 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   // fallback to default list if it takes more than 2 seconds to load nav items
   const isLoading = !isTwoSecondsTimeoutReached && (isNavItemsLoading || isTagsLoading);
 
+  if (!isNavItemsLoading && data && !error) {
+    setLeftNavItemsCache({ merchantId: merchant?.id, leftNavItems: data });
+  }
+
+  const leftNavItems = cachedLeftNavItems || data;
+
   return (
     <>
       <SidebarContainer>
@@ -152,7 +170,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                 ))}
               </Items>
               <Divider />
-              {data.map((each) => (
+              {leftNavItems.map((each) => (
                 <NavLinkProduct
                   key={each.section_name}
                   heading={each.section_name}

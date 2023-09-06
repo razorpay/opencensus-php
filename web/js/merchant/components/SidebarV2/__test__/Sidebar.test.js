@@ -7,9 +7,11 @@ import * as fetchNavigationItems from 'merchant/reducers/leftNav';
 import * as devices from 'merchant/components/Home/data';
 import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import * as SidebarUtils from 'merchant/components/SidebarV2/utils/Sidebar';
 
 describe('SidebarV2', () => {
   const fetchNavigationSpy = jest.spyOn(fetchNavigationItems, 'fetchLeftNavItems');
+  const fetchNavItemsCacheSpy = jest.spyOn(SidebarUtils, 'getLeftNavItemsCache');
   window.open = jest.fn();
 
   const renderApp = ({ initialState = state, props } = {}) =>
@@ -19,9 +21,11 @@ describe('SidebarV2', () => {
 
   beforeEach(() => {
     fetchNavigationSpy.mockClear();
+    fetchNavItemsCacheSpy.mockClear();
   });
 
   test('should call fetch items on mount', async () => {
+    fetchNavItemsCacheSpy.mockReturnValue(null);
     renderApp();
     await waitFor(() => {
       expect(fetchNavigationSpy).toHaveBeenCalledTimes(1);
