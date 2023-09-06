@@ -287,6 +287,20 @@ class PreProcess extends Base\Mock\Server
                 ]);
 
             }
+            else if ($data["PayerVA"] === 'disable-terminal@icici')
+            {
+                $response->setError([
+                    'description' => 'Debit has been failed',
+                    'gateway_error_code' => 'U16',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code' => 200,
+                    'internal_error_code' => 'GATEWAY_ERROR_DEBIT_FAILED',
+                ]);
+
+                $response->mergeUpi([
+                    UpiEntity::STATUS_CODE => 'U16',
+                ]);
+            }
             else
             {
                 $response->setError([

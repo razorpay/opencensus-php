@@ -204,6 +204,7 @@ trait CommonGatewayTrait
             Payment\Gateway::UPI_MINDGATE,
             Payment\Gateway::UPI_RZPRBL,
             Payment\Gateway::UPI_AXISOLIVE,
+            Payment\Gateway::UPI_ICICI,
             ];
 
         return (in_array($gateway, $gateways, true));

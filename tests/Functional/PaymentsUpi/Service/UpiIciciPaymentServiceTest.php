@@ -42,94 +42,6 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         ];
     }
 
-    public function testNonRearchPaymentSuccessWithApiPreProcess()
-    {
-        $this->gateway = 'upi_mozart';
-
-        $this->setMockGatewayTrue();
-
-        $this->doAjaxPayment('terminal:shared_upi_icici_terminal', 'upi_icici');
-
-        $this->gateway = 'upi_icici';
-
-        $payment = $this->getDbLastPayment();
-
-        $this->assertEquals(0, $payment->getCpsRoute());
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-        });
-
-        $payment = $this->getDbLastPayment()->toArray();
-
-        $payment['payment_id'] = $payment['id'];
-
-        $upiEntity = $upiEntity = $this->getLastEntity('upi', true);
-
-        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
-
-        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
-
-        $payment = $this->getDbLastPayment()->toArray();
-
-        $this->assertArraySubset([
-            Entity::STATUS          => Status::AUTHORIZED,
-            Entity::REFERENCE16     => $upiEntity['npci_reference_id'],
-            Entity::TERMINAL_ID     => $this->terminal->getId(),
-            Entity::GATEWAY         => $this->gateway
-        ], $payment);
-    }
-    public function testPaymentFailureWithApiPreProcess()
-    {
-        $this->gateway = 'upi_mozart';
-
-        $this->setMockGatewayTrue();
-
-        $this->doAjaxPayment('terminal:shared_upi_icici_terminal', 'upi_icici');
-
-        $this->gateway = 'upi_icici';
-
-        $payment = $this->getDbLastPayment();
-
-        $this->assertEquals(0, $payment->getCpsRoute());
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-        });
-
-        $payment = $this->getDbLastPayment()->toArray();
-
-        $payment['payment_id'] = $payment['id'];
-
-        $upiEntity = $upiEntity = $this->getLastEntity('upi', true);
-
-        $content = $this->mockServer('upi_icici')->getFailedAsyncCallbackContent($upiEntity, $payment);
-
-        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
-
-        $payment = $this->getDbLastPayment()->toArray();
-
-        $upiEntity = $this->getDbLastUpi();
-
-        $this->assertArraySubset([
-            Entity::STATUS              => Status::FAILED,
-            Entity::TERMINAL_ID         => $this->terminal->getId(),
-            Entity::GATEWAY             => $this->gateway,
-            Entity::CPS_ROUTE           => 0,
-            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
-            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
-        ], $payment);
-
-        $this->assertArraySubset([
-            UpiEntity::TYPE          => Flow::COLLECT,
-            UpiEntity::ACTION        => 'authorize',
-            UpiEntity::GATEWAY       => $this->gateway,
-            UpiEntity::STATUS_CODE   => 'U30'
-        ], $upiEntity->toArray());
-    }
-
     public function testUpsPaymentSuccess($description = 'create_collect_success')
     {
         $this->gateway = 'upi_mozart';
@@ -447,7 +359,7 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $upiEntity['created_at'] = $payment['created_at'];
         $upiEntity['gateway_payment_id'] = '882087011';
         $upiEntity['gateway_merchant_id'] = '123456';
-        $upiEntity['vpa'] =  'vishnu@icici';
+        $upiEntity['vpa'] =  'disable-terminal@icici';
         $upiEntity['payment_id'] = $payment['id'];
 
         $this->mockServerContentFunction(

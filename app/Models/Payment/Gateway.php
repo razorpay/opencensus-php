@@ -4993,6 +4993,8 @@ class Gateway
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
             self::UPI_YESBANK,
+            self::UPI_ICICI,
+            self::UPI_AXIS,
         ];
 
         return (in_array($gateway, $gateways, true));

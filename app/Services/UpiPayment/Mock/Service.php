@@ -266,6 +266,11 @@ class Service extends UpiPaymentService
             'currency'          => $payment['currency'],
         ];
 
+        if ($gateway === 'upi_axis')
+        {
+            $responseData['acquirer']['reference1'] = 'IBL3aa942ae75214480b73704d09b3c1f69';
+        }
+
         $statusCode = 200;
         $responseError = [];
         // If mozart pre-process has returned an error block,
