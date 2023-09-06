@@ -30,6 +30,7 @@ use RZP\Models\Merchant;
 class Payment extends Base
 {
     const FLEXMONEY      = 'flexmoney';
+    const OFFLINE        = 'offline';
     const HCIN_IFSC      = 'HCIN';
     const KRBE_IFSC      = 'KRBE';
     const CSHE_IFSC      = 'CSHE';
@@ -548,6 +549,12 @@ class Payment extends Base
             // default pricing for UPI (no qr_code fallback pricing).
             if ($qrCode !== null && $qrCode->isCheckoutQrCode()) {
                 $receiverType = null;
+            }
+
+            // In case of QrV2 payments received on Razorpay Pos we need to fetch
+            // zero pricing for UPI (no qr_code fallback pricing).
+            if (($qrCode !== null) and ($qrCode->isRazorpayPosQRCode() === true)) {
+                $receiverType = self::OFFLINE;
             }
         }
 

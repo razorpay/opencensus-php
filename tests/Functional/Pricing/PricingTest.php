@@ -2672,6 +2672,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithOfflineReceiver()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanRuleWithFeatureRefundWithPercentRate()
     {
         $this->ba->adminAuth();

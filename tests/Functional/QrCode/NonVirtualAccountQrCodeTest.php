@@ -1273,6 +1273,130 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(270, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
     }
 
+
+    public function testRZPPosQrCodePricing(): void
+    {
+        // add qr_code pricing plan
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 150, // 150 base points i.e. 1.50%
+            'fixed_rate'          => 0,
+        ];
+        // add pos qr_code pricing plan
+        $posQRPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'offline',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+        $this->fixtures->create('pricing', $posQRPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 200000],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100102';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 2000;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(200000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        // Ensure Default UPI Fees is Charged i.e. 1.50%
+        $this->assertEquals(3540, $payment->getFee());
+        $this->assertEquals(540, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(3000, $feeBreakup[0]['amount']); // 1.50% of 200000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(540, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 3000
+
+        // use ezetap auth to add request source as ezetap
+        $this->ba->ezetapInternalAuth('test', Account::TEST_ACCOUNT);
+
+        // create QR code with ezetap auth
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100000],
+            'test',
+            Account::TEST_ACCOUNT, headers: ['X-Razorpay-Request-Source' => 'ezetap']
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+
+        $this->assertEquals($qrCode['request_source'], 'ezetap');
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 1000;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        // Ensure Default POS UPI Fees is Charged i.e. 0
+        $this->assertEquals(0, $payment->getFee());
+        $this->assertEquals(0, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(0, $feeBreakup[0]['amount']); // 1.50% of 0
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(0, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 0
+    }
+
     public function testProcessDuplicateIciciQrPayment()
     {
         $qrCode = $this->createQrCode();

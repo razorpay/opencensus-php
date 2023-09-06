@@ -272,7 +272,7 @@ class Entity extends QrCode\Entity
 
     protected function setPublicRequestSourceAttribute(array &$array)
     {
-        if ($this->getRequestSource() === RequestSource::EZETAP)
+        if ($this->isRazorpayPosQrCode() === true)
         {
             $array[self::REQUEST_SOURCE] = $this->getAttribute(self::REQUEST_SOURCE);
         }
@@ -281,6 +281,11 @@ class Entity extends QrCode\Entity
     public function isCheckoutQrCode(): bool
     {
         return $this->getRequestSource() === RequestSource::CHECKOUT;
+    }
+
+    public function isRazorpayPosQrCode(): bool
+    {
+        return $this->getRequestSource() === RequestSource::EZETAP;
     }
 
     public function hasFixedAmount()
