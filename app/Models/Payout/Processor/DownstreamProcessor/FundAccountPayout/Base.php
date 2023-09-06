@@ -56,7 +56,7 @@ class Base extends DSBase
         /*
          * We don't want fee recovery payouts to go through the free payout flow, hence the check here.
          */
-        if (in_array($payout->getPurpose(), [Purpose::RZP_FEES, Purpose::RZP_FUND_MANAGEMENT]) === true)
+        if ($payout->getPurpose() === Purpose::RZP_FEES)
         {
             return;
         }

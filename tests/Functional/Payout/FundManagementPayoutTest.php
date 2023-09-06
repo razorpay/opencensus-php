@@ -1993,7 +1993,7 @@ class FundManagementPayoutTest extends TestCase
         $this->assertEquals(15000000, $basDetails->getGatewayBalance());
         $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
 
-        // Asserting that no FMP got created
+        // Asserting that 1 FMP got created
         $this->assertEquals(1, $finalPayoutCount - $initialPayoutCount);
 
         // Asserting that Fee Recovery Entity got created
@@ -2004,8 +2004,9 @@ class FundManagementPayoutTest extends TestCase
         $this->assertTrue((bool) $mozartSuccess);
         $this->assertTrue((bool) $ftsSuccess);
 
-        // Assert that zero free payout has been consumed when payout is on_hold
-        $this->assertEquals(0, $this->directCounter->getFreePayoutsConsumed());
+        // Assert that free payout has been consumed when payout is in initiated state
+        $this->directCounter->reload();
+        $this->assertEquals(1, $this->directCounter->getFreePayoutsConsumed());
 
         $fundManagementPayout = $this->getDBLastEntity('payout');
 
@@ -2018,10 +2019,10 @@ class FundManagementPayoutTest extends TestCase
             PayoutEntity::CHANNEL         => Channel::RBL,
             PayoutEntity::MODE            => PayoutMode::IMPS,
             PayoutEntity::NARRATION       => Purpose::RZP_FUND_MANAGEMENT,
-            PayoutEntity::FEES            => 1770,
-            PayoutEntity::TAX             => 270,
-            PayoutEntity::FEE_TYPE        => null,
-            PayoutEntity::PRICING_RULE_ID => 'Bbg7e4oKCgaube',
+            PayoutEntity::FEES            => 0,
+            PayoutEntity::TAX             => 0,
+            PayoutEntity::FEE_TYPE        => PayoutEntity::FREE_PAYOUT,
+            PayoutEntity::PRICING_RULE_ID => 'Bbg7cl6t6I3XB0',
         ];
 
         $this->assertEquals('testmerchantsample', $fundManagementPayout->fundAccount->source->getName());
@@ -2336,6 +2337,7 @@ class FundManagementPayoutTest extends TestCase
         $this->assertFalse((bool) $ftsTransferSuccess);
 
         // Assert that zero free payout has been consumed when payout is on_hold
+        $this->directCounter->reload();
         $this->assertEquals(0, $this->directCounter->getFreePayoutsConsumed());
 
         // Asserting that No Fee Recovery Entity got created
@@ -2471,8 +2473,9 @@ class FundManagementPayoutTest extends TestCase
         $this->assertFalse((bool) $boolJobFailureMetricCaptured);
         $this->assertTrue((bool) $ftsTransferSuccess);
 
-        // Assert that zero free payout has been consumed when payout is on_hold
-        $this->assertEquals(0, $this->directCounter->getFreePayoutsConsumed());
+        // Assert that 1 free payout has been consumed when payout is in initiated state
+        $this->directCounter->reload();
+        $this->assertEquals(1, $this->directCounter->getFreePayoutsConsumed());
 
         $fundManagementPayout = $this->getDBLastEntity('payout');
 
@@ -2485,10 +2488,10 @@ class FundManagementPayoutTest extends TestCase
             PayoutEntity::CHANNEL         => Channel::RBL,
             PayoutEntity::MODE            => PayoutMode::IMPS,
             PayoutEntity::NARRATION       => Purpose::RZP_FUND_MANAGEMENT,
-            PayoutEntity::FEES            => 1062,
-            PayoutEntity::TAX             => 162,
-            PayoutEntity::FEE_TYPE        => null,
-            PayoutEntity::PRICING_RULE_ID => 'Bbg7dTcURsOr78',
+            PayoutEntity::FEES            => 0,
+            PayoutEntity::TAX             => 0,
+            PayoutEntity::FEE_TYPE        => PayoutEntity::FREE_PAYOUT,
+            PayoutEntity::PRICING_RULE_ID => 'Bbg7cl6t6I3XB0',
             PayoutEntity::FUND_ACCOUNT_ID => '100000000000fa',
         ];
 
@@ -2585,6 +2588,10 @@ class FundManagementPayoutTest extends TestCase
             Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
         ]);
 
+        $this->fixtures->edit('counter', $this->directCounter->getId(), [
+            'free_payouts_consumed' => 250
+        ]);
+
         $this->fixtures->create('credits', [
             'merchant_id' => $this->basDetails->getMerchantId(),
             'value'       => 1200,
@@ -2616,8 +2623,9 @@ class FundManagementPayoutTest extends TestCase
         $this->assertFalse((bool) $boolJobFailureMetricCaptured);
         $this->assertTrue((bool) $ftsTransferSuccess);
 
-        // Assert that zero free payout has been consumed when payout is on_hold
-        $this->assertEquals(0, $this->directCounter->getFreePayoutsConsumed());
+        // Assert that all the free payouts have been consumed
+        $this->directCounter->reload();
+        $this->assertEquals(250, $this->directCounter->getFreePayoutsConsumed());
 
         $fundManagementPayout = $this->getDBLastEntity('payout');
 
