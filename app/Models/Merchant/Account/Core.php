@@ -227,7 +227,7 @@ class Core extends Merchant\Core
             {
                 if ($partner->isPurePlatformPartner() === true && $this->app['request.ctx']->getRoute() === 'account_fetch_v2')
                 {
-                    Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+                    Merchant\PhantomUtility::validateCobrandedOnboardingEnabledForPlatformPartner($partner);
 
                     Entity::verifyIdAndSilentlyStripSign($accountId);
 

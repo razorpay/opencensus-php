@@ -1149,7 +1149,7 @@ return [
         ],
     ],
 
-    'testFetchAccountV2ByPlatformPartnerWithExpDisabled' => [
+    'testFetchAccountV2ByPlatformPartnerWithFeatureNotEnabled' => [
         'request' => [
             'url'    => '/v2/accounts/{accountId}',
             'method' => 'GET',
@@ -1160,7 +1160,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_COBRANDED_ONBOARDING_NOT_ENABLED,
         ],
     ],
 

@@ -347,13 +347,13 @@ class Validator extends Base\Validator
 
         if ($checkPhantomExp === true)
         {
-            // To update/get partner_config via merchant dashboard UI configurator and via Phantom onboarding flow,
-            // we have different whitelisting experiments
-            if($app['basicauth']->isProxyAuth() === true)
+            // to update partner config from Phantom onboarding flow and to get partner config
+            // from partner dashboard for UI configurator we have different whitelisting experiments
+            if ($app['basicauth']->isProxyAuth() === true)
             {
-                Merchant\PhantomUtility::validatePhantomConfigurationEnabledForPurePlatformPartner($partner->getId());
+                Merchant\PhantomUtility::validateCobrandedOnboardingEnabledForPlatformPartner($partner);
             }
-            else if($app['request.ctx']->isDashboardGuest() === true)
+            else if ($app['request.ctx']->isDashboardGuest() === true)
             {
                 Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
             }

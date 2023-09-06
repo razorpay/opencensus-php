@@ -1268,6 +1268,37 @@ return [
         ],
     ],
 
+    'testFetchConfigByPlatformPartner' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'apple'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchConfigByPlatformPartnerWithFeatureNotEnabled' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_COBRANDED_ONBOARDING_NOT_ENABLED,
+        ],
+    ],
+
     'testFetchConfigByPartnerWithDefaultValues' => [
         'request'  => [
             'url'     => '/partner_config',

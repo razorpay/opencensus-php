@@ -58,32 +58,23 @@ class PhantomUtility
         return true;
     }
 
-    public static function validatePhantomConfigurationEnabledForPurePlatformPartner(String $partnerId) : bool
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public static function validateCobrandedOnboardingEnabledForPlatformPartner(Entity $partner): bool
     {
-        $isExpEnabled = self::isPhantomConfigurationWhitelistedForPurePlatformPartner($partnerId);
+        $isFeatureEnabled = $partner->isCobrandedOnboardingEnabled();
 
-        if ($isExpEnabled !== true)
+        if ($isFeatureEnabled !== true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_OAUTH_APP_CONFIGURATOR_EXP_NOT_ENABLED,
+                ErrorCode::BAD_REQUEST_PARTNER_COBRANDED_ONBOARDING_NOT_ENABLED,
                 null,
-                ['partner_id' => $partnerId]
+                ['partner_id' => $partner->getId()]
             );
         }
 
         return true;
-    }
-
-    private static function isPhantomConfigurationWhitelistedForPurePlatformPartner(String $partnerId) : bool
-    {
-        $app = App::getFacadeRoot();
-
-        $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $app['config']->get('app.partner_oauth_app_config_experiement_id')
-        ];
-
-        return (new Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private static function isPhantomOnboardingWhitelistedForPurePlatformPartner(String $partnerId) : bool

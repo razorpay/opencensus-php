@@ -834,7 +834,17 @@ class WebhookV2Test extends TestCase
 
         $response = $this->startTest($this->testData['testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner']);
 
-        $events = array_intersect($response, Event::$eventsApplicableBasedOnFeatureOrPartnerType);
+        $accountStatusEvents = [
+            Event::ACCOUNT_REJECTED,
+            Event::ACCOUNT_SUSPENDED,
+            Event::ACCOUNT_ACTIVATED,
+            Event::ACCOUNT_UNDER_REVIEW,
+            Event::ACCOUNT_NEEDS_CLARIFICATION,
+            Event::ACCOUNT_ACTIVATED_KYC_PENDING
+        ];
+
+        $events = array_intersect($response, $accountStatusEvents);
+
         self::assertCount(6, $events);
     }
 

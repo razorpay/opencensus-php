@@ -1390,6 +1390,62 @@ class PartnerConfigTest extends OAuthTestCase
         $this->checkResponseFieldsForProxyOrInternalAuth($response);
     }
 
+    public function testFetchConfigByPlatformPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'pure_platform']);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], $partner->id);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'apple'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_config?application_id=' . $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchConfigByPlatformPartnerWithFeatureNotEnabled()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'pure_platform']);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'apple'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_config?application_id=' . $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
     public function testFetchConfigByPartnerWithDefaultValues()
     {
         list($partner, $app) = $this->createPartnerAndApplication();

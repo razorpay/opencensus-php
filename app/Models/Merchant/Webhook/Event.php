@@ -967,17 +967,17 @@ class Event
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_REJECTED                   => Feature\Constants::PAYOUT,
-        self::ACCOUNT_SUSPENDED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::SUBMERCHANT_ONBOARDING_V2],
+        self::ACCOUNT_SUSPENDED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::SUBMERCHANT_ONBOARDING_V2, Feature\Constants::COBRANDED_ONBOARDING],
         self::ACCOUNT_FUNDS_HOLD                => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_FUNDS_UNHOLD              => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_ENABLED     => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_DISABLED    => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INSTANTLY_ACTIVATED       => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_ACTIVATED_KYC_PENDING     => Feature\Constants::SUBMERCHANT_ONBOARDING,
-        self::ACCOUNT_UNDER_REVIEW              => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE],
-        self::ACCOUNT_NEEDS_CLARIFICATION       => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE],
-        self::ACCOUNT_ACTIVATED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE],
-        self::ACCOUNT_REJECTED                  => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE],
+        self::ACCOUNT_UNDER_REVIEW              => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
+        self::ACCOUNT_NEEDS_CLARIFICATION       => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
+        self::ACCOUNT_ACTIVATED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
+        self::ACCOUNT_REJECTED                  => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
         self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_MAPPED_TO_PARTNER         => Feature\Constants::SUBMERCHANT_ONBOARDING,
@@ -1057,23 +1057,8 @@ class Event
         self::ISSUING_TRANSFER_FAILED                     => Feature\Constants::RAZORPAY_WALLET
     ];
 
-    public static $eventsToPartnerTypeMap = [
-        self::ACCOUNT_APP_AUTHORIZATION_REVOKED        => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_ACTIVATED                        => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_ACTIVATED_KYC_PENDING            => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_NEEDS_CLARIFICATION              => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_REJECTED                         => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_SUSPENDED                        => [Merchant\Constants::PURE_PLATFORM],
-        self::ACCOUNT_UNDER_REVIEW                     => [Merchant\Constants::PURE_PLATFORM],
-    ];
-
-    public static array $eventsApplicableBasedOnFeatureOrPartnerType = [
-        self::ACCOUNT_REJECTED,
-        self::ACCOUNT_SUSPENDED,
-        self::ACCOUNT_ACTIVATED,
-        self::ACCOUNT_UNDER_REVIEW,
-        self::ACCOUNT_NEEDS_CLARIFICATION,
-        self::ACCOUNT_ACTIVATED_KYC_PENDING
+    public static array $eventsToPartnerTypeMap = [
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED        => [Merchant\Constants::PURE_PLATFORM]
     ];
 
     /**
@@ -1105,35 +1090,15 @@ class Event
      * @param  array|null      $events
      * @return array
      */
-    public static function filterForPublicApi(Merchant\Entity $merchant, array $events = null)
+    public static function filterForPublicApi(Merchant\Entity $merchant, array $events = null): array
     {
-        $originalEvents = ($events !== null) ?
-                          $events :
-                          static::getLaunchedEventNames();
+        $originalEvents = ($events !== null) ? $events : static::getLaunchedEventNames();
 
-        $productFilteredEvents = static::filterByProductOrigin($originalEvents);
+        $originProductFilteredEvents = static::filterByProductOrigin($originalEvents);
 
-        $featureFilteredEvents = static::filterByFeatures($productFilteredEvents, $merchant->getEnabledFeatures());
+        $featureFilteredEvents = static::filterByFeatures($originProductFilteredEvents, $merchant->getEnabledFeatures());
 
-        $partnerTypeFilteredEvents = static::filterByPartnerType($featureFilteredEvents, $merchant->getPartnerType());
-
-        return array_merge($partnerTypeFilteredEvents, static::getFeaturesAvailableByFeatureOrPartnerType($productFilteredEvents, $merchant));
-    }
-
-    public static function getFeaturesAvailableByFeatureOrPartnerType($originalEvents, Merchant\Entity $merchant) : array
-    {
-        $eventsListApplicable = Event::$eventsApplicableBasedOnFeatureOrPartnerType;
-
-        $events = array_filter($originalEvents, function ($key, $value) use ($eventsListApplicable)
-        {
-            return in_array($value, $eventsListApplicable);
-        }, ARRAY_FILTER_USE_BOTH);
-
-        $featureFilteredEvents = static::filterByFeatures($events, $merchant->getEnabledFeatures());
-
-        $productFilteredEvents = static::filterByPartnerType($events, $merchant->getPartnerType());
-
-        return array_merge($featureFilteredEvents, $productFilteredEvents);
+        return static::filterByPartnerType($featureFilteredEvents, $merchant->getPartnerType());
     }
 
     public static function filterByProductOrigin(array $events): array
@@ -1185,19 +1150,19 @@ class Event
         return $eventNames;
     }
 
-    public static function filterByPartnerType(array $eventNames, string $merchantPartnerType = null): array
+    public static function filterByPartnerType(array $eventNames, string $partnerType = null): array
     {
-        $eventPartnerMap = Event::$eventsToPartnerTypeMap;
+        $eventPartnerTypeMap = Event::$eventsToPartnerTypeMap;
 
         foreach ($eventNames as $eventName => $value)
         {
             $removeEvent = false;
 
-            if ((isset($eventPartnerMap[$eventName]) === true))
+            if (isset($eventPartnerTypeMap[$eventName]) === true)
             {
-                $eventPartnerMapValue = $eventPartnerMap[$eventName];
+                $partnerTypes = $eventPartnerTypeMap[$eventName];
 
-                if (array_search($merchantPartnerType, $eventPartnerMapValue) === false)
+                if (in_array($partnerType, $partnerTypes) !== true)
                 {
                     $removeEvent = true;
                 }

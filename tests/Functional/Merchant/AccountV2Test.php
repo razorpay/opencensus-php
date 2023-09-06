@@ -488,7 +488,7 @@ class AccountV2Test extends TestCase
     {
         $this->setPurePlatformContext(Mode::TEST, false);
 
-        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $subMerchantDetails = [
             'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -514,11 +514,9 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
-    public function testFetchAccountV2ByPlatformPartnerWithExpDisabled()
+    public function testFetchAccountV2ByPlatformPartnerWithFeatureNotEnabled()
     {
         $this->setPurePlatformContext(Mode::TEST, false);
-
-        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $subMerchantDetails = [
             'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -556,7 +554,7 @@ class AccountV2Test extends TestCase
     {
         $this->setPurePlatformContext(Mode::TEST, false);
 
-        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $subMerchantDetails = [
             'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -590,7 +588,7 @@ class AccountV2Test extends TestCase
     {
         $this->setPurePlatformContext(Mode::TEST, false);
 
-        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $subMerchantDetails = [
             'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,

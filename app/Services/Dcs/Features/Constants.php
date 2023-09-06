@@ -80,6 +80,7 @@ class Constants
     const SubmerchantInstantActivationViaV2ApiEnabled = 'submerchant_instant_activation_via_v2_api_enabled';
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
+    const CobrandedOnboardingEnabled = 'cobranded_onboarding_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
     const HideInstrumentRequest = 'hide_instrument_request';
     const CustomReportExtensions = 'custom_report_extensions';
@@ -328,6 +329,7 @@ class Constants
         self::SubmerchantInstantActivationViaV2ApiEnabled => "rzp/platform/partner/onboarding/Features",
         self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
         self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
+        self::CobrandedOnboardingEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
         self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
         self::CustomReportExtensions => "rzp/pg/org/dashboard/banking_program/Reporting",
@@ -546,6 +548,7 @@ class Constants
         APIFeaturesConstants::INSTANT_ACTIVATION_V2_API                     => self::SubmerchantInstantActivationViaV2ApiEnabled,
         APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT                     => self::MerchantActivationByPartnerEnabled,
         APIFeaturesConstants::OVERRIDE_SUB_CONFIG                           => self::OverridingSubmerchantConfigEnabled,
+        APIFeaturesConstants::COBRANDED_ONBOARDING                          => self::CobrandedOnboardingEnabled,
         APIFeaturesConstants::RAZORPAY_SECURE_MERCHANT                      => self::ShopifyPaymentsReport,
         APIFeaturesConstants::NO_DOC_ONBOARDING                             => self::NoDocOnboardingEnabled,
         APIFeaturesConstants::CREATE_SOURCE_V2                              => self::OnboardedViaV2ApiEnabled,

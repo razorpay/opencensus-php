@@ -1361,7 +1361,7 @@ class Entity extends Base\PublicEntity
         /**
          * NOTE: This is a stop-gap solution to unblock merchants for whom invoices are not being generated when they
          * get deactivated in the middle of a month
-         * */ 
+         * */
         if ($this->getAttribute(self::ACTIVATED))
         {
             // surround this in try-catch to avoid failure of main request as they are not always wrapped in transactions
@@ -3982,6 +3982,11 @@ class Entity extends Base\PublicEntity
     public function isDebitCardValidationEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::DEBIT_CARD_VALIDATION);
+    }
+
+    public function isCobrandedOnboardingEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::COBRANDED_ONBOARDING);
     }
 
     public function isFieldHasValue($field): bool
