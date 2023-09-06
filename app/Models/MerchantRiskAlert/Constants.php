@@ -188,6 +188,9 @@ class Constants
     const WORKFLOW_INPUT_DETAILS_TPL = 'WORKFLOW_INPUT_DETAILS: %s';
 
     const RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT = 'RAS NC Outbound email freshdesk ticket url: https://razorpay-ind.freshdesk.com/a/tickets/%s'; //hardcoding url as its the only instance being used
+    const RAS_NC_CLARIFICATION_TYPE_COMMENT_FORMAT          = 'RAS NC Clarification Type : %s';
+    const RAS_NC_CLARIFICATION_SUB_TYPE_COMMENT_FORMAT      = 'RAS NC Clarification Sub Type : ';
+
     const RAS_NC_WORKFLOW_CACHE_KEY                         = 'ras_nc_workflow_key_%s';
     const RAS_NC_WORKFLOW_CACHE_TTL                         = 120 * (60 * 60 * 24); // 120days
 
@@ -210,9 +213,18 @@ class Constants
     const RAS_RULES_ID                                 = 'ras_rules_id';
 
     const TEAM_NAME                                    = 'team_name';
-    const MERCHANT_RISK_PG_TEAM_NAME                   = 'Merchant Risk - PG';
+    const MERCHANT_RISK_TEAM_NAME                      = 'Merchant Risk';
+    const MERCHANT_RISK_FUNDS_ON_HOLD_TEAM_NAME        = 'Merchant Risk - Funds On Hold';
+    const MERCHANT_RISK_BANKING_TEAM_NAME              = 'Merchant Risk - Banking';
+    const RISK_ONBOARDING_TEAM_NAME                    = 'Risk Onboarding';
+    const CPV_CHECK_TEAM_NAME                          = 'cpv-check';
     const TRANSACTION_MONITORING_TEAM_NAME             = 'Transaction Monitoring';
 
     const RAS_NEEDS_CLARIFICATION_FD_CREATED           = 'ras_needs_clarification_fd_created';
+    const CLARIFICATION_SUB_TYPE                       = 'clarification_sub_type';
+    const CLARIFICATION_TYPE                           = 'clarification_type';
+
+    const TEAM_NAME_ERROR_MESSAGE                      = "Team name not correct.";
+
 }
 

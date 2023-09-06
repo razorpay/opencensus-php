@@ -1121,6 +1121,10 @@ class Service extends Base\Service
 
         (new Validator)->validateTriggerNeedsClarificationRequest($action);
 
+        $clarificationSubType = array_get($input, "clarification_sub_type");
+
+        $clarificationType = array_get($input, "clarification_type");
+
         $merchant = (new Merchant\Repository())->findOrFail($action->getEntityId());
 
         if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === false)
@@ -1132,7 +1136,7 @@ class Service extends Base\Service
             $ticketId = $this->sendMobileSignUpNotificationForNC($merchant);
         }
 
-        $this->addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId);
+        $this->addCommentToWorkflowForTriggerNeedsClarification($action, $clarificationType, $clarificationSubType, $ticketId);
 
         $this->markNeedsClarificationAsTriggeredForAction($action);
 
@@ -1147,16 +1151,7 @@ class Service extends Base\Service
 
         $teamName = array_get($params, Constants::TEAM_NAME);
 
-        $groupId = $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_FOH'];
-
-        $emailConfig = $this->freshdeskConfig['email_config_ids']['merchant_risk_FOH_email_config'];
-
-        if($teamName == Constants::TRANSACTION_MONITORING_TEAM_NAME)
-        {
-            $groupId = $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction_monitoring'];
-
-            $emailConfig = $this->freshdeskConfig['email_config_ids']['merchant_risk_transaction_monitoring_email_config'];
-        }
+        [$groupId, $emailConfig] = $this->getFreshdeskGroupIdConfigIdByTeam($teamName);
 
         return $this->sendEmail($merchant, [
             $emailSubject,
@@ -1170,7 +1165,7 @@ class Service extends Base\Service
         ], [], true);
     }
 
-    protected function addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId = ''): void
+    protected function addCommentToWorkflowForTriggerNeedsClarification($action, string $clarificationType = '', array $clarificationSubType = [], $ticketId = ''): void
     {
         $comment = sprintf(Constants::RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT, $ticketId);
 
@@ -1181,6 +1176,31 @@ class Service extends Base\Service
         $commentEntity->entity()->associate($action);
 
         $this->repo->saveOrFail($commentEntity);
+
+        if($clarificationType != '')
+        {
+            $clarificationComment = (new Comment\Core())->create([
+                Comment\Entity::COMMENT => sprintf(Constants::RAS_NC_CLARIFICATION_TYPE_COMMENT_FORMAT, $clarificationType)
+            ]);
+
+            $clarificationComment->entity()->associate($action);
+
+            $this->repo->saveOrFail($clarificationComment);
+        }
+
+        if( $clarificationSubType != [])
+        {
+            $subTypeComment = Constants::RAS_NC_CLARIFICATION_SUB_TYPE_COMMENT_FORMAT . implode(', ', $clarificationSubType);;
+
+            $clarificationSubTypeComment = (new Comment\Core())->create([
+                Comment\Entity::COMMENT => $subTypeComment
+            ]);
+
+            $clarificationSubTypeComment->entity()->associate($action);
+
+            $this->repo->saveOrFail($clarificationSubTypeComment);
+
+        }
     }
 
     public function getCacheKeyForNeedsClarificationRequest($action): string
@@ -1227,5 +1247,36 @@ class Service extends Base\Service
         return (empty($this->app['cache']->connection()->hget(
                 Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
                 === false);
+    }
+
+    private function getFreshdeskGroupIdConfigIdByTeam($teamName): array
+    {
+        switch ($teamName){
+            case CONSTANTS::MERCHANT_RISK_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_email_config_id'];
+                return [$groupId, $emailConfig];
+            case Constants::MERCHANT_RISK_FUNDS_ON_HOLD_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_funds_on_hold_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_funds_on_hold_email_config_id'];
+                return [$groupId, $emailConfig];
+            case Constants::MERCHANT_RISK_BANKING_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_banking_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['merchant_risk_banking_email_config_id'];
+                return [$groupId, $emailConfig];
+            case Constants::RISK_ONBOARDING_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['risk_onboarding_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['risk_onboarding_email_config_id'];
+                return [$groupId, $emailConfig];
+            case Constants::CPV_CHECK_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['cpv_check_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['cpv_check_email_config_id'];
+                return [$groupId, $emailConfig];
+            case Constants::TRANSACTION_MONITORING_TEAM_NAME:
+                $groupId     = $this->freshdeskConfig['group_ids']['risk_ops']['transaction_monitoring_group_id'];
+                $emailConfig  = $this->freshdeskConfig['group_ids']['risk_ops']['transaction_monitoring_email_config_id'];
+                return [$groupId, $emailConfig];
+            }
+            return [];
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\MerchantRiskAlert;
 
 use App;
 use RZP\Models\Workflow\Action;
+use RZP\Models\MerchantRiskAlert\Teams;
 use RZP\Base\Validator as BaseValidator;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -12,14 +13,13 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends BaseValidator
 {
-
-    const TEAM_NAME_ERROR_MESSAGE = "Team name not correct.";
-
     protected $app;
 
     protected static array $needsClarificationRequestRules = [
         "email_body"            => 'required|string',
-        "team_name"             => 'required|string|custom'
+        "team_name"             => 'required|string|custom',
+        "clarification_type"     => 'required|string',
+        "clarification_sub_type" => 'required|array|min:1|max:10'
     ];
 
     public function __construct($entity = null)
@@ -31,11 +31,12 @@ class Validator extends BaseValidator
 
     protected function validateTeamName(string $attribute, string $value)
     {
-        if($value != Constants::TRANSACTION_MONITORING_TEAM_NAME && $value != Constants::MERCHANT_RISK_PG_TEAM_NAME)
+        if(Teams::isValidTeam($value) === false)
         {
-            throw new BadRequestValidationFailureException(self::TEAM_NAME_ERROR_MESSAGE);
+            throw new BadRequestValidationFailureException(CONSTANTS::TEAM_NAME_ERROR_MESSAGE);
         }
     }
+
     public function validateTriggerNeedsClarificationRequest($action): void
     {
         if ($action->getAttribute(Action\Entity::ENTITY_NAME) !== EntityConstants::MERCHANT_DETAIL)

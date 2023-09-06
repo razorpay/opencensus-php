@@ -470,13 +470,30 @@ return [
                 'debit_note'    => env('FRESHDESK_IND_GROUP_DEBIT_NOTE_ID'),
                 'dispute'       => env('FRESHDESK_IND_GROUP_DISPUTE_ID'),
                 'chargebacks'   => env('FRESHDESK_IND_GROUP_CHARGEBACKS_ID'),
-
-                'merchant_risk_transaction_monitoring'           => env('FRESHDESK_IND_GROUP_ID_TRANSACTION_MONITORING'),
-                'merchant_risk_FOH'                              => env('FRESHDESK_IND_GROUP_ID_MERCHANT_FOH'),
             ],
             'cybercrime_helpdesk'   => [
                 'acknowledgement'   => env('FRESHDESK_GROUP_MERCHANT_CYBERCRIME_HELPDESK_ID'),
                 'reply_to_lea'      => env('FRESHDESK_GROUP_MERCHANT_CYBERCRIME_HELPDESK_ID'),
+            ],
+            "risk_ops" => [
+                'merchant_risk_email_config_id' => env('FRESHDESK_MERCHANT_RISK_EMAIL_CONFIG'),
+                'merchant_risk_group_id' => env('FRESHDESK_MERCHANT_RISK_GROUP_ID'),
+
+                'merchant_risk_funds_on_hold_email_config_id' => env('FRESHDESK_MERCHANT_RISK_FUNDS_ON_HOLD_EMAIL_CONFIG'),
+                'merchant_risk_funds_on_hold_group_id' => env('FRESHDESK_MERCHANT_RISK_FUNDS_ON_HOLD_GROUP_ID'),
+
+                'merchant_risk_banking_email_config_id' => env('FRESHDESK_MERCHANT_RISK_BANKING_EMAIL_CONFIG'),
+                'merchant_risk_banking_group_id' => env('FRESHDESK_MERCHANT_RISK_BANKING_GROUP_ID'),
+
+                'risk_onboarding_email_config_id' => env('FRESHDESK_RISK_ONBOARDING_EMAIL_CONFIG'),
+                'risk_onboarding_group_id' => env('FRESHDESK_RISK_ONBOARDING_GROUP_ID'),
+
+                'cpv_check_email_config_id' => env('FRESHDESK_CPV_CHECK_EMAIL_CONFIG'),
+                'cpv_check_group_id' => env('FRESHDESK_CPV_CHECK_GROUP_ID'),
+
+                'transaction_monitoring_email_config_id' => env('FRESHDESK_TRANSACTION_MONITORING_EMAIL_CONFIG'),
+                'transaction_monitoring_group_id' => env('FRESHDESK_TRANSACTION_MONITORING_GROUP_ID'),
+
             ]
         ],
 
