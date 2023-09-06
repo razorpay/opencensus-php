@@ -22,6 +22,7 @@ final class Constants
     const M2M_REFERRALS_ENABLE_CRON                         = 'm2m_referrals_enable_cron';
     const M2M_REFERRAL_TIME_BOUND_THRESHOLD                 = 30;
     const TRACE                                   = 'trace';
+    const ENTITY_NAME                             = 'entity_name';
     const API_MUTEX                               = 'api.mutex';
     const EDIT                                    = 'edit';
     const INPUT                                   = "input";

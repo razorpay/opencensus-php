@@ -274,6 +274,7 @@
             <directory>./tests/Unit/Models/Merchant/Asv/</directory>
             <directory>./tests/Functional/Merchant/Slabs/</directory>
             <directory>./tests/Functional/Merchant/Store/</directory>
+            <directory>./tests/Functional/Jobs/Kafka/</directory>
         </testsuite>
         <testsuite name="Feature-7-2 Test Suite">
             <directory>./tests/Functional/Merchant/Products</directory>

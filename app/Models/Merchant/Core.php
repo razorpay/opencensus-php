@@ -3852,6 +3852,16 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
     }
 
+    public function invalidateCache(string $entityName, string $merchantId): void
+    {
+        $this->trace->info(TraceCode::INVALIDATING_CACHE_FOR_MERCHANT, [
+            Constants::MERCHANT_ID => $merchantId,
+            Constants::ENTITY_NAME => $entityName,
+        ]);
+
+        (new Entity())->flushCache(strtolower($entityName) . '_' . $merchantId);
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      * @throws Throwable

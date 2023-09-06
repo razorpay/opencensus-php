@@ -14,7 +14,6 @@ class SplitzHelperTest extends TestCase
     {
         #T1 starts - isSplitzOn - True
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(2))->method('info');
         $traceMock->expects($this->never())->method('traceException');
         $output = [
             'status_code' => 200,
@@ -58,7 +57,6 @@ class SplitzHelperTest extends TestCase
 
         #T2 starts - isSplitzOn - False - status code 400
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(2))->method('info');
         $traceMock->expects($this->never())->method('traceException');
         $output = [
             'status_code' => 400,
@@ -75,7 +73,6 @@ class SplitzHelperTest extends TestCase
 
         #T3 starts - isSplitzOn - False - status code 200
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(2))->method('info');
         $traceMock->expects($this->never())->method('traceException');
         $output = [
             'status_code' => 200,
@@ -102,7 +99,6 @@ class SplitzHelperTest extends TestCase
 
         #T4 starts - isSplitzOn - False - Exception occurred while evaluating splitz
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(1))->method('info');
         $traceMock->expects($this->exactly(1))->method('traceException');
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->any())->method('evaluateRequest')

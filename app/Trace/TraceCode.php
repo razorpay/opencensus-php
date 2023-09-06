@@ -8622,6 +8622,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_CALL_SYNC_ACCOUNT_DEVIATION_SUCCESS               = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION_SUCCESS';
     const ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR                 = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR';
     const ASV_SPLITZ_REQUEST                                    = 'ASV_SPLITZ_REQUEST';
+    const ASV_MERCHANT_UPDATE_EVENTS                            = 'ASV_MERCHANT_UPDATE_EVENTS';
+    const INVALID_PAYLOAD_FOR_MERCHANT_UPDATE_EVENTS            = 'INVALID_PAYLOAD_FOR_MERCHANT_UPDATE_EVENTS';
+    const INVALIDATING_CACHE_FOR_MERCHANT                       = 'INVALIDATING_CACHE_FOR_MERCHANT';
 
     const ASV_SPLITZ_RESPONSE                                   = 'ASV_SPLITZ_RESPONSE';
 
