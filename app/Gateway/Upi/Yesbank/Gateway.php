@@ -1158,6 +1158,13 @@ class Gateway extends Mindgate\Gateway
             BharatQr\GatewayResponseParams::PAYEE_VPA             => $inputFields['terminal']['vpa'],
         ];
 
+        $payerAccountType = $this->getInternalPayerAccountType($inputFields);
+
+        if (isset($payerAccountType) === true)
+        {
+            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
         if (empty($inputFields['meta']['response']['content']) === false)
         {
             $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE],
@@ -1280,5 +1287,33 @@ class Gateway extends Mindgate\Gateway
         }
 
         return $merchantReference;
+    }
+
+    /**
+     * Get internal payer account type from gateway payer account type
+     * @param $input
+     * @return string|void
+     */
+    protected function getInternalPayerAccountType($input)
+    {
+        if (array_key_exists(Fields::PAYER_ACCOUNT_TYPE, $input['payment']) === true)
+        {
+            $payerAccountType = $input['payment'][Fields::PAYER_ACCOUNT_TYPE];
+        }
+        else
+        {
+            return ;
+        }
+
+        if (in_array($payerAccountType,PayerAccountType::SUPPORTED_INTERNAL_PAYER_ACCOUNT_TYPES))
+        {
+            return $payerAccountType;
+        }
+
+        if ((isset($payerAccountType) === true) and
+            (in_array(strtolower($payerAccountType), PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)))
+        {
+            return PayerAccountType::getPayerAccountType(strtolower($payerAccountType));
+        }
     }
 }

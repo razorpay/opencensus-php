@@ -41,6 +41,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::NOTES                 => 'sometimes|string',
         GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
         GatewayResponseParams::PAYEE_VPA             => 'sometimes|string',
+        GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
     ];
 
     public function validateGatewayResponseData($input, $gateway)

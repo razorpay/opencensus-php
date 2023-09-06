@@ -518,4 +518,111 @@ return [
             Fields::RESPONSE_CODE       => '',
         ],
     ],
+
+
+    'testProcessYesbankQrPaymentInternalWithPayerAccountType' => [
+        'url'     => '/payment/callback/bharatqr/upi_yesbank/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'=>[
+                'status'   => 'payment_successful',
+                'terminal' =>
+                    [
+                        'gateway' => 'upi_yesbank',
+                        'vpa'     => 'testvpa@yesb',
+                    ],
+                'upi'      =>
+                    [
+                        'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                        'npci_reference_id'  => '306133002290',
+                        'vpa'                => 'kushagra@oksbi',
+                    ],
+                'payment'=>[
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => 'SAVINGS'
+                ]
+            ],
+            'success' => true,
+        ],
+    ],
+
+    'testProcessYesbankQrPaymentInternalWithInvalidPayerAccountType' => [
+        'url'     => '/payment/callback/bharatqr/upi_yesbank/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'=>[
+                'status'   => 'payment_successful',
+                'terminal' =>
+                    [
+                        'gateway' => 'upi_yesbank',
+                        'vpa'     => 'testvpa@yesb',
+                    ],
+                'upi'      =>
+                    [
+                        'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                        'npci_reference_id'  => '306133002290',
+                        'vpa'                => 'kushagra@oksbi',
+                    ],
+                'payment'=>[
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => 'INVALID'
+                ]
+            ],
+            'success' => true,
+        ],
+    ],
+
+    'testProcessYesbankQrPaymentInternalWithNullPayerAccountType' => [
+        'url'     => '/payment/callback/bharatqr/upi_yesbank/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'=>[
+                'status'   => 'payment_successful',
+                'terminal' =>
+                    [
+                        'gateway' => 'upi_yesbank',
+                        'vpa'     => 'testvpa@yesb',
+                    ],
+                'upi'      =>
+                    [
+                        'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                        'npci_reference_id'  => '306133002290',
+                        'vpa'                => 'kushagra@oksbi',
+                    ],
+                'payment'=>[
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => null
+                ]
+            ],
+            'success' => true,
+        ],
+    ],
+
+
+    'testProcessYesbankQrPaymentInternalWithEmptyPayerAccountType' => [
+        'url'     => '/payment/callback/bharatqr/upi_yesbank/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'=>[
+                'status'   => 'payment_successful',
+                'terminal' =>
+                    [
+                        'gateway' => 'upi_yesbank',
+                        'vpa'     => 'testvpa@yesb',
+                    ],
+                'upi'      =>
+                    [
+                        'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                        'npci_reference_id'  => '306133002290',
+                        'vpa'                => 'kushagra@oksbi',
+                    ],
+                'payment'=>[
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => ''
+                ]
+            ],
+            'success' => true,
+        ],
+    ],
+
 ];

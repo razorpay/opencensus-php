@@ -113,6 +113,7 @@ class Fields
     const STATUS                 = 'status';
     const PAYER_NOTE             = 'PayerNote';
     const AMOUNT_AUTHORIZED      = 'amount_authorized';
+    const PAYER_ACCOUNT_TYPE     = 'payer_account_type';
 
     const PAYOUT = [
       self::YBLREFNO,

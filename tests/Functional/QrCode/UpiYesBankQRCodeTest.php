@@ -645,4 +645,132 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrPaymentEntityAssertions(true, $payment);
     }
 
+    public function testProcessYesbankQrPaymentInternalWithPayerAccountType()
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+        $payment = $this->getDbLastEntity('payment');
+
+        $request = $this->testData['testProcessYesbankQrPaymentInternalWithPayerAccountType'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $payment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment    = $this->getDbLastEntity('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals('bank_account', $payment['reference2']);
+    }
+
+    public function testProcessYesbankQrPaymentInternalWithInvalidPayerAccountType()
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+        $payment = $this->getDbLastEntity('payment');
+
+        $request = $this->testData['testProcessYesbankQrPaymentInternalWithInvalidPayerAccountType'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $payment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment    = $this->getDbLastEntity('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals(null, $payment['reference2']);
+    }
+
+
+    public function testProcessYesbankQrPaymentInternalWithNullPayerAccountType()
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+        $payment = $this->getDbLastEntity('payment');
+
+        $request = $this->testData['testProcessYesbankQrPaymentInternalWithNullPayerAccountType'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $payment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment    = $this->getDbLastEntity('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals(null, $payment['reference2']);
+    }
+
+    public function testProcessYesbankQrPaymentInternalWithEmptyPayerAccountType()
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+        $payment = $this->getDbLastEntity('payment');
+
+        $request = $this->testData['testProcessYesbankQrPaymentInternalWithEmptyPayerAccountType'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $payment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment    = $this->getDbLastEntity('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_YESBANK, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals(null, $payment['reference2']);
+    }
 }
