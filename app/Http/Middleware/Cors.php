@@ -126,6 +126,8 @@ class Cors
                 'x-dashboard-merchant-id',
                 'x-dashboard-user-id',
                 'x-razorpay-account',
+                // Adding this to pass application id during phantom signup
+                'x-partner-application-id',
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',
