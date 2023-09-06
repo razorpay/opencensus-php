@@ -191,6 +191,7 @@ class ProviderCode
     const NAVIAXIS           = 'naviaxis';
     const SHRIRAMHDFCBANK    = 'shriramhdfcbank';
     const FINCAREBANK        = 'fincarebank';
+    const INDIE              = 'indie';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -373,6 +374,7 @@ class ProviderCode
         self::NAVIAXIS           => IFSC::UTIB,
         self::SHRIRAMHDFCBANK    => IFSC::HDFC,
         self::FINCAREBANK        => IFSC::FINF,
+        self::INDIE              => IFSC::INDB,
     ];
 
     /**
@@ -481,6 +483,7 @@ class ProviderCode
         ProviderPsp::INDIAN_OVERSEAS_BANK,
         ProviderPsp::BHIM_CENT_UPI_APP,
         ProviderPsp::FINCARE_BANK,
+        ProviderPsp::INDUSIND_BANK_APP,
     ];
 
     /**
@@ -537,6 +540,7 @@ class ProviderCode
         self::IOB           => ProviderPsp::INDIAN_OVERSEAS_BANK,
         self::CENTRALBANK   => ProviderPsp::BHIM_CENT_UPI_APP,
         self::FINCAREBANK   => ProviderPsp::FINCARE_BANK,
+        self::INDIE         => ProviderPsp::INDUSIND_BANK_APP,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

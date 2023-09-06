@@ -3957,6 +3957,7 @@ trait PaymentTrait
             "naviaxis",
             "shriramhdfcbank",
             "fincarebank",
+            "indie",
 
         ];
 

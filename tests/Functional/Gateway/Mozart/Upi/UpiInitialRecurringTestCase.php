@@ -1577,6 +1577,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['whatsapp_waicici_allow']        = ['razorpay@waicici', $throwables['whitelisted']];
         $cases['indianoverseasbank_iob_allow']  = ['razorpay@iob', $throwables['whitelisted']];
         $cases['bhimcentupiapp_centralbank_allow']  = ['razorpay@centralbank', $throwables['whitelisted']];
+        $cases['indusindbankapp_indie_allow']  = ['razorpay@indie', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
 
