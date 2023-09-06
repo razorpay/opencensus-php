@@ -550,7 +550,20 @@ class Core extends Base\Core
 
             if ($dispute->getDeductAtOnset() === true)
             {
-                $this->updatePaymentRefundedAmount($dispute);
+                try
+                {
+                    $this->updatePaymentRefundedAmount($dispute);
+                }
+                catch (Exception\LogicException $ex){
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Refund amount should be less than or equal to amount not refunded yet',
+                        null,
+                        [
+                            'amount'            => $acceptedDisputeAmount,
+                            'amount_unrefunded' => $dispute->payment->getAmountUnrefunded(),
+                            'payment_id'        => $dispute->payment->getId(),
+                        ]);
+                }
             }
 
             if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
@@ -624,7 +637,20 @@ class Core extends Base\Core
 
             if ($updatePaymentAttributes === true)
             {
-                $this->updatePaymentRefundedAmount($dispute);
+                try
+                {
+                    $this->updatePaymentRefundedAmount($dispute);
+                }
+                catch (Exception\LogicException $ex){
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Refund amount should be less than or equal to amount not refunded yet',
+                        null,
+                        [
+                            'amount'            => $amount,
+                            'amount_unrefunded' => $dispute->payment->getAmountUnrefunded(),
+                            'payment_id'        => $dispute->payment->getId(),
+                        ]);
+                }
             }
 
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
