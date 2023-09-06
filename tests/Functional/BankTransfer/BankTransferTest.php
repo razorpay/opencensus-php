@@ -2482,8 +2482,8 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
         $this->assertEquals(343946, $bankTransfer['amount']);
-
         $payment =  $this->getLastEntity('payment', true);
+
         $this->assertEquals(343946, $payment['amount']);
         $this->assertEquals('bt_rbl', $payment['gateway']);
 
@@ -9464,6 +9464,135 @@ class BankTransferTest extends TestCase
         // $this->expectExceptionMessage("Payment done on closed customer identifier cannot be captured.");
 
         $this->capturePayment($payment['id'], $payment['amount']);
+    }
+
+    public function testValidateBankTransferAxis()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
+    public function testBankTransferAxis()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+        var_dump($testData['request']['content']['Data']);
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+    }
+
+    public function testValidateBankTransferAxisDuplicate()
+    {
+        $testData = $this->testData['testBankTransferAxis'];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+
+        $testData['request']['content']['Req_type'] = 'validation';
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
+    public function testBankTransferAxisDuplicate()
+    {
+        $testData = $this->testData['testBankTransferAxis'];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
+    protected function getAxisVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBNKAXIS', 'gateway' => Gateway::BT_AXIS, 'gateway_merchant_id' => 'RAZP0001' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
     }
 
 }

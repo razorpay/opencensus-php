@@ -91,6 +91,36 @@ abstract class Processor extends Base\Core
         return $this->paymentProcessor;
     }
 
+    // Entry point for virtual account validate flow.
+    public function validate(Base\PublicEntity $entity): bool
+    {
+        $this->setVirtualAccount($entity);
+
+        if ($this->virtualAccount->isActive() === false ||
+            $this->virtualAccount->isDueToBeClosed() === true)
+        {
+            return false;
+        }
+
+        if ($this->virtualAccount->hasAmountExpected() === true)
+        {
+            $expectedAmount = $this->virtualAccount->getAmountExpected();
+            $amountReceived = $entity->getAmount();
+            $amountPaid     = $this->virtualAccount->getAmountPaid();
+            $amountTotal    = $amountPaid + $amountReceived;
+            if ($amountTotal > $expectedAmount)
+            {
+                return false;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_VALIDATION_COMPLETED
+        );
+
+        return true;
+    }
+
     /**
      * Entry point for  virtual account  process flow.
      * Check if the payment was a duplicate.

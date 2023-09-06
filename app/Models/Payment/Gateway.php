@@ -202,6 +202,7 @@ class Gateway
     const BT_RBL             = 'bt_rbl';
     const BT_RBL_JSW         = 'bt_rbl_jsw';
     const BT_HDFC_ECMS       = 'bt_hdfc_ecms';
+    const BT_AXIS            = 'bt_axis';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
@@ -1864,6 +1865,7 @@ class Gateway
         Provider::RBL       => self::BT_RBL,
         Provider::RBL_JSW   => self::BT_RBL_JSW,
         Provider::HDFC_ECMS => self::BT_HDFC_ECMS,
+        Provider::AXIS      => self::BT_AXIS,
     ];
 
     //

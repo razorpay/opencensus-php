@@ -111,6 +111,8 @@ class Entity extends Base\PublicEntity
     const SOURCE                        = 'source';
     const STATUS                        = 'status';
 
+    const REQUEST_TYPE                  = 'request_type';
+
     protected $requestSource;
 
     protected $fillable = [

@@ -161,6 +161,23 @@ class Service extends Base\Service
         string $routeName = null
     )
     {
+        //For validation callbacks, request type is set as "validation in input
+        //Validations are performed in processValidationRequest() and success
+        //or failure response is returned from here.
+        //If it is a notification request (request type = "notification") these validations
+        //are skipped.
+        //$response is returned empty if it is not a validation request
+        $response = $this->processValidationRequest($input, $provider);
+
+        if (empty($response) === false)
+        {
+            if ($response['valid'] === false)
+            {
+                throw new Exception\BadRequestValidationFailureException();
+            }
+            return $response;
+        }
+
         $response = $this->validateDuplicateRequest($input, $routeName);
 
         if (empty($response) === false)
@@ -208,6 +225,70 @@ class Service extends Base\Service
         }
 
         return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
+    }
+
+    protected function processValidationRequest(array $input, string $provider = null)
+    {
+        if (($input['request_type'] == 'validation') &&
+            (in_array($provider, Provider::VALIDATE_CALLBACK_PROVIDERS) === true))
+        {
+            try
+            {
+                if (empty($provider) === false)
+                {
+                    $this->provider = $provider;
+                }
+
+                $valid = $this->core->validationsForCallback($input, $this->provider);
+
+                if ($valid !== true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Validations failed for callback", $input);
+                }
+
+                //Validate duplicate request
+                if(!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Amount/UTR/Payee account number not valid", $input);
+                }
+
+                (new Validator)->validateInput('validateDuplicateReq', array(Entity::AMOUNT => $input[Entity::AMOUNT],
+                    Entity::REQ_UTR => $input[Entity::REQ_UTR],
+                    Entity::PAYEE_ACCOUNT => $input[Entity::PAYEE_ACCOUNT]));
+
+                $duplicateBankTransfer = $this->repo
+                    ->bank_transfer
+                    ->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
+                        $input[Entity::PAYEE_ACCOUNT],
+                        $input[Entity::AMOUNT] * 100);
+
+                if ($duplicateBankTransfer !== null)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Duplicate Amount/UTR/Payee account number for bank transfer request", $input);
+                }
+
+                return [
+                    'valid'          => true,
+                    'message'        => null,
+                    'transaction_id' => $input[Entity::REQ_UTR] ?? '',
+                ];
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::BANK_TRANSFER_VALIDATE_REQUEST_FAILED);
+                return [
+                    'valid'          => false,
+                    'message'        => null,
+                    'transaction_id' => $input[Entity::REQ_UTR] ?? '',
+                ];
+            }
+        }
+        return  [];
     }
 
     protected function validateAndProcessRequest(
@@ -767,7 +848,10 @@ class Service extends Base\Service
 
         if (($routeName === 'bank_transfer_process_rbl_internal') or
             ($routeName === 'bank_transfer_process_icici_internal') or
-            ($routeName === 'bank_transfer_process_yesbank_internal'))
+            ($routeName === 'bank_transfer_process_yesbank_internal') or
+            ($routeName === 'bank_transfer_process_axis') or
+            ($routeName === 'bank_transfer_process_axis_test') or
+            ($routeName === 'bank_transfer_process_axis_internal'))
         {
             if(!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true)
             {
@@ -786,6 +870,12 @@ class Service extends Base\Service
 
             if ($duplicateBankTransfer !== null)
             {
+                if (($routeName === 'bank_transfer_process_axis') or
+                    ($routeName === 'bank_transfer_process_axis_test') or
+                    ($routeName === 'bank_transfer_process_axis_internal'))
+                {
+                    throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+                }
                 return [
                     'valid'          => true,
                     'message'        => null,

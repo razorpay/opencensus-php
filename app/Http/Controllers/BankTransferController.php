@@ -146,6 +146,27 @@ class BankTransferController extends Controller
         return $this->processRblBankTransfer(false);
     }
 
+    public function processAxisBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        return $this->processAxisBankTransfer();
+    }
+
+    public function processAxisBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->processAxisBankTransfer();
+    }
+
+    public function processAxisBankTransferInternal()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->processAxisBankTransfer(false);
+    }
+
     public function processRblBankTransfer($validateReqToken = true)
     {
         // hardcoding this for now. We will fix this later.
@@ -205,6 +226,71 @@ class BankTransferController extends Controller
         }
 
         return ApiResponse::json(['Status' => 'Success']);
+    }
+
+    public function processAxisBankTransfer($validateReqToken = true)
+    {
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::AXIS_VA_CALLBACK,
+            $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::AXIS));
+
+        $errorResp = $this->validateAxisRequestToken($validateReqToken);
+
+        if ($errorResp !== null)
+        {
+            return $errorResp;
+        }
+
+        try
+        {
+            $inputList = $this->modifyAxisDataToEntity($input);
+
+            $provider = $inputList['gateway_provider']['provider'];
+
+            $payeeAccount = $inputList['input']['payee_account'];
+
+            $variantFlag = $this->app['razorx']->getTreatment($payeeAccount,
+                RazorxTreatment::SMARTCOLLECT_SERVICE_BANK_TRANSFER,
+                Mode::LIVE);
+
+            if ($variantFlag === 'on')
+            {
+                $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+            }
+            else
+            {
+                $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+            }
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->trace->traceException($e);
+
+            return ApiResponse::json([
+                'Stts_flg' =>  'F',
+                'Err_cd'   =>  '002',
+                'message'  =>  'Validation failed',
+            ], 400);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return ApiResponse::json([
+                'Stts_flg' =>  'F',
+                'Err_cd'   =>  '001',
+                'message'  =>  'Authentication failed',
+            ], 400);
+        }
+
+        return ApiResponse::json([
+            'Stts_flg' =>  'S',
+            'Err_cd'   =>  '000',
+            'message'  =>  'Success',
+        ]);
     }
 
     public function processIciciBankTransferCallback()
@@ -283,6 +369,47 @@ class BankTransferController extends Controller
             ]);
 
             return ApiResponse::json(['Status' => 'Failure Invalid token.'], 400);
+        }
+
+        return null;
+    }
+
+    protected function validateAxisRequestToken($validateReqToken)
+    {
+        if ($validateReqToken === false)
+        {
+            return null;
+        }
+
+        $headers = Request::header();
+
+        if (empty($headers['xorgtoken']) === true)
+        {
+            $this->trace->error(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
+                'message'   => 'empty token',
+            ]);
+
+            return ApiResponse::json([
+                'Stts_flg'=>'F',
+                'Err_cd'=>'003',
+                'message'=>'Authentication failed',
+            ], 400);
+        }
+
+        $actualToken = $headers['xorgtoken'][0];
+        $expectedToken = $this->config['applications.axis_va.org_token'];
+
+        if (hash_equals($expectedToken, $actualToken) === false)
+        {
+            $this->trace->error(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
+                'message'   => 'invalid token',
+            ]);
+
+            return ApiResponse::json([
+                'Stts_flg'=>'F',
+                'Err_cd'=>'003',
+                'message'=>'Authentication failed',
+            ], 400);
         }
 
         return null;
@@ -437,6 +564,88 @@ class BankTransferController extends Controller
             'gateway_provider' => [
                             'provider'       => $provider,
                         ]);
+    }
+
+    protected function modifyAxisDataToEntity($input)
+    {
+        (new JitValidator)->setStrictFalse()->rules(Validator::$axisRules)->caller($this)->validate($input);
+
+        $mode = null;
+
+        $utr = $input['UTR'];
+
+        $pMode = strtolower($input['Pmode']);
+
+        switch ($pMode)
+        {
+            case 'NEFT':
+            case 'neft':
+                $mode = \RZP\Models\BankTransfer\Mode::NEFT;
+                break;
+
+            case 'RTGS':
+            case 'rtgs':
+                $mode = \RZP\Models\BankTransfer\Mode::RTGS;
+                break;
+
+            case 'Transfer':
+            case 'transfer':
+            case 'FT':
+            case 'ft':
+                $mode = \RZP\Models\BankTransfer\Mode::FT;
+                break;
+            case 'IMPS':
+            case 'imps':
+                $mode = \RZP\Models\BankTransfer\Mode::IMPS;
+                break;
+
+            default:
+                throw new BadRequestValidationFailureException('invalid mode: '. $input['Pmode'], null, $input);
+        }
+
+        if (($mode === null) or
+            ($utr === null))
+        {
+            throw new BadRequestValidationFailureException('invalid data', null, $input);
+        }
+
+        try
+        {
+            $time = Carbon::createFromFormat('Y-m-d H:i:s', $input['Req_dt_time'], Timezone::IST)->getTimestamp();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->warning(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
+                'time'  => $input['Req_dt_time'] ?: null,
+            ]);
+
+            $time = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $provider  = Provider::AXIS;
+        $payeeIfsc = Provider::IFSC[Provider::AXIS];
+
+        $payerAccount = isset($input['Sndr_acnt'])?$input['Sndr_acnt']:'';
+        $payerName = isset($input['Sndr_nm'])?$input['Sndr_nm']:'';
+
+        return array(
+            'input' => [
+                'request_type'   => $input['Req_type'],
+                'payee_account'  => $input['Bene_acc_no'],
+                'payee_ifsc'     => $payeeIfsc,
+                'payer_name'     => $payerName,
+                'payer_account'  => $payerAccount,
+                'payer_ifsc'     => $input['Sndr_ifsc'],
+                'mode'           => $mode,
+                'transaction_id' => $utr,
+                'time'           => $time,
+                'amount'         => number_format($input['Txn_amnt'], 2, '.', ''),
+                'description'    => null,
+                'narration'      => $input['UTR'],
+            ],
+            'gateway_provider' => [
+                'provider'       => $provider,
+            ]);
     }
 
     protected function modifyIciciDataToEntity($input)

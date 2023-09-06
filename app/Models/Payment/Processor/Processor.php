@@ -7667,8 +7667,10 @@ class Processor
         }
 
         $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
+        $axisVaRoutes = ['bank_transfer_process_axis', 'bank_transfer_process_axis_test', 'bank_transfer_process_axis_internal'];
 
-        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
+        if ((in_array(Route::currentRouteName(), $rblVaRoutes, true) === true) ||
+            (in_array(Route::currentRouteName(), $axisVaRoutes, true) === true))
         {
             return;
         }

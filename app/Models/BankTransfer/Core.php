@@ -87,6 +87,43 @@ class Core extends Base\Core
     }
 
     /**
+     * Validate a bank transfer entity, but doesn't save.
+     * Used for validation callback for bank transfers to VA before notification callback
+     * @param array  $input
+     *
+     * @param string $provider
+     *
+     * @return bool
+     */
+    public function validationsForCallback(array $input, string $provider): bool
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_VALIDATING,
+            $this->removePiiForLogging($input)
+        );
+
+        $processor = new Processor();
+
+        $bankTransfer = null;
+
+        try
+        {
+            $bankTransfer = $this->create($input, $provider);
+
+            return $processor->validate($bankTransfer);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::VIRTUAL_ACCOUNT_VALIDATION_ERROR
+            );
+            return false;
+        }
+    }
+
+    /**
      * Creates bank transfer and calls processor with it.
      * Implements mutex lock to avoid race conditions.
      * Catches validationExceptions to stop unnecessary retries.
@@ -695,6 +732,7 @@ class Core extends Base\Core
         {
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
+            case 'bank_transfer_process_axis':
             case 'bank_transfer_process_icici':
             case 'bank_transfer_process_hdfc_ecms':
                 $properties = [
@@ -705,6 +743,7 @@ class Core extends Base\Core
                 break;
 
             case 'bank_transfer_process_rbl_internal':
+            case 'bank_transfer_process_axis_internal':
             case 'bank_transfer_process_icici_internal':
                 $properties = [
                     'source'        => 'file',

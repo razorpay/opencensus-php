@@ -35,6 +35,7 @@ class Provider
     const RBL       = 'rbl';
     const RBL_JSW   = 'rbl_jsw';
     const HDFC_ECMS = 'hdfc_ecms';
+    const AXIS      = 'axis';
 
     const UPI_ICICI = 'upi_icici';
 
@@ -58,7 +59,8 @@ class Provider
         self::ICICI     => 'ICIC0000104',
         self::RBL       => 'RATN0VAAPIS',
         self::HDFC_ECMS => 'HDFC0000113',
-        self::RBL_JSW   => 'RATN0000001'
+        self::RBL_JSW   => 'RATN0000001',
+        self::AXIS      => 'UTIB000RAZP'
     ];
 
     // The default details are fixed by each provider, most specifically
@@ -88,6 +90,9 @@ class Provider
         self::RBL_JSW => [
             BankAccount::IFSC_CODE => self::IFSC[self::RBL_JSW],
         ],
+        self::AXIS => [
+            BankAccount::IFSC_CODE => self::IFSC[self::AXIS],
+        ],
     ];
 
     const LIVE_PROVIDERS = [
@@ -95,6 +100,7 @@ class Provider
         self::KOTAK,
         self::ICICI,
         self::RBL,
+        self::AXIS
     ];
 
     const TEST_PROVIDERS = [
@@ -129,11 +135,18 @@ class Provider
         ],
         self::RBL_JSW => [
             '*',
+        ],
+        self::AXIS => [
+            '*',
         ]
     ];
 
     const VPA_HANDLE = [
         self::UPI_ICICI => 'icici',
+    ];
+
+    const VALIDATE_CALLBACK_PROVIDERS = [
+        self::AXIS,
     ];
 
     public static function getBankCode(string $provider)

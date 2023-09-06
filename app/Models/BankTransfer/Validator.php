@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::ATTEMPT                 => 'nullable|integer',
         Entity::NARRATION               => 'nullable|string',
         Entity::FIRST_TIME_ON_TEST_MODE => 'sometimes|boolean',
+        Entity::REQUEST_TYPE            => 'sometimes|string',
     ];
 
     public static $rblRules = [
@@ -50,6 +51,19 @@ class Validator extends Base\Validator
         'Data.0.senderAccountNumber'        => 'nullable|string',
         'Data.0.senderName'                 => 'nullable|string',
         'Data.0.creditAccountNumber'        => 'required|string',
+    ];
+
+    public static $axisRules = [
+        'UTR'                               => 'required|string',
+        'Bene_acc_no'                       => 'required|string',
+        'Req_type'                          => 'nullable|in:validation,notification',
+        'Req_dt_time'                       => 'required|string',
+        'Txn_amnt'                          => 'required|string',
+        'Pmode'                             => 'nullable|string',
+        'Sndr_acnt'                         => 'nullable|string',
+        'Sndr_nm'                           => 'nullable|string',
+        'Sndr_ifsc'                         => 'nullable|string',
+        'Corp_code'                         => 'nullable|string',
     ];
 
     public static $iciciRules = [

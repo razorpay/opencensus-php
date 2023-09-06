@@ -288,6 +288,10 @@ return [
         'org_token' => env('RBL_VA_SECRET'),
     ],
 
+    'axis_va'    => [
+        'org_token' => env('AXIS_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],

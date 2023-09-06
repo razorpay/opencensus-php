@@ -268,6 +268,7 @@ class Entity extends Base\PublicEntity
         {
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
+            case 'bank_transfer_process_axis':
             case 'bank_transfer_process_icici':
             case 'bank_transfer_process_hdfc_ecms':
                 $requestSource = [
@@ -278,6 +279,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             case 'bank_transfer_process_rbl_internal':
+            case 'bank_transfer_process_axis_internal':
             case 'bank_transfer_process_icici_internal':
             case 'bank_transfer_process_yesbank_internal':
                 $requestSource = [
@@ -306,6 +308,7 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process_test_x_demo_cron':
             case 'bank_transfer_process_test':
             case 'bank_transfer_process_rbl_test':
+            case 'bank_transfer_process_axis_test':
                 $requestSource = [
                     'source'       => 'test',
                     'request_from' => 'test',

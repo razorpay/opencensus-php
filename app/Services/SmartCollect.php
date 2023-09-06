@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\Request\Requests;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Trace\TraceCode;
 
 class SmartCollect
@@ -11,6 +12,7 @@ class SmartCollect
     const CONTENT_TYPE_JSON = 'application/json';
 
     const PROCESS_BANK_TRANSFER = "/v1/ecollect/validate/rbl";
+    const PROCESS_BANK_TRANSFER_AXIS = "/v1/ecollect/validate/axis";
 
     protected $trace;
 
@@ -63,7 +65,17 @@ class SmartCollect
 
     public function processBankTransfer($data)
     {
-        return $this->sendRequest(self::PROCESS_BANK_TRANSFER, 'POST' , $data);
+        switch ($data['gateway'])
+        {
+            case Provider::RBL:
+                return $this->sendRequest(self::PROCESS_BANK_TRANSFER, 'POST' , $data);
+                break;
+            case Provider::AXIS:
+                return $this->sendRequest(self::PROCESS_BANK_TRANSFER_AXIS, 'POST' , $data);
+                break;
+            default:
+                throw new BadRequestValidationFailureException('invalid gateway: '. $data['gateway'], null, $data);
+        }
     }
 
     public function processQrCodePayment($path, $data)
