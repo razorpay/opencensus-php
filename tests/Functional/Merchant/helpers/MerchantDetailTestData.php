@@ -588,6 +588,27 @@ return [
         ],
     ],
 
+    'testNCRevampEligibilityMidDoesNotExist' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/10000000000001/clarifications/eligibility',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "The id provided does not exist"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testAddClarificationReasonsNullFields' => [
         'request' => [
             'content' =>  [

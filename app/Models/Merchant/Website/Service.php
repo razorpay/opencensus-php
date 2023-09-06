@@ -2214,9 +2214,9 @@ class Service extends Base\Service
     // get all published section pages for public view
     public function getPublicWebsiteSectionPageLinks($id)
     {
-        $websiteDetail = $this->repo->merchant_website->findOrFail($id);
+        $websiteDetail = $this->repo->merchant_website->findOrFailPublic($id);
 
-        $merchant = $this->repo->merchant->findOrFail($websiteDetail->getMerchantId());
+        $merchant = $this->repo->merchant->findOrFailPublic($websiteDetail->getMerchantId());
 
         $links = [];
 

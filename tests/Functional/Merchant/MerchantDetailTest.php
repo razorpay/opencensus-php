@@ -540,6 +540,19 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testNCRevampEligibilityMidDoesNotExist()
+    {
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>"10000000000000",
+        ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
     public function testAddNonGroupClarificationReasons()
     {
         $this->enableRazorXTreatmentForRazorX();

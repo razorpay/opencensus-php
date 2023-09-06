@@ -141,7 +141,7 @@ class Service extends Base\Service
     public function isEligibleForRevampNC(string $merchantId): bool
     {
 
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
