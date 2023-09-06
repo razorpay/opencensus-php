@@ -76,6 +76,8 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
+        $startTime = microtime(true);
+
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
                            $this->removePiiForLogging($input));
 
@@ -102,6 +104,8 @@ class Service extends Base\Service
         );
 
         $this->pushVaEventToDataLake($virtualAccount, EventCode::VIRTUAL_ACCOUNT_CREATED);
+
+        (new Metric())->pushCreateLatencyMetrics($input, $startTime);
 
         return $virtualAccount->toArrayPublic();
     }

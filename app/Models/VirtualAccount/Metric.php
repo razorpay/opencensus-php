@@ -8,6 +8,7 @@ use RZP\Models\Base;
 class Metric extends Base\Core
 {
     const VIRTUAL_ACCOUNT_CREATE_SUCCESS           = 'virtual_account_create_success';
+    const VIRTUAL_ACCOUNT_CREATE_LATENCY           = 'virtual_account_create_latency';
     const VIRTUAL_ACCOUNT_CREATE_FAILED            = 'virtual_account_create_failed';
     const VIRTUAL_ACCOUNT_CLOSE_SUCCESS            = 'virtual_account_close_success';
     const VIRTUAL_ACCOUNT_CLOSE_FAILED             = 'virtual_account_close_failed';
@@ -66,6 +67,15 @@ class Metric extends Base\Core
             Metric::VIRTUAL_ACCOUNT_CREATE_SUCCESS,
             $dimensions
         );
+    }
+
+    public function pushCreateLatencyMetrics(array $input, $startTime)
+    {
+        $latencyMs = get_diff_in_millisecond($startTime);
+
+        $dimensions = $this->getDefaultDimensions($input);
+
+        $this->trace->histogram(Metric::VIRTUAL_ACCOUNT_CREATE_LATENCY, $latencyMs, $dimensions);
     }
 
     public function pushCreateFailedMetrics(array $input, \Throwable $e)
