@@ -2178,8 +2178,9 @@ class Gateway
             Network::RUPAY,
         ],
         self::LYRA => [
-          Network::VISA,
-          Network::MC
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
         ],
         self:: CHECKOUT_DOT_COM =>[
             Network::MC,
