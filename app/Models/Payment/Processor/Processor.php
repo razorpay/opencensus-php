@@ -28,6 +28,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
+use RZP\Http\Request\Requests;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity;
@@ -99,6 +100,7 @@ use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use CodeOrange\RedisCountingSemaphore\Semaphore;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Transfer\ToType as TransferToType;
+use RZP\Gateway\Upi\Base\Constants as UpiConstants;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
@@ -8444,6 +8446,87 @@ class Processor
         return $response;
     }
 
+    protected function sendWebhookToAltBalaji($payment)
+    {
+        try
+        {
+            $upiMandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+
+            $upiMandateGatewayData = $upiMandate->getGatewayData();
+
+            if (isset($upiMandateGatewayData[UpiConstants::QR_ID]) === true)
+            {
+                $data = [
+                    'partner-uid' => $this->generatePartnerUid($payment->getContact()),
+                    'partner-transactionId' => $payment->getId(),
+                    'partner-packValidFrom' => Carbon::now()->getTimestamp(),
+                    'alt-productId' => "136"
+                ];
+
+                $request['url'] = "https://telco-ms.cloud.altbalaji.com/v1/callback";
+                $request['content'] = json_encode($data);
+                $request['headers'] = $this->setHeaders();
+                $request['options'] = [
+                    'timeout' => 8
+                ];
+
+                $response = Requests::post(
+                    $request['url'],
+                    $request['headers'],
+                    $request['content'],
+                    $request['options']);
+
+                $this->trace->info(
+                    TraceCode::UPI_AUTOPAY_PROMOTIONAL_QR_ALT_BALAJI_WEBHOOK,
+                    [
+                        'request' => $request,
+                        'response' => $response
+                    ]
+                );
+
+                $response = json_decode($response->body);
+
+                if((isset($response->subscriptionStatus)) and ($response->subscriptionStatus === 'success'))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_AUTOPAY_PROMOTIONAL_QR_ALT_BALAJI_WEBHOOK_FAILED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'contact' => $payment->getContact()
+                ]);
+        }
+        return false;
+    }
+
+    protected function generatePartnerUid($contact)
+    {
+        $contact = '91-'.substr($contact, -10);
+
+        $iv = '@@@@&&&&####$$$$';
+        $hashKey = '2E#BU4&wwP#pzvp9vV%K2HKFkli$RR4$';
+
+        return openssl_encrypt($contact, "AES-256-CBC", $hashKey, 0, $iv);
+    }
+
+    protected function setHeaders()
+    {
+        $headers = [];
+
+        $headers['Authorization'] = 'Basic cmF6b3JwYXlxcjohRFJzMFdidUJORlpPTSRSJUlsOFNOUE0kemRucEFWOQ==';
+
+        return $headers;
+    }
+
     protected function shouldAutoCapturePaymentConfig(Payment\Entity $payment)
     {
         $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
@@ -8472,6 +8555,19 @@ class Processor
                                                                                     $manualTimeoutDuration,
                                                                                     $payment,
                                                                                     $lateAuthConfig);
+        }
+
+        if(($payment->getMethod() === Constants::UPI) and
+           ($payment->isRecurring()) and
+           ($payment->getRecurringType() === Payment\RecurringType::INITIAL) and
+           ($payment->terminal->getGatewayMerchantId() === 'HDFC000023594149'))
+        {
+            $shouldRefund = $this->sendWebhookToAltBalaji($payment);
+
+            if($shouldRefund === true)
+            {
+                return [false, $lateAuthConfig];
+            }
         }
 
         $captureValue = $lateAuthConfig['capture'];
