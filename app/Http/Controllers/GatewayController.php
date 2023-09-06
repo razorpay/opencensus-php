@@ -489,6 +489,28 @@ class GatewayController extends Controller
 
                     }
 
+                    // For card recurring regular gateways, there is no static callback support. So most of
+                    // the card recurring post-processing is handled in dynamic callback url flow only.
+                    // For payu, this is not the case, we get webhooks also for card recurring.
+                    // We want to skip this for such card recurring payu payments, because the
+                    // card mandate logic is not handled in this flow.
+                    // Also, we are adding this logic here instead of the mode=null, as we are only dealing with
+                    // card payments.
+                    if ($this->shouldSkipPayuCardRecurringCallback($payment, $mode, $input) === true)
+                    {
+
+                        $this->trace->info(TraceCode::SKIP_PAYU_CARD_RECURRING_CALLBACK_PROCESSING,
+                            [
+                                'payment_id' => $payment->getId(),
+                                'merchant_id' => $payment->getMerchantId(),
+                            ]);
+
+                        return [
+                            'success' => true,
+                        ];
+
+                    }
+
                     $data = (new Payment\Service)->s2sCallback($paymentId, $input);
 
                     $this->logCallbackResponseTime($startTime, $gatewayDriver);
@@ -2101,6 +2123,22 @@ class GatewayController extends Controller
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    // For card recurring regular gateways, there is no static callback support. So most of
+    // the card recurring post-processing is handled in dynamic callback url flow only.
+    // For payu, this is not the case, we get webhooks also for card recurring.
+    // We want to skip this for such card recurring payu payments, because the
+    // card mandate logic is not handled in this flow.
+    private function shouldSkipPayuCardRecurringCallback(Payment\Entity $payment, string $mode, array $input){
+
+        // only in case of card recurring and payu we should skip static callback
+        if ( ($payment->isCardRecurring() === true) and ($payment->getGateway() === Gateway::PAYU))
+        {
+            return true;
         }
 
         return false;
