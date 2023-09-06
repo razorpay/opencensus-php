@@ -82,7 +82,7 @@ class Service extends QrCode\Service
 
         $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
 
-        $metric->pushCreateLatencyMetrics($input, $startTimeMs);
+        $metric->pushCreateLatencyMetrics($input, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
 
         return $qrCode->toArrayPublic();
     }

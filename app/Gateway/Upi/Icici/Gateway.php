@@ -782,7 +782,11 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::INTENT_QR;
 
+        $gatewayRequestStartTime = microtime(true);
+
         $response = $this->sendGatewayRequest($request);
+
+        $this->gatewayTimeTakenMs = get_diff_in_millisecond($gatewayRequestStartTime);
 
         $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['response' => $response]);
 

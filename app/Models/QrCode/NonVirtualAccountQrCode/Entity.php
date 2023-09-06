@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends QrCode\Entity
@@ -397,14 +398,28 @@ class Entity extends QrCode\Entity
 
     public function getGatewayFromQrString()
     {
-        $qrString = $this->getQrString();
+        try
+        {
+            if ($this->getProvider() === Provider::UPI_QR)
+            {
+                $qrString = $this->getQrString();
 
-        $parsedQrString = [];
+                $parsedQrString = [];
 
-        parse_str(parse_url($qrString)['query'], $parsedQrString);
+                parse_str(parse_url($qrString)['query'], $parsedQrString);
 
-        $vpa = (explode("@", $parsedQrString['pa']));
+                $vpa = (explode("@", $parsedQrString['pa']));
 
-        return 'upi_' . $vpa[1];
+                return 'upi_' . $vpa[1];
+            }
+            else if ($this->getProvider() === Provider::BHARAT_QR)
+            {
+                return Provider::UPI_ICICI;
+            }
+        }
+        catch (\Exception)
+        {
+            return null;
+        }
     }
 }

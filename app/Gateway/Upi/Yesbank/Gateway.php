@@ -1252,10 +1252,14 @@ class Gateway extends Mindgate\Gateway
             'gateway' => $this->gateway
         ]);
 
+        $gatewayRequestStartTime = microtime(true);
+
         $result = $this->upiSendGatewayRequest($request,
                                                TraceCode::GATEWAY_INTENT_REQUEST,
                                                Action::INTENT_QR
         );
+
+        $this->gatewayTimeTakenMs = get_diff_in_millisecond($gatewayRequestStartTime);
 
         $data = $result['data'];
 

@@ -38,4 +38,9 @@ class Gateway extends Icici\Gateway
 
         return 'icicirefID';
     }
+
+    public function getGatewayTimeTakenMs()
+    {
+        return 50;
+    }
 }

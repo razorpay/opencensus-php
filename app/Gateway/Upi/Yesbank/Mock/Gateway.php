@@ -19,4 +19,9 @@ class Gateway extends Yesbank\Gateway
         }
         return '107611570997';
     }
+
+    public function getGatewayTimeTakenMs()
+    {
+        return 50;
+    }
 }

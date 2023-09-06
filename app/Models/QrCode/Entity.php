@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $gatewayLatencyForCreate = 0;
+
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
@@ -521,6 +523,16 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getGatewayLatencyForQrCreate()
+    {
+        return $this->gatewayLatencyForCreate;
+    }
+
+    public function setGatewayLatencyForQrCreate($latency)
+    {
+        return $this->gatewayLatencyForCreate = $latency;
     }
 
     public static function getQrStringWithDetokenizedMpans($qrString)

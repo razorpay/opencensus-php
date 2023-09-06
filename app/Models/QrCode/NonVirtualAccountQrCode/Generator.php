@@ -242,6 +242,8 @@ class Generator extends QrCode\Generator
 
                 $refId = $gatewayClass->getQrRefId($input);
 
+                $qrCode->setGatewayLatencyForQrCreate($gatewayClass->getGatewayTimeTakenMs() ?? 0);
+
                 if ($this->gateway === Gateway::UPI_YESBANK)
                 {
                     if ($this->ifPrefixAdditionExperimentInTREnabled($qrCode->getMerchantId()) === true)

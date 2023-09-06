@@ -8,11 +8,12 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 
 class Metric extends Base\Core
 {
-    const QR_CODE_CREATE_SUCCESS = 'qr_code_create_success';
-    const QR_CODE_CREATE_FAILED  = 'qr_code_create_failed';
-    const QR_CODE_CREATE_LATENCY = 'qr_code_create_latency';
-    const QR_CODE_CLOSE_SUCCESS  = 'qr_code_close_success';
-    const QR_CODE_CLOSE_FAILED   = 'qr_code_close_failed';
+    const QR_CODE_CREATE_SUCCESS            = 'qr_code_create_success';
+    const QR_CODE_CREATE_FAILED             = 'qr_code_create_failed';
+    const QR_CODE_CREATE_LATENCY            = 'qr_code_create_latency';
+    const QR_CODE_CREATE_LATENCY_WIHTOUT_GW = 'qr_code_create_latency_without_gw';
+    const QR_CODE_CLOSE_SUCCESS             = 'qr_code_close_success';
+    const QR_CODE_CLOSE_FAILED              = 'qr_code_close_failed';
 
     const LABEL_MERCHANT_ID   = 'merchant_id';
     const LABEL_CLOSE_REASON  = 'close_reason';
@@ -67,7 +68,7 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushCreateLatencyMetrics($input, $startTimeMs)
+    public function pushCreateLatencyMetrics($input, $startTimeMs, $gatewaylatency)
     {
         $processingTimeMs = (microtime(true) * 1000) - $startTimeMs;
 
@@ -80,6 +81,10 @@ class Metric extends Base\Core
         ];
 
         $this->trace->histogram(self::QR_CODE_CREATE_LATENCY, $processingTimeMs, $dimensions);
+
+        $processingTimeWithoutGatewayMs = $processingTimeMs - $gatewaylatency;
+
+        $this->trace->histogram(self::QR_CODE_CREATE_LATENCY_WIHTOUT_GW, $processingTimeWithoutGatewayMs, $dimensions);
     }
 
     public function pushCloseMetrics($closeReason, $errorMessage, $requestSource)

@@ -36,6 +36,8 @@ class Gateway extends Base\Gateway
 
     protected $shouldRetryForAction = true;
 
+    protected $gatewayTimeTakenMs = 0;
+
     /**
      * @var string Hexadecimal for UPI
      */
@@ -316,5 +318,10 @@ class Gateway extends Base\Gateway
             // Can be passed as 3rd parameter is needed
             TraceCode::PAYMENT_UPI_RECURRING_ANOMALY,
             $anomalies->toArray());
+    }
+
+    public function getGatewayTimeTakenMs()
+    {
+        return $this->gatewayTimeTakenMs;
     }
 }
