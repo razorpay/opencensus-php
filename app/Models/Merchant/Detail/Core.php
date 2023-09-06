@@ -5816,6 +5816,8 @@ class Core extends Base\Core
 
         $merchant = $merchantDetails->merchant;
 
+        $businessType = $merchantDetails->getBusinessType();
+
         if (empty($merchant) === false and $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
             return Status::ACTIVATED_MCC_PENDING;
@@ -5876,7 +5878,7 @@ class Core extends Base\Core
                         return Status::ACTIVATED_MCC_PENDING;
                     }
 
-                    if ($this->isSubCategoryExcluded($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]) === true)
+                    if ($this->isSubCategoryExcluded($mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
                     {
                         return Status::ACTIVATED_MCC_PENDING;
                     }
@@ -5898,7 +5900,7 @@ class Core extends Base\Core
         }
         else
         {
-            if ($this->isSubCategoryExcluded($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
+            if ($this->isSubCategoryExcluded($merchantDetails->getBusinessSubcategory(), $businessType) === true)
             {
                 return Status::ACTIVATED_MCC_PENDING;
             }
@@ -5935,11 +5937,16 @@ class Core extends Base\Core
         return $subcategoryMetaData[SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
     }
 
-    private function isSubCategoryExcluded($category, $subCategory): bool
+    private function isSubCategoryExcluded($subCategory, $businessType): bool
     {
-        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
-
-        return $subcategoryMetaData[SubcategoryV2::AUTOMATION_ACTIVATION_ALLOWED] === false;
+        switch ($businessType)
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::INDIVIDUAL:
+                return in_array($subCategory, SubcategoryV2::UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
+            default:
+                return in_array($subCategory, SubcategoryV2::REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
+        }
     }
 
     private function getApplicableActivationStatusForNoDoc(Entity $merchantDetails): string
