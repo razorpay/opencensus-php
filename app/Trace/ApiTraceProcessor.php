@@ -571,11 +571,22 @@ class ApiTraceProcessor
     private function blockLogs(array &$record): void
     {
         // If this is an exception, a stack key is present in the context array
-        $isException = (
-            isset($record['context']['stack'])
-            or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA)
-            or (isset($record['code']) and $record['code'] === TraceCode::ERROR_EXCEPTION)
-        );
+        $isException = isset($record['context']['stack']);
+
+        // If trace code contains any of these words(case-insensitive) don't block those logs
+        $ignoreMessages = ['error', 'exception', 'bad', 'fail'];
+        if ($isException === false && isset($record['message']) === true)
+        {
+            foreach ($ignoreMessages as $ignoreMessage)
+            {
+                $isErrorMsg = stripos($record['message'], $ignoreMessage);
+                if ($isErrorMsg !== false)
+                {
+                    $isException = true;
+                    break;
+                }
+            }
+        }
 
         try
         {
