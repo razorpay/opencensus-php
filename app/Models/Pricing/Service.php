@@ -204,6 +204,13 @@ class Service extends Base\Service
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
 
+                    // If orgId is not passed, get it from merchant entity.
+                    // Get signed orgId for verification checks
+                    if($orgId == null){
+                        $orgId = $merchant->getOrgId();
+                        $orgId = Org\Entity::getSignedId($orgId);
+                    }
+
                     unset($item[Entity::MERCHANT_ID], $item['idempotency_key'], $item['update']);
 
                     $item = $this->setFeeBearerIfApplicable($item, $merchant);

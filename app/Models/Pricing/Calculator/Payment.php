@@ -822,6 +822,40 @@ class Payment extends Base
         ];
     }
 
+    private function logPricingFailureDetails($pricing)
+    {
+        $mode = $this->app['rzp.mode'] ?? null;
+
+        $card = $this->getCardDetails();
+
+        $payment_details = $this->getPaymentDetails();
+
+        $features = $this->entity->getPricingFeatures();
+
+        $this->trace->info(TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,[
+            'mode'  => $mode,
+            'pricing_plan'  => $pricing->getId(),
+            'merchant_id' => $this->entity->getMerchantId(),
+            'payment_details' => $payment_details,
+            'card_details' => $card,
+            'features' => $features
+        ]);
+    }
+
+    /*
+     *  Checks if Fallback Rule should be applied in case
+     *  no rule is found in Merchant Pricing Plan
+     */
+    private function isFallbackRuleExpEnabled(): bool
+    {
+        $properties = [
+            'id' => $this->entity->getMerchantId(),
+            'experiment_id' => $this->fallbackStandardPlanExperimentId,
+            'request_data'  => json_encode(['mid' => $this->entity->getMerchantId()]),
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
     /*
      * Even though function says "get", no rule is getting returned here.
      * This is because even the parent class function has the same behavior.
@@ -836,33 +870,30 @@ class Payment extends Base
 
                 $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT);
 
-                $properties = [
-                    'id' => $this->entity->getMerchantId(),
-                    'experiment_id' => $this->fallbackStandardPlanExperimentId,
-                    'request_data'  => json_encode(['mid' => $this->entity->getMerchantId()]),
-                ];
-
-                $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+                $isExpEnabled = $this->isFallbackRuleExpEnabled();;
 
                 $merchant = $this->entity->merchant;
 
-                if ($merchant?->org->getId() === Org\Entity::RAZORPAY_ORG_ID && $pricing->isTypePricing() && $isExpEnabled === true && $pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
-                    $card = $this->getCardDetails();
+                if ($merchant?->org->getId() === Org\Entity::RAZORPAY_ORG_ID && $pricing->isTypePricing() && $isExpEnabled === true){
 
-                    $payment_details = $this->getPaymentDetails();
+                    $this->logPricingFailureDetails($pricing);
 
-                    $this->trace->info(TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,[
-                        'pricing_plan'  => $pricing->getId(),
-                        'merchant_id' => $this->entity->getMerchantId(),
-                        'payment_details' => $payment_details,
-                        'card_details' => $card
-                    ]);
+                    if ($pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
 
-                    $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID);
+                        $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID);
+                        $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
 
-                    $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
-
-                    parent::getRelevantPricingRule($pricing);
+                        try {
+                            parent::getRelevantPricingRule($pricing);
+                        }catch (Exception\LogicException $e) {
+                            if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
+                                $this->logPricingFailureDetails($pricing);
+                            }
+                            throw $e;
+                        }
+                    }else{
+                        throw $e;
+                    }
                 }else{
                     throw $e;
                 }
