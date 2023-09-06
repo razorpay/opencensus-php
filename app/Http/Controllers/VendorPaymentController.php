@@ -498,4 +498,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->unlinkPurchaseOrderFromInvoice($this->ba->getMerchant(), $this->ba->getUser(), $vpId, $this->input);
     }
+
+    public function searchItems()
+    {
+        return $this->service->searchItems($this->ba->getMerchant(), $this->input);
+    }
 }

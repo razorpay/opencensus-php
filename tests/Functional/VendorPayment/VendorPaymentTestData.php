@@ -1183,5 +1183,26 @@ return [
                 'success' => true
             ]
         ]
-    ]
+    ],
+
+    'testSearchItems' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/items/search',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'itm_dummyId'
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

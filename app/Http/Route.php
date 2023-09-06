@@ -2078,6 +2078,9 @@ class Route
         'vendor_payment_get_latest_approvers'      => ['get',      'vendor-payments/get_latest_approvers',                                    'VendorPaymentController@getLatestApprovers'                        ],
         'vendor_payment_get_timeline_view'         => ['get',      'vendor-payments/get_timeline_view',                                       'VendorPaymentController@getTimelineView'                           ],
 
+        // VP - Items
+        'vendor_payment_items_search'              => ['get',       'vendor-payments/items/search',                                           'VendorPaymentController@searchItems'                               ],
+
         // VP - Purchase Orders
         'vendor_payment_po_number_suggestion'                   => ['get',       'vendor-payments/purchase-orders/number/suggestion',                     'VendorPaymentController@suggestNextPurchaseOrderNumber'             ],
         'vendor_payment_cancel_purchase_order'                  => ['post',      'vendor-payments/purchase-orders/{id}/cancel',                           'VendorPaymentController@cancelPurchaseOrder'                        ],
@@ -6959,6 +6962,7 @@ class Route
         'vendor_payment_list_vendor_advance',
         'vendor_payment_advance_suggestion',
 
+        'vendor_payment_items_search',
         'vendor_payment_cancel_purchase_order',
         'vendor_payment_close_purchase_order',
         'vendor_payment_issue_purchase_order',
@@ -10426,6 +10430,7 @@ class Route
         'vendor_payment_close_purchase_order'          => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_issue_purchase_order'          => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_get_purchase_order'            => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_items_search'                  => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_list_purchase_order'           => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_edit_purchase_order'           => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_unlink_purchase_order_from_invoice'         => Permission::CREATE_VENDOR_PAYMENTS,
@@ -12448,6 +12453,7 @@ class Route
             'vendor_payment_get_auto_processed_invoice',
             'vendor_invoices_list',
             'vendor_invoice_create',
+            'vendor_payment_items_search',
             'vendor_payment_cancel_purchase_order',
             'vendor_payment_close_purchase_order',
             'vendor_payment_issue_purchase_order',
@@ -14769,6 +14775,7 @@ class Route
             'vendor_payment_reporting_info',
             'vendor_payment_summary',
             'vendor_payment_advance_suggestion',
+            'vendor_payment_items_search',
             'vendor_payment_cancel_purchase_order',
             'vendor_payment_close_purchase_order',
             'vendor_payment_issue_purchase_order',
@@ -17173,6 +17180,8 @@ class Route
         'vendor_payment_invoice_upload',
         'vendor_payment_create_file_upload',
         'vendor_payment_get_file_upload',
+
+        'vendor_payment_items_search',
 
         'vendor_payment_cancel_purchase_order',
         'vendor_payment_close_purchase_order',

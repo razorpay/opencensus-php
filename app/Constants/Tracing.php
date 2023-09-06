@@ -156,6 +156,7 @@ class Tracing
             'vendor_payment_create_file_upload',
             'vendor_payment_get_file_upload',
             'vendor_payment_delete_file_upload',
+            'vendor_payment_items_search',
             'vendor_payment_create_purchase_order',
             'vendor_payment_po_number_suggestion',
             'vendor_payment_cancel_purchase_order',

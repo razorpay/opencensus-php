@@ -1136,4 +1136,26 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('unlinkPurchaseOrderFromInvoice');
     }
+
+    public function testSearchItems()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('searchItems')->andReturn([
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'itm_dummyId'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('searchItems');
+    }
 }

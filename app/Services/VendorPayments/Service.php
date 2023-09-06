@@ -106,6 +106,8 @@ class Service
     const SUGGEST_NEXT_PURCHASE_ORDER_NUMBER = 'SuggestNextPurchaseOrderNumber';
     const UNLINK_PURCHASE_ORDER_FROM_INVOICE  = 'UnlinkPurchaseOrderFromInvoice';
 
+    const SEARCH_ITEMS = "SearchItems";
+
     const CREATE_ADDRESS        = 'CreateAddress';
     const UPDATE_ADDRESS        = 'UpdateAddress';
     const LIST_ADDRESS          = 'ListAddress';
@@ -1189,6 +1191,13 @@ class Service
         $input[self::ID] = $vpId;
 
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UNLINK_PURCHASE_ORDER_FROM_INVOICE);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function searchItems(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SEARCH_ITEMS);
 
         return $this->makeRequest($merchant, $url, $input);
     }

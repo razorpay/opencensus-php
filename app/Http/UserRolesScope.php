@@ -1178,6 +1178,7 @@ class UserRolesScope
             'vendor_payment_close_purchase_order'                  => [Role::OWNER, Role::ADMIN],
             'vendor_payment_issue_purchase_order'                  => [Role::OWNER, Role::ADMIN],
             'vendor_payment_get_purchase_order'                    => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_items_search'                          => [Role::OWNER, Role::ADMIN],
             'vendor_payment_list_purchase_order'                   => [Role::OWNER, Role::ADMIN],
             'vendor_payment_edit_purchase_order'                   => [Role::OWNER, Role::ADMIN],
             'vendor_payment_unlink_purchase_order_from_invoice'    => [Role::OWNER, Role::ADMIN],
