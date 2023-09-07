@@ -549,7 +549,8 @@ class SettlementController extends Controller
     public function getNiumFile()
     {
         $input = Request::all();
-        $this->increaseAllowedSystemLimits();
+        // Increasing memory limit so that high number of files can be processed.
+        RuntimeManager::setMemoryLimit('2048M');
         $data = $this->service()->getNiumFile($input);
 
         return ApiResponse::json($data);
