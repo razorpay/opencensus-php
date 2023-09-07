@@ -54,7 +54,7 @@ const PAYMENT_LINK_FORMS = {
 
 export const CONTACT_PLACEHOLDER = {
   IN: '+91 9876543210',
-  MY: '+60 60132758792',
+  MY: '+60 132758792',
 };
 
 // eslint-disable-next-line react/no-unsafe
