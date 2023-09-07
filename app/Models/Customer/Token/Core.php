@@ -14,6 +14,7 @@ use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
@@ -431,13 +432,35 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function cloneToken(Entity $token) :Entity
+    public function cloneToken(Entity $token, Payment\Entity $payment) :Entity
     {
         $createInput = [
             Entity::METHOD      => $token->getMethod(),
             Entity::CARD_ID     => $token->getCardId(),
             Entity::STATUS      => $token->getStatus()
         ];
+
+        $order = $payment->order;
+
+        if ($order !== null)
+        {
+            $tokenRegistration = $order->getTokenRegistration();
+
+            if ($tokenRegistration !== null)
+            {
+                $maxAmount = $tokenRegistration->getMaxAmount();
+
+                if (isset($maxAmount))
+                {
+                    $createInput[Token\Entity::MAX_AMOUNT] = $maxAmount;
+                }
+
+                $createInput[Token\Entity::EXPIRED_AT] = $tokenRegistration->getExpireAt();
+
+                $createInput[Token\Entity::FREQUENCY] = $tokenRegistration->getFrequency() ?? 'as_presented';
+            }
+        }
+
 
         return $this->create($token->customer, $createInput, null, false);
     }
@@ -888,7 +911,7 @@ class Core extends Base\Core
     public function updateTokenForEmandateRecurringDetails(Entity $token, array $configs = [])
     {
         $emandateConfigs = [];
-        
+
         if(empty($configs) === false)
         {
             $emandateConfigs["emandate_configs"] = $configs;
@@ -2164,7 +2187,19 @@ class Core extends Base\Core
 
         $token->card()->associate($card);
 
-        $token->setExpiredAt($card->getTokenExpiryTimestamp());
+        if (($payment !== null) and
+            ($payment->isRecurring() === true))
+        {
+            if (($token->getExpiredAt() === null) or
+                ($card->getTokenExpiryTimestamp() < $token->getExpiredAt()))
+            {
+                $token->setExpiredAt($card->getTokenExpiryTimestamp());
+            }
+        }
+        else
+        {
+            $token->setExpiredAt($card->getTokenExpiryTimestamp());
+        }
 
         $this->repo->saveOrFail($card);
 

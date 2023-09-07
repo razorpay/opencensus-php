@@ -6235,7 +6235,7 @@ trait Authorize
                         'Mandate registrations through tokenised card is not allowed for Rupay. Please register using the full card number.');
                 }
 
-                $token = (new Token\Core)->cloneToken($token);
+                $token = (new Token\Core)->cloneToken($token, $payment);
             }
 
             $payment->localToken()->associate($token);
