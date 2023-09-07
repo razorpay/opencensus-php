@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
+
 import DateRangePicker from 'common/ui/DateRangePicker';
-import SummaryWidget from 'merchant/views/MagicCheckout/OrderAnalytics/widgets/Summary';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getPresetsValue } from 'merchant/views/MagicCheckout/CODOrdersTab/utils';
 import { useOrderAnalyticsContext } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
 import { TABS } from 'merchant/views/MagicCheckout/OrderAnalytics/constants/tabs';
-import { getPresetsValue } from 'merchant/views/MagicCheckout/CODOrdersTab/utils';
+import SummaryWidget from 'merchant/views/MagicCheckout/OrderAnalytics/widgets/Summary';
 
 // all ranges offseted by 1 since end date for those preset is day before
 const DATE_RANGE_PRESETS = [
@@ -17,8 +18,8 @@ const DATE_RANGE_PRESETS = [
 ];
 
 const DEFAULT_PRESET = 1;
-const TODAY = moment().local();
-const DAY_BEFORE = moment().local().subtract('1', 'day');
+const TODAY = moment();
+const DAY_BEFORE = moment().subtract('1', 'day');
 
 const Header = ({ setTimeRange, updated_at }) => {
   const { activeTab } = useOrderAnalyticsContext();
@@ -31,7 +32,7 @@ const Header = ({ setTimeRange, updated_at }) => {
 
   const defaultPreset = useMemo(() => {
     if (isConversionTab) {
-      const timeDiff = DAY_BEFORE.unix() - moment().local().subtract(2, 'days').unix();
+      const timeDiff = DAY_BEFORE.unix() - moment().subtract(2, 'days').unix();
       return { name: 'Custom Range', value: timeDiff };
     } else {
       return getPresetsValue([DATE_RANGE_PRESETS[DEFAULT_PRESET]])[0];

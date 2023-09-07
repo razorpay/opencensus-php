@@ -1,13 +1,13 @@
 import moment from 'moment';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 
 export const fetchAnalyticsData = ({ start, end }) => {
-  if (!start) {
-    start = moment().startOf('day').subtract(2, 'days').unix();
-  }
-  if (!end) {
-    end = moment().endOf('day').subtract(1, 'day').unix();
-  }
+  start = start ? moment.unix(start).local().unix() : moment().startOf('day').local().unix();
+
+  end = end
+    ? moment.unix(end).local().unix()
+    : moment().endOf('day').subtract(1, 'day').local().unix();
 
   return merchantFetch({
     url: '1cc/analytics',
