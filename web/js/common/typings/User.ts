@@ -64,6 +64,7 @@ type Getters = {
   isOrgRZP: boolean;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipsInviteFlowEnabled: boolean;
+  isInternationalMethodsHidden: boolean;
 };
 
 type UserProperties = {

@@ -2047,6 +2047,10 @@ export default class User {
     return this.isOrgFeatureEnabled('custom_report_extensions');
   }
 
+  get isInternationalMethodsHidden() {
+    return this.isOrgFeatureEnabled('hide_international_methods');
+  }
+
   get isShowInternationalPaymentBtnExpEnabled() {
     const variant = getSplitzExperimentVariant('show_international_payments_button_ab');
 

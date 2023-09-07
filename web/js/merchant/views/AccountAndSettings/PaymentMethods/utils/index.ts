@@ -15,6 +15,7 @@ export const isInternationalLeafItemDisabled = ({
       'swiftbanktransfer',
       'instantbanktransfer',
       'moneysaverexportaccount',
-    ].includes(slug ?? '') && !user?.international
+    ].includes(slug ?? '') &&
+    (!user?.international || user?.isInternationalMethodsHidden)
   );
 };

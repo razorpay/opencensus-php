@@ -374,6 +374,22 @@ describe('User model', () => {
     });
   });
 
+  describe('isInternationalMethodsHidden', () => {
+    const user = getDefaultUserObj();
+
+    test('should return true if when org level feature flag - custom_report_extensions is enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(true);
+
+      expect(user.isInternationalMethodsHidden).toBe(true);
+    });
+
+    test('should return true if when org level feature flag - custom_report_extensions is not enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(false);
+
+      expect(user.isInternationalMethodsHidden).toBe(false);
+    });
+  });
+
   describe('isDynamicPlOffset', () => {
     test('should return true when mid level feature flag - dynamic_pl_offset is enabled', () => {
       user.isFeatureEnabled = jest.fn().mockReturnValueOnce(true);
