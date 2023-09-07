@@ -36,6 +36,7 @@ class Validator extends Base\Validator
     const SEND_PROCESSING_EXPIRED_EMAIL_INTERNAL_RULE   = 'send_processing_expired_email_internal';
     const SEND_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_approve_otp_email_internal';
     const OWNER_BULK_REJECT_PAYOUT_LINKS   = 'owner_bulk_reject_payout_links';
+    const PAYOUT_LINKS_CANCEL_ADMIN = 'payout_links_cancel_admin';
     const SEND_BULK_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_bulk_approve_otp_email_internal';
     const FETCH_PENDING_PAYOUT_LINKS       = 'fetch_pending_payout_links';
     const MAX_IMPS_AMOUNT                  = 50000000;
@@ -204,6 +205,11 @@ class Validator extends Base\Validator
         PayoutLinkConstants::PAYOUT_LINK_IDS . '.*'     => 'required|public_id|size:21',
         PayoutLinkConstants::BULK_REJECT_AS_OWNER       => 'required|boolean',
         ActionChecker::USER_COMMENT                     => 'sometimes|nullable|string|max:255',
+    ];
+
+    protected static $payoutLinksCancelAdminRules = [
+        PayoutLinkConstants::MERCHANT_ID => 'required|alpha_num|size:14',
+        PayoutLinkConstants::PAYOUT_LINK_IDS => 'required|array',
     ];
 
     protected static $fetchPendingPayoutLinksRules = [

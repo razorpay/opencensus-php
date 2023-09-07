@@ -306,6 +306,13 @@ class PayoutLinkController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function cancelAdmin()
+    {
+        $data = $this->service()->cancel('', $this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function pullPayoutStatus(string $payoutLinkId)
     {
         $response =$this->service()->pullBulkPayoutStatus($payoutLinkId, $this->input);

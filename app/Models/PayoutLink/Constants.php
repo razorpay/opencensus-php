@@ -14,7 +14,11 @@ class Constants
 
     const BULK_REJECT_PLS_ACTION                    = 'BulkRejectPLs';
 
+    const CANCEL_PL_ACTION                          = 'CancelPLs';
+
     const USER_COMMENT                              = 'user_comment';
 
     const MERCHANT_ID                               = 'merchant_id';
+
+    const JSON_DATA                                 = 'json_data';
 }

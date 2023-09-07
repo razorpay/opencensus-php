@@ -667,9 +667,23 @@ class Service extends Base\Service
         return $this->app['payout-links']->generateAndSendCustomerOtp($payoutLinkId, $input);
     }
 
-    public function cancel(string $payoutLinkId): array
+    public function cancel(string $payoutLinkId, $input = []): array
     {
         $this->checkIfPLServiceIsDown();
+
+        if($this->auth->isAdminAuth() === true )
+        {
+            (new Validator())->validateInput(Validator::PAYOUT_LINKS_CANCEL_ADMIN, $input);
+
+            $cancelPayload = $this->prepareCancelPayload($input);
+
+            $this->app['trace']->info(TraceCode::ADMIN_CANCEL_PAYOUT_LINK_REQUEST,
+                [
+                    'admin_action_payload' => $cancelPayload,
+                ]);
+
+            return $this->app['payout-links']->adminActions($cancelPayload);
+        }
 
         if($this->checkIfMerchantOnAPI() == true)
         {
@@ -822,7 +836,7 @@ class Service extends Base\Service
     {
         $this->checkIfPLServiceIsDown();
 
-        $jsonInput = array_pull($input, 'json_data', null);
+        $jsonInput = array_pull($input, PayoutLinkConstants::JSON_DATA, null);
 
         if ($jsonInput !== null) {
 
@@ -839,7 +853,7 @@ class Service extends Base\Service
                 $this->preparePayloadForBulkRejectAction($parsedData);
             }
 
-            $input['json_data'] = json_encode($parsedData, true);
+            $input[PayoutLinkConstants::JSON_DATA] = json_encode($parsedData, true);
         }
 
         return $this->app['payout-links']->adminActions($input);
@@ -919,9 +933,53 @@ class Service extends Base\Service
 
         $payload[PayoutLinkConstants::ADDITIONAL_DATA] = $additionalData;
 
-        $bulkRejectPayload['json_data'] = json_encode($payload);
+        $bulkRejectPayload[PayoutLinkConstants::JSON_DATA] = json_encode($payload);
 
         return $bulkRejectPayload;
+    }
+
+    private function prepareCancelPayload($input): array
+    {
+        /*
+         * Input: $payoutLinkIds = ['plk1', ...], $merchantId = 'mid'
+         * Output:
+            {
+                "action_type": "CancelPL",
+                "additional_data": {
+                    "payout_link_ids": "poutlk_1234",
+                    "actor_id": <owner-id>,
+                    "actor_type": "owner",
+                    "actor_property_key": "role",
+                    "actor_property_value": "owner",
+                    "owner_id": "MID",
+                    "service": "rx_live",
+                    "comment": "",
+                }
+            }
+        */
+
+        $payoutLinkIds = $input[PayoutLinkConstants::PAYOUT_LINK_IDS];
+
+        $payoutLinks = join(',', $payoutLinkIds);
+
+        $merchantId = $input[PayoutLinkConstants::MERCHANT_ID];
+
+        $payload = array();
+
+        $payload[PayoutLinkConstants::ACTION_TYPE] = PayoutLinkConstants::CANCEL_PL_ACTION;
+
+        $additionalData = [
+            PayoutLinkConstants::PAYOUT_LINK_IDS => $payoutLinks,
+            PayoutLinkConstants::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->addActorDetails($additionalData, true);
+
+        $payload[PayoutLinkConstants::ADDITIONAL_DATA] = $additionalData;
+
+        $cancelPayload[PayoutLinkConstants::JSON_DATA] = json_encode($payload);
+
+        return $cancelPayload;
     }
 
     private function addActorDetails(array &$additionalData, bool $isAdminAction)
