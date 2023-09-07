@@ -3,13 +3,13 @@ import { NavLink } from 'react-router-dom';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString, titleCase } from 'common/utils/rzp-utils';
-
-import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
-import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
-import MaskedEmail from 'merchant/components/Mask/Email';
 import MaskedContact from 'merchant/components/Mask/Contact';
+import MaskedEmail from 'merchant/components/Mask/Email';
+import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
+import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 
 import * as id from './id';
+
 import * as items from './index';
 
 const allRoles = {
@@ -264,6 +264,7 @@ export const offerStatus = {
 export const promotionType = {
   title: 'Promotion Type',
   value: (item) => {
+    if (item.emi_subvention && item.percent_rate) return 'Low Cost EMI';
     if (item.emi_subvention) return 'No Cost EMI';
     if (item.product_type === 'subscription') return 'Subscription';
 

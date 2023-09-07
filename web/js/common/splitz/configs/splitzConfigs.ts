@@ -172,5 +172,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/offers'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'Low_cost_offer',
+          experimentId: {
+            beta: 'MSfpg3rG4RJMto',
+            production: 'MT1KxclWw7zMtH',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

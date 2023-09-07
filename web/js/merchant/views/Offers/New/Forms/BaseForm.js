@@ -1,14 +1,15 @@
-import Wizard from '../components/Wizard';
+import React from 'react';
 
 import { getCurrency } from 'common/ui/Amount';
-
+import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
+import Wizard from 'merchant/views/Offers/New/components/Wizard';
 import { prepareDataForSubmit } from 'merchant/views/Offers/New/helpers';
 
 const SCREEN_MAP = {
-  '0': 'description',
-  '1': 'discountType',
-  '2': 'applicableOn',
-  '3': 'offerValidity',
+  0: 'description',
+  1: 'discountType',
+  2: 'applicableOn',
+  3: 'offerValidity',
 };
 
 export default class BaseForm extends React.Component {
@@ -26,7 +27,9 @@ export default class BaseForm extends React.Component {
 
     let invalidateTabs = false;
 
-    let { name: fieldName, value: fieldValue } = event.target;
+    let { value: fieldValue } = event.target;
+
+    const { name: fieldName } = event.target;
 
     if (fieldName.length === 0) return;
 
@@ -51,7 +54,6 @@ export default class BaseForm extends React.Component {
     } else {
       newState.formData[fieldName] = fieldValue;
     }
-
     // Description
     if (fieldName === 'type') {
       if (formData.discountType.discount_type) {
@@ -131,6 +133,11 @@ export default class BaseForm extends React.Component {
       }
     }
 
+    if (fieldName === 'issuer' && newState.formData.applicableOn) {
+      newState.formData.applicableOn.low_cost_emi = [];
+      newState.formData.applicableOn.emi_durations = [];
+    }
+
     this.setState(newState);
 
     if (invalidateTabs) {
@@ -142,12 +149,25 @@ export default class BaseForm extends React.Component {
 
   onSubmit = () => {
     const { formData } = this.state;
-    const preparedFormData = prepareDataForSubmit({
-      ...formData.description,
-      ...formData.discountType,
-      ...formData.applicableOn,
-      ...formData.offerValidity,
-    });
+
+    let isLowCostExperimentEnabled = false;
+    if (this.props.splitz) {
+      const {
+        abExperiments: { Low_cost_offer },
+      } = this.props.splitz;
+
+      isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
+    }
+
+    const preparedFormData = prepareDataForSubmit(
+      {
+        ...formData.description,
+        ...formData.discountType,
+        ...formData.applicableOn,
+        ...formData.offerValidity,
+      },
+      isLowCostExperimentEnabled,
+    );
 
     return this.props.onSubmit(preparedFormData);
   };

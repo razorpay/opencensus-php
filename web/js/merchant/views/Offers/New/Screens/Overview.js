@@ -1,5 +1,11 @@
 import Input from 'common/new-ui/Input';
+import { findBy } from 'common/utils/rzp-utils';
 import { WorkSection, WorkFlow } from 'merchant/components/WorkFlow';
+import {
+  filterNoCostTenures,
+  getAllLowCostTenures,
+} from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
+import { useLowCostOfferExperiment } from 'merchant/views/Offers/New/Screens/NoCostEMI/useLowCostOfferExperiment';
 import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 import {
   OFFER_TYPE_LABELS,
@@ -11,8 +17,6 @@ import {
   APPLICABLE_ON_OPTIONS,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
-
-import { findBy } from 'common/utils/rzp-utils';
 
 const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
   switch (paymentMethod) {
@@ -60,10 +64,13 @@ export default function OverView(props) {
         payment_method_type,
         emi_durations,
         applicable_on,
+        low_cost_emi,
       },
       offerValidity: { starts_at, ends_at, redemption_type },
     },
   } = props;
+
+  const { isLowCostEnabled } = useLowCostOfferExperiment();
 
   const DiscountTypeHeading = `${discount_type.split('_').join(' ')} discount`;
   const OfferValidityDesc = `${starts_at ? starts_at.format('DD-MM-YY, hh:mm a') : 'Valid till'} ${
@@ -80,7 +87,14 @@ export default function OverView(props) {
   }
 
   if (discount_type === DISCOUNT_TYPES.NO_COST_EMI) {
-    discountReview = `${emiDurationString(emi_durations)}.`;
+    if (isLowCostEnabled && low_cost_emi && low_cost_emi.length) {
+      const filteredTenures = filterNoCostTenures(emi_durations, low_cost_emi);
+      if (filteredTenures && filteredTenures.length) {
+        discountReview = `${emiDurationString(filteredTenures)}.`;
+      }
+    } else {
+      discountReview = `${emiDurationString(emi_durations)}.`;
+    }
   }
 
   if (applicable_on) {
@@ -104,7 +118,18 @@ export default function OverView(props) {
           </WorkSection>
 
           <WorkSection heading="Discount Type">
-            <DualColumnTable heading={DiscountTypeHeading}>{discountReview}</DualColumnTable>
+            {discountReview ? (
+              <DualColumnTable heading={DiscountTypeHeading}>{discountReview}</DualColumnTable>
+            ) : (
+              ''
+            )}
+            {isLowCostEnabled && low_cost_emi && low_cost_emi.length ? (
+              <DualColumnTable heading="Low Cost EMI discount">
+                {emiDurationString(getAllLowCostTenures(low_cost_emi))}
+              </DualColumnTable>
+            ) : (
+              ''
+            )}
           </WorkSection>
 
           <WorkSection heading="Applicable On">
@@ -144,7 +169,7 @@ export default function OverView(props) {
 function DualColumnTable({ heading, children, columnRatio = 0.25 }) {
   return (
     <div
-      className={'dual-column-table'}
+      className="dual-column-table"
       style={{ gridTemplateColumns: `${columnRatio}fr ${1 - columnRatio}fr` }}
     >
       {

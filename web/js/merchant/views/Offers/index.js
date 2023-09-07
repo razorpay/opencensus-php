@@ -1,29 +1,28 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
-import HeaderAction from 'common/ui/HeaderAction';
-import Alert from 'common/ui/Forms/Alert';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import ShowWhen from 'merchant/components/ShowWhen';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import List from 'merchant/views/Offers/List';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { withSplitzService } from 'common/splitz';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-
-import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
-
+import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import { RZPFeatures } from 'merchant/helpers/data';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import List from 'merchant/views/Offers/List';
+import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
+
+import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
 
 // eslint-disable-next-line react/no-unsafe
 @connect(
@@ -39,7 +38,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
   },
 )
 @RTracking(() => window.rzpQ.component('OfferIndex'))
-export default class OfferIndex extends Component {
+class OfferIndex extends Component {
   componentDidMount() {
     if (window.rzpQ && window.rzpQ.merchantActions) {
       this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
@@ -89,6 +88,15 @@ export default class OfferIndex extends Component {
     const createOfferRoute = this.props.user.isSubscriptionOffersEnabled
       ? '/offers/new' // '/offers/new?offer_creation_modal_type=subscription'
       : '/offers/new?offer_creation_modal_type=basic';
+
+    let isLowCostExperimentEnabled = false;
+    if (this.props.splitz) {
+      const {
+        abExperiments: { Low_cost_offer },
+      } = this.props.splitz;
+
+      isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
+    }
 
     return (
       <>
@@ -153,7 +161,9 @@ export default class OfferIndex extends Component {
                                 });
                               }}
                             >
-                              Create No Cost EMI
+                              {!isLowCostExperimentEnabled
+                                ? 'Create No Cost EMI'
+                                : 'Create No & Low Cost EMI'}
                             </span>
                           </NavLink>
                         </ShowWhen>
@@ -171,3 +181,5 @@ export default class OfferIndex extends Component {
     );
   }
 }
+
+export default withSplitzService(OfferIndex);

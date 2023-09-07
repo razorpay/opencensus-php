@@ -1,20 +1,21 @@
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { luminateRow } from 'merchant/reducers/app';
-import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
-import { saveOffer } from 'merchant/reducers/offers/offerDetails';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { luminateRow } from 'merchant/reducers/app';
+import { saveOffer } from 'merchant/reducers/offers/offerDetails';
+import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
+import { StyledOfferModal } from 'merchant/views/Offers/New/Screens/NoCostEMI/Styled';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BaseForm from './Forms/BaseForm';
-import OfferForm from './Forms/Offers';
 import NoCostEMI from './Forms/NoCostEMI';
+import OfferForm from './Forms/Offers';
 import Subscription from './Forms/Subscription';
 import OfferTypeSelector from './components/OfferTypeSelector';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const BaseFormKey = 'base';
 const FORMS = {
@@ -23,7 +24,6 @@ const FORMS = {
   'no-cost-emi': NoCostEMI,
   subscription: Subscription,
 };
-
 @withRouter
 @connect((state) => state.session, {
   showNotification,
@@ -63,32 +63,92 @@ export default class CreateOfferWizard extends React.Component {
         if (this.CURRENT_FORM === 'no-cost-emi') {
           selfServeActionName = 'New No Cost EMI Offer Created';
         }
-        selfServeTrackSuccess({
-          selfServeAction: selfServeActionName,
-          page: 'Offers',
-          screen: 'Offers',
-        });
-        this.props.showNotification({
-          type: 'success',
-          message: 'New offer created',
-        });
 
-        //analytics event tracking
-        this.props.tracking.trackEvent(
-          window.rzpQ.merchantActions().success('offer_create', {
-            offer_id: savedOffer.id,
-          }),
-        );
+        if (savedOffer && savedOffer['0']) {
+          if (
+            Object.keys(savedOffer).find((offer) => {
+              return (
+                savedOffer[offer] &&
+                savedOffer[offer].code &&
+                savedOffer['0'].code === 'BAD_REQUEST_ERROR'
+              );
+            })
+          ) {
+            this.props.showNotification({
+              type: 'error',
+              message: savedOffer['0'].description,
+            });
+          } else {
+            selfServeTrackSuccess({
+              selfServeAction: selfServeActionName,
+              page: 'Offers',
+              screen: 'Offers',
+            });
+            this.props.showNotification({
+              type: 'success',
+              message: 'New offer created',
+            });
 
-        const entityId = savedOffer.id;
-        if (this.IS_MODAL_VIEW) {
-          this.props.appendOfferInReduxList(savedOffer);
+            const savedOfferIds = [];
+            Object.keys(savedOffer).forEach((offer) => {
+              if (offer && typeof savedOffer[offer] === 'object' && savedOffer[offer].id) {
+                savedOfferIds.push(savedOffer[offer].id);
+                const entityId = `offer_${savedOffer[offer].id}`;
+                this.props.appendOfferInReduxList({
+                  ...savedOffer[offer],
+                  id: entityId,
+                  resourceFields: savedOffer.resourceFields,
+                  resourceIdField: savedOffer.resourceIdField,
+                  resourceUrl: savedOffer.resourceUrl,
+                  entity: 'offer',
+                });
+                this.props.luminateRow(entityId);
+              }
+            });
 
-          setTimeout(() => {
-            this.props.onClose();
-            this.props.luminateRow(entityId);
-          }, 50);
+            if (savedOfferIds && savedOfferIds.length) {
+              savedOfferIds.forEach((id) => {
+                //analytics event tracking
+                this.props.tracking.trackEvent(
+                  window.rzpQ.merchantActions().success('offer_create', {
+                    offer_id: id,
+                  }),
+                );
+              });
+              if (this.IS_MODAL_VIEW) {
+                this.props.onClose();
+              } else {
+                this.props.history.push(`/offers/`);
+              }
+            }
+          }
         } else {
+          selfServeTrackSuccess({
+            selfServeAction: selfServeActionName,
+            page: 'Offers',
+            screen: 'Offers',
+          });
+          this.props.showNotification({
+            type: 'success',
+            message: 'New offer created',
+          });
+
+          //analytics event tracking
+          this.props.tracking.trackEvent(
+            window.rzpQ.merchantActions().success('offer_create', {
+              offer_id: savedOffer.id,
+            }),
+          );
+
+          const entityId = savedOffer.id;
+          if (this.IS_MODAL_VIEW) {
+            this.props.appendOfferInReduxList(savedOffer);
+
+            setTimeout(() => {
+              this.props.onClose();
+              this.props.luminateRow(entityId);
+            }, 50);
+          }
           this.props.history.push(`/offers/${entityId}`);
         }
       })
@@ -121,7 +181,7 @@ export default class CreateOfferWizard extends React.Component {
     const Form = FORMS[this.CURRENT_FORM];
 
     return (
-      <div class="Offers--Create">
+      <StyledOfferModal class="Offers--Create">
         {showSelectionView && (
           <OfferTypeSelector
             selectTemplate={this.handleSelectTemplate}
@@ -130,7 +190,7 @@ export default class CreateOfferWizard extends React.Component {
         )}
 
         <Form {...props} onSubmit={this.onSubmit} isFormLocked={state.isFormLocked} />
-      </div>
+      </StyledOfferModal>
     );
   }
 }

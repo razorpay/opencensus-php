@@ -1,10 +1,15 @@
 import React from 'react';
-import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
-import Form from 'common/new-ui/Form';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import Spinner from 'common/ui/Spinner';
+import Form from 'common/new-ui/Form';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
 import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
+import {
+  isLowCostAmountMissing,
+  isOfferTypeAbsent,
+} from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 
 const CLASS_NAME = 'Offers--Create-form';
 
@@ -89,8 +94,24 @@ export default class CreateOfferWizard extends React.Component {
     const isLastTab = currentTab === this.TABS_DATA.length - 1;
 
     const disabled = validTabs.some((tab) => tab === false) || props.disabled || props.isLoading;
-    const isNextBtnDisabled = !validTabs[currentTab];
     const layout = !isLastTab && 'tabular';
+
+    const isDisabled = () => {
+      const { offersData, isLowCostExperimentEnabled } = this.props;
+      const { currentTab } = this.state;
+      // Validate Low cost offer form if the experiment is enabled
+      if (
+        currentTab === 2 &&
+        isLowCostExperimentEnabled &&
+        offersData &&
+        (!Object.keys(offersData).length ||
+          isOfferTypeAbsent(offersData) ||
+          isLowCostAmountMissing(offersData))
+      ) {
+        return true;
+      }
+      return !validTabs[currentTab];
+    };
 
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
@@ -131,7 +152,7 @@ export default class CreateOfferWizard extends React.Component {
           )}
 
           {!isLastTab ? (
-            <Button.Primary type="button" disabled={isNextBtnDisabled} onClick={this.changeTab(1)}>
+            <Button.Primary type="button" disabled={isDisabled()} onClick={this.changeTab(1)}>
               Next
             </Button.Primary>
           ) : (

@@ -79,7 +79,8 @@
     "js/merchant/views/RazorpayXWidget",
     "js/merchant/views/PaymentMetrics",
     "js/common/splitz",
-    "js/merchant/views/Settings/Configuration"
+    "js/merchant/views/Settings/Configuration",
+    "js/merchant/views/Offers/New/Screens/NoCostEMI"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

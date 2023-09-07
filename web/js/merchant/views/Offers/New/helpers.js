@@ -1,7 +1,8 @@
 import { rupeesToPaise, deepClone } from 'common/utils/rzp-utils';
+import { filterNoCostTenures } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
 
-export function prepareDataForSubmit(formData) {
+export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
   const transformedFormData = {
     ...formData,
   };
@@ -67,8 +68,24 @@ export function prepareDataForSubmit(formData) {
 
     transformedFormData.emi_subvention = 1;
     transformedFormData.payment_method = 'emi';
+
+    if (isLowCostExperimentEnabled && formData.low_cost_emi && formData.low_cost_emi.length) {
+      // check if emi tenure is selected for low cost offer
+      // if yes remove it from emi_durations
+      // since emi durations will only include tenures for no cost offer
+      const formattedTenures = filterNoCostTenures(formData.emi_durations, formData.low_cost_emi);
+      transformedFormData.low_cost_emi = formData.low_cost_emi;
+      transformedFormData.emi_durations = formattedTenures;
+      fieldsToBeDeleted.push('merchant_borne_discount');
+    } else {
+      fieldsToBeDeleted.push('low_cost_emi');
+      fieldsToBeDeleted.push('merchant_borne_discount');
+    }
   } else {
     fieldsToBeDeleted.push('max_order_amount');
+    fieldsToBeDeleted.push('low_cost_emi');
+    fieldsToBeDeleted.push('emi_durations');
+    fieldsToBeDeleted.push('merchant_borne_discount');
   }
 
   if (!['card', 'emi'].includes(formData.payment_method)) {

@@ -1,13 +1,17 @@
 import React from 'react';
-import Input from 'common/new-ui/Input';
-import Amount from 'common/ui/Amount';
+import { Text, Box } from '@razorpay/blade/components';
 
+import Input from 'common/new-ui/Input';
+import { withSplitzService } from 'common/splitz';
+import Amount from 'common/ui/Amount';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { DocLink } from 'merchant/components/DocsLink';
+import { NoCostOfferForm } from 'merchant/views/Offers/New/Screens/NoCostEMI/NoCostOfferForm';
+import { FootNote, StyledOfferForm } from 'merchant/views/Offers/New/Screens/NoCostEMI/Styled';
 import { getIssuerLabel } from 'merchant/views/Offers/utils';
 
 // TODO: Fix EMI Tenure validations
-export default class ApplicableOn extends React.Component {
+class ApplicableOn extends React.Component {
   constructor(props) {
     super();
 
@@ -56,12 +60,18 @@ export default class ApplicableOn extends React.Component {
   };
 
   render() {
-    const { formData, minAmount } = this.props;
+    const { formData, minAmount, offersData } = this.props;
     const SelectedEMIOptions = this.props.emiData.emi_options[formData.issuer]?.sort(
       (a, b) => a.duration - b.duration,
     );
+
+    const {
+      abExperiments: { Low_cost_offer },
+    } = this.props.splitz;
+
+    const isLowCostExperimentEnabled = Low_cost_offer.variables.result === 'on';
     return (
-      <React.Fragment>
+      <StyledOfferForm className={isLowCostExperimentEnabled ? 'low-cost-offer-container' : ''}>
         <Input.Select
           required
           label="Issuer"
@@ -69,55 +79,93 @@ export default class ApplicableOn extends React.Component {
           placeholder="Select network"
           options={this.ISSUERS_OPTIONS}
           defaultValue={formData.issuer}
+          className="no-cost-offer-plans"
+          onChange={() => {
+            this.props.onOffersChange({});
+          }}
         />
 
         {formData.issuer && (
-          <Input.Group label="EMI Tenure" required>
-            <div class="emi-options">
-              <div class="emi-option heading">
-                <div class="emi-check-field">
-                  <p>EMI tenure</p>
-                </div>
-                <p>Discount borne by merchant</p>
-              </div>
-              {SelectedEMIOptions.map((plan) => (
-                <div class="emi-option" key={plan.duration}>
-                  <div class="emi-check-field">
-                    <Input.Check
-                      fieldLabel={`${plan.duration} Months`}
-                      onChange={this.handleEmiDuration(plan.duration)}
-                      defaultValue={formData.emi_durations?.indexOf(plan.duration) > -1}
-                    />
+          <Box>
+            {isLowCostExperimentEnabled ? (
+              <NoCostOfferForm
+                formData={formData}
+                offersData={offersData}
+                onChange={this.props.onChange}
+                onOffersChange={this.props.onOffersChange}
+                tenure={SelectedEMIOptions}
+              />
+            ) : (
+              <Input.Group label="EMI Tenure" required>
+                <div class="emi-options">
+                  <div class="emi-option heading">
+                    <div class="emi-check-field">
+                      <Text>EMI tenure</Text>
+                    </div>
+                    <Text>Discount borne by merchant</Text>
                   </div>
+                  {SelectedEMIOptions.map((plan) => (
+                    <div class="emi-option" key={plan.duration}>
+                      <div class="emi-check-field">
+                        <Input.Check
+                          fieldLabel={`${plan.duration} Months`}
+                          onChange={this.handleEmiDuration(plan.duration)}
+                          defaultValue={formData.emi_durations?.indexOf(plan.duration) > -1}
+                        />
+                      </div>
 
-                  <p>{plan.merchant_payback} %</p>
+                      <Text>{plan.merchant_payback} %</Text>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Input.Group>
+              </Input.Group>
+            )}
+          </Box>
         )}
 
-        <div className="no-cost-emi-footnote">
-          <ul>
-            <li>
-              Only banks with minimum EMI order amount of{' '}
-              <Amount value={rupeesToPaise(minAmount)} /> are being displayed.
-            </li>
-            <li>
-              In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
-              To know more about how this works, click{' '}
+        <FootNote
+          className={`${
+            isLowCostExperimentEnabled ? 'low-cost-footnote ' : ''
+          }no-cost-emi-footnote`}
+        >
+          {isLowCostExperimentEnabled ? (
+            <Text>
+              In No Cost EMI the total interest charged is given as a discount and in Low Cost EMI
+              partial interest is charged to the customer. To know more about how these work,
+              click&nbsp;
               <DocLink
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://razorpay.com/docs/offers/no-cost-emi/"
+                href="https://razorpay.com/docs/payments/payment-gateway/affordability/low-cost-emi/"
               >
                 here
               </DocLink>
               .
-            </li>
-          </ul>
-        </div>
-      </React.Fragment>
+            </Text>
+          ) : (
+            <ul>
+              <li>
+                Only banks with minimum EMI order amount of{' '}
+                <Amount value={rupeesToPaise(minAmount)} /> are being displayed.
+              </li>
+              <li>
+                In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
+                To know more about how this works, click{' '}
+                <DocLink
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://razorpay.com/docs/offers/no-cost-emi/"
+                >
+                  here
+                </DocLink>
+                .
+              </li>
+            </ul>
+          )}
+        </FootNote>
+      </StyledOfferForm>
     );
   }
 }
+
+export default withSplitzService(ApplicableOn);

@@ -1,19 +1,18 @@
 /* eslint-disable react/display-name */
-import Wizard from '../components/Wizard';
-
-import BaseForm from './BaseForm';
-
+import { withSplitzService } from 'common/splitz';
+import { merchantFetch } from 'merchant/utils/ajax';
+import BaseForm from 'merchant/views/Offers/New/Forms/BaseForm';
 import Description from 'merchant/views/Offers/New/Screens/Description';
 import DiscountType from 'merchant/views/Offers/New/Screens/DiscountTypes';
 import ApplicableOn from 'merchant/views/Offers/New/Screens/NoCostEMI/ApplicableOn';
+import { isLowCostExperimentEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import OfferValidity from 'merchant/views/Offers/New/Screens/OfferValidity';
 import Overview from 'merchant/views/Offers/New/Screens/Overview';
-
-import { merchantFetch } from 'merchant/utils/ajax';
+import Wizard from 'merchant/views/Offers/New/components/Wizard';
 
 const VALID_TABS = [false, false, false, false, false];
 
-export default class NoCostEMIForm extends BaseForm {
+class NoCostEMIForm extends BaseForm {
   constructor(props) {
     super(props);
 
@@ -30,10 +29,17 @@ export default class NoCostEMIForm extends BaseForm {
         // HINT: Input.Check don't have validation support
         creation_terms_accepted: undefined,
       },
+      offersData: {},
       isLoading: true,
       emiData: {},
     };
   }
+
+  onOffersChange = (data) => {
+    this.setState({
+      offersData: data,
+    });
+  };
 
   get tabsData() {
     return [
@@ -67,6 +73,8 @@ export default class NoCostEMIForm extends BaseForm {
             <ApplicableOn
               emiData={this.state.emiData}
               onChange={this.onFieldChange}
+              offersData={this.state.offersData}
+              onOffersChange={this.onOffersChange}
               minAmount={this.state.formData.discountType.min_amount}
               formData={this.state.formData.applicableOn}
               isFormLocked={this.props.isFormLocked}
@@ -131,6 +139,12 @@ export default class NoCostEMIForm extends BaseForm {
   };
 
   render() {
+    const {
+      abExperiments: { Low_cost_offer },
+    } = this.props.splitz;
+
+    const isLowCostEnabled = isLowCostExperimentEnabled(Low_cost_offer);
+
     const isFormDisabled =
       this.props.isFormLocked || this.state.formData.creation_terms_accepted !== '1';
     return (
@@ -141,11 +155,15 @@ export default class NoCostEMIForm extends BaseForm {
         ref={(form) => (this.FormWizard = form)}
         tabsData={this.tabsData}
         validTabs={VALID_TABS}
-        submitBtnText="Create No Cost EMI"
+        submitBtnText="Create EMI offer"
         onChange={this.onFieldChange}
         onClose={this.props.onClose}
         onSubmit={this.onSubmit}
+        offersData={this.state.offersData}
+        isLowCostExperimentEnabled={isLowCostEnabled}
       />
     );
   }
 }
+
+export default withSplitzService(NoCostEMIForm);

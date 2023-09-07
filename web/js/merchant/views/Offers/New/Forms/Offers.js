@@ -1,10 +1,9 @@
-import Wizard from '../components/Wizard';
-
+import ApplicableOn from 'merchant/views/Offers/New/Screens/ApplicableOn';
 import Description from 'merchant/views/Offers/New/Screens/Description';
 import DiscountType from 'merchant/views/Offers/New/Screens/DiscountTypes';
-import ApplicableOn from 'merchant/views/Offers/New/Screens/ApplicableOn';
 import OfferValidity from 'merchant/views/Offers/New/Screens/OfferValidity';
 import Overview from 'merchant/views/Offers/New/Screens/Overview';
+import Wizard from 'merchant/views/Offers/New/components/Wizard';
 
 import BaseForm from './BaseForm';
 
