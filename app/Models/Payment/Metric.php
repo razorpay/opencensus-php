@@ -347,7 +347,7 @@ class Metric extends Base\Core
             try
             {
                 $authenticationData = (new PaymentService())->getAuthenticationEntity3ds2($payment->getPublicId());
-                $protocolVersion = $this->getCardProtcolVersion($authenticationData);
+                $protocolVersion = (new PaymentService())->getCardProtcolVersion($authenticationData);
                 if (isset($authenticationData['enrollment_status']))
                 {
                     $enrolled = $authenticationData['enrollment_status'];
@@ -451,19 +451,6 @@ class Metric extends Base\Core
             return ProviderCode::getPspForAppName($appName);
         }
 
-        return null;
-    }
-
-    protected function getCardProtcolVersion($authenticationData)
-    {
-        if (isset($authenticationData['protocol_version'])) {
-            if($authenticationData['protocol_version'] == '2.1.0' || $authenticationData['protocol_version'] == '2.2.0'){
-                return "3DS2";
-            }
-            else {
-                return "3DS1";
-            }
-        }
         return null;
     }
 

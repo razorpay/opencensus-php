@@ -142,6 +142,10 @@ class CardPaymentService extends BaseCardPaymentService
         return [];
     }
 
+    public function fetchEntity(string $entityName, $id)
+    {
+        return  [];
+    }
 
     public function authorizeAcrossTerminals(Payment\Entity $payment, array $gatewayInput, array $terminals)
     {

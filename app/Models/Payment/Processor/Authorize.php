@@ -10686,6 +10686,18 @@ trait Authorize
             }
         }
 
+        if($gateway == Payment\Gateway::HDFC)
+        {
+            $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
+            $protocolVersion = (new Payment\Service)->getCardProtcolVersion($authenticationData);
+
+            if($protocolVersion == '3DS2')
+            {
+                return false;
+            }
+
+        }
+
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
     }
 

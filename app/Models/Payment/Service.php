@@ -4726,6 +4726,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getCardProtcolVersion($authenticationData)
+    {
+        if ($authenticationData !== null && isset($authenticationData['protocol_version'])) {
+            if($authenticationData['protocol_version'] == '2.1.0' || $authenticationData['protocol_version'] == '2.2.0'){
+                return "3DS2";
+            }
+            else {
+                return "3DS1";
+            }
+        }
+        return null;
+    }
+
     public function getAuthenticationEntityForAcquirerData($id)
     {
         return $this->app['card.payments']->fetchEntity('authentication', $id);
