@@ -17,7 +17,7 @@ export const RAZORPAY_SUPPORT_LINK = 'https://razorpay.com/support/#request';
 export const B2B_EXPORTS_TNC_LINK = 'https://razorpay.com/terms/local-bank-transfer';
 
 export const REQUEST_ACCOUNT_TYPE = {
-  [VA_USD]: 'localBankTranfer',
+  [VA_USD]: 'localBankTransfer',
   [VA_SWIFT]: 'intBankTransfer',
 };
 
@@ -47,3 +47,5 @@ export const ACTIVATION_POPUP_CONTENT = {
     faqs: SWIFT_ACCOUNT_ACTIVATION_INFO,
   },
 };
+
+export const MCC_CODE_NOT_ELIGIBLE_ERROR = 'we do not support ach and swift account for the mcc';

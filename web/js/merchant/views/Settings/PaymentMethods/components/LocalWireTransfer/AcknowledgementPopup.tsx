@@ -12,12 +12,14 @@ import { connect, ConnectedProps } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import Input from 'common/new-ui/Input';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ModalHeader from 'common/ui/ModalHeader';
 import {
   activateAccountError,
   activateAccountPending,
   activateAccountSuccess,
 } from 'merchant/reducers/b2bExports/actions';
+import lazy from 'merchant/routes/LazyLoader';
 import {
   trackActivateClick,
   trackAccountActivated,
@@ -31,13 +33,22 @@ import {
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { activateAccount } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
 import { AcknowledgementPopupProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { hasMCCInEligibleError } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+const MCCIneligiblePopup = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "MCCIneligiblePopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/MCCIneligiblePopup'
+    ),
+);
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
       showNotification,
+      openModal,
       closeModal,
       activateAccountError,
       activateAccountPending,
@@ -50,7 +61,16 @@ const connector = connect(null, mapDispatchToProps);
 
 const AcknowledgementPopup: React.FC<
   AcknowledgementPopupProps<ConnectedProps<typeof connector>>
-> = ({ account = VA_USD, showTnC = true, showNotification, closeModal }) => {
+> = ({
+  account = VA_USD,
+  showTnC = true,
+  showNotification,
+  openModal,
+  closeModal,
+  activateAccountError,
+  activateAccountPending,
+  activateAccountSuccess,
+}) => {
   const [isChecked, setIsChecked] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
   const popupContent = useMemo(() => ACTIVATION_POPUP_CONTENT[account], [account]);
@@ -58,6 +78,17 @@ const AcknowledgementPopup: React.FC<
   //functions
   const onChange = ({ target }) => {
     setIsChecked(target.checked);
+  };
+
+  const onOpenMCCIneligiblePopup = (error: string) => {
+    openModal({
+      size: 'medium',
+      component: (
+        <SuspenseWithLoader>
+          <MCCIneligiblePopup error={error} />
+        </SuspenseWithLoader>
+      ),
+    });
   };
 
   /**
@@ -87,15 +118,18 @@ const AcknowledgementPopup: React.FC<
           message: 'Account have been successfully created!',
         });
       }
-    } catch ({ errors }) {
-      const error = Array.isArray(errors) ? errors[0] : errors;
-      trackAccountError(error, account);
+    } catch (errorMessage) {
+      trackAccountError(errorMessage as string, account);
       setIsLoading(false);
       showNotification({
         type: 'error',
-        message: error,
+        message: errorMessage,
       });
-      activateAccountError({ type: REQUEST_ACCOUNT_TYPE[account], errors });
+      activateAccountError({ type: REQUEST_ACCOUNT_TYPE[account], errors: errorMessage });
+
+      if (hasMCCInEligibleError(errorMessage)) {
+        onOpenMCCIneligiblePopup(errorMessage as string);
+      }
     }
   };
 

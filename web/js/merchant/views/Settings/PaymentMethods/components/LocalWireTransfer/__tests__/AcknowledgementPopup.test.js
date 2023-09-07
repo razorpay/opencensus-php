@@ -31,7 +31,7 @@ const activateAccountFailure = (errors) => {
     () =>
       new Promise((_, reject) => {
         setTimeout(() => {
-          reject({ errors, success: false });
+          reject(Array.isArray(errors) ? errors[0] : errors);
         });
       }),
   );
@@ -39,10 +39,12 @@ const activateAccountFailure = (errors) => {
 
 describe('Acknowledgement Popup flow', () => {
   const closeModal = jest.spyOn(modalActions, 'closeModal');
+  const openModal = jest.spyOn(modalActions, 'openModal');
   const showNotification = jest.spyOn(notifications, 'showNotification');
 
   beforeEach(() => {
     closeModal.mockClear();
+    openModal.mockClear();
     showNotification.mockClear();
   });
 
@@ -182,5 +184,16 @@ describe('Acknowledgement Popup flow', () => {
         message: error,
       }),
     );
+  });
+
+  test('should open MCCIneligiblePopup when MCC code is not eligible error occurs', async () => {
+    const errors = ['we do not support ACH and SWIFT account for the MCC 1124', 'Status 400'];
+
+    activateAccountFailure(errors);
+
+    renderComponent();
+    await userEvent.click(screen.getByText('Activate Now'));
+
+    await waitFor(() => expect(openModal).toHaveBeenCalled());
   });
 });

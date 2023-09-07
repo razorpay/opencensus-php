@@ -76,6 +76,7 @@ enum Account {
 export type AcknowledgementPopupProps<ReduxProps> = {
   account?: Account;
   showTnC?: boolean;
+  purposeCode?: string;
 } & ReduxProps;
 
 export interface TogglePropsInterface {
@@ -120,6 +121,12 @@ export interface AccountBalancePropsInterface {
 export type PurposeCodeIneligibleProps = {
   code?: string;
   onOpen: (payload: unknown) => void;
+  onClose: () => void;
+  onCloseAction: () => void;
+};
+
+export type MCCIneligibleProps = {
+  error: string;
   onClose: () => void;
   onCloseAction: () => void;
 };

@@ -13,16 +13,16 @@ export const activateAccount = async (
     });
     return response;
   } catch (error) {
-    let errors: string[] = [];
+    let errorMessage = '';
 
     if (error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors)) {
-      errors = error.errors;
+      errorMessage = error.errors[0];
     } else if (error instanceof Error) {
-      errors = [error.message];
+      errorMessage = error.message;
     } else {
-      errors = ['Something went wrong. Please try again later.'];
+      errorMessage = 'Something went wrong. Please try again later.';
     }
 
-    throw errors;
+    throw errorMessage;
   }
 };
