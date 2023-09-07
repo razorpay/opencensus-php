@@ -19,6 +19,7 @@ import { bindActionCreators } from 'redux';
 import SettlementCycle from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 const CapturedPaymentCard = ({
   openModal,
@@ -73,7 +74,7 @@ const CapturedPaymentCard = ({
                 suffix="decimals"
                 currency={currency}
                 size="title-medium"
-                value={paymentCapturedAmount}
+                value={paiseToRupees(paymentCapturedAmount)}
                 isAffixSubtle={false}
               />
             </StyledAmount>

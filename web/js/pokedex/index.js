@@ -22,6 +22,7 @@ import { fetch } from 'merchant/reducers/pokedex';
 import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';
+import { AppProvider } from 'common/context/App';
 
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
@@ -112,13 +113,10 @@ class App extends Component {
 
   render() {
     let { user } = this.props;
-
     const { tabsOrder, tabsMeta } = this.state;
-
     if (this.state.isLoading) {
       return null;
     }
-
     return (
       <Home
         tabsOrder={tabsOrder}
@@ -165,17 +163,20 @@ class App extends Component {
   }
 }
 
+// TODO: Refactor all providers into one.
 render(
   <BladeProvider themeTokens={paymentTheme}>
     <ThemeProvider theme={theme}>
       <Provider store={store}>
-        <Router>
-          <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
-            <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
-              <App />
-            </SplitzRoutesBasedService>
-          </SpiltzServiceProvider>
-        </Router>
+        <AppProvider>
+          <Router>
+            <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
+              <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
+                <App />
+              </SplitzRoutesBasedService>
+            </SpiltzServiceProvider>
+          </Router>
+        </AppProvider>
       </Provider>
     </ThemeProvider>
   </BladeProvider>,

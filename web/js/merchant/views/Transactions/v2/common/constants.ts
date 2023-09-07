@@ -2,7 +2,8 @@ import { Theme } from '@razorpay/blade/components';
 
 import { getCurrentYear } from 'common/utils/date-utils';
 
-export const headerActionTarget = '.tabbed-container > #transactions-header';
+export const headerActionTarget =
+  '.tabbed-container > #transactions-header, tabbed-container > #transactions-header';
 
 export const mobileBreakoints: Readonly<Array<keyof Theme['breakpoints']>> = [
   'base',

@@ -35,8 +35,8 @@ interface Props {
 }
 
 const AppProvider: React.FC<Props> = ({ context, children }) => {
-  const [mode, setMode] = useState<ModeT>(context.mode);
-  axiosInstance.defaults.headers.common['x-org-id'] = context.org.id;
+  const [mode, setMode] = useState<ModeT>(context?.mode);
+  axiosInstance.defaults.headers.common['x-org-id'] = context?.org?.id;
   axiosInstance.defaults.headers.common['x-app-mode'] = mode;
   // restInstance.defaults.headers.common['X-Razorpay-Account'] = context.user.id;
   restInstance.defaults.baseURL = `${process.env.hostName ? process.env.hostName : ''}`;

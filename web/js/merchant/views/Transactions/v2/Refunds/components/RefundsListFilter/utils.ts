@@ -33,20 +33,6 @@ const getDefaultStatusAndOption = (): DefaultStatusAndOption => {
 };
 
 export const _getDefaultDateAndOption = (): DefaultDateAndOption => {
-  const { from, to } = qs.parse(location.search);
-  const { all } = refundsDurationOptionsMap;
-  if ((!from || !to) && all) {
-    return {
-      defaultDate: {
-        from: null,
-        to: null,
-      },
-      defaultDuration: {
-        title: all,
-        value: 'all' as const,
-      },
-    };
-  }
   const { defaultDate, defaultDuration } = getDefaultDateAndOption({
     customDurationOptionsMap: refundsDurationOptionsMap,
     sectionOptions: refundsDurationSectionOptions,

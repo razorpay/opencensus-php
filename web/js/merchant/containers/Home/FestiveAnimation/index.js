@@ -36,17 +36,17 @@ const setViewConfig = ({ userId }) => {
   }
 };
 
-const FestiveAnimationWrapper = ({ isMobile, user: { id } = {} }) => {
+const FestiveAnimationWrapper = ({ isMobile, user }) => {
   const { isShowFestiveAnimation, handleFestiveAnimeAction } = useApp();
   const {
     abExperiments: { Festive_Anime },
   } = useSplitzService();
   const isFestiveAnimeExperimentEnabled = isExperimentEnabled(Festive_Anime);
 
-  const isViewsPending = getViewConfig({ userId: id });
+  const isViewsPending = getViewConfig({ userId: user?.id });
 
   const isRenderFestiveAnimation =
-    isShowFestiveAnimation && isFestiveAnimeExperimentEnabled && isViewsPending;
+    Boolean(isShowFestiveAnimation) && isFestiveAnimeExperimentEnabled && isViewsPending;
 
   if (!isRenderFestiveAnimation) {
     return null;
@@ -56,9 +56,9 @@ const FestiveAnimationWrapper = ({ isMobile, user: { id } = {} }) => {
     <Suspense>
       <FestiveAnimation
         isMobile={isMobile}
-        handleClose={handleFestiveAnimeAction}
-        isShow={isShowFestiveAnimation}
-        updateConfig={() => setViewConfig({ userId: id })}
+        handleClose={Boolean(handleFestiveAnimeAction) ? handleFestiveAnimeAction : () => {}}
+        isShow={Boolean(isShowFestiveAnimation)}
+        updateConfig={() => setViewConfig({ userId: user?.id })}
       />
     </Suspense>
   );

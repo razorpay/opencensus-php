@@ -17,6 +17,7 @@ const failedPaymentsData = 234;
 const failureInfo = {
   customer: { value: 10, failure_types: [] },
   bank: { value: 5, failure_types: [] },
+  business: { value: 4, failure_types: [] },
   others: { value: 3, failure_types: [] },
 };
 
@@ -100,6 +101,8 @@ export const assertFailureData = async () => {
     expect(screen.queryByText(failedPaymentsData)).toBeInTheDocument();
     expect(screen.queryByText(failureInfo.bank.value)).toBeInTheDocument();
     expect(screen.queryByText(failureInfo.customer.value)).toBeInTheDocument();
-    expect(screen.queryByText(failureInfo.others.value)).toBeInTheDocument();
+    expect(
+      screen.queryByText(failureInfo.others.value + failureInfo.business.value),
+    ).toBeInTheDocument();
   });
 };

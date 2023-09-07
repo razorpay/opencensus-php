@@ -9,7 +9,6 @@ import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
 import {
-  ALL_VALUE,
   CUSTOM,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
   MOBILE_CALENDAR_NUMBER_OF_MONTHS,
@@ -99,12 +98,8 @@ const RefundsListFilter = ({
       return;
     }
     setShowDateRangePicker(false);
-    let from: number | null = null;
-    let to: number | null = null;
-    if (value !== ALL_VALUE) {
-      from = getFromTime(value as DurationOption['value']).unix();
-      to = endOfDay.unix();
-    }
+    const from: number = getFromTime(value as DurationOption['value']).unix();
+    const to: number = endOfDay.unix();
     setDate({
       from,
       to,

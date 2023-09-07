@@ -175,7 +175,7 @@ export const getAnalyticsPropsForFailedPyaments = (
       },
       {
         title: 'Business failures or others',
-        value: failureInfo.others.value,
+        value: failureInfo.others.value + failureInfo.business.value,
         subtitle: 'payments',
         toolTipText: EntityPageAnalyticsToolTip.Failed.businessFailures,
       },

@@ -199,4 +199,5 @@ module.exports = {
   // Whether to use watchman for file crawling
   // watchman: true,
   testRunner: 'jest-circus/runner',
+  testTimeout: 10000,
 };

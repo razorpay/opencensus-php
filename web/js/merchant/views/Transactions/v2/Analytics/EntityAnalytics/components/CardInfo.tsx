@@ -11,6 +11,7 @@ import React from 'react';
 import { CardInfoShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
 import { CardInfoProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 const CardInfo = ({
   title,
@@ -43,7 +44,7 @@ const CardInfo = ({
           <Box marginTop="spacing.4">
             {isAmount ? (
               <Amount
-                value={value}
+                value={paiseToRupees(value)}
                 isAffixSubtle={true}
                 suffix="decimals"
                 currency={currency}

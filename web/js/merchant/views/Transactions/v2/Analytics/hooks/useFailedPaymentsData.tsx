@@ -27,6 +27,10 @@ export default function useFailedPaymentsData(): FailedDataHookResponse {
       value: 0,
       failure_types: [],
     },
+    business: {
+      value: 0,
+      failure_types: [],
+    },
     others: {
       value: 0,
       failure_types: [],

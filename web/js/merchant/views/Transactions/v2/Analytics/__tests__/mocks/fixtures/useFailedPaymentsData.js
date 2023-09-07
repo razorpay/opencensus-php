@@ -77,6 +77,7 @@ export const expectedInvalidHookResponse = {
   failureInfo: {
     customer: { value: 0, failure_types: [] },
     bank: { value: 0, failure_types: [] },
+    business: { value: 0, failure_types: [] },
     others: { value: 0, failure_types: [] },
   },
 };
@@ -88,6 +89,10 @@ export const expectedHookResponse = {
     customer: {
       failure_types: ['Payment cancelled while in-progress', 'Payment timed-out'],
       value: 2,
+    },
+    business: {
+      value: 0,
+      failure_types: [],
     },
     others: {
       failure_types: [

@@ -16,9 +16,9 @@ describe('RefundsListFilter', () => {
   });
 
   describe('Duration filter', () => {
-    test('should render default All days and duration options', async () => {
+    test('should render default Last 7 days and duration options', async () => {
       renderApp();
-      const dropdownTrigger = screen.getByRole('button', { name: 'All' });
+      const dropdownTrigger = screen.getByRole('button', { name: 'Last 7 days' });
       expect(dropdownTrigger).toBeInTheDocument();
       await userEvent.click(dropdownTrigger);
       Object.values(refundsDurationOptionsMap).forEach((duration) => {
@@ -31,21 +31,21 @@ describe('RefundsListFilter', () => {
 
     test('should allow to change duration options', async () => {
       renderApp();
-      let dropdownTrigger = screen.getByRole('button', { name: 'All' });
+      let dropdownTrigger = screen.getByRole('button', { name: 'Last 7 days' });
       expect(dropdownTrigger).toBeInTheDocument();
       await userEvent.click(dropdownTrigger);
       await userEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
       dropdownTrigger = screen.getByRole('button', { name: 'Last 30 days' });
       expect(dropdownTrigger).toBeInTheDocument();
       await userEvent.click(dropdownTrigger);
-      await userEvent.click(screen.getAllByRole('menuitem', { name: 'All' })[0]);
-      dropdownTrigger = screen.getByRole('button', { name: 'All' });
+      await userEvent.click(screen.getAllByRole('menuitem', { name: 'Last 7 days' })[0]);
+      dropdownTrigger = screen.getByRole('button', { name: 'Last 7 days' });
       expect(dropdownTrigger).toBeInTheDocument();
     });
 
     test('should allow to select custom duration', async () => {
       renderApp();
-      const dropdownTrigger = screen.getByRole('button', { name: 'All' });
+      const dropdownTrigger = screen.getByRole('button', { name: 'Last 7 days' });
       expect(dropdownTrigger).toBeInTheDocument();
       await userEvent.click(dropdownTrigger);
       await userEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
@@ -57,7 +57,7 @@ describe('RefundsListFilter', () => {
     test('should allow to select custom duration on Mobile', async () => {
       useMobileSpy.mockImplementationOnce(() => true);
       renderApp();
-      const dropdownTrigger = screen.getByRole('button', { name: 'All' });
+      const dropdownTrigger = screen.getByRole('button', { name: 'Last 7 days' });
       expect(dropdownTrigger).toBeInTheDocument();
       await userEvent.click(dropdownTrigger);
       await userEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));

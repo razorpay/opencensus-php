@@ -12,6 +12,7 @@ import {
   TxnStatus,
 } from 'merchant/views/Transactions/v2/Analytics/types';
 import { Duration } from 'merchant/views/Transactions/v2/common/types';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 import { accumalateCountAmount, getAnalyticsRequestPayload } from './utils';
 
@@ -107,7 +108,7 @@ export default function usePaymentData({
             processedStatusRefunds.count + processedStatusRefundsInstant.count;
 
           updatePaymentMethodResponse.refundAmount =
-            processedStatusRefunds.amount + processedStatusRefunds.amount;
+            processedStatusRefunds.amount + processedStatusRefundsInstant.amount;
         }
 
         if (paymentbymethod?.result) {
@@ -119,7 +120,7 @@ export default function usePaymentData({
             .sort((a, b) => b.value - a.value)
             .map((item) => ({
               label: item.method,
-              value: item.value,
+              value: paiseToRupees(item.value),
             }));
           splitByPaymentMethod.push(...sortedPaymentMethod.slice(0, 3));
           if (sortedPaymentMethod.length > 4) {

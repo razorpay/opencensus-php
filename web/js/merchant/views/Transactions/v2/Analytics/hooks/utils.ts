@@ -275,6 +275,7 @@ export const accumulateFailureData = (data: FailedPaymentsAPIResponse): FailedOv
   const result: FailedOverviewResult = {
     customer: { value: 0, failure_types: [] },
     bank: { value: 0, failure_types: [] },
+    business: { value: 0, failure_types: [] },
     others: { value: 0, failure_types: [] },
   };
 

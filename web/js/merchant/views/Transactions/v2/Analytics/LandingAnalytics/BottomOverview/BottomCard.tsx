@@ -26,6 +26,7 @@ import {
 } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 import CardFooter from './CardFooter';
 import CardIcon from './CardIcon';
@@ -98,7 +99,7 @@ const BottomOverviewCard = ({
                       suffix="decimals"
                       currency={currency}
                       size="title-small"
-                      value={value}
+                      value={paiseToRupees(value)}
                     />
                   ) : (
                     <Heading

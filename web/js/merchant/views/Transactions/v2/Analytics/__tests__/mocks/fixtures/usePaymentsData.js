@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { usePaymentsData } from 'merchant/views/Transactions/v2/Analytics/hooks';
 import { render } from 'test-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 const App = ({ dataCallback, isRefundPendingEnabled }) => {
   const { paymentsData, fetchPaymentData, loading, failed } = usePaymentsData({
@@ -246,10 +247,10 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: 6794974 },
-        { label: 'netbanking', value: 386774 },
-        { label: 'upi', value: 354387 },
-        { label: 'Others', value: 149500 },
+        { label: 'cod', value: paiseToRupees(6794974) },
+        { label: 'netbanking', value: paiseToRupees(386774) },
+        { label: 'upi', value: paiseToRupees(354387) },
+        { label: 'Others', value: paiseToRupees(149500) },
       ],
     },
   },
@@ -258,12 +259,12 @@ export const expectedHookResponse = {
       paymentCapturedCount: 2,
       paymentCapturedAmount: 88000,
       refundCount: 7,
-      refundAmount: 608400,
+      refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: 6794974 },
-        { label: 'netbanking', value: 386774 },
-        { label: 'upi', value: 354387 },
-        { label: 'Others', value: 149500 },
+        { label: 'cod', value: paiseToRupees(6794974) },
+        { label: 'netbanking', value: paiseToRupees(386774) },
+        { label: 'upi', value: paiseToRupees(354387) },
+        { label: 'Others', value: paiseToRupees(149500) },
       ],
     },
   },
@@ -272,12 +273,12 @@ export const expectedHookResponse = {
       paymentCapturedCount: 2,
       paymentCapturedAmount: 88000,
       refundCount: 7,
-      refundAmount: 608400,
+      refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: 6794974 },
-        { label: 'upi', value: 354387 },
-        { label: 'card', value: 136500 },
-        { label: 'wallet', value: 13000 },
+        { label: 'cod', value: paiseToRupees(6794974) },
+        { label: 'upi', value: paiseToRupees(354387) },
+        { label: 'card', value: paiseToRupees(136500) },
+        { label: 'wallet', value: paiseToRupees(13000) },
       ],
     },
   },
@@ -286,11 +287,11 @@ export const expectedHookResponse = {
       paymentCapturedCount: 2,
       paymentCapturedAmount: 88000,
       refundCount: 7,
-      refundAmount: 608400,
+      refundAmount: 304200,
       paymentByMethod: [
-        { label: 'upi', value: 354387 },
-        { label: 'card', value: 136500 },
-        { label: 'wallet', value: 13000 },
+        { label: 'upi', value: paiseToRupees(354387) },
+        { label: 'card', value: paiseToRupees(136500) },
+        { label: 'wallet', value: paiseToRupees(13000) },
       ],
     },
   },
@@ -308,12 +309,12 @@ export const expectedHookResponse = {
       paymentCapturedCount: 0,
       paymentCapturedAmount: 0,
       refundCount: 7,
-      refundAmount: 608400,
+      refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: 6794974 },
-        { label: 'netbanking', value: 386774 },
-        { label: 'upi', value: 354387 },
-        { label: 'Others', value: 149500 },
+        { label: 'cod', value: paiseToRupees(6794974) },
+        { label: 'netbanking', value: paiseToRupees(386774) },
+        { label: 'upi', value: paiseToRupees(354387) },
+        { label: 'Others', value: paiseToRupees(149500) },
       ],
     },
   },

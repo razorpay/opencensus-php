@@ -5,7 +5,7 @@ import {
   getFromTime,
 } from 'merchant/views/Transactions/v2/common/utils';
 
-export const refundsDurationOptionsMap = { all: 'All', ...durationOptionsMap };
+export const refundsDurationOptionsMap = { ...durationOptionsMap };
 export const refundsDurationSectionOptions = generateOptions(refundsDurationOptionsMap);
 export const refundsDurationSectionName = 'Duration';
 export const refundsDurationOptions = [
