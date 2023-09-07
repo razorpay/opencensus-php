@@ -1,4 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { Button, InfoIcon, ArrowRightIcon, Link } from '@razorpay/blade/components';
+
+import { analyticsTrack } from 'common/utils/analytics';
+import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
+import {
+  STEPS,
+  StepComponentProps,
+} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
 import {
   ServiceProvidedHeading,
   ServiceProvidedDescription,
@@ -11,15 +20,8 @@ import {
   IntegrateAPICTA,
   ServiceProviderFooter,
 } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Styled';
-import { Button, InfoIcon, ArrowRightIcon } from '@razorpay/blade/components';
-import {
-  STEPS,
-  StepComponentProps,
-} from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
-import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
-import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
+import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 const EvaluateUseCase = ({
   setStep,
@@ -137,8 +139,17 @@ const EvaluateUseCase = ({
           You will need to integrate with OAuth to receive commissions after switching
         </IntegrateAPIDesc>
         <IntegrateAPICTA>
-          <span onClick={learnMoreClick}>Learn More</span>
-          <ArrowRightIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <Link
+            href={PARTNERSHIPS_WEBSITE_LINKS.PLATFORM_OAUTH_INTEGRATION}
+            onClick={learnMoreClick}
+            rel="noopener noreferrer"
+            target="_blank"
+            icon={ArrowRightIcon}
+            iconPosition="right"
+            variant="anchor"
+          >
+            Learn more
+          </Link>
         </IntegrateAPICTA>
       </IntegrateAPIBanner>
       <ServiceProviderFooter>

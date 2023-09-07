@@ -349,29 +349,18 @@ export const IntegrateAPIDesc = styled.div(
 `,
 );
 
-export const IntegrateAPICTA = styled.div(
-  ({ theme }: { theme: Theme }) => `
+export const IntegrateAPICTA = styled.div`
   cursor: pointer;
   display: inline-flex;
   position: absolute;
   right: 35px;
   top: 50px;
 
-  span {
-    vertical-align: text-bottom;
-    margin-right: 8px;
-    font-weight: ${theme.typography.fonts.weight.bold};
-    font-size: ${theme.typography.fonts.size[75]}px;
-    line-height: ${theme.typography.lineHeights[75]}px;
-    color: #2b83ea;
-  }
-
   @media (max-width: ${mobileTabMax}) {
     position: unset;
     margin-top: 12px;
   }
-`,
-);
+`;
 
 export const ApplicationFormContent = styled.div`
   margin-top: 20px;

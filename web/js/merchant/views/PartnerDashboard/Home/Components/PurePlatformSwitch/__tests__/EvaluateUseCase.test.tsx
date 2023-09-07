@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
 import EvaluateUseCase from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/EvaluateUseCase';
 import { stepTestProps } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/__tests__/mocks/fixtures';

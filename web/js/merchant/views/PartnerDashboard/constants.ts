@@ -70,3 +70,8 @@ export const COMMISSION_TYPE = {
   REFUND: 'refund',
   PAYMENT: 'payment',
 };
+
+// TODO: Move existing website links in PartnerDashboard/ folder to this constant:
+export const PARTNERSHIPS_WEBSITE_LINKS = {
+  PLATFORM_OAUTH_INTEGRATION: 'https://razorpay.com/docs/partners/platform/oauth/',
+};

@@ -13,6 +13,7 @@ import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rz
 import { analyticsTrack } from 'common/utils/analytics';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import { trackingExperimentsProps } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
+import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 interface PurePlatformSwitchGuideProps {
   openModal: OpenModalT;
@@ -83,7 +84,7 @@ const PurePlatformSwitchGuide = ({
           Seamlessly manage payments for your clients by integrating Razorpay APIs with your
           platform.&nbsp;
           <Link
-            href="https://razorpay.com/docs/partners/platform/payments-oauth"
+            href={PARTNERSHIPS_WEBSITE_LINKS.PLATFORM_OAUTH_INTEGRATION}
             htmlTitle="Read more here"
             target="_blank"
             rel="noreferrer noopener"

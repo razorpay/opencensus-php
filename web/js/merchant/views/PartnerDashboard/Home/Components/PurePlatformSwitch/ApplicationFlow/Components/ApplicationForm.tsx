@@ -1,8 +1,12 @@
+import React, { useEffect, useState } from 'react';
 import { ArrowRightIcon, Button, TextArea, TextInput } from '@razorpay/blade/components';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import { useFormik } from 'formik';
 import isEmpty from 'lodash/isEmpty';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
 import {
@@ -22,9 +26,6 @@ import {
 } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Styled';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 const getInitialState = () => {
   return {
@@ -118,18 +119,20 @@ const ApplicationForm = ({
   }, []);
 
   const onFormChange = (name, value) => {
-    analyticsTrack({
-      objectName: 'Migrate To PurePlatform Details',
-      actionName: 'Entered',
-      screen: 'Details Screen',
-      properties: {
-        location: 'partner home',
-        field: name,
-        ...trackingExperiments,
-        ...getCommonAnalyticsProperties(user),
-        ...getExperimentsForTracking(user),
-      },
-    });
+    if (isEmpty(formik.touched)) {
+      analyticsTrack({
+        objectName: 'Migrate To PurePlatform Details',
+        actionName: 'Entered',
+        screen: 'Details Screen',
+        properties: {
+          location: 'partner home',
+          field: name,
+          ...trackingExperiments,
+          ...getCommonAnalyticsProperties(user),
+          ...getExperimentsForTracking(user),
+        },
+      });
+    }
     formik.setFieldTouched(name);
     formik.setFieldValue(name, value);
   };
