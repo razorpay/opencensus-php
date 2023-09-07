@@ -143,6 +143,7 @@ class MySqlConnection extends BaseMySqlConnection
             'error_code'            => $e->getCode(),
             'retry'                 => false,
             'func'                  => 'MySqlConnection::handleQueryException',
+            'txn_count'             => $this->transactions
         ]);
 
         if ($this->transactions >= 1) {
