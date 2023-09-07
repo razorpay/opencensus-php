@@ -4781,6 +4781,7 @@ class Route
         'pages_view_by_slug_empty',
     ];
 
+
     public static $private = [
         'collect_info_merchant_details_patch',
         'mock_bvs_validation_event',
@@ -18868,4 +18869,22 @@ class Route
 
         return false;
     }
+
+
+
+    /**
+     * Routes which are supposed to be used with edge passport along with internal auth (passport forwarding).
+     * routes can be part of $private,$public or any new internal auth route.
+     * route added here must be added in $internalApps against your app name
+     *
+     * @var array
+     */
+    public static $internalAuthWithPassportRoutes = [
+    ];
+
+
+    public function isInternalAuthWithPassportRoutes(string $route) : bool{
+        return in_array($route, self::$internalAuthWithPassportRoutes,true) == true;
+    }
+
 }

@@ -304,11 +304,6 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testBasicAuthRealm()
-    {
-        ;
-    }
-
     public function testAppRoutesWithPrivateAuth()
     {
         $this->ba->privateAuth();
@@ -336,16 +331,6 @@ class BasicAuthTest extends TestCase
 
             $this->startTest($testData);
         }
-    }
-
-    public function testInvalidMerchantKeyForAppRouteAndNotExistentRoute()
-    {
-        ;
-    }
-
-    public function testValidMerchantKeyForAppRouteAndNonExistentRoute()
-    {
-        ;
     }
 
     public function testPublicQueryAuth()

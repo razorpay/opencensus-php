@@ -2720,6 +2720,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const AUTH_TYPE_USED                                        = 'AUTH_TYPE_USED';
 
+    //internal auth with passport
+    const INTERNAL_AUTH_PASSPORT_APP_VERIFICATION_FAILED        = 'INTERNAL_AUTH_PASSPORT_APP_VERIFICATION_FAILED';
+    const INTERNAL_AUTH_PASSPORT_ACCESS_DENIED                  = 'INTERNAL_AUTH_PASSPORT_ACCESS_DENIED';
+    const INTERNAL_AUTH_PASSPORT_CHECKS_FAILED                  = 'INTERNAL_AUTH_PASSPORT_CHECKS_FAILED';
+    const INTERNAL_AUTH_PASSPORT_MODE_MISMATCH                  = 'INTERNAL_AUTH_PASSPORT_MODE_MISSMATCH';
+
     const MERCHANT_FETCHED_FROM_PASSPORT                        = "MERCHANT_FETCHED_FROM_PASSPORT";
 
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';

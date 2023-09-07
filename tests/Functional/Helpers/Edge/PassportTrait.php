@@ -3,10 +3,12 @@
 namespace RZP\Tests\Functional\Helpers\Edge;
 
 use DateTimeZone;
+
 use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Token\Builder;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
+use Razorpay\Edge\Passport;
 use RZP\Constants\Mode;
 use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 use RZP\Tests\Functional\Authorization;
@@ -163,5 +165,27 @@ trait PassportTrait
         // do a db fetch to get the merchant associated with the key
         $keyEntity = $this->app['repo']->key->connection($mode)->find($keyId);
         return $keyEntity->getMerchantId();
+    }
+
+
+    /**
+     * @return Passport\Passport
+     */
+    protected function getDummyMerchantAuthPassport() :Passport\Passport
+    {
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->authenticated = true;
+        $passport->mode = "live";
+        $passport->domain = "razorpay";
+        $passport->consumer = new Passport\ConsumerClaims;
+        $passport->consumer->id = "10000000000000";
+        $passport->consumer->type = "merchant";
+
+        $passport->credential = new Passport\CredentialClaims;
+        $passport->credential->username = "rzp_live_10000000000000";
+        $passport->credential->publicKey = "rzp_live_10000000000000";
+
+        return $passport;
     }
 }

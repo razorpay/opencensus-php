@@ -8,6 +8,7 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\HyperTrace;
 use Illuminate\Support\Str;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Http\BasicAuth\KeyAuthCreds;
 use RZP\Http\BasicAuth\ClientAuthCreds;
 use RZP\Http\BasicAuth\Type;
@@ -18,6 +19,7 @@ use RZP\Http\RequestContextV2;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
+use RZP\Exception;
 use RZP\Http\OAuth;
 use RZP\Http\Route;
 use RZP\Trace\Tracer;
@@ -47,6 +49,7 @@ class Authenticate
     const STATUS        = 'status';
     const AUTH          = 'auth';
     const PUBLIC_KEY    = 'public_key';
+    const MODE          = 'mode';
 
     const AUTH_FLOW     = 'auth_flow';
     const PASSPORT_AUTH = 'passport_auth';
@@ -56,6 +59,8 @@ class Authenticate
     const PASSPORT_CONSUMER_ID = 'passport_consumer_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
     const ACCOUNT_ID_SOURCE    = 'account_id_source';
+    const APP_NAME             = 'app_name';
+    const SECRET               = 'secret';
 
     /**
      * Application instance
@@ -104,6 +109,13 @@ class Authenticate
     protected $isPartnerAuth = false;
 
     /**
+     * Api Route instance
+     *
+     * @var \RZP\Http\Route
+     */
+    protected $route;
+
+    /**
      * Create a new filter instance.
      *
      * @param Application $app
@@ -123,6 +135,8 @@ class Authenticate
         $this->oauth = new OAuth();
 
         $this->passport = $this->requestContext->passport;
+
+        $this->route = $this->app['api.route'];
 
         $this->passportUtil = empty($this->passport) ? null : new PassportUtil($this->passport);
     }
@@ -148,7 +162,7 @@ class Authenticate
         $this->ba->init();
 
         // check if the request should be authenticated using Edge passport
-        if ($this->requestContext->shouldAuthenticateUsingPassport)
+        if ( $this->requestContext->shouldAuthenticateUsingPassport || $this->shouldUsePassportWithInternalAuth($route,$request) )
         {
             $this->isPartnerAuth = ($this->passport->consumer->type == self::PARTNER);
             $passportAuthType = ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
@@ -159,9 +173,14 @@ class Authenticate
                     self::MERCHANT_ID        => $this->passport->consumer->id,
                     self::ACCOUNT_ID         => $this->passportUtil->getAccountId(),
                     self::ROUTE              => $route,
-                    self::PASSPORT_AUTH_TYPE => $passportAuthType
+                    self::PASSPORT_AUTH_TYPE => $passportAuthType,
+                    self::APP_NAME           => $this->ba->getInternalApp()
                 ]
             );
+
+            // in case of app auth with edge passport. after validation of internal auth creds it's similar to private/public auth
+            // so resetting internal app name in order to avoid any conflict in further processing.
+            $this->ba->setInternalApp(null);
 
             $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT], function () use($passportAuthType) {
                 return (empty($this->passport->oauth) ? $this->setBasicAuthContextsFromPassport($passportAuthType) : $this->setOauthContextsFromPassport($passportAuthType));
@@ -592,5 +611,87 @@ class Authenticate
         }
 
         return null;
+    }
+
+    /**
+     * checks if passport can be used with internal auth or not for current request. it also validates internal auth credentials as well.
+     *
+     * @param string $route
+     * @param \Illuminate\Http\Request  $request
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function shouldUsePassportWithInternalAuth(string $route,\Illuminate\Http\Request $request) : bool
+    {
+
+        //check if route is eligible to be used with passport and internal auth
+        if ( !$this->route->isInternalAuthWithPassportRoutes($route) ){
+            return false;
+        }
+
+        $username = $request->getUser();
+        $password = $request->getPassword();
+
+        //request doesn't have a internal auth username(rzp_live or rzp_test)
+        //return false.
+        if (
+            empty($username) ||
+            empty($password) ||
+            !$this->isInternalAuthUsername($username)
+        )
+        {
+            return false;
+        }
+
+        //request doesn't have a edge passport.
+        //request doesn't have a usable edge passport.
+        if (
+            !$this->requestContext->hasPassportJwt ||
+            empty($this->passportUtil) ||
+            !$this->passportUtil->isEdgePassportUsable()
+        )
+        {
+            //need to reject the request here after logs confirmation
+            $this->trace->info(TraceCode::INTERNAL_AUTH_PASSPORT_CHECKS_FAILED);
+            return  false;
+        }
+
+        if (!$this->validateModeAccess($username, $this->passport->mode))
+        {
+            //need to reject the request here after logs confirmation
+            $this->trace->info(TraceCode::INTERNAL_AUTH_PASSPORT_MODE_MISMATCH,
+                [
+                    self::MODE => $this->passport->mode,
+                    'username' => $username
+                ]
+            );
+            return  false;
+        }
+
+        // validate the app secret is correct and route is added in access list.
+        if (!$this->ba->verifyInternalApp($password)) {
+            //planning to throw 401 from here not adding right now to avoid failure of any existing incorrect integrations
+            $this->trace->info(TraceCode::INTERNAL_AUTH_PASSPORT_APP_VERIFICATION_FAILED);
+            return false;
+        };
+
+        //blacklisting eztap app to go via this flow because it has a custom integration and can be migrated to new integration as it has only one route.
+        // https://razorpay.slack.com/archives/C012ZGQQFDJ/p1694012076645759?thread_ts=1693477006.638119&cid=C012ZGQQFDJ
+        if ($this->ba->isEzetapApiApp()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isInternalAuthUsername(string $username):bool
+    {
+        return $username == 'rzp_live' || $username == 'rzp_test';
+    }
+
+
+    public function validateModeAccess(string $username, string $passportMode):bool
+    {
+        return substr($username, 4, 4) === $passportMode;
     }
 }

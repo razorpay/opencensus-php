@@ -144,4 +144,22 @@ return [
             'status_code' => 200,
         ],
     ],
+    'inValidAppAuthWithEdgePassport' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
 ];

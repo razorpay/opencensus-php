@@ -149,4 +149,21 @@ class RoutesTest extends TestCase
 
         $this->assertEquals([], $diff);
     }
+
+    public function testValidateInternalAuthWithPassportAccessForRouteSuccess()
+    {
+        Route::$internalAuthWithPassportRoutes[] = 'test_route';
+        $route = new Route($this->app);
+        $isAllowed = $route->isInternalAuthWithPassportRoutes('test_route');
+        self::assertTrue($isAllowed);
+    }
+
+    public function testValidateInternalAuthWithPassportAccessForRouteFailure()
+    {
+        Route::$internalAuthWithPassportRoutes[] = 'test_route';
+        $route = new Route($this->app);
+        $isAllowed = $route->isInternalAuthWithPassportRoutes('test_route2');
+        self::assertFalse($isAllowed);
+    }
+
 }

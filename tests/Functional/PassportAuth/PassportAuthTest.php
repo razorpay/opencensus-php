@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PassportAuth;
 
+use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Error\PublicErrorCode;
@@ -607,4 +608,111 @@ class PassportAuthTest extends TestCase
 
         $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 120000]);
     }
+
+
+    /**
+     * testMerchantAuthWithInternalAuthWithAccess
+     * allows the request if passport is passed in header and request has valid internal auth credentials
+     *
+     */
+    public function testMerchantAuthWithInternalAuthWithAccess()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['validPassportFlowData'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+
+        $pwd = $pgRouterConfig['secret'];
+
+        /* @var route Route */
+        $route = $this->app['api.route'];
+
+
+        $currentAppConfig = $route::$internalApps['pg_router'];
+        $currentInternalAuthWithPassportRoutes = $route::$internalAuthWithPassportRoutes;
+
+        $route::$internalApps['pg_router'] = ['payment_fetch_multiple'];
+        $route::$internalAuthWithPassportRoutes[] = 'payment_fetch_multiple';
+
+        $this->ba->basicAuth('rzp_test',$pwd);
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues( 'TheTestAuthKey', '10000000000000', 'rzp_test_TheTestAuthKey', KeyAuthCreds::class);
+    }
+
+    /**
+     * testMerchantAuthWithInternalAuthNoAccess
+     * rejects the request if passport is passed in header and request has valid internal auth credentials but app is not listed
+     * in $internalAuthWithPassportApps.
+     *
+     */
+    public function testMerchantAuthWithInternalAuthNoAccess()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['inValidAppAuthWithEdgePassport'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+
+        $pwd = $pgRouterConfig['secret'];
+
+        $this->ba->basicAuth('rzp_test',$pwd);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+
+    /**
+     * testMerchantAuthWithInternalAuthWithWrongSecret
+     * rejects the request if passport is passed in header and request has invalid secret
+     *
+     */
+    public function testMerchantAuthWithInternalAuthWithWrongSecret()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['inValidAppAuthWithEdgePassport'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+
+        /* @var route Route */
+        $route = $this->app['api.route'];
+
+
+        $currentAppConfig = $route::$internalApps['pg_router'];
+        $currentInternalAuthWithPassportRoutes = $route::$internalAuthWithPassportRoutes;
+
+        $route::$internalApps['pg_router'] = ['payment_fetch_multiple'];
+        $route::$internalAuthWithPassportRoutes[] = 'payment_fetch_multiple';
+
+        $this->ba->basicAuth('rzp_test','dummy_password');
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
+
 }

@@ -182,7 +182,17 @@ class PassportUtil
         // passport should be used only for identified requests, identified will be true for both private and public auth
         // unidentified or invalid requests should be terminated at edge itself
         // validate if passport should be used for the request and claims are valid
-        return ( ($passportUsable === true) && ($this->passport->identified === true) && ($this->validatePassport() === true) );
+        return ( $passportUsable === true && $this->isEdgePassportUsable());
+    }
+
+    /**
+     * checks if edge passport can be used for auth purposes or not.
+     *
+     * @return bool
+     */
+    public function isEdgePassportUsable(): bool
+    {
+        return ($this->passport->identified === true && $this->validatePassport() === true);
     }
 
     /**

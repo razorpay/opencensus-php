@@ -1596,11 +1596,11 @@ class BasicAuth
      * Verify the request is made by an app (internal/external)
      * @return boolean
      */
-    protected function verifyInternalApp()
+    public function verifyInternalApp(string $password = null)
     {
         // First, check that the secret matches one of
         // the application's secrets
-        if ($this->verifyInternalAppSecret() === false)
+        if ($this->verifyInternalAppSecret($password) === false)
         {
             return false;
         }
@@ -1710,9 +1710,10 @@ class BasicAuth
         return $this->dashboardHeaders;
     }
 
-    protected function verifyInternalAppSecret()
+    protected function verifyInternalAppSecret(string $password = null)
     {
-        $secret = $this->authCreds->getSecret();
+       
+        $secret = $password ?? $this->authCreds->getSecret();
 
         $internalApps = $this->internalAppConfigs;
 
@@ -1893,6 +1894,11 @@ class BasicAuth
     public function getInternalApp()
     {
         return $this->internalApp;
+    }
+
+    public function setInternalApp(?string $appName)
+    {
+        $this->internalApp = $appName;
     }
 
     public function isSettlementsApp()
@@ -3600,4 +3606,5 @@ class BasicAuth
             return '';
         }
     }
+    
 }
