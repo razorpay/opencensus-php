@@ -623,9 +623,11 @@ class UserController extends Controller
 
         $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
+        $submitted = $details['submitted'] ?? null;
+
         if (($signupCampaign === 'easy_onboarding') and
             (empty($details['activation_form_milestone']) === true) and
-            ($details['submitted'] == 0))
+            ($submitted == 0))
         {
             return true;
         }
