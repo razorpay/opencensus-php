@@ -262,7 +262,7 @@ class Service extends Base\Service
         return $publicTncDetails;
     }
 
-    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin = false)
+    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin = false, bool $isPublicView = false)
     {
 
         try
@@ -274,17 +274,20 @@ class Service extends Base\Service
             //run experiment from every flow except for admin dashboard
             if ($admin === false)
             {
-                if ((new Merchantcore)->isRegularMerchant($merchant) === false)
+                //by pass the condition if it is for public page links
+                if ($isPublicView === false)
                 {
-                    return false;
+                    if ((new Merchantcore)->isRegularMerchant($merchant) === false)
+                    {
+                        return false;
+                    }
+
+                    if ($merchant->isRazorpayOrgId() === false)
+                    {
+
+                        return false;
+                    }
                 }
-
-                if ($merchant->isRazorpayOrgId() === false)
-                {
-
-                    return false;
-                }
-
                 try
 
                 {
@@ -364,6 +367,7 @@ class Service extends Base\Service
 
         return false;
     }
+
 
     public function getMerchantWebsiteSection()
     {
@@ -2220,7 +2224,7 @@ class Service extends Base\Service
 
         $links = [];
 
-        if ($this->isWebsiteSectionsApplicable($merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, false, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }

@@ -1277,4 +1277,71 @@ class TncActivationTest extends TestCase
 
         $this->assertEquals("0-2 days", $merchantWebsiteDetail['shipping_period']);
     }
+
+    //test isWebsiteSectionsApplicable for normal flow
+    public function testIsWebsiteSectionsApplicable()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 3
+                                                            ]
+                                                        ]]);
+
+        $input = [
+            "section_name"     => "contact_us",
+            "action"           => "publish",
+            "merchant_consent" => true
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
+        //enable business banking
+
+        $merchant->setBusinessBanking(true);
+        $response = (new Merchant\Website\Service)->isWebsiteSectionsApplicable($merchant, false);
+        $this->assertEquals(false, $response);
+
+    }
+    //test isWebsiteSectionsApplicable for public
+    public function testIsWebsiteSectionsApplicableForPublicPages()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 3
+                                                            ]
+                                                        ]]);
+
+        $input = [
+            "section_name"     => "contact_us",
+            "action"           => "publish",
+            "merchant_consent" => true
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
+        //enable business banking
+
+        $merchant->setBusinessBanking(true);
+        $response = (new Merchant\Website\Service)->isWebsiteSectionsApplicable($merchant, false, true);
+        $this->assertEquals(true, $response);
+
+    }
 }
