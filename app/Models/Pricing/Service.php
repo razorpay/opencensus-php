@@ -536,6 +536,10 @@ class Service extends Base\Service
 
     protected function setFeeBearerIfApplicable(array $input, $merchant)
     {
+        if (isset($input[Pricing\Entity::FEE_BEARER])) {
+            return $input;
+        }
+
         $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
 
         return $input;
