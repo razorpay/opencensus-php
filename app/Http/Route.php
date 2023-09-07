@@ -4551,6 +4551,9 @@ class Route
         '1cc_coupon_engine_sync_platform_coupons'            => ['post', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_get_sync_platform_coupons_status' => ['get', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_search_product_collections'                     => ['get', '1cc/magic/platform/products/collections/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+
+        // Edge Routes
+        'third_party_authenticate'                            => ['post', 'edge/internal/authenticate', 'EdgeController@authenticate'],
     ];
 
     public static $public = [
@@ -6188,6 +6191,9 @@ class Route
         'dispute_bulk_create_internal',
 
         'adj_custom_create_cron',
+
+        // Edge
+        'third_party_authenticate'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -16475,6 +16481,9 @@ class Route
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
+        ],
+        'edge' => [
+            'third_party_authenticate'
         ],
     ];
 

@@ -6172,6 +6172,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
     const PASSPORT_ATTRS_MISSING                                = 'PASSPORT_ATTRS_MISSING';
     const PASSPORT_UNIDENTIFIED_REQUEST                         = 'PASSPORT_UNIDENTIFIED_REQUEST';
+    const PASSPORT_PROXY_AUTH                                   = 'PASSPORT_PROXY_AUTH';
+    const PASSPORT_ADMIN_AUTH                                   = 'PASSPORT_ADMIN_AUTH';
     const EDGE_AUTHORIZATION_MISMATCH                           = 'EDGE_AUTHORIZATION_MISMATCH';
     const EDGE_AUTHENTICATION_MISMATCH                          = 'EDGE_AUTHENTICATION_MISMATCH';
     const EDGE_IMPERSONATION_MISMATCH                           = 'EDGE_IMPERSONATION_MISMATCH';

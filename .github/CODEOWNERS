@@ -9,6 +9,7 @@
 # Core App
 #
 app/Http/BasicAuth/                                           @razorpay/spine-edge
+app/Http/Controllers/EdgeController.php                       @razorpay/spine-edge
 app/Http/Controllers/EdgeProxyController.php                  @razorpay/spine-edge
 app/Http/Controllers/EdgeThrottleController.php               @razorpay/spine-edge
 app/Http/Controllers/RateLimiterController.php                @razorpay/spine-edge
@@ -86,7 +87,7 @@ tests/Functional/QrCode/                               @razorpay/qr-code-devs
 tests/Functional/Transfer/                             @razorpay/Payouts-core
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
-
+tests/Functional/Edge/                                 @razorpay/spine-edge
 #
 # Jobs
 #

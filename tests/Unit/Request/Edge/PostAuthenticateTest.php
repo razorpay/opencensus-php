@@ -142,7 +142,7 @@ class PostAuthenticateTest extends TestCase
             ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getAccountId',
                 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId',
                 'getPublicKey', 'getPassport', 'setPassportDomain', 'getRequestMetricDimensions', 'getPassportImpersonationClaims',
-                'isKeylessPublicAuth', 'isPublicAuth', 'isOAuth','getPassportConsumerClaims'])
+                'isKeylessPublicAuth', 'isPublicAuth', 'isOAuth','getPassportConsumerClaims', 'isAdminAuth', 'getInternalApp', 'isDashboardApp'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -271,6 +271,8 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
         $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
+        $ba->expects($this->once())->method('isDashboardApp')->willReturn(false);
+
 
         // overwrite passport type attributes
         $passport->consumer->type = $expectedConsumerType;
@@ -339,6 +341,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
         $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('public');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
+        $ba->expects($this->once())->method('isDashboardApp')->willReturn(false);
         $ba->expects($this->any())->method('getPassportConsumerClaims')->willReturn([
                 "id" => $expectedConsumerId
         ]);
@@ -466,6 +469,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn('');
         $ba->expects($this->exactly(2))->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
+        $ba->expects($this->once())->method('isDashboardApp')->willReturn(false);
 
         // overwrite passport attributes
         $passport->mode = $expectedMode;
@@ -1223,6 +1227,54 @@ class PostAuthenticateTest extends TestCase
             [KeyAuthCreds::class, false, false, true, null, 'oauth_without_impersonation'],
             // Case 13 - oauth_with_impersonation
             [KeyAuthCreds::class, false, false, true, '123', 'oauth_with_impersonation'],
+        ];
+    }
+
+    /**
+     * @dataProvider getLogDashboardProxyAndAdminAuthAPIPassportCases
+     * @param $authType
+     * @return void
+     */
+    public function testLogDashboardProxyAndAdminAuthAPIPassport($authType): void
+    {
+        $request = null;
+        $expectedTraceCode = null;
+        $ba = $this->mockBasicAuth();
+        switch ($authType) {
+            case 'proxy': {
+                $request = $this->mockProxyRoute();
+                $expectedTraceCode = TraceCode::PASSPORT_PROXY_AUTH;
+                $ba->expects($this->any())->method('isProxyAuth')->willReturn(true);
+                break;
+            }
+            case 'admin': {
+                $request = $this->mockPrivilegeRouteWithAdminAuth();
+                $expectedTraceCode = TraceCode::PASSPORT_ADMIN_AUTH;
+                $ba->expects($this->any())->method('isAdminAuth')->willReturn(true);
+                break;
+            }
+        }
+
+        $trace = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance("trace", $trace);
+
+        $ba->expects($this->any())->method('getPassport')->willReturn([]);
+        $ba->expects($this->any())->method('getInternalApp')->willReturn('merchant_dashboard');
+
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+
+        $trace->shouldReceive('info')->withArgs([$expectedTraceCode, ['application' => $ba->getInternalApp(), 'passport' => []]]);
+        $trace->shouldReceive('histogram')->times(1);
+
+        (new PostAuthenticate())->handle(true, $request);
+    }
+
+    public function getLogDashboardProxyAndAdminAuthAPIPassportCases(): array
+    {
+        return [
+            ['proxy'],
+            ['admin']
         ];
     }
 }

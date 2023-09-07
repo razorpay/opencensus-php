@@ -81,6 +81,7 @@ final class PostAuthenticate
             $this->ensureRequestContextPassport($authenticated);
             $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
             $this->updateAPIPassport();
+            $this->logDashboardProxyAndAdminAuthAPIPassport();
 
             $this->trace->histogram(Metric::MIDDLEWARE_POSTAUTH_DURATION_MS, millitime() - $funcStartedAt);
         } catch (Throwable $e) {
@@ -648,6 +649,24 @@ final class PostAuthenticate
 
         $authType = $prefix . $authType . $suffix;
         return $authType;
+    }
+
+    /**
+     * Logs passport created by API for proxy auth and admin auth requests sent by dashboard apps
+     */
+    private function logDashboardProxyAndAdminAuthAPIPassport(): void
+    {
+        if (!$this->ba->isDashboardApp())
+            return;
+
+        if ($this->ba->isAdminAuth())
+        {
+            $this->trace->info(TraceCode::PASSPORT_ADMIN_AUTH, ['application' => $this->ba->getInternalApp(), 'passport' => $this->ba->getPassport()]);
+        }
+        else if ($this->ba->isProxyAuth())
+        {
+            $this->trace->info(TraceCode::PASSPORT_PROXY_AUTH, ['application' => $this->ba->getInternalApp(), 'passport' => $this->ba->getPassport()]);
+        }
     }
 }
 
