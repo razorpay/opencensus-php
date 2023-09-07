@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { BladeProvider, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -9,16 +10,19 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
+import Theme from 'merchant/components/SidebarV2/theme';
 import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
+
+import { trackEvents } from 'merchant/reducers/trackEvents';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import Divider from './components/Divider';
 import NavLinkItem from './components/NavLinkItem';
 import { Typo, Icon } from './components/NavLinkItem/styled';
 import NavLinkProduct from './components/NavLinkProduct';
-import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
-
 import {
   RZP_LOGO_URL,
   ONBOARDING_STEPS_URL,
@@ -26,22 +30,18 @@ import {
   ACTIVATION_URL,
   EASY_DASHBOARD_NC_LANDING_URL,
 } from './constants/constants';
-import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
-import { getActiveTab, initializeRoutes } from './utils/href';
 import {
   SidebarContainer,
   SidebarSection,
   Logo,
-  Items,
   NavContent,
   Navigation,
   ExternalLink,
 } from './styled';
-import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
-
 import { NavLinkData, Routes, SidebarPropsInterface } from './typings';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { trackEvents } from 'merchant/reducers/trackEvents';
+import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
+import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
+import { getActiveTab, initializeRoutes } from './utils/href';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -141,7 +141,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const leftNavItems = cachedLeftNavItems || data;
 
   return (
-    <>
+    <BladeProvider themeTokens={Theme} colorScheme="light">
       <SidebarContainer>
         <SidebarSection>
           <Link to="/dashboard">
@@ -159,7 +159,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
           <NavContent>
             <>
               {' '}
-              <Items>
+              <Box display="flex" flexDirection="column" gap="spacing.1">
                 {COMMON_PRODUCTS.map((product, index) => (
                   <NavLinkItem
                     key={`${product.title}_${index}`}
@@ -168,7 +168,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                     {...PRODUCTS_DATA[product.product_id]}
                   />
                 ))}
-              </Items>
+              </Box>
               <Divider />
               {leftNavItems.map((each) => (
                 <NavLinkProduct
@@ -193,7 +193,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                 loading={isLoading}
                 user={user}
               />
-              <Items>
+              <Box display="flex" flexDirection="column" gap="spacing.1">
                 {CUSTOMERS_PRODUCTS.map((product, index) => (
                   <NavLinkItem
                     key={`${product.title}_${index}`}
@@ -216,7 +216,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                     <Typo>{org?.external_redirect_url_text}</Typo>
                   </ExternalLink>
                 </ShowWhen>
-              </Items>
+              </Box>
             </>
           </NavContent>
         </Navigation>
@@ -226,7 +226,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
         shouldShow={props.showAcceptPayments}
         onClose={props.hideAcceptPaymentsModal}
       />
-    </>
+    </BladeProvider>
   );
 };
 

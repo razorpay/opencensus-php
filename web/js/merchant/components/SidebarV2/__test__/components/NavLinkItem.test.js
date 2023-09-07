@@ -109,7 +109,7 @@ describe('NavLinkItem', () => {
       },
     });
     await waitFor(() => {
-      expect(screen.getByText('New')).toBeInTheDocument();
+      expect(screen.getByText('NEW')).toBeInTheDocument();
     });
   });
 

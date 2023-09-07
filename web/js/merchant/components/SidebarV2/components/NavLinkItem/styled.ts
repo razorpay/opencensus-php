@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Theme } from '@razorpay/blade/components';
 import styled, { css } from 'styled-components';
 
 export const LinkItem = styled(Link)<any>`
@@ -81,3 +82,11 @@ export const NewTag = styled.span`
   position: absolute;
   right: 16px;
 `;
+
+export const BadgeContainer = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    color: ${theme.colors.surface.text.normal.highContrast};
+    position: absolute;
+    right: 16px;
+  `,
+);

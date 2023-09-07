@@ -1,31 +1,31 @@
-// core
 import React from 'react';
+import { Badge, Text } from '@razorpay/blade/components';
 import { withRouter } from 'react-router';
 
-// analytics
 import { analyticsTrack } from 'common/utils/analytics';
-
-// utils
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
+import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 
-// constants
-import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
+import { BadgeContainer, Icon, LinkButtonItem, LinkItem, Typo } from './styled';
 
-// types
-import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
-
-// components
-import ShowWhen from 'merchant/components/ShowWhen';
-
-// styles
-import { LinkItem, Icon, Typo, NewTag, LinkButtonItem } from './styled';
+const CustomBadge = ({ text }: { text: string }) => {
+  return (
+    <BadgeContainer>
+      <Badge contrast="high" fontWeight="bold" variant="positive" size="small">
+        {text.toUpperCase()}
+      </Badge>
+    </BadgeContainer>
+  );
+};
 
 const getTags = (type) => {
   return type.reduce((acc, each) => {
     switch (each) {
       case 'NEW': {
-        acc.push(<NewTag>New</NewTag>);
+        acc.push(<CustomBadge text="new" />);
         break;
       }
       default:
@@ -74,7 +74,7 @@ const NavLinkItem = ({
           isActive={activeTab === product_id}
           onClick={onNavLinkItemClick}
         >
-          {title}
+          <Typo>{title}</Typo>
           <i className="i i-chevron-right" />
           {Tags}
         </LinkButtonItem>
@@ -85,7 +85,15 @@ const NavLinkItem = ({
           onClick={onNavLinkItemClick}
         >
           <Icon className={`i ${icon}`} />
-          <Typo>{title}</Typo>
+          <Text
+            color={
+              activeTab === product_id
+                ? 'surface.text.normal.highContrast'
+                : 'surface.text.normal.lowContrast'
+            }
+          >
+            {title}
+          </Text>
           {Tags}
         </LinkItem>
       )}
