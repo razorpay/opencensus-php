@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Metric;
@@ -1093,8 +1094,7 @@ trait Capture
             }
 
             //This will only be enabled for live mode in production. Non-prod & prod test mode won't be broken down to multiple queues.
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::USE_NEW_MERCHANT_BALANCE_UPDATE_QUEUES, $this->mode);
-            if (strtolower($variant) === 'on')
+            if ($this->app['env'] === Environment::PRODUCTION && $this->mode === Mode::LIVE)
             {
                 $ascii = ord($payment->getMerchantId());
                 $queueNo = $ascii%5;
