@@ -36,6 +36,7 @@ class Repository extends Base\Repository
         Constants::CHECKER_ACTIONS  => 'sometimes|boolean|in:0,1',
         Constants::ACTIONS_CHECKED  => 'sometimes|boolean|in:0,1',
         Entity::TAGS                => 'sometimes|array',
+        Entity::STATE               => 'sometimes|array',
         Constants::CREATED_START    => 'required_with:created_end|integer',
         Constants::CREATED_END      => 'required_with:created_start|integer',
         Constants::ORDER            => 'sometimes|string|in:asc,desc',
