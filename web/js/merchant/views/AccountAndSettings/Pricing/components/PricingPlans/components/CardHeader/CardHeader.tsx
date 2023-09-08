@@ -1,14 +1,16 @@
 import React from 'react';
+import { Text, Badge, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
+
+import { ProgressBar } from 'common/components/ProgressBar';
+import { Flex } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/PricingPlans.styles';
 import {
   ProgressBarContainer,
   CardHeaderLeftItem,
   StyledCardHeader,
 } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardHeader/CardHeader.styles';
 import { CardHeaderPropsT } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardHeader/CardHeader.types';
-import { Text, Badge, Heading } from '@razorpay/blade/components';
-import { ProgressBar } from 'common/components/ProgressBar';
-import { Flex } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/PricingPlans.styles';
+import { STATUS_DATA } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
 
 const CardHeader = ({
   isMobileResolution,
@@ -152,7 +154,8 @@ const CardHeader = ({
               </Heading>
             </div>
           </CardHeaderLeftItem>
-          {statusData.label === 'IN PROGRESS' ? (
+          {statusData.label === STATUS_DATA.IN_PROGRESS.label ||
+          statusData.label === STATUS_DATA.PAYMENT_PROCESSING.label ? (
             <Heading size="small" weight="regular" type="subdued">
               Pricing Plan updation in-progress
             </Heading>

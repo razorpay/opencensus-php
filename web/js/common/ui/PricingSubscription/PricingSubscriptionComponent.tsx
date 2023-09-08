@@ -5,7 +5,6 @@ import rTracking, { useTracking } from 'react-tracking';
 import { withRouter } from 'react-router';
 import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { Button } from '@razorpay/blade/components';
 import Image from 'common/ui/Image';
 import {
@@ -17,13 +16,19 @@ import {
   StyleHeroImage,
 } from './PricingStyled';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
-import { LS_LABELS, IMPRESSION_TIME_INTERVAL } from 'common/ui/PricingSubscription/constants';
+import {
+  LS_LABELS,
+  IMPRESSION_TIME_INTERVAL,
+  PAYMENT_TYPE,
+} from 'common/ui/PricingSubscription/constants';
 import { setCookie } from 'common/utils/cookies';
 import { fetchGSModal as fetchGSModalAction } from 'merchant/reducers/growthService';
 import type {
   PricingSubscriptionProps,
   TogglePlan,
   TrackingObjectType,
+  PlansType,
+  PaymentType,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
 import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
@@ -32,37 +37,75 @@ import {
   FooterButton,
   plansDetailsForViewMore,
   PricingHeader,
-  RedirectToastUI,
   getPlanPrice,
   TogglePlanValue,
   ModalLoader,
   PricingTncInfoMemo,
   handleCheckoutPayment,
 } from './PricingBundleCommon';
+import MultiPaymentModal from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions';
+import { MODAL_TYPE } from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions/constant';
+import {
+  getPaymentOptions,
+  ReturnPaymentResponse,
+} from 'common/ui/PricingSubscription/API/getPaymentDetails.api';
+import { MultiPaymentContext, INITIAL_PLAN } from 'common/ui/PricingSubscription/PricingContext';
+import lazy from 'merchant/routes/LazyLoader';
 
+const CongratulatoryModal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'BundlePricingCongratulatoryModal' */ 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions/CongratulatoryModal'
+    ),
+);
+export interface MULTIPAYMENT_DATA_TYPE {
+  planName: string;
+  amount: number;
+  frequency: string;
+  taxPercentage: number;
+  icon: string;
+}
 let outsidePlanSectionTimer;
+const MULTIPAYMENT_DATA = Object.freeze({
+  planName: '',
+  amount: 0,
+  frequency: '',
+  taxPercentage: 0,
+  icon: '',
+});
+
 const PricingSubscriptionComponent = ({
   pricingSubscription,
   closeModal,
   showNotificationToast,
   user,
-  history,
   variant = '',
   templateId,
   fetchGSModal,
   loading,
   gs_modals = {},
+  currentBalance,
   isMobile,
 }: PricingSubscriptionProps): React.ReactElement | null => {
   const isReadOnly = variant === PRICING_BUNDLE_VARIANT.READ_ONLY;
   const [isFullView, setFullView] = useState(false);
   const [isChecked, setChecked] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPaymentOptionLoading, setIsPaymentOptionLoading] = useState(false);
   const checkoutId = useRef('');
   const [selectedPlanId, setSelectedPlanId] = useState('');
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentType>(PAYMENT_TYPE.PG);
+  const [isCongModalOpen, setCongratulatoryModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<PlansType>({ ...INITIAL_PLAN });
+  const [multiPaymentData, setMultiPaymentData] = useState<MULTIPAYMENT_DATA_TYPE>({
+    ...MULTIPAYMENT_DATA,
+  });
   const [togglePlan, setTogglePlan] = useState<TogglePlan>(TogglePlanValue.monthly);
   const { trackEvent } = useTracking({ page: 'Home' });
   const totalPlanTimer = {};
+  const { data: { balance = 0 } = {} } = currentBalance || {};
   const {
     pricingPlans = [],
     featureIdOrder = [],
@@ -84,7 +127,7 @@ const PricingSubscriptionComponent = ({
   };
 
   const trackInstrumentation = (type: string, trackingObject: TrackingObjectType) => {
-    const { toggle_switch, cta_value, section, event_name } = trackingObject || {};
+    const { toggle_switch, cta_value, section, event_name, event_method } = trackingObject || {};
 
     const handleEventBasedOnType = () => {
       switch (type) {
@@ -131,15 +174,25 @@ const PricingSubscriptionComponent = ({
       }
     };
 
-    trackEvent(
-      window.rzpQ &&
-        window.rzpQ
-          .merchantActions()
-          .clicked(`${event_name || 'merchant_dashboard.click_cta_initiated'}`, {
+    if (event_method === 'initiated') {
+      trackEvent(
+        window.rzpQ &&
+          window.rzpQ.merchantActions().initiated(event_name, {
             ...trackingObject,
             ...handleEventBasedOnType(),
           }),
-    );
+      );
+    } else {
+      trackEvent(
+        window.rzpQ &&
+          window.rzpQ
+            .merchantActions()
+            .clicked(`${event_name || 'merchant_dashboard.click_cta_initiated'}`, {
+              ...trackingObject,
+              ...handleEventBasedOnType(),
+            }),
+      );
+    }
   };
 
   const timer = () => {
@@ -217,19 +270,18 @@ const PricingSubscriptionComponent = ({
       cta_value: '🎁 View All Benefits',
     });
   };
-
-  const RedirectToast = (): JSX.Element => {
-    const handleToastLink = () => {
-      if (
-        user.isAllowedMultiple(
-          'webhooks applications configuration api_keys profile credits add_funds team referrals',
-        ) &&
-        user.isAccountAndSettingsRevampEnabled
-      )
-        history.push(ROUTES_INFO.PRICING_PLANS);
-      else history.push('/pricing-plans');
-    };
-    return <RedirectToastUI handleToastLink={handleToastLink} />;
+  const togglePaymentOptionModal = (): void => {
+    if (isOpen)
+      trackInstrumentation('', {
+        event_method: 'initiated',
+        cta_value: 'Close',
+        toggle_switch: togglePlan,
+        modal: 'Payment method selection modal',
+        plan_id: selectedPlan?.id,
+        plan_name: selectedPlan?.title,
+        event_name: 'merchant_dashboard.click_close',
+      });
+    setIsOpen((prevState) => !prevState);
   };
 
   const toggleAnnualPlan = (): void => {
@@ -252,12 +304,9 @@ const PricingSubscriptionComponent = ({
     toggleAnnualPlan();
   };
   const handlePaymentSuccess = (response, plans) => {
-    closeModal();
-    showNotificationToast({
-      type: 'success',
-      message: RedirectToast,
-      closeTimeout: 15000,
-    });
+    setModalType(MODAL_TYPE.CHECKOUT_PAYMENT);
+    setCongratulatoryModal(true);
+    if (isOpen) togglePaymentOptionModal();
     trackInstrumentation('paymentSuccess', {
       value: 'success',
       payment_id: response?.razorpay_payment_id,
@@ -282,11 +331,18 @@ const PricingSubscriptionComponent = ({
   const checkoutPayment = {
     trackInstrumentation,
     togglePlan,
-    setLoading,
+    setLoading: setIsPaymentOptionLoading,
+    isLoading: isPaymentOptionLoading,
     setSelectedPlanId,
     handlePaymentSuccess,
     handlePaymentFailure,
     showNotificationToast,
+    planAmount: multiPaymentData.amount,
+    settlementBalance: balance,
+    setCongratulatoryModal,
+    setModalType,
+    togglePaymentOptionModal,
+    closeModal,
   };
 
   const handleClose =
@@ -362,6 +418,51 @@ const PricingSubscriptionComponent = ({
       handleMouseLeave,
       togglePlan,
     });
+
+  const getPaymentMethodCall =
+    (
+      plans,
+    ): ((plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>) =>
+    async () => {
+      setLoading(true);
+      setSelectedPlanId(plans.id);
+      try {
+        const paymentMethod: unknown = await getPaymentOptions({ plans, togglePlan });
+        const {
+          payment_methods,
+          name: planName,
+          amount,
+          frequency,
+          tax_percentage,
+          icon_url,
+        } = paymentMethod as ReturnPaymentResponse;
+        setMultiPaymentData({
+          planName,
+          amount,
+          frequency,
+          taxPercentage: tax_percentage,
+          icon: icon_url,
+        });
+        if (
+          payment_methods.includes(PAYMENT_TYPE.INTERNAL) &&
+          payment_methods.includes(PAYMENT_TYPE.PG)
+        ) {
+          setSelectedPlan(plans);
+          setSelectedPaymentMode(PAYMENT_TYPE.INTERNAL); // Since once we get payment mode from BE, default will be INTERNAL payment mode(settlement balance)
+          togglePaymentOptionModal();
+        } else {
+          handleCheckoutPayment({ ...checkoutPayment, plans, type: PAYMENT_TYPE.PG })();
+        }
+      } catch (e) {
+        showNotificationToast({
+          type: 'error',
+          message: (e as Error)?.message || 'Something went wrong . Please try again',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
     <StyledDiv
       fullView={isFullView}
@@ -404,8 +505,8 @@ const PricingSubscriptionComponent = ({
                   isReadOnly,
                   isLoading,
                   selectedPlanId,
-                  handleCheckoutPayment,
-                  checkoutPayment: { ...checkoutPayment, plans },
+                  getPaymentMethodCall,
+                  isPaymentOptionLoading,
                 })}
               </StyledTh>
             );
@@ -422,10 +523,14 @@ const PricingSubscriptionComponent = ({
                 !isReadOnly && (
                   <StyledTd lastRow key={plans?.id} isRecommend={plans?.isRecommended}>
                     <Button
-                      isLoading={isLoading && selectedPlanId === plans?.id}
-                      isDisabled={isLoading && selectedPlanId !== plans?.id}
+                      isLoading={
+                        (isLoading || isPaymentOptionLoading) && selectedPlanId === plans?.id
+                      }
+                      isDisabled={
+                        (isLoading || isPaymentOptionLoading) && selectedPlanId !== plans?.id
+                      }
                       variant={plans.button?.variant}
-                      onClick={handleCheckoutPayment({ ...checkoutPayment, plans })}
+                      onClick={getPaymentMethodCall(plans)}
                       size="small"
                       type="button"
                     >
@@ -437,6 +542,27 @@ const PricingSubscriptionComponent = ({
             })}
         </StyledTr>
       </StyledTable>
+      <MultiPaymentContext.Provider
+        value={{ checkoutPayment, currentBalance, plans: selectedPlan, multiPaymentData }}
+      >
+        <MultiPaymentModal
+          isOpen={isOpen}
+          togglePaymentOptionModal={togglePaymentOptionModal}
+          setSelectedPaymentMode={setSelectedPaymentMode}
+        />
+      </MultiPaymentContext.Provider>
+
+      {isCongModalOpen ? (
+        <CongratulatoryModal
+          type={modalType}
+          isCongModalOpen={isCongModalOpen}
+          setCongratulatoryModal={setCongratulatoryModal}
+          trackInstrumentation={trackInstrumentation}
+          selectedPlan={selectedPlan}
+          selectedPaymentMode={selectedPaymentMode}
+          togglePlan={togglePlan}
+        />
+      ) : null}
       {isFullView ? <PricingTncInfoMemo isMobile={isMobile} /> : null}
       <FooterButton handleToggle={handleToggle} isFullView={isFullView} handleClose={handleClose} />
     </StyledDiv>
@@ -451,6 +577,7 @@ export default compose<any>(
   connect(
     (state) => ({
       user: state.session.user,
+      currentBalance: state.home.current_balance,
       isMobile: state.app.isMobileResolution,
       ...state?.growthService?.gs_modals,
     }),

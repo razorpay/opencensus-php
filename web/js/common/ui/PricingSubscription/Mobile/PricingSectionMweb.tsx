@@ -98,7 +98,7 @@ const PricingSectionMweb = ({
         user.isAccountAndSettingsRevampEnabled
       )
         history.push(ROUTES_INFO.PRICING_PLANS);
-      else history.push('/pricing-plans');
+      else history.push(ROUTES_INFO.PRICING_PLANS_RELATIVE);
     };
     return <RedirectToastUI handleToastLink={handleToastLink} />;
   };

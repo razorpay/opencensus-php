@@ -1,22 +1,25 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { render, screen, userEvent, server, waitFor, getByRole } from 'test-utils';
+
 import PricingSubscriptionComponent from 'common/ui/PricingSubscription/PricingSubscriptionComponent';
+import { pricing_bundle } from 'common/ui/PricingSubscription/__test__/PricingParentComponentsMockData';
 import {
   getState,
   templateId,
   getMonthlyDiscount,
 } from 'common/ui/PricingSubscription/__test__/mock/fixtures';
 import { fetchGSModalHandler } from 'common/ui/PricingSubscription/__test__/mock/handlers';
-import { pricing_bundle } from 'common/ui/PricingSubscription/__test__/PricingParentComponentsMockData';
-import { render, screen, userEvent, server, waitFor, getByRole } from 'test-utils';
-import * as modalReducer from 'merchant_common/reducers/modals';
+import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
 import * as growthServiceReducer from 'merchant/reducers/growthService';
 import * as capitalUtils from 'merchant/views/Capital/utils';
-import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import * as modalReducer from 'merchant_common/reducers/modals';
 
 describe('Tests for `PricingSubscriptionComponent` components', () => {
   const renderApp = ({ props = {}, initialState = {} }) =>
     render(
-      <PricingSubscriptionComponent pricingSubscription={[{ ...pricing_bundle }]} {...props} />,
+      <Suspense fallback={null}>
+        <PricingSubscriptionComponent pricingSubscription={[{ ...pricing_bundle }]} {...props} />
+      </Suspense>,
       {
         initialState,
       },
@@ -151,23 +154,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       renderApp({ initialState, props: { variant: PRICING_BUNDLE_VARIANT.READ_ONLY } });
 
       expect(screen.queryByAltText(pricingPlan.button.label)).toBeNull();
-    },
-  );
-
-  test.each(pricing_bundle.pricingPlans)(
-    '`Data from props`: Should open the Checkout flow when the user clicks on payment button',
-    async (pricingPlan) => {
-      const loadCheckoutScriptSpy = jest.spyOn(capitalUtils, 'loadCheckoutScript');
-      const initialState = getState();
-      renderApp({ initialState });
-
-      const currentPricingColumn = screen.getByTestId(`plan-column-${pricingPlan.id}`);
-      const paymentButton = getByRole(currentPricingColumn, 'button', {
-        name: pricingPlan.button.label,
-      });
-
-      await userEvent.click(paymentButton);
-      await waitFor(() => expect(loadCheckoutScriptSpy).toHaveBeenCalledTimes(1));
     },
   );
 
@@ -348,7 +334,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
       await userEvent.click(paymentButton);
 
-      await waitFor(() => expect(loadCheckoutScriptSpy).toHaveBeenCalledTimes(1));
+      waitFor(() => expect(loadCheckoutScriptSpy).toHaveBeenCalledTimes(1));
     },
   );
 

@@ -1,5 +1,8 @@
 import { RouteComponentProps } from 'react-router-dom';
+
 import { STATUS_DATA } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
+
+import type { PaymentType } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
 interface PricingPlansProps extends RouteComponentProps {
   enrollmentStatus: {
@@ -17,9 +20,13 @@ type SubscriptionPlanDataT = {
   merchant_id?: string;
   account_key?: string;
   plan_id?: string;
+  type?: PaymentType;
   frequency?: 'monthly' | 'yearly';
   payment_subscription_id?: string;
   status?: 'created' | 'processing' | 'approved' | 'rejected' | 'canceled';
+  internal_subscription?: {
+    status?: 'pending' | 'processed';
+  };
   payment_subscription?: {
     id?: string;
     entity?: string;

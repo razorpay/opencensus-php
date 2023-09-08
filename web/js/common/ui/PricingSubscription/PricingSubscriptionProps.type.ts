@@ -1,4 +1,5 @@
 import { TogglePlanValue } from 'common/ui/PricingSubscription/PricingBundleCommon';
+import { PAYMENT_TYPE } from 'common/ui/PricingSubscription/constants';
 
 interface pricingBundleAsset {
   pricingPlans?: Array<Record<string, string>> | [];
@@ -29,7 +30,23 @@ interface PlansType {
     label: string;
   };
 }
-interface PricingSubscriptionProps {
+interface CurrentBalanceContext {
+  currentBalance: { data: { balance: number } };
+  isLoading: boolean;
+}
+interface MultiPaymentContextType {
+  multiPaymentData: {
+    planName: string;
+    amount: number;
+    frequency: string;
+    taxPercentage: number;
+    icon: string;
+  };
+  currentBalance: { data: { balance: number } };
+  plans: PlansType;
+  checkoutPayment: checkoutPaymentType;
+}
+interface PricingSubscriptionProps extends CurrentBalanceContext {
   pricingSubscription: pricingBundleAsset;
   closeModal: () => void;
   showNotificationToast: ({
@@ -86,10 +103,10 @@ interface GetPlanPriceType {
   selectedPlanId: string;
   isReadOnly: boolean;
   isLoading: boolean;
-  handleCheckoutPayment: (
-    props: PaymentCheckoutFlowType,
+  getPaymentMethodCall: (
+    plans,
   ) => (plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>;
-  checkoutPayment: PaymentCheckoutFlowType;
+  isPaymentOptionLoading: boolean;
 }
 
 interface TncModalText {
@@ -116,12 +133,17 @@ interface TrackingObjectType {
   plan_viewed?: string;
   last_plan_id?: string;
   last_plan_viewed?: string;
+  event_method?: string;
+  plan_name?: string;
+  payment_method?: string;
+  modal?: string;
+  balance?: string;
 }
-interface PaymentCheckoutFlowType {
-  plans: PlansType;
+interface checkoutPaymentType {
   trackInstrumentation: (type: string, trackingObject: TrackingObjectType) => void;
   togglePlan: TogglePlan;
   setLoading: (value: React.SetStateAction<boolean>) => void;
+  isLoading?: boolean;
   setSelectedPlanId: (value: React.SetStateAction<string>) => void;
   handlePaymentSuccess: (response: { razorpay_payment_id?: string }, plans: PlansType) => void;
   handlePaymentFailure: (
@@ -137,7 +159,19 @@ interface PaymentCheckoutFlowType {
     message: any;
     closeTimeout?: number | undefined;
   }) => void;
+  planAmount: number;
+  settlementBalance: number;
+  setCongratulatoryModal: (flag: boolean) => void;
+  setModalType: (modalType: string) => void;
+  togglePaymentOptionModal: () => void;
+  closeModal: () => void;
+  currentBalance?: { data: { balance: number } };
 }
+interface PaymentCheckoutFlowType extends checkoutPaymentType {
+  plans: PlansType;
+  type: typeof PAYMENT_TYPE.INTERNAL | typeof PAYMENT_TYPE.PG;
+}
+type PaymentType = (typeof PAYMENT_TYPE)[keyof typeof PAYMENT_TYPE];
 
 export type {
   PricingSubscriptionProps,
@@ -152,4 +186,8 @@ export type {
   TrackingObjectType,
   PaymentCheckoutFlowType,
   pricingBundleAsset,
+  CurrentBalanceContext,
+  MultiPaymentContextType,
+  checkoutPaymentType,
+  PaymentType,
 };

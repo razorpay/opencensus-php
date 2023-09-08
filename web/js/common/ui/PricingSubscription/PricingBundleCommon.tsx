@@ -1,5 +1,27 @@
 import React, { useState, memo, useCallback } from 'react';
 import {
+  Text,
+  Button,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  Badge,
+  CloseIcon,
+  Heading,
+  Box,
+  RupeeIcon,
+  Link,
+} from '@razorpay/blade/components';
+
+import rzpLogo from 'assets/rzp_logo.jpg';
+import Image from 'common/ui/Image';
+import Loader from 'common/ui/Loader';
+import { PAYMENT_TYPE } from 'common/ui/PricingSubscription/constants';
+import { MODAL_TYPE } from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions/constant';
+import lazy from 'merchant/routes/LazyLoader';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { loadCheckoutScript } from 'merchant/views/Capital/utils';
+
+import {
   StyledTr,
   StyledTd,
   StyledFooter,
@@ -12,11 +34,11 @@ import {
   StylePlanName,
   StyleWrapper,
   StylePercentageColor,
+  StyleToastLink,
   Label,
   Input,
   Switch,
   StyledHeaderIcon,
-  StyleToastLink,
   StyleBadgeContainer,
   StyleSwitchContainer,
   PlanLeftSection,
@@ -24,20 +46,6 @@ import {
   StyleInfo,
   StylePlanWrapper,
 } from './PricingStyled';
-import Loader from 'common/ui/Loader';
-import {
-  Text,
-  Button,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  Badge,
-  CloseIcon,
-  Heading,
-  Link,
-  Box,
-  RupeeIcon,
-} from '@razorpay/blade/components';
-import Image from 'common/ui/Image';
 import {
   FooterButtonType,
   PricingHeaderType,
@@ -46,11 +54,7 @@ import {
   PlansType,
   PaymentCheckoutFlowType,
 } from './PricingSubscriptionProps.type';
-import rzpLogo from 'assets/rzp_logo.jpg';
-import { loadCheckoutScript } from 'merchant/views/Capital/utils';
-import { merchantFetch } from 'merchant/utils/ajax';
 import TncMobile from './PricingTnCMobile';
-import lazy from 'merchant/routes/LazyLoader';
 
 const TncDesktop = lazy(
   () => import(/* webpackChunkName: 'PricingTncModalDesktopComponent' */ './PricingTnC'),
@@ -180,8 +184,8 @@ const getPlanPrice = ({
   isReadOnly,
   isLoading,
   selectedPlanId,
-  handleCheckoutPayment,
-  checkoutPayment,
+  getPaymentMethodCall,
+  isPaymentOptionLoading,
 }: GetPlanPriceType): JSX.Element => {
   return (
     <StylePlanName data-testid={`plan-column-${plans.id}`}>
@@ -227,10 +231,10 @@ const getPlanPrice = ({
       {!isReadOnly && (
         <StyleWrapper>
           <Button
-            isLoading={isLoading && selectedPlanId === plans?.id}
-            isDisabled={isLoading && selectedPlanId !== plans?.id}
+            isLoading={(isLoading || isPaymentOptionLoading) && selectedPlanId === plans?.id}
+            isDisabled={(isLoading || isPaymentOptionLoading) && selectedPlanId !== plans?.id}
             iconPosition="left"
-            onClick={handleCheckoutPayment({ ...checkoutPayment, plans })}
+            onClick={getPaymentMethodCall(plans)}
             size="small"
             type="button"
             variant={plans.button?.variant}
@@ -299,50 +303,83 @@ const handleCheckoutPayment =
     props: PaymentCheckoutFlowType,
   ): ((plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>) =>
   async () => {
-    props.trackInstrumentation('choosePlanCTA', {
-      toggle_switch: props.togglePlan,
-      cta_value: props.plans.button?.label,
-      section: props.plans?.title,
-      plan_id: props.plans?.id,
+    const {
+      togglePlan,
+      plans,
+      type,
+      trackInstrumentation,
+      setLoading,
+      handlePaymentSuccess,
+      handlePaymentFailure,
+      planAmount,
+      settlementBalance,
+      setModalType,
+      togglePaymentOptionModal,
+      setCongratulatoryModal,
+      showNotificationToast,
+    } = props;
+    const { title, id, button: { label } = {} } = plans;
+
+    trackInstrumentation('choosePlanCTA', {
+      event_method: 'initiated',
+      toggle_switch: togglePlan,
+      cta_value: type ? 'Proceed to pay' : label,
+      section: title,
+      payment_method: type === PAYMENT_TYPE.INTERNAL ? 'Settlement balance' : 'Normal Checkout',
+      plan_id: id,
+      plan_name: title,
+      event_name: 'merchant_dashboard.click_cta',
     });
-    props.setSelectedPlanId(props.plans.id);
-    props.setLoading(true);
+    setLoading(true);
     await loadCheckoutScript();
     try {
       const subscriptionData = await merchantFetch({
         method: 'post',
-        url: `pricing/merchant/subscriptions?plan_id=${props.plans.id}&frequency=${props.togglePlan}`,
+        url: `pricing/merchant/subscriptions?plan_id=${id}&frequency=${togglePlan}&type=${
+          type || 'PG' // TODO: remove `|| 'PG'` when add this feature in Mobile
+        }`,
         mode: 'live',
       });
       const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
       if (status_code === 200) {
         const { subscription = {} } = response;
-        const options = {
-          key: subscription?.account_key,
-          subscription_id: subscription?.payment_subscription_id,
-          name: `Razorpay Pricing Package`,
-          description: '18% GST included',
-          image: rzpLogo,
-          handler: (response) => {
-            props.handlePaymentSuccess(response, props.plans);
-          },
-        };
-        const razorpayCheckout = new window.Razorpay(options);
-        razorpayCheckout.open();
-        razorpayCheckout.on('payment.failed', (response) => {
-          props.handlePaymentFailure(response, props.plans);
-        });
-        handleCheckoutInitiation(props.trackInstrumentation);
+        if (type === PAYMENT_TYPE.PG || !type) {
+          // TODO: remove `!type` when add this feature in Mobile
+          const options = {
+            key: subscription?.account_key,
+            subscription_id: subscription?.payment_subscription_id,
+            name: `Razorpay Pricing Package`,
+            description: '18% GST included',
+            image: rzpLogo,
+            handler: (response) => {
+              handlePaymentSuccess(response, plans);
+            },
+          };
+          const razorpayCheckout = new window.Razorpay(options);
+          razorpayCheckout.open();
+          razorpayCheckout.on('payment.failed', (response) => {
+            handlePaymentFailure(response, plans);
+          });
+          handleCheckoutInitiation(trackInstrumentation);
+        } else if (type === PAYMENT_TYPE.INTERNAL) {
+          if (planAmount <= settlementBalance) {
+            setModalType(MODAL_TYPE.SUFFICIENT_BALANCE);
+          } else {
+            setModalType(MODAL_TYPE.INSUFFICIENT_BALANCE);
+          }
+          setCongratulatoryModal(true);
+          togglePaymentOptionModal();
+        }
       } else {
-        handleCheckoutError(props.trackInstrumentation);
+        handleCheckoutError(trackInstrumentation);
       }
     } catch (e) {
-      props.showNotificationToast({
+      showNotificationToast({
         type: 'error',
         message: (e as Error)?.message || 'Something went wrong . Please try again',
       });
     } finally {
-      props.setLoading(false);
+      setLoading(false);
     }
   };
 const PricingTncInfoMemo = memo(PricingTncInfo);
@@ -350,11 +387,11 @@ export {
   FooterButton,
   plansDetailsForViewMore,
   PricingHeader,
-  RedirectToastUI,
   TogglePlanValue,
   getPlanPrice,
   ModalLoader,
   PricingTncInfoMemo,
   handleCheckoutPayment,
   getMonthlyDiscount,
+  RedirectToastUI,
 };

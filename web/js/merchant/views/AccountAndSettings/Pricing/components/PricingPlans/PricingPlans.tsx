@@ -82,7 +82,7 @@ const PricingPlans = ({
       </StyledPricingPlans>
     );
 
-  const statusData = getStatusData(data);
+  const statusData = getStatusData(data, data?.type);
 
   if (!statusData) {
     return (

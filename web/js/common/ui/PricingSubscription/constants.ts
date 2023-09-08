@@ -1,3 +1,5 @@
+import { getFormattedAmount } from 'common/utils/rzp-utils';
+
 const TNC_DETAILS_CREDIT_LINK = `${window.RAZORPAY_WEBSITE}/docs/payments/dashboard/account-settings/credits/#amount-credits`;
 const TNC_DETAILS_PRICING_LINK = `${window.RAZORPAY_WEBSITE}/pricing/`;
 
@@ -16,7 +18,10 @@ const LS_LABELS = {
   IMPRESSION_COUNT: 'IMPRESSION_COUNT',
   LAST_IMPRESSION_WITHIN_INTERVAL: 'LAST_IMPRESSION_WITHIN_INTERVAL',
 };
-
+const PAYMENT_TYPE = {
+  PG: 'PG',
+  INTERNAL: 'INTERNAL',
+} as const;
 /** Time interval wihtin which the asset should'nt be shown */
 const IMPRESSION_TIME_INTERVAL = 24 * 60 * 60 * 1000;
 const TOUCH_SPEED = 5;
@@ -80,6 +85,22 @@ const TNC_CONTENT: Array<TncContentType> = [
   },
 ];
 
+const supportedPaymentMode = (balance: number) => {
+  return [
+    {
+      paymentType: PAYMENT_TYPE.INTERNAL,
+      title: 'Use Your Razorpay Balance',
+      shouldPreferred: true,
+      subText: `Balance: ₹${getFormattedAmount(balance)}`,
+    },
+    {
+      paymentType: PAYMENT_TYPE.PG,
+      title: 'Pay via e-Mandate/UPI/Cards',
+      shouldPreferred: false,
+      subText: 'Using Razorpay Checkout',
+    },
+  ];
+};
 export {
   modalZindex,
   LS_LABELS,
@@ -87,4 +108,6 @@ export {
   TOUCH_SPEED,
   TNC_CONTENT,
   TNC_DETAILS_CREDIT_LINK,
+  PAYMENT_TYPE,
+  supportedPaymentMode,
 };
