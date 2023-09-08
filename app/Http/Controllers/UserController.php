@@ -104,8 +104,9 @@ class UserController extends Controller
         $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
         $onboardingFluxExperiment =  config('splitz.experiments')[self::ONBOARDING_FTUX];
         $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
+        $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
 
-        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled];
+        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled];
 
         $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, [], self::SPLITZ_BULK_EVALUATE_PATH);
 
@@ -339,8 +340,11 @@ class UserController extends Controller
     {
         $isSplitzCachingEnabled = $this->isSplitzCachingEnabled();
 
+        $isRazorxCachingEnabled = $this->isRazorxCachingEnabled();
+
         $params = [
-            Constants::SPLITZ_API_CACHING_ENABLED => $isSplitzCachingEnabled
+            Constants::SPLITZ_API_CACHING_ENABLED => $isSplitzCachingEnabled,
+            Constants::RAZORX_CACHING_ENABLED     => $isRazorxCachingEnabled
         ];
 
         if ($isConcurrentApiCallEnabled)
@@ -363,11 +367,12 @@ class UserController extends Controller
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
 
         $dimensions = [
-            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN             => ApiUrl::getRequestOrigin(),
-            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN             => $domain,
-            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE              => $currentRouteName,
-            MetricConstants::LABEL_DASHBOARD_CBS                    => $cbsFlow,
-            MetricConstants::LABEL_DASHBOARD_CONCURRENT_API_CALL    => $concurrentApICall
+            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN               => ApiUrl::getRequestOrigin(),
+            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN               => $domain,
+            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE                => $currentRouteName,
+            MetricConstants::LABEL_DASHBOARD_CBS                      => $cbsFlow,
+            MetricConstants::LABEL_DASHBOARD_CONCURRENT_API_CALL      => $concurrentApICall,
+            MetricConstants::LABEL_DASHBOARD_RAZORX_CACHING_API_CALL  => $this->isRazorxCachingEnabled(),
         ];
 
         $this->trace->info(TraceCode::USER_RENDER_DATA, $dimensions + ['time_taken' => $timeTaken]);
@@ -1525,6 +1530,19 @@ class UserController extends Controller
         }
 
         return AppResponse::jsonResponse($error, null);
+    }
+
+
+    private function isRazorxCachingEnabled(): bool
+    {
+        $experimentId = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 
     /**

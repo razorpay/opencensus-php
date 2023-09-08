@@ -13,6 +13,7 @@ use Config;
 use App\Base;
 use DateTimeZone;
 use App\Merchant;
+use App\Razorx;
 use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Http\Headers;
@@ -1311,7 +1312,7 @@ class Service extends Base\Service
         return round(microtime(true) * 1000);
     }
     
-    private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled): array
+    private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled, $isRazorxCachingEnabled = false): array
     {
         $startTime = self::millitime();
         
@@ -1333,11 +1334,16 @@ class Service extends Base\Service
     
         $merchantService = new Merchant\Service;
 
-        if (isset($allApiResponses[self::EXPERIMENT_PROMISE]))
+        if (empty($data[Constants::EXPERIMENTS]) && isset($allApiResponses[self::EXPERIMENT_PROMISE]))
         {
             $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
         
             $data['experiments'] = $experiments;
+
+            if($isRazorxCachingEnabled && empty($experiments) == false)
+            {
+                (new Razorx\Service())->setRazorxCacheByIdAsyncPromise($currentMerchantId, $experiments);
+            }
         
             $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
         
@@ -1432,7 +1438,7 @@ class Service extends Base\Service
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
             ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
-            ($experiments === "1"))
+            ($experiments === "1") and empty($data[Constants::EXPERIMENTS]))
         {
             $promise = $merchantService->getExperimentPromise($guzzleClient);
             $apiPromiseAny[self::EXPERIMENT_PROMISE] = new ApiPromiseAny('razorx/bulkevaluate','GET');
@@ -1615,10 +1621,29 @@ class Service extends Base\Service
                         
                         }
                     }
+
+                    $isRazorxCachingEnabled = $params[Constants::RAZORX_CACHING_ENABLED];
+                    
+                    $data[Constants::EXPERIMENTS] = [];
+
+                    if($isRazorxCachingEnabled) {
+
+                        $razorxExperiments = (new Razorx\Service())->getRazorxCacheByIdAsyncPromise($currentMerchantId);
+
+                        if($razorxExperiments) {
+
+                            $data[Constants::EXPERIMENTS] = $razorxExperiments;
+
+                            $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
+        
+                            $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
+                        
+                        }
+                    }
     
                     $apiPromiseAny = $this->getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data);
     
-                    $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled);
+                    $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled, $isRazorxCachingEnabled);
                 }
             }
         }
@@ -1766,7 +1791,7 @@ class Service extends Base\Service
                             ]
                         );
 
-                        $experiments = $merchantService->getExperiments();
+                        $experiments = $merchantService->getExperiments($params[Constants::RAZORX_CACHING_ENABLED], $currentMerchantId);
 
                         $data['experiments'] = $experiments;
 

@@ -838,4 +838,21 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse([], $data);
     }
+
+    // invalidate the complete razorX cache
+    public function clearRazorXCache() {
+
+        $input = Input::all();
+    
+        $error = (new App\Razorx\Validator)->validateInput('razorx_invalidation', $input)->messages();
+    
+        if(empty($error) === false)
+        {
+            return [$error, []];
+        }
+
+        $data = (new App\Razorx\Service())->clearRazorxCache($input);
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }

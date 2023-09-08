@@ -79,7 +79,8 @@ class Constants
   const PASSPORT_MISSING_FOR_OAUTH_ROUTE                = 'passport_missing_for_oauth_route';
   const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_HIT           = 'splitz_experiment_dashboard_cache_hit';
   const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'splitz_experiment_dashboard_cache_miss';
-
+  const RAZORX_EXPERIMENT_DASHBOARD_CACHE_HIT           = 'razorx_experiment_dashboard_cache_hit';
+  const RAZORX_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'razorx_experiment_dashboard_cache_miss';
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';
   const LOGIN_ACTION                = 'login_action';
@@ -113,6 +114,8 @@ class Constants
   const LABEL_DASHBOARD_CBS                         = 'chunked_based_streaming';
   const LABEL_DASHBOARD_CONCURRENT_API_CALL         = 'concurrent_api_call';
   
+  const LABEL_DASHBOARD_RAZORX_CACHING_API_CALL     = 'razorx_cache_api_call';
+
   const LABEL_RZP_TEAM                              = 'rzp_team';
 
   // Metric labels - HTTP_REQUESTS_API_DOWNSTREAM

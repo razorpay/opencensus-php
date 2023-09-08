@@ -1043,13 +1043,13 @@ class Service extends Base\Service
         return $data['count'];
     }
 
-    public function getExperiments()
+    public function getExperiments($razorxCachingEnabled = false, $merchantId = '')
     {
         $response = [];
 
         $razorxService = (new Razorx\Service());
 
-        $response = $razorxService->updateExperiments($response);
+        $response = $razorxService->updateExperiments($response, $razorxCachingEnabled, $merchantId);
 
         $experiments = $response['experiments'] ?? [];
 
@@ -1129,7 +1129,7 @@ class Service extends Base\Service
     {
         $razorxService = (new Razorx\Service());
 
-        return $razorxService->getBulkTreatmentPromise(Razorx\Service::FEATURE_FLAGS, $guzzleClient);
+        return $razorxService->getBulkTreatmentPromise(Razorx\Constants::FEATURE_FLAGS, $guzzleClient);
     }
 
     public function getBusinessTypes(){

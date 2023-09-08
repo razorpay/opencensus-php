@@ -197,6 +197,8 @@ class Constants
     const SIGNUP_SOURCE                     = 'signup_source';
     const REQUEST_SOURCE                    = 'request_source';
 
+    const RAZORX_CACHING_ENABLED            = 'RAZORX_CACHING_ENABLED';
+
     const SESSION_WHITELISTED_ERROR_CODES = [
         'BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED',
         'BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED',
