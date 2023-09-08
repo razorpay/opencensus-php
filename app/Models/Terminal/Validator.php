@@ -275,7 +275,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
-    
+
     protected static $upiCitiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_citi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -500,6 +500,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',
         Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|max:15',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string|max:32',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:15',
         Entity::EMI                        => 'sometimes|boolean',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
@@ -851,6 +852,7 @@ class Validator extends Base\Validator
     protected static $hdfcEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:15',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string|max:32',
         Entity::GATEWAY                    => 'sometimes|in:hdfc',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
