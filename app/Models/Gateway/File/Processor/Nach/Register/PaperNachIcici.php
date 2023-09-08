@@ -455,12 +455,12 @@ class PaperNachIcici extends Base
 
         $occurences->addChild(RequestFields::FREQUENCY, Constants::ADHOC);
 
-        $occurences->addChild(RequestFields::FIRST_COLLECTION_DATE, $firstCollectionDate);
-
         if($mandateCreateDateEnabled === true){
             $formGenerationDate = Carbon::createFromTimestamp($formGenerationEpoch, Timezone::IST)->format('Y-m-d');
             ($occurences->addChild(RequestFields::DRTN))->addChild(RequestFields::FORM_DATE, $formGenerationDate);
         }
+
+        $occurences->addChild(RequestFields::FIRST_COLLECTION_DATE, $firstCollectionDate);
 
         $endDate = $token->getExpiredAt();
         if (empty($endDate) === false)
