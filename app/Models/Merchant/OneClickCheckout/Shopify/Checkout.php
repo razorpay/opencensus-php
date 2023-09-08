@@ -376,6 +376,15 @@ class Checkout extends Base\Core
 
         $checkoutId = $order->getNotes()['storefront_id'];
 
+        $cartToken = $this->getCartTokenFromCheckoutId($checkoutId);
+
+        $response = $this->app['magic_analytics_provider_service']->fetchUniqueId($this->merchant->getId(), $cartToken);
+
+        if(!empty($response) && $response['unique_id'] != "")
+        {
+            return;
+        }
+
         $cartId = $order->getNotes()['cart_id'];
 
         $client = $this->getShopifyClientByMerchant();

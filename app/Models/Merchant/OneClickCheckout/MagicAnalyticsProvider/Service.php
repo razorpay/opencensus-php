@@ -12,6 +12,7 @@ class Service
 
     const ANALYTICS_EVENTS_API = 'analytics_events_api';
     const ANALYTICS_EVENTS_CONFIG_API = 'analytics_events_config_api';
+    const FETCH_UNIQUE_ID = 'fetch_unique_id';
     const PATH                 = "path";
 
     const PARAMS = [
@@ -20,6 +21,9 @@ class Service
         ],
         self::ANALYTICS_EVENTS_CONFIG_API => [
             self::PATH => 'v1/magic/analytics/ad_partner/configs?merchant_id=',
+        ],
+        self::FETCH_UNIQUE_ID => [
+            self::PATH => 'v1/magic/checkouts/recover_id'
         ]
     ];
 
@@ -136,6 +140,33 @@ class Service
 
             throw $e;
         }
+    }
+
+    public function fetchUniqueId($merchantId, $cartToken) : array
+    {
+        $url = self::PARAMS[self::FETCH_UNIQUE_ID][self::PATH];
+
+        $input = [
+            'merchant_id' => $merchantId,
+            'shopify_cart_token' => $cartToken,
+        ];
+
+        try
+        {
+            return $this->app['integration_service_client']->sendRequest($url, Requests::POST, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAGIC_CONSUMER_APP_FETCH_UNIQUE_ID_ERROR,
+                []
+            );
+
+            $this->app['trace']->count(TraceCode::MAGIC_CONSUMER_APP_FETCH_UNIQUE_ID_ERROR);
+        }
+        return [];
     }
 
 }
