@@ -4078,4 +4078,100 @@ class Entity extends Base\PublicEntity
         }
         return Timezone::IST;
     }
+
+    public function getTerminalAttribute()
+    {
+        $terminals = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminals = $this->getRelation('terminal');
+        }
+
+        if ($terminals !== null)
+        {
+            return $terminals;
+        }
+
+        $app = \App::getFacadeRoot();
+
+        $rampUpTerminalsTraffic = $app['config']->get('applications.terminals_service.merchant_associate_terminals_from_ts');
+
+        if(!(new Terminal\Repository)->canMerchantFetchTerminalsFromTS($this->getId(),$rampUpTerminalsTraffic))
+        {
+
+            try
+            {
+
+                $terminals = $this->terminals()->get();
+
+                if (empty($terminals) === false)
+                {
+                    (new Terminal\Service())->pushTerminalReadMetrics( "merchant",false);
+
+                    $this->setRelation('terminal',$terminals);
+
+                    return $terminals;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch (\Throwable $ex)
+            {
+
+                $data = [
+                    'entity'=>'merchant'
+                ];
+
+                $data = (new Terminal\Service())->addRouteNameToMetrics($data);
+
+                $app['trace']->count(Terminal\Metric::TERMINAL_RETRIEVED_ERROR,$data);
+
+                $data['fetch_from_ts'] = false;
+
+                $app['trace']->traceException($ex, Logger::CRITICAL, TraceCode::TERMINALS_SERVICE_READ_OVERRIDES_ERROR, $data);
+
+                throw $ex;
+            }
+
+        }
+
+        $id = $this->getAttribute(self::MERCHANT_ID);
+
+        if (empty($id))
+        {
+            return null;
+        }
+
+        try
+        {
+            $terminals = (new Terminal\Repository)->getByMerchantId($id, false);
+
+            (new Terminal\Service())->pushTerminalReadMetrics("merchant",true);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $data = [
+                'entity'=>'merchant'
+            ];
+
+            $data = (new Terminal\Service())->addRouteNameToMetrics($data);
+
+            $app['trace']->count(Terminal\Metric::TERMINAL_RETRIEVED_ERROR, $data);
+
+            $data['id'] = $id;
+
+            $app['trace']->traceException($ex, Logger::CRITICAL, TraceCode::TERMINALS_SERVICE_READ_OVERRIDES_ERROR, $data);
+
+            throw $ex;
+        }
+
+        $this->setRelation('terminal',$terminals);
+
+        return $terminals;
+    }
 }

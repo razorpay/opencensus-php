@@ -1362,6 +1362,7 @@ return [
         'proxy_calls_retry_attempt' => env('TERMINAL_PROXY_CALL_RETRY_ATTEMPT',1),
         'gatewaytoken_associate_terminals_from_ts' => env('GATEWAYTOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'token_associate_terminals_from_ts' => env('TOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
+        'merchant_associate_terminals_from_ts' => env('MERCHANT_ASSOCIATE_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
     ],
 
     'financial_data_service' => [

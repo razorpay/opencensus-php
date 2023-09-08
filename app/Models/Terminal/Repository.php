@@ -506,21 +506,78 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function getByMerchantId($mid)
+    public function getByMerchantId($mid, $withTrashed = true)
     {
         $metricData = [
             'route' => $this->fetchRouteName(),
             "function" => __FUNCTION__
         ];
 
+        if($this->isTestEnv())
+        {
+
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
-        $query = $this->newQuery()
-                      ->withTrashed();
+        $query = $this->newQuery();
+
+        if($withTrashed)
+        {
+            $query = $query->withTrashed();
+        }
 
         $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->get();
+
+        }
+
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
+        {
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+
+            try
+            {
+                $path = "v1/merchants/terminals";
+
+                $input = [
+                    'merchant_ids' => [$mid],
+                    'deleted' => true,
+                ];
+
+                if(!$withTrashed)
+                {
+                    $input['deleted'] = false;
+                }
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                    return $terminals;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (\Throwable $ex)
+            {
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+                $metricData['message'] = $ex->getMessage();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $metricData);
+
+
+                if(!$this->isTestEnv())
+                {
+                    throw $ex;
+                }
+            }
+        }
+
     }
 
     public function getEnabledTerminalsByMerchantId($mid)
