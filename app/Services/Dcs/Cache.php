@@ -5,6 +5,7 @@ namespace RZP\Services\Dcs;
 
 use App;
 use Razorpay\Dcs\CacheInterface;
+use RZP\Constants\Environment;
 use RZP\Trace\TraceCode;
 
 class Cache implements CacheInterface
@@ -25,7 +26,14 @@ class Cache implements CacheInterface
      */
     public function get($key)
     {
-        return $this->cache->get($key);
+        if (($this->app->isProduction() === true) or
+            (($this->app['env'] === Environment::TESTING) or
+                ($this->app['env'] === Environment::TESTING_DOCKER )))
+        {
+            return $this->cache->get($key);
+        }
+
+        return null;
     }
 
     /**
@@ -41,17 +49,22 @@ class Cache implements CacheInterface
      */
     public function set($key, $value, $ttl = 0): void
     {
-        $message = [
-            'action' => 'cache_set',
-            'key'    => $key,
-            'ttl'    => $ttl,
-        ];
+        if (($this->app->isProduction() === true) or
+            (($this->app['env'] === Environment::TESTING) or
+                ($this->app['env'] === Environment::TESTING_DOCKER )))
+        {
+            $message = [
+                'action' => 'cache_set',
+                'key'    => $key,
+                'ttl'    => $ttl,
+            ];
 
-        $this->trace->info(
-            TraceCode::REDIS_KEY_SET, $message
-        );
+            $this->trace->info(
+                TraceCode::REDIS_KEY_SET, $message
+            );
 
-        $this->cache->put($key, $value, $ttl);
+            $this->cache->put($key, $value, $ttl);
+        }
     }
 }
 
