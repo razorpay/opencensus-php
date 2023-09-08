@@ -81,9 +81,25 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    public function createV3($input, $path)
+    public function validateCreateV3($input, $path)
     {
         $path = str_replace("v1","v3", $path);
+
+        $this->trace->info(TraceCode::TERMINAL_VALIDATE_CREATE_REQUEST, [
+            '$path' => $path,
+        ]);
+
+        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+    }
+
+    public function createV3($input, $path)
+    {
+
+        $path = str_replace("v1","v3", $path);
+
+        $this->trace->info(TraceCode::TERMINAL_CREATE_REQUEST, [
+            '$path' => $path,
+        ]);
 
         return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
     }

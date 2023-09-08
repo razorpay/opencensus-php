@@ -557,6 +557,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ANALYTICS_INCORRECT_DATA                      = 'PAYMENT_ANALYTICS_INCORRECT_DATA';
     const RECORD_TERMINAL_AUDIT_FAILED                          = 'RECORD_TERMINAL_AUDIT_FAILED';
     const TERMINAL_CREATE_REQUEST                               = 'TERMINAL_CREATE_REQUEST';
+    const TERMINAL_VALIDATE_CREATE_REQUEST                      = 'TERMINAL_VALIDATE_CREATE_REQUEST';
     const TERMINAL_REMOVE_FROM_MERCHANT                         = 'TERMINAL_REMOVE_FROM_MERCHANT';
     const TERMINAL_ADD_MERCHANT                                 = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                         = 'TERMINAL_COPY';

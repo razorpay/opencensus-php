@@ -57,11 +57,26 @@ class Service extends Base\Service
         return $terminal;
     }
 
+    public function validateCreateTerminalV3( $input, $path)
+    {
 
-    public function createTerminalV3($id, $input, $path)
+        $terminal = (new Terminal\Core)->validateCreateV3($input, $path);
+
+        $this->trace->info(TraceCode::TERMINAL_VALIDATE_CREATE_REQUEST, [
+            'terminal' => $terminal
+        ]);
+
+        return $terminal;
+    }
+
+    public function createTerminalV3($input, $path)
     {
 
         $terminal = (new Terminal\Core)->createV3($input, $path);
+
+        $this->trace->info(TraceCode::TERMINAL_CREATE_REQUEST, [
+            'terminal' => $terminal
+        ]);
 
         return $terminal;
     }
