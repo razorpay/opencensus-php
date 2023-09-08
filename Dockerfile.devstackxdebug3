@@ -57,8 +57,16 @@ RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}
-RUN make error-module-clean
-RUN make error-module-fetch
+RUN --mount=type=secret,id=git_token set -eux && \
+    echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    make error-module-clean && \
+    rm -f ~/.netrc
+
+RUN --mount=type=secret,id=git_token set -eux && \
+    echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    make error-module-fetch && \
+    rm -f ~/.netrc
+
 
 # Install and configure XDebug
 RUN pecl81 install xdebug
