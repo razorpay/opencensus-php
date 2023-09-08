@@ -1614,6 +1614,8 @@ class Constants
 
     const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
 
+    const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
+
     // form builder
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
@@ -2489,6 +2491,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PL       => true,
         self::ENABLE_MERCHANT_EXPIRY_PP       => true,
         self::DYNAMIC_PL_OFFSET               => true,
+        self::ENABLE_PAYMENT_LINK_SIGN        => true,
         self::ENABLE_CREATE_OWN_TEMPLATE      => true,
         self::ENABLE_CUSTOMER_AMOUNT          => true,
         self::FILE_UPLOAD_PP                  => true,

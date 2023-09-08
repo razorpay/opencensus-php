@@ -29,6 +29,8 @@ class Constants
     const EnableMerchantExpiryForPP = 'payment_page_no_expiry_enabled';
     const EnableMerchantExpiryForPL = 'payment_link_no_expiry_enabled';
     const DynamicPLOffset = 'dynamic_pl_offset';
+
+    const EnablePaymentLinkSign = 'enable_payment_link_sign';
     const EnableMerchantCreateOwnTemplate = 'payment_page_create_own_template_enabled';
     const EnableCustomerAmount = 'payment_page_customer_decide_amount_enabled';
     const ReceiptUniqueEnabled = 'receipt_unique_enabled';
@@ -276,6 +278,7 @@ class Constants
         self::EnableMerchantExpiryForPP => "rzp/nocode/merchant/paymentpage/Features",
         self::EnableMerchantExpiryForPL => "rzp/nocode/merchant/paymentlink/Features",
         self::DynamicPLOffset           => "rzp/pg/merchant/paymentlinks/Features",
+        self::EnablePaymentLinkSign => "rzp/pg/merchant/paymentlinks/Features",
         self::EnableMerchantCreateOwnTemplate => "rzp/nocode/merchant/paymentpage/Features",
         self::EnableCustomerAmount => "rzp/nocode/merchant/paymentpage/Features",
         self::ReceiptUniqueEnabled => "rzp/pg/merchant/order/Features",
@@ -495,6 +498,7 @@ class Constants
         self::AffordabilityWidgetSet                                        => self::AffordabilityWidgetSet,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL                     => self::EnableMerchantExpiryForPL,
         APIFeaturesConstants::DYNAMIC_PL_OFFSET                             => self::DynamicPLOffset,
+        APIFeaturesConstants::ENABLE_PAYMENT_LINK_SIGN                      => self::EnablePaymentLinkSign,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP                     => self::EnableMerchantExpiryForPP,
         APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE                    => self::EnableMerchantCreateOwnTemplate,
         APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT                        => self::EnableCustomerAmount,
