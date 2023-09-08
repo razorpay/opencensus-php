@@ -1318,7 +1318,7 @@ export const removeMid = (value) => {
 };
 
 export const DEFAULT_RULE = 'Default Rule';
-export const TOTAL_RULE_LIMIT = 15;
+export const TOTAL_RULE_LIMIT = 25;
 
 const setRuleModeOperand = (rule, mode) => {
   rule.expression?.operands?.forEach((o) => {
