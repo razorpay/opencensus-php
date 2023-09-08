@@ -1,30 +1,30 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import PropTypes from 'prop-types';
 
-import * as OffersActions from 'merchant/reducers/offers/offersList';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-
-import Banner from 'common/ui/Banner';
-import Time from 'common/ui/Time';
-import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Amount from 'common/ui/Amount';
+import { Modules } from 'common/constant/enums';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
+import Banner from 'common/ui/Banner';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { OfferStatusLabel } from 'merchant/components/StatusLabel';
+import * as OffersActions from 'merchant/reducers/offers/offersList';
+import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 import {
   PAYMENT_NETWORK_MAP,
   OFFER_TYPE_LABELS,
   ISSUERS,
   OFFER_DISABLE_CTA_NETWORKS,
 } from 'merchant/views/Offers/constants';
-import SubscriptionUsageDetails from './SubscriptionUsageDetails';
-import { emiDurationString } from 'merchant/views/Offers/New/helpers';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isOfferIdClickable } from 'merchant/views/Offers/utils';
-import { Modules } from 'common/constant/enums';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 
 @connect((state) => ({ ...state.offer, user: state.session.user }), {
   ...OffersActions,
@@ -104,14 +104,8 @@ export default class OffersDetails extends React.Component {
   };
 
   toggleActivation = () => {
-    const {
-      offer,
-      tracking,
-      fetchOffer,
-      updateOfferInReduxList,
-      showNotification,
-      user,
-    } = this.props;
+    const { offer, tracking, fetchOffer, updateOfferInReduxList, showNotification, user } =
+      this.props;
     const { id, active, current_offer_usage, payment_network, emi_subvention } = offer;
     const actionName = active ? 'Disable' : 'Enable';
 
@@ -234,6 +228,7 @@ export default class OffersDetails extends React.Component {
       redemption_type,
       terms,
       no_of_cycles,
+      max_order_amount,
     } = offer;
 
     const discountType = percent_rate !== null ? 'Percentage' : 'Flat';
@@ -321,6 +316,12 @@ export default class OffersDetails extends React.Component {
                   <EntityDetailRow label="Min Payment">
                     <Amount value={min_amount} currency="INR" />
                   </EntityDetailRow>
+
+                  {max_order_amount && (
+                    <EntityDetailRow label="Max Payment">
+                      <Amount value={max_order_amount} currency="INR" />
+                    </EntityDetailRow>
+                  )}
 
                   <EntityDetailRow label="Start of Offer">
                     <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />

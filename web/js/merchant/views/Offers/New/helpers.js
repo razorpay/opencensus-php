@@ -82,7 +82,6 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
       fieldsToBeDeleted.push('merchant_borne_discount');
     }
   } else {
-    fieldsToBeDeleted.push('max_order_amount');
     fieldsToBeDeleted.push('low_cost_emi');
     fieldsToBeDeleted.push('emi_durations');
     fieldsToBeDeleted.push('merchant_borne_discount');

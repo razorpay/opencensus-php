@@ -112,7 +112,7 @@ export default function DiscountType({
           />
         )}
 
-        {isNO_COST_EMIDiscount && (
+        {(isNO_COST_EMIDiscount || formData.discount_type) && (
           <Input
             name="max_order_amount"
             label="Maximum Order amount"
