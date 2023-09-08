@@ -28,10 +28,10 @@ _HLD - **[Miro link](https://miro.com/welcomeonboard/b09jSTBDMXJzWmxjNVczdksySVh
 
 ### 2. Schedule and Permissions
 
-| Deployment Type | Timings                       | Permission to Start                                                           | Permission to Approve                                                                                                                                               |
-| --------------- | ----------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Regular**     | Monday - Friday (09:00-17:00) | [Member of Frontend](https://github.com/orgs/razorpay/teams/frontend/members) | [Member of Deploy Leads](https://github.com/orgs/razorpay/teams/deploy-leads/members) (tag @dashboarddeployleads on slack for approval once all test suites passed) |
-| **Hotfix**      | No fixed time window          | [Member of Frontend](https://github.com/orgs/razorpay/teams/frontend/members) | Director Level (Chirag Patel/Rizwanul Haque/Director/Director+)                                                                                                     |
+| Deployment Type | Timings                                 | Permission to Start                                                           | Permission to Approve                                                                                                                                               |
+| --------------- | --------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Regular**     | Monday, Wednesday, Friday (10:00-17:00) | [Member of Frontend](https://github.com/orgs/razorpay/teams/frontend/members) | [Member of Deploy Leads](https://github.com/orgs/razorpay/teams/deploy-leads/members) (tag @dashboarddeployleads on slack for approval once all test suites passed) |
+| **Hotfix**      | No fixed time window                    | [Member of Frontend](https://github.com/orgs/razorpay/teams/frontend/members) | Director Level (Chirag Patel/Rizwanul Haque/Director/Director+)                                                                                                     |
 
 > **Note -**
 >
@@ -58,14 +58,14 @@ _HLD - **[Miro link](https://miro.com/welcomeonboard/b09jSTBDMXJzWmxjNVczdksySVh
 
 #### 4.2. Steps to follow for Hotfix Deployment
 
-1. Fork out of the deployed commit and create a branch **with the prefix** `hotfix/`
+1. Fork out of the [deployed commit](https://dashboard.razorpay.com/commit.txt) and create a branch **with the prefix** `hotfix/` (do not fork from master)
 2. Cherry-pick the commit that needs to be deployed as a hotfix.
 3. Get the latest commit id of your new branch for deploying that commit id.
 4. Cross-check the diff between the currently deployed commit and the new commit id to be deployed. It should be carrying only the targeted changes.
 5. Start the deployment with the above commit id
-6. Request for approval by tagging @dashboarddeployleads on the [#payments-dashboard](https://razorpay.slack.com/archives/C0156ULAEFQ) channel.
+6. Request for approval by tagging **@dashboarddeployleads** on the [#payments-dashboard](https://razorpay.slack.com/archives/C0156ULAEFQ) channel. Use the **Hotfix Approval Request** template given below.
 7. Take the approval of the directors (Deploy leads will approve the deployment post permission from directors)
-8. After deployment/, while deploying of hotfix make sure the changes get merged to master immediately (If you miss this step, new deployments will not have the hotfix changes in it)
+8. After deployment/while deploying of hotfix make sure the changes get merged to master immediately (If you miss this step, new deployments will not have the hotfix changes in it)
 
 > **Note for hotfix deployments -**
 >
@@ -74,6 +74,24 @@ _HLD - **[Miro link](https://miro.com/welcomeonboard/b09jSTBDMXJzWmxjNVczdksySVh
 > - @dashboarddeployleads needs to make sure the PR format is followed before deploying as a hotfix.
 > - For hotfix deployment, you need a sign-off from the directors and make sure one round of sanity is done by someone else from the team.
 > - Deploy as a hotfix only if the changes are less than 15 lines of code and the deployment does not carry any other changes than yours. And changes should not have any breaking changes in it.
+
+##### 4.2.1. Hotfix Approval Request Template
+> **Summary:** <50 word summary of the issue> <What is broken> Ex: 100% of the Merchants are unable to invite team members to their accounts\
+> **Is it caused by a change:** Yes/No\
+> **Owner of the change:** Developer/Team\
+> **Reference to the change:** PR Link / JIRA Ticket / Slack Thread\
+> **PR Approvers of the change:** Developer/Developers\
+> **Escalation Source:** Dev Testing / Merchant Escalation / Alerts\
+> **Escalation Reference:**  Slack / PD / Sentry / Any Relevant Links\
+> **Potential Impact:** Merchants Impacted / GMV Loss\
+> **Best resolution:** Rollback / Forward Fix\
+> **Link to Fix (if applicable):** PR Link
+
+
+##### 4.2.2. Post Hotfix Deployment Template
+- Why was this not caught in Dev Testing?
+- Why was this not caught in Pre Prod Suite?
+- ETA to add the scenario to Pre Prod Suite
 
 ### 5. Post-deployment
 
