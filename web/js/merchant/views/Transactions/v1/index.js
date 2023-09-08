@@ -302,8 +302,9 @@ class TransactionsContainer extends Component {
               </NavLink>
             </ShowWhen>
             <ShowWhen
-              featureEnabled="enable_intl_bank_transfer"
-              additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
+              additionalCondition={(user) =>
+                user.international && user.isAllowedView('b2b_payments')
+              }
             >
               <NavLink
                 to="/payments/b2b-exports"
