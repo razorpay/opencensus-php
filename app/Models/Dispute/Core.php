@@ -139,7 +139,7 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($this->app['api.route']->getCurrentRouteName());
+        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($payment->isInternational());
 
         return $this->mutex->acquireAndRelease(
             $payment->getId(),

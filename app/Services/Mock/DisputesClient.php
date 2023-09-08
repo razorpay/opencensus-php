@@ -25,7 +25,7 @@ class DisputesClient
         return [];
     }
 
-    public function isShadowModeDualWrite($route)
+    public function isShadowModeDualWrite($isInternationalPayment = true)
     {
         return false;
     }

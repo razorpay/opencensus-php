@@ -215,8 +215,13 @@ class DisputesClient
         return $variant === RazorxTreatment::RAZORX_VARIANT_ON;
     }
 
-    public function isShadowModeDualWrite($route): bool
+    public function isShadowModeDualWrite($isInternationalPayment = true): bool
     {
+        if ($isInternationalPayment === true)
+        {
+            return false;
+        }
+
         $featureFlag = sprintf("%s_%s", RazorxTreatment::DISPUTES_DUAL_WRITE_SHADOW_MODE, $this->app['api.route']->getCurrentRouteName());
 
         return $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->app['basicauth']->getMode() ?? Mode::LIVE)
