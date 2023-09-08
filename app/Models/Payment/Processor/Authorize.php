@@ -11,6 +11,7 @@ use Route;
 use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Constants\Country;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -7810,7 +7811,7 @@ trait Authorize
 
             // adding these check before checking feature flag constraint since we are updating error code there and we don;t want to update any error for international and bajaj since these cases are not supported for network tokenisation
 
-            if ($token->card->isInternational() === true)
+            if ($token->card->isInternational() === true || Country::matches($token->merchant->getCountry() , Country::MY))
             {
                 return ;
             }
