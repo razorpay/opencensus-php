@@ -12,21 +12,21 @@ class EdgeAuthenticateTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->ba->appAuth(pwd: env('APP_EDGE_SECRET'));
     }
 
     public function testAuthenticate()
     {
         $response = $this->sendRequest([
-            'url' => 'edge/internal/authenticate',
-            'method' => 'POST'
-        ]);
+            'url' => '/edge/internal/authenticate',
+            'method' => 'POST',
+            'server' => [
+                'PHP_AUTH_USER' => 'rzp_test',
+                'PHP_AUTH_PW'   => env('APP_EDGE_SECRET')
+                ]
+            ]);
 
         $response->assertOk();
-        $response->assertExactJson([
-            [ 'message' => 'Work in progress']
-        ]);
+        $response->assertExactJson([ 'message' => 'Work in Progress']);
     }
 
 
