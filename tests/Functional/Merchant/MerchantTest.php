@@ -17584,8 +17584,14 @@ The same has been enabled for the account.
 
         return null;
     }
-
-    public function switchProductMerchantSetup (...$args)
+    
+    public function fetchQueryDBException()
+    {
+        // id1 is not present DB exception
+        $this->fixtures->create('merchant', ['id1' => '10000000000000']);
+    }
+    
+    public function switchProductMerchantSetup ($args)
     {
         $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
 
@@ -17601,7 +17607,7 @@ The same has been enabled for the account.
             ->will($this->returnValue(true));
 
         $validatorMock->method('addProductSwitchRole')
-            ->will($this->onConsecutiveCalls(...$args));
+            ->will($this->onConsecutiveCalls(...array_get($args, "addProductSwitchRole", [])));
 
         $validatorMock->method('captureEventOfInterestOfPrimaryMerchantInBanking')
             ->will($this->returnValue(null));
@@ -17612,8 +17618,16 @@ The same has been enabled for the account.
         $validatorMock->method('activateBusinessBankingAndApplyPromotion')
             ->will($this->returnValue(null));
 
-        $validatorMock->method('postProductSwitchActions')
-            ->will($this->returnValue(null));
+        if (! empty(array_get($args, "postProductSwitchActions")))
+        {
+            $validatorMock->method('postProductSwitchActions')
+                ->will(array_get($args, "postProductSwitchActions"));
+        }
+        else
+        {
+            $validatorMock->method('postProductSwitchActions')
+                ->will($this->returnValue(null));
+        }
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -17630,20 +17644,37 @@ The same has been enabled for the account.
     {
         $exception = $this->fetchQueryException();
 
-        $return = $this->switchProductMerchantSetup($exception, null);
+        $return = $this->switchProductMerchantSetup(["addProductSwitchRole" => [$exception, null]]);
 
         $this->assertNull($return);
     }
 
     public function testSwitchProductMerchantOnFailure()
     {
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(\RZP\Exception\BadRequestException::class);
 
         $exception = $this->fetchQueryException();
 
-        $this->switchProductMerchantSetup($exception, $exception);
+        $this->switchProductMerchantSetup(["addProductSwitchRole" => [$exception, $exception]]);
     }
-
+    
+    public function testSwitchProductMerchantDBFailure()
+    {
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        
+        $exception = $this->fetchQueryDBException();
+        
+        $this->switchProductMerchantSetup(["addProductSwitchRole" => [$exception, $exception]]);
+    }
+    
+    public function testSwitchProductMerchantOnFailuredDueToPostProductSwitchActionsFailure()
+    {
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+        
+        $exception = $this->fetchQueryException();
+        
+        $this->switchProductMerchantSetup(["postProductSwitchActions" => $exception, "addProductSwitchRole" => [null]]);
+    }
 
     public function initializeMerchantAndBankAccount($merchantId)
     {

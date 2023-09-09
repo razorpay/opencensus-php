@@ -8258,7 +8258,11 @@ class Service extends Base\Service
         return (in_array($org, \RZP\Models\Admin\Org\Constants:: ALLOW_TO_BUSINESS_BANKING, true) and
             (Merchant\Detail\BusinessType::isUnregisteredBusiness($businessType) === false));
     }
-
+    
+    /**
+     * @throws Throwable
+     * @throws BadRequestException
+     */
     public function switchProductMerchant($product = null, $afterEmailVerified = false)
     {
         // TODO: remove this once Yesbank issue is resolved
@@ -8317,7 +8321,15 @@ class Service extends Base\Service
                         // This will return from the transaction, but the loop while loop continues
                         return;
                     }
-
+    
+                    if ($ex->errorInfo[1] == 1062)
+                    {
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                            null,
+                            null,
+                            "Duplicate entry exists");
+                    }
+                    
                     throw $ex;
                 }
 
@@ -8388,9 +8400,29 @@ class Service extends Base\Service
             $wasSwitchToPG or
             $afterEmailVerified)
         {
-            Tracer::inSpan(['name' => 'product_switch.postProductSwitchActions'] , function() use($merchant, $wasSwitchToPG, $wasBankingEnabledNow) {
-                $this->postProductSwitchActions($merchant, $wasBankingEnabledNow);
-            });
+            try
+            {
+                Tracer::inSpan(['name' => 'product_switch.postProductSwitchActions'] , function() use($merchant, $wasSwitchToPG, $wasBankingEnabledNow) {
+                    $this->postProductSwitchActions($merchant, $wasBankingEnabledNow);
+                });
+            }
+            catch(\Illuminate\Database\QueryException $ex)
+            {
+                if ($ex->errorInfo[1] == 1062)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::ERROR_DUE_TO_ISOLATION_LEVEL);
+                    
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                      null,
+                      null,
+                      "Duplicate entry exists");
+                }
+    
+                throw $ex;
+            }
         }
 
     }
