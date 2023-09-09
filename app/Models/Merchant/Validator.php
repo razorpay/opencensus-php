@@ -266,7 +266,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
-        Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
+        Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255|utf8',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
         Entity::AMOUNT_CREDITS_THRESHOLD => 'sometimes|integer|nullable',
         Entity::REFUND_CREDITS_THRESHOLD => 'sometimes|integer|nullable',

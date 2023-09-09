@@ -5,9 +5,11 @@ namespace Tests\Unit\Models\Merchant;
 
 use Mockery;
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Service;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use Tests\Unit\TestCase;
 
@@ -122,6 +124,15 @@ class UserTest extends TestCase
 
         $coreMock->shouldHaveReceived("addPartnerAddedFeaturesToSubmerchantOnMode")->twice();
         $this->assertNull($result);
+    }
+
+    public function testValidationInvalidCharacterInDisplayName()
+    {
+        $entity = new \RZP\Models\Merchant\Entity();
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $entity->edit([\RZP\Models\Merchant\Entity::DISPLAY_NAME => "Sample name 𤨒"], "editConfig");
     }
 
     public function createTestDependencyMocks()
