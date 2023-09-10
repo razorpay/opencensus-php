@@ -2,10 +2,16 @@
 
 namespace Unit\Models\Merchant\Website;
 
+use Config;
 use Razorpay\Asv\Error\GrpcError;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponse;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponseByMerchantId;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Models\Merchant\Website\Repository;
 use RZP\Modules\Acs\Wrapper\Constant;
@@ -72,6 +78,37 @@ class RepositoryTest extends TestCase
                         "updated_at":1234
            }';
 
+    private $splitzResponse = [
+        'id' => '10000000000000',
+        'project_id' => 'K1ZCHBSn7hbCMN',
+        'experiment' => [
+            'id' => 'K1ZaAGS9JfAUHj',
+            'name' => 'CallSyncDviationAPI',
+            'exclusion_group_id' => '',
+        ],
+        'variant' => [
+            'id' => 'K1ZaAHZ7Lnumc6',
+            'name' => 'Dummy Enabled',
+            'variables' => [
+                [
+                    'key' => 'enabled',
+                    'value' => 'true',
+                ]
+            ],
+            'experiment_id' => 'K1ZaAGS9JfAUHj',
+            'weight' => 100,
+            'is_default' => false
+        ],
+        'Reason' => 'bucketer',
+        'steps' => [
+            'sampler',
+            'exclusion',
+            'audience',
+            'assign_bucket'
+        ]
+    ];
+
+
     private $sampleSpltizOutput = [
         'status_code' => 200,
         'response' => [
@@ -104,6 +141,29 @@ class RepositoryTest extends TestCase
             ]
         ]
     ];
+
+    private $merchantEntityJson1 = '{
+        "id": "K4O9sCGihrL2bG",
+        "org_id": "100000razorpay",
+        "default_refund_speed": "normal",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "country_code": "IN"
+     }';
+
+    private $merchantDetailEntityJson1 = '{
+        "merchant_id": "K4O9sCGihrL2bG",
+        "additional_websites": "[\"https://razorpay.in\"]",
+        "steps_finished": "[1,2,3]",
+        "kyc_clarification_reasons": "{\"nc_count\": 1, \"additional_details\": [], \"clarification_reasons\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}, \"clarification_reasons_v2\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}}",
+        "kyc_additional_details": "{\"business_description\": \"description\"}",
+        "custom_fields": "{\"tnc\":{\"accepted\":1,\"ip_address\":\"201.189.12.23\",\"time\":1561110415,\"url\":\"https:\\/\\/rtll.com\\/tnc\",\"user_agent\":\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_14_4)\"},\"apps\":[{\"name\":\"Ratnalal Shopping App\",\"links\":{\"android\":\"https:\\/\\/playstore.google.com\\/appId\\/122\",\"ios\":\"https:\\/\\/appstore.com\\/appId\\/122\"}}]}",
+        "client_applications": "{\"ios\": [{\"url\": \"appstore.acme.org\", \"name\": \"Acme\"}], \"android\": [{\"url\": \"playstore.acme.org\", \"name\": \"Acme\"}]}",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "fund_addition_va_ids": "{\"fee_credit\": \"va_LIc0SnP6OMuXxH\"}",
+        "industry_category_code_type": "iIfMMCYyTFbVSgHjgxBo"
+    }';
 
 
     public function testGetWebsiteDetailsForMerchantId()
@@ -425,5 +485,178 @@ class RepositoryTest extends TestCase
         return $this->getMockBuilder("Razorpay\Asv\Interfaces\WebsiteInterface")
             ->enableOriginalConstructor()
             ->getMock();
+    }
+
+    public function testMerchantWebsiteAssociation()
+    {
+        $entitiesData = [
+            [
+                "repo" => new \RZP\Models\Merchant\Detail\Repository(),
+                "entityName" => "merchant_detail",
+                "data" => $this->merchantDetailEntityJson1,
+                "entityClass" =>  new MerchantDetailEntity(),
+                "merchant_id" => "K4O9sCGihrL2bG",
+                "shouldMerchantWebsiteBeCreated" => true,
+                "isDependentEntity" => true,
+                "dependentEntity" => [
+                    [
+                        "dependentEntityName" => "merchant",
+                        "dependentEntityData" => $this->merchantEntityJson1,
+                        "dependentEntityClass" => new MerchantEntity(),
+
+                    ]
+                ]
+            ]
+        ];
+
+        for ($i = 0; $i < count($entitiesData); $i++) {
+            $data = $entitiesData[$i];
+            if($data["isDependentEntity"])
+            {
+                for ($i = 0; $i < count($data["dependentEntity"]); $i++) {
+                    $dependentData = $data["dependentEntity"][$i];
+                    $this->createEntityInDatabase($dependentData["dependentEntityName"], $dependentData["dependentEntityData"], $dependentData["dependentEntityClass"]);
+                }
+            }
+            $this->createEntityInDatabase($data["entityName"], $data["data"], $data["entityClass"]);
+
+            if($data["shouldMerchantWebsiteBeCreated"])
+            {
+                $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
+            }
+
+            $entityRepo = $data["repo"];
+            $entity = $entityRepo->find($data["merchant_id"]);
+            $merchantWebsiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
+            $merchantWebsiteEntity1Array = $merchantWebsiteEntity1->toArray();
+            $merchantWebsiteProto1 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson1);
+
+            // TestCase1 - when route belongs to exclusive flow
+            $this->setSplitzWithOutputForBulk(["false", "false"], 0);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+            //TestCase 2 both experiment is false
+            $entity->unsetRelation('merchantWebsite');
+            $this->setSplitzWithOutputForBulk(["false", "false"],   1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+            //TestCase3 - experiment respons - false, true
+            $entity->unsetRelation('merchantWebsite');
+            $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+            //TestCase4 - experiment respons - true, false
+            $entity->unsetRelation('merchantWebsite');
+            $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+            //TestCase5 - call is going to asv
+            $entity->unsetRelation('merchantWebsite');
+            $merchantWebsiteResponse = (new MerchantWebsiteResponseByMerchantId())->setWebsites([$merchantWebsiteProto1]);
+            $this->setEntityMockClientWithMerchantIdAndResponse($data["merchant_id"], $merchantWebsiteResponse, null, "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+            //TestCase6 - should go to account service - Exception occurs fallback to DB
+            $entity->unsetRelation('merchantWebsite');
+            $this->setEntityMockClientWithMerchantIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array);
+
+
+            //TestCase7 - Not found in asv;
+            $entity->unsetRelation('merchantWebsite');
+            $this->setEntityMockClientWithMerchantIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            app('repo')->merchant_website = $merchantWebsiteRepo;
+            $this->assertNull($entity->merchantWebsite);
+
+            //TestCase8 - invalid argument in asv;
+            $entity->unsetRelation('merchantWebsite');
+            $this->setEntityMockClientWithMerchantIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantWebsiteRepo = new Repository();
+            $merchantWebsiteRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            app('repo')->merchant_website = $merchantWebsiteRepo;
+            $this->assertNull($entity->merchantWebsite);
+        }
+    }
+
+    private function updateAuditIdAndAssert($merchantWebsiteRepo, $entity, $merchantWebsiteEntity1Array) {
+        app('repo')->merchant_website = $merchantWebsiteRepo;
+        $website = $entity->merchantWebsite->toArray();
+        $website['audit_id'] = "testtesttest";
+        $this->assertEquals($merchantWebsiteEntity1Array, $website);
+    }
+
+    private function createEntityInDatabase($entityName, $json, $entity)
+    {
+        $entityArray = json_decode($json, true);
+        $entity->setRawAttributes($entityArray);
+        $this->fixtures->create($entityName,
+            $entity->toArray(),
+        );
+    }
+
+    private function setSplitzWithOutputForBulk(array $output, $count = 1, $exception = false) {
+        $response = [];
+        for ($i = 0; $i < count($output); $i++) {
+            $tempResponse = $this->splitzResponse;
+            $tempResponse["variant"]["variables"][0]["value"] = $output[$i];
+            $response[$i] = $tempResponse;
+        }
+
+        $splitzMock = $this->createSplitzMock(['bulkCallsToSplitz']);
+
+        if ($exception) {
+            $splitzMock->expects($this->exactly($count))->method('bulkCallsToSplitz')->willThrowException(new \Exception("sample"));
+        } else {
+            $splitzMock->expects($this->exactly($count))->method('bulkCallsToSplitz')->willReturn($response);
+        }
+
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        return;
+    }
+
+    public function getMockAsvRouterInRepository($method, $count, $response, $error)
+    {
+        $asvRouterMock = $this->getAsvRouteMock([$method]);
+        if ($error === null) {
+            $asvRouterMock->expects($this->exactly($count))->method($method)->willReturn($response);
+        } else {
+            $asvRouterMock->expects($this->exactly($count))->method($method)->willThrowException($error);
+        }
+
+        return $asvRouterMock;
+    }
+
+    private function getAsvRouteMock($methods = [])
+    {
+        return $this->getMockBuilder(AsvRouter::class)
+            ->enableOriginalConstructor()
+            ->onlyMethods($methods)
+            ->getMock();
+    }
+
+    protected function setEntityMockClientWithMerchantIdAndResponse($id, $response, $error, $method, $count)
+    {
+        $merchantWebsite = new MerchantWebsite();
+        $merchantWebsiteMockClient = $this->getMockClient();
+        $merchantWebsiteMockClient->expects($this->exactly($count))->method($method)->with($id, $merchantWebsite->getDefaultRequestMetaData())->willReturn([$response, $error]);
+        $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
     }
 }

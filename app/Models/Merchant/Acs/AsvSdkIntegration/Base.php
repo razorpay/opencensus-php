@@ -225,7 +225,7 @@ class Base
      * @throws BadRequestException
      * @throws BaseException|\Exception
      */
-    public function getLatestByMerchantId(string $id, RequestMetadata $requestMetadata = null): ?PublicEntity
+    public function getLatestByMerchantIdOrFail(string $id, RequestMetadata $requestMetadata = null): ?PublicEntity
     {
         try {
             $entitiesForMerchantId = $this->getByMerchantId($id, $requestMetadata);
@@ -240,6 +240,32 @@ class Base
         // Account Service, By default returns the ordering by created at desc. To get the latest element
         // we need to return the first element from the response.
         return $entitiesForMerchantId->first();
+    }
+
+    public function getLatestByMerchantIdOrFailCallBack(string $id, ?RequestMetadata $requestMetadata = null): \Closure
+    {
+        return function() use ($id, $requestMetadata) {
+            return $this->getLatestByMerchantIdOrFail($id, $requestMetadata);
+        };
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function getLatestByMerchantId(string $id, RequestMetadata $requestMetadata = null): ?PublicEntity
+    {
+        try {
+            $merchantWebsitesForMerchantId = $this->getLatestByMerchantIdOrFail($id, $requestMetadata);
+        } catch (\Exception $e) {
+            if( $e->getCode() == ErrorCode::BAD_REQUEST_NO_RECORD_FOUND_FOR_ID) {
+                return null;
+            }
+
+            throw $e;
+        }
+
+        return $merchantWebsitesForMerchantId;
     }
 
     public function getLatestByMerchantIdCallBack(string $id, ?RequestMetadata $requestMetadata = null): \Closure

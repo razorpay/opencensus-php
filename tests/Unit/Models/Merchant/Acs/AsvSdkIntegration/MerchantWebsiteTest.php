@@ -200,7 +200,7 @@ class MerchantWebsiteTest extends TestCase
         $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $merchantWebsite->getDefaultRequestMetaData())->willReturn([$merchantWebsiteResponse, null]);
 
         // Call and Assert //
-        $gotWebsite = $merchantWebsite->getLatestByMerchantId("K4O9sCGihrL2bH");
+        $gotWebsite = $merchantWebsite->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
         self::assertEquals($websiteEntity3->toArray(), $gotWebsite->toArray());
 
         /* Not found  */
@@ -209,7 +209,7 @@ class MerchantWebsiteTest extends TestCase
             $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $merchantWebsite->getDefaultRequestMetaData())->willReturn([ new MerchantWebsiteResponseByMerchantId(), null]);
             $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
 
-            $response = $merchantWebsite->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $response = $merchantWebsite->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::assertEquals(null, $response);
         } catch (\Exception $e) {
             self::fail("Expection not expected: ".$e->getMessage());
@@ -222,7 +222,7 @@ class MerchantWebsiteTest extends TestCase
             $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $merchantWebsite->getDefaultRequestMetaData())->willReturn([ null, $grpcError]);
             $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
 
-            $response = $merchantWebsite->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $response = $merchantWebsite->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::assertEquals(null,$response );
         } catch (\Exception $e) {
             self::fail("Expection not expected: ".$e->getMessage());
@@ -235,7 +235,7 @@ class MerchantWebsiteTest extends TestCase
             $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $merchantWebsite->getDefaultRequestMetaData())->willReturn([null, $grpcError]);
             $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
 
-            $merchantWebsite->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $merchantWebsite->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::fail("Expected not found exception");
         } catch (\Exception $e) {
             self::assertEquals(ErrorCode::ASV_SERVER_ERROR, $e->getCode());

@@ -50,4 +50,6 @@ class Constant
 
     const GET_DOCUMENT_BY_TYPE_AND_MERCHANT_ID = 'AsvMerchantDocument_getDocumentByTypeAndMerchantId';
     const GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER =  'GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER';
+
+    CONST GET_WEBSITE_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN = "AsvMerchantDocument_getWebsiteDetailsForMerchantIdForImplicitJoin";
 }

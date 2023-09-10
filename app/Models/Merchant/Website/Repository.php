@@ -7,6 +7,8 @@ use Razorpay\Asv\RequestMetadata;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Modules\Acs\Wrapper\MerchantWebsite as MerchantWebsiteWrapper;
@@ -22,6 +24,16 @@ class Repository extends Base\Repository
     use AsvFetch;
 
     protected $entity ='merchant_website';
+    public AsvRouter $asvRouter;
+
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
 
     public function fetchAllMerchantIDsFromSlaveDB($input)
     {
@@ -46,6 +58,16 @@ class Repository extends Base\Repository
         return $this->getEntityDetails(
             ASVV2Constant::GET_WEBSITE_BY_MERCHANT_ID,
             (new SplitzHelper())->isSplitzOnByExperimentName(ASVV2Constant::SPLITZ_WEBSITE_READ_MERCHANTID, $merchantId),
+            (new MerchantWebsiteSDKWrapper())->getLatestByMerchantIdOrFailCallBack($merchantId),
+            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId)
+        );
+    }
+
+    public function getWebsiteDetailsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
+    {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_WEBSITE_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
+            $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
             (new MerchantWebsiteSDKWrapper())->getLatestByMerchantIdCallBack($merchantId),
             $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId)
         );

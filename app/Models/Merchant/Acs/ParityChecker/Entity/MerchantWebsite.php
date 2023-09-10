@@ -211,7 +211,7 @@ class MerchantWebsite extends Base implements ParityInterface
         $merchantWebsiteFromAPIDbRawAttributes = $merchantWebsiteFromAPIDb->getAttributes();
         $merchantWebsiteFromAPIDbArray = $merchantWebsiteFromAPIDb->toArray();
 
-        $merchantWebsitesFromASV = $this->website->getLatestByMerchantId($merchantId);
+        $merchantWebsitesFromASV = $this->website->getLatestByMerchantIdOrFail($merchantId);
         $merchantWebsiteFromASVRawAttributes = $merchantWebsitesFromASV->getAttributes();
         $merchantWebsiteFromASVArray = $merchantWebsitesFromASV->toArray();
 

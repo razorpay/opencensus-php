@@ -83,7 +83,7 @@ class MerchantWebsite extends Base
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function getLatestByMerchantId(string $id, RequestMetadata $requestMetadata = null): ?MerchantWebsiteEntity
+    public function getLatestByMerchantIdOrFail(string $id, RequestMetadata $requestMetadata = null): ?MerchantWebsiteEntity
     {
         try {
             /**
@@ -103,11 +103,11 @@ class MerchantWebsite extends Base
         return $merchantWebsitesForMerchantId->first();
     }
 
-    public function getLatestByMerchantIdCallBack(string $id, ?RequestMetadata $requestMetadata = null): \Closure
+    public function getLatestByMerchantIdOrFailCallBack(string $id, ?RequestMetadata $requestMetadata = null): \Closure
     {
        return function() use ($id, $requestMetadata) {
-            return $this->getLatestByMerchantId($id, $requestMetadata);
+            return $this->getLatestByMerchantIdOrFail($id, $requestMetadata);
         };
     }
-    
+
 }

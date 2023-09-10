@@ -21,6 +21,7 @@ final class RepoAndFunctionToSplitzMap
         MerchantWebsiteRepository::class => array(
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_WEBSITE_READ_FIND,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_WEBSITE_READ_FIND,
+            FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID,
         ),
         MerchantEmailRepository::class => array(
             FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_EMAIL_GET_BY_MERCHANT_ID,

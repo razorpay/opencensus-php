@@ -39,6 +39,7 @@ class SplitzHelper
             $experimentIdForEntity = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
             $experimentIdForRoute = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_SEND_WRITE_ROUTE_OR_WORKER_TO_ASV];
 
+
             return $this->isSplitzOnBulk(
                 [
                     [
@@ -152,10 +153,42 @@ class SplitzHelper
                 }
             }
 
+
             return $totalExperimentsEnabledTrue === $totalExperiments;
         } catch (\Throwable $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
 
+            return false;
+        }
+    }
+
+    function isSplitzOnForFindForImplicitJoinByExperimentName(
+        string $experimentName,
+        string $identifier,
+        string $callingEntity,
+        array $metadata = []): bool {
+        try {
+            $experimentIdForEntity = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
+            $experimentIdForCallingEntity = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_IMPLICIT_JOIN_ENTITY];
+
+            return $this->isSplitzOnBulk(
+                [
+                    [
+                        "experiment_id" => $experimentIdForEntity, "id" => $identifier,
+                    ],
+                    [
+                        "experiment_id" => $experimentIdForCallingEntity, "id" => $callingEntity,
+                    ]
+                ],
+                $metadata
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_SPLITZ_EXCEPTION, [
+                "splitz_call_exception" => $e->getMessage(),
+                "experiment_name" => $experimentName,
+                "identifier" => $identifier,
+                "calling_entity" => $callingEntity,
+            ]);
             return false;
         }
     }

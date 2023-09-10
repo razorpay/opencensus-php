@@ -227,4 +227,35 @@ class AsvRouter
             return false;
         }
     }
+
+    public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
+        try {
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
+
+            if ($isExclusionFlow === true) {
+                return false;
+            }
+
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
+
+            $resp =  $this->spitzHelper->isSplitzOnForFindForImplicitJoinByExperimentName(
+                $experimentName,
+                $id,
+                $entityName
+            );
+
+            return $resp;
+        } catch (\Throwable $e) {
+            $this->trace->traceException
+            (
+                $e,
+                Trace::WARNING,
+                TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION,
+                [
+                    'flow' => 'implicit_join'
+                ]
+            );
+            return false;
+        }
+    }
 }

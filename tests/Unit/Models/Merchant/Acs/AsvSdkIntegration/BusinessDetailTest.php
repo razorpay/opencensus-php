@@ -201,7 +201,7 @@ class BusinessDetailTest extends TestCase
         $businessDetailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $businessDetail->getDefaultRequestMetaData())->willReturn([$businessDetailResponse, null]);
 
         // Call and Assert //
-        $gotbusinessDetail = $businessDetail->getLatestByMerchantId("K4O9sCGihrL2bH");
+        $gotbusinessDetail = $businessDetail->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
         self::assertEquals($businessDetailEntity3->toArray(), $gotbusinessDetail->toArray());
 
         /* Not found  */
@@ -210,7 +210,7 @@ class BusinessDetailTest extends TestCase
             $businessDetailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $businessDetail->getDefaultRequestMetaData())->willReturn([ new MerchantbusinessDetailResponseByMerchantId(), null]);
             $businessDetail->getAsvSdkClient()->setbusinessDetail($businessDetailMockClient);
 
-            $response = $businessDetail->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $response = $businessDetail->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::assertEquals(null, $response);
         } catch (\Exception $e) {
             self::fail("Expection not expected: ".$e->getMessage());
@@ -223,7 +223,7 @@ class BusinessDetailTest extends TestCase
             $businessDetailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $businessDetail->getDefaultRequestMetaData())->willReturn([ null, $grpcError]);
             $businessDetail->getAsvSdkClient()->setbusinessDetail($businessDetailMockClient);
 
-            $response = $businessDetail->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $response = $businessDetail->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::assertEquals(null,$response );
         } catch (\Exception $e) {
             self::fail("Expection not expected: ".$e->getMessage());
@@ -236,7 +236,7 @@ class BusinessDetailTest extends TestCase
             $businessDetailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bH", $businessDetail->getDefaultRequestMetaData())->willReturn([null, $grpcError]);
             $businessDetail->getAsvSdkClient()->setbusinessDetail($businessDetailMockClient);
 
-            $businessDetail->getLatestByMerchantId("K4O9sCGihrL2bH");
+            $businessDetail->getLatestByMerchantIdOrFail("K4O9sCGihrL2bH");
             self::fail("Expected not found exception");
         } catch (\Exception $e) {
             self::assertEquals(ErrorCode::ASV_SERVER_ERROR, $e->getCode());

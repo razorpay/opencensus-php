@@ -16,6 +16,7 @@ use RZP\Constants\Country;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\ClarificationDetail;
 use RZP\Exception\InvalidPermissionException;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
@@ -178,6 +179,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const SHOP_ESTABLISHMENT_NUMBER                = 'shop_establishment_number';
     const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = 'shop_establishment_verification_status';
     const REJECTION_OPTION                         = 'rejection_option';
+    const MERCHANT_DETAIL                          = 'merchant_detail';
 
     const BUSINESS_SUGGESTED_PIN     = 'business_suggested_pin';
     const BUSINESS_SUGGESTED_ADDRESS = 'business_suggested_address';
@@ -1106,6 +1108,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setActivationProgress($activationProgress)
     {
         $this->setAttribute(self::ACTIVATION_PROGRESS, $activationProgress);
+    }
+
+    public function getMerchantWebsiteAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantWebsiteAttributeByMerchantId($this, self::MERCHANT_DETAIL);
     }
 
     public function setMarketplaceActivationStatus(string $status)

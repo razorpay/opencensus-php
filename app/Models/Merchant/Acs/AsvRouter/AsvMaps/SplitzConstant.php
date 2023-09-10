@@ -27,4 +27,9 @@ final class SplitzConstant
     const SPLITZ_MERCHANT_GET_BY_ID = 'splitz_experiment_merchant_read_by_id';
 
     const SPLITZ_SEND_WRITE_ROUTE_OR_WORKER_TO_ASV = 'splitz_experiment_send_write_route_or_worker_to_asv';
+
+    const SPLITZ_IMPLICIT_JOIN_ENTITY = 'splitz_experiment_implicit_join_entity';
+
+    const SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID = 'splitz_experiment_implicit_join_website_by_merchant_id';
+
 }

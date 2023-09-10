@@ -37,7 +37,7 @@ class Repository extends Base\Repository
         return $this->getEntityDetails(
             ASVV2Constant::GET_BUSINESS_DETAIL_BY_MERCHANT_ID,
             $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID),
-            (new BusinessDetailSDKWrapper())->getLatestByMerchantIdCallBack($merchantId),
+            (new BusinessDetailSDKWrapper())->getLatestByMerchantIdOrFailCallBack($merchantId),
             $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId)
         );
     }
