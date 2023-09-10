@@ -320,7 +320,7 @@ jobs:
             {
               "service_under_test": "api",
               "commit_id": "${{ steps.pr_info_e2e.outputs.latest_commit }}",
-              "end_to_end_tests_ref": "master",
+              "end_to_end_tests_branch_ref": "master",
               "status": "Pending",
               "config_overrides": "{}"
             }

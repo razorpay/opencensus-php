@@ -40,6 +40,11 @@ class Metric
     const ASV_HTTP_CLIENT_RESPONSE_TOTAL        = 'asv_http_client_response_total';
     const ASV_COMPARE_MISMATCH                  = 'asv_compare_mismatch';
     const ASV_REQUEST_NOT_ROUTED_TO_ASV         = 'asv_request_not_routed_to_asv';
+
+    const ASV_WRITE_REQUEST_ERROR              = 'asv_write_request_error';
+    const ASV_WRITE_REQUEST_ROUTER_ERROR              = 'asv_router_error';
+
+    const ASV_WRITE_REQUEST_ROUTER_RESULT       = 'asv_write_request_router_result';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
 

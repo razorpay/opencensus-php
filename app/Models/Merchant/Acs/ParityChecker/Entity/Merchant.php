@@ -19,7 +19,7 @@ class Merchant extends Base implements ParityInterface
     /**
      * @throws \Exception
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         $this->checkParityForGetById($this->merchantId);
     }

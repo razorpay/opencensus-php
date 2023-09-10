@@ -28,8 +28,13 @@ final class SplitzConstant
 
     const SPLITZ_SEND_WRITE_ROUTE_OR_WORKER_TO_ASV = 'splitz_experiment_send_write_route_or_worker_to_asv';
 
+    const SPLITZ_MERCHANT_WEBSITE_SAVE_OR_FAIL  = 'splitz_experiment_merchant_website_save_or_fail';
+
+    const SPLITZ_MERCHANT_EMAIL_SAVE_OR_FAIL  = 'splitz_experiment_merchant_email_save_or_fail';
+
     const SPLITZ_IMPLICIT_JOIN_ENTITY = 'splitz_experiment_implicit_join_entity';
 
     const SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID = 'splitz_experiment_implicit_join_website_by_merchant_id';
+
 
 }

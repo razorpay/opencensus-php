@@ -78,4 +78,21 @@ class Constant
     const FIND_OR_FAIL_API_ARRAY = 'FIND_OR_FAIL_API_ARRAY';
     const FIND_OR_FAIL_PUBLIC_API_ARRAY = 'FIND_OR_FAIL_PUBLIC_API_ARRAY';
 
+    const PARITY_CHECK_TYPE = 'parity_check_type';
+
+    const READ = 'read';
+
+    const WRITE = 'write';
+
+    const SUCCESS = 'success';
+
+    const ERROR = 'error';
+
+    const API_BUILD_ATTRIBUTES = 'api_build_attributes';
+
+    const CUSTOM_ATTRIBUTES = 'custom_attributes';
+    const ASV_EXPECTED_EXCEPTION = 'asv_expected_exception';
+    const API_EXPECTED_EXCEPTION = 'api_expected_exception';
+    const UPDATE_ATTRIBUTES = 'update_attributes';
+    const SET_RANDOM_ID = 'set_random_id';
 }

@@ -23,7 +23,7 @@ class Stakeholder extends Base implements ParityInterface
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         $this->checkParityStakeholder($this->merchantId);
     }

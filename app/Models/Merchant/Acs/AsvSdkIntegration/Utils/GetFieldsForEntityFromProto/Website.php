@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
 
-class  Merchant implements GetFieldsForEntityFromProtoInterface
+class Website implements GetFieldsForEntityFromProtoInterface
 {
     private MerchantV1\SaveResponse $saveResponse;
 
@@ -14,15 +14,15 @@ class  Merchant implements GetFieldsForEntityFromProtoInterface
 
     public function getCreatedAt(): int
     {
-        return $this->saveResponse->getMerchant()->getCreatedAt();
+        return $this->saveResponse->getMerchantWebsite()->getCreatedAt();
     }
 
     public function getUpdatedAt(): int
     {
-        return $this->saveResponse->getMerchant()->getUpdatedAt();
+        return $this->saveResponse->getMerchantWebsite()->getUpdatedAt();
     }
 
     public function getAuditId() : ?string {
-        return $this->saveResponse->getMerchant()->getAuditIdUnwrapped();
+        return $this->saveResponse->getMerchantWebsite()->getAuditIdUnwrapped() ?? "";
     }
 }

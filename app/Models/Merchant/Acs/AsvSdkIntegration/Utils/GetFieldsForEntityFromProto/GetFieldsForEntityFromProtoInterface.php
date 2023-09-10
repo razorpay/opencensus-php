@@ -5,6 +5,8 @@ use Rzp\Accounts\Merchant\V1 as MerchantV1;
 
 interface GetFieldsForEntityFromProtoInterface
 {
-    public function getCreatedAt();
-    public function getUpdatedAt();
+    public function getCreatedAt(): int;
+    public function getUpdatedAt() : int;
+
+    public function getAuditId() : ?string;
 }

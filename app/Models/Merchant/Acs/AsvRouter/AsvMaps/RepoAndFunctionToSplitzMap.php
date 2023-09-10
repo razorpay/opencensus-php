@@ -21,6 +21,7 @@ final class RepoAndFunctionToSplitzMap
         MerchantWebsiteRepository::class => array(
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_WEBSITE_READ_FIND,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_WEBSITE_READ_FIND,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_WEBSITE_SAVE_OR_FAIL,
             FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID,
         ),
         MerchantEmailRepository::class => array(
@@ -28,6 +29,7 @@ final class RepoAndFunctionToSplitzMap
             FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID => SplitzConstant::SPLITZ_EMAIL_GET_BY_TYPE_AND_MERCHANT_ID,
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_EMAIL_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_EMAIL_GET_BY_ID,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_EMAIL_SAVE_OR_FAIL,
         ),
         MerchantBusinessDetailRepository::class => array(
             FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_BUSINESS_DETAIL_GET_BY_MERCHANT_ID,

@@ -132,9 +132,10 @@ class Base
      * @param array $array1
      * @param array $array2
      * @param string $parentKey
+     * @param bool $nullAndAbsentAreEqual
      * @return array
      */
-    protected function getExactArrayDifference(array $array1, array $array2, string $parentKey = ""): array
+    protected function getExactArrayDifference(array $array1, array $array2, string $parentKey = "", bool $nullAndAbsentAreEqual=false): array
     {
         $difference = [];
         foreach($array1 as $key => $value)
@@ -145,6 +146,11 @@ class Base
             }
 
             if(array_key_exists($key, $array2) === false) {
+                if($nullAndAbsentAreEqual){
+                    if($value === null){
+                       continue;
+                    }
+                }
                 $difference[] = $key;
                 continue;
             }
@@ -159,7 +165,7 @@ class Base
                 }
                 else
                 {
-                    $childDifference = $this->getExactArrayDifference($value, $array2[$key], $keyWithParent);
+                    $childDifference = $this->getExactArrayDifference($value, $array2[$key], $keyWithParent, $nullAndAbsentAreEqual);
                     foreach($childDifference as $childDifferenceKey => $childDifferenceValue) {
                         $difference[] = $key."->".$childDifferenceValue;
                     }
@@ -187,10 +193,10 @@ class Base
      * @param array $array2
      * @return array
      */
-    public function getExactDifference(array $array1, array $array2): array {
+    public function getExactDifference(array $array1, array $array2, bool $nullAndAbsentAreEqual = false): array {
         $difference = array_values(array_unique(array_merge(
-            $this->getExactArrayDifference($array1, $array2),
-            $this->getExactArrayDifference($array2, $array1)
+            $this->getExactArrayDifference($array1, $array2,"", $nullAndAbsentAreEqual),
+            $this->getExactArrayDifference($array2, $array1,"", $nullAndAbsentAreEqual)
         )));
 
         return $difference;

@@ -16,13 +16,16 @@ class MerchantEmail extends Base implements ParityInterface
     {
         parent::__construct($merchantId, $parityCheckMethods);
         $this->email = new \RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail();
+        $this->entityClass = EmailEntity::class;
+        $this->entityRepoClass = \RZP\Models\Merchant\Email\Repository::class;
+        $this->testData = new TestData\MerchantEmail();
     }
 
     /**
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         if (in_array(Constant::GET_BY_MERCHANT_ID, $this->parityCheckMethods) === true) {
             $this->checkParityForGetAllEmailsExceptPartnerDummyByMerchantId($this->merchantId);

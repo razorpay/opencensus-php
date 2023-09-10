@@ -90,12 +90,17 @@ class Service extends Base\Service
     public function triggerParityCheck(array $input): array
     {
         $this->trace->info(TraceCode::ASV_TRIGGER_PARITY_CHECK, $input);
-        $merchantIds = $input[Constant::MERCHANT_IDS];
+        $merchantIds = $input[Constant::MERCHANT_IDS] ?? [];
         $parityCheckEntity = $input[Constant::PARITY_CHECK_ENTITY];
         $parityCheckMethods = $input[Constant::PARITY_CHECK_METHODS] ?? [Constant::GET_BY_MERCHANT_ID];
-        $parityService = new ParityChecker\Service($merchantIds, $parityCheckEntity, $parityCheckMethods);
-        $parityService->triggerParityCheck();
-        return [];
+        $parityCheckType = $input[Constant::PARITY_CHECK_TYPE] ?? Constant::READ;
+        $parityService = new ParityChecker\Service(
+            $merchantIds,
+            $parityCheckEntity,
+            $parityCheckMethods,
+            $parityCheckType
+        );
+        return $parityService->triggerParityCheck();
     }
 
     public function triggerFullSync(array $input)

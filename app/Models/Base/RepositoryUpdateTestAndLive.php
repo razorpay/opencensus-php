@@ -33,15 +33,13 @@ trait RepositoryUpdateTestAndLive
         $this->validateIdGenerated($entity);
 
         /*
-         *
-         * TODO: Uncomment this code once ASV is ready to handle the requests.
-        // Route Request to ASV, rest of the handling is done by ASV, and through events.
+         *  We are migrating save for Merchant Entities to Account Service, and request won't be routed to DB.
+         */
         if ($this->shouldRouteRequestToAccountService($entity, $options, FunctionConstant::SAVE_OR_FAIL))
         {
-            $this->saveOnAccountService($entity);;
+            $this->saveOnAccountService($entity);
             return;
         }
-        */
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
@@ -385,33 +383,36 @@ trait RepositoryUpdateTestAndLive
         return $shouldSync;
     }
 
-//
-//    TODO: Uncomment this code once ASV is ready to handle the requests.
-//    protected function shouldRouteRequestToAccountService($entity, $options, $function) {
-//        try {
-//            if($options !== []){
-//                // TODO: log the error and return false, also add a alert on corologix.
-//                return false;
-//            }
-//
-//            return (new AsvRouter())->shouldRouteSaveRequestToAccountService(
-//                $this::class, $function, $entity->getId()
-//            );
-//
-//        } catch (\Throwable $th) {
-//            //TODO: log the error and return false
-//            return false;
-//        }
-//
-//    }
-//
-//    protected function saveOnAccountService($entity) {
-//        try {
-//            $asvSdkIntegration = new AsvSdkIntegration();
-//            $asvSdkIntegration->save($entity);
-//        } catch (\Throwable $th) {
-//            // TODO: log and throw the exception with DB ERROR
-//            throw $th;
-//        }
-//    }
+
+    protected function shouldRouteRequestToAccountService($entity, $options, $function): bool
+    {
+        try {
+            if($options !== []){
+                // We do not except options to be passed, adding this log and adding alert to find flows that use this.
+                $this->trace->warning(TraceCode::ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE,[
+                    "options" => $options
+                ]);
+                return false;
+            }
+
+            return (new AsvRouter())->shouldRouteWriteRequestToAccountService(
+                $this::class, $function, $entity->getId()
+            );
+
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+    }
+
+    public function saveOnAccountService($entity) {
+        try {
+            (new AsvSdkIntegration())->save($entity);
+        } catch (\Throwable $th) {
+            // Map the ASV Error to DB QueryException, so that the handling for this error is not impacted.
+            // However, we are not Setting SQL and binding and the SQL generated will be empty.
+            // It is not possible to get the query executed as it is done on Account Service.
+            throw new \Illuminate\Database\QueryException("", [], $th);
+        }
+    }
 }

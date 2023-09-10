@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\EntityToProtoConverter
 class Factory
 {
     public static function getEntityToProtoConvertor($entity): ?EntityToProtoConvertorInterface{
-        if ($entity instanceof \RZP\Models\Merchant\Entity) {
-            return new Merchant($entity);
-        }
-        return null;
+
+        return match (get_class($entity)) {
+            \RZP\Models\Merchant\Website\Entity::class => new Website($entity),
+            \RZP\Models\Merchant\Email\Entity::class => new Email($entity),
+            default => null,
+        };
+
     }
 }

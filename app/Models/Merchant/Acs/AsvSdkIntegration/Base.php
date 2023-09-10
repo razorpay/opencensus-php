@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 use App;
 use Razorpay\Asv\RequestMetadata;
-use Razorpay\Trace\Logger;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\Asv\Client as ASVClient;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Error\ErrorCode;
@@ -20,9 +20,12 @@ use Razorpay\Asv\DbSource;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\EntityToProtoConverter\Factory;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\Factory as GetFieldsForEntityFromProtoFactory;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\GetFieldsForEntityFromProtoInterface;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
+use RZP\Models\Merchant\Website\Entity;
 use RZP\Trace\TraceCode;
 use RZP\lib\AwsTraceIdExtractor;
+use RZP\Constants\Metric;
 use RZP\Models\Base as BaseModel;
 
 class Base
@@ -39,6 +42,9 @@ class Base
 
     protected $awsTraceIdExtractor;
 
+    const AUDIT_ID_KEY = 'audit_id';
+
+    const SAVE_TIMEOUT_IN_MICRO_SECONDS = 2000000;
 
     function __construct()
     {
@@ -117,21 +123,32 @@ class Base
 
         $requestMetaData = $this->getRequestMetaData($inputRequestMetadata);
 
+        // override timeout as 2s for save.
+        $requestMetaData->setTimeoutInMicroSeconds(self::SAVE_TIMEOUT_IN_MICRO_SECONDS);
+
         $currentHeaders = $requestMetaData->getHeaders();
 
         $saveHeaders = (new RequestHeadersHelper())->getRequestHeaders();
 
         $headers = array_merge($currentHeaders, $saveHeaders);
 
+        $this->trace->info(TraceCode::ASV_CALL_SYNC_ACCOUNT_DEVIATION, [
+            'request_headers' => $headers,
+        ]);
+
         $requestMetaData->setHeaders($headers);
 
         return $requestMetaData;
     }
 
+    /**
+     * @throws \Throwable
+     * @throws BaseException
+     * @throws BadRequestException
+     */
     function save(BaseModel\PublicEntity $entity, ?RequestMetadata $requestMetadata = null): void
     {
         try {
-
             $requestProto = (Factory::
             getEntityToProtoConvertor($entity))->toSaveProtoRequest();
 
@@ -145,14 +162,28 @@ class Base
             }
 
             $fieldFromProtoHelper = GetFieldsForEntityFromProtoFactory::getEntityToProtoConvertor($entity, $response);
-
-            $entity->setCreatedAt($fieldFromProtoHelper->getCreatedAt());
-            $entity->setUpdatedAt($fieldFromProtoHelper->getUpdatedAt());
+            $this->setEntityAttributes($entity, $fieldFromProtoHelper);
         } catch (\Throwable $e) {
-            // rethrow the errors depending upon the handling required
-            // for example if there is some DB error, we should throw it ahead.
-            // if it is ASV timeout we need to ensure that requests now go to db.
+
+            $this->trace->count(Metric::ASV_WRITE_REQUEST_ERROR, [
+                'error_code' => $e->getCode(),
+            ]);
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_WRITE_ERROR);
+            throw $e;
         }
+    }
+
+    function setEntityAttributes(BaseModel\PublicEntity                $entity,
+                                 ?GetFieldsForEntityFromProtoInterface $fieldFromProtoHelper): void
+    {
+        $entity->setCreatedAt($fieldFromProtoHelper->getCreatedAt());
+        $entity->setUpdatedAt($fieldFromProtoHelper->getUpdatedAt());
+        if ($entity->hasAttribute(self::AUDIT_ID_KEY) === true) {
+            $entity->setAttribute(self::AUDIT_ID_KEY, $fieldFromProtoHelper->getAuditId());
+        }
+        $entity->setRawAttributes($entity->getAttributes(), true);
+        $entity->exists = true;
     }
 
     /**
@@ -274,5 +305,4 @@ class Base
             return $this->getLatestByMerchantId($id, $requestMetadata);
         };
     }
-
 }

@@ -207,21 +207,40 @@ class AsvRouter
         }
     }
 
-    public function shouldRouteSaveRequestToAccountService($repoClass, $functionName, $id): bool
+    public function shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id): bool
     {
         try {
-            if(AsvMaps\WriteEnabledOnAsv::checkIfWriteEnabled($repoClass, $functionName) === false) {
+            if ((new AsvMaps\WriteEnabledOnAsv)->checkIfWriteEnabled($repoClass, $functionName) === false) {
                 return false;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
-
-            return $this->spitzHelper->isSplitzOnForWriteByExperimentName(
+            $routeOrWorkerName = $this->getRouteOrJobName();
+            $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
                 $experimentName,
                 $id,
                 $this->getRouteOrJobName()
             );
+
+            // To avoid high cardinality metric, we are avoiding function_identifier in metric.
+            // Why both metric/log?: It is hard to get insights from logs for over
+            // 7 days, hence, also adding a metric.
+            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
+                'routeOrWorkerName' => $routeOrWorkerName,
+                'isWriteRequestRouted' => $isRequestRoutedToAsv
+            ]);
+
+            $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [
+                'routeOrWorkerName' => $routeOrWorkerName,
+                'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                'function_identifier' => $repoClass . '::' . $functionName,
+            ]);
+
+            return $isRequestRoutedToAsv;
         } catch (\Throwable $e) {
+            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_ERROR, [
+                'error_code' => $e->getCode(),
+            ]);
 
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;

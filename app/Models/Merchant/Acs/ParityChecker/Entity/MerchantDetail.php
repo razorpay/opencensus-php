@@ -21,7 +21,7 @@ class MerchantDetail extends Base implements ParityInterface
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         $this->checkParityForGetById($this->merchantId);
     }

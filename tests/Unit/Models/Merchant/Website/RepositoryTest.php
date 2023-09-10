@@ -4,12 +4,14 @@ namespace Unit\Models\Merchant\Website;
 
 use Config;
 use Razorpay\Asv\Error\GrpcError;
+use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponse;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponseByMerchantId;
+use Rzp\Accounts\Merchant\V1\SaveRequest;
+use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
@@ -345,6 +347,160 @@ class RepositoryTest extends TestCase
             $this->getExceptionForFindOrFailPublicAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Not Found"))
         );
     }
+    public function testMerchantWebsiteSaveOrFail() {
+
+
+        /*
+         *  Base Setup for the test
+         *
+         */
+
+        $repo = new Repository();
+        $merchantWebsite = new MerchantWebsite();
+
+        $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
+        $websiteEntity2 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson2);
+        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
+
+        $merchantWebsiteProto1 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson1);
+        $merchantWebsiteProto1->setCreatedAt(0);
+        $merchantWebsiteProto1->setUpdatedAt(0);
+        $merchantWebsiteProto2 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson2);
+        $merchantWebsiteProto2->setCreatedAt(0);
+        $merchantWebsiteProto2->setUpdatedAt(0);
+        $merchantWebsiteProto3 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson3);
+        $merchantWebsiteProto3->setCreatedAt(0);
+        $merchantWebsiteProto3->setUpdatedAt(0);
+
+        $saveResponse = (new SaveResponse())->setMerchantWebsite(new EntitySaveResponse(
+            [
+                "id" => "K9UzmvitzJwyS4",
+                "created_at" => 10,
+                "updated_at" => 10,
+                "audit_id" => "newtesttesttest"
+            ]
+        ));
+
+        /*
+         * Test 1: The save or fail ASV should not be reached if write is not enabled.
+         * Comment this testcase when writes are to be enabled.
+         */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = false;
+        $repo->saveOrFail($websiteEntity1);
+        $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+
+        /*
+        * Test  2: The save or fail ASV should not be reached if Splitz is off.
+        */
+
+        // false, false
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $repo->saveOrFail($websiteEntity2);
+        $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+
+        // true, false
+        $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $repo->saveOrFail($websiteEntity2);
+        $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+
+        // false, true
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo->saveOrFail($websiteEntity2);
+        $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+
+        /*
+        * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
+        */
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $repo->saveOrFail($websiteEntity2);
+        $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+
+        /*
+        * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
+        */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $websiteEntity1->audit_id = "testtesttest";
+        $saveRequest = (new SaveRequest())->setMerchantWebsite(
+            $merchantWebsiteProto1
+        );
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($websiteEntity1);
+        self::assertEquals(10, $websiteEntity1['created_at']);
+        self::assertEquals(10, $websiteEntity1['updated_at']);
+        self::assertEquals("newtesttesttest", $websiteEntity1['audit_id']);
+
+        /*
+         * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated.
+         */
+        $websiteEntity2->audit_id = "testtesttest";
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $saveRequest = (new SaveRequest())->setMerchantWebsite(
+            $merchantWebsiteProto2
+        );
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($websiteEntity2);
+
+        self::assertEquals(10, $websiteEntity2['created_at']);
+        self::assertEquals(10, $websiteEntity2['updated_at']);
+        self::assertEquals("newtesttesttest", $websiteEntity2['audit_id']);
+
+        /*
+         * Test  4-3: Save Or should work fine if splitz is on, created updated_at should be updated.
+         */
+        $websiteEntity3->audit_id = "testtesttest";
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $saveRequest = (new SaveRequest())->setMerchantWebsite(
+            $merchantWebsiteProto3
+        );
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($websiteEntity3);
+        self::assertEquals(10, $websiteEntity3['created_at']);
+        self::assertEquals(10, $websiteEntity3['updated_at']);
+        self::assertEquals("newtesttesttest", $websiteEntity3['audit_id']);
+
+        /*
+        * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
+        */
+        $saveResponse->getMerchantWebsite()->setCreatedAt(15);
+        $saveResponse->getMerchantWebsite()->setUpdatedAt(15);
+        $websiteEntity3->audit_id = "testtesttest";
+
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->
+        expects($this->once())->
+        method("save")->
+        with($saveRequest)->
+        willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
+        $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        try {
+            $repo->saveOrFail($websiteEntity3);
+            self::fail("Exception was expected.");
+        } catch (\Exception $e) {
+            self::assertEquals(\Illuminate\Database\QueryException::class, get_class($e));
+            self::assertEquals("ASV_SERVER_ERROR", $e->getCode());
+            self::assertEquals("I am ASV Exception. (SQL: )", $e->getMessage());
+            self::assertEquals([], $e->getBindings());
+            self::assertEquals("", $e->getSql());
+
+            //created_at, updated_at not changed
+            self::assertEquals(10, $websiteEntity3['created_at']);
+            self::assertEquals(10, $websiteEntity3['updated_at']);
+            // update should not happen since save failed.
+            self::assertEquals("testtesttest", $websiteEntity3['audit_id']);
+        }
+    }
 
     private function getExceptionForFindOrFailAsv($repo, $id, $grpcError) {
         try {
@@ -483,6 +639,12 @@ class RepositoryTest extends TestCase
 
     private function getMockClient() {
         return $this->getMockBuilder("Razorpay\Asv\Interfaces\WebsiteInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
+    }
+
+    private function getWriteMockClient() {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\WriteInterface")
             ->enableOriginalConstructor()
             ->getMock();
     }

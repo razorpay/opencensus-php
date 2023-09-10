@@ -22,7 +22,7 @@ class MerchantDocument extends Base implements ParityInterface
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         $merchantDocuments = $this->repo->merchant_document->getAllDocumentsFromReplica($this->merchantId);
 

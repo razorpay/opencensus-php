@@ -5,5 +5,6 @@ namespace RZP\Models\Merchant\Acs\ParityChecker;
 
 interface ParityInterface
 {
-    public function checkParity();
+    public function checkReadParity();
+    public function checkWriteParity(): array;
 }

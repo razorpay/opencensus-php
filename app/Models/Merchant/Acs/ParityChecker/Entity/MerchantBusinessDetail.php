@@ -23,7 +23,7 @@ class MerchantBusinessDetail extends Base implements ParityInterface
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function checkParity()
+    public function checkReadParity()
     {
         if (in_array(Constant::GET_BY_MERCHANT_ID, $this->parityCheckMethods) === true) {
             $this->checkParityForGetLatestBusinessDetailByMerchantId($this->merchantId);
