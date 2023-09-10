@@ -2971,7 +2971,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -2979,8 +2979,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
 
@@ -3026,7 +3026,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3034,8 +3034,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
 
@@ -3073,7 +3073,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3081,8 +3081,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
 
@@ -3119,7 +3119,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3127,8 +3127,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         (new MerchantCore())->appendTag($merchant, 'random_tag');
 
@@ -3154,7 +3154,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3162,8 +3162,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->mockRazorxTreatment();
 
@@ -3246,7 +3246,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3254,8 +3254,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->mockRazorxTreatment();
 
@@ -3345,7 +3345,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3353,8 +3353,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $output = [
             "response" => [
@@ -3390,7 +3390,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3398,8 +3398,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetails->getId());
 
@@ -3450,7 +3450,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3458,8 +3458,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->createWebsitePolicyAndNegativeKeywordFixtures($merchant->getId());
 
@@ -3642,7 +3642,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3650,8 +3650,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
 
@@ -3852,7 +3852,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3864,8 +3864,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -3996,7 +3996,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4004,8 +4004,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -4079,7 +4079,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4087,8 +4087,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -4176,7 +4176,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4184,8 +4184,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -4226,7 +4226,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4234,8 +4234,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 6,
@@ -4438,7 +4438,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4446,8 +4446,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 9,
@@ -5250,6 +5250,8 @@ class CoreTest extends TestCase
 
         Config::set('pgos.proxy.request.mock', true);
 
+        Config::set('pgos.proxy.request.response', true);
+
         $this->mockRazorxTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -5705,7 +5707,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5713,8 +5715,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
@@ -5783,7 +5785,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5791,8 +5793,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
@@ -5859,7 +5861,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5867,8 +5869,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -6107,7 +6109,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6115,8 +6117,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -7054,7 +7056,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7062,8 +7064,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7100,7 +7102,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7108,8 +7110,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7156,7 +7158,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7164,8 +7166,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7212,7 +7214,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7220,8 +7222,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7266,7 +7268,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7274,8 +7276,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7456,7 +7458,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7464,8 +7466,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7683,7 +7685,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7695,8 +7697,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -7829,7 +7831,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7837,8 +7839,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -8337,6 +8339,8 @@ class CoreTest extends TestCase
         Queue::fake();
 
         Config::set('pgos.proxy.request.mock', true);
+
+        Config::set('pgos.proxy.request.response', true);
 
         $this->mockRazorxTreatment();
 
@@ -9166,7 +9170,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9174,8 +9178,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -9260,7 +9264,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9268,8 +9272,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -9348,13 +9352,13 @@ class CoreTest extends TestCase
     }
 
     //If additional doc is asked from merchants, merchant will not be moved to KQU/Activated
-    public function testGetApplicableActivationStatusIfAdditionalDocRequiredNotVerified()
+    public function testGetApplicableActivationStatusIfMerchantNotEligibleFOrAutomation()
     {
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9362,8 +9366,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(true);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(false);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
@@ -9448,7 +9452,7 @@ class CoreTest extends TestCase
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
             ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isAdditionalDocRequiredAndNotVerified'])
+            ->setMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9456,8 +9460,8 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $detailCoreMock->expects($this->any())
-            ->method('isAdditionalDocRequiredAndNotVerified')
-            ->willReturn(false);
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,

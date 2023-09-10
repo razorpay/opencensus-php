@@ -37,6 +37,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const SEND_OTP                       = 'send_otp';
 
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
+    const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
@@ -126,6 +127,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
 
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
+        self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
     ];
 
     // timeout in seconds
@@ -140,6 +142,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_UPDATE_BY_ADMIN      => 10,
         self::MERCHANT_DETAILS_PATCH        => 10,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
+        self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => 10,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -147,6 +150,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
+        self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION,
     ];
 
     public function __construct()

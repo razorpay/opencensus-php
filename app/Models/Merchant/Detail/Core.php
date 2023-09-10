@@ -5828,7 +5828,8 @@ class Core extends Base\Core
             return Status::ACTIVATED_MCC_PENDING;
         }
 
-        if ($this->isAdditionalDocRequiredAndNotVerified() === true)
+        //This checks automation activation exclusion logic in PGOS
+        if ($this->isEligibleForAutomationActivation() === false)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -10071,7 +10072,7 @@ class Core extends Base\Core
         }
     }
 
-    public function isAdditionalDocRequiredAndNotVerified()
+    public function isEligibleForAutomationActivation()
     {
         $app = App::getFacadeRoot();
 
@@ -10079,28 +10080,23 @@ class Core extends Base\Core
 
         if($mock === true)
         {
-            return false;
+            return $app['config']['pgos.proxy.request.response'];
         }
 
         $pgosPayload = [];
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_onboarding_docs_verification',
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_eligibility_for_automation_activation',
             $pgosPayload, $this->merchant);
 
         $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
             'response' => $response
         ]);
 
-        if ($response['additional_docs']['is_required'] === false)
+        if ($response['is_eligible'] === true)
         {
-            return false;
+            return true;
         }
 
-        if ($response['additional_docs']['is_verified'] === true)
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 }
