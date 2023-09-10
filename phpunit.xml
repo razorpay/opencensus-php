@@ -583,6 +583,9 @@
             <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
             <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
         </testsuite>
+        <testsuite name="Split_Payments_Test_Suite">
+            <file>./tests/Functional/Payment/SplitPayment.php</file>
+        </testsuite>
     </testsuites>
     <listeners>
         <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">

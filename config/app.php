@@ -705,6 +705,8 @@ return array(
 
     'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
 
+    'split_payment_enabled_experiment_id' => env('SPLIT_PAYMENT_ENABLED_EXPERIMENT_ID'),
+
     'pp_brand_color_hex' => env('PP_BRAND_COLOR_HEX'),
 
     'transaction_isolation_fallback_query_experiment_id' => env('TRANSACTION_ISOLATION_FALLBACK_QUERY_EXP_ID'),

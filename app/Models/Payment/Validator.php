@@ -170,7 +170,7 @@ class Validator extends Base\Validator
         'browser.screen_height'                                      => 'sometimes|integer',
         'network_transaction_id'                                     => 'sometimes',
         'payer_account_type'                                         => 'sometimes_if:method,upi|nullable|string|max:20',
-
+        'wallet_amount'                                              => 'sometimes|integer',
     ];
 
     protected static $editAcquirerRules = [

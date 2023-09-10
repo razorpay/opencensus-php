@@ -300,11 +300,11 @@ class Validator extends Base\Validator
      *
      * @param Payment\Entity $payment
      */
-    public function validatePaymentCreation(Payment\Entity $payment)
+    public function validatePaymentCreation(Payment\Entity $payment, array $input)
     {
         $this->validateOrderNotPaid();
 
-        $this->validateOrderAmount($payment);
+        $this->validateOrderAmount($payment, $input);
 
         $this->validateOrderCurrency($payment->getCurrency());
 
@@ -404,7 +404,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateOrderAmount(Payment\Entity $payment )
+    protected function validateOrderAmount(Payment\Entity $payment, array $input)
     {
         $paymentAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
 
@@ -418,10 +418,24 @@ class Validator extends Base\Validator
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
         // otherwise it should be same.
-
-        $partialPaymentAllowed = $order->isPartialPaymentAllowed();
+        $partialPaymentAllowed = false;
+        if(($order->isPartialPaymentAllowed() === true))
+        {
+            $partialPaymentAllowed = true;
+        }
 
         $orderAmountDue = $order->getAmountDue($payment);
+
+        if (($order->merchant->isFeatureEnabled(Feature\Constants::RAZORPAY_WALLET) === true) and
+            isset($input[Payment\Entity::WALLET_AMOUNT]))
+        {
+            $paymentAmount = $paymentAmount + $input[Payment\Entity::WALLET_AMOUNT];
+            if ($paymentAmount === $orderAmountDue)
+            {
+                return true;
+            }
+            return false;
+        }
 
         if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))

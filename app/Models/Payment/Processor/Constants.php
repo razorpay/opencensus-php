@@ -110,6 +110,7 @@ class Constants
     const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';
     const OPTIMIZER_AUTO_CAPTURE_TIMEOUT_EXCEEDED   = 'Optimizer Auto Capture timeout exceeded';
+    const SPLIT_PAYMENT_METHOD                      = 'Payment cannot be auto captured as depends on split payment.';
 
     const OPTIMIZER_CARD_RECURRING_AUTO_DEBIT_PAYMENT            = 'Optimizer Card Recurring Auto Debit Payment';
     const OPTIMIZER_CARD_RECURRING_INITIAL_REGISTRATION_PAYMENT  = 'Optimizer Card Recurring Initial Registration Payment';

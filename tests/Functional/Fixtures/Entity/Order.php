@@ -219,4 +219,19 @@ class Order extends Base
 
         return $order;
     }
+
+    public function createOrderWithSplitPayments(array $attributes = [])
+    {
+        $order = parent::create($attributes);
+
+        $this->fixtures->create('order_meta', [
+            'order_id' => $order->getId(),
+            'type'     => 'split_payment_info',
+            'value'    => [
+                'is_split_payment' => true
+            ],
+        ]);
+
+        return $order;
+    }
 }

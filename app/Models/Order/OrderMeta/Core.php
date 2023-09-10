@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order\OrderMeta;
 
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -42,6 +43,7 @@ class Core extends Base\Core
     }
 
     /**
+
      * @param Order\Entity $order
      * @param array        $input
      *
@@ -49,6 +51,7 @@ class Core extends Base\Core
      */
     public function createAndSaveOrderMeta(Order\Entity $order, array $input)
     {
+        $this->createAndSaveSplitPaymentOrderMeta($order);
         $this->createAndSave1CCOrderMetaData($order, $input);
         $this->createAndSaveOfflineConfigMetaData($order,$input);
         return $this->createAndSaveTaxInvoice($order, $input);
@@ -451,4 +454,42 @@ class Core extends Base\Core
         return self::MUTEX_PREFIX_1CC . $orderId;
     }
 
+    public function createAndSaveSplitPaymentOrderMeta(Order\Entity $order)
+    {
+        if ($this->isLiveMode() === true)
+        {
+            return null;
+        }
+
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.split_payment_enabled_experiment_id'),
+        ];
+
+        $splitPaymentExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enabled');
+
+        // Ensuring split payment meta is created only for enabled merchants on test mode.
+        if ($splitPaymentExpEnabled === false)
+        {
+            return null;
+        }
+
+        if (
+            $this->merchant === null or
+            $this->merchant->isFeatureEnabled(FeatureConstants::RAZORPAY_WALLET) === false
+        )
+        {
+            return null;
+        }
+
+        $orderMetaInput = [
+            Entity::ORDER_ID => $order->getId(),
+            Entity::TYPE     => Order\OrderMeta\Type::SPLIT_PAYMENT_INFO,
+            Entity::VALUE    => [
+                'is_split_payment' => true
+            ],
+        ];
+
+        return $this->saveOrderMeta($orderMetaInput);
+    }
 }

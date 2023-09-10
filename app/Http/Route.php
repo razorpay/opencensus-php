@@ -8732,6 +8732,10 @@ class Route
          '1cc_shopify_update_liquid_files',
     ];
 
+    protected static $splitPaymentRoutes = [
+        'payment_create_ajax',
+    ];
+
     public static $routePermission = [
         'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
         'barricade_get_config' => Permission::BARRICADE_DCS_CONFIG_GET,
@@ -18881,6 +18885,18 @@ class Route
         }
 
         return false;
+    }
+
+    /**
+     * Routes which are allowed for split payment.
+     *
+     * @var boolean
+     */
+    public static function isSplitPaymentRoute($route)
+    {
+        $splitPaymentRoutes = self::$splitPaymentRoutes;
+
+        return (in_array($route, $splitPaymentRoutes, true) === true);
     }
 
 

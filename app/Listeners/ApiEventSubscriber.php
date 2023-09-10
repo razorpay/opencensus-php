@@ -508,6 +508,11 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
+        if ($payment->isSplitPayment() === true)
+        {
+            (new Payment\Processor\Processor($payment->merchant))->refundSplitPayments($payment);
+        }
+
         if ($payment->hasSubscription() === true)
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
@@ -607,6 +612,14 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
+        // auto capture all payments, when the following conditions are satisfied
+        // 1: Payment is a split payment
+        // 2: Payment was captured via auto_capture feature
+        if (($payment->isSplitPayment() === true) and ($payment->getAutoCaptured() === true))
+        {
+            (new Payment\Processor\Processor($payment->merchant))->processAutoCaptureForSplitPayment($payment);
+        }
+
         if ($payment->hasPaymentLink() === true)
         {
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);

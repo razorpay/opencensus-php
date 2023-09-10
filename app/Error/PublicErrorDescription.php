@@ -1720,6 +1720,7 @@ class PublicErrorDescription
     const EMERCHANTPAY_INTERNATIONAL_DISABLED_DESC                                  = "Payment method request not allowed as international is disabled on the merchant";
     const EMERCHANTPAY_INSTRUMENT_INVALID_DESC                                      = "Invalid payment method requested";
     const BAD_REQUEST_RAZORPAY_WALLET_ERROR                                         = "failed to perform razorpay wallet transaction.";
+    const BAD_REQUEST_SPLIT_PAYMENT_ORDER_AMOUNT_MISMATCH                           = "Payment amount does not match order amount.";
     const SERVER_ERROR_INVALID_ACS_EVENT_PROCESSOR                                  = "invalid acs event processor attached to acs event processor factory";
 
     const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                              = 'Route not enabled for banking';

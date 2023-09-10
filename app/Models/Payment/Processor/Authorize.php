@@ -3563,6 +3563,15 @@ trait Authorize
 
     protected function setAuthTypeInPayment(Payment\Entity $payment)
     {
+        // Skip 2FA for wallet payments in test mode. This ensures payment state moves of authorized.
+        if(($payment->isRazorpaywalletPayment() === true) and
+            ($payment->isSplitPayment() === true) and
+            ($this->mode === Mode::TEST))
+        {
+            $payment->setAuthType(Payment\AuthType::SKIP);
+            return;
+        }
+
         //
         // We set `auth_type` from `preferred_auth` field here
         // on the basis of the used terminal
@@ -8638,7 +8647,8 @@ trait Authorize
                 if (($payment->order->getPaymentCapture() === true) and
                     ($payment->isFileBasedEmandateRegistrationPayment() === false) and
                     ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                    ($payment->isCod() === false))
+                    ($payment->isCod() === false) and
+                    ($payment->isSplitPayment() == false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }

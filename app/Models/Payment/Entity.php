@@ -264,6 +264,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFUND_AUTHORIZED_PAYMENT = 'refund_authorized_payment';
 
     const OPTIMIZER_PROVIDER = 'optimizer_provider';
+    const WALLET_AMOUNT = 'wallet_amount';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -6875,6 +6876,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         ]);
 
         return min($expiryWindow, self::PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW);
+    }
+
+    public function isSplitPayment()
+    {
+        if ($this->order === null)
+        {
+            return false;
+        }
+
+        return ($this->order->hasSplitPayments() === true) and ($this->getAmount() < $this->order->getAmount());
     }
 
     /** isCollectExpiryDisabled() verifies if the

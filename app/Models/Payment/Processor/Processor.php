@@ -6,6 +6,7 @@ use App;
 use Illuminate\Support\Arr;
 use Request;
 
+use RZP\Base\ConnectionType;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Services\Shield;
@@ -2336,6 +2337,8 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
+            $this->validateSplitPayment($input);
+
             $isReArchPayment = false;
 
             if (($this->isLRSEducationMerchant() === false) and
@@ -2405,6 +2408,7 @@ class Processor
             }
 
             $this->saveUserConsentInRedis($input, $paymentData);
+            $this->processSplitPayment($input);
 
             return $paymentData;
         }
@@ -7186,6 +7190,12 @@ class Processor
 
     protected function buildPaymentEntity(array $input): Payment\Entity
     {
+        // When a split payment is created, the second payment is already set in payment attribute.
+        if ((empty($input['payment']) === false) and (isset($input[Payment\Entity::WALLET_AMOUNT]) === true))
+        {
+            return $input['payment'];
+        }
+
         //
         //For simpl provider if $input['payment'] is not empty than we return the same payment
         //
@@ -7409,7 +7419,7 @@ class Processor
             $this->validateOrderForUpiOtm($this->order);
         }
 
-        $this->order->getValidator()->validatePaymentCreation($payment);
+        $this->order->getValidator()->validatePaymentCreation($payment, $input);
 
         if ($payment->isCoD() === false)
         {
@@ -7997,6 +8007,17 @@ class Processor
      */
     protected function shouldAutoCapture(Payment\Entity $payment): array
     {
+        if (
+            ($payment->isRazorpaywalletPayment() === true) and
+            ($payment->isSplitPayment() === true)
+        )
+        {
+            $response['should_auto_capture'] = false;
+            $response['reason'] = Constants::SPLIT_PAYMENT_METHOD;
+
+            return $response;
+        }
+
         // For upi otm, Payments cannot auto captured, as merchants needs to hit the capture
         // api, to execute the mandate, we will block this scenario right now.
         if ($payment->isUpiOtm() === true)
@@ -8784,6 +8805,13 @@ class Processor
         if ($payment->hasInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
+        }
+
+        // Do not capture late authorized payments when the payment is split payment because
+        // wallet payment is already refunded on initial failed event. Hence, skip capture for this payment.
+        if ($payment->isSplitPayment() === true)
+        {
+            return false;
         }
 
         $merchant = $payment->merchant;
@@ -10091,6 +10119,266 @@ class Processor
         );
 
         return $variant === 'on';
+    }
+
+    private function validateSplitPayment(array $input)
+    {
+        // Skip validations, since split payment fields are not passed at all.
+        if (isset($input[Payment\Entity::WALLET_AMOUNT]) === false)
+        {
+            return;
+        }
+
+        // Don't allow split payment on live mode
+        if ($this->mode === Mode::LIVE)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED);
+        }
+
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.split_payment_enabled_experiment_id'),
+        ];
+
+        $splitPaymentEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enabled');
+
+        if ($splitPaymentEnabled === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED);
+        }
+
+        // validate request is coming from checkout
+        $currentRouteName = $this->route->getCurrentRouteName();
+        if ($this->route->isSplitPaymentRoute($currentRouteName) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED, null,
+                [
+                    'route' => $currentRouteName,
+                ]);
+        }
+
+        //Validate order is created
+        if ($this->order === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                Payment\Entity::ORDER_ID,
+                [],
+                "Order Id is required for split payment");
+        }
+
+        if ($this->order->hasSplitPayments() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED,
+                Payment\Entity::ORDER_ID,
+                [],
+                "Order is not enabled for split payments."
+            );
+        }
+
+        $orderAmount = $this->order->getAmount();
+        $paidAmount = $this->order->getAmountPaid();
+
+        // if paid_amount > 0, split payment cannnot be supported
+        if ($paidAmount > 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+        }
+
+        // validate break of amount, wallet_amount is correct
+        $totalPaymentAmount = $input[Payment\Entity::AMOUNT] + $input[Payment\Entity::WALLET_AMOUNT];
+        if ($totalPaymentAmount !== $orderAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                Payment\Entity::WALLET_AMOUNT,
+                [
+                    'amount'        => $input[Payment\Entity::AMOUNT],
+                    'wallet_amount' => $input[Payment\Entity::WALLET_AMOUNT],
+                ]);
+        }
+
+        return true;
+    }
+
+    private function processSplitPayment(array $input)
+    {
+        // No processing required if request wasn't a split payment request.
+        if (isset($input[Payment\Entity::WALLET_AMOUNT]) === false)
+        {
+            return;
+        }
+
+        // Terminating condition to avoid recursion, processSplitPayment will be called again when wallet payment is created,
+        // but no processing is needed.
+        if (isset($input['payment']) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::CREATE_SPLIT_PAYMENT_PROCESSING_INITIATED,
+                [
+                    'input' => $input
+                ]
+            );
+
+            $orderMeta = array_first($this->order->orderMetas ?? [], function ($orderMeta)
+            {
+                return $orderMeta->getType() === Order\OrderMeta\Type::SPLIT_PAYMENT_INFO;
+            });
+
+            if ($orderMeta === null || $orderMeta->getValue()['is_split_payment'] !== true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED,
+                    null,
+                    [
+                        'method' => 'wallet'
+                    ],
+                    null
+                );
+            }
+
+            $input['payment'] = $this->buildWalletSplitPaymentInput($input);;
+
+            $this->process($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::CREATE_SPLIT_PAYMENT_PROCESSING_FAILED,
+                [
+                    'message' => $e->getMessage(),
+                    'stack_trace' => $e->getTrace(),
+                    'input' => $input,
+                ]
+            );
+            throw $e;
+        }
+    }
+
+    public function buildWalletSplitPaymentInput(array $input)
+    {
+        $walletPaymentInput = array_merge([], $input);
+        $walletPaymentInput[Payment\Entity::METHOD] = Payment\Entity::WALLET;
+        $walletPaymentInput[Payment\Entity::AMOUNT] = $walletPaymentInput[Payment\Entity::WALLET_AMOUNT];
+        $walletPaymentInput[Payment\Entity::WALLET] = Wallet::RAZORPAYWALLET;
+
+        return $this->buildPaymentEntity($walletPaymentInput);
+    }
+
+    public function processAutoCaptureForSplitPayment(Payment\Entity $payment)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::SPLIT_PAYMENT_AUTO_CAPTURE_INITIATED, [
+                'payment' => $payment
+            ]);
+
+            $this->order = $this->repo->order->findByPublicIdAndMerchant($payment->getPublicOrderId(), $this->merchant);
+
+            // return if payment isn't a split payment
+            if ($this->order->hasSplitPayments() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_FAILED,
+                    null,
+                    null,
+                    'This order doesnt have any associated split payments.'
+                );
+            }
+
+            // Process auto capture only when primary payment is being captured
+            if ($payment->isRazorpaywalletPayment() === true)
+            {
+                $this->trace->info(TraceCode::SPLIT_PAYMENT_SKIPPING_AUTO_CAPTURE, [
+                    'payment' => $payment
+                ]);
+                return;
+            }
+
+            // check payment in captured state
+            if ($payment->isCaptured() === false)
+            {
+                return;
+            }
+
+            $walletPayment = null;
+            $payments = $this->repo->payment->fetchPaymentsForOrderId($payment->order->getId());
+            foreach ($payments as $attempt)
+            {
+                if (($attempt->getAmount() === $this->order->getAmount() - $payment->getAmount()) and
+                    ($attempt->isAuthorized() === true) and
+                    ($attempt->isRazorpaywalletPayment() === true))
+                {
+                    $walletPayment = $attempt;
+                }
+            }
+
+            if ($walletPayment === null)
+            {
+                $this->trace->info(TraceCode::SPLIT_PAYMENT_WALLET_PAYMENT_NOT_FOUND, [
+                    'order_id' => $this->order->getId()
+                ]);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_FAILED,
+                    null,
+                    null,
+                    'Wallet payment failed. Please try again later.'
+                );
+            }
+
+            $this->setPayment($walletPayment);
+            $this->capturePayment($walletPayment, $walletPayment->getAmount(), $walletPayment->getCurrency());
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::SPLIT_PAYMENT_CAPTURE_FAILED, [
+                'message'  => $e->getMessage(),
+                'stack'    => $e->getTrace(),
+                'payment'  => $payment
+            ]);
+            throw $e;
+        }
+    }
+
+    public function refundSplitPayments(Payment\Entity $payment)
+    {
+        if ($payment->isSplitPayment() == false)
+        {
+            return;
+        }
+
+        // Terminating condition to avoid recursive calls.
+        if ($payment->isRazorpaywalletPayment() == true)
+        {
+            return;
+        }
+
+        // check payment in failed state
+        if ($payment->isFailed() === false)
+        {
+            return;
+        }
+
+        $payments = $this->repo->payment->fetchPaymentsForOrderId($payment->order->getId());
+
+        // Refund authorized wallet payments
+        foreach ($payments as $record)
+        {
+            if (
+                $record->isRazorpaywalletPayment() === true &&
+                $record->isAuthorized() === true &&
+                $record->getAmount() + $payment->getAmount() === $payment->order->getAmount()
+            )
+            {
+                $this->refundAuthorizedPayment($record);
+            }
+        }
     }
 
     protected function associateMerchantToOptimizerLinkAndPayWalletTokens(Customer\Token\Entity &$token,Payment\Entity $payment){
