@@ -511,7 +511,7 @@ trait UpiRecurring
             ($lastSuccessDebitTimeStamp !== null) and
             (in_array($this->app['env'],['automation','bvt']) === false))
         {
-            $sequenceNumber = new UpiMandate\SequenceNumber($lastSuccessDebitTimeStamp, Carbon::now()->getTimestamp());
+            $sequenceNumber = new UpiMandate\SequenceNumber($lastSuccessDebitTimeStamp, Carbon::now(Timezone::IST)->getTimestamp());
             $recurType = $upiMandate['recurring_type'];
             $recurVal = $upiMandate['recurring_value'];
             $frequency = $upiMandate['frequency'];
@@ -835,7 +835,7 @@ trait UpiRecurring
         {
             $upiMandateGatewayData = $upiMandate->getGatewayData();
 
-            $upiMandateGatewayData[UpiConstants::LAST_SUCCESSFUL_DEBIT] = Carbon::now()->getTimestamp();
+            $upiMandateGatewayData[UpiConstants::LAST_SUCCESSFUL_DEBIT] = Carbon::now(Timezone::IST)->getTimestamp();
 
             $upiMandate->setGatewayData($upiMandateGatewayData);
 

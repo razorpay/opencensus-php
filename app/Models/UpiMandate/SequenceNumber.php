@@ -88,7 +88,7 @@ class SequenceNumber
             }
         }
 
-        $currentTime = Carbon::now()->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         switch ($recurType)
         {
