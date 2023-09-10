@@ -5552,6 +5552,15 @@ class Core extends Base\Core
             Attempt\Constants::FTS_FUND_ACCOUNT_ID  => $ftsFundAccountId,
         ];
 
+        $statusCode = null;
+
+        if ((Status::isFailureState($status) === true) and
+            (is_null($payout->getStatusCode()) === true) and
+            (empty($payout->getFTSTransferId()) === true))
+        {
+            $statusCode = "FTS_ATTEMPT_CREATE_FAILED";
+        }
+
         switch ($status)
         {
             case Status::PROCESSED:
@@ -5564,14 +5573,14 @@ class Core extends Base\Core
                 $this->handlePayoutReversed(
                     $payout,
                     $ftaFailureReason,
-                    null,
+                    $statusCode,
                     null,
                     $ftsSourceInformation,
                     $ftsStatus);
                 break;
 
             case Status::FAILED:
-                $this->handlePayoutFailed($payout, $ftaFailureReason);
+                $this->handlePayoutFailed($payout, $ftaFailureReason, $statusCode);
                 break;
 
             default:
@@ -5611,15 +5620,15 @@ class Core extends Base\Core
 
         // Only updating fta failure reason if payout failure reason was updated during this request.
         if ((empty($input[Entity::FAILURE_REASON]) === false) and
-            (($payout->wasChanged(Entity::FAILURE_REASON) === true) or
+            (($payout->getFailureReason() !== $fta->getFailureReason()) or
              ($payout->getIsPayoutService() === true)))
         {
-            $fta->setFailureReason($input[Entity::FAILURE_REASON]);
+            $fta->setFailureReason($payout->getFailureReason());
         }
 
         // Only updating fta status if payout status was updated during this request.
         if ((empty($input[Entity::STATUS]) === false) and
-            (($payout->wasChanged(Entity::STATUS) === true) or
+            (($payout->getStatus() !== $fta->getStatus()) or
              ($payout->getIsPayoutService() === true)))
         {
             $fta->setStatus($input[Entity::STATUS]);

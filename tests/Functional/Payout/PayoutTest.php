@@ -14224,6 +14224,46 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('failed', $payout->getStatus());
     }
 
+    public function testPayoutWithEmptyFTSTransferIDStatusUpdateToFailed()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('create_request_submitted', $payout->getStatus());
+
+        $this->assertNull($payout->getStatusDetailsId());
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'failed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('failed', $payout->getStatus());
+
+        $this->assertEquals("FTS_ATTEMPT_CREATE_FAILED", $payout->getStatusCode());
+
+        $statusDetailsId = $payout->getStatusDetailsId();
+
+        $statusDetails = $this->getDbEntityById('payouts_status_details', $statusDetailsId);
+
+        $this->assertNotNull($statusDetails);
+
+        $this->assertEquals('server_error', $statusDetails['reason']);
+
+        $this->assertEquals('Payout failed due to technical failure. Please retry after 30 min.', $statusDetails['description']);
+    }
+
     public function testUpdatePayoutStatusToProcessedManuallyFailed()
     {
         $this->testCreatePayout();
@@ -14362,6 +14402,18 @@ class PayoutTest extends OAuthTestCase
             ]
         ];
 
+        $statusDetailsId = $payout->getStatusDetailsId();
+
+        $this->assertNotNull($statusDetailsId);
+
+        $statusDetails = $this->getDbEntityById('payouts_status_details', $statusDetailsId);
+
+        $this->assertNotNull($statusDetails);
+
+        $this->assertEquals('payout_processed', $statusDetails['reason']);
+
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
+
         $this->ba->adminAuth();
 
         $this->makeRequestAndGetContent($request);
@@ -14373,6 +14425,16 @@ class PayoutTest extends OAuthTestCase
 
         // Assert that payout failure reason was also updated.
         $this->assertEquals('payout reversed at bank', $payout['failure_reason']);
+
+        $statusDetailsId = $payout->getStatusDetailsId();
+
+        $statusDetails = $this->getDbEntityById('payouts_status_details', $statusDetailsId);
+
+        $this->assertNotNull($statusDetails);
+
+        $this->assertEquals('server_error', $statusDetails['reason']);
+
+        $this->assertEquals('Payout failed due to technical failure. Please retry after 30 min.', $statusDetails['description']);
 
         $fta->reload();
 
