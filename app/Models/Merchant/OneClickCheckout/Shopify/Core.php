@@ -1624,6 +1624,7 @@ class Core extends Base\Core
         }
         else
         {
+            $body['taxes_included'] = true;
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
 
