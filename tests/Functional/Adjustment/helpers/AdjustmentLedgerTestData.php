@@ -91,7 +91,67 @@ return [
         ]
     ],
 
+    'testDuplicateAdjustmentTransactionCreate' => [
+        'request' => [
+            'url' => '/adjustments/transaction_create',
+            'method' => 'POST',
+            'content' => [
+                'id'        =>  'LN1MS4fADj0Sn0',
+                'transaction_id' =>  'LN5BWCGvLdPu7T',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'adjustment',
+                'amount'         => 500,
+                'currency'       => 'INR',
+                'description'    =>  'add primary balance in reverse shadow',
+                'transaction_id' => 'LN5BWCGvLdPu7T'
+            ],
+        ]
+    ],
 
+    'testNegativeAdjustmentCreateWithNegativeLimit' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -5000,
+                'type'          =>  'primary',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'loan payment reference id : some_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -5000,
+                'currency'      => 'INR',
+                'description'   => 'loan payment reference id : some_id',
+            ],
+        ]
+    ],
+
+    'testNegativeAdjustmentTransactionCreateWithLowBalanceInReverseShadow' => [
+        'request' => [
+            'url' => '/adjustments/transaction_create',
+            'method' => 'POST',
+            'content' => [
+                'id'        =>  'LN1MS4fADj0Sn0',
+                'transaction_id' =>  'LN5BWCGvLdPu7T',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'adjustment',
+                'amount'         => -5000,
+                'currency'       => 'INR',
+                'description'    =>  'deduct primary balance in reverse shadow',
+                'transaction_id' => 'LN5BWCGvLdPu7T'
+            ],
+        ]
+    ],
 ];
 
 

@@ -2360,6 +2360,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+
+                $this->repo->saveOrFail($txn);
+
+                $this->saveFeeDetails($txn, $feesSplit);
             }
             else
             {
@@ -2379,13 +2383,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         else
         {
             list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
-        }
 
-        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-        {
             $this->repo->saveOrFail($txn);
-
-            $this->saveFeeDetails($txn, $feesSplit);
         }
 
         // This is required to save the association of the transaction with the payment.

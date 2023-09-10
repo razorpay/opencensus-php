@@ -4,22 +4,23 @@ namespace RZP\Models\Ledger\ReverseShadow;
 
 use App;
 use Exception;
-use Ramsey\Uuid\Uuid;
-use RZP\Constants\Metric;
 use RZP\Error\Error;
-use RZP\Models\LedgerOutbox\Entity as LedgerOutboxEntity;
-use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
-use RZP\Models\Ledger\Constants;
-use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
-use RZP\Models\Merchant\RefundSource;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use Ramsey\Uuid\Uuid;
+use RZP\Models\Feature;
+use RZP\Constants\Metric;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Services\Ledger as LedgerService;
-use RZP\Trace\TraceCode;
-use RZP\Models\Feature;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Processor as PaymentProcessor;
+use RZP\Models\LedgerOutbox\Entity as LedgerOutboxEntity;
+use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
+use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 
 trait ReverseShadowTrait
 {
@@ -547,4 +548,14 @@ trait ReverseShadowTrait
         return $payment->getId()."_transaction";
     }
 
+    public function isNegativeBalanceEnabledForTxnTypeAndMerchant(string $txnType, string $balanceType = Balance\Type::PRIMARY) : bool
+    {
+        if ((array_key_exists($balanceType, Balance\Core::NEGATIVE_FLOWS) === true) and
+            (in_array($txnType, Balance\Core::NEGATIVE_FLOWS[$balanceType]) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

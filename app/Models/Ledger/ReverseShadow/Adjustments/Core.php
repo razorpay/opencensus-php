@@ -3,14 +3,16 @@
 namespace RZP\Models\Ledger\ReverseShadow\Adjustments;
 
 use App;
-use Ramsey\Uuid\Uuid;
-use RZP\Constants\Metric;
-use RZP\Models\Adjustment\Entity;
 use RZP\Models\Base;
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
-use RZP\Models\Ledger\Constants;
-use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Constants\Metric;
+use RZP\Models\Transaction;
 use RZP\Services\KafkaProducer;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Adjustment\Entity;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 class Core extends Base\Core
 {
@@ -35,13 +37,16 @@ class Core extends Base\Core
 
         $transactionMessage = $this->generateBaseForJournalEntry($adjustment);
 
+        $maxNegativeLimit = $this->getMaxNegativeLimitForAdjustment($adjustment);
+
         $disputeDeductData = array(
             Constants::TRANSACTOR_ID                => $transactorId,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::MONEY_PARAMS                 => [
                 Constants::MERCHANT_BALANCE_AMOUNT           => strval($adjustmentAmount),
                 Constants::BASE_AMOUNT                       => strval($adjustmentAmount),
-                Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount)
+                Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount),
+                Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
             ],
         );
 
@@ -62,13 +67,16 @@ class Core extends Base\Core
 
         $transactionMessage = $this->generateBaseForJournalEntry($adjustment);
 
+        $maxNegativeLimit = $this->getMaxNegativeLimitForAdjustment($adjustment);
+
         $disputeReversalData = array(
             Constants::TRANSACTOR_ID                => $transactorId,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::MONEY_PARAMS                 => [
                 Constants::MERCHANT_BALANCE_AMOUNT           => strval($adjustmentAmount),
                 Constants::BASE_AMOUNT                       => strval($adjustmentAmount),
-                Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount)
+                Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount),
+                Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
             ],
         );
 
@@ -94,13 +102,16 @@ class Core extends Base\Core
 
         $transactionMessage = $this->generateBaseForJournalEntry($adjustment);
 
+        $maxNegativeLimit = $this->getMaxNegativeLimitForAdjustment($adjustment);
+
         $manualAdjData = array(
             Constants::TRANSACTOR_ID                => $transactorId,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::MONEY_PARAMS                 => [
                 Constants::MERCHANT_BALANCE_AMOUNT           => strval($adjustmentAmount),
                 Constants::BASE_AMOUNT                       => strval($adjustmentAmount),
-                Constants::ADJUSTMENT_AMOUNT                 => strval($adjustmentAmount)
+                Constants::ADJUSTMENT_AMOUNT                 => strval($adjustmentAmount),
+                Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
             ]
         );
 
@@ -167,5 +178,31 @@ class Core extends Base\Core
 
             throw $ex;
         }
+    }
+
+    private function getMaxNegativeLimitForAdjustment(Entity $adjustment): int
+    {
+        $balanceType = Balance\Type::PRIMARY;
+        $txnType = Transaction\Type::ADJUSTMENT;
+
+        $balanceConfigCore = new Balance\BalanceConfig\Core();
+
+        $isNegativeBalanceEnabled = $this->isNegativeBalanceEnabledForTxnTypeAndMerchant($txnType, $balanceType);
+
+        if ($isNegativeBalanceEnabled === false) {
+            return 0;
+        }
+
+        $balance = $adjustment->merchant->getBalanceByTypeOrFail($balanceType);
+
+        $negativeAllowedFlows = $balanceConfigCore->getNegativeFlowsForBalance($balance->getId());
+
+        if (in_array($txnType, $negativeAllowedFlows) === false)
+        {
+            return 0;
+        }
+
+        return $balanceConfigCore->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
     }
 }

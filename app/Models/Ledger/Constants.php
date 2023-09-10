@@ -127,6 +127,7 @@ class Constants
     const PAYMENT_ID                                        = "payment_id";
     const API_TXN_ID                                        = "api_txn_id";
     const MERCHANT_BALANCE_LIMIT                            = "merchant_balance_limit";
+    const TRANSACTION_ID                                    = "transaction_id";
 
     const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';

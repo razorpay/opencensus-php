@@ -304,6 +304,20 @@ class Service extends Base\Service
                 ]);
         }
 
+        $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($adjustment->getId());
+
+        if ((isset($txn) === true) and ($txn->getBalanceId() !== null))
+        {
+            $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
+                [
+                    LedgerConstants::ADJUSTMENT_ID      => $adjustmentId,
+                    LedgerConstants::TRANSACTION_ID     => $txn->getId(),
+                ]
+            );
+
+            return $adjustment->toArrayPublic();
+        }
+
         $txn = $this->repo->transaction(function() use ($adjustment, $txnId)
         {
             $txn = (new Transaction\Core)->createFromAdjustment($adjustment, $txnId);
