@@ -32,6 +32,7 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { openSlider } from 'merchant_common/reducers/slider';
@@ -261,6 +262,7 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
+const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 const PaymentsDetailsV2 = lazy(() =>
   import(
     /* webpackChunkName: "PaymentsDetailsV2" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails'
@@ -991,6 +993,11 @@ class Content extends Component {
             path="/bank-accounts-settlements"
             component={BankAccountsAndSettlements}
             additionalCondition={isProfileViewAllowed}
+          />
+          <ShowWhenRoute
+            path="/pos/:page?"
+            component={POS}
+            additionalCondition={() => isPosExperimentEnabled(splitz)}
           />
           <Route exact path="/" component={HandleIndex} />
           <Route path="*" component={HandleIndex} />

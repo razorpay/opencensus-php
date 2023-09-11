@@ -35,6 +35,7 @@ const ROUTE_REG = {
   wallet: /^\/(wallet)/,
   internationalPaymentsBtn: /^\/(international)/,
   payment_metrics: /^\/(payment-metrics)/,
+  pos: /^\/pos(\/(catalog|dashboard))*/,
 };
 
 export const BASE_ROUTES = {
@@ -78,6 +79,7 @@ export const BASE_ROUTES = {
   wallet: '/wallet',
   internationalPaymentsBtn: '/payment-methods/international-payments',
   payment_metrics: '/payment-metrics',
+  pos: '/pos',
 };
 
 export const initializeRoutes = (location, user) => {

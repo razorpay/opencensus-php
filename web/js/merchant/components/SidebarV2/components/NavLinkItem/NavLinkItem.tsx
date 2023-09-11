@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge, Text } from '@razorpay/blade/components';
 import { withRouter } from 'react-router';
 
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -48,6 +49,7 @@ const NavLinkItem = ({
   section,
   location,
 }: NavLinkItemInterface): JSX.Element | null => {
+  const { abExperiments } = useSplitzService();
   const onNavLinkItemClick = () => {
     analyticsTrack({
       objectName: 'sidebar',
@@ -67,7 +69,7 @@ const NavLinkItem = ({
   const Tags = getTags(tags);
 
   return (
-    <ShowWhen additionalCondition={additionalCondition}>
+    <ShowWhen additionalCondition={(user) => additionalCondition(user, abExperiments)}>
       {type === 'linkButton' ? (
         <LinkButtonItem
           to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}

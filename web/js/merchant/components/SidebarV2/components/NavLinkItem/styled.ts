@@ -65,7 +65,9 @@ export const Typo = styled.span`
 export const Icon = styled.i`
   display: flex;
   margin: 0 12px 0 16px;
-  max-width: 13px;
+  max-width: 18px;
+  min-width: 15px;
+  justify-content: center;
 `;
 
 export const NewTag = styled.span`

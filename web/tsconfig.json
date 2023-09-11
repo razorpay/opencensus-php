@@ -79,6 +79,7 @@
     "js/merchant/views/RazorpayXWidget",
     "js/merchant/views/PaymentMetrics",
     "js/common/splitz",
+    "js/merchant/views/POS",
     "js/merchant/views/Settings/Configuration",
     "js/merchant/views/Offers/New/Screens/NoCostEMI"
   ],

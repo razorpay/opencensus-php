@@ -17,6 +17,7 @@ import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { analyticsTrack } from 'common/utils/analytics';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { withRouter } from 'react-router';
+import { useSplitzService } from 'common/splitz';
 
 const NavLinkProduct = ({
   heading,
@@ -30,6 +31,7 @@ const NavLinkProduct = ({
 }: NavLinkProductPropsInterface): JSX.Element | null => {
   const [sectionProducts, setSectionProducts] = useState<ProductsStateInterface>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { abExperiments } = useSplitzService();
 
   const handleToggle = (): void => {
     analyticsTrack({
@@ -55,7 +57,8 @@ const NavLinkProduct = ({
         if (
           PRODUCTS_DATA[each.product_id] &&
           showWhenUtil({
-            additionalCondition: PRODUCTS_DATA[each.product_id].additionalCondition,
+            additionalCondition: (users) =>
+              PRODUCTS_DATA[each.product_id].additionalCondition(users, abExperiments),
           })
         ) {
           accumulator.valid.push(each);

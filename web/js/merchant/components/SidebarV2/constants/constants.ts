@@ -62,4 +62,5 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   developers: 'Developers',
   app_store: 'App Store',
   payment_metrics: 'Payment Metrics',
+  pos: 'POS',
 };

@@ -64,7 +64,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   tags: string[];
   activeTab?: string;
   routes: Record<string, string>;
-  additionalCondition: (payload: any) => boolean;
+  additionalCondition: (payload: User, experiments: any) => boolean;
   getHref?: (payload: any) => boolean;
   user: User;
   section?: string;

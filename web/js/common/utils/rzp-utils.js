@@ -1668,7 +1668,7 @@ export const exportFileAsExcel = ({ finalDataSend, fileName, fileFormat }) => {
   const data = new Blob([excelBuffer], { type: fileType });
   saveAs(data, `${fileName}.${fileFormat}`);
 };
-/**
+/*
  * @param {String} countryCode -country code of merchant, ex-IN, MY
  * @returns {String} - monetary unit text
  */
@@ -1679,3 +1679,6 @@ export const openTicketModal = (data = {}) => {
   const id = `ticket-${Date.now()}`;
   window.rzpTicketSystem?.openModal(id, data);
 };
+
+export const isPosEnabled = (experimenets) =>
+  experimenets?.pos_onboarding?.variables.result === 'on';

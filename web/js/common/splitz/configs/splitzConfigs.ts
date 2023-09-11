@@ -17,7 +17,24 @@ const {
 export const splitzConfig: SplitzInitConfig = {
   onInit: {
     default: [],
-    merchant: [],
+    merchant: [
+      {
+        uniqueHashKey: 'pos_onboarding',
+        experimentId: {
+          beta: 'MVPjQVuTnq6nHb',
+          production: 'MVNsecIfv7m93R',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+    ],
     linkedAccount: [],
     pokedex: [],
   },

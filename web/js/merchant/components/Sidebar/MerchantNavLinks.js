@@ -10,6 +10,7 @@ import {
   getIsPayrollWidgetEnabled,
   getIsShowAffordabilityWidget,
   getIsCheckoutPaymentMetricsEnabled,
+  usePosOnboardingExperiment,
 } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
@@ -28,6 +29,8 @@ function MerchantNavLinks(props) {
   const { recommendedProduct, hasRecommendedProduct } = getRecommendedProductDetails();
   const isRecommendProduct =
     hasRecommendedProduct && payment === 0 && user.isProductRecommendationEnabled;
+
+  const { isPosOnboardingEnabled } = usePosOnboardingExperiment();
 
   useEffect(() => {
     //set recommend product to localstorage.
@@ -187,6 +190,14 @@ function MerchantNavLinks(props) {
         }
         customBadge={getProductBadge(['payment_button', 'payment_gateway'])}
       />
+      <MainNavLink
+        type="product"
+        label="POS"
+        icon="i i-pos pos-icon-styles text-primary"
+        to={routes.pos}
+        additionalCondition={() => isPosOnboardingEnabled}
+      />
+
       <MainNavLink
         label="Route"
         type="product"

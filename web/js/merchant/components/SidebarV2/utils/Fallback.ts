@@ -24,6 +24,12 @@ export const FALLBACK_PRODUCTS = [
         tags: ['NEW'],
       },
       {
+        title: SIDEEBAR_PRODUCTS_TITLES.pos,
+        product_id: 'pos',
+        category: '',
+        tags: [],
+      },
+      {
         title: SIDEEBAR_PRODUCTS_TITLES.invoices,
         product_id: 'invoices',
         category: 'popular',

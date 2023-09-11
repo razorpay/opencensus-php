@@ -2,6 +2,7 @@ import { isMobileResolution } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 export const PRODUCTS_DATA = {
   home: {
@@ -195,6 +196,13 @@ export const PRODUCTS_DATA = {
   },
   internationalPaymentsBtn: {
     additionalCondition: (user: any) => user.isShowInternationalPaymentBtnExpEnabled,
+  },
+  pos: {
+    icon: 'i-pos',
+    additionalCondition: (_, experiments: any) => {
+      const isPosOnboardingEnabled = isExperimentEnabled(experiments.pos_onboarding);
+      return isPosOnboardingEnabled;
+    },
   },
 };
 
