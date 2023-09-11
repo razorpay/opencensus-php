@@ -7,8 +7,7 @@ export const fetchAnalyticsData = ({ start, end }) => {
 
   end = end
     ? moment.unix(end).local().unix()
-    : moment().endOf('day').subtract(1, 'day').local().unix();
-
+    : moment().endOf('day').subtract(2, 'day').local().unix();
   return merchantFetch({
     url: '1cc/analytics',
     method: 'get',
