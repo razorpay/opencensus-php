@@ -1,7 +1,8 @@
-const moment = require('moment');
 const { expect } = require('@playwright/test');
-const { COMMON_SELECTORS } = require('./selectors');
+const moment = require('moment');
+
 const { routes } = require('./constants');
+const { COMMON_SELECTORS } = require('./selectors');
 
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 
@@ -121,7 +122,7 @@ export const switchToTestMode = async ({ page }) => {
   }
 };
 
-const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
+export const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       'universal-search-ftux',

@@ -92,9 +92,12 @@ export const SEARCHABLE_ENTITIES = [
   'Transfers',
   'Reversals',
   'Accounts',
-  // 'Subscriptions',
-  // 'Plans',
-  // 'QRcode',
+  'Subscriptions',
+  'Plans',
+  'QRcode',
+  'SmartCollect',
+  'Customer',
+  'Offers',
 ];
 
 export const ENTITY_SEARCH_KEYS = {
@@ -106,7 +109,7 @@ export const ENTITY_SEARCH_KEYS = {
   SETTLEMENTS_UTR_NUMBER: 'SETTLEMENTS_UTR_NUMBER',
   PAYMENT_PAGES_TITLE: 'PAYMENT_PAGES_TITLE',
   PAYMENT_LINKS_URL: 'PAYMENT_LINKS_URL',
-  // QRCODE_STATUS: 'QRCODE_STATUS',
+  QRCODE_STATUS: 'QRCODE_STATUS',
   ACCOUNTS_EMAIL: 'ACCOUNTS_EMAIL',
   REVERSALS_TRANSFER_ID: 'REVERSALS_TRANSFER_ID',
 };
@@ -123,7 +126,7 @@ export const getEntitySearchResultsRoutes = (searchQuery, key) => {
     SETTLEMENTS_UTR_NUMBER: `/app/settlements?utr=${searchQuery}`,
     PAYMENT_LINKS_URL: `/app/paymentlinks?short_url=${searchQuery}`,
     PAYMENT_PAGES_TITLE: `/app/paymentpages?title=${searchQuery}`,
-    // QRCODE_STATUS: `/app/qr_codes?status=${searchQuery}`,
+    QRCODE_STATUS: `/app/qr_codes?status=${searchQuery}`,
     ACCOUNTS_EMAIL: `/app/route/accounts?email=${searchQuery}`,
     REVERSALS_TRANSFER_ID: `/app/route/reversals?transfer_id=${searchQuery}`,
   };

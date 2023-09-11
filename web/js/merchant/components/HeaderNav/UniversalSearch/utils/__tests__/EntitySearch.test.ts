@@ -29,7 +29,9 @@ describe('Entity search util', () => {
       'Payments',
       'PaymentLinks',
       'Accounts',
-      'QRcodes',
+      'SmartCollect',
+      'Customer',
+      'QRcode',
     ];
 
     expect(searchResults.success).toBe(true);
@@ -74,7 +76,10 @@ describe('Entity search util', () => {
       'Accounts',
       'Subscriptions',
       'Plans',
-      'QRcodes',
+      'QRcode',
+      'SmartCollect',
+      'Offers',
+      'Customer',
     ];
 
     expect(searchResults.success).toBe(false);
@@ -134,8 +139,11 @@ describe('Transform search results util', () => {
       'Accounts',
       'Reversals',
       'Subscriptions',
-      'QRcodes',
+      'QRcode',
       'Plans',
+      'SmartCollect',
+      'Offers',
+      'Customer',
     ];
 
     expect(transformedSearchResults).toHaveLength(Object.keys(searchableEntities).length);

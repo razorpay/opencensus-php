@@ -1,7 +1,9 @@
 import { hideSearchFTUXBannerByLocalStorage } from '../utils';
 import { hideCustomBannersFromState, loginByEmail, loginByMobile } from '../utils/common';
 import { routes } from '../utils/constants';
+
 const { test, expect } = require('@playwright/test');
+
 const { getCredentials } = require('../utils/config');
 
 test.describe.parallel('Dashboard login flow @flow=auth', () => {

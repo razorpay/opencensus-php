@@ -103,7 +103,10 @@ export type SearchableEntities =
   | 'Accounts'
   | 'Subscriptions'
   | 'Plans'
-  | 'QRcodes';
+  | 'QRcode'
+  | 'SmartCollect'
+  | 'Customer'
+  | 'Offers';
 
 type PaymentEntityAttributeTypes = 'PaymentId' | 'PaymentStatus';
 type RefundEntityAttributeTypes = 'RefundId' | 'RefundStatus';
@@ -120,12 +123,14 @@ type PaymentLinkEntityAttributeTypes =
   | 'PaymentLinkUrl'
   | 'PaymentLinkStatus';
 type TransfersEntityAttributeTypes = 'TransferId' | 'TransferStatus' | 'TransferSettlementStatus';
+type QRCodeEntityAttributeTypes = 'QRCodeId' | 'QRCodeStatus';
 type AccountsEntityAttributeTypes = 'AccountId';
 type ReversalsEntityAttributeTypes = 'ReversalId';
-type QRCodeEntityAttributeTypes = 'QRCodeId' | 'QRCodeStatus';
 type SubscriptionsEntityAttributeTypes = 'SubscriptionId';
 type PlanEntityAttributeTypes = 'PlanId';
 type CustomerEntityAttributeTypes = 'CustomerId';
+type SmartCollectEntityAttributeTypes = 'CustomerIdentifierId';
+type OffersEntityAttributeTypes = 'OfferId';
 
 export type EntityAttributeTypes =
   | PaymentEntityAttributeTypes
@@ -144,7 +149,9 @@ export type EntityAttributeTypes =
   | SubscriptionsEntityAttributeTypes
   | QRCodeEntityAttributeTypes
   | PlanEntityAttributeTypes
-  | CustomerEntityAttributeTypes;
+  | CustomerEntityAttributeTypes
+  | SmartCollectEntityAttributeTypes
+  | OffersEntityAttributeTypes;
 
 export interface SearchableEntityType {
   id: SearchableEntities;
@@ -177,6 +184,16 @@ export type entityAttributesTypes = Record<EntityAttributeTypes, attributeType>;
 export type defaultEntityParamTypes = Record<SearchableEntities, string>;
 
 export type statusKeywordsStoreType = Record<
-  Exclude<SearchableEntities, 'Invoices' | 'Reversals' | 'Accounts' | 'Subscriptions' | 'Plans'>,
+  Exclude<
+    SearchableEntities,
+    | 'Invoices'
+    | 'Reversals'
+    | 'Accounts'
+    | 'Subscriptions'
+    | 'Plans'
+    | 'Customer'
+    | 'Offers'
+    | 'SmartCollect'
+  >,
   Record<string, string>
 >;

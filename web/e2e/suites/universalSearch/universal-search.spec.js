@@ -175,7 +175,12 @@ test.describe
       searchTerm: `+91${searchQuery}`,
     });
     await expect(searchResults).toBeVisible();
-    await expect(searchResults.getByText('in: Payments')).toBeVisible();
+
+    const entities = ['Payments', 'PaymentLinks', 'SmartCollect', 'Customer', 'QRcode'];
+
+    entities.forEach(async (entity) => {
+      await expect(searchResults.getByText(`in: ${entity}`)).toBeVisible();
+    });
 
     await searchResults.getByText('in: Payments').click();
     await expect(page).toHaveURL(
@@ -196,7 +201,12 @@ test.describe
       searchTerm: searchQuery,
     });
     await expect(searchResults).toBeVisible();
-    await expect(searchResults.getByText('in: Payments')).toBeVisible();
+
+    const entities = ['Payments', 'PaymentLinks', 'Accounts', 'SmartCollect', 'Customer', 'QRcode'];
+    entities.forEach(async (entity) => {
+      await expect(searchResults.getByText(`in: ${entity}`)).toBeVisible();
+    });
+    // await expect(searchResults.getByText('in: Payments')).toBeVisible();
 
     await searchResults.getByText('in: Payments').click();
     await expect(page).toHaveURL(
@@ -220,8 +230,11 @@ test.describe
     });
 
     await expect(searchResults).toBeVisible();
-    await expect(searchResults.getByText('in: Settlements')).toBeVisible();
-    await expect(searchResults.getByText('in: Orders')).toBeVisible();
+
+    const entities = ['Settlements', 'Transfers', 'Orders', 'PaymentLinks'];
+    entities.forEach(async (entity) => {
+      await expect(searchResults.getByText(`in: ${entity}`)).toBeVisible();
+    });
 
     await searchResults.getByText('in: Orders').click();
     await expect(page).toHaveURL(
@@ -304,35 +317,35 @@ test.describe
     );
   });
 
-  // test('should show entity search results for QRCode status search @priority=normal', async ({
-  //   page,
-  // }) => {
-  //   await page.goto(routes.DASHBOARD);
-  //   const searchBox = await page.locator("input[name='search']");
-  //   await expect(searchBox).toBeVisible();
-  //   await searchBox.focus();
-  //   const searchQuery = 'active';
+  test('should show entity search results for QRCode status search @priority=normal', async ({
+    page,
+  }) => {
+    await page.goto(routes.DASHBOARD);
+    const searchBox = await page.locator("input[name='search']");
+    await expect(searchBox).toBeVisible();
+    await searchBox.focus();
+    const searchQuery = 'active';
 
-  //   const searchResults = await getSearchResultsEl({
-  //     page,
-  //     searchBox,
-  //     searchTerm: searchQuery,
-  //   });
+    const searchResults = await getSearchResultsEl({
+      page,
+      searchBox,
+      searchTerm: searchQuery,
+    });
 
-  //   await expect(searchResults).toBeVisible();
-  //   const paymentPagesSearchResult = searchResults.getByText('in: PaymentPages');
-  //   const paymentButtonsSearchResult = searchResults.getByText('in: PaymentButtons');
-  //   const qrCodesSearchResult = searchResults.getByText('in: QRcodes');
+    await expect(searchResults).toBeVisible();
+    const paymentPagesSearchResult = searchResults.getByText('in: PaymentPages');
+    const paymentButtonsSearchResult = searchResults.getByText('in: PaymentButtons');
+    const qrCodesSearchResult = searchResults.getByText('in: QRcode');
 
-  //   await expect(paymentPagesSearchResult).toBeVisible();
-  //   await expect(paymentButtonsSearchResult).toBeVisible();
-  //   await expect(qrCodesSearchResult).toBeVisible();
+    await expect(paymentPagesSearchResult).toBeVisible();
+    await expect(paymentButtonsSearchResult).toBeVisible();
+    await expect(qrCodesSearchResult).toBeVisible();
 
-  //   await qrCodesSearchResult.click();
-  //   await expect(page).toHaveURL(
-  //     getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.QRCODE_STATUS),
-  //   );
-  // });
+    await qrCodesSearchResult.click();
+    await expect(page).toHaveURL(
+      getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.QRCODE_STATUS),
+    );
+  });
 
   test('should show entity search results for Accounts email search @priority=normal', async ({
     page,

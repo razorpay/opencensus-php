@@ -5,6 +5,7 @@ import {
   statusKeywordsStoreType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
+
 const {
   transactions,
   settlements,
@@ -14,6 +15,9 @@ const {
   route,
   subscriptions,
   qr_codes,
+  smart_collect,
+  customers,
+  offers,
 } = PRODUCTS_DATA;
 
 export const searchableEntities: SearchableEntitiesType = {
@@ -152,15 +156,41 @@ export const searchableEntities: SearchableEntitiesType = {
       PlanId: 'id',
     },
   },
-  QRcodes: {
-    id: 'QRcodes',
+  QRcode: {
+    id: 'QRcode',
     route: '/qr_codes',
     icon: qr_codes.icon,
     attributes: {
       QRCodeId: 'id',
       QRCodeStatus: 'status',
-      Email: 'cust_email',
-      PhoneNumber: 'cust_contact',
+    },
+  },
+  SmartCollect: {
+    id: 'SmartCollect',
+    route: '/smartcollect/virtualaccounts',
+    icon: smart_collect.icon,
+    attributes: {
+      CustomerIdentifierId: 'id',
+      Email: 'email',
+      PhoneNumber: 'contact',
+    },
+  },
+  Customer: {
+    id: 'Customer',
+    route: '/customers',
+    icon: customers.icon,
+    attributes: {
+      CustomerId: 'id',
+      Email: 'email',
+      PhoneNumber: 'contact',
+    },
+  },
+  Offers: {
+    id: 'Offers',
+    route: '/offers',
+    icon: offers.icon,
+    attributes: {
+      OfferId: 'id',
     },
   },
 };
@@ -236,7 +266,13 @@ export const entityAttributes: entityAttributesTypes = {
     attributeId: 'CustomerId',
     attributeType: 'entity_id',
     matchWith: /^cust_[a-zA-Z0-9]{14}$/,
-    entities: ['Subscriptions'],
+    entities: ['Subscriptions', 'Customer'],
+  },
+  OfferId: {
+    attributeId: 'OfferId',
+    attributeType: 'entity_id',
+    matchWith: /^offer_[a-zA-Z0-9]{14}$/,
+    entities: ['Offers'],
   },
   PaymentPageUrl: {
     attributeId: 'PaymentPageUrl',
@@ -248,13 +284,13 @@ export const entityAttributes: entityAttributesTypes = {
     attributeId: 'Email',
     attributeType: 'entity_email',
     matchWith: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/,
-    entities: ['Payments', 'PaymentLinks', 'Accounts', 'QRcodes'],
+    entities: ['Payments', 'PaymentLinks', 'Accounts', 'SmartCollect', 'Customer', 'QRcode'],
   },
   PhoneNumber: {
     attributeId: 'PhoneNumber',
     attributeType: 'entity_contact_number',
     matchWith: /^(?:\+91|0)?[6-9]\d{9}$/,
-    entities: ['Payments', 'PaymentLinks', 'QRcodes'],
+    entities: ['Payments', 'PaymentLinks', 'SmartCollect', 'Customer', 'QRcode'],
   },
   TransferId: {
     attributeId: 'TransferId',
@@ -278,7 +314,13 @@ export const entityAttributes: entityAttributesTypes = {
     attributeId: 'QRCodeId',
     attributeType: 'entity_id',
     matchWith: /^qr_[a-zA-Z0-9]{0,14}/,
-    entities: ['QRcodes'],
+    entities: ['QRcode'],
+  },
+  CustomerIdentifierId: {
+    attributeId: 'CustomerIdentifierId',
+    attributeType: 'entity_id',
+    matchWith: /^va_[a-zA-Z0-9]{0,14}/,
+    entities: ['SmartCollect', 'QRcode'],
   },
   TransferStatus: {
     attributeId: 'TransferStatus',
@@ -332,13 +374,13 @@ export const entityAttributes: entityAttributesTypes = {
   DisputeState: {
     attributeId: 'DisputeState',
     attributeType: 'entity_state',
-    matchWith: ['open', 'lost', 'won', 'closed', 'review', 'under review'],
+    matchWith: ['open', 'under_review', 'lost', 'won', 'closed', 'review', 'under review'],
     entities: ['Disputes'],
   },
   PaymentLinkStatus: {
     attributeId: 'PaymentLinkStatus',
     attributeType: 'entity_state',
-    matchWith: ['created', 'partially paid', 'paid', 'cancelled', 'expired'],
+    matchWith: ['created', 'partially_paid', 'partially', 'paid', 'cancelled', 'expired'],
     entities: ['PaymentLinks'],
   },
   PaymentPageStatus: {
@@ -357,7 +399,7 @@ export const entityAttributes: entityAttributesTypes = {
     attributeId: 'QRCodeStatus',
     attributeType: 'entity_state',
     matchWith: ['active', 'closed'],
-    entities: ['QRcodes'],
+    entities: ['QRcode'],
   },
 };
 
@@ -376,7 +418,10 @@ export const defaultQueryParamsPerEntity: defaultEntityParamTypes = {
   Accounts: 'q',
   Subscriptions: 'q',
   Plans: 'q',
-  QRcodes: 'q',
+  QRcode: 'q',
+  SmartCollect: 'q',
+  Customer: 'q',
+  Offers: 'q',
 };
 
 export const statusKeywordsStore: statusKeywordsStoreType = {
@@ -444,7 +489,7 @@ export const statusKeywordsStore: statusKeywordsStoreType = {
     hold: 'on_hold',
     'on hold': 'on_hold',
   },
-  QRcodes: {
+  QRcode: {
     active: 'active',
     closed: 'closed',
   },
