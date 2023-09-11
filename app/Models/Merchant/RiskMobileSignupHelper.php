@@ -93,6 +93,26 @@ class RiskMobileSignupHelper
                 $postTicketRequest['attachments'] = $requestParams['attachments'];
             }
 
+            if (isset($requestParams[FreshdeskTicket\Constants::CC_EMAILS]) === true)
+            {
+                $postTicketRequest[FreshdeskTicket\Constants::CC_EMAILS] = $requestParams[FreshdeskTicket\Constants::CC_EMAILS];
+            }
+
+            if (isset($requestParams[FreshdeskTicket\Constants::CF_WEBSITE_URL]) === true)
+            {
+                $postTicketRequest[FreshdeskTicket\Constants::CUSTOM_FIELDS][FreshdeskTicket\Constants::CF_WEBSITE_URL] = $requestParams[FreshdeskTicket\Constants::CF_WEBSITE_URL];
+            }
+
+            if (isset($requestParams[FreshdeskTicket\Constants::CF_MERCHANT_ID]) === true)
+            {
+                $postTicketRequest[FreshdeskTicket\Constants::CUSTOM_FIELDS][FreshdeskTicket\Constants::CF_MERCHANT_ID] = $requestParams[FreshdeskTicket\Constants::CF_MERCHANT_ID];
+            }
+
+            if (isset($requestParams[FreshdeskTicket\Constants::CF_NEW_REQUESTOR_CATEGORY]) === true)
+            {
+                $postTicketRequest[FreshdeskTicket\Constants::CUSTOM_FIELDS][FreshdeskTicket\Constants::CF_NEW_REQUESTOR_CATEGORY] = $requestParams[FreshdeskTicket\Constants::CF_NEW_REQUESTOR_CATEGORY];
+            }
+
             $response = (new FreshdeskTicket\Service())->postTicketOnMerchantBehalf(
                 $postTicketRequest, $merchant->getId(), true);
 
@@ -100,7 +120,7 @@ class RiskMobileSignupHelper
                 TraceCode::MERCHANT_RISK_FD_TICKET_CREATED,
                 [
                     'merchant_id'       => $merchant->getId(),
-                    'fd_ticket_id'         => $response['id'],
+                    'fd_ticket_id'      => $response['id'],
                 ]);
 
             return $response;

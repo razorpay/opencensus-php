@@ -18,6 +18,11 @@ class Notification
     const SETTINGS           = 'settings';
     const NOTIFY_INTERVAL    = 'notify_interval';
 
+    const RESOLVED           = 'Resolved';
+    const CLOSED             = 'Closed';
+
+    const CHANNEL            = 'channel';
+    
     // Email providers
     const FRESHDESK         = 'freshdesk';
     const MAILGUN           = 'mailgun';
@@ -109,4 +114,8 @@ class Notification
 
         return self::FRAUD_NOTIFICATIONS[$fraudType][self::HANDLER];
     }
+
+    const URL_MISMATCH_REPLY_ON_TICKET_ID_KEY = 'app.url_mismatch_reply_on_ticket_experiment_id';
+
+    const VARIANT_ENABLE = 'enable';
 }

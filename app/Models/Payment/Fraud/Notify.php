@@ -12,6 +12,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Fraud\Notifications\Config;
+use RZP\Models\Payment\Fraud\Notifications\Metrics as Metrics;
 use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
 
 class Notify
@@ -91,6 +92,8 @@ class Notify
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, null, TraceCode::FRAUD_NOTIFICATION_FAILED);
+
+            $this->trace->count(Metrics::FRAUD_NOTIFICATION_FAILED);
         }
     }
 

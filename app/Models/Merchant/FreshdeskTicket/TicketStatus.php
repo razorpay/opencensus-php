@@ -36,6 +36,11 @@ class TicketStatus
         7 => self::WAITING_ON_THIRD_PARTY,
     ];
 
+    const FRESHDESK_TICKET_STATUS_FOR_NEW_TICKET_CREATION = [
+        self::CLOSED,
+        self::RESOLVED,
+    ];
+
     public static function getStatusMappingForStatusString($ticketStatusString)
     {
         $values = array_flip(self::$ticketStatusMapping);

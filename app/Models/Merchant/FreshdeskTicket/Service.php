@@ -1329,7 +1329,7 @@ class Service extends Base\Service
         return $midWithPrefix;
     }
 
-    protected function sortTicketsInDescendingOrderOfCreatedAt(array &$allTickets)
+    public function sortTicketsInDescendingOrderOfCreatedAt(array &$allTickets)
     {
         // Sorting the tickets in descending order of created_at
         usort($allTickets, function($a, $b){
@@ -1663,7 +1663,7 @@ class Service extends Base\Service
         return $queryString;
     }
 
-    protected function getCustomFieldsFromInput(array $fields, $input)
+    public function getCustomFieldsFromInput(array $fields, $input)
     {
         //This list will contain custom fields received from input
         $finalFields = [];

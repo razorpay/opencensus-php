@@ -52,8 +52,10 @@ class Constants
     const CF_WORKFLOW_ID                       = 'cf_workflow_id';
     const CF_MULTIPRODUCT_USER_P0              = 'cf_multiproduct_user_p0';
 
-    const MULTI_PRODUCT_USER                     = 'MP User P0';
+    const MULTI_PRODUCT_USER                   = 'MP User P0';
 
+    const ID                                   = 'id';
+    const CF_WEBSITE_URL                       = 'cf_website_url';
 
     const EMAIL_SOURCE_DISPUTES_TAG            = 'email_source_Disputes';
 
@@ -280,6 +282,12 @@ class Constants
     const ACTIVATIONS_DOCUMENT_REVIEW = "Activations: Document Review";
     const LEAD_SCORE                  = "cf_lead_score";
     const CF_CASE_TRIGGER             = "cf_case_trigger";
+
+    const CUSTOM_FIELDS_LIST_FOR_FETCH_TICKETS = [
+        self::CF_MERCHANT_ID,
+        self::CF_WEBSITE_URL,
+        self::CF_SUBCATEGORY,
+    ];
 
     const RAZORPAY_ONE_MERCHANTS = array(
         "GmFC3z7gCW6UAz",

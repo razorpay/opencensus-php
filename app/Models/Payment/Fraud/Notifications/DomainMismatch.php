@@ -4,7 +4,9 @@ namespace RZP\Models\Payment\Fraud\Notifications;
 
 use View;
 use RZP\lib\TemplateEngine;
+use \RZP\Models\Dispute\Service as DisputeService;
 use RZP\Models\Payment\Fraud\Constants\Notification as NotifConstants;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class DomainMismatch extends Base
 {
@@ -49,6 +51,10 @@ class DomainMismatch extends Base
     {
         $emailPayload = $this->getEmailPayload();
 
+        $sopEmailIds = [];
+
+        $ccEmailIds = (new DisputeService)->addSalesPOCToCCEmails($emailPayload['merchant']['id'], $sopEmailIds);
+
         if ($this->config->getEmailProvider() === NotifConstants::FRESHDESK)
         {
             $mailSubject = sprintf(self::EMAIL_SUBJECT_TPL, $this->merchant->getId());
@@ -62,17 +68,22 @@ class DomainMismatch extends Base
                 'type'            => 'Service request',
                 'priority'        => 1,
                 'email'           => $this->merchant->getEmail(),
+                'cc_emails'       => $ccEmailIds,
                 'tags'            => ['website_mismatch'],
                 'group_id'        => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['merchant_risk'],
                 'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['rzpind']['risk_notification'],
                 'custom_fields'   => [
+                    FreshdeskConstants::CF_NEW_REQUESTOR_CATEGORY => FreshdeskConstants::RAZORPAY,
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
                     'cf_subcategory'  => 'Website Mismatch',
                     'cf_product'      => 'Payment Gateway',
+                    'cf_merchant_id'  => $emailPayload['merchant']['id'] ?? "",
+                    'cf_website_url'  => $emailPayload['payment']['referer_domain'] ?? "",
                 ],
             ];
         }
+
         return $emailPayload;
     }
 
@@ -174,10 +185,19 @@ class DomainMismatch extends Base
     {
         $emailPayload = $this->getEmailPayload();
 
+        $sopEmailIds = [];
+
+        $ccEmailIds = (new DisputeService)->addSalesPOCToCCEmails($emailPayload['merchant']['id'], $sopEmailIds);
+
         $requestParams = [
-            'tags'            => ['website_mismatch'],
-            'type'            => 'Service request',
-            'subCategory'     => 'Website Mismatch',
+            'tags'                      => ['website_mismatch'],
+            'type'                      => 'Service request',
+            'subCategory'               => 'Website Mismatch',
+            'cf_merchant_id'            => $emailPayload['merchant']['id'],
+            'cf_website_url'            => $emailPayload['payment']['referer_domain'],
+            'cc_emails'                 => $ccEmailIds,
+            'cf_new_requester_category' => 'Razorpay',
+            'groupId'                   => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['merchant_risk'],
         ];
 
         return [self::EMAIL_BODY, self::EMAIL_SUBJECT_TPL, $emailPayload, $requestParams];

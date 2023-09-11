@@ -11,6 +11,7 @@ use RZP\Models\Risk;
 use RZP\Constants\Shield;
 use RZP\Models\Payment;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Error\PublicErrorDescription;
@@ -25,6 +26,7 @@ class FraudDetectionTest extends TestCase
     use PaymentTrait;
     use FreshdeskTrait;
     use EventsTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -489,10 +491,13 @@ class FraudDetectionTest extends TestCase
                 'cf_subcategory'                => 'Website Mismatch',
                 'cf_product'                    => 'Payment Gateway',
                 'cf_created_by'                 => 'agent',
-                'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                'cf_website_url'                => 'anotherurl.com',
                 'cf_merchant_id'                => '10000000000000',
+                'cf_new_requester_category'     => 'Razorpay',
+                'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
                 'cf_merchant_activation_status' => 'undefined',
             ],
+            'cc_emails' => [],
         ];
 
         if ($mobileSignUpTest === true)
@@ -612,6 +617,17 @@ class FraudDetectionTest extends TestCase
 
     public function testFraudDetectedByShieldWebsiteMismatchMobileSignup()
     {
+        $splitzInput = [
+            'experiment_id' => 'MYGLSjyh1SkQNa',
+            'id'            => '10000000000000',
+        ];
+
+        $splitzOutput = [
+            'response' => []
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
         $this->runFraudDetectedByShieldWebsiteMismatch(true, false,  'rule_random', "DOMAIN_MISMATCH_BLOCK_NOTIFY_MERCHANT");
     }
 

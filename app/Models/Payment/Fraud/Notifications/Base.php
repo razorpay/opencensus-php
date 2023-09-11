@@ -7,12 +7,16 @@ use Mail;
 
 use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\lib\TemplateEngine;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
+use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskService;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
+use RZP\Models\Merchant\FreshdeskTicket\TicketStatus as FreshdeskTicketStatus;
 
 abstract class Base
 {
@@ -84,13 +88,80 @@ abstract class Base
 
     private function createFreshdeskTicketForMerchant()
     {
-        [$mailBody, $mailSubject, $emailPayload, $requestParams] = $this->getFreshdeskTicketData();
+        [$mailBody, $mailSubjectTemplate, $emailPayload, $requestParams] = $this->getFreshdeskTicketData();
 
-        (new RiskMobileSignupHelper())->createFdTicket($this->merchant,
-                                                       $mailBody,
-                                                       $mailSubject,
-                                                       $emailPayload,
-                                                       $requestParams);
+        $experimentEnabled = $this->isSplitzExperimentEnable(
+            $requestParams[FreshdeskConstants::CF_MERCHANT_ID],
+            Constants::URL_MISMATCH_REPLY_ON_TICKET_ID_KEY,
+            Constants::VARIANT_ENABLE
+        );
+
+        if ($experimentEnabled === true)
+        {
+            $latestTicket = $this->fetchFreshdeskExistingTicketsForUrlMismatch($emailPayload, $requestParams);
+
+            $createNewTicket = $this->checkIfCreateNewFreshdeskTicket($latestTicket);
+
+            if ($createNewTicket === false)
+            {
+                return $this->freshdeskNotificationReplyOnExistingFreshdeskTicket($mailBody, $emailPayload, $requestParams, $latestTicket);
+            }
+            else
+            {
+                return $this->freshdeskNotificationCreateNewFreshdeskTicket($mailBody, $mailSubjectTemplate, $emailPayload, $requestParams);
+            }
+        }
+        else
+        {
+            return $this->freshdeskNotificationCreateNewFreshdeskTicket($mailBody, $mailSubjectTemplate, $emailPayload, $requestParams);
+        }
+    }
+
+    private function freshdeskNotificationReplyOnExistingFreshdeskTicket($mailBody, $emailPayload, $requestParams, $latestTicket)
+    {
+        $replyPayload = $this->getFdRequestPayloadForTicketReply($mailBody, $emailPayload, $requestParams);
+
+        $response = $this->app[FreshdeskConstants::FRESHDESK_CLIENT]->postTicketReply($latestTicket[FreshdeskConstants::ID], $replyPayload, FreshdeskConstants::URLIND);
+
+        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+        $this->trace->info(TraceCode::URL_MISMATCH_REPLY_ON_EXISTING_TICKET_SUCCESS, [
+            'merchant_id'    => $requestParams[FreshdeskConstants::CF_MERCHANT_ID],
+            'ticket_id'      => $latestTicket[FreshdeskConstants::ID],
+            'website_domain' => $requestParams[FreshdeskConstants::CF_WEBSITE_URL],
+            'channel'        => Constants::FRESHDESK_TICKET
+        ]);
+
+        $this->trace->count(Metrics::FRAUD_NOTIFICATION_REPLY_ON_EXISTING_TICKET, [
+            Constants::CHANNEL => Constants::FRESHDESK_TICKET
+        ]);
+
+        return $response;
+    }
+
+    private function freshdeskNotificationCreateNewFreshdeskTicket($mailBody, $mailSubjectTemplate, $emailPayload, $requestParams)
+    {
+        $mailSubject = sprintf($mailSubjectTemplate, $requestParams[FreshdeskConstants::CF_MERCHANT_ID]);
+
+        $response = (new RiskMobileSignupHelper())->createFdTicket($this->merchant,
+            $mailBody,
+            $mailSubject,
+            $emailPayload,
+            $requestParams);
+
+        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+        $this->trace->info(TraceCode::URL_MISMATCH_NEW_TICKET_CREATED_SUCCESS, [
+            'merchant_id'    => $requestParams[FreshdeskConstants::CF_MERCHANT_ID],
+            'website_domain' => $requestParams[FreshdeskConstants::CF_WEBSITE_URL],
+            'channel'        => Constants::FRESHDESK_TICKET
+        ]);
+
+        $this->trace->count(Metrics::FRAUD_NOTIFICATION_NEW_TICKET_CREATED, [
+            Constants::CHANNEL => Constants::FRESHDESK_TICKET
+        ]);
+
+        return $response;
     }
 
     private function sendWhatsappToMerchant()
@@ -114,6 +185,62 @@ abstract class Base
     {
         $data = $this->getEmailData();
 
+        $experimentEnabled = $this->isSplitzExperimentEnable(
+            $this->merchant->getId(),
+            Constants::URL_MISMATCH_REPLY_ON_TICKET_ID_KEY,
+            Constants::VARIANT_ENABLE
+        );
+
+        if ($experimentEnabled === true)
+        {
+            $latestTicket = $this->fetchFreshdeskExistingTicketsForUrlMismatch($data);
+
+            $createNewTicket = $this->checkIfCreateNewFreshdeskTicket($latestTicket);
+
+            if ($createNewTicket === false)
+            {
+                return $this->emailNotificationReplyOnExistingFreshdeskTicket($data, $latestTicket, $requestParams);
+            }
+            else
+            {
+                return $this->emailNotificationCreateNewFreshdeskTicket($data);
+            }
+        }
+        else
+        {
+            return $this->emailNotificationCreateNewFreshdeskTicket($data);
+        }
+    }
+
+    private function emailNotificationReplyOnExistingFreshdeskTicket($data, $latestTicket, $requestParams)
+    {
+        $replyPayload = [
+            FreshdeskConstants::BODY      => $data[FreshdeskConstants::DESCRIPTION],
+            FreshdeskConstants::CC_EMAILS => $data[FreshdeskConstants::CC_EMAILS],
+        ];
+
+        $response =  $this->app[FreshdeskConstants::FRESHDESK_CLIENT]->postTicketReply($latestTicket[FreshdeskConstants::ID],
+            $replyPayload,
+            FreshdeskConstants::URLIND);
+
+        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+        $this->trace->info(TraceCode::URL_MISMATCH_REPLY_ON_EXISTING_TICKET_SUCCESS, [
+            'merchant_id'    => $data[FreshdeskConstants::CUSTOM_FIELDS][FreshdeskConstants::CF_MERCHANT_ID],
+            'ticket_id'      => $latestTicket[FreshdeskConstants::ID],
+            'website_domain' => $data[FreshdeskConstants::CUSTOM_FIELDS][FreshdeskConstants::CF_WEBSITE_URL],
+            'channel'        => Constants::EMAIL
+        ]);
+
+        $this->trace->count(Metrics::FRAUD_NOTIFICATION_REPLY_ON_EXISTING_TICKET, [
+            Constants::CHANNEL => Constants::EMAIL
+        ]);
+
+        return $response;
+    }
+
+    private function emailNotificationCreateNewFreshdeskTicket($data)
+    {
         if (is_null($data) === false)
         {
             $mailer = $this->config->getEmailHandler();
@@ -130,8 +257,23 @@ abstract class Base
 
             if ($provider === Constants::FRESHDESK)
             {
-                $this->app['freshdesk_client']->sendOutboundEmail(
+                $response = $this->app[FreshdeskConstants::FRESHDESK_CLIENT]->sendOutboundEmail(
                     $data, FreshdeskConstants::URLIND);
+
+                (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+                $this->trace->info(TraceCode::URL_MISMATCH_NEW_TICKET_CREATED_SUCCESS, [
+                    'merchant_id'    => $requestParams[FreshdeskConstants::CF_MERCHANT_ID],
+                    'website_domain' => $requestParams[FreshdeskConstants::CF_WEBSITE_URL],
+                    'ticket_id'      => $response[FreshdeskConstants::ID],
+                    'channel'        => Constants::EMAIL
+                ]);
+
+                $this->trace->count(Metrics::FRAUD_NOTIFICATION_NEW_TICKET_CREATED, [
+                    Constants::CHANNEL => Constants::EMAIL
+                ]);
+
+                return $response;
             }
             else
             {
@@ -247,6 +389,176 @@ abstract class Base
         }
 
         return true;
+    }
+
+    private function checkIfCreateNewFreshdeskTicket($latestTicket) : bool
+    {
+        $createNewTicket = true;
+
+        if (empty($latestTicket) === false)
+        {
+            $ticketStatus = (new FreshdeskService)->getTicketStatusForCustomer($latestTicket);
+
+            $createNewTicket = (in_array($ticketStatus, FreshdeskTicketStatus::FRESHDESK_TICKET_STATUS_FOR_NEW_TICKET_CREATION)) ? true : false;
+        }
+
+        return $createNewTicket;
+    }
+
+    private function fetchFreshdeskExistingTicketsForUrlMismatch(array $emailPayload, array $requestParams = []) : array
+    {
+        $latestTicket = [];
+
+        $filters = [
+            FreshdeskConstants::CF_MERCHANT_ID  => $requestParams[FreshdeskConstants::CF_MERCHANT_ID] ?? $emailPayload[FreshdeskConstants::CUSTOM_FIELDS][FreshdeskConstants::CF_MERCHANT_ID],
+            FreshdeskConstants::CF_WEBSITE_URL  => $requestParams[FreshdeskConstants::CF_WEBSITE_URL] ?? $emailPayload[FreshdeskConstants::CUSTOM_FIELDS][FreshdeskConstants::CF_WEBSITE_URL],
+            FreshdeskConstants::CF_SUBCATEGORY  => FreshdeskConstants::FD_SUB_CATEGORY_WEBSITE_MISMATCH,
+        ];
+
+        $queryString = $this->buildQueryStringForGetFreshdeskTickets($filters);
+
+        $queryParams = [
+            FreshdeskConstants::QUERY => $queryString,
+            FreshdeskConstants::PAGE => 1,
+        ];
+
+        $urlMismatchTickets = $this->app[FreshdeskConstants::FRESHDESK_CLIENT]->getTickets($queryParams, FreshdeskConstants::URLIND);
+
+        if ((isset($urlMismatchTickets[FreshdeskConstants::TOTAL]) === true) and
+            (isset($urlMismatchTickets[FreshdeskConstants::RESULTS]) === true) and
+            ($urlMismatchTickets[FreshdeskConstants::TOTAL] !== 0))
+        {
+            // for sanity
+            (new FreshdeskService())->sortTicketsInDescendingOrderOfCreatedAt($urlMismatchTickets[FreshdeskConstants::RESULTS]);
+
+            $latestTicket = $urlMismatchTickets[FreshdeskConstants::RESULTS][0];
+
+            $this->trace->info(TraceCode::URL_MISMATCH_FETCH_EXISTING_TICKET_DETAILS, [
+                'ticket_id' => $latestTicket[FreshdeskConstants::ID],
+                'status'    => $latestTicket[FreshdeskConstants::STATUS],
+            ]);
+        }
+
+        return $latestTicket;
+    }
+
+    private function getFdRequestPayloadForTicketReply($mailTemplate, $requestPayload, $requestParams) : array
+    {
+        $data = array_merge($requestPayload, $requestParams);
+
+        $mailBody = \View::make($mailTemplate)->with($data)->render();
+
+        $ticketPayload = [
+            FreshdeskConstants::BODY => $mailBody,
+            FreshdeskConstants::CC_EMAILS => $requestParams[FreshdeskConstants::CC_EMAILS],
+        ];
+
+        return $ticketPayload;
+    }
+
+    private function buildQueryStringForGetFreshdeskTickets($input): string
+    {
+        $status = $input[FreshdeskConstants::STATUS] ?? null;
+
+        $customStringsListForQuery = FreshdeskConstants::CUSTOM_FIELDS_LIST_FOR_FETCH_TICKETS;
+
+        $customStringsPresent = (new FreshDeskService())->getCustomFieldsFromInput($customStringsListForQuery, $input);
+
+        // Adding status filter if necessary
+        if (empty($status) === false)
+        {
+            $queryString .= '"(';
+
+            if (is_array($status) === true)
+            {
+                foreach ($status as $index => $value)
+                {
+                    $queryString .= ($index === 0) ? 'status:' . $value : ' OR status:' . $value;
+                }
+            }
+            else
+            {
+                $queryString .= 'status:' . $status;
+            }
+
+            $queryString .= ')';
+        }
+
+        if (empty($customStringsPresent) === false)
+        {
+            if (empty($status) === false)
+            {
+                foreach ($customStringsPresent as $key => $values)
+                {
+                    $queryString .= ' AND custom_string:\'' . $customStringsPresent[$key] . '\'';
+                }
+            }
+            else
+            {
+                $firstKey = array_shift($customStringsPresent);
+
+                $queryString .= '"custom_string:\'' . $firstKey . '\'';
+
+                // Adding custom fields in filter
+                foreach ($customStringsPresent as $key => $values)
+                {
+                    $queryString .= ' AND custom_string:\'' . $customStringsPresent[$key] . '\'';
+                }
+            }
+        }
+
+        if (array_key_exists('tags', $input) === true)
+        {
+            // adding tags in the filter
+            foreach ($input['tags'] as $tag)
+            {
+                $queryString .= ' AND tag:\'' . $tag . '\'';
+            }
+        }
+
+        $queryString .= '"';
+
+        return $queryString;
+    }
+
+    private function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
+    {
+        $variant = $this->getSplitzResponse($merchantId, $experimentName);
+
+        if ($variant === $checkVariant)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     abstract protected function getSmsData();
