@@ -2228,7 +2228,7 @@ class Service extends Base\Service
                     //Disable commissions only if merchant was not a sub-merchant for the partner before referral
                     if($accessMaps->isEmpty() === true)
                     {
-                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant->getId());
+                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant);
                     }
 
                     (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);

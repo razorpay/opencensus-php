@@ -7049,7 +7049,7 @@ class Service extends Base\Service
                     //Disable commissions only if merchant was not a sub-merchant for the partner before invite
                     if($isMerchantAlreadyLinkedToPartner === false)
                     {
-                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($merchant, $subMerchant->getId());
+                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($merchant, $subMerchant);
                     }
                 }
             });

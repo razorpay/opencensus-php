@@ -58,7 +58,7 @@ class Service extends Base\Service
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    protected function getApplicationFromInput(array $input): OAuthApp\Entity
+    public function getApplicationFromInput(array $input): OAuthApp\Entity
     {
         $this->validateConfigInput($input);
 

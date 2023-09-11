@@ -343,7 +343,7 @@ class MerchantReferralTest extends OAuthTestCase
     public function testCreateOrFetchNewMerchantReferralPartnerEligibleForCapital(): void
     {
         $input = [
-            'experiment_id' => 'M6dmstlJXnnU8F',
+            'experiment_id' => 'L0rynez0HhIXHb',
             'id'            => Constants::DEFAULT_MERCHANT_ID,
         ];
 
@@ -353,13 +353,6 @@ class MerchantReferralTest extends OAuthTestCase
                     'name' => 'enable',
                 ]
             ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
-            'experiment_id' => 'L0rynez0HhIXHb',
-            'id'            => Constants::DEFAULT_MERCHANT_ID,
         ];
 
         $this->mockSplitzTreatment($input, $output);

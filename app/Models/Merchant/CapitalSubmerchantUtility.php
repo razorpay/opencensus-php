@@ -218,7 +218,7 @@ class CapitalSubmerchantUtility
      * create partner_config entry for the submerchant to disable commissions
      * and create/update sub_merchant_config which notifies why we disabled commissions
      */
-    public function createPartnerConfigForExistingMerchantsInvitedForLOC(Merchant\Entity $partner, string $submerchantId)
+    public function createPartnerConfigForExistingMerchantsInvitedForLOC(Merchant\Entity $partner, Merchant\Entity $subMerchant)
     {
         try
         {
@@ -231,13 +231,15 @@ class CapitalSubmerchantUtility
             ];
 
             $partnerConfigInput = [
-                'submerchant_id'        => $submerchantId,
+                'submerchant_id'        => $subMerchant->getId(),
                 'sub_merchant_config'   => $submerchantConfig,
             ];
 
             $partnerConfigInput = array_merge($defaultConfig, $partnerConfigInput);
 
-            (new PartnerConfig\Service())->create($partnerConfigInput);
+            $application = (new PartnerConfig\Service())->getApplicationFromInput($partnerConfigInput);
+
+            (new PartnerConfig\Core)->create($application, $partnerConfigInput, $subMerchant);
         }
         catch (\Exception $e)
         {
@@ -246,7 +248,7 @@ class CapitalSubmerchantUtility
                 TraceCode::CAPITAL_SUBMERCHANT_PARTNER_CONFIG_CREATE_FAILED,
                 [
                     'partner_id'     => $partner->getId(),
-                    'submerchant_id' => $submerchantId
+                    'submerchant_id' => $subMerchant->getId()
                 ]
             );
 
