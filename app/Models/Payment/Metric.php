@@ -25,6 +25,7 @@ class Metric extends Base\Core
     const LABEL_CARD_TYPE                       = 'card_type';
     const LABEL_CARD_NETWORK                    = 'card_network';
     const LABEL_CARD_TOKENISED                  = 'card_tokenised';
+    const LABEL_CARD_ALTID                      = 'alt_id';
     const LABEL_CARD_VAULT                      = 'card_vault';
     const LABEL_CARD_PROTOCOL_VERSION           = 'card_protocol_version';
     const LABEL_CARD_ENROLLMENT_STATUS          = 'card_enrolled';
@@ -341,6 +342,10 @@ class Metric extends Base\Core
             $iin = $card->getIin();
 
             $tokenised = $card->isTokenPan();
+            $altid = false;
+            if ($card->getTrivia() === '3') {
+                $altid  = true;
+            }
 
             $vault = $card->getVault();
 
@@ -386,6 +391,7 @@ class Metric extends Base\Core
             self::LABEL_CARD_NETWORK            => $network  ?? null,
             self::LABEL_CARD_TYPE               => $cardType ?? null,
             self::LABEL_CARD_TOKENISED          => $tokenised ?? null,
+            self::LABEL_CARD_ALTID              => $altid ?? null,
             self::LABEL_CARD_VAULT              => $vault ?? null,
             self::LABEL_PAYMENT_MANDATE_HUB     => $mandateHub ?? null,
             self::LABEL_CARD_PROTOCOL_VERSION   => $protocolVersion ?? null,
