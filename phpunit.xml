@@ -363,8 +363,36 @@
         <testsuite name="Gateway-3 Test Suite">
             <exclude>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</exclude>
         </testsuite>
-        <testsuite name="Smart Collect Test Suite">
-            <directory>./tests/Functional/BankTransfer</directory>
+        <testsuite name="Smart Collect Bank Transfer Test Suite">
+            <file>./tests/Functional/BankTransfer/BankTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect RBL Bank Transfer Test Suite">
+            <file>./tests/Functional/BankTransfer/RblBankTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect HDFC ECMS Bank Transfer Test Suite">
+            <file>./tests/Functional/BankTransfer/HdfcEcmsBankTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect ICICI Bank Transfer Test Suite">
+            <file>./tests/Functional/BankTransfer/IciciBankTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect Axis Bank Transfer Test Suite">
+            <file>./tests/Functional/BankTransfer/AxisBankTransferTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect VA Test Suite">
+            <file>./tests/Functional/VirtualAccount/VirtualAccountTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect VA TPV Test Suite">
+            <file>./tests/Functional/VirtualAccount/VirtualAccountTpvTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect VA for Order and VA Batch Test Suite">
+            <file>./tests/Functional/VirtualAccount/VirtualAccountForOrderTest.php</file>
+            <file>./tests/Functional/VirtualAccount/VirtualAccountBatchTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect Virtual VPA Prefix Test Suite">
+            <file>./tests/Functional/VirtualVpaPrefix/VirtualVpaPrefixTest.php</file>
+        </testsuite>
+        <testsuite name="Smart Collect UPI Transfer Test Suite">
+            <file>./tests/Functional/UpiTransfer/UpiTransferTest.php</file>
         </testsuite>
         <testsuite name="QR Payment Test Suite">
             <directory>./tests/Functional/QrCode</directory>

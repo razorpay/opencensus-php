@@ -27,8 +27,8 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           SONAR_HOST: https://sonar.razorpay.com
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-      - name: smart collect test suite
-        run: ci-assets/unit_coverage.sh
+      - name: Smart Collect Bank Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
         env:
           DB_LIVE_HOST: mysql
           DB_TEST_HOST: mysql
@@ -48,20 +48,323 @@ jobs:
           SESSION_REDIS_PORT: 6379
           SESSION_REDIS_HOST_V2: redis
           SESSION_REDIS_PORT_V2: 6379
-          THROTTLE_REDIS_HOST: redis
-          THROTTLE_REDIS_PORT: 6379
           ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
           ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-          SONAR_HOST: https://sonar.razorpay.com
+          TEST_SUITE_NAME: "Smart Collect Bank Transfer Test Suite"
+          CLOVER_NAME: sc
+          RUN_FIXTURES: true
+          RUN_FIXTURES_ONCE: true
+      - name: Smart Collect RBL Bank Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect RBL Bank Transfer Test Suite"
+          CLOVER_NAME: sc_rbl
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect ICICI Bank Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect ICICI Bank Transfer Test Suite"
+          CLOVER_NAME: sc_icici
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect Axis Bank Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect Axis Bank Transfer Test Suite"
+          CLOVER_NAME: sc_axis
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect HDFC ECMS Bank Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect HDFC ECMS Bank Transfer Test Suite"
+          CLOVER_NAME: sc_hdfc
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect VA Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect VA Test Suite"
+          CLOVER_NAME: sc_va
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect VA TPV Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect VA TPV Test Suite"
+          CLOVER_NAME: sc_va_tpv
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect VA for Order and VA Batch Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect VA for Order and VA Batch Test Suite"
+          CLOVER_NAME: sc_va_order_batch
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect Virtual VPA Prefix Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect Virtual VPA Prefix Test Suite"
+          CLOVER_NAME: sc_vpa
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Smart Collect UPI Transfer Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Smart Collect UPI Transfer Test Suite"
+          CLOVER_NAME: sc_upi_transfer
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Sonar Analysis
+        uses: sonarsource/sonarcloud-github-action@v1.6
+        env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONARCLOUD_URL: https://sonar.razorpay.com
+          SONAR_HOST: https://sonar.razorpay.com
           GIT_COMMIT_ID: ${{ github.sha }}
           SONAR_PROJECT_ID: API_SMARTCOLLECT_UT
-          TEST_SUITE_NAME: "Smart Collect Test Suite"
-          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest
+          SOURCE_DIR: app/Models/BankAccount,app/Models/BankTransfer,app/Models/BankTransferRequest,app/Models/VirtualAccount,app/Models/VirtualAccountProducts,app/Models/VirtualAccountTpv,app/Models/VirtualVpaPrefix,app/Models/VirtualVpaPrefixHistory,app/Models/Vpa,app/Models/UpiTransfer,app/Models/UpiTransferRequest
+        with:
+          args: >
+            -Dsonar.host.url=${{ env.SONAR_HOST }}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_ID }}
+            -Dsonar.projectName=${{ env.SONAR_PROJECT_ID }}
+            -Dsonar.projectVersion=${{ env.GIT_COMMIT_ID }}
+            -Dsonar.login=${{ env.SONAR_TOKEN }}
+            -Dsonar.sources=${{ env.SOURCE_DIR }}
+            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_sc.xml,clover_files/clover_cov_sc_rbl.xml,clover_files/clover_cov_sc_hdfc.xml,clover_files/clover_cov_sc_icici.xml,clover_files/clover_cov_sc_va.xml,clover_files/clover_cov_sc_va_tpv.xml,clover_files/clover_cov_sc_va_order_batch.xml,clover_files/clover_cov_sc_vpa.xml,clover_files/clover_cov_sc_upi_transfer.xml
     services:
       redis:
         credentials:
@@ -347,6 +650,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
@@ -377,6 +682,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
@@ -407,6 +714,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
@@ -437,6 +746,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
@@ -467,6 +778,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
@@ -497,6 +810,8 @@ jobs:
           SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
