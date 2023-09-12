@@ -29,16 +29,17 @@ export const getDataFromAPI = (response) => {
   } else throw new Error('FIRC API call failed');
 };
 
-//This function reorders the files array based on the document type
-//firs_file on top - firs_icici_zip in bottom
+/**
+ * @param {*} files - Array of documents
+ * @returns {Array} - transformedData
+ * This function reorders the files array based on the document type.
+ * All the documents of type FILE will be on top and ZIP will be at the bottom
+ */
 export const organiseFiles = (files) => {
   let transformed_files = [];
 
   if (Array.isArray(files)) {
-    const single_files = files.filter(
-      (file) =>
-        file?.document_type === 'firs_file' || file?.document_type === 'firs_firstdata_file',
-    );
+    const single_files = files.filter((file) => !file.document_type?.includes('zip'));
     const zip_files = files.filter((file) => file?.document_type === 'firs_icici_zip');
 
     transformed_files = transformed_files.concat(
@@ -46,9 +47,6 @@ export const organiseFiles = (files) => {
         ...file,
         name: `FIRS - ${index + 1}`,
       })),
-    );
-
-    transformed_files = transformed_files.concat(
       zip_files.map((file, index) => ({
         ...file,
         name: `FIRS - ZIP - ${index + 1}`,
