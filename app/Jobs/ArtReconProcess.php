@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Service;
 use RZP\Models\Payment\Gateway;
@@ -21,6 +22,10 @@ class ArtReconProcess extends Job
     protected $mode;
 
     protected $data;
+
+    public $timeout = 150;
+
+    protected $startTime;
 
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
@@ -49,6 +54,8 @@ class ArtReconProcess extends Job
         parent::__construct($this->mode);
 
         $this->data = $payload;
+
+        $this->startTime = microtime(true);
     }
 
     public function handle()
@@ -227,6 +234,18 @@ class ArtReconProcess extends Job
             }
         }
         return $scroogeReconData;
+    }
+
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $currentTime = microtime(true);
+
+        $this->trace->info(TraceCode::ART_REFUND_RECON_UPDATE_JOB_TIMEOUT, [
+            'total_response_time'  => $currentTime - $this->startTime,
+            'queue_name'           => $this->getJobName(),
+        ]);
+
+        parent::beforeJobKillCleanUp();
     }
 }
 
