@@ -90,7 +90,7 @@ trait Reversal
             Refund\Entity::NOTES  => $refundNotes,
         ];
 
-        if ($this->checkIfRefundAfterReversalExperimentIsEnabled() === true)
+        if (($rearchRefund === true) or ($this->checkIfRefundAfterReversalExperimentIsEnabled() === true))
         {
             // Reverse the associated transfer - this credits the marketplace balance
             $reversal = (new ReversalCore)
@@ -101,7 +101,7 @@ trait Reversal
             if ($rearchRefund === true)
             {
                 $refund = (new Processor($transferPayment->merchant))
-                    ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
+                    ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund, $reversal);
             }
             else
             {
@@ -113,20 +113,10 @@ trait Reversal
         }
         else
         {
-            // Refund the transfer payment - this debits the account balance
-            // Avoiding taking a lock on payment ID if it's a rearch refund request, as the same is present on Scrooge
-            if ($rearchRefund === true)
-            {
-                $refund = (new Processor($transferPayment->merchant))
+            $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundInput, $rearchRefund) {
+                return (new Processor($transferPayment->merchant))
                     ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
-            }
-            else
-            {
-                $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function () use ($input, $transferPayment, $refundInput, $rearchRefund) {
-                    return (new Processor($transferPayment->merchant))
-                        ->refundTransferPayment($transferPayment, $refundInput, $rearchRefund);
-                });
-            }
+            });
 
             // Reverse the associated transfer - this credits the marketplace balance
             $reversal = (new ReversalCore)
@@ -147,16 +137,22 @@ trait Reversal
      * Refund an internal marketplace payment (method = transfer)
      *
      * @param  Payment\Entity $payment
-     * @param  array          $input
-     *
+     * @param  array $input
+     * @param  bool $rearchRefund
+     * @param  ReversalEntity $reversal
      * @throws Exception\BadRequestException
      * @return Refund\Entity
      */
-    protected function refundTransferPayment(Payment\Entity $payment, array $input, bool $rearchRefund = false): Refund\Entity
+    protected function refundTransferPayment(Payment\Entity $payment, array $input, bool $rearchRefund = false, ReversalEntity $reversal = null): Refund\Entity
     {
         if ($rearchRefund === true)
         {
             $input['transfer_refund'] = true;
+
+            if (empty($reversal) === false)
+            {
+                $input['reversal_id'] = $reversal->getId();
+            }
 
             $this->trace->info(
                 TraceCode::REFUND_TRANSFER_PAYMENT_SCROOGE,
