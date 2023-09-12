@@ -1,5 +1,5 @@
 <?php
-    $isOrgHDFC = (json_decode($org, true)['custom_code']) === "hdfc";
+    $isOrgHDFC = array_get(json_decode($org, true), 'custom_code') === "hdfc";
 ?>
 
 
