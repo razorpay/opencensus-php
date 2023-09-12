@@ -356,6 +356,12 @@ class Repository extends Base\Repository
 
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
+        $dcs = $this->app['dcs'];
+        $proxyVariant = $dcs->getDcsProxyVariant(Constants::MERCHANT . ':' . $apiFeatureName, $mode);
+        if ($proxyVariant === 'on_proxy_read')
+        {
+            return $dcs->fetchByEntityIdsAndNameViaProxy($merchantIds, $featureName, Constants::MERCHANT, $this->getAppMode());
+        }
         if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
@@ -367,7 +373,6 @@ class Repository extends Base\Repository
             try
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
-                $dcs = $this->app['dcs'];
                 $res = $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
                 $dcsRes = new PublicCollection($res);
                 return $dcsRes->pluck(Entity::ENTITY_ID)->toArray();
@@ -404,6 +409,7 @@ class Repository extends Base\Repository
             }
             catch (\Throwable $e)
             {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
                 $this->removeOnDCS($feature, $this->getAppMode());
                 throw $e;
             }

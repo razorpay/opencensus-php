@@ -217,6 +217,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UTM_PARAMS                                            = 'UTM_PARAMS';
     const RZP_UTM                                               = 'RZP_UTM';
+    // DCS Proxy
+    const DCS_PROXY_REQUEST                                     = 'DCS_PROXY_REQUEST';
+    const DCS_PROXY_EDIT_RESPONSE                               = 'DCS_PROXY_EDIT_RESPONSE';
+    const DCS_PROXY_DEBUG                                       = 'DCS_PROXY_DEBUG';
+    const DCS_PROXY_EDIT_FAILURE                                = 'DCS_PROXY_EDIT_FAILURE';
+    const DCS_READ_PROXY_DIFF                                   = 'DCS_READ_PROXY_DIFF';
+    const DCS_READ_PROXY_ENTITY_ID_NAME_DIFF                    = 'DCS_READ_PROXY_ENTITY_ID_NAME_DIFF';
+    const DCS_READ_PROXY_ENTITY_IDS_NAME_DIFF                   = 'DCS_READ_PROXY_ENTITY_IDS_NAME_DIFF';
+    const DCS_READ_PROXY_ENTITY_ID_NAMES_DIFF                   = 'DCS_READ_PROXY_ENTITY_ID_NAMES_DIFF';
+    const DCS_READ_BY_ENTITY_TYPE_FAILURE                       = 'DCS_READ_BY_ENTITY_TYPE_FAILURE';
+    const DCS_READ_BY_ENTITY_ID_NAME_FAILURE                    = 'DCS_READ_BY_ENTITY_ID_NAME_FAILURE';
+    const DCS_READ_BY_ENTITY_IDS_NAME_FAILURE                   = 'DCS_READ_BY_ENTITY_IDS_NAME_FAILURE';
     // DCS Traces
     const DCS_EXTERNAL_REQUEST_RECEIVED                         = 'DCS_EXTERNAL_REQUEST_RECEIVED';
     const DCS_EXTERNAL_RESPONSE_RECEIVED                        = 'DCS_EXTERNAL_RESPONSE_RECEIVED';

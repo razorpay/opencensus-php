@@ -2,11 +2,11 @@
 
 namespace RZP\Services\Dcs\Features;
 
-use Razorpay\Dcs\Kv\V1\ApiException;
 use Razorpay\Trace\Logger;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Dcs\Cache;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -18,7 +18,11 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Entity;
 use Razorpay\Dcs\DataFormatter;
+use Razorpay\Dcs\Kv\V1\ApiException;
+use Razorpay\Dcs\Proxy\V1\ApiException as ProxyApiException;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
+use Razorpay\Dcs\Proxy\V1\Model\V1FeatureBulkEditResponse;
+use Razorpay\Dcs\Proxy\V1\Model\V1GetFeaturesAggregateResponse;
 use Razorpay\Dcs\Constants as SDKConstants;
 use RZP\Trace\Tracer;
 
@@ -48,26 +52,47 @@ class Service extends Base
      */
     public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST)
     {
-        $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
-        if ($isAssignment === true)
-        {
-            $action  = 'assign';
-        }
-        else
-        {
-            $action  = 'remove';
-        }
-        $dimension = [
-            Entity::ENTITY_TYPE     => $entity->getEntity(),
-            Entity::NAME            => $entity->getName(),
-            'variant'               => $variant,
-            'mode'                  => $mode,
-            'action'                => $action
-        ];
-
-        $actualDcsFeatureName = Utility::extractActualDcsName($dcsFeatureName);
-        // if there is any exception will be thrown to caller
         try {
+            $dimension = [
+                Entity::ENTITY_TYPE     => $entity->getEntity(),
+                Entity::NAME            => $entity->getName(),
+                'variant'               => $variant,
+                'mode'                  => $mode,
+                "is_assignment"         => $isAssignment
+            ];
+
+            if (str_starts_with($variant, 'on_direct_dcs') === true)
+            {
+                $proxyVariant = $this->getDcsProxyVariant($entity->getName(), $mode);
+                if (str_starts_with($proxyVariant, 'on_proxy') === true)
+                {
+                    $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_TOTAL, $dimension);
+                    try
+                    {
+                        $this->editProxyFeatures($entity, $isAssignment, $mode);
+
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $this->trace->traceException($ex);
+                        $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_FAILURE_TOTAL, $dimension);
+                    }
+                }
+            }
+            if ($isAssignment === true)
+            {
+                $action  = 'assign';
+            }
+            else
+            {
+                $action  = 'remove';
+            }
+
+            $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
+            $dimension['action'] = $action;
+
+            $actualDcsFeatureName = Utility::extractActualDcsName($dcsFeatureName);
+            // if there is any exception will be thrown to caller
             $this->trace->count(Metric::DCS_FEATURE_EDIT_TOTAL, $dimension);
 
             if (str_starts_with($variant, 'on_direct_dcs'))
@@ -140,6 +165,82 @@ class Service extends Base
         }
     }
 
+    /**
+     * @param Entity $entity
+     * @param bool $isAssignment
+     * @param string $mode
+     * @throws ProxyApiException
+     */
+    public function editProxyFeatures(Entity $entity, bool $isAssignment, string $mode = Mode::TEST)
+    {
+        $req = [
+            "features" => [
+                [
+                    "name" => $entity->getName(),
+                    "entity_type" => $entity->getEntityType(),
+                ],
+            ],
+            "entity_ids" => [
+                $entity->getEntityId(),
+            ]
+        ];
+
+        if ($isAssignment === true)
+        {
+            $proxyResponse = $this->client($mode)->Assign($req, $this->getAuditInfo());
+        }
+        else
+        {
+            $proxyResponse = $this->client($mode)->Remove($req, $this->getAuditInfo());
+        }
+
+        if (($proxyResponse->getResponse() !== null) and
+            (sizeof($proxyResponse->getResponse()) === 1) and
+            ($proxyResponse->getResponse()[0]->getStatus() === "success"))
+        {
+            $this->trace->info(TraceCode::DCS_PROXY_EDIT_RESPONSE, [
+                'response_size' => sizeof($proxyResponse->getResponse())
+            ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::DCS_PROXY_EDIT_FAILURE, [
+                'response_size' => sizeof($proxyResponse->getResponse())
+            ]);
+
+            throw new ProxyApiException("Response is null or size is greater than 1");
+        }
+    }
+
+    private function getByEntityIDAndTypeFromProxy(string $entity_type, string $entity_id,
+                                                   string $mode = Mode::LIVE): ?PublicCollection
+    {
+        $dimension = [
+            'feature_name' => 'many',
+            'mode' => $mode,
+            'function' => __FUNCTION__,
+            'entity_type' => $entity_type,
+        ];
+
+        try
+        {
+            $req = [
+                "entity_type" => $entity_type,
+                "entity_id" => $entity_id
+            ];
+
+            $proxyResp = $this->client($mode)->aggregateFeatureFetch($req);
+
+            return $this->handleAggregateFetchProxyResponse($proxyResp, $entity_type);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->count(Metric::DCS_FEATURE_PROXY_FETCH_BY_ENTITY_TYPE_FAILURE_TOTAL, $dimension);
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_TYPE_FAILURE);
+        }
+        return null;
+    }
+
     public function getDcsEnabledFeatures(string $entityType, string $entityId, string $mode = null) : PublicCollection
     {
         if ($mode === null || $mode = '')
@@ -156,9 +257,27 @@ class Service extends Base
         try
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
-            return $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
+            $dcsResponse = $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
+
+            $proxyResponse = $this->getByEntityIDAndTypeFromProxy($entityType, $entityId, $mode);
+
+            if ($proxyResponse !== null)
+            {
+                $diff = $dcsResponse->diff($proxyResponse);
+                $this->trace->info(TraceCode::DCS_READ_PROXY_DIFF, [
+                    'diff' => $diff,
+                    'entity_id' => $entityId,
+                    'entity_type' => $entityType
+                ]);
+            }
+            else
+            {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
+            }
+
+            return $dcsResponse;
         }
-        catch (\Throwable $e)
+        catch (\Exception $e)
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -178,13 +297,20 @@ class Service extends Base
      * @param string $entityId
      * @param string $apiFeatureName
      * @param string $mode
+     * @param string $entityType
      * @return Entity|null
-     * @throws ApiException
-     * @throws BadRequestException
      * @throws ServerErrorException
      */
-    public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName, string $mode = Mode::TEST): ?Entity
+    public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName,
+                                           string $mode = Mode::TEST, string $entityType = ''): ?Entity
     {
+        $proxyVariant = $this->getDcsProxyVariant($entityType . ':' .$apiFeatureName, $mode);
+        $entity = null;
+        if ($proxyVariant === 'on_proxy_read')
+        {
+            $entity = $this->fetchByEntityIdAndNameViaProxy($entityId, $apiFeatureName, $mode, $entityType);
+        }
+
         $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
@@ -232,6 +358,19 @@ class Service extends Base
         Tracer::addAttribute('entity_id' , $entityId);
         Tracer::addAttribute('function', __FUNCTION__);
 
+        if (($proxyVariant === 'on_proxy_read') and ($entity == null and $response != null))
+        {
+            $this->trace->info(TraceCode::DCS_READ_PROXY_ENTITY_ID_NAME_DIFF, [
+                'dcs_response' => $response->getEntityId(),
+            ]);
+        }
+
+        if (($proxyVariant === 'on_proxy_read') and ($entity != null and $response == null))
+        {
+            $this->trace->info(TraceCode::DCS_READ_PROXY_ENTITY_ID_NAME_DIFF, [
+                'proxy_response' => $entity->getEntityId(),
+            ]);
+        }
         return $response;
     }
 
@@ -343,6 +482,48 @@ class Service extends Base
         Tracer::addAttribute('api_feature_name' , $featureName);
         Tracer::addAttribute('function', __FUNCTION__);
         return $response;
+    }
+
+
+    public function fetchByEntityIdsAndNameViaProxy(array $entityIds, string $apiFeatureName, string $entityType, string $mode = Mode::TEST): array
+    {
+        $res = [];
+        $dimension = [
+            Entity::ENTITY_TYPE     => $entityType,
+            Entity::NAME            => $apiFeatureName,
+            'mode'                  => $mode,
+        ];
+        try
+        {
+            $input = [
+                'entity_ids' => $entityIds,
+                'name' => $apiFeatureName,
+            ];
+
+            $proxyResp = $this->client($mode)->aggregateFeatureFetchByEntityIdsAndName($input);
+
+            if (sizeof($proxyResp->getEntityIds()) > 0)
+            {
+                foreach ($proxyResp->getEntityIds() as $entityId)
+                {
+                    $data = [
+                        Entity::NAME => $proxyResp->getName(),
+                        Entity::ENTITY_TYPE => $entityType,
+                        Entity::ENTITY_ID => $entityId,
+                    ];
+                    $entity = (new Entity)->build($data);
+                    $res[] = $entity;
+                }
+            }
+            return $res;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_IDS_NAME_FAILURE);
+            $this->trace->count(Metric::DCS_FEATURE_PROXY_FETCH_BY_ENTITY_IDS_NAME_FAILURE_TOTAL, $dimension);
+        }
+
+        return $res;
     }
 
     /**
@@ -628,6 +809,7 @@ class Service extends Base
       return $data;
     }
 
+    // deprecate this after proxy ramp up
     public static function isDcsFeature($featureName): bool
     {
         // seems to be wrong
@@ -678,6 +860,26 @@ class Service extends Base
        return $svc->handleResponse($res);
     }
 
+    private function handleAggregateFetchProxyResponse(V1GetFeaturesAggregateResponse $proxyResponse,
+                                                       string $entityType): PublicCollection
+    {
+        $response = new PublicCollection();
+        $entityId = $proxyResponse->getEntityId();
+        foreach ($proxyResponse->getFeatureNames() as $proxyFeatureName)
+        {
+            $featureName = str_after($proxyFeatureName, ":");
+            $attributes = [
+                Entity::NAME => $featureName,
+                Entity::ENTITY_TYPE => $entityType,
+                Entity::ENTITY_ID => $entityId,
+            ];
+            $entity = new Entity();
+            $entity->forceFill($attributes);
+            $entity->setEntityType($entityType);
+            $response->push($entity);
+        }
+        return $response;
+    }
     protected function getAuditInfo(): array
     {
         if($this->auth->isAdminAuth() === true)
@@ -700,5 +902,59 @@ class Service extends Base
     {
         $res = $this->fetchByFeatureName($apiFeatureName,$entityType, $mode);
         return $res->pluck(Entity::ENTITY_ID)->toArray();
+    }
+
+    public function getDcsProxyVariant($featureName, $mode)
+    {
+        $mode = $mode ?? 'live';
+        $flag = $this->app['razorx']->getTreatment($featureName,
+            RazorxTreatment::DCS_PROXY_ENABLED,
+            $mode);
+
+        $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
+            'feature_name' => $featureName,
+            'razorx_treatment' => RazorxTreatment::DCS_PROXY_ENABLED,
+            'razorx_output' => $flag,
+            'mode' => $mode,
+        ]);
+        return $flag;
+    }
+
+    /**
+     * @param string $entityId
+     * @param string $apiFeatureName
+     * @param string $mode
+     * @param string $entityType
+     * @param Entity $entity
+     * @return Entity|null
+     */
+    public function fetchByEntityIdAndNameViaProxy(string $entityId, string $apiFeatureName, string $mode,
+                                                   string $entityType): ?Entity
+    {
+        try
+        {
+            $entity = null;
+            $input = [
+                'entity_ids' => [$entityId],
+                'name' => $apiFeatureName,
+            ];
+
+            $proxyResp = $this->client($mode)->aggregateFeatureFetchByEntityIdsAndName($input);
+
+            if (sizeof($proxyResp->getEntityIds()) > 0) {
+                $data = [
+                    Entity::NAME => $proxyResp->getName(),
+                    Entity::ENTITY_TYPE => $entityType,
+                    Entity::ENTITY_ID => $entityId,
+                ];
+                $entity = (new Entity)->build($data);
+            }
+            return $entity;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_ID_NAME_FAILURE);
+        }
+        return null;
     }
 }

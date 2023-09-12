@@ -10,6 +10,10 @@ use Razorpay\Dcs\Kv\V1\Model\V1GetResponse;
 use Razorpay\Dcs\Kv\V1\Model\V1Key;
 use Razorpay\Dcs\Kv\V1\Model\V1KeyValue;
 use Razorpay\Dcs\Kv\V1\Model\V1PatchResponse;
+use Razorpay\Dcs\Proxy\V1\Model\V1APIFeature;
+use Razorpay\Dcs\Proxy\V1\Model\V1FeatureBulkEditRequest;
+use Razorpay\Dcs\Proxy\V1\Model\V1FeatureBulkEditResponse;
+use Razorpay\Dcs\Proxy\V1\Model\V1FeatureEditResponse;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Entity;
@@ -76,6 +80,123 @@ class DcsServiceTest extends TestCase
         $this->expectExceptionCode(403);
         $this->expectExceptionMessage("unauthorized Error on_direct_dcs_new");
         $this->dcsService->editFeature($entity, "on_direct_dcs_new", true, "test");
+    }
+
+    public function testAssignFeatureViaProxy()
+    {
+        $data = [
+            Entity::NAME => 'disable_amount_check',
+            Entity::ENTITY_TYPE => Type::MERCHANT,
+            Entity::ENTITY_ID => "LNWDzDK1sqQnjY",
+        ];
+
+        $entity = (new Entity)->build($data);
+        $entity->setEntityType(Type::MERCHANT);
+        $entity->setEntityId("LNWDzDK1sqQnjY");
+
+        $testMockClient = $this->dcsService->client("test");
+
+        /*
+        ##############################################################
+        #############  Assign Via Proxy TESTING #####################
+        ##############################################################
+        */
+        $testMockClient->shouldReceive('Assign')
+            ->times(1)
+            ->andReturnUsing(
+                function (array $data, array $auditInfo) {
+                    $assignResponse = [];
+                    $res = new V1FeatureBulkEditResponse();
+                    $response = new V1FeatureEditResponse();
+                    $feature = new V1APIFeature();
+                    $feature->setName("disable_amount_check");
+                    $feature->setEntityType("merchant");
+                    $response->setEntityId("LNWDzDK1sqQnjY");
+                    $response->setStatus("success");
+                    $response->setFeature($feature);
+                    $assignResponse[] = $response;
+                    $res->setResponse($assignResponse);
+                    return $res;
+                }
+            );
+
+        $this->dcsService->editProxyFeatures($entity, true, "test");
+        $testMockClient->shouldReceive('Assign')
+            ->times(1)
+            ->andReturnUsing(
+                function (array $data, array $auditInfo) {
+                    throw new ApiException(
+                        "unauthorized Error on_direct_dcs_new",
+                        403
+                    );
+                }
+            );
+        $this->expectException("Razorpay\Dcs\Kv\V1\ApiException");
+        $this->expectExceptionCode(403);
+        $this->expectExceptionMessage("unauthorized Error on_direct_dcs_new");
+        $this->dcsService->editProxyFeatures($entity, true, "test");
+    }
+
+    public function testRemoveFeatureViaProxy()
+    {
+        $data = [
+            Entity::NAME => 'disable_amount_check',
+            Entity::ENTITY_TYPE => Type::MERCHANT,
+            Entity::ENTITY_ID => "LNWDzDK1sqQnjY",
+        ];
+
+        $entity = (new Entity)->build($data);
+        $entity->setEntityType(Type::MERCHANT);
+        $entity->setEntityId("LNWDzDK1sqQnjY");
+
+        $testMockClient = $this->dcsService->client("test");
+
+        /*
+        ##############################################################
+        #############  Assign Via Proxy TESTING #####################
+        ##############################################################
+        */
+        $testMockClient->shouldReceive('Assign')
+            ->times(1)
+            ->andReturnUsing(
+                function (array $data, array $auditInfo) {
+                    $assignResponse = [];
+                    $res = new V1FeatureBulkEditResponse();
+                    $response = new V1FeatureEditResponse();
+                    $feature = new V1APIFeature();
+                    $feature->setName("disable_amount_check");
+                    $feature->setEntityType("merchant");
+                    $response->setEntityId("LNWDzDK1sqQnjY");
+                    $response->setStatus("success");
+                    $response->setFeature($feature);
+                    $assignResponse[] = $response;
+                    $res->setResponse($assignResponse);
+                    return $res;
+                }
+            );
+
+        $this->dcsService->editProxyFeatures($entity, true, "test");
+
+        $testMockClient->shouldReceive('Remove')
+            ->times(1)
+            ->andReturnUsing(
+                function (array $data, array $auditInfo) {
+                    $removeResponse = [];
+                    $res = new V1FeatureBulkEditResponse();
+                    $response = new V1FeatureEditResponse();
+                    $feature = new V1APIFeature();
+                    $feature->setName("disable_amount_check");
+                    $feature->setEntityType("merchant");
+                    $response->setEntityId("LNWDzDK1sqQnjY");
+                    $response->setStatus("success");
+                    $response->setFeature($feature);
+                    $removeResponse[] = $response;
+                    $res->setResponse($removeResponse);
+                    return $res;
+                }
+            );
+
+        $this->dcsService->editProxyFeatures($entity, false, "test");
     }
 
     public function testEditFeatureDirectDcsShadow()

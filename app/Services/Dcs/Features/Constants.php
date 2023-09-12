@@ -795,7 +795,14 @@ class Constants
             $key = Utility::getRandomPrefix() . '_' . ConfigKey::DCS_READ_WHITELISTED_FEATURES;
             $dcsReadEnabledFeatures = $adminService->getConfigKey(
                 ['key' => $key]);
-            self::$loadedReadEnabledFeatures =  $dcsReadEnabledFeatures;
+            if ($dcsReadEnabledFeatures === null)
+            {
+                $dcsReadEnabledFeatures = [];
+            }
+            else
+            {
+                self::$loadedReadEnabledFeatures =  $dcsReadEnabledFeatures;
+            }
         }
         else
         {

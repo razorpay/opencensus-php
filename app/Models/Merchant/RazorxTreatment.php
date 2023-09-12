@@ -718,6 +718,9 @@ final class RazorxTreatment
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_EDIT_ENABLED = 'dcs_edit_enabled';
 
+    //Experiment used to control whether requests route via proxy or NOT
+    const DCS_PROXY_ENABLED = 'dcs_proxy_enabled';
+
     //Experiment used to control whether aggregate read requests route to DCS or NOT
     const DCS_AGGREGATE_READ_ENABLED = 'dcs_aggregate_read_enabled';
 
