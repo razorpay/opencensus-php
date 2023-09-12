@@ -32,7 +32,7 @@ import {
 } from 'merchant/views/Subscriptions/RegistrationLinks/ga';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { isAmountLiesInRange } from 'merchant/views/Subscriptions/utils';
+import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subscriptions/utils';
 import {
   DEBIT_TYPES,
   FREQUENCY,
@@ -266,19 +266,21 @@ export default class NewRegistrationLink extends React.Component {
 
     if (frequency === FREQUENCY.WEEKLY && (value < 1 || value > 7)) {
       this.setFormFields('isValidRecurringValue', true);
-      this.setFormFields('recurringValue', value);
-    } else if (frequency !== FREQUENCY.WEEKLY && (value < 1 || value > 31)) {
+    } else if (frequency === FREQUENCY.FORTNIGHTLY && (value < 1 || value > 15)) {
       this.setFormFields('isValidRecurringValue', true);
-      this.setFormFields('recurringValue', value);
+    } else if (isMonthlyDebitPattern(frequency) && (value < 1 || value > 31)) {
+      this.setFormFields('isValidRecurringValue', true);
     } else {
       this.setFormFields('isValidRecurringValue', false);
-      this.setFormFields('recurringValue', value);
     }
+    this.setFormFields('recurringValue', value);
   };
 
   setDefaultDebitPattern = (value) => {
     if (value === FREQUENCY.WEEKLY) {
       this.setFormFields('recurringValue', 7);
+    } else if (value === FREQUENCY.FORTNIGHTLY) {
+      this.setFormFields('recurringValue', 15);
     } else {
       this.setFormFields('recurringValue', 31);
     }
@@ -428,44 +430,73 @@ export default class NewRegistrationLink extends React.Component {
   };
 
   prepareDataForRequest = () => {
-    const data = { ...this.state.formFields };
-    const notes = data.notes.reduce(
+    const {
+      notes,
+      description,
+      receipt,
+      hasNoExpiry,
+      expireAt,
+      currency,
+      amount,
+      configSmsNotify,
+      configEmailNotify,
+      customerName,
+      customerContact,
+      customerEmail,
+      mandateMethod,
+      tokenHasNoExpiry,
+      mandateExpireAt,
+      bankAccountIFSC,
+      bankAccountNumber,
+      beneficiaryName,
+      accountType,
+      skipBankDetails,
+      bankName,
+      formReference1,
+      formReference2,
+      firstPaymentAmount,
+      recurringType,
+      recurringValue,
+      frequency,
+      mandateMaxAmount,
+    } = { ...this.state.formFields };
+    const combinedNotes = notes.reduce(
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {},
     );
     const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[this.countryCode];
 
     const payload = {
+      currency,
+      description,
+      receipt,
       type: 'link',
-      description: data.description,
-      receipt: data.receipt,
-      expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
-      currency: data.currency,
-      amount: !!data.amount ? rupeesToPaise(data.amount) : 0,
-      sms_notify: data.configSmsNotify,
-      email_notify: data.configEmailNotify,
-      notes: notes || undefined,
+      expire_by: !Number(hasNoExpiry) ? expireAt : undefined,
+      amount: !!amount ? rupeesToPaise(amount) : 0,
+      sms_notify: configSmsNotify,
+      email_notify: configEmailNotify,
+      notes: combinedNotes || undefined,
       customer: {
-        name: data.customerName,
-        contact: data.customerContact,
-        email: data.customerEmail,
+        name: customerName,
+        contact: customerContact,
+        email: customerEmail,
       },
       subscription_registration: {
-        method: data.mandateMethod,
-        expire_at: !Number(data.tokenHasNoExpiry) ? data.mandateExpireAt : undefined,
+        method: mandateMethod,
+        expire_at: !Number(tokenHasNoExpiry) ? mandateExpireAt : undefined,
         bank_account: undefined,
       },
     };
 
     const bankAccountDetails = {
-      ifsc_code: data.bankAccountIFSC,
-      account_number: data.bankAccountNumber,
-      beneficiary_name: data.beneficiaryName,
-      account_type: data.accountType,
+      ifsc_code: bankAccountIFSC,
+      account_number: bankAccountNumber,
+      beneficiary_name: beneficiaryName,
+      account_type: accountType,
     };
 
-    if (this.isEmandatePayment && !data.skipBankDetails) {
-      bankAccountDetails.bank_name = data.bankName;
+    if (this.isEmandatePayment && !skipBankDetails) {
+      bankAccountDetails.bank_name = bankName;
 
       payload.subscription_registration.bank_account = bankAccountDetails;
     }
@@ -473,15 +504,15 @@ export default class NewRegistrationLink extends React.Component {
     if (this.isNACHPayment) {
       payload.subscription_registration.bank_account = bankAccountDetails;
 
-      if (data.formReference1 || data.formReference2) {
+      if (formReference1 || formReference2) {
         payload.subscription_registration.nach = {};
 
-        if (data.formReference1) {
-          payload.subscription_registration.nach.form_reference1 = data.formReference1;
+        if (formReference1) {
+          payload.subscription_registration.nach.form_reference1 = formReference1;
         }
 
-        if (data.formReference2) {
-          payload.subscription_registration.nach.form_reference2 = data.formReference2;
+        if (formReference2) {
+          payload.subscription_registration.nach.form_reference2 = formReference2;
         }
       }
 
@@ -490,22 +521,20 @@ export default class NewRegistrationLink extends React.Component {
 
     let maxAmount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
     if (this.isEmandatePayment || this.isNACHPayment) {
-      if (data.firstPaymentAmount) {
-        payload.subscription_registration.first_payment_amount = rupeesToPaise(
-          data.firstPaymentAmount,
-        );
+      if (firstPaymentAmount) {
+        payload.subscription_registration.first_payment_amount = rupeesToPaise(firstPaymentAmount);
       }
 
-      if (data.mandateMaxAmount) {
-        maxAmount = rupeesToPaise(data.mandateMaxAmount);
+      if (mandateMaxAmount) {
+        maxAmount = rupeesToPaise(mandateMaxAmount);
       }
 
       payload.subscription_registration.max_amount = maxAmount;
     }
 
     if (this.isUPIPayment) {
-      if (data.mandateMaxAmount) {
-        maxAmount = rupeesToPaise(data.mandateMaxAmount);
+      if (mandateMaxAmount) {
+        maxAmount = rupeesToPaise(mandateMaxAmount);
       }
 
       // For UPI TPV param name is different
@@ -519,17 +548,23 @@ export default class NewRegistrationLink extends React.Component {
        */
       payload.subscription_registration = {
         ...payload.subscription_registration,
-        recurring_type: data.recurringType,
-        recurring_value: data.recurringValue,
-        frequency: data.frequency,
+        frequency,
         bank_account: bankAccountDetails,
         max_amount: maxAmount,
       };
+      // debit pattern value is not expected in case of as_presented and daily frequency
+      if (![FREQUENCY.AS_PRESENTED, FREQUENCY.DAILY].includes(frequency)) {
+        payload.subscription_registration = {
+          ...payload.subscription_registration,
+          recurring_type: recurringType,
+          recurring_value: recurringValue,
+        };
+      }
     }
 
     if (this.isCardPayment) {
-      payload.subscription_registration.frequency = data.frequency;
-      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || cardAfaMaxLimit);
+      payload.subscription_registration.frequency = frequency;
+      const cardMaxAmount = rupeesToPaise(mandateMaxAmount || cardAfaMaxLimit);
       payload.subscription_registration.max_amount = cardMaxAmount;
     }
 
@@ -656,6 +691,18 @@ export default class NewRegistrationLink extends React.Component {
         const maxAmountInPaisa = rupeesToPaise(maxAmount);
         const isCardMultipleFrequencyEnabled = this.props.user?.isCardMultipleFrequencyEnabled;
         const isDebitPatternEnabled = this.props.user?.isDebitPatternEnabled;
+
+        const isWeeklyFrequency = frequency === FREQUENCY.WEEKLY;
+        const isFortnightlyFrequency = frequency === FREQUENCY.FORTNIGHTLY;
+        const isMonthlyRangeFrequency = isMonthlyDebitPattern(frequency);
+        const isInWeeklyRange = recurringValue >= 1 && recurringValue <= 7;
+        const isInFortnightlyRange = recurringValue >= 1 && recurringValue <= 15;
+        const isInMonthlyRange = recurringValue >= 1 && recurringValue <= 31;
+        const isCorrectWeeklyFrequency = isWeeklyFrequency && !isInWeeklyRange;
+        const isCorrectFortnightlyFrequency = isFortnightlyFrequency && !isInFortnightlyRange;
+        const isCorrectMonthly = isMonthlyRangeFrequency && !isInMonthlyRange;
+        const isBreachingGatewayLimit = maxAmount > GATEWAY_MAX_LIMIT;
+        const isBreachingMaxAmountLimit = maxAmount < amount;
         if (this.isUPIPayment) {
           if (!maxAmount && isDebitPatternEnabled) {
             return false;
@@ -663,21 +710,18 @@ export default class NewRegistrationLink extends React.Component {
           if (!maxAmount) {
             maxAmount = DEFAULT_UPI_LIMIT;
           }
-          if (maxAmount > GATEWAY_MAX_LIMIT || maxAmount < amount) {
-            return false;
-          }
-          if (frequency === FREQUENCY.WEEKLY && (recurringValue < 1 || recurringValue > 7)) {
-            return false;
-          }
-          if (frequency !== FREQUENCY.WEEKLY && (recurringValue < 1 || recurringValue > 31)) {
+          if (
+            isBreachingGatewayLimit ||
+            isBreachingMaxAmountLimit ||
+            isCorrectWeeklyFrequency ||
+            isCorrectFortnightlyFrequency ||
+            isCorrectMonthly
+          ) {
             return false;
           }
         }
         if (this.isCardPayment) {
-          if (!maxAmount && isCardMultipleFrequencyEnabled) {
-            return false;
-          }
-          if (maxAmount > maxCardAmountAllowed) {
+          if ((!maxAmount && isCardMultipleFrequencyEnabled) || maxAmount > maxCardAmountAllowed) {
             return false;
           }
         }

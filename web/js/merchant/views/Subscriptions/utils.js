@@ -2,6 +2,7 @@ import { getKeysSeparatedByPipe, rupeesToPaise } from 'common/utils/rzp-utils';
 import { isAmount } from 'common/utils/validators';
 import analytics from './analytics';
 import moment from 'moment';
+import { FREQUENCY } from './constants';
 
 export function trackSearchEvent(event, { eventStartLabel, options }) {
   if (!event) return;
@@ -61,4 +62,24 @@ export const getProbableEndDate = (startDate = moment(), totalCount, interval, p
     .add(totalCount * interval, planPeriods[period])
     .add('days', 7)
     .format('DD MMM YYYY');
+};
+
+export const isMonthlyDebitPattern = (frequency) => {
+  return [
+    FREQUENCY.MONTHLY,
+    FREQUENCY.BIMONTHLY,
+    FREQUENCY.QUARTERLY,
+    FREQUENCY.HALF_YEARLY,
+    FREQUENCY.YEARLY,
+  ].includes(frequency);
+};
+
+export const getDebitPatternDesc = (frequency) => {
+  let range = '1-31';
+  if (frequency === FREQUENCY.WEEKLY) {
+    range = '1-7';
+  } else if (frequency === FREQUENCY.FORTNIGHTLY) {
+    range = '1-15';
+  }
+  return `Enter a value between ${range} corresponding to days of a week`;
 };

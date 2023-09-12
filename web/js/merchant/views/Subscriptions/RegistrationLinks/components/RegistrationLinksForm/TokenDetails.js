@@ -16,10 +16,11 @@ import {
   CARD_MAX_AMOUNT_ALLOWED,
   RECURRING_TYPE,
   FREQUENCY,
-  getDebitPatternDesc,
+  CARD_FREQUENCY,
   CARD_TOKEN_MAX_AMOUNT,
 } from 'merchant/views/Subscriptions/constants';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { getDebitPatternDesc } from 'merchant/views/Subscriptions/utils';
 
 const CARD_PAYMENT_LABEL = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
@@ -84,6 +85,8 @@ export default function TokenDetailsForm({
   const currency = user.merchant.currency;
   const isCardMultipleFrequencyEnabled = user?.isCardMultipleFrequencyEnabled;
   const isDebitPatternEnabled = user?.isDebitPatternEnabled;
+  // Need to hide debit pattern fields if as_presented or daily frequency choosen
+  const hideDebitPattern = ![FREQUENCY.AS_PRESENTED, FREQUENCY.DAILY].includes(frequency);
 
   const countryCode = user.merchant.country_code;
   const customCode = org.custom_code;
@@ -117,7 +120,7 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
-    billingFrequency = BILLING_FREQUENCY.filter(({ name }) => name !== FREQUENCY.QUARTERLY);
+    billingFrequency = BILLING_FREQUENCY.filter(({ name }) => CARD_FREQUENCY.includes(name));
     maxAmountProps.validator = cardMaxAmountValidator(cardTokenMaxAmount, currencySym);
     let maxAmount = cardAfaMaxLimit;
     if (isCardMultipleFrequencyEnabled) {
@@ -149,6 +152,7 @@ export default function TokenDetailsForm({
           label=" Billing Frequency"
           className="Input--vTop Input--small"
           data-name="billing_frequency"
+          data-testid="billing_frequency"
           options={billingFrequency}
           defaultValue={frequency}
           description={FREQUENCY_DESC_MAP[frequency]}
@@ -263,7 +267,7 @@ export default function TokenDetailsForm({
           {...maxAmountProps}
         />
       )}
-      {isUPIPayment && isDebitPatternEnabled && (
+      {hideDebitPattern && isUPIPayment && isDebitPatternEnabled && (
         <Input.Group class="InputGroup--inline" label="Debit pattern (optional)">
           <div class="Input-content debit-pattern">
             <Input.Select
@@ -286,7 +290,7 @@ export default function TokenDetailsForm({
               className="Input-desc"
               style={{ color: `${isValidRecurringValue ? '#f05050' : ''}` }}
             >
-              {getDebitPatternDesc(frequency === 'weekly' ? '1-7' : '1-31')}
+              {getDebitPatternDesc(frequency)}
             </span>
             <br />
             <DocsLink

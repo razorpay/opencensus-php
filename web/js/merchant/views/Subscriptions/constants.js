@@ -43,16 +43,24 @@ export const CARD_MAX_AMOUNT_ALLOWED = {
   MY: MY_CARD_MAX_AMOUNT,
 };
 
-export const getDebitPatternDesc = (range) =>
-  `Enter a value between ${range} corresponding to days of a week`;
-
 export const FREQUENCY = {
   AS_PRESENTED: 'as_presented',
+  DAILY: 'daily',
   WEEKLY: 'weekly',
+  FORTNIGHTLY: 'fortnightly',
   MONTHLY: 'monthly',
+  BIMONTHLY: 'bimonthly',
   QUARTERLY: 'quarterly',
+  HALF_YEARLY: 'half_yearly',
   YEARLY: 'yearly',
 };
+
+export const CARD_FREQUENCY = [
+  FREQUENCY.AS_PRESENTED,
+  FREQUENCY.WEEKLY,
+  FREQUENCY.MONTHLY,
+  FREQUENCY.YEARLY,
+];
 export const DEBIT_TYPES = {
   BEFORE: 'before',
   AFTER: 'after',
@@ -60,17 +68,25 @@ export const DEBIT_TYPES = {
 };
 export const BILLING_FREQUENCY = [
   { name: FREQUENCY.AS_PRESENTED, label: 'As and when presented' },
+  { name: FREQUENCY.DAILY, label: 'Daily' },
   { name: FREQUENCY.WEEKLY, label: 'Weekly' },
+  { name: FREQUENCY.FORTNIGHTLY, label: 'Fortnightly' },
   { name: FREQUENCY.MONTHLY, label: 'Monthly' },
+  { name: FREQUENCY.BIMONTHLY, label: 'Bimonthly' },
   { name: FREQUENCY.QUARTERLY, label: 'Quarterly' },
+  { name: FREQUENCY.HALF_YEARLY, label: 'Half Yearly' },
   { name: FREQUENCY.YEARLY, label: 'Yearly' },
 ];
 
 export const FREQUENCY_DESC_MAP = {
   as_presented: 'You can charge the customer anytime',
+  daily: 'You can charge the customer daily',
   weekly: 'You can charge the customer once a week',
+  fortnightly: 'You can charge the customer fortnightly',
   monthly: 'You can charge the customer once a month',
+  bimonthly: 'You can charge the customer bimonthly',
   quarterly: 'You can charge the customer once a quarter',
+  half_yearly: 'You can charge the customer half yearly',
   yearly: 'You can charge the customer once a year',
 };
 
