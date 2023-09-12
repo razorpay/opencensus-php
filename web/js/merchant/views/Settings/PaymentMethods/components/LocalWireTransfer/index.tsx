@@ -2,26 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-//redux actions
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { fetchB2bAccounts } from 'merchant/reducers/b2bExports/actions';
+import { fetchPurposeCode } from 'merchant/reducers/profile';
+import lazy from 'merchant/routes/LazyLoader';
+import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer';
+import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
+import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
+import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
+import { VA_USD } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import { LocalWireTransferPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-//analytics
-import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
-
-//utils
-import { fetchPurposeCode } from 'merchant/reducers/profile';
-import { LocalWireTransferPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
-
-//components
-import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer';
-import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
-import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
 
 //Styles
 import './LocalWireTransfer.styl';
@@ -62,7 +55,7 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
    * before account activation
    */
   const onRequest = () => {
-    trackTandCPopupOpened();
+    trackTandCPopupOpened(VA_USD);
     openModal({
       size: 'medium',
       component: (

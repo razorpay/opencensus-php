@@ -25,13 +25,14 @@ export const trackAccountCopied = (currency: string): void => {
   });
 };
 
-export const trackTandCPopupOpened = (): void => {
+export const trackTandCPopupOpened = (account: string): void => {
   track({
     objectName: 'b2b accounts list',
     actionName: 'clicked',
     properties: {
       isActivateClicked: true,
       isPopupOpened: true,
+      account,
     },
   });
 };

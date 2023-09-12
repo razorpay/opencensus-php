@@ -1,3 +1,4 @@
+import * as analytics from 'common/utils/analytics';
 import {
   trackGoToIECCodeStep,
   trackPurposeCodeSaved,
@@ -11,7 +12,6 @@ import {
   trackPurposeCodeUpdateRequestRaised,
   trackPurposeCodeUpdateRequestFailed,
 } from 'merchant/views/Account/Profile/components/FIRC/analytics';
-import * as analytics from 'common/utils/analytics';
 
 const trackSpy = jest.spyOn(analytics, 'analyticsTrack');
 
@@ -102,13 +102,14 @@ describe('trackPurposeCodeSaved', () => {
 
 describe('trackPurposeCodeSavingFailed', () => {
   test('should track purpose code saving failed', () => {
-    trackPurposeCodeSavingFailed('S23112');
+    trackPurposeCodeSavingFailed('S23112', 'error reason');
     expect(trackSpy).toHaveBeenCalledWith({
       ...commonProperties,
       objectName: 'purpose code popup save',
       actionName: 'failed',
       properties: {
         purposeCode: 'S23112',
+        errorReason: 'error reason',
       },
     });
   });

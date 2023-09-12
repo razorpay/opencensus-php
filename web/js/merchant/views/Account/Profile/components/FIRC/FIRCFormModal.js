@@ -1,18 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import FIRCFormContext from './FIRCFormContext';
-import SelectPurposeCode from './SelectPurposeCode';
-import EnterIECCode from './EnterIECCode';
-import Confirm from './Confirm';
-import TicketSuccess from 'merchant/views/Account/Profile/components/FIRC/TicketSuccess';
-import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import { getPurposeCodes, updatePurposeCode } from 'merchant/reducers/profile';
-import { MODAL_HEADING, SPECIAL_PURPOSE_CODES, computeSearch } from './utility';
-import 'merchant/views/Account/Profile/components/FIRC/css/firc.styl';
 
-import { createSupportTicketForPurposeCode } from 'merchant/views/Account/Profile/components/FIRC/service';
+import ModalHeader from 'common/ui/ModalHeader';
+import { getPurposeCodes, updatePurposeCode } from 'merchant/reducers/profile';
+import TicketSuccess from 'merchant/views/Account/Profile/components/FIRC/TicketSuccess';
 import {
   trackGoToIECCodeStep,
   trackPurposeCodeSaved,
@@ -25,6 +16,17 @@ import {
   trackPurposeCodeUpdateRequestRaised,
   trackPurposeCodeUpdateRequestFailed,
 } from 'merchant/views/Account/Profile/components/FIRC/analytics';
+import { createSupportTicketForPurposeCode } from 'merchant/views/Account/Profile/components/FIRC/service';
+import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+
+import Confirm from './Confirm';
+import EnterIECCode from './EnterIECCode';
+import FIRCFormContext from './FIRCFormContext';
+import SelectPurposeCode from './SelectPurposeCode';
+import { MODAL_HEADING, SPECIAL_PURPOSE_CODES, computeSearch } from './utility';
+
+import 'merchant/views/Account/Profile/components/FIRC/css/firc.styl';
 
 const FIRCFormModal = (props) => {
   const { closeModal, showNotification, onSubmit, editMode, user, code } = props;
@@ -158,12 +160,15 @@ const FIRCFormModal = (props) => {
           trackPurposeCodeSaved(formData.purpose_code);
         }
       })
-      .catch(() => {
+      .catch(({ errors }) => {
         showNotification({
           type: 'error',
           message: 'Sorry! Update failed.',
         });
-        trackPurposeCodeSavingFailed(formData.purpose_code);
+        trackPurposeCodeSavingFailed(
+          formData.purpose_code,
+          Array.isArray(errors) ? errors.join(',') : JSON.stringify(errors),
+        );
       })
       .finally(() => {
         setIsSubmitting(false);

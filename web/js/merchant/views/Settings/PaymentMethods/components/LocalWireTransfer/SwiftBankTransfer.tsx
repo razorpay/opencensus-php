@@ -38,7 +38,7 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
   }, [accounts]);
 
   const onRequest = () => {
-    trackTandCPopupOpened();
+    trackTandCPopupOpened(VA_SWIFT);
     openModal({
       size: 'medium',
       component: (

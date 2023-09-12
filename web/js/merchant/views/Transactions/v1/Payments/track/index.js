@@ -76,4 +76,18 @@ function _track() {
   };
 }
 
+export const trackRefundError = (error, method) => {
+  analyticsTrack({
+    objectName: 'issue refund',
+    actionName: 'response',
+    screen: 'payments',
+    toLumberjack: true,
+    properties: {
+      method,
+      status: 'error',
+      error,
+    },
+  });
+};
+
 export default _track();

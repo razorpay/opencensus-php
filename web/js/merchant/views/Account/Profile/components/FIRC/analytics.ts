@@ -65,12 +65,13 @@ export const trackPurposeCodeSaved = (purposeCode: string): void => {
   });
 };
 
-export const trackPurposeCodeSavingFailed = (purposeCode: string): void => {
+export const trackPurposeCodeSavingFailed = (purposeCode: string, errorReason: string): void => {
   track({
     objectName: PURPOSE_CODE_POPUP_SAVED,
     actionName: 'failed',
     properties: {
       purposeCode,
+      errorReason,
     },
   });
 };

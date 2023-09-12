@@ -1,3 +1,5 @@
+import * as analytics from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import {
   trackAccountCopied,
   trackTandCPopupOpened,
@@ -11,9 +13,6 @@ import {
   trackSubmitPayoutFailed,
   trackWithdrawClicked,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
-
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import * as analytics from 'common/utils/analytics';
 
 jest.mock('common/utils/analytics');
 
@@ -36,7 +35,7 @@ describe('Tests for analytics events', () => {
   });
 
   test('trackTandCPopupOpened should call the correct analytic events', () => {
-    trackTandCPopupOpened();
+    trackTandCPopupOpened('usd');
     expect(analytics.analyticsTrack).toBeCalledTimes(1);
     expect(analytics.analyticsTrack).toBeCalledWith({
       objectName: 'b2b accounts list',
@@ -44,6 +43,7 @@ describe('Tests for analytics events', () => {
       properties: {
         isActivateClicked: true,
         isPopupOpened: true,
+        account: 'usd',
         location: 'Payment Methods',
         ...getCommonSegmentProperties(),
       },

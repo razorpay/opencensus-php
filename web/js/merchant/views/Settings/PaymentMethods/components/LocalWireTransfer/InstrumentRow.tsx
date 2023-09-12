@@ -1,28 +1,20 @@
 import React, { useMemo } from 'react';
+import { Button } from '@razorpay/blade/components';
 
-import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-//analytics
+import ShowWhen from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
+import ErrorContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/ErrorContainer';
+import Instrument from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/Instrument';
+import Toggle from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/Toggle';
 import { trackAccountCopied } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
-
-//types
-import { InstrumentRowPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
-
-//constants
 import {
   DETAIL_FIELDS,
   DEACTIVATED,
   VA_USD,
   RAZORPAY_SUPPORT_LINK,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
-
-//components
-import ShowWhen from 'merchant/components/ShowWhen';
-import { Button } from '@razorpay/blade/components';
-import Instrument from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/Instrument';
-import Toggle from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/Toggle';
-import ErrorContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/ErrorContainer';
+import { InstrumentRowPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import CustomClipboard from 'common/ui/Clipboard/Custom'; // eslint-disable-line
 
 const AccountBalance = lazy(
@@ -66,6 +58,10 @@ const InstrumentRow: React.FC<InstrumentRowPropsInterface> = (props) => {
     return false;
   };
 
+  const onCopy = () => {
+    trackAccountCopied(data.vaCurrency);
+  };
+
   return (
     <div
       className={`local-wire-transfer-instrument${isOpen === data?.vaCurrency ? ' active' : ''}`}
@@ -103,7 +99,7 @@ const InstrumentRow: React.FC<InstrumentRowPropsInterface> = (props) => {
           </ShowWhen>
           <div className="list-item">
             <p className="info">{data?.message}</p>
-            <CustomClipboard value={clipboardText} onCopy={trackAccountCopied}>
+            <CustomClipboard value={clipboardText} onCopy={onCopy}>
               <div className="list-cta">
                 <Button variant="primary" size="small" isFullWidth>
                   Copy Details

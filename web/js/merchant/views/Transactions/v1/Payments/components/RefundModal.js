@@ -35,6 +35,7 @@ import {
   PAYMENT_STATUS,
   FETCH_EZETAP_KEY_NAME,
 } from 'merchant/views/Transactions/v1/Payments/constants';
+import { trackRefundError } from 'merchant/views/Transactions/v1/Payments/track';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
@@ -248,6 +249,7 @@ class RefundModal extends Component {
         refundPayment(payment, data)
           .then((response) => {
             if (paymentByCardOffline && !response?.data?.success) {
+              trackRefundError(response?.data?.errorMessage, payment.method);
               this.props.showNotification({
                 type: 'error',
                 message: response?.data?.errorMessage || 'Something Went Wrong',
@@ -328,6 +330,10 @@ class RefundModal extends Component {
           })
           .catch(
             /* istanbul ignore next */ ({ errors }) => {
+              trackRefundError(
+                Array.isArray(errors) ? errors.join(',') : JSON.stringify(errors),
+                payment.method,
+              );
               if (errors)
                 this.props.showNotification({
                   type: 'error',
