@@ -44,6 +44,7 @@ class BusinessSubCategoryMetaData
     const REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION = 'require_additional_documents_for_activation';
 
     const REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION = [
+        Sub::AD_AND_MARKETING,
         Sub::ACCOUNTING,
         Sub::CENTRAL,
         Sub::CHARITY,
@@ -90,6 +91,7 @@ class BusinessSubCategoryMetaData
         Sub::WATER
     ];
     const UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION = [
+        Sub::AD_AND_MARKETING,
         Sub::DISTANCE_LEARNING,
         Sub::TRAVEL_AGENCY,
         Sub::CONSULTING,

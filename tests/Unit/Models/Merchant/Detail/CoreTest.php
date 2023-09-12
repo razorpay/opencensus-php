@@ -9539,4 +9539,72 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
+    public function testisSubCategoryExcludedForAd_And_Marketing_SubcategoryWithRegistedBusinessType()
+    {
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'services',
+            'business_subcategory'      => 'ad_and_marketing',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchantDetailCore = new DetailCore();
+
+        // Create a ReflectionClass object to inspect the DetailCore class
+        $reflection = new ReflectionClass($merchantDetailCore);
+
+        // Get a reference to the protected method 'isSubCategoryExcluded'
+        $method = $reflection->getMethod('isSubCategoryExcluded');
+
+        // Allow access to the protected method by setting it to be accessible.
+        $method->setAccessible(true);
+
+       // Call the protected method 'isSubCategoryExcluded' and store the result
+        $result = $method->invoke($merchantDetailCore, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
+
+        $this->assertEquals(true, $result);
+
+    }
+
+    public function testisSubCategoryExcludedForAd_And_Marketing_SubcategoryWithNonRegistedBusinessType()
+    {
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'services',
+            'business_subcategory'      => 'ad_and_marketing',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchantDetailCore = new DetailCore();
+
+        // Create a ReflectionClass object to inspect the DetailCore class
+        $reflection = new ReflectionClass($merchantDetailCore);
+
+        // Get a reference to the protected method 'isSubCategoryExcluded'
+        $method = $reflection->getMethod('isSubCategoryExcluded');
+
+        // Allow access to the protected method by setting it to be accessible
+        $method->setAccessible(true);
+
+        // Call the protected method 'isSubCategoryExcluded' and store the result
+        $result = $method->invoke($merchantDetailCore, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
+
+        $this->assertEquals(true, $result);
+
+    }
+
 }
