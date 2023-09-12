@@ -260,7 +260,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
     const { showNotification } = this.props;
     const reqPayload = {
       ...this.state.formData,
-      ...data,
+      ...(data || {}),
     };
 
     if (!showNoExpiryPL() && !reqPayload?.expire_by) {

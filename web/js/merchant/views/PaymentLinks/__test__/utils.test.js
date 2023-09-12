@@ -113,19 +113,21 @@ describe('Payment Page Helper', () => {
   });
 });
 
-// TODO: fix this test case
-describe.skip('convertExcelToObj', () => {
+describe('convertExcelToObj', () => {
   test('should convert an Excel file to an array of objects', async () => {
     const sampleJson = [{ Name: 'Sample Name', Email: 'sample_email@gmail.com' }];
 
     // Mock the fetch request.
-    const mockResponse = new Response(new ArrayBuffer(8));
+    const mockResponse = {
+      arrayBuffer: jest.fn(() => Promise.resolve(new ArrayBuffer(8))),
+    };
+
     jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
     // Mock the xlsx read function.
     const worksheet = xlsx.utils.json_to_sheet(sampleJson);
-
     const workbook = { SheetNames: ['Sheet1'], Sheets: { Sheet1: worksheet } };
+
     jest.spyOn(xlsx, 'read').mockReturnValue(workbook);
 
     const result = await convertExcelToObj('/files/sample_file.xlsx');

@@ -7,6 +7,7 @@ import {
   userEvent,
   waitForLoadingToFinish,
   waitFor,
+  delay,
 } from 'test-utils';
 
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
@@ -244,6 +245,9 @@ describe('Payment Link Create V2 Unit Test', () => {
       'Test note description',
     );
 
+    // Purposely delaying to capture the notes field title and description values as debounce is used to set the state, so not getting the updated state immediately.
+    await delay(500);
+
     // Create payment link.
     await userEvent.click(screen.getByRole('button', { name: /Create Payment Link/i }));
 
@@ -257,6 +261,7 @@ describe('Payment Link Create V2 Unit Test', () => {
       contact: '1234567890',
       reference_id: '123456',
       expire_by: null,
+      notes: { 'Test note title': 'Test note description' },
     });
     expect(track.lj.form.create).toHaveBeenCalled();
 
@@ -267,7 +272,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     expect(screen.getByTestId('Notification--success')).toHaveTextContent(
       'Payment link created successfully. Sending via SMS and Email',
     );
-    expect(onCloseMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onCloseMock).toHaveBeenCalledTimes(1));
   });
 
   test('should render "Standard Payment Link" form with dynamic fields and should be able to create payment link', async () => {
