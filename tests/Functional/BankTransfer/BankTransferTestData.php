@@ -2711,4 +2711,67 @@ return [
             'status_code' => 200,
         ]
     ],
+    'testBankTransferAxisCallbackValidationFailure' => [
+        'request' => [
+            'url'     => '/ecollect/validate/axis/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_AXIS_SECRET',
+            ],
+            'content' => [
+                'Req_type'     => null,
+                'Bene_acc_no'  => 'NBSP123MHW987654321',
+                'UTR'          => null,
+                "Req_dt_time"  => "2021-06-28 15:24:33",
+                'payer_name'   => 'Name of account holder',
+                'Txn_amnt'     => '532.55',
+                'Sndr_acnt'    => '9876543210123456789',
+                'Sndr_ifsc'    => 'PAYERIFSC12',
+                'Pmode'        => 'neft',
+                'Corp_code'    => 'NBSP',
+                'description'  => 'Test Payment of 532.55',
+                'Tran_id'      => '28062021',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Stts_flg' => 'F',
+                'Err_cd'   => '002',
+                'message'  => 'Validation failed',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+    'testBankTransferAxisWithEmptyPayeeAccount' => [
+        'request' => [
+            'url'     => '/ecollect/validate/axis/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_AXIS_SECRET',
+            ],
+            'content' => [
+                'gateway'      => 'axis',
+                'Req_type'     => null,
+                'Bene_acc_no'  => '',
+                'UTR'          => '28062021',
+                "Req_dt_time"  => "2021-06-28 15:24:33",
+                'payer_name'   => 'Name of account holder',
+                'Txn_amnt'     => '532.55',
+                'Sndr_acnt'    => '9876543210123456789',
+                'Sndr_ifsc'    => 'PAYERIFSC12',
+                'Pmode'        => 'neft',
+                'Corp_code'    => 'NBSP',
+                'description'  => 'Test Payment of 532.55',
+                'Tran_id'      => '28062021',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'Stts_flg' => 'F',
+                'Err_cd'   => '002',
+                'message'  => 'Validation failed',
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

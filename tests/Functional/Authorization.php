@@ -770,6 +770,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function axisAuth($mode = 'test')
+    {
+        $axisConfig = \Config::get('applications.axis');
+
+        $pwd = $axisConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function hdfcEcmsAuth($mode = 'test')
     {
         $hdfcEcmsConfig = \Config::get('applications.hdfc_ecms');

@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const TIME              = 'time';
     const REQUEST_PAYLOAD   = 'request_payload';
     const REQUEST_SOURCE    = 'request_source';
+    const REQUEST_TYPE      = 'request_type';
 
     const TRANSACTION_ID        = 'transaction_id';
     const PAYER_ACCOUNT_TYPE    = 'payer_account_type';

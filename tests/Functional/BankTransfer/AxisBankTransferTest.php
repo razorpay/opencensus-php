@@ -270,6 +270,11 @@ class AxisBankTransferTest extends TestCase
 
         $this->startTest($testData);
 
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
 
         $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
@@ -292,6 +297,11 @@ class AxisBankTransferTest extends TestCase
         $this->ba->directAuth();
 
         $this->startTest($testData);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
 
@@ -332,6 +342,11 @@ class AxisBankTransferTest extends TestCase
 
         $this->startTest($testData);
 
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
 
         $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
@@ -366,6 +381,100 @@ class AxisBankTransferTest extends TestCase
         $bankAccount = $this->createVirtualAccount();
 
         return $bankAccount['account_number'];
+    }
+
+    public function testBankTransferAxisImps() {
+
+        $testData = $this->testData['testBankTransferAxis'];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+        $testData['request']['content']['Pmode'] = 'IMPS';
+        var_dump($testData['request']['content']['Data']);
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+
+        $this->assertEquals('GENERICBNKAXIS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+    }
+
+    public function testBankTransferAxisCallbackValidationFailure()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->axisAuth();
+
+        $this->startTest($testData);;
+    }
+
+    public function testBankTransferAxisWithEmptyPayeeAccount()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->axisAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferAxisUnexpected()
+    {
+        $testData = $this->testData['testBankTransferAxis'];
+        $this->getAxisVaBankAccount();
+
+        // Set beneficiary account to an unknown for creating unexpected payment
+        $testData['request']['content']['Bene_acc_no'] = 'RAND123';
+
+        $this->ba->axisAuth();
+        $this->enableRazorXTreatmentForDisableRefundsUnexpectedPayment();
+
+        $this->startTest($testData);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        // refund_at should be NULL as we disabled refunds for unexpected payments
+        $this->assertNull($payment['refund_at']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+
     }
 
 }

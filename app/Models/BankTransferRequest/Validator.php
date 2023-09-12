@@ -10,6 +10,7 @@ class Validator extends Base\Validator
     const IFSC_LENGTH = 11;
 
     protected static $createRules = [
+        Entity::REQUEST_TYPE            => 'nullable|string',
         Entity::GATEWAY                 => 'required|string',
         Entity::TRANSACTION_ID          => 'required|string|max:255',
         Entity::MODE                    => 'required|string|max:4',
