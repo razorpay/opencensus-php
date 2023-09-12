@@ -71,7 +71,7 @@ class CommissionCreateEventDataUtil
             }
         }
 
-        return $publicKey;
+        return $publicKey ?? "";
     }
 
     /**
