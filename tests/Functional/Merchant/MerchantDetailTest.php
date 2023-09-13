@@ -2055,7 +2055,7 @@ class MerchantDetailTest extends OAuthTestCase
         $website = 'http://abc.com';
 
         $this->fixtures->edit('merchant', $merchantId, [
-            'website'               => $website, 
+            'website'               => $website,
             'whitelisted_domains'   => ['abc.com'],
             'activated'             => 1
         ]);
@@ -2086,8 +2086,8 @@ class MerchantDetailTest extends OAuthTestCase
         });
 
         $value = (new MerchantAttributeRepository())->getValueForProductGroupType($merchant->getId(),
-            'primary', 
-            MerchantAttributeGroup::ACTIVATION, 
+            'primary',
+            MerchantAttributeGroup::ACTIVATION,
             MerchantAttributeType::DEACTIVATED_AT);
 
         $this->assertNotEmpty($value);
@@ -11543,5 +11543,62 @@ We look forward to transacting with you!
         // we do not want to throw any error and simply return from the function.
 
         $this->assertNull($response);
+    }
+
+    public function testAccessMerchantHostedPolicyPagePublicUrl()
+    {
+        $this->ba->directAuth();
+
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId, []);
+
+        $this->fixtures->create('merchant_detail',
+                                ["merchant_id"      => $merchantId,
+                                 'business_website' => "http://hello.com"
+                                ]);
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantWebsite = $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchantId . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls'    => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url'  => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+        $websiteId = $merchantWebsite->getId();
+
+        $sectionName = "contact_us";
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/' . 'policy/' . $sectionName.'/'. $websiteId;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response);
     }
 }

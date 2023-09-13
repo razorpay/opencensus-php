@@ -608,6 +608,17 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+    'testAccessMerchantHostedPolicyPagePublicUrl' => [
+        'request'  => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testAddClarificationReasonsNullFields' => [
         'request' => [

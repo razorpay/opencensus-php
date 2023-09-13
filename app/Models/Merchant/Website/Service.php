@@ -2179,7 +2179,10 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($websiteDetail->getMerchantId());
 
-        if (empty($websiteDetail) === true or $this->isWebsiteSectionsApplicable($merchant) === false)
+        // $admin is set as false because this url is accessed by the merchant hence $admin is passed as false
+        // $publicView is being passed as true, as this is a public page we want to skip the check of regular merchant and razorpay org
+
+        if (empty($websiteDetail) === true or $this->isWebsiteSectionsApplicable($merchant, false, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
