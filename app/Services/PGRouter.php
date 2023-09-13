@@ -111,6 +111,12 @@ class PGRouter
 
     const MODE = 'mode';
 
+    const MERCHANT_BASED_ROUTES = [
+        'order_fetch_by_id',
+        'order_payments',
+        'payment_fetch_by_id'
+    ];
+
     // Requests will be logged by default or if value for path is true.
     const REQUEST_LOGGER_MAP = [
         Requests::POST.'_'.self::PGRouterValidateAndCreatePayment   => true,
@@ -903,12 +909,6 @@ class PGRouter
                         'data' => $e->getMessage()
                     ]);
 
-                $dimensions = [
-                    'url' => $this->currentEndPoint
-                ];
-
-                $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
-
                 $exception = $e;
 
                 continue;
@@ -926,6 +926,12 @@ class PGRouter
         // An exception is thrown by lib in cases of network errors e.g. timeout etc.
         if ($exception !== null)
         {
+            $dimensions = [
+                'url' => $this->currentEndPoint
+            ];
+
+            $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
+            
             throw new $exception;
         }
 
@@ -1158,6 +1164,11 @@ class PGRouter
         $headers = $this->headers;
 
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
+
+        if (in_array($this->app['api.route']->getCurrentRouteName(), self::MERCHANT_BASED_ROUTES) === true)
+        {
+            $headers['MERCHANT_BASED_ROUTE'] = true;
+        }
 
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
