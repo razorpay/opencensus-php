@@ -2624,6 +2624,9 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
+        if($this->isTestEnv())
+        {
+
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
@@ -2631,6 +2634,13 @@ class Repository extends Base\Repository
                       ->enabled();
 
         return $query->first();
+
+        }
+        else
+        {
+            return $this->fetchTerminalsWithGatewayMerchantIdFromTS($gatewayMerchantId,true,$metricData);
+        }
+
     }
 
     public function findMerchantIdByGatewayMerchantIDAll(string $gatewayMerchantId)
@@ -2640,12 +2650,64 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
+        if($this->isTestEnv())
+        {
+
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId);
 
         return $query->first();
+
+        }
+        else
+        {
+            return $this->fetchTerminalsWithGatewayMerchantIdFromTS($gatewayMerchantId,false,$metricData);
+        }
+
+    }
+
+    private function fetchTerminalsWithGatewayMerchantIdFromTS(string $gatewayMerchantId,bool $enabled,$metricData)
+    {
+        try
+        {
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+
+            $content["fetch_where_submerchant"] = false;
+
+            $identifiers = ["gateway_merchant_id" => $gatewayMerchantId];
+
+            $content["identifiers"] = $identifiers;
+
+            if($enabled)
+            {
+                $content["enabled"] = true;
+            }
+
+            $path = "v1/merchants/terminals";
+
+            $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+            if (count($response) > 0)
+            {
+                $terminal = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                return $terminal;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            $metricData['message'] = $ex->getMessage();
+
+            $metricData['gateway_merchant_id'] = $gatewayMerchantId;
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $metricData);
+
+            throw $ex;
+        }
     }
 
     public function fetchTerminalsForTokenization(int $count, array $terminalIds = [])
