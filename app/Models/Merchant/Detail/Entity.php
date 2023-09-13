@@ -1115,6 +1115,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantWebsiteAttributeByMerchantId($this, self::MERCHANT_DETAIL);
     }
 
+    public function getBusinessDetailAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getBusinessDetailAttributeByMerchantId($this, self::MERCHANT_DETAIL);
+    }
+
     public function setMarketplaceActivationStatus(string $status)
     {
         $this->setAttribute(self::MARKETPLACE_ACTIVATION_STATUS, $status);

@@ -42,6 +42,16 @@ class Repository extends Base\Repository
         );
     }
 
+    public function getBusinessDetailsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
+    {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_BUSINESS_DETAIL_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
+            $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
+            (new BusinessDetailSDKWrapper())->getLatestByMerchantIdCallBack($merchantId),
+            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId)
+        );
+    }
+
     public function getBusinessDetailsForMerchantIdDatabaseCallBack(string $merchantId) {
         return function () use ($merchantId) {
             return $this->getBusinessDetailsForMerchantIdDatabase($merchantId);

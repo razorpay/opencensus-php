@@ -3,9 +3,13 @@
 namespace Unit\Models\Merchant\BusinessDetail;
 
 use Razorpay\Asv\Error\GrpcError;
+use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponseByMerchantId;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite;
 use RZP\Models\Merchant\BusinessDetail\Repository;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
@@ -13,8 +17,9 @@ use RZP\Tests\Functional\TestCase;
 use Rzp\Accounts\Merchant\V1\MerchantBusinessDetailResponse;
 use Rzp\Accounts\Merchant\V1\MerchantBusinessDetailResponseByMerchantId;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 
-class RepositoryTest extends TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
 
     private $businessDetailEntityJson1 = '{
@@ -76,6 +81,29 @@ class RepositoryTest extends TestCase
                         "updated_at":1234,
                         "gst_details":null
      }';
+
+    private $merchantEntityJson1 = '{
+        "id": "K4O9sCGihrL2bG",
+        "org_id": "100000razorpay",
+        "default_refund_speed": "normal",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "country_code": "IN"
+     }';
+
+    private $merchantDetailEntityJson1 = '{
+        "merchant_id": "K4O9sCGihrL2bG",
+        "additional_websites": "[\"https://razorpay.in\"]",
+        "steps_finished": "[1,2,3]",
+        "kyc_clarification_reasons": "{\"nc_count\": 1, \"additional_details\": [], \"clarification_reasons\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}, \"clarification_reasons_v2\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}}",
+        "kyc_additional_details": "{\"business_description\": \"description\"}",
+        "custom_fields": "{\"tnc\":{\"accepted\":1,\"ip_address\":\"201.189.12.23\",\"time\":1561110415,\"url\":\"https:\\/\\/rtll.com\\/tnc\",\"user_agent\":\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_14_4)\"},\"apps\":[{\"name\":\"Ratnalal Shopping App\",\"links\":{\"android\":\"https:\\/\\/playstore.google.com\\/appId\\/122\",\"ios\":\"https:\\/\\/appstore.com\\/appId\\/122\"}}]}",
+        "client_applications": "{\"ios\": [{\"url\": \"appstore.acme.org\", \"name\": \"Acme\"}], \"android\": [{\"url\": \"playstore.acme.org\", \"name\": \"Acme\"}]}",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "fund_addition_va_ids": "{\"fee_credit\": \"va_LIc0SnP6OMuXxH\"}",
+        "industry_category_code_type": "iIfMMCYyTFbVSgHjgxBo"
+    }';
 
 
     private $sampleSpltizOutput = [
@@ -365,6 +393,43 @@ class RepositoryTest extends TestCase
         }
     }
 
+    public function testMerchantBusinessDetailAssociation()
+    {
+        $entitiesData = [
+            [
+                "relationName" => "businessDetail",
+                "asvEntity" => new BusinessDetail(),
+                "asvResponseEntity" => new MerchantBusinessDetailResponseByMerchantId(),
+                "setterFunctionName" => 'setBusinessDetail',
+                "responseSetterFunctionName" => 'setBusinessDetails',
+                "entityRepo" => new Repository(),
+                "entityRepoName" =>  'merchant_business_detail',
+                "entityName" => "merchant_business_detail",
+                "entityData" => $this->businessDetailEntityJson1,
+                "entityClass" => new BusinessDetailEntity(),
+                "entityProtoClass"  => new \Rzp\Accounts\Merchant\V1\BusinessDetail(),
+                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Detail\Repository(),
+                "AssociatedEntityName" => "merchant_detail",
+                "mockBuilderInterface" => "Razorpay\Asv\Interfaces\BusinessDetailInterface",
+                "AssociatedEntityData" => $this->merchantDetailEntityJson1,
+                "AssociatedEntityClass" =>  new MerchantDetailEntity(),
+                "merchant_id" => "K4O9sCGihrL2bG",
+                "shouldEntityNeedsToBeCreated" => true,
+                "isDependentEntity" => true,
+                "dependentEntity" => [
+                    [
+                        "dependentEntityName" => "merchant",
+                        "dependentEntityData" => $this->merchantEntityJson1,
+                        "dependentEntityClass" => new MerchantEntity(),
+
+                    ]
+                ]
+            ]
+        ];
+
+        $this->runTestsForImplicitJoin($entitiesData);
+    }
+
     private function getExceptionForFindAndFailPublicDatabase($repo, $id)
     {
         try {
@@ -497,4 +562,5 @@ class RepositoryTest extends TestCase
             ->onlyMethods($methods)
             ->getMock();
     }
+
 }

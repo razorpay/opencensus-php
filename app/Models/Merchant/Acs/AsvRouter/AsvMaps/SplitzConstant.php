@@ -36,5 +36,5 @@ final class SplitzConstant
 
     const SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID = 'splitz_experiment_implicit_join_website_by_merchant_id';
 
-
+    const SPLITZ_IMPLICIT_JOIN_BUSINESS_DETAIL_BY_MERCHANTID = 'splitz_experiment_implicit_join_business_detail_by_merchant_id';
 }

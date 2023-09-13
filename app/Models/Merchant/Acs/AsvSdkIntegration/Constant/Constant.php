@@ -52,4 +52,6 @@ class Constant
     const GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER =  'GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER';
 
     CONST GET_WEBSITE_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN = "AsvMerchantDocument_getWebsiteDetailsForMerchantIdForImplicitJoin";
+    CONST GET_BUSINESS_DETAIL_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN = "AsvBusinessDetail_getBusinessDetailsForMerchantIdForImplicitJoin";
+
 }

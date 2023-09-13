@@ -25,24 +25,35 @@ class ImplicitJoinHelper
         $this->trace = $app[Constant::TRACE];
     }
 
-    public function getMerchantWebsiteAttributeByMerchantId($classInstance, $entityName, $relationName ='merchantWebsite')
+    public function getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod)
     {
-        $merchantWebsite = null;
-        if ($classInstance->relationLoaded($relationName) === true)
-        {
-            $merchantWebsite = $classInstance->getRelation($relationName);
-        }
+            $relationData = null;
 
-        if ($merchantWebsite !== null)
-        {
-            return $merchantWebsite;
-        }
+            if ($classInstance->relationLoaded($relationName)) {
+                $relationData = $classInstance->getRelation($relationName);
+            }
 
-        $merchantWebsite = app('repo')->merchant_website->getWebsiteDetailsForMerchantIdForImplicitJoin($classInstance->getMerchantId(), $entityName);
+            if ($relationData !== null) {
+                return $relationData;
+            }
 
-        $classInstance->setRelation($relationName, $merchantWebsite);
+            $repo = app('repo');
 
-        return $merchantWebsite;
+            $relationData = $repo->$repositoryInstance->$repositoryMethod($classInstance->getMerchantId(), $entityName);
+            $classInstance->setRelation($relationName, $relationData);
+
+            return $relationData;
+    }
+
+    public function getMerchantWebsiteAttributeByMerchantId($classInstance, $entityName, $relationName = 'merchantWebsite', )
+    {
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant_website', 'getWebsiteDetailsForMerchantIdForImplicitJoin');
+    }
+
+
+    public function getBusinessDetailAttributeByMerchantId($classInstance, $entityName, $relationName = 'businessDetail')
+    {
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant_business_detail', 'getBusinessDetailsForMerchantIdForImplicitJoin');
     }
 }
 
