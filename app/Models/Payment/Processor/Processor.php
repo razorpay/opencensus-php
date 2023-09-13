@@ -104,6 +104,8 @@ use RZP\Models\Transfer\ToType as TransferToType;
 use RZP\Gateway\Upi\Base\Constants as UpiConstants;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
 use RZP\Models\EMandate\Constants as EmandateConstants;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
@@ -10424,5 +10426,45 @@ class Processor
         }
 
         $gatewayInput['payment']['global_customer_id']= $customer->getId();
+    }
+
+
+    public function calculateDiscount($payment, $refundAmount)
+    {
+        $paymentClone = clone $payment;
+
+        $paymentClone->base_amount = $refundAmount;
+
+        list($fees, $tax, $feesplit) = (new Pricing\Fee)->calculateMerchantFees($paymentClone);
+
+        return $fees;
+    }
+
+    public function getDiscountIfApplicable(Payment\Entity $payment, $transactionAmount)
+    {
+        // For the Bajaj finserv emi payments we have to calculate fee that we deducted while making
+        // the payments
+        if ($payment->gateway === RefundConstants::BAJAJFINSERV and $payment->isMethod(Payment\Entity::EMI))
+        {
+            return $this->calculateDiscount($payment, $transactionAmount);
+        }
+
+        return $this->getApplicableDiscountOnRefund($payment, $transactionAmount);
+    }
+
+    public function getApplicableDiscountOnRefund(Payment\Entity $payment, $transactionAmount) {
+
+        if (($payment->isCardlessEmiWalnut369() === true) and ($payment->merchant->isFeatureEnabled(FeatureConstants::SOURCED_BY_WALNUT369) === true))
+        {
+            if ($payment->getBaseAmount() !== $transactionAmount)
+            {
+                // no discount applicable if partial payment if merchant is sourced by walnut
+                return 0;
+            }
+        }
+
+        $discountRatio = $payment->getDiscountRatioIfApplicable();
+
+        return (int) round($discountRatio * $transactionAmount);
     }
 }

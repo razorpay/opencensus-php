@@ -13,6 +13,7 @@ use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Models\Pricing;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
@@ -30,6 +31,7 @@ use RZP\Models\Merchant;
 use RZP\Base\Repository;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
@@ -63,6 +65,7 @@ use RZP\Models\Merchant\Email\Type as MerchantEmailType;
 use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
@@ -930,6 +933,17 @@ class Service extends Base\Service
                                     $data = $card->toArrayRefund();
                                 }
                             }
+                            else if ($key === Constants\Entity::BALANCE_CONFIG)
+                            {
+                                $merchant = $payment->merchant;
+
+                                $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+                                $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+                                $data = [
+                                  RefundConstants::MAX_NEGATIVE_MANUAL_LIMIT => $negativeLimit
+                                ];
+                            }
                             else if ($key !== Constants\Entity::PAYMENT)
                             {
                                 if ($key === Constants\Entity::IIN)
@@ -1318,6 +1332,54 @@ class Service extends Base\Service
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
         return $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
+    }
+
+    public function fetchRefundDiscount(array $input)
+    {
+        $responseArray = [];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_DISCOUNT_REQUEST,
+            [
+                RefundConstants::REFUND_DATA => $input[RefundConstants::REFUND_DATA]
+            ]);
+
+        foreach ($input[RefundConstants::REFUND_DATA] as $refundData)
+        {
+
+            $paymentId = $refundData[RefundConstants::PAYMENT_ID];
+            $payment = $this->repo->payment->findByPublicId(Payment\Entity::getSignedId($paymentId));
+
+            if (empty($payment) === true)
+            {
+                $response[RefundConstants::ENTITIES][RefundConstants::DISCOUNT][RefundConstants::DATA] = "0";
+                $responseArray[$paymentId] = $response;
+                continue;
+            }
+
+            $response = [];
+
+            $refundAmount = $refundData["refund_amount"];
+
+            if($refundAmount == "") {
+                $refundAmount = $payment->getAmount();
+            } else {
+                $refundAmount = intval($refundData["refund_amount"]);
+            }
+
+            $discountInfo = $this->getNewProcessor($payment->merchant)->fetchDiscountForRefundAmount($payment, $refundAmount);
+
+            $response[RefundConstants::ENTITIES][RefundConstants::DISCOUNT][RefundConstants::DATA] = strval($discountInfo);
+
+            $responseArray[$paymentId] = $response;
+        }
+
+        $traceData = [
+            RefundConstants::RESPONSE_DATA         => $responseArray,
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_DISCOUNT_SUMMARY, $traceData);
+
+        return $responseArray;
     }
 
     public function scroogeFetchRefundFee(array $input)

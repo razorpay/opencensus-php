@@ -1162,7 +1162,7 @@ trait Refund
             and ($refund->getGateway() !== RefundConstants::GATEWAY_RZP_INTERNAL)) // gateway == rzp_internal means Scrooge created transfer refund, for which reverse shadow isn't live yet
             // this is just a double check
         {
-            $journalResponse = (new ReverseShadowRefundsCore())->createLedgerEntriesForRefundReverseShadow($refund);
+            $journalResponse = (new ReverseShadowRefundsCore())->createLedgerEntriesForRefundReverseShadow($refund, $payment);
             if (isset($journalResponse['id']) === true)
             {
                 $txnId = $journalResponse['id'];
@@ -2143,6 +2143,11 @@ trait Refund
             RefundEntity::FEE => null,
             RefundEntity::TAX => null,
         ];
+    }
+
+    public function fetchDiscountForRefundAmount(Payment\Entity $payment, $refundAmount)
+    {
+        return $this->getDiscountIfApplicable($payment, $refundAmount);
     }
 
     // Fetches refund creation related data of the payment for FE apps

@@ -50,6 +50,7 @@ class Constants
     const REFUND_CREDITS                                    = "refund_credits";
     const ACCOUNT_ENTITIES                                  = "account_entities";
     const REFUND_ID                                         = "refund_id";
+    const DISCOUNT                                          = "discount";
 
     const INSTANT_REFUND_PROCESSED_WITH_CREDITS_POSTPAID_MODEL  = "instant_refund_processed_with_credits_postpaid_model";
     const INSTANT_REFUND_PROCESSED_POSTPAID_MODEL               = "instant_refund_processed_postpaid_model";
@@ -127,6 +128,7 @@ class Constants
     const PAYMENT_ID                                        = "payment_id";
     const API_TXN_ID                                        = "api_txn_id";
     const MERCHANT_BALANCE_LIMIT                            = "merchant_balance_limit";
+    const MERCHANT_VAS_AMOUNT                               = "merchant_vas_amount";
     const TRANSACTION_ID                                    = "transaction_id";
 
     const MONEY_PARAMS                                      = 'money_params';

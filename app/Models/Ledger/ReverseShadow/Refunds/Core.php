@@ -11,14 +11,17 @@ use RZP\Models\Base;
 use RZP\Models\Ledger\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Models\Pricing\Fee;
+use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Models\Dispute\Entity;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Payment\Refund\Speed as Speed;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
@@ -38,7 +41,7 @@ class Core extends Base\Core
     /**
      * @throws \Exception
      */
-    public function createLedgerEntriesForRefundReverseShadow(RefundEntity $refund)
+    public function createLedgerEntriesForRefundReverseShadow(RefundEntity $refund, PaymentEntity $payment)
     {
         $this->trace->info(TraceCode::LEDGER_REFUND_JOURNAL_CREATE_REQUEST, [
             RefundConstants::REFUND_ID  => $refund->getId(),
@@ -47,19 +50,26 @@ class Core extends Base\Core
         $commission = $refund->getFee() - $refund->getTax();
         $tax = $refund->getTax();
 
+        $merchant = $payment->merchant;
+
+        $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+        $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        $discount = $this->getDiscountIfApplicable($payment, $refund->getAmount());
+
         // Generate payload
         if (($refund->isDirectSettlementWithoutRefund() === true) or
             ($refund->isDirectSettlementRefund() === true))
         {
-            $journalPayload = $this->createTransactionMessageForDSRefund($refund, $commission, $tax);
+            $journalPayload = $this->createTransactionMessageForDSRefund($refund, $commission, $tax, $negativeLimit);
         }
         else if ($refund->payment->hasBeenCaptured() === false)
         {
-            $journalPayload = $this->createTransactionMessageForAuthorizedRefund($refund);
+            $journalPayload = $this->createTransactionMessageForAuthorizedRefund($refund, $discount);
         }
         else
         {
-            $journalPayload = $this->createTransactionMessageForCapturedRefund($refund, $commission, $tax);
+            $journalPayload = $this->createTransactionMessageForCapturedRefund($refund, $commission, $tax, $negativeLimit, $discount);
         }
 
         if ($journalPayload === null)
@@ -86,6 +96,7 @@ class Core extends Base\Core
 
             if (str_contains($e->getMessage(), \RZP\Models\LedgerOutbox\Constants::INSUFFICIENT_BALANCE_FAILURE) and $this->isRefundCredits($refund->merchant) === false)
             {
+
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE, null, [
                     RefundConstants::REFUND_ID  => $journalPayload[Constants::TRANSACTOR_ID],
                 ]);
@@ -109,7 +120,7 @@ class Core extends Base\Core
         return $journalResponse;
     }
 
-    private function createTransactionMessageForDSRefund(RefundEntity $refund, $fee, $tax)
+    private function createTransactionMessageForDSRefund(RefundEntity $refund, $fee, $tax, $negativeLimit)
     {
         list($rule, $moneyParams) = $this->fetchMoneyParamsAndLedgerRulesForRefundsDirectSettlement($refund, $fee, $tax);
 
@@ -125,6 +136,8 @@ class Core extends Base\Core
             return null;
         }
 
+        $moneyParams[Constants::MERCHANT_BALANCE_LIMIT] = strval($negativeLimit);
+
         $transactionMessage = $this->createTransactionMessageForRefund($refund, $moneyParams);
 
         $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
@@ -133,9 +146,9 @@ class Core extends Base\Core
 
     }
 
-    private function createTransactionMessageForCapturedRefund(RefundEntity $refund, $fee, $tax)
+    private function createTransactionMessageForCapturedRefund(RefundEntity $refund, $fee, $tax, $negativeLimit, $discount)
     {
-        list($rule, $moneyParams) = $this->fetchLedgerRulesAndMoneyParamsForRefunds($refund, $fee, $tax);
+        list($rule, $moneyParams) = $this->fetchLedgerRulesAndMoneyParamsForRefunds($refund, $fee, $tax, $negativeLimit, $discount);
 
         $transactionMessage = $this->createTransactionMessageForRefund($refund, $moneyParams);
 
@@ -144,9 +157,9 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
-    private function createTransactionMessageForAuthorizedRefund(RefundEntity $refund)
+    private function createTransactionMessageForAuthorizedRefund(RefundEntity $refund, $discount)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getAmount() - $discount);
         $moneyParams = [
             Constants::AMOUNT       => strval($amount),
             Constants::BASE_AMOUNT  => strval($amount)
@@ -161,14 +174,15 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
-    private function fetchLedgerRulesAndMoneyParamsForRefunds(RefundEntity $refund, $fee, $tax)
+    private function fetchLedgerRulesAndMoneyParamsForRefunds(RefundEntity $refund, $fee, $tax, $negativeLimit, $discount)
     {
         $rule = null;
         $moneyParams = [];
 
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getAmount() - $discount);
 
         $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_LIMIT] = strval($negativeLimit);
 
         if($refund->isRefundSpeedInstant() === true) {
             $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
@@ -496,6 +510,45 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::REFUND_API_TXN_KAFKA_PUSH_FAILURE);
         }
+    }
+
+    public function calculateDiscount($payment, $transactionAmount)
+    {
+        $paymentClone = clone $payment;
+
+        $paymentClone->base_amount = $transactionAmount;
+
+        list($fees, $tax, $feesplit) = (new Pricing\Fee)->calculateMerchantFees($paymentClone);
+
+        return $fees;
+    }
+
+    public function getDiscountIfApplicable(PaymentEntity $payment, $transactionAmount)
+    {
+        // For the Bajaj finserv emi payments we have to calculate fee that we deducted while making
+        // the payments
+        if ($payment->gateway === RefundConstants::BAJAJFINSERV and $payment->isMethod(PaymentEntity::EMI))
+        {
+            return $this->calculateDiscount($payment, $transactionAmount);
+        }
+
+        return $this->getApplicableDiscountOnRefund($payment, $transactionAmount);
+    }
+
+    public function getApplicableDiscountOnRefund(PaymentEntity $payment, $transactionAmount) {
+
+        if (($payment->isCardlessEmiWalnut369() === true) and ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        {
+            if ($payment->getBaseAmount() !== $transactionAmount)
+            {
+                // no discount applicable if partial payment if merchant is sourced by walnut
+                return 0;
+            }
+        }
+
+        $discountRatio = $payment->getDiscountRatioIfApplicable();
+
+        return (int) round($discountRatio * $transactionAmount);
     }
 
 }

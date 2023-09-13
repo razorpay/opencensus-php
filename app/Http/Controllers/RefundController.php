@@ -85,6 +85,16 @@ class RefundController extends Controller
         return ApiResponse::json($fee);
     }
 
+
+    public function getRefundDiscount()
+    {
+        $input = Request::all();
+
+        $discount = $this->service()->fetchRefundDiscount($input);
+
+        return ApiResponse::json($discount);
+    }
+
     /**
      * This is almost a duplicate route to getRefundFee, just used by scrooge with internal auth with instant refund mode sent from scrooge.
      */

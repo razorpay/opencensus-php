@@ -96,6 +96,12 @@ class Constants
     const CARD_TRANSFER   = 'card_transfer';
     const TRANSFER_METHOD = 'transfer_method';
 
+    const PRIMARY                   = "primary";
+    const MAX_NEGATIVE_MANUAL_LIMIT = "max_negative_manual_limit";
+    const DISCOUNT                  = "discount";
+    const BAJAJFINSERV              = "bajajfinserv";
+    const TRANSACTION_AMOUNT        = "transaction_amount";
+
 
     const TOKEN_STATUS              = 'token_status';
     const TOKENIZED                 = 'tokenized';
@@ -234,6 +240,8 @@ class Constants
     const PAYMENT_RAW_AMOUNT       = 'payment_raw_amount';
     const PAYMENT_RAW_CURRENCY     = 'payment_raw_currency';
     const GATEWAY_RZP_INTERNAL     = 'rzp_internal';
+
+    const REFUND_DATA               = "refund_data";
 
 
     // to revert payment attributes on transaction create failure

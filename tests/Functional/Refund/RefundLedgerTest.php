@@ -94,6 +94,120 @@ class RefundLedgerTest extends TestCase
         $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
 
+    public function testNormalRefundReverseShadowMerchantBalanceLimit()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->andReturn([
+                    "body" => $this->getJournalCreateSuccessResponse()
+                ]
+            );
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 0]);
+
+        $this->setUpCreateRequestFixturesForExistingBalanceConfig(50000);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+    }
+
+    public function testNormalRefundReverseShadowFailureUsingNegativeMerchantBalance()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->andThrow(new \Exception("insufficient balance"), $this->getJournalCreateFailureResponse(), 500);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 0]);
+
+        $this->setUpCreateRequestFixturesForExistingBalanceConfig(50000);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        try {
+            $this->refundPayment($payment['id']);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+            $this->assertEquals("LEDGER_JOURNAL_CREATE_ERROR", $e->getMessage());
+        }
+    }
+
+    private function setUpCreateRequestFixturesForExistingBalanceConfig($manualLimit)
+    {
+        $this->fixtures->create(
+            'balance_config',
+            [
+                'balance_id'                    => '10000000000000',
+                'type'                          => 'primary',
+                'negative_transaction_flows'   => ['payment', 'refund'],
+                'negative_limit_auto'           => 6000000,
+                'negative_limit_manual'         => $manualLimit
+            ]
+        );
+
+        $this->ba->adminAuth();
+    }
+
     public function testNormalRefundReverseShadowFailure()
     {
         Mail::fake();

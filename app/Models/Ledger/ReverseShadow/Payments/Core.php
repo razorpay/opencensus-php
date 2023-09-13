@@ -98,7 +98,7 @@ class Core extends Base\Core
 
         $amountCredits = $merchantAccountBalances[Constants::MERCHANT_AMOUNT_CREDITS];
 
-        $fee = $fee - $tax;
+        $commission = $fee - $tax;
 
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
         //Todo: how do we charge this amount from acquirer bank.
@@ -119,26 +119,26 @@ class Core extends Base\Core
         else if($this->isPostpaid($payment) === true)
         {
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission);
         }
         else if (($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
         {
             $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($payment->getAmount());
             $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
         }
-        else if($this->isFeeCredits($feeCredits, $fee) === true)
+        else if($this->isFeeCredits($feeCredits, $commission) === true)
         {
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $commission);
         }
         // Normal merchant captured scenario (commissions considered)
         else
         {
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $commission + $tax);
         }
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
