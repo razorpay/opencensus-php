@@ -2377,7 +2377,7 @@ class Core extends Base\Core
 
         // Adding this mutex here to handle concurrent requests.
         $payout = $this->mutex->acquireAndRelease(
-            $payoutId,
+            'process_workflow_action_on_' . $payoutId,
             function() use ($payout, $approve, $input)
             {
                 // Reload $payout here if needed.
