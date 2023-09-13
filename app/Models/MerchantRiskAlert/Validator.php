@@ -39,7 +39,8 @@ class Validator extends BaseValidator
 
     public function validateTriggerNeedsClarificationRequest($action): void
     {
-        if ($action->getAttribute(Action\Entity::ENTITY_NAME) !== EntityConstants::MERCHANT_DETAIL)
+        if (($action->getAttribute(Action\Entity::ENTITY_NAME) !== EntityConstants::MERCHANT_DETAIL) and
+            ($action->getAttribute(Action\Entity::ENTITY_NAME) !== EntityConstants::MERCHANT))
         {
             $message = 'Cannot send needs clarification email for entity:' .
                 $action->getEntityName() ;

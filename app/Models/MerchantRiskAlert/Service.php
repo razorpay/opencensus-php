@@ -1145,7 +1145,7 @@ class Service extends Base\Service
 
     protected function sendOutboundEmailForTriggerNeedsClarification($merchant, array $params)
     {
-        $emailSubject = sprintf( " %s | %s | %s", Constants::RISK_CLARIFICATION, $merchant->getId(), $merchant->getName());
+        $emailSubject = sprintf( " %s | %s | %s", Constants::RISK_CLARIFICATION, $merchant->getId(), "Risk Clarification");
 
         $emailBody = array_get($params, 'email_body');
 
