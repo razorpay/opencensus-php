@@ -5,7 +5,9 @@ on:
     - cron: '*/15 * * * *'
 jobs:
   slack-notify:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     steps:
       # This gets the rate limit for the default github.token that is a per-repo rate limit.
       - id: get_rate_limit

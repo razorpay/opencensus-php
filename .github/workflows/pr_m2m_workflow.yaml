@@ -11,7 +11,10 @@ jobs:
   cancel:
     name: Cancel or Skip workflow
     if: always()
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     steps:
       - name: Cancel Previous Runs
         timeout-minutes: 3
@@ -23,7 +26,10 @@ jobs:
   run_partnerLms_sanity_on_pr_approval:
     name: Partner LMS sanity workflow
     if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) }}
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ cancel ]
     steps:
       - name: Get Build Image Workflow Status

@@ -18,7 +18,9 @@ on:
 jobs:
   slack-notify:
     name: Notify Account service team
-    runs-on: [ self-hosted ]
+    runs-on:
+      - self-hosted
+      - X64
     steps:
       - uses: rtCamp/action-slack-notify@v2.2.0
         env:

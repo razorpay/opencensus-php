@@ -1,7 +1,9 @@
 on: [push]
 jobs:
   cancel:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
@@ -20,7 +22,9 @@ jobs:
         run: |
           echo "Don't cancel old workflow"
   UT_Cards_Test_Suite:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     needs: [cancel]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1-api-web

@@ -7,7 +7,9 @@ jobs:
 
   Find-Jira-Id:
     name: Find-Jira-Id
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
 
     steps:
       - name: Checkout

@@ -1,7 +1,9 @@
 on: [ push ]
 jobs:
   cancel:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
@@ -20,7 +22,9 @@ jobs:
         run: |
           echo "Don't cancel old workflow"
   validate_php_syntax:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ cancel ]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1-api-web
@@ -46,7 +50,9 @@ jobs:
       - name: validate_php_syntax
         run: ci-assets/validate_php_syntax.sh
   build-web:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ cancel ]
     continue-on-error: false
     name: Build Web Harbor
@@ -78,7 +84,9 @@ jobs:
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-worker:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ cancel ]
     continue-on-error: false
     name: Build Worker Harbor
@@ -110,7 +118,9 @@ jobs:
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-checkout:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ cancel ]
     continue-on-error: false
     name: Build Checkout Harbor
@@ -140,7 +150,9 @@ jobs:
 
   build-e2e:
     name: E2E test build
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ build-web, build-worker, build-checkout ]
     steps:
       - uses: actions/checkout@v2
@@ -167,7 +179,10 @@ jobs:
   # Triggers end-to-end test execution with argo workflow as executor
   e2e-test-webhook:
     name: E2E test webhook
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ build-e2e ]
     steps:
       - uses: actions/checkout@v2
@@ -227,7 +242,9 @@ jobs:
 
   build-slit:
     name: SLIT test build
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     needs: [ build-web, build-worker, build-checkout ]
     steps:
       - uses: actions/checkout@v2
@@ -258,7 +275,10 @@ jobs:
   # Triggers end-to-end test execution with argo workflow as executor
   slit-test-webhook:
     name: SLIT test webhook
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ build-slit ]
     steps:
       - uses: actions/checkout@v2
@@ -292,7 +312,9 @@ jobs:
             }
 
   trigger_regression_suite:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     name: Regression Suite
     needs: [ validate_php_syntax, build-web, build-worker, build-checkout ]
     if: github.ref == 'refs/heads/master'
@@ -305,7 +327,10 @@ jobs:
 
   trigger-e2e-execution-master:
     name: Trigger E2E Execution on Master
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ build-web, build-worker, build-checkout ]
     if: github.ref == 'refs/heads/master'
     steps:

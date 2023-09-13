@@ -10,7 +10,9 @@ on:
 jobs:
   slack-notify:
     name: Notify Edge team
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     if: ${{ github.event.pull_request.merged }}
     steps:
       - uses: rtCamp/action-slack-notify@v2.2.0
@@ -23,7 +25,9 @@ jobs:
           SLACK_ICON: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
   user-notify:
     name: Notify change maker
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     steps:
       - uses: mshick/add-pr-comment@v1
         with:

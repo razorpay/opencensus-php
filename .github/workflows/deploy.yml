@@ -2,7 +2,9 @@ name: Run Unit Coverage
 on: [deployment]
 jobs:
   Smart-collect:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'smartcollectUT'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -393,7 +395,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   QR-Payment:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'qrPaymentUT'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -482,7 +486,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   SMEP-Partnerships:
-    runs-on: [self-hosted]
+    runs-on:
+      - self-hosted
+      - X64
     if: github.event.deployment.environment == 'smep-partnerships-api'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -570,7 +576,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   Route:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'routeUT'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -870,7 +878,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   PaymentPage:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'paymentPageUT'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -958,7 +968,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   RxPayouts:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'RX_PAYOUTS'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -1046,7 +1058,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   RxCore:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'RX_CORE'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -1134,7 +1148,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   EsOndemand:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'ES_ONDEMAND'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3
@@ -1211,7 +1227,9 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   OnboardingAPIs:
-    runs-on: [ api-public ]
+    runs-on:
+      - api-public
+      - X64
     if: github.event.deployment.environment == 'OnboardingAPIsUT'
     container:
       image: c.rzp.io/razorpay/api:devstackxdebug3

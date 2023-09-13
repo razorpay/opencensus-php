@@ -8,7 +8,10 @@ jobs:
   cancel:
     name: Cancel Previous Runs
     if: always()
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     timeout-minutes: 3
     steps:
       - uses: styfle/cancel-workflow-action@0.9.0
@@ -21,7 +24,10 @@ jobs:
     env:
       old_commit: ${{ github.event.pull_request.head.sha }}
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved') }}
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ cancel ]
     steps:
       - name: Retrieve Current Workflow URL
@@ -293,7 +299,10 @@ jobs:
 
   trigger-e2e-execution:
     name: Trigger E2E Execution
-    runs-on: [ self-hosted, api ]
+    runs-on:
+      - self-hosted
+      - api
+      - X64
     needs: [ pull_request_approved ]
     if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) }}
     steps:

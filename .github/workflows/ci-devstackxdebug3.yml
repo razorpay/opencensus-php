@@ -7,7 +7,9 @@ on:
 
 jobs:
   cancel:
-    runs-on: [api-public]
+    runs-on:
+      - api-public
+      - X64
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
@@ -27,7 +29,9 @@ jobs:
           echo "Don't cancel old workflow"
 
   build-docker-image:
-    runs-on: [ api-public]
+    runs-on:
+      - api-public
+      - X64
     needs: [ cancel ]
     continue-on-error: false
     name: Build Devstack xdebug3 Web Harbor
