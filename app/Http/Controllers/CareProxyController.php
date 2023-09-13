@@ -141,6 +141,8 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_FD_TICKETS = 'twirp/rzp.care.sav.v1.SavService/FetchFdTickets';
 
+    const SAV_FETCH_FD_KB_ARTICLE = 'twirp/rzp.care.sav.v1.SavService/FetchFdKbArticle';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -188,6 +190,7 @@ class CareProxyController extends Controller
         self::SAV_FETCH_MERCHANT_STATS                => Name::VIEW_ALL_ENTITY,
         self::ADMIN_CREATE_ENTITY                     => Name::MANAGE_CARE_SERVICE_CALLBACK,
         self::SAV_FETCH_RESPONSE_SUGGESTION           => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_FD_KB_ARTICLE                 => Name::VIEW_ALL_ENTITY,
     ];
 
     /**
@@ -288,6 +291,7 @@ class CareProxyController extends Controller
         self::ADMIN_CREATE_ENTITY,
         self::SAV_FETCH_RESPONSE_SUGGESTION,
         self::SAV_FETCH_FD_TICKETS,
+        self::SAV_FETCH_FD_KB_ARTICLE,
     ];
 
     const CHAT_ROUTES = [
