@@ -619,6 +619,12 @@ class YesbankCaPayoutTest extends TestCase
             'source_id'   => $contact->getId(),
         ]);
 
+        $dcsResponse = [
+            Payout\Configurations\DirectAccounts\PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS => [],
+        ];
+
+        $this->mockDcsFetchConfigurationWithGivenResponse($dcsResponse);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -1507,6 +1513,12 @@ class YesbankCaPayoutTest extends TestCase
                     "address" => 'yesbank@upi',
                 ]
             ]];
+
+        $dcsResponse = [
+            Payout\Configurations\DirectAccounts\PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS => [],
+        ];
+
+        $this->mockDcsFetchConfigurationWithGivenResponse($dcsResponse);
 
         $this->ba->privateAuth();
 
