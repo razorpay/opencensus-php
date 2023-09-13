@@ -144,6 +144,7 @@ export interface PaymentMethodSplitProps {
   isMobile: boolean;
   shouldShowSrBanner: boolean;
   successRateData: number;
+  durationOption: Option;
 }
 
 export enum SuccessRateBannerSection {
@@ -313,6 +314,7 @@ export interface CardInfoProps {
   title: string;
   value: number;
   isLeader?: boolean;
+  isMobile?: boolean;
   isAmount?: boolean;
   subtitle: string;
   toolTipText: string;

@@ -51,6 +51,7 @@ const TopOverviewContainer = ({
                   successRateData={successRateData}
                   isMobile={isMobile}
                   paymentByMethod={paymentByMethod}
+                  durationOption={durationOption}
                 />
               </Box>
             ) : null}

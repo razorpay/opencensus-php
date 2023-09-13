@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
 import { Doughnut } from 'react-chartjs-2';
 import {
@@ -14,15 +14,18 @@ import SuccessRateBanner from 'merchant/views/Transactions/v2/Analytics/componen
 import { LegendDot } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getPercentage } from 'common/utils/rzp-utils';
+import { track } from 'merchant/views/Transactions/v2/common/tracking';
 
 const PaymentMethodSplit = ({
   paymentByMethod,
   isMobile,
   shouldShowSrBanner,
   successRateData,
+  durationOption,
 }: PaymentMethodSplitProps): JSX.Element => {
   const shouldCollapseSrBanner = isMobileDevice(1200);
   const chartRef = useRef(null);
+  const [hoveredSegment, setHoveredSegment] = useState<number>(-1);
   const { labels, segmentData, segmentDataTotal } = getPaymentMethodData(paymentByMethod);
   const data = {
     labels,
@@ -48,6 +51,21 @@ const PaymentMethodSplit = ({
             segmentData[tooltipItem?.index],
           )}%)`,
       },
+    },
+    onHover: (_e, elements) => {
+      const nowHoveredElement = elements[0]?._index;
+      if (!isNaN(nowHoveredElement) && hoveredSegment !== nowHoveredElement) {
+        setHoveredSegment(nowHoveredElement);
+        track({
+          objectName: 'Payment Method Pie',
+          actionName: 'Hovered',
+          properties: {
+            section: 'Overview',
+            pieElementHovered: labels[nowHoveredElement],
+            overviewDate: durationOption?.title,
+          },
+        });
+      }
     },
   };
 

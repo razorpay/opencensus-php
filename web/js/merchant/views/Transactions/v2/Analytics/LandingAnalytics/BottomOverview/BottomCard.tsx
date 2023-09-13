@@ -13,7 +13,7 @@ import {
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
 import { withRouter } from 'react-router-dom';
-
+import noop from 'lodash/noop';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
 import {
   BottomCardWrapper,
@@ -41,18 +41,25 @@ const BottomOverviewCard = ({
 }: BottomOverviewCardProps): JSX.Element | null => {
   const [isHover, setIsHover] = useState(false);
   const { name, loading: isLoading, value, isAmount, failed: isFailed } = data;
+  const goToEntityPage = () => {
+    track({
+      objectName: `${name} Tab`,
+      properties: { overviewDate: durationOption?.title, section: 'Overview' },
+    });
+    history.push(cardLink[name], { prevPath: location.pathname });
+  };
   if (isLoading) {
     return <CardShimmer />;
   }
   return (
-    <BottomCardWrapper>
+    <BottomCardWrapper onClick={goToEntityPage}>
       <Box onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
         <Box flex="1">
           <Card
             surfaceLevel={isHover ? 3 : 2}
             padding="spacing.5"
             marginY="spacing.2"
-            elevation="lowRaised"
+            elevation="none"
             display="flex"
           >
             <CardBody>
@@ -69,7 +76,11 @@ const BottomOverviewCard = ({
                     <Text type="subtle" weight="bold" contrast="low" size="medium">
                       {name}
                     </Text>
-                    <TooltipWrapper>
+                    <TooltipWrapper
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
                       <Tooltip content={LandingPageAnalyticsToolTip[name]} placement="top">
                         <TooltipInteractiveWrapper>
                           <InfoIcon color="feedback.icon.neutral.lowContrast" size="small" />
@@ -81,14 +92,8 @@ const BottomOverviewCard = ({
                     <IconButton
                       accessibilityLabel={`view-${name}-details`}
                       icon={ChevronRightIcon}
-                      size="medium"
-                      onClick={() => {
-                        track({
-                          objectName: `${name} Tab`,
-                          properties: { overviewDate: durationOption?.title, section: 'Overview' },
-                        });
-                        history.push(cardLink[name], { prevPath: location.pathname });
-                      }}
+                      size="large"
+                      onClick={noop}
                     />
                   </ViewDetailsPrefix>
                 </Box>

@@ -12,6 +12,7 @@ import { CardInfoShimmer } from 'merchant/views/Transactions/v2/Analytics/compon
 import { CardInfoProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import { StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
 
 const CardInfo = ({
   title,
@@ -22,6 +23,7 @@ const CardInfo = ({
   isLoading,
   currency,
   isLeader,
+  isMobile,
 }: CardInfoProps): JSX.Element => {
   return (
     <>
@@ -43,15 +45,27 @@ const CardInfo = ({
         <>
           <Box marginTop="spacing.4">
             {isAmount ? (
-              <Amount
-                value={paiseToRupees(value)}
-                isAffixSubtle={true}
-                suffix="decimals"
-                currency={currency}
-                size={isLeader ? 'title-medium' : 'title-small'}
-              />
+              isMobile && isLeader ? (
+                <StyledAmount>
+                  <Amount
+                    value={paiseToRupees(value)}
+                    isAffixSubtle={false}
+                    suffix="decimals"
+                    currency={currency}
+                    size="title-medium"
+                  />
+                </StyledAmount>
+              ) : (
+                <Amount
+                  value={paiseToRupees(value)}
+                  isAffixSubtle={true}
+                  suffix="decimals"
+                  currency={currency}
+                  size="title-medium"
+                />
+              )
             ) : (
-              <Title color="surface.text.normal.lowContrast" size="small">
+              <Title color="surface.text.normal.lowContrast" size={isLeader ? 'large' : 'small'}>
                 {value}
               </Title>
             )}

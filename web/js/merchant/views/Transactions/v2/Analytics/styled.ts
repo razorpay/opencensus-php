@@ -71,6 +71,7 @@ export const BottomCardWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
     flex: 1;
     &:hover {
+      cursor: pointer;
       button{
         &::before {
           content: 'View All';

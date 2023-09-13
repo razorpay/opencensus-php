@@ -18,7 +18,13 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
     <Box display="flex" flexDirection="column" gap="spacing.4" marginTop="spacing.4">
       <Card elevation="none" surfaceLevel={3} padding="spacing.5">
         <CardBody>
-          <CardInfo {...lead} isLoading={isLoading} currency={currency} isLeader={true} />
+          <CardInfo
+            {...lead}
+            isLoading={isLoading}
+            currency={currency}
+            isLeader={true}
+            isMobile={isMobile}
+          />
         </CardBody>
       </Card>
       <ScrollableContainer>
@@ -34,7 +40,12 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
                     justifyContent="space-between"
                     minWidth="200px"
                   >
-                    <CardInfo {...element} isLoading={isLoading} currency={currency} />
+                    <CardInfo
+                      {...element}
+                      isLoading={isLoading}
+                      currency={currency}
+                      isMobile={isMobile}
+                    />
                   </Box>
                 </CardBody>
               </Card>
@@ -52,7 +63,13 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
         backgroundColor="surface.background.level3.lowContrast"
       >
         <Box flex="1" padding="spacing.5" gap="spacing.2">
-          <CardInfo {...lead} isLoading={isLoading} currency={currency} isLeader={true} />
+          <CardInfo
+            {...lead}
+            isLoading={isLoading}
+            currency={currency}
+            isLeader={true}
+            isMobile={isMobile}
+          />
         </Box>
         <Box
           flex={trail.length}
@@ -67,7 +84,12 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
           {trail.map((element, index) => (
             <>
               <Box flexGrow={1}>
-                <CardInfo {...element} isLoading={isLoading} currency={currency} />
+                <CardInfo
+                  {...element}
+                  isLoading={isLoading}
+                  currency={currency}
+                  isMobile={isMobile}
+                />
               </Box>
               {!(index === trail.length - 1) && <Divider orientation="vertical" />}
             </>

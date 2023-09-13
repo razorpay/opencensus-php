@@ -41,7 +41,7 @@ const FailedPaymentsOverview = ({ mode, user }): JSX.Element => {
     mode,
     user,
   });
-  const shouldShowSR = isSrEnabled && !isSRLoading && successRateData;
+  const shouldShowSR = isSrEnabled && !isSRLoading;
   const isMobile = useMobile(mobileBreakoints);
   const { defaultDate, defaultDuration, durationOptions } = getOptions(isMobile);
 
