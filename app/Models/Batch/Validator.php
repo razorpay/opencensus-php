@@ -1210,7 +1210,7 @@ class Validator extends Base\Validator
     protected static $partnerSubmerchantReferralInviteTypeRowRules = [
         Header::NAME                                 => 'required|alpha_space|max:255',
         Header::EMAIL                                => 'required|email|max:255',
-        Header::CONTACT_MOBILE                       => 'sometimes|min:10|max:15|contact_syntax'
+        Header::CONTACT_MOBILE                       => 'sometimes|nullable|contact_syntax'
     ];
 
     protected static $partnerSubmerchantReferralInviteConfigRules = [
