@@ -1,15 +1,16 @@
 version: v1beta10
 dev:
+# Changing the imagepullpolicy for ensuring devspace brings up a new pod for syncing the code changes irrespective of number of pods running previously
+  replacePods:
+    - labelSelector:
+        name: ${APP_NAME}-${DEVSTACK_LABEL}
+      namespace: ${NAMESPACE}
+      patches:
+        - op: replace
+          path: spec.containers[0].imagePullPolicy
+          value: Always
 # uncomment only to use remote debugging
-  # replacePods:
-  #   - labelSelector:
-  #       name: ${APP_NAME}-${DEVSTACK_LABEL}
-  #     replaceImage: c.rzp.io/razorpay/api:devstackxdebug3
-  #     namespace: ${NAMESPACE}
-  #     patches:
-  #       - op: replace
-  #         path: spec.containers[0].imagePullPolicy
-  #         value: Always
+  #    replaceImage: c.rzp.io/razorpay/api:devstackxdebug3
   # ports:
   #   - labelSelector:
   #       name: ${APP_NAME}-${DEVSTACK_LABEL}
