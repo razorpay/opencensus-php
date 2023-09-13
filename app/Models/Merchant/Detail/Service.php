@@ -4588,7 +4588,7 @@ class Service extends Base\Service
         return $isExpEnabled;
     }
 
-    public function getNotificationDetails($merchant, $acceptanceTimestamp = null)
+    public function getNotificationDetails($merchant)
     {
         $isExpEnabled = $this->isConsentNotificationExperimentEnabled($merchant->getId());
 
@@ -4617,7 +4617,7 @@ class Service extends Base\Service
 
         $send_sms = (empty($user) === false and $send_email === false) ? $user['contact_mobile_verified'] : false;
 
-        $email_details = ($send_email === true) ? $this->getEmailDetails($acceptanceTimestamp) : null;
+        $email_details = ($send_email === true) ? $this->getEmailDetails() : null;
 
         $sms_details = ($send_sms === true) ? $this->getSmsDetails() : null;
 
@@ -4629,15 +4629,9 @@ class Service extends Base\Service
         ];
     }
 
-    private function getEmailDetails($acceptanceTimestamp = null)
+    private function getEmailDetails()
     {
         $ownerName = $this->merchant->merchantDetail->getBusinessName();
-
-        $acceptanceTimestamp = $acceptanceTimestamp ?? Carbon::now()->getTimestamp();
-
-        $dateTime = new DateTime("@$acceptanceTimestamp");
-
-        $formattedDateTime = $dateTime->format('Y-m-d H:i:s');
 
         return [
             "owner_id"              =>  $this->merchant->getMerchantId(),
@@ -4652,7 +4646,6 @@ class Service extends Base\Service
             ],
             "params"                =>  [
                 "ownerName" => $ownerName,
-                "acceptance_timestamp" => $formattedDateTime,
             ],
             "to"                    =>  [
                 "address"   => $this->merchant->getEmail(),
@@ -4668,10 +4661,10 @@ class Service extends Base\Service
             "owner_id"              =>  $this->merchant->getMerchantId(),
             "owner_type"            => "merchant",
             "org_id"                =>  $this->merchant->getOrgId(),
-            "template_name"         => "sms.bvs.consent_docs",
-            "template_namespace"    => "platform",
+            "template_name"         => "sms.pg.consent_docs",
+            "template_namespace"    => "payments_onboarding",
             "service"               => "api",
-            "sender"                => "Razorpay",
+            "sender"                => "RZRPAY",
             'destination'           => $this->merchant->merchantDetail->getContactMobile(),
             "language"              => "english"
         ];

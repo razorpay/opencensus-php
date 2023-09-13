@@ -29,6 +29,10 @@ class ConsentDocumentsManagerResponse extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .platform.bvs.consentdocumentmanager.v2.ConsentDocumentDetails documents_detail = 4;</code>
      */
     private $documents_detail;
+    /**
+     * Generated from protobuf field <code>bool email_sent = 5;</code>
+     */
+    protected $email_sent = false;
 
     /**
      * Constructor.
@@ -40,6 +44,7 @@ class ConsentDocumentsManagerResponse extends \Google\Protobuf\Internal\Message
      *     @type string $status
      *     @type \Google\Protobuf\UInt32Value $count
      *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails>|\Google\Protobuf\Internal\RepeatedField $documents_detail
+     *     @type bool $email_sent
      * }
      */
     public function __construct($data = NULL) {
@@ -164,6 +169,28 @@ class ConsentDocumentsManagerResponse extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Platform\Bvs\Consentdocumentmanager\V2\ConsentDocumentDetails::class);
         $this->documents_detail = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool email_sent = 5;</code>
+     * @return bool
+     */
+    public function getEmailSent()
+    {
+        return $this->email_sent;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool email_sent = 5;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setEmailSent($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->email_sent = $var;
 
         return $this;
     }

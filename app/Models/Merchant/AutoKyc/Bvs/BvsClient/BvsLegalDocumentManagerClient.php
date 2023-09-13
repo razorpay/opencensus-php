@@ -350,7 +350,8 @@ class BvsLegalDocumentManagerClient extends BaseClient
             'acceptance_timestamp'  => $ownerDetails['acceptance_timestamp'],
             'signatory_name'        => $ownerDetails['signatory_name'],
             'contact_number'        => $ownerDetails['contact_number'],
-            'email'                 => $ownerDetails['email']
+            'email'                 => $ownerDetails['email'],
+            'time_zone'             => $ownerDetails['time_zone'],
         ]);
     }
 

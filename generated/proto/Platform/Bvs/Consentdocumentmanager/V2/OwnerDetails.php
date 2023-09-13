@@ -26,6 +26,8 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      */
     protected $ip_address = '';
     /**
+     * acceptance_timestamp needs to be epoch timestamp
+     *
      * Generated from protobuf field <code>uint64 acceptance_timestamp = 4;</code>
      */
     protected $acceptance_timestamp = 0;
@@ -57,6 +59,14 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string application_name = 11;</code>
      */
     protected $application_name = '';
+    /**
+     * time_zone is the time zone in which the acceptance_timestamp needs to be converted while document creation,
+     * the same timestamp will be used for indication in sms and email if sms and email template contains param for
+     * acceptance_timestamp, the format will be YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     *
+     * Generated from protobuf field <code>string time_zone = 12;</code>
+     */
+    protected $time_zone = '';
 
     /**
      * Constructor.
@@ -68,6 +78,7 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      *     @type string $owner_name
      *     @type string $ip_address
      *     @type int|string $acceptance_timestamp
+     *           acceptance_timestamp needs to be epoch timestamp
      *     @type string $signatory_name
      *     @type string $contact_number
      *     @type string $email
@@ -75,6 +86,10 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
      *     @type string $partner_name
      *     @type string $application_id
      *     @type string $application_name
+     *     @type string $time_zone
+     *           time_zone is the time zone in which the acceptance_timestamp needs to be converted while document creation,
+     *           the same timestamp will be used for indication in sms and email if sms and email template contains param for
+     *           acceptance_timestamp, the format will be YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
      * }
      */
     public function __construct($data = NULL) {
@@ -149,6 +164,8 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * acceptance_timestamp needs to be epoch timestamp
+     *
      * Generated from protobuf field <code>uint64 acceptance_timestamp = 4;</code>
      * @return int|string
      */
@@ -158,6 +175,8 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * acceptance_timestamp needs to be epoch timestamp
+     *
      * Generated from protobuf field <code>uint64 acceptance_timestamp = 4;</code>
      * @param int|string $var
      * @return $this
@@ -320,6 +339,36 @@ class OwnerDetails extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->application_name = $var;
+
+        return $this;
+    }
+
+    /**
+     * time_zone is the time zone in which the acceptance_timestamp needs to be converted while document creation,
+     * the same timestamp will be used for indication in sms and email if sms and email template contains param for
+     * acceptance_timestamp, the format will be YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     *
+     * Generated from protobuf field <code>string time_zone = 12;</code>
+     * @return string
+     */
+    public function getTimeZone()
+    {
+        return $this->time_zone;
+    }
+
+    /**
+     * time_zone is the time zone in which the acceptance_timestamp needs to be converted while document creation,
+     * the same timestamp will be used for indication in sms and email if sms and email template contains param for
+     * acceptance_timestamp, the format will be YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     *
+     * Generated from protobuf field <code>string time_zone = 12;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTimeZone($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->time_zone = $var;
 
         return $this;
     }

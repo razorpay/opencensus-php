@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Consent\Processor;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
@@ -97,6 +98,7 @@ class LegalDocumentProcessor implements Processor
             "owner_name"           => $ownerName,
             "contact_number"       => $this->merchant->merchantDetail->getContactMobile(),
             "email"                => $this->merchant->getEmail(),
+            "time_zone"            => Timezone::getTimeZoneAbbrevation($this->merchant->getTimeZone()),
         ];
 
         $body = [

@@ -58,6 +58,10 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
      */
     private $reply_to;
     /**
+     * params should contain all the keys from the email template excluding {acceptance_timestamp}
+     * if any of the {acceptance_timestamp} key is passed in param it will be ignored and
+     * server should be responsible for populating the acceptance_timestamp value in email template
+     *
      * Generated from protobuf field <code>.google.protobuf.Struct params = 12;</code>
      */
     protected $params = null;
@@ -84,6 +88,9 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
      *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $bcc
      *     @type array<\Platform\Bvs\Consentdocumentmanager\V2\Email>|\Google\Protobuf\Internal\RepeatedField $reply_to
      *     @type \Google\Protobuf\Struct $params
+     *           params should contain all the keys from the email template excluding {acceptance_timestamp}
+     *           if any of the {acceptance_timestamp} key is passed in param it will be ignored and
+     *           server should be responsible for populating the acceptance_timestamp value in email template
      *     @type string $subject
      * }
      */
@@ -345,6 +352,10 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * params should contain all the keys from the email template excluding {acceptance_timestamp}
+     * if any of the {acceptance_timestamp} key is passed in param it will be ignored and
+     * server should be responsible for populating the acceptance_timestamp value in email template
+     *
      * Generated from protobuf field <code>.google.protobuf.Struct params = 12;</code>
      * @return \Google\Protobuf\Struct|null
      */
@@ -364,6 +375,10 @@ class EmailDetails extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * params should contain all the keys from the email template excluding {acceptance_timestamp}
+     * if any of the {acceptance_timestamp} key is passed in param it will be ignored and
+     * server should be responsible for populating the acceptance_timestamp value in email template
+     *
      * Generated from protobuf field <code>.google.protobuf.Struct params = 12;</code>
      * @param \Google\Protobuf\Struct $var
      * @return $this

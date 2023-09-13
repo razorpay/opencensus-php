@@ -53,6 +53,19 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string application_id = 10;</code>
      */
     protected $application_id = '';
+    /**
+     * acceptance_time is the acceptance_timestamp converted into specified zone as passed inside owner_details
+     * in the format YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     * If the zone was not passed in inside owner_details the acceptance_timestamp_in_zone would not contain any zone
+     * but the time in UTC in format YYYY-MM-DD HH-MM-SS e.g 2023-09-06 15:03:12
+     *
+     * Generated from protobuf field <code>string acceptance_time = 11;</code>
+     */
+    protected $acceptance_time = '';
+    /**
+     * Generated from protobuf field <code>bool sms_sent = 12;</code>
+     */
+    protected $sms_sent = false;
 
     /**
      * Constructor.
@@ -70,6 +83,12 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
      *     @type string $platform
      *     @type string $partner_id
      *     @type string $application_id
+     *     @type string $acceptance_time
+     *           acceptance_time is the acceptance_timestamp converted into specified zone as passed inside owner_details
+     *           in the format YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     *           If the zone was not passed in inside owner_details the acceptance_timestamp_in_zone would not contain any zone
+     *           but the time in UTC in format YYYY-MM-DD HH-MM-SS e.g 2023-09-06 15:03:12
+     *     @type bool $sms_sent
      * }
      */
     public function __construct($data = NULL) {
@@ -293,6 +312,60 @@ class ConsentDocumentDetails extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->application_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * acceptance_time is the acceptance_timestamp converted into specified zone as passed inside owner_details
+     * in the format YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     * If the zone was not passed in inside owner_details the acceptance_timestamp_in_zone would not contain any zone
+     * but the time in UTC in format YYYY-MM-DD HH-MM-SS e.g 2023-09-06 15:03:12
+     *
+     * Generated from protobuf field <code>string acceptance_time = 11;</code>
+     * @return string
+     */
+    public function getAcceptanceTime()
+    {
+        return $this->acceptance_time;
+    }
+
+    /**
+     * acceptance_time is the acceptance_timestamp converted into specified zone as passed inside owner_details
+     * in the format YYYY-MM-DD HH-MM-SS ZONE e.g 2023-09-06 15:03:12 IST
+     * If the zone was not passed in inside owner_details the acceptance_timestamp_in_zone would not contain any zone
+     * but the time in UTC in format YYYY-MM-DD HH-MM-SS e.g 2023-09-06 15:03:12
+     *
+     * Generated from protobuf field <code>string acceptance_time = 11;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAcceptanceTime($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->acceptance_time = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool sms_sent = 12;</code>
+     * @return bool
+     */
+    public function getSmsSent()
+    {
+        return $this->sms_sent;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool sms_sent = 12;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setSmsSent($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->sms_sent = $var;
 
         return $this;
     }

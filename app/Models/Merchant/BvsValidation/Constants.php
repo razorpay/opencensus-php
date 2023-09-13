@@ -44,6 +44,7 @@ class Constants
     const OWNER_ID              = 'owner_id';
     const CLIENT_ID             = 'client_id';
     const PLATFORM              = 'platform';
+    const EMAIL_SENT            = 'email_sent';
 
     const CONSENT_RETRY_JOB_FAILURE = 'consent_retry_job_failure';
 

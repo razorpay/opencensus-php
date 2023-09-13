@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Constants::DOCUMENTS_DETAIL         => 'sometimes|array',
         Constants::OWNER_ID                 => 'sometimes|string',
         Constants::CLIENT_ID                => 'sometimes|string',
-        Constants::PLATFORM                 => 'sometimes|string'
+        Constants::PLATFORM                 => 'sometimes|string',
+        Constants::EMAIL_SENT               => 'sometimes|boolean',
     ];
 }

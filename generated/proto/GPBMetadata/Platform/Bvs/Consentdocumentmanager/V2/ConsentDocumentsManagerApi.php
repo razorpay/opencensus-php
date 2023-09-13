@@ -19,9 +19,9 @@ class ConsentDocumentsManagerApi
         \GPBMetadata\Platform\Bvs\Consentdocumentmanager\V2\GetConsentDocuments::initOnce();
         $pool->internalAddGeneratedFile(
             '
-€
+¿
 
-Jplatform/bvs/consentdocumentmanager/v2/consent_documents_manager_api.proto&platform.bvs.consentdocumentmanager.v2Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.protoBplatform/bvs/consentdocumentmanager/v2/get_consent_documents.proto"à
+Jplatform/bvs/consentdocumentmanager/v2/consent_documents_manager_api.proto&platform.bvs.consentdocumentmanager.v2Eplatform/bvs/consentdocumentmanager/v2/create_consent_documents.protoBplatform/bvs/consentdocumentmanager/v2/get_consent_documents.proto"‹
 ConsentDocumentDetails
 type (	
 ufh_file_id (	
@@ -35,13 +35,17 @@ error_code (	
 
 partner_id	 (	
 application_id
- (	"Ä
+ (	
+acceptance_time (	
+sms_sent ("Ø
 ConsentDocumentsManagerResponse
 
 id (	
 status (	+
 count (2.google.protobuf.UInt32ValueX
-documents_detail (2>.platform.bvs.consentdocumentmanager.v2.ConsentDocumentDetails2¢
+documents_detail (2>.platform.bvs.consentdocumentmanager.v2.ConsentDocumentDetails
+
+email_sent (2¢
 ConsentDocumentManagerAPI¨
 CreateConsentDocumentsE.platform.bvs.consentdocumentmanager.v2.CreateConsentDocumentsRequestG.platform.bvs.consentdocumentmanager.v2.ConsentDocumentsManagerResponse¢
 GetConsentDocumentsB.platform.bvs.consentdocumentmanager.v2.GetConsentDocumentsRequestG.platform.bvs.consentdocumentmanager.v2.ConsentDocumentsManagerResponse´

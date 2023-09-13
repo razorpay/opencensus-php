@@ -49,6 +49,14 @@ class SmsDetails extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string language = 9;</code>
      */
     protected $language = '';
+    /**
+     * content_params should contain all the keys from the template excluding {acceptance_timestamp, doc_type, doc_link}
+     * if any of the {acceptance_timestamp, doc_type, doc_link} is passed in content_params it will ignore those fields and
+     * server should be responsible for populating {acceptance_timestamp, doc_type, doc_link} values in the sms template
+     *
+     * Generated from protobuf field <code>.google.protobuf.Struct content_params = 10;</code>
+     */
+    protected $content_params = null;
 
     /**
      * Constructor.
@@ -65,6 +73,10 @@ class SmsDetails extends \Google\Protobuf\Internal\Message
      *     @type string $template_name
      *     @type string $template_namespace
      *     @type string $language
+     *     @type \Google\Protobuf\Struct $content_params
+     *           content_params should contain all the keys from the template excluding {acceptance_timestamp, doc_type, doc_link}
+     *           if any of the {acceptance_timestamp, doc_type, doc_link} is passed in content_params it will ignore those fields and
+     *           server should be responsible for populating {acceptance_timestamp, doc_type, doc_link} values in the sms template
      * }
      */
     public function __construct($data = NULL) {
@@ -266,6 +278,46 @@ class SmsDetails extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->language = $var;
+
+        return $this;
+    }
+
+    /**
+     * content_params should contain all the keys from the template excluding {acceptance_timestamp, doc_type, doc_link}
+     * if any of the {acceptance_timestamp, doc_type, doc_link} is passed in content_params it will ignore those fields and
+     * server should be responsible for populating {acceptance_timestamp, doc_type, doc_link} values in the sms template
+     *
+     * Generated from protobuf field <code>.google.protobuf.Struct content_params = 10;</code>
+     * @return \Google\Protobuf\Struct|null
+     */
+    public function getContentParams()
+    {
+        return $this->content_params;
+    }
+
+    public function hasContentParams()
+    {
+        return isset($this->content_params);
+    }
+
+    public function clearContentParams()
+    {
+        unset($this->content_params);
+    }
+
+    /**
+     * content_params should contain all the keys from the template excluding {acceptance_timestamp, doc_type, doc_link}
+     * if any of the {acceptance_timestamp, doc_type, doc_link} is passed in content_params it will ignore those fields and
+     * server should be responsible for populating {acceptance_timestamp, doc_type, doc_link} values in the sms template
+     *
+     * Generated from protobuf field <code>.google.protobuf.Struct content_params = 10;</code>
+     * @param \Google\Protobuf\Struct $var
+     * @return $this
+     */
+    public function setContentParams($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->content_params = $var;
 
         return $this;
     }
