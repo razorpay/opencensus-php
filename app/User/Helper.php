@@ -9,14 +9,26 @@ use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Trace\SpanTrace;
 use App\Constants\Tracing;
+use App\Constants\Constants as AppConstants;
 use App\RZP\PublicCollection;
 use App\Providers\GenericUser;
+use GuzzleHttp\Client as Guzzle;
 use App\Merchant\GenericMerchant;
 use App\Metrics\Constants as MetricConstants;
 use const App\Http\Controllers\EVENT_TRIGGER_COUNT;
 
 class Helper
 {
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
+
+    public function __construct(array $options = [])
+    {
+        $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
+    }
+
     public function getCurrentMerchant(GenericUser $user)
     {
         $sessionMerchantId = Session::get('current_merchant_id');
@@ -56,7 +68,7 @@ class Helper
             if ($currentMerchant === null)
             {
                 // Update the user and check if he accepted any new invites after logging in.
-                list($error, $updatedUser) = (new Service())->getUserFromApi($user->id);
+                [$error, $updatedUser] = (new Service([AppConstants::HTTP_CLIENT => $this->httpClient]))->getUserFromApi($user->id);
 
                 if (empty($error) === true)
                 {

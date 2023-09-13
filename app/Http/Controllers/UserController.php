@@ -18,6 +18,7 @@ use App\Http\AppResponse;
 use App\Base\UniqueIdEntity;
 use App\Admin\ApiRequestAny;
 use Illuminate\Http\Response;
+use GuzzleHttp\Client as Guzzle;
 use App\User\RecoverableException;
 use Razorpay\Api\Errors\ErrorCode;
 use Illuminate\Routing\Redirector;
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\RedirectResponse;
 use Razorpay\Api\Errors\BadRequestError;
 use App\Splitz\Service as SplitzService;
+use App\Constants\Constants as AppConstants;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
@@ -53,6 +55,18 @@ class UserController extends Controller
     const DASHBOARD_USER_CONCURRENT_API_CALL = 'DASHBOARD_USER_CONCURRENT_API_CALL';
 
     const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
+    /**
+     * @var \App\Admin\Service|null
+     */
+    private ?Admin\Service $adminService;
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
+    /**
+     * @var \App\User\Service|null
+     */
+    private ?User\Service $userService;
 
     public function __construct()
     {
@@ -108,7 +122,12 @@ class UserController extends Controller
 
         $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled];
 
-        $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, [], self::SPLITZ_BULK_EVALUATE_PATH);
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
+            $currentMerchantId,
+            $experimentIds,
+            [AppConstants::HTTP_CLIENT => $this->httpClient],
+            self::SPLITZ_BULK_EVALUATE_PATH
+        );
 
         $this->splitzExprimentData = $data;
     }
@@ -349,10 +368,10 @@ class UserController extends Controller
 
         if ($isConcurrentApiCallEnabled)
         {
-            return (new User\Service)->getSecondChunkUserDetailsConcurrent($firstChunkData, $params);
+            return $this->userService->getSecondChunkUserDetailsConcurrent($firstChunkData, $params);
         }
 
-        return (new User\Service)->getSecondChunkUserDetails($firstChunkData, $params);
+        return $this->userService->getSecondChunkUserDetails($firstChunkData, $params);
     }
 
     static function millitime(): int
@@ -414,7 +433,11 @@ class UserController extends Controller
 
         $domain = \Request::server('SERVER_NAME');
 
-        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+        $this->httpClient   = $this->getHttpClient(ApiUrl::getApiBaseUrl(), \Config::get('api.request_timeout'));
+        $this->adminService = new Admin\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+        $this->userService  = new User\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
+        [$orgError, $org] = $this->adminService->getOrg($domain);
 
         if (empty($orgError) == false)
         {
@@ -445,7 +468,7 @@ class UserController extends Controller
         //    we will get other details by calling getSecondChunkUserDetails function and then we will call viewOrRedirectToUrl function
         //    and view index2 blade file using chunked based streaming.
 
-        list($userError, $firstChunkData) = (new User\Service)->getFirstChunkUserDetails();
+        [$userError, $firstChunkData] = $this->userService->getFirstChunkUserDetails();
 
         if (empty($userError) == false)
         {
@@ -1722,5 +1745,15 @@ class UserController extends Controller
             return false;
         }
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
+    }
+
+    private function getHttpClient(string $baseUrl, $timeOut): Guzzle
+    {
+        return new Guzzle([
+            'base_uri' => $baseUrl,
+            'defaults' => [
+                'timeout' => $timeOut,
+            ]
+        ]);
     }
 }

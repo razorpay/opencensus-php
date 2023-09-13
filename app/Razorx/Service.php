@@ -7,6 +7,7 @@ use Auth;
 use App\Base;
 use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
+use App\Constants\Constants as AppConstant;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
@@ -194,7 +195,7 @@ class Service extends Base\Service
     {
         $featureString = implode(', ', $features);
 
-        $request = new ApiRequestAny(['client_type' => 'merchant', 'guzzle_client' => $guzzleClient]);
+        $request = new ApiRequestAny(['client_type' => 'merchant', AppConstant::HTTP_CLIENT => $guzzleClient]);
 
         return $request->sendAsyncPromise("razorx/bulkevaluate?features=$featureString", 'GET');
     }

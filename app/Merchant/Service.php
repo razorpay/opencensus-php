@@ -14,7 +14,7 @@ use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors\ServerError;
 use App\Admin\Service as AdminService;
 use Razorpay\Api\Errors\BadRequestError;
-
+use App\Constants\Constants as AppConstants;
 use App\Base;
 use App\User;
 use App\Razorx;
@@ -33,6 +33,11 @@ class Service extends Base\Service
 
     protected $app;
 
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
+
     const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
@@ -43,7 +48,7 @@ class Service extends Base\Service
         'promoter_address_proof'   => 'promoter_address_url'
     ];
 
-    public function __construct()
+    public function __construct(array $options = [])
     {
         $this->currentUser = Auth::user();
 
@@ -52,6 +57,8 @@ class Service extends Base\Service
         $this->app = $app;
 
         $this->trace = $app['trace'];
+
+        $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
 
     /**
@@ -535,9 +542,9 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function fetchPartnerConfigsAsyncPromise(Guzzle $guzzleClient): PromiseInterface
+    public function fetchPartnerConfigsAsyncPromise(): PromiseInterface
     {
-        $request = new ApiRequestAny(['client_type' => 'merchant', 'guzzle_client' => $guzzleClient]);
+        $request = new ApiRequestAny(['client_type' => 'merchant', AppConstants::HTTP_CLIENT => $this->httpClient]);
 
         return $request->sendAsyncPromise('merchants/me/partner/configs', 'GET');
     }
@@ -692,9 +699,9 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getPartnerIntentAsyncPromise(Guzzle $guzzleClient): PromiseInterface
+    public function getPartnerIntentAsyncPromise(): PromiseInterface
     {
-        $request = new ApiRequestAny(['client_type'    => 'merchant', 'guzzle_client' => $guzzleClient]);
+        $request = new ApiRequestAny(['client_type'    => 'merchant', AppConstants::HTTP_CLIENT => $this->httpClient]);
 
         return $request->sendAsyncPromise('merchant/partner-intent', 'GET');
     }
@@ -747,11 +754,18 @@ class Service extends Base\Service
 
         if (empty($adminUser) === false)
         {
-            $request = new ApiRequestAny(['client_type' => 'admin', 'mode' => "live_$merchantId"]);
+            $request = new ApiRequestAny([
+                'client_type'           => 'admin',
+                'mode'                  => "live_$merchantId",
+                AppConstants::HTTP_CLIENT => $this->httpClient
+            ]);
         }
         else
         {
-            $request = new ApiRequestAny(['client_type' => 'merchant']);
+            $request = new ApiRequestAny([
+                'client_type'           => 'merchant',
+                AppConstants::HTTP_CLIENT => $this->httpClient
+            ]);
         }
 
         list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
@@ -795,7 +809,10 @@ class Service extends Base\Service
             'start_time'            => $startTime
         ]);
 
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny([
+            'client_type'           => 'merchant',
+            AppConstants::HTTP_CLIENT => $this->httpClient
+        ]);
 
         list($error, $data) = $request->send("merchants/me/features", 'GET');
 
@@ -907,8 +924,9 @@ class Service extends Base\Service
 
         $request = new ApiRequestAny(
             [
-                'client_type'   => 'merchant',
-                'process_input' => false,
+                'client_type'           => 'merchant',
+                'process_input'         => false,
+                AppConstants::HTTP_CLIENT => $this->httpClient,
             ]);
 
         list($error, $data) = $request->send("credits?fetch_expired=0&is_promotion=1", 'GET');
@@ -1055,11 +1073,11 @@ class Service extends Base\Service
 
         return $experiments;
     }
-    
+
     public function processPartnerIntentPromiseResponse($apiPartnerIntentPromise)
     {
         list($error, $data) = $apiPartnerIntentPromise->processAsyncPromiseResponse();
-        
+
         if(empty($error) === false)
         {
             throw new BadRequestError(
@@ -1068,14 +1086,14 @@ class Service extends Base\Service
                 400
             );
         }
-        
+
         return $data['partner_intent'] ?? null;
     }
-    
+
     public function processPartnerConfigPromiseResponse($apiPartnerConfigPromise)
     {
         list($error, $data)  = $apiPartnerConfigPromise->processAsyncPromiseResponse();
-    
+
         if (empty($error) === false)
         {
             throw new BadRequestError(
@@ -1084,15 +1102,15 @@ class Service extends Base\Service
                 400
             );
         }
-    
+
         return $data['items'] ?? [];
-        
+
     }
-    
+
     public function processPartnerActivationStatusPromiseResponse($apiPartnerActivationPromise)
     {
         list($error, $data)  = $apiPartnerActivationPromise->processAsyncPromiseResponse();
-    
+
         if (empty($error) === false)
         {
             $this->trace->error(
@@ -1106,30 +1124,30 @@ class Service extends Base\Service
 
         return ($data && $data['partner_activation']) ? $data ['partner_activation']['activation_status'] : '';
     }
-    
+
     public function processExperimentPromiseResponse($apiExperimentPromise)
     {
         $razorxService = (new Razorx\Service());
-        
+
         $experimentsResults =  $razorxService->processBulkTreatmentPromiseResponse($apiExperimentPromise);
-    
+
         foreach ($experimentsResults as $result => $val)
         {
             $data['experiments'][$result] = $val;
         }
-    
+
         return  $data['experiments'] ?? [];
-        
+
     }
 
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getExperimentPromise(Guzzle $guzzleClient): PromiseInterface
+    public function getExperimentPromise(): PromiseInterface
     {
         $razorxService = (new Razorx\Service());
 
-        return $razorxService->getBulkTreatmentPromise(Razorx\Constants::FEATURE_FLAGS, $guzzleClient);
+        return $razorxService->getBulkTreatmentPromise(Razorx\Constants::FEATURE_FLAGS, $this->httpClient);
     }
 
     public function getBusinessTypes(){

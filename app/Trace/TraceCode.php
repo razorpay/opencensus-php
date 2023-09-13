@@ -262,6 +262,9 @@ class TraceCode
     const USER_RENDER_DATA                          = 'USER_RENDER_DATA';
 
     const INVALIDATE_ORG_CACHE                      = 'INVALIDATE_ORG_CACHE';
+
+    const PROMISE_BUILT_TIME                        = 'PROMISE_BUILT_TIME';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

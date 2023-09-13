@@ -34,8 +34,10 @@ use App\Mailers\MiscMailer;
 use App\Providers\ApiGuard;
 use App\Admin\ApiRequestAny;
 use App\Session as SessionTable;
+use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
+use App\Constants\Constants as AppConstants;
 use App\Transaction\Service as TransactionService;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
@@ -76,8 +78,12 @@ class Service extends Base\Service
         self::PNG,
         self::SVG,
     ];
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
 
-    public function __construct()
+    public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
 
@@ -86,6 +92,8 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
 
         $this->cache = $app['cache'];
+
+        $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
 
     protected function getEncryptionSecret()
@@ -1422,14 +1430,14 @@ class Service extends Base\Service
 
         if ($asMerchant)
         {
-            $request = new ApiRequestAny(['client_type' => 'user']);
+            $request = new ApiRequestAny(['client_type' => 'user', AppConstants::HTTP_CLIENT => $this->httpClient]);
         }
         else
         {
             $request = new ApiRequestAny();
         }
 
-        list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
+        [$error, $data] = $request->send("orgs/hostname/$domain", "GET");
 
         if (empty($error))
         {

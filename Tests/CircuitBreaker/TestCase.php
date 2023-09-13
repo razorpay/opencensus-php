@@ -6,6 +6,7 @@ namespace CircuitBreaker;
 use Mockery;
 use Cache;
 use GuzzleHttp\Psr7\Utils;
+use App\Constants\Constants;
 use GuzzleHttp\Psr7\Response;
 use Razorpay\Api\Errors\Error;
 use Illuminate\Contracts\Console\Kernel;
@@ -49,7 +50,7 @@ class TestCase extends IlluminateTestCase
             ->withAnyArgs()
             ->andReturn($response);
 
-        $request = new ApiRequestAny(['guzzle_client' => $guzzleMock]);
+        $request = new ApiRequestAny([Constants::HTTP_CLIENT => $guzzleMock]);
 
         return $request->processInput([])->send($path, $methodName);
     }
@@ -62,7 +63,7 @@ class TestCase extends IlluminateTestCase
             ->withAnyArgs()
             ->andThrow($response);
 
-        $request = new ApiRequestAny(['guzzle_client' => $guzzleMock]);
+        $request = new ApiRequestAny([Constants::HTTP_CLIENT => $guzzleMock]);
 
         return $request->processInput([])->send($path, $methodName);
     }

@@ -45,6 +45,7 @@ use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use Illuminate\Auth\Access\AuthorizationException;
 use hisorange\BrowserDetect\Parser as BrowserDetect;
+use App\Constants\Constants as AppConstants;
 use App\Admin\ApiPromiseAny as ApiPromiseAny;
 
 const EVENT_TRIGGER_COUNT = 1;
@@ -79,20 +80,20 @@ class Service extends Base\Service
     const SOURCE              = 'source';
 
     const OAUTH_ACTION        = 'oauth_action';
-    
+
     const EXPERIMENT_PROMISE = 'experiments';
     const SPLITZ_EXPERIMENT_PROMISE = 'splitz_experiments';
     const PARTNER_INTENT_PROMISE = 'partner_intent';
     const CONFIG_PROMISE = 'configs';
     const SALES_FORCE_LEADS_PROMISE = 'create_lead_sales_force';
-    
+
     const PROMISES_PARALLEL_API_CALL = [
         self::EXPERIMENT_PROMISE,
         self::SPLITZ_EXPERIMENT_PROMISE,
         self::PARTNER_INTENT_PROMISE,
         self::CONFIG_PROMISE,
     ];
-    
+
     /**
      * @var Application
      */
@@ -105,7 +106,12 @@ class Service extends Base\Service
      */
     protected $cache;
 
-    public function __construct()
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
+
+    public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
 
@@ -116,6 +122,8 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
 
         $this->metrics = $app['metrics'];
+
+        $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
 
     /**
@@ -1284,7 +1292,7 @@ class Service extends Base\Service
         $data['features'] = [];
         $data['campaigns'] = [];
 
-        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+        $currentMerchant = (new Helper([AppConstants::HTTP_CLIENT => $this->httpClient]))->getCurrentMerchant($genericUser);
 
         if ($currentMerchant === null)
         {
@@ -1306,74 +1314,74 @@ class Service extends Base\Service
 
         return [[], ['details' => $data, 'currentMerchant' => $currentMerchant, 'genericUser' => $genericUser]];
     }
-    
+
     static function millitime(): int
     {
         return round(microtime(true) * 1000);
     }
-    
+
     private function getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled, $isRazorxCachingEnabled = false): array
     {
         $startTime = self::millitime();
-        
+
         if (empty($apiPromiseAny))
         {
             return $data;
         }
 
         $currentMerchantId = $currentMerchant->id;
-        
+
         $allPromises =  $this->getAllApiPromises($apiPromiseAny);
-    
+
         $this->setStartTimeForAllApiPromises($apiPromiseAny);
-        
+
         // fire and wait for all the promises to complete
         $allApiResponses = \GuzzleHttp\Promise\Utils::settle($allPromises)->wait();
-        
+
         $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses);
-    
+
         $merchantService = new Merchant\Service;
 
         if (empty($data[Constants::EXPERIMENTS]) && isset($allApiResponses[self::EXPERIMENT_PROMISE]))
         {
             $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
-        
+
             $data['experiments'] = $experiments;
 
             if($isRazorxCachingEnabled && empty($experiments) == false)
             {
                 (new Razorx\Service())->setRazorxCacheByIdAsyncPromise($currentMerchantId, $experiments);
             }
-        
+
             $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
-        
+
             $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
         }
-    
+
         if (empty($data[Constants::SPLITZ_EXPERIMENTS]) && isset($allApiResponses[self::SPLITZ_EXPERIMENT_PROMISE]))
         {
-            $splitzExperiments = (new SplitzService())->processVariantBulkAsyncPromiseResponse($apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]);
+            $splitzExperiments = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->processVariantBulkAsyncPromiseResponse($apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]);
 
             $data[Constants::SPLITZ_EXPERIMENTS] = $splitzExperiments;
 
             if($isSplitzCachingEnabled && empty($splitzExperiments) == false){
 
-                (new SplitzService())->setCacheByIdAsyncPromise($currentMerchantId, $splitzExperiments);
-            
+                (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->setCacheByIdAsyncPromise($currentMerchantId, $splitzExperiments);
+
             }
         }
-    
+
         if (isset($allApiResponses[self::PARTNER_INTENT_PROMISE]))
         {
             $partnerIntent = $merchantService->processPartnerIntentPromiseResponse($apiPromiseAny[self::PARTNER_INTENT_PROMISE]);
-        
+
             $data['partner_intent'] = $partnerIntent;
         }
-    
+
         if (isset($allApiResponses[self::CONFIG_PROMISE]))
         {
             $configs = $merchantService->processPartnerConfigPromiseResponse($apiPromiseAny[self::CONFIG_PROMISE]);
-        
+
             if (empty($configs) === false)
             {
                 foreach ($configs as $config)
@@ -1391,15 +1399,15 @@ class Service extends Base\Service
         }
 
         $endTime = self::millitime();
-    
+
         $this->trace->info(TraceCode::API_PROMISE_RESPONSE_TIME_TAKEN, [
             'promises_response_time_taken'  =>  $endTime - $startTime,
             'concurrent_call'               =>  true,
         ]);
-        
+
         return $data;
     }
-    
+
     private function getGuzzleClient(): Guzzle
     {
         $guzzleClient = new Guzzle([
@@ -1408,7 +1416,7 @@ class Service extends Base\Service
                                             'timeout' => Config::get('api.request_timeout'),
                                         ]
                                     ]);
-        
+
         return $guzzleClient;
     }
     /**
@@ -1417,82 +1425,103 @@ class Service extends Base\Service
     private function getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data): array
     {
         $startTime = self::millitime();
-        
+
         $apiPromiseAny = [];
-        
+
         $currentRouteName = \Route::currentRouteName();
-    
+
         $serverName = \Request::server('SERVER_NAME');
-    
+
         $splitzExperiments = $params[Constants::SPLITZ_EXPERIMENTS] ?? "1";
         $experiments = $params[Constants::EXPERIMENTS] ?? "1";
-    
+
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
-        
-        $merchantService = new Merchant\Service;
-    
+
+        $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
         $currentMerchantId = $currentMerchant->id;
-        
-        $guzzleClient =  $this->getGuzzleClient();
-        
+
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
             ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
             ($experiments === "1") and empty($data[Constants::EXPERIMENTS]))
         {
-            $promise = $merchantService->getExperimentPromise($guzzleClient);
+            $start = self::millitime();
+            $promise = $merchantService->getExperimentPromise();
             $apiPromiseAny[self::EXPERIMENT_PROMISE] = new ApiPromiseAny('razorx/bulkevaluate','GET');
             $apiPromiseAny[self::EXPERIMENT_PROMISE]->setPromise($promise);
+            $this->trace->info(TraceCode::PROMISE_BUILT_TIME, [
+                'uri'                       => 'razorx/bulkevaluate',
+                'promises_built_time_taken' =>  self::millitime() - $start
+            ]);
         }
-    
+
         // API 1.2
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
             ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
             ($splitzExperiments === "1") and empty($data[Constants::SPLITZ_EXPERIMENTS]))
         {
-            $promise = (new SplitzService())->getSplitzVariantBulkAsyncPromise($currentMerchantId, $guzzleClient);
-        
+            $start = self::millitime();
+            $promise = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getSplitzVariantBulkAsyncPromise($currentMerchantId);
+
             if (!empty($promise))
             {
                 $apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE] =  new ApiPromiseAny('splitz/bulkEvaluateProxy','POST');
                 $apiPromiseAny[self::SPLITZ_EXPERIMENT_PROMISE]->setPromise($promise);
+                $this->trace->info(TraceCode::PROMISE_BUILT_TIME, [
+                    'uri'                       => 'splitz/bulkEvaluateProxy',
+                    'promises_built_time_taken' =>  self::millitime() - $start
+                ]);
             }
         }
-    
+
         // API 1.3
         if (($isBankingRequest === false) and
             (new Helper)->isOwner($currentMerchant))
         {
-            $promise = $merchantService->getPartnerIntentAsyncPromise($guzzleClient);
-        
+            $start = self::millitime();
+
+            $promise = $merchantService->getPartnerIntentAsyncPromise();
+
             $apiPromiseAny[self::PARTNER_INTENT_PROMISE] =  new ApiPromiseAny('merchant/partner-intent','GET');
             $apiPromiseAny[self::PARTNER_INTENT_PROMISE]->setPromise($promise);
+
+            $this->trace->info(TraceCode::PROMISE_BUILT_TIME, [
+                'uri'                       => 'merchant/partner-intent',
+                'promises_built_time_taken' =>  self::millitime() - $start
+            ]);
         }
-    
+
         // API 1.4
         if (($isBankingRequest === false) and
             (empty($data['merchants'][$merchant['id']]['partner_type']) === false))
         {
+            $start = self::millitime();
+
             // if the merchant is a partner
             $data['merchants'][$merchant['id']]['partner'] = [];
-        
+
             // API 1.4.1
-            $promise = $merchantService->fetchPartnerConfigsAsyncPromise($guzzleClient);
+            $promise = $merchantService->fetchPartnerConfigsAsyncPromise();
             $apiPromiseAny[self::CONFIG_PROMISE] =  new ApiPromiseAny('merchants/me/partner/configs','GET');
             $apiPromiseAny[self::CONFIG_PROMISE]->setPromise($promise);
-        
+
+            $this->trace->info(TraceCode::PROMISE_BUILT_TIME, [
+                'uri'                       => 'merchants/me/partner/configs',
+                'promises_built_time_taken' =>  self::millitime() - $start
+            ]);
         }
-    
+
         $endTime = self::millitime();
-    
+
         $this->trace->info(TraceCode::API_PROMISE_BUILT_TIME_TAKEN, [
             'promises_built_time_taken'  =>  $endTime - $startTime,
             'concurrent_call'               =>  true,
         ]);
-        
+
         return $apiPromiseAny;
     }
-    
+
     public function getSecondChunkUserDetailsConcurrent(array $chunkData = [], array $params = [])
     {
         $currentRouteName = \Route::currentRouteName();
@@ -1515,15 +1544,15 @@ class Service extends Base\Service
         $currentMerchant =  $chunkData['currentMerchant'] ?? null;
 
         $activated = false;
-    
+
         $currentMerchantId = null;
-    
+
         if(!is_null($currentMerchant))
         {
             $currentMerchantId = $currentMerchant->id;
         }
 
-        $merchantService = new Merchant\Service;
+        $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
 
         // If the user is logged in as someone
         if ($currentMerchantId)
@@ -1608,22 +1637,22 @@ class Service extends Base\Service
                     }
 
                     $isSplitzCachingEnabled = $params[Constants::SPLITZ_API_CACHING_ENABLED];
-                    
+
                     $data[Constants::SPLITZ_EXPERIMENTS] = [];
 
                     if($isSplitzCachingEnabled) {
 
-                        $splitzExperiments = (new SplitzService())->getCacheByIdAsyncPromise($currentMerchantId);
+                        $splitzExperiments = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getCacheByIdAsyncPromise($currentMerchantId);
 
                         if($splitzExperiments) {
 
                             $data[Constants::SPLITZ_EXPERIMENTS] = $splitzExperiments;
-                        
+
                         }
                     }
 
                     $isRazorxCachingEnabled = $params[Constants::RAZORX_CACHING_ENABLED];
-                    
+
                     $data[Constants::EXPERIMENTS] = [];
 
                     if($isRazorxCachingEnabled) {
@@ -1635,19 +1664,19 @@ class Service extends Base\Service
                             $data[Constants::EXPERIMENTS] = $razorxExperiments;
 
                             $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
-        
+
                             $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
-                        
+
                         }
                     }
-    
+
                     $apiPromiseAny = $this->getApiPromiseAnyForParallelApiCall($params, $currentMerchant, $merchant, $data);
-    
+
                     $data = $this->getDataFromApiPromiseResponse($data, $globalMerchant, $apiPromiseAny, $currentMerchant, $isSplitzCachingEnabled, $isRazorxCachingEnabled);
                 }
             }
         }
-    
+
         // This is to stop leads assigning to sales poc on salesforce
         if ($data['pre_signup_complete'] === false and array_key_exists('rx_ca_self_serve_flow_neo', $data['experiments']) === true)
         {
@@ -1657,11 +1686,11 @@ class Service extends Base\Service
                   'merchant_id' => $currentMerchantId,
                   'x_onboarding_category'   => 'self_serve'
                 ];
-            
+
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
             }
         }
-        
+
         $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
         if (isset($data['activated']) === true) {
@@ -1670,7 +1699,7 @@ class Service extends Base\Service
 
         return [[], ['details' => $data]];
     }
-    
+
     public function setResponseForEachApiPromises(array $apiPromiseAny, array $allApiResponses): void
     {
         foreach ($allApiResponses as $key => $apiResponse)
@@ -1685,7 +1714,7 @@ class Service extends Base\Service
     public function setStartTimeForAllApiPromises(array $apiPromiseAny): void
     {
         $startTime = round(microtime(true) * 1000);
-        
+
         foreach ($apiPromiseAny as $key => $apiPromise)
         {
             if (in_array($key,self::PROMISES_PARALLEL_API_CALL,true))
@@ -1694,11 +1723,11 @@ class Service extends Base\Service
             }
         }
     }
-    
+
     public function getAllApiPromises(array $apiPromiseAny): array
     {
         $allPromise = [];
-        
+
         foreach ($apiPromiseAny as $key => $apiPromise)
         {
             if (in_array($key,self::PROMISES_PARALLEL_API_CALL,true))
@@ -1706,10 +1735,10 @@ class Service extends Base\Service
                 $allPromise[$key] = $apiPromise->getPromise();
             }
         }
-        
+
         return $allPromise;
     }
-    
+
     public function getSecondChunkUserDetails(array $chunkData = [], array $params = [])
     {
         $currentRouteName = \Route::currentRouteName();
@@ -1734,14 +1763,14 @@ class Service extends Base\Service
         $currentMerchant =  $chunkData['currentMerchant'] ?? null;
 
         $activated = false;
-        
+
         $currentMerchantId = null;
-        
+
         if(!is_null($currentMerchant))
         {
             $currentMerchantId = $currentMerchant->id;
         }
-        
+
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
@@ -2186,7 +2215,7 @@ class Service extends Base\Service
                   'merchant_id' => $currentMerchantId,
                   'x_onboarding_category'   => 'self_serve'
                 ];
-            
+
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
             }
         }
@@ -2321,7 +2350,7 @@ class Service extends Base\Service
 
         $data['user'] = $genericUser->toArray();
 
-        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+        $currentMerchant = (new Helper([AppConstants::HTTP_CLIENT => $this->httpClient]))->getCurrentMerchant($genericUser);
 
         if ($currentMerchant === null)
         {
@@ -2597,14 +2626,18 @@ class Service extends Base\Service
         if (empty($adminUser) === false)
         {
             $request = new \App\Admin\ApiRequestAny([
-                'client_type' => 'admin'
+                'client_type'           => 'admin',
+                AppConstants::HTTP_CLIENT => $this->httpClient
             ]);
 
             list($error, $data) = $request->send("users-admin/$userId", "GET");
         }
         else
         {
-            $request = new \App\Admin\ApiRequestAny(['client_type' => 'user']);
+            $request = new \App\Admin\ApiRequestAny([
+                'client_type'           => 'user',
+                AppConstants::HTTP_CLIENT => $this->httpClient
+            ]);
 
             list($error, $data) = $request->send("users/$userId", "GET");
         }
@@ -3034,7 +3067,8 @@ class Service extends Base\Service
         ]);
 
         $options = [
-            'client_type' => 'merchant',
+            'client_type'           => 'merchant',
+            AppConstants::HTTP_CLIENT => $this->httpClient,
         ];
 
         $request = new \App\Admin\ApiRequestAny($options);
@@ -3169,7 +3203,7 @@ class Service extends Base\Service
             'start_time'            => $startTime
         ]);
 
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(['client_type' => 'merchant', AppConstants::HTTP_CLIENT => $this->httpClient]);
 
         list($error, $data) = $request->processInput($payload)->send("merchants/lead_to_salesforce", "POST");
 

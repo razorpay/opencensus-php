@@ -24,6 +24,7 @@ use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ConnectException;
+use App\Constants\Constants as AppConstants;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 use App\Http\ApiUrl;
@@ -197,18 +198,18 @@ class ApiRequestAny
         ];
 
         // === Guzzle client
-        if (empty($options['guzzle_client']) === true)
+        if (empty($options[AppConstants::HTTP_CLIENT]) === true)
         {
             $this->client = new Guzzle([
-                                           'base_uri' => ApiUrl::getApiBaseUrl(),
-                                           'defaults' => [
-                                               'timeout' => Config::get('api.request_timeout'),
-                                           ]
-                                       ]);
+               'base_uri' => ApiUrl::getApiBaseUrl(),
+               'defaults' => [
+                   'timeout' => Config::get('api.request_timeout'),
+               ]
+           ]);
         }
         else
         {
-            $this->client = $options['guzzle_client'];
+            $this->client = $options[AppConstants::HTTP_CLIENT];
         }
 
         // === Get API Route map config

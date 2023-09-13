@@ -11,6 +11,7 @@ use GuzzleHttp\Client as Guzzle;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
 use GuzzleHttp\Promise\PromiseInterface;
+use App\Constants\Constants as AppConstants;
 
 class Service extends Base\Service
 {
@@ -26,7 +27,12 @@ class Service extends Base\Service
      */
     protected $cache;
 
-    public function __construct()
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private ?Guzzle $httpClient;
+
+    public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
 
@@ -39,13 +45,15 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
 
         // redis cache timeout for 1 day (1440 minutes)
-        $this->cacheTimeout = 2 * 12 * 60; 
+        $this->cacheTimeout = 2 * 12 * 60;
+
+        $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
 
     public function getSplitzVariantBulk($merchantId, $isSplitzCachingEnabled = false): array
     {
         $clientType = ['client_type' => 'merchant'];
-       
+
         $url = 'splitz/bulkEvaluateProxy';
 
         return $this->getVariantBulk($merchantId, config('splitz.experiments'), $clientType, $url, [], $isSplitzCachingEnabled);
@@ -188,14 +196,14 @@ class Service extends Base\Service
     /**
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function getSplitzVariantBulkAsyncPromise($merchantId, Guzzle $guzzleClient): ?PromiseInterface
+    public function getSplitzVariantBulkAsyncPromise($merchantId): ?PromiseInterface
     {
-        $clientType = ['client_type' => 'merchant', 'guzzle_client' => $guzzleClient];
-        
+        $clientType = ['client_type' => 'merchant', AppConstants::HTTP_CLIENT => $this->httpClient];
+
         return $this->getVariantBulkAsyncPromise($merchantId, config('splitz.experiments'), $clientType);
     }
 
-    public function getSplitzApiPayload($merchantId, $experimentIds, $optionalRequestData = []) 
+    public function getSplitzApiPayload($merchantId, $experimentIds, $optionalRequestData = [])
     {
 
         $requestData = ['mid' => $merchantId];
