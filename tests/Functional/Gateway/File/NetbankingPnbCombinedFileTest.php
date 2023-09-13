@@ -45,8 +45,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        Queue::fake();
-
         $this->app['rzp.mode'] = Mode::TEST;
         $nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
         $this->app->instance('nbplus.payments', $nbPlusService);
@@ -230,10 +228,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
             return true;
         });
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     protected function assertRefundFileContents($filePath, $refundsToBeAsserted): void

@@ -72,7 +72,7 @@ class Core extends Base\Core
 
         $processor->validateAndProcess($gatewayFile);
     }
-    
+
     /**
      * Processes the input for acknowledging a gateway_file entity. This sets the
      * status to acknowledged and also fills in additional details like acknowledgement
