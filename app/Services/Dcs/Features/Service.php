@@ -259,22 +259,6 @@ class Service extends Base
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcsResponse = $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
 
-            $proxyResponse = $this->getByEntityIDAndTypeFromProxy($entityType, $entityId, $mode);
-
-            if ($proxyResponse !== null)
-            {
-                $diff = $dcsResponse->diff($proxyResponse);
-                $this->trace->info(TraceCode::DCS_READ_PROXY_DIFF, [
-                    'diff' => $diff,
-                    'entity_id' => $entityId,
-                    'entity_type' => $entityType
-                ]);
-            }
-            else
-            {
-                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
-            }
-
             return $dcsResponse;
         }
         catch (\Exception $e)
