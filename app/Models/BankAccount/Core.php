@@ -566,6 +566,13 @@ class Core extends Base\Core
 
     protected function buildBankAccount($input, $merchant, $mode)
     {
+        if(isset($input["auth_type"]) === true)
+        {
+            $authType = $input["auth_type"];
+
+            unset($input['auth_type']);
+        }
+
         $ba = new BankAccount\Entity;
 
         $ba->setConnection($mode);
@@ -596,7 +603,7 @@ class Core extends Base\Core
             $ba = $ba->build($input,$bankValidator);
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
-            $merchant->isLRSEducationFlowEnabled() === false)
+            $merchant->isLRSEducationFlowEnabled() === false and ($authType !== 'migrated'))
         {
             $ba->getValidator()->validateIfscCode($input, $mode);
         }

@@ -396,6 +396,12 @@ class Core extends Base\Core
             return $subscriptionRegistration;
         }
 
+        if(isset($subrInput[Entity::AUTH_TYPE]) === true && $subrInput[Entity::AUTH_TYPE] === "migrated") {
+
+            $bankInput[Entity::AUTH_TYPE] = $subrInput[Entity::AUTH_TYPE];
+
+        }
+
         if (empty($bankInput) === false)
         {
             $this->setDefaultValuesForBank($bankInput, $customer);
