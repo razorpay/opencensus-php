@@ -614,4 +614,13 @@ class Service extends Base\Service
 
         return $isSelfServe;
     }
+
+    public function getApplicationsDetailsForPayment(array $input)
+    {
+        (new Validator())->validateInput('get_app_name', $input);
+
+        $appDetails = $this->core->getApplicationDetailsForPayment($input['payment_id']);
+
+        return ['application' => $appDetails];
+    }
 }

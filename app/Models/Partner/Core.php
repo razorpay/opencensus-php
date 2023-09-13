@@ -42,6 +42,7 @@ use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\EntityOrigin\Constants as EOConstants;
 use RZP\Models\Pricing\Calculator\Tax\IN\Utils as TaxUtils;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
@@ -51,6 +52,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
 use Throwable;
 
 class Core extends Detail\Core
@@ -1817,5 +1819,47 @@ class Core extends Detail\Core
         }
 
         return false;
+    }
+
+    public function getApplicationDetailsForPayment(string $paymentId)
+    {
+        $response = [];
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $entityOrigin = optional($payment)->entityOrigin;
+
+            $origin     = optional($entityOrigin)->origin;
+            $originType = optional($origin)->getEntityName();
+
+            if ($originType === EOConstants::APPLICATION)
+            {
+                $application = (new ApplicationRepo())->fetchMerchantApplicationByAppIdAndType($origin->getId(),
+                    MerchantApplicationsEntity::OAUTH);
+
+                if (empty($application) === false)
+                {
+                    $response =  [
+                        'id'            => $origin->getId(),
+                        'merchant_id'   => $origin->getMerchantId(),
+                        'name'          => $origin->getName(),
+                    ];
+                }
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            // Should not fail even if the origin extraction from public key is failed.
+            $this->trace->critical(TraceCode::FETCH_APP_NAME_FROM_PAYMENT_EXCEPTION,
+                [
+                    'payment_id'        => $paymentId,
+                    'message'           => $e->getMessage(),
+                    'stack_trace'       => $e->getTraceAsString(),
+                ]
+            );
+        }
+        return $response;
     }
 }

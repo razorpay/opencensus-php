@@ -42,6 +42,10 @@ class Validator extends Base\Validator
         'terms.url'     => 'required|string',
     ];
 
+    protected static $getAppNameRules = [
+        'payment_id'  => 'required|string|size:14',
+    ];
+
     /**
      * @param Merchant\Entity $partner
 

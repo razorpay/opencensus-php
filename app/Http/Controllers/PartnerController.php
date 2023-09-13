@@ -150,4 +150,13 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getOauthApplicationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getApplicationsDetailsForPayment($input);
+
+        return ApiResponse::json($response);
+    }
 }

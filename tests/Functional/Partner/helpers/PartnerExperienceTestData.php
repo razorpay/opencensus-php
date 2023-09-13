@@ -1750,6 +1750,19 @@ return [
         ],
     ],
 
+    'testFetchOauthApplicationDetailsFromPayment'   => [
+        'request'   => [
+            'url'       => '/partner/subm_payment/app_details',
+            'method'    => 'GET',
+            'content'   => [
+                'payment_id' => 'test_payment',
+            ],
+        ],
+        'response'  => [
+            'content'       => [],
+        ],
+    ],
+
     'testRequestPartnerMigration'   => [
         'request'   => [
             'url'       => '/partner/request_migration',

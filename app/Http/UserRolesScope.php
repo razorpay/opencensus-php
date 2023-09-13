@@ -898,6 +898,7 @@ class UserRolesScope
             'p2p_fetch_private'                                    => [Role::OWNER, Role::ADMIN],
             'partner_activation_details'                           => Role::READER_ROLES,
             'partner_sales_poc'                                    => [Role::OWNER, Role::ADMIN],
+            'get_app_name_from_payment'                            => Role::READER_ROLES,
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],

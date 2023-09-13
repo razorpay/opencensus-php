@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use ReflectionFunction;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
@@ -3910,6 +3911,76 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->mockAllSplitzTreatment();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchOauthApplicationDetailsFromPayment()
+    {
+        $accessToken = $this->setPurePlatformContext(Mode::TEST);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $merchantId = Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment_id'] = substr($payment['id'],4);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantId , $user['id']);
+
+        $app = DB::Connection('auth')
+            ->table('applications')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $testData['response']['content']['application']['name'] = $app->name;
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchOauthApplicationDetailsFromPaymentForPartnerAuth()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $partnerId = '100000Razorpay';
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
+
+        $submerchantId = '10000000000000';
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $submerchantId,
+            ]
+        );
+
+        $response = $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
+
+        $app = DB::Connection('auth')
+            ->table('applications')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+
+        $user = $this->fixtures->user->createUserForMerchant($submerchantId);
+
+        $testData = $this->testData['testFetchOauthApplicationDetailsFromPayment'];
+
+        $testData['request']['content']['payment_id'] = PublicEntity::stripDefaultSign($response['razorpay_payment_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$submerchantId , $user['id']);
+
+        $response = $this->startTest($testData);
+
+        $this->assertEmpty($response['application']);
     }
 
     public function mockDcsFetchConfiguration() {

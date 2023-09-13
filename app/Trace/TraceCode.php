@@ -5280,6 +5280,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY                    = 'SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY';
     const SET_ORIGIN_FROM_ORDER_PUBLIC_KEY                      = 'SET_ORIGIN_FROM_ORDER_PUBLIC_KEY';
 
+    const FETCH_APP_NAME_FROM_PAYMENT_EXCEPTION                  = 'FETCH_APP_NAME_FROM_PAYMENT_EXCEPTION';
+
+
     // auth selector
     const AUTH_SELECTION                                        = 'AUTH_SELECTION';
     const AUTH_FILTER_RULES                                     = 'AUTH_FILTER_RULES';

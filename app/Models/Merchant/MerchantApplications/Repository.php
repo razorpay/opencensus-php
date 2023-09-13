@@ -114,6 +114,19 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param   string   $applicationId Application ID of merchant application
+     *
+     * @return  null|Entity
+     */
+    public function fetchMerchantApplicationByAppIdAndType(string $applicationId, string $type) : Entity|null
+    {
+        return $this->newQuery()
+            ->where(Entity::APPLICATION_ID, $applicationId)
+            ->where(Entity::TYPE, $type)
+            ->first();
+    }
+
+    /**
      * Restores the merchant applications for given appIds
      * @param   array           $deletedAppIds  The application_id of merchant applications
      * @param   string|null     $mode

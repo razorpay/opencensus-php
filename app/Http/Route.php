@@ -3216,6 +3216,8 @@ class Route
         'partner_send_weekly_activation_summary_emails' => ['post', 'partner/send_weekly_activation_summary_emails', 'PartnerController@sendPartnerWeeklyActivationSummaryEmails'       ],
         'partner_bulk_update_onboarding_source'            =>  ['patch',    'partner_configs/submerchant/bulk_update_onboarding_source', 'PartnerConfigController@bulkUpdateOnboardingSource'],
 
+        'get_app_name_from_payment'                => ['get',      'partner/subm_payment/app_details',                          'PartnerController@getOauthApplicationDetails'                      ],
+
         //route for sending events to partner with pending commission and Incomplete KYC
         'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerController@sendEventsOfPartnersWithCommissionPending'],
 
@@ -3412,6 +3414,7 @@ class Route
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
         'internal_entity_origin_fetch'             => ['get',      'internal/entity_origins',                        'EntityOriginController@fetch'                                       ],
+
 
         'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
         'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
@@ -6762,6 +6765,8 @@ class Route
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'entity_origin_create',
+
+        'get_app_name_from_payment',
 
         'merchant_product_switch',
         'merchant_instant_activation_post',
@@ -11439,6 +11444,7 @@ class Route
             'commissions_invoice_status_change',
             'partner_activation_details',
             'partner_sales_poc',
+            'get_app_name_from_payment',
             'partner_request_migration',
             'partner_activation_save',
             'partner_kyc_access_request',
