@@ -1952,4 +1952,75 @@ return [
             ],
         ],
     ],
+    'testFetchWithQueryFieldIsSupported' => [
+        'request' => [
+            'url' => '/virtual_accounts?q=something',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+    'testFetchWithQueryFieldMinCharacterValidation' => [
+        'request' => [
+            'url' => '/virtual_accounts?q=a',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The q must be at least 2 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testFetchWithQueryFieldMaxCharacterValidation' => [
+        'request' => [
+            'url' => '/virtual_accounts?q=ashdkjahsdkajdhkasjdhkajdhkajdhkashdksahdjkasdhjkasdhkjsahdkjasdhksjadhkjadhksajdhksajdhakjsdhkjashdkjsadhajkssdhsajkdhjksadhsakjd',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The q may not be greater than 100 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testFetchWithUnknownParamShouldFail' => [
+        'request' => [
+            'url' => '/virtual_accounts?asdad=something',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'asdad is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
 ];

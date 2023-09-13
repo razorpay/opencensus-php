@@ -3902,4 +3902,23 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchWithQueryFieldIsSupported()
+    {
+        $this->startTest();
+    }
+
+    public function testFetchWithUnknownParamShouldFail()
+    {
+        $this->startTest();
+    }
+
+    public function testFetchWithQueryFieldMinCharacterValidation()
+    {
+        $this->startTest();
+    }
+
+    public function testFetchWithQueryFieldMaxCharacterValidation()
+    {
+        $this->startTest();
+    }
 }

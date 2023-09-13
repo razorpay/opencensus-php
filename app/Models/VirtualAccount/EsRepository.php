@@ -27,6 +27,16 @@ class EsRepository extends Base\EsRepository
         Entity::VPA,
     ];
 
+    /**
+     * Fields which will be used to search against 'q' parameter.
+     *
+     * @var array
+     */
+    protected $queryFields = [
+        Entity::NOTES. ".value",
+        Customer\Entity::NAME,
+    ];
+
     public function buildQueryForReceiverType(array &$query, $value)
     {
         $receiverTypes = explode(',', $value);

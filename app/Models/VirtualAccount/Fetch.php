@@ -25,6 +25,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE => 'sometimes|string|custom',
+            EsRepository::QUERY   => 'sometimes|string|min:2|max:100',
         ],
     ];
 
@@ -45,6 +46,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE,
+            EsRepository::QUERY,
         ],
     ];
 
@@ -59,6 +61,7 @@ class Fetch extends BaseFetch
         Customer\Entity::EMAIL,
         Customer\Entity::NAME,
         Customer\Entity::CONTACT,
+        EsRepository::QUERY,
     ];
 
     const COMMON_FIELDS = [
