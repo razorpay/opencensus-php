@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         BDConstants::OTHERS                     => 'sometimes|string',
         Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
         Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
+        Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
     ];
 
     protected static $createOauthRules = [
@@ -203,6 +204,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA                   => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE           => 'sometimes|string',
         MDEntity::REFERRAL_CODE           => 'filled|string',
+        Entity::SKIP_SMS_REQUEST          => 'sometimes|boolean',
     ];
 
     protected static $loginOtp2faPasswordRules = [

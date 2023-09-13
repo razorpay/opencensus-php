@@ -16,6 +16,7 @@ use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Services\Raven;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
@@ -124,7 +125,34 @@ class Core extends Base\Core
 
         $receiver = $input[Entity::EMAIL];
 
-        $otp = $this->generateOtpForLoginSignup($receiver, $input);
+        $isMockRaven = false;
+
+        // set $isMockRaven to true when it is staging environment.
+        if ((isset($input[Entity::SKIP_SMS_REQUEST]) === true) and
+            (Environment::isLowerEnvironment($this->app['env']) === true))
+        {
+            $skipSmsVerification = $input[Entity::SKIP_SMS_REQUEST];
+
+            if (($skipSmsVerification === true) or
+                ($skipSmsVerification === '1'))
+            {
+                $isMockRaven = true;
+            }
+        }
+
+        // unsetting the skip_sms_request to not disturb the remaining flow
+        unset($input[Entity::SKIP_SMS_REQUEST]);
+
+        $otp = $this->generateOtpForLoginSignup($receiver, $input, $isMockRaven);
+
+        // on stage env return otp to skip sending email  when $isMockRaven is true
+        if ($isMockRaven === true)
+        {
+            //reset SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX when $isMockRaven is true
+            LoginSignupRateLimit::resetKey($receiver, Constants::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX);
+
+            return array_only($otp, 'token');
+        }
 
         $payload = $this->getEmailPayload($input, $otp);
 
@@ -225,21 +253,30 @@ class Core extends Base\Core
             $input['action'] = Constants::SIGNUP_OTP_ACTION_V2; //It should come from frontend once experiment will be removed.
         }
 
-        $otp = $this->generateOtpForLoginSignup($receiver, $input);
+        $isMockRaven = false;
 
+        // set isMockRaven to true when it is staging environment
         if ((isset($input[Entity::SKIP_SMS_REQUEST]) === true) and
             (Environment::isLowerEnvironment($this->app['env']) === true))
         {
             $skipSmsVerification = $input[Entity::SKIP_SMS_REQUEST];
 
-            unset($input[Entity::SKIP_SMS_REQUEST]);
-
             if (($skipSmsVerification === true) or
                 ($skipSmsVerification === '1'))
-
             {
-                return array_only($otp, 'token');
+                $isMockRaven = true;
             }
+        }
+
+        // unsetting the skip_sms_request to not disturb the remaining flow
+        unset($input[Entity::SKIP_SMS_REQUEST]);
+
+        $otp = $this->generateOtpForLoginSignup($receiver, $input, $isMockRaven);
+
+        // on stage env return otp to skip raven calls when isMockRaven is true
+        if ($isMockRaven === true)
+        {
+            return array_only($otp, 'token');
         }
 
         try
@@ -454,7 +491,6 @@ class Core extends Base\Core
     public function verifySignupOtp(array $input): bool
     {
         $this->getUserEntity()->getValidator()->validateInput('verifySignupOtp', $input);
-
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
             // if a user associated with the input contact_mobile exists, raise an error
@@ -1223,7 +1259,7 @@ class Core extends Base\Core
         $this->checkSecondFactorAuthAndSendOtp($user);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
-            EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
+                                         EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
         $this->trace->count(
             Metric::USER_LOGIN_COUNT,
@@ -1400,13 +1436,25 @@ class Core extends Base\Core
             'source');
     }
 
-    public function generateOtpForLoginSignup(string $userId, array $input)
+    public function generateOtpForLoginSignup(string $userId, array $input, bool $isMockRaven = false)
     {
         $payload = $this->getToken($userId, $input);
 
         $token = array_pull($payload, 'token');
 
-        $otp = $this->app->raven->generateOtp($payload);
+        // Check if the $isMockRaven is true
+        if ($isMockRaven === true)
+        {
+            // If the condition is met, generate a mock OTP with the appropriate values
+            $otp = [
+                Raven::OTP        => Raven::MOCK_VALID_OTPS[1],
+                Raven::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
+            ];
+        }
+        else
+        {
+            $otp = $this->app->raven->generateOtp($payload);
+        }
 
         return $otp + array_only($payload, 'context') + compact('token');
     }
@@ -1538,7 +1586,7 @@ class Core extends Base\Core
      * @return array
      * @throws BadRequestException
      */
-    public function sendLoginOtpViaSms(array $input, Entity $user): array
+    public function sendLoginOtpViaSms(array $input, Entity $user, bool $isMockRaven = false): array
     {
         $this->checkIfOtpLoginLocked($user);
 
@@ -1563,15 +1611,12 @@ class Core extends Base\Core
             $messageSendViaStork = true;
         }
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLoginSignup($user->getId(), $input, $isMockRaven);
 
-        if (Environment::isLowerEnvironment($this->app['env']) === true)
+        // on stage env return otp to skip raven calls when isMockRaven is true
+        if ($isMockRaven === true)
         {
-            if (isset($input[Entity::SKIP_SMS_REQUEST]) === true and
-                $input[Entity::SKIP_SMS_REQUEST] === true)
-            {
-                return array_only($otp, 'token');
-            }
+            return array_only($otp, 'token');
         }
 
         // Raven payload
@@ -1684,7 +1729,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws Exception\ServerErrorException
      */
-    public function sendLoginOtpViaEmail(array $input, Entity $user): array
+    public function sendLoginOtpViaEmail(array $input, Entity $user, bool $isMockRaven = false): array
     {
         $this->checkIfOtpLoginLocked($user);
 
@@ -1697,7 +1742,16 @@ class Core extends Base\Core
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION));
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLoginSignup($user->getId(), $input, $isMockRaven);
+
+        // on stage env return otp to skip sending mail when isMockRaven is true
+        if ($isMockRaven === true)
+        {
+            //reset SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX when $isMockRaven is true
+            LoginSignupRateLimit::resetKey($input[Entity::EMAIL], Constants::SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX);
+
+            return array_only($otp, 'token');
+        }
 
         $payload = $this->getEmailPayload($input, $otp);
 
@@ -1735,7 +1789,7 @@ class Core extends Base\Core
     /**
      * @throws BadRequestException
      */
-    public function mobileOtpLogin(array $input)
+    public function mobileOtpLogin(array $input, bool $isMockRaven = false)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === false)
         {
@@ -1786,7 +1840,7 @@ class Core extends Base\Core
             }
         }
 
-        $token = $this->sendLoginOtpViaSms($input, $receiver);
+        $token = $this->sendLoginOtpViaSms($input, $receiver, $isMockRaven);
 
         return $token;
     }
@@ -1795,14 +1849,27 @@ class Core extends Base\Core
     {
         $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
 
-        $token = $this->mobileOtpLogin($input);
+        $isMockRaven = false;
 
-        // unsetting the skip_sms_request to not disturb the verification rules
-        // after the send otp sms
+        // set isMockRaven to true when it is staging environment
+        if ((isset($input[Entity::SKIP_SMS_REQUEST]) === true) and
+            (Environment::isLowerEnvironment($this->app['env']) === true))
+        {
+            $skipSmsVerification = $input[Entity::SKIP_SMS_REQUEST];
 
+            if (($skipSmsVerification === true) or
+                ($skipSmsVerification === '1'))
+            {
+                $isMockRaven = true;
+            }
+        }
+
+        $token = $this->mobileOtpLogin($input, $isMockRaven);
+
+        // unsetting the skip_sms_request to not disturb the remaining flow
         unset($input[Entity::SKIP_SMS_REQUEST]);
 
-       // $this->trace->count(Merchant\Metric::Login_total);
+        // $this->trace->count(Merchant\Metric::Login_total);
         if ($token !== null)
         {
             return $token;
@@ -1828,7 +1895,7 @@ class Core extends Base\Core
 
         $receiver = $this->isEmailVerified($receiver);
 
-        $token = $this->sendLoginOtpViaEmail($input, $receiver);
+        $token = $this->sendLoginOtpViaEmail($input, $receiver, $isMockRaven);
 
 
         return $token;
@@ -1879,7 +1946,27 @@ class Core extends Base\Core
 
         try
         {
-            $this->app->raven->verifyOtp($payload);
+            // verify mock otps on staging when skip_sms_request is true
+            if ((isset($input[Entity::SKIP_SMS_REQUEST]) === true) and
+                (Environment::isLowerEnvironment($this->app['env']) === true))
+            {
+                $skipSmsVerification = $input[Entity::SKIP_SMS_REQUEST];
+
+                unset($input[Entity::SKIP_SMS_REQUEST]);
+
+                if (($skipSmsVerification === true) or
+                    ($skipSmsVerification === '1'))
+                {
+                    if (in_array($input['otp'], Raven::MOCK_VALID_OTPS) === false)
+                    {
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                    }
+                }
+            }
+            else
+            {
+                $this->app->raven->verifyOtp($payload);
+            }
         }
         catch (\Throwable $e)
         {
@@ -2217,6 +2304,9 @@ class Core extends Base\Core
         }
 
         $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
+
+        // unsetting the skip_sms_request to not disturb the remaining flow
+        unset($input[Entity::SKIP_SMS_REQUEST]);
 
         LoginSignupRateLimit::resetKey($receiver, Constants::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX);
 
@@ -3294,7 +3384,7 @@ class Core extends Base\Core
         return [];
     }
 
-     /**
+    /**
      * Verifies the otp sent on the number in setup2faMobile.
      * If otp is correct, the login for the user needs to be successful.
      * The method returns the user object if the otp is correct.
@@ -6420,7 +6510,7 @@ class Core extends Base\Core
      * @param Entity $user  The user entity to be updated.
      * @return Entity The updated user entity.
      * @throws \Exception If there is an error while saving the user.
-    */
+     */
     public function postUpdateUserName(string $userName, Entity $user)
     {
         // Check if the new name is different from the current name

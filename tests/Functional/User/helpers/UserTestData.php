@@ -7074,4 +7074,136 @@ return [
             ]
         ],
     ],
+
+    'testloginUserWithOtpSendLoginOtpViaSmsSkipOnStage' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testloginUserWithOtpSendLoginOtpViaEmailSkipOnStage'=> [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginSkipOnStage' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '000007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'skip_sms_request' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMobileVerifyOtpForSignupSkipOnStage' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '000007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776664',
+                'captcha'        => 'faked',
+                'skip_sms_request' => true
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+    'testUserRegisterSkipSendSignupOtpViaEmail' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testloginUserWithOtpSendLoginOtpViaSmsSkipOnProd' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginSkipOnTesting' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '000007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'skip_sms_request' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMobileVerifyOtpForSignupSkipOnTesting' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '000007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776664',
+                'captcha'        => 'faked',
+                'skip_sms_request' => true
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ]
 ];

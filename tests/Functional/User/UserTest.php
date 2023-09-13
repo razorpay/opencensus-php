@@ -12201,4 +12201,260 @@ class UserTest extends TestCase
 
         $this->startTest($testDataToReplace);
     }
+
+    public function testloginUserWithOtpSendLoginOtpViaSmsSkipOnStage()
+    {
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+        $storkMock = $this->getMockBuilder(\RZP\Services\Mock\Stork::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['sendSms'])
+                          ->getMock();
+
+        $this->app->instance('stork', $storkMock);;
+
+        $storkMock->expects($this->never())->method('sendSms');
+
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'   => '9012345678',
+            'skip_sms_request' => true
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testloginUserWithOtpSendLoginOtpViaEmailSkipOnStage()
+    {
+        Mail::fake();
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'            => $user['email'],
+            'skip_sms_request' => true
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertNothingQueued();
+    }
+
+    public function testMobileVerifyOtpForLoginSkipOnStage()
+    {
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->never())->method('verifyOtp');
+
+        $this->startTest();
+    }
+
+    public function testMobileVerifyOtpForSignupSkipOnStage()
+    {
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $this->ba->appAuth();
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->never())->method('verifyOtp');
+
+        $this->startTest();
+    }
+
+    public function testUserRegisterSkipSendSignupOtpViaEmail()
+    {
+        // setting dev env in the test case
+
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        Mail::fake();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email' => 'some.rand@some.com',
+            'skip_sms_request' => true
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+        Mail::assertNothingQueued();
+    }
+
+    public function testloginUserWithOtpSendLoginOtpViaSmsSkipOnProd()
+    {
+        $this->app['env'] = 'production';
+
+        $this->app['config']->set('app.debug', false);
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:login_otp:token',
+        ];
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $ravenMock->expects($this->once())->method('generateOtp');
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'   => '9012345678',
+            'skip_sms_request' => true
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testMobileVerifyOtpForLoginSkipOnTesting()
+    {
+        $this->app['env'] = 'testing';
+
+        $this->app['config']->set('app.debug', false);
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $this->startTest();
+
+    }
+
+    public function testMobileVerifyOtpForSignupSkipOnTesting()
+    {
+
+        $this->app['env'] = 'testing';
+
+        $this->app['config']->set('app.debug', false);
+
+        $this->ba->appAuth();
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $this->startTest();
+    }
 }

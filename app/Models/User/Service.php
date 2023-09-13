@@ -651,6 +651,8 @@ class Service extends Base\Service
 
         $verifySuccess = $this->core->verifySignupOtp($input);
 
+        unset($input[Entity::SKIP_SMS_REQUEST]);
+
         list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId) {
 
             if ($verifySuccess === true) {
