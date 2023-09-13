@@ -526,29 +526,7 @@ class Core extends Base\Core
 
     public function getBalanceAmountForRblDirectAccount(Balance\Entity $balanceEntity)
     {
-        $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
-
-        $basDetails = $balanceEntity->bankingAccountStatementDetails;
-
-        $variant = $this->app->razorx->getTreatment(
-            $basDetails->getId(),
-            Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            $balanceAmount = $basDetails->getGatewayBalance();
-        }
-        else
-        {
-            if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
-            {
-                $balanceAmount = $basDetails->getGatewayBalance();
-            }
-        }
-
-        return $balanceAmount;
+        return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
     }
 
     protected function autoLoadBalance(Entity $lowBalanceConfigEntity,

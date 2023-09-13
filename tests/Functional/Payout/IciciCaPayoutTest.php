@@ -1915,7 +1915,9 @@ class IciciCaPayoutTest extends TestCase
 
         $bankingBalance = $this->getDbLastEntity('balance');
 
-        $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 21000000]);
+        $this->fixtures->edit('banking_account_statement_details', $bankingBalance->bankingAccountStatementDetails->getId(), [
+            'gateway_balance' =>  21000000,
+        ]);
 
         $this->dispatchQueuedPayouts();
 
@@ -1928,8 +1930,6 @@ class IciciCaPayoutTest extends TestCase
     public function testQueuedPayoutByFetchingBalanceFromGatewayBalance()
     {
         $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $firstQueuedPayoutAttributes = [
             'account_number'       => '2224440041626905',
@@ -1965,8 +1965,6 @@ class IciciCaPayoutTest extends TestCase
     public function testQueuedPayoutWithForMerchantWithUnderMaintenanceStatus()
     {
         $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $firstQueuedPayoutAttributes = [
             'account_number'       => '2224440041626905',

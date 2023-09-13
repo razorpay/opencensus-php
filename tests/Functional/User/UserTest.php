@@ -8589,13 +8589,14 @@ class UserTest extends TestCase
 
         $this->disableRazorXTreatmentCAC();
 
-        $this->fixtures->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::ICICI,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID              => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID     => '10000000000000',
+            Details\Entity::BALANCE_ID      => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER  => '2224440041626905',
+            Details\Entity::CHANNEL         => Details\Channel::ICICI,
+            Details\Entity::STATUS          => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE => 9999,
         ]);
 
         $this->ba->dashboardGuestAppAuth();
@@ -8607,7 +8608,7 @@ class UserTest extends TestCase
 
     public function testGetForUsersWithBankingAccountForCAHavingGatewayBalance()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED => 'off']);
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED => 'off']);
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
                                                Channel::ICICI);

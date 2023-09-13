@@ -168,32 +168,7 @@ class Entity extends Base\PublicEntity
 
         if ($accountType === AccountType::DIRECT)
         {
-            /** @var Details\Entity $basDetails */
-            $basDetails = $this->bankingAccountStatementDetails;
-
-            $app = App::getFacadeRoot();
-
-            $variant = $app->razorx->getTreatment(
-                $basDetails->getId(),
-                RazorxTreatment::USE_GATEWAY_BALANCE,
-                $app['rzp.mode'] ?? 'live'
-            );
-
-            if ($variant === 'on')
-            {
-                // Consuming gateway balance from basDetails for RBL too, since banking_account is going to be migrated
-                // to banking_account service
-                $attributes[self::BALANCE] = $basDetails->getGatewayBalance();
-            }
-            else
-            {
-                // in normal scenario we are sending balance table's balance but if the gateway balance is
-                // more updated, then we use that instead
-                if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
-                {
-                    $attributes[self::BALANCE] = $basDetails->getGatewayBalance();
-                }
-            }
+            $attributes[self::BALANCE] = $this->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
         }
 
         if ($accountType === AccountType::SHARED)
@@ -224,30 +199,7 @@ class Entity extends Base\PublicEntity
 
         if ($accountType === AccountType::DIRECT)
         {
-            /** @var Details\Entity $basDetails */
-            $basDetails = $this->bankingAccountStatementDetails;
-
-            $variant = $app->razorx->getTreatment(
-                $basDetails->getId(),
-                RazorxTreatment::USE_GATEWAY_BALANCE,
-                $app['rzp.mode'] ?? 'live'
-            );
-
-            if ($variant === 'on')
-            {
-                // Consuming balanceLastFetchedAt from basDetails for RBL too, since banking_account is going to be migrated
-                // to banking_account service
-                $attributes[self::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
-            }
-            else
-            {
-                // in normal scenario we are sending balance table's balance but if the gateway balance is
-                // more updated, then we use that instead
-                if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
-                {
-                    $attributes[self::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
-                }
-            }
+            $attributes[self::LAST_FETCHED_AT] = $this->bankingAccountStatementDetails->getBalanceLastFetchedAt();
         }
 
         if ($accountType === AccountType::SHARED)

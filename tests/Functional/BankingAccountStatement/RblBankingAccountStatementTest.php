@@ -5299,84 +5299,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-    public function testLastFetchedAtWhenNewDataIsPresent()
-    {
-        $balanceId = $this->balance->getId();
-
-        // 1578044039 is the timestamp of Jan 3, 2020.
-        // Need to edit here as balance creation and update occur in test within the same second.
-        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
-
-        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
-        $startTime = Carbon::now()->timestamp;
-
-        $this->testRblAccountStatementCase1();
-
-        $endTime = Carbon::now()->timestamp;
-
-        $this->ba->proxyAuth();
-
-        $response = $this->startTest();
-
-        foreach ($response['items'] as $balance)
-        {
-            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
-            {
-                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
-                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
-            }
-        }
-
-        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        // last_fetched_at and updated_at both change as there was new data
-        $this->assertNotEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
-    }
-
-    public function testLastFetchedAtWhenNewDataIsNotPresent()
-    {
-        $balanceId = $this->balance->getId();
-
-        // 1578044039 is the timestamp of Jan 3, 2020.
-        // Need to edit here as balance creation and update occur in test within the same second.
-        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
-
-        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
-        $startTime = Carbon::now()->timestamp;
-
-        $this->testRblAccountStatementCase2();
-
-        $endTime = Carbon::now()->timestamp;
-
-        $this->ba->proxyAuth();
-
-        $response = $this->startTest();
-
-        foreach ($response['items'] as $balance)
-        {
-            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
-            {
-                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
-                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
-            }
-        }
-
-        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        // last_fetched_at changed but updated_at remains same as there was no new data
-        $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
-    }
-
     // in this balance fetch cron is run after banking Account statement fetch Cron.
     // and then checks dispatch queued payout flow uses balance from cron which updated latest for processing
     // of queued payout
@@ -5405,40 +5327,6 @@ class RblBankingAccountStatementTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertNotEquals('queued', $payout['status']);
-    }
-
-    public function testLastFetchedAtEqualsBalanceUpdatedAtInitially()
-    {
-        $balanceId = $this->balance->getId();
-
-        // 1578044039 is the timestamp of Jan 3, 2020.
-        // Need to edit here as balance creation and update occur in test within the same second.
-        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
-
-        $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
-        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        $this->testRblAccountStatementCase3();
-
-        $this->ba->proxyAuth();
-
-        $response = $this->startTest();
-
-        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
-
-        foreach ($response['items'] as $balance)
-        {
-            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
-            {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
-            }
-        }
-
-        // updated_at remains same as BAS fetch failed
-        $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
     }
 
     protected function getBasicNegativeBalanceResponse()
@@ -5747,91 +5635,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $actualOutputAfterBalanceFetchCron);
     }
 
-    // in this first balance fetch cron is run before banking Account statement fetch Cron.
-    // and then balance api is checked to see it uses balance from cron which last updated
-    public function testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron($amount = 500)
-    {
-        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
-
-        Carbon::setTestNow($oldDateTime);
-
-        // running balance fetch cron
-        $this->mockMozartResponseForFetchingBalanceFromRblGateway($amount);
-
-        $this->runBalanceFetchCron();
-
-        $this->ba->proxyAuth();
-
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/balances?type=banking',
-            'content' => []
-        ];
-
-        $balanceApiResponseAfterBalanceFetchCron = $this->makeRequestAndGetContent($request);
-
-        foreach ($balanceApiResponseAfterBalanceFetchCron['items'] as $item)
-        {
-            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
-                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
-            {
-                $actualOutputAfterBalanceFetchCron = $item;
-            }
-        }
-
-        $oldDateTime = Carbon::create(2019, 07, 21, 12, 25, 41, Timezone::IST);
-
-        Carbon::setTestNow($oldDateTime);
-
-        // account statement fetch cron
-        $mockedResponse = $this->getRblDataResponse();
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $this->runBankingAccountStatementFetchCron();
-
-        $this->ba->proxyAuth();
-
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/balances?type=banking',
-            'content' => [
-            ]
-        ];
-
-        $balanceApiResponseAfterStmtCron = $this->makeRequestAndGetContent($request);
-
-        foreach ($balanceApiResponseAfterStmtCron['items'] as $item)
-        {
-            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
-                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
-            {
-                $actualOutputAfterStmtCron = $item;
-            }
-        }
-
-        // assertions
-
-        $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::LAST_FETCHED_AT],
-                               $actualOutputAfterBalanceFetchCron[Balance\Entity::LAST_FETCHED_AT]);
-
-        $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::BALANCE],
-                               $actualOutputAfterBalanceFetchCron[Balance\Entity::BALANCE]);
-    }
-
-    // in this first balance fetch cron is run before banking Account statement fetch Cron.
-    // and then checks payout creation uses balance from cron which updated latest
-    public function testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron()
-    {
-        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron();
-
-        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
     public function testPayoutForRblWhenBalanceIsNegative()
     {
         $originalMozart = $this->app['mozart'];
@@ -5946,48 +5749,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-
-    // in this first balance fetch cron is run before banking Account statement fetch Cron.
-    // and then checks payout creation uses balance from cron which updated latest,but this time balance
-    // is low so payout gets queued
-    public function testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCronWithLowBalance()
-    {
-        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
-
-        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    // in this first balance fetch cron is run before banking Account statement fetch Cron.
-    // and then checks dispatch queued payout flow uses balance from cron which updated latest for processing
-    // of queued payout
-    public function testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron()
-    {
-        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
-
-        $queuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  11000,
-            'queue_if_low_balance'  =>  1,
-        ];
-
-        $balance = $this->getDbLastEntity('balance');
-
-        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
-
-        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
-
-        $response = $this->dispatchQueuedPayouts();
-
-        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertNotEquals('queued', $payout['status']);
     }
 
     public function testFetchStatementByTransactionIdForRbl()
@@ -6715,7 +6476,7 @@ class RblBankingAccountStatementTest extends TestCase
             'account_number' => "2224440041626905",
             'balance'        => [
                 'id'             => $this->bankingBalance->getId(),
-                'balance'        => 11355,
+                'balance'        => 100,
                 'currency'       => "INR",
                 'locked_balance' => 0,
             ],

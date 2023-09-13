@@ -1133,7 +1133,9 @@ class YesbankCaPayoutTest extends TestCase
 
         $bankingBalance = $this->getDbLastEntity('balance');
 
-        $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 21000000]);
+        $this->fixtures->edit('banking_account_statement_details', $bankingBalance->bankingAccountStatementDetails->getId(), [
+            'gateway_balance' =>  21000000,
+        ]);
 
         $this->dispatchQueuedPayouts();
 
@@ -1146,8 +1148,6 @@ class YesbankCaPayoutTest extends TestCase
     public function testQueuedPayoutByFetchingBalanceFromGatewayBalance()
     {
         $this->mockMozartResponseForFetchingBalanceFromYesbankGateway(500);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $firstQueuedPayoutAttributes = [
             'account_number'       => '2224440041626905',
@@ -1359,8 +1359,6 @@ class YesbankCaPayoutTest extends TestCase
         $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
 

@@ -1006,7 +1006,9 @@ class AxisCaPayoutTest extends TestCase
 
         $bankingBalance = $this->getDbLastEntity('balance');
 
-        $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 21000000]);
+        $this->fixtures->edit('banking_account_statement_details', $bankingBalance->bankingAccountStatementDetails->getId(), [
+           'gateway_balance' =>  21000000,
+        ]);
 
         $this->dispatchQueuedPayouts();
 
@@ -1019,8 +1021,6 @@ class AxisCaPayoutTest extends TestCase
     public function testQueuedPayoutByFetchingBalanceFromGatewayBalance()
     {
         $this->mockMozartResponseForFetchingBalanceFromAxisGateway(500);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $firstQueuedPayoutAttributes = [
             'account_number'       => '2224440041626905',
@@ -1232,8 +1232,6 @@ class AxisCaPayoutTest extends TestCase
         $oldTime = Carbon::create(2020, 1, 4, 12, 45, null);
 
         Carbon::setTestNow($oldTime);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
 
         $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
 

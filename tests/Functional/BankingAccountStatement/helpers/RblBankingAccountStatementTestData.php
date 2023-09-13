@@ -355,36 +355,6 @@ return [
         ]
     ],
 
-    'testLastFetchedAtWhenNewDataIsPresent' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/balances',
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'testLastFetchedAtWhenNewDataIsNotPresent' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/balances',
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'testLastFetchedAtEqualsBalanceUpdatedAtInitially' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/balances',
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
     'testRblAccountStatementNegativeBalance' => [
         'request'  => [
             'method'  => 'POST',

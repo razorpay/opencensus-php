@@ -1446,37 +1446,12 @@ class Core extends Base\Core
         return $traceData;
     }
 
-    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity, $useGatewayBalance = false)
+    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity)
     {
         /** @var BankingAccountStatement\Details\Entity $basDetailsUpdated */
         $basDetailsUpdated = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity);
 
-        if ($useGatewayBalance === false)
-        {
-            $variant = $this->app->razorx->getTreatment(
-                $basDetailsUpdated->getId(),
-                Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
-                $this->mode
-            );
-        }
-        else
-        {
-            $variant = 'on';
-        }
-
-        $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
-
-        if ($variant === 'on')
-        {
-            $balanceAmount = $basDetailsUpdated->getGatewayBalance();
-        }
-        else
-        {
-            if ($basDetailsUpdated->isGatewayBalanceFetchCronMoreUpdated() === true)
-            {
-                $balanceAmount = $basDetailsUpdated->getGatewayBalance();
-            }
-        }
+        $balanceAmount = $basDetailsUpdated->getGatewayBalance() ?? 0;
 
         $balanceAmount = $this->negateODIfApplicable($balanceEntity->merchant, $balanceAmount);
 
@@ -1523,7 +1498,7 @@ class Core extends Base\Core
         }
         else
         {
-            return $this->getLatestBalanceForDirectAccount($basDetails->balance, true);
+            return $this->getLatestBalanceForDirectAccount($basDetails->balance);
         }
     }
 

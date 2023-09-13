@@ -5381,11 +5381,11 @@ return [
                                 'account_number'  => '2224440041626905',
                                 'account_type'    => 'current',
                                 'balance'         => [
-                                    'balance' => 1000000,
+                                    'balance' => 9999,
                                 ],
                                 'banking_balance' => [
                                     'account_number' => '2224440041626905',
-                                    'balance'        => 1000000,
+                                    'balance'        => 9999,
                                     'type'           => 'banking',
                                     'channel'        => 'icici',
                                 ]

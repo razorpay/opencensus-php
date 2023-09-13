@@ -5393,9 +5393,8 @@ class PayoutTest extends OAuthTestCase
             'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
-        $this->fixtures->edit('balance', $balanceId2, [
-            'balance'    => 30000099,
-            'updated_at' => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'gateway_balance' =>  30000099,
         ]);
 
         // Update both counters to 300
@@ -12310,14 +12309,9 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit('payout', $payout2Id, ['purpose' => 'rzp_fees']);
 
         // Add enough balance for exactly one payout to go through
-        $this->fixtures->edit('balance', $balanceId, ['balance' => 15000]);
-
-        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
-
-        $this->fixtures->edit('banking_account', $bankingAccount->getId(),
-                              [
-                                  'balance_last_fetched_at' => $oldDateTime->getTimestamp()
-                              ]);
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'gateway_balance' =>  15000,
+        ]);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(150);
 

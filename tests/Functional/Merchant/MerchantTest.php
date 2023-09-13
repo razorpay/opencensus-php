@@ -17584,13 +17584,13 @@ The same has been enabled for the account.
 
         return null;
     }
-    
+
     public function fetchQueryDBException()
     {
         // id1 is not present DB exception
         $this->fixtures->create('merchant', ['id1' => '10000000000000']);
     }
-    
+
     public function switchProductMerchantSetup ($args)
     {
         $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
@@ -17657,22 +17657,22 @@ The same has been enabled for the account.
 
         $this->switchProductMerchantSetup(["addProductSwitchRole" => [$exception, $exception]]);
     }
-    
+
     public function testSwitchProductMerchantDBFailure()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
-        
+
         $exception = $this->fetchQueryDBException();
-        
+
         $this->switchProductMerchantSetup(["addProductSwitchRole" => [$exception, $exception]]);
     }
-    
+
     public function testSwitchProductMerchantOnFailuredDueToPostProductSwitchActionsFailure()
     {
         $this->expectException(\RZP\Exception\BadRequestException::class);
-        
+
         $exception = $this->fetchQueryException();
-        
+
         $this->switchProductMerchantSetup(["postProductSwitchActions" => $exception, "addProductSwitchRole" => [null]]);
     }
 
@@ -18727,7 +18727,7 @@ The same has been enabled for the account.
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on', RazorxTreatment::USE_GATEWAY_BALANCE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
 
         $this->setUpMerchantForGetBalances();
 
@@ -18779,7 +18779,7 @@ The same has been enabled for the account.
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on', RazorxTreatment::USE_GATEWAY_BALANCE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
 
         $this->setUpMerchantForGetBalances();
 

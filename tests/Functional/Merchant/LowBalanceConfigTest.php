@@ -665,8 +665,6 @@ class LowBalanceConfigTest extends TestCase
 
         $this->setLimitViaRedisKeyForFetchingConfigs(2);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
-
         $this->setLimitViaRedisKeyForFetchingConfigs(2);
 
         $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
