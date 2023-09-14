@@ -10584,7 +10584,7 @@ class PaymentCreateTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('9fab08f0ac2e49d7b33d7eb3bf26dbc4', $card['vault_token']);
-        $this->assertEquals('3', $card['trivia']);
+        $this->assertEquals('2', $card['trivia']);
         $this->assertEquals('==AMyYTN2gTM3ADM2UTM5UDN', $card['global_fingerprint']);
     }
 

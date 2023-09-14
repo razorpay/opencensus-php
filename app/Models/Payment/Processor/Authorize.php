@@ -539,6 +539,8 @@ trait Authorize
         if(isset($input['card']))
         {
             $requestData['card'] = $input['card'];
+            $requestData['card']['expiry_month'] =  strval($payment->card->getExpiryMonth());
+            $requestData['card']['expiry_year']  =  strval($payment->card->getExpiryYear());
         }
         if(isset($gatewayInput['iin']))
         {
@@ -917,14 +919,15 @@ trait Authorize
         $cardCore = new Card\Core;
         $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment);
 
-        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input, $terminalGatewayInput);
+        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput);
 
         // saving data in card entity for future use
         if(isset($altIdData['token']) && isset($altIdData['alt_id'])){
             $payment->card->setVaultToken($altIdData['token']);
             $payment->card->setTokenExpiryMonth($altIdData['alt_id']['expiry_month']);
             $payment->card->setTokenExpiryYear($altIdData['alt_id']['expiry_year']);
-            $payment->card->setTrivia(3);
+            $payment->card->setTokenIin(substr($altIdData['alt_id']['value'],0,9));
+            $payment->card->setTrivia('2');
         }
         $this->repo->saveOrFail($payment->card);
 

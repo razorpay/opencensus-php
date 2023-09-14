@@ -395,7 +395,7 @@ class CardVault extends Base\Core
             {
                 if (empty($input['trivia']) === false)
                 {
-                    if ($input['trivia'] === '3' )
+                    if ($input['trivia'] === '2' )
                     {
                         $buNamespace = 'payments_alt_id';
                     }

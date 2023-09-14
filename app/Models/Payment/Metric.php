@@ -343,7 +343,7 @@ class Metric extends Base\Core
 
             $tokenised = $card->isTokenPan();
             $altid = false;
-            if ($card->getTrivia() === '3') {
+            if ($card->getTrivia() === '2') {
                 $altid  = true;
             }
 

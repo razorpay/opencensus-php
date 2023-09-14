@@ -70,8 +70,8 @@ trait CardCacheTrait
             $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl * 60);
         }
 
-        // Storing alt id data in cache. 3 is value for alt id
-        if ($input['card']['trivia'] === 3  && isset($input['alt_id_data']))
+        // Storing alt id data in cache. 2 is value for alt id
+        if ($input['card']['trivia'] === '2'  && isset($input['alt_id_data']))
         {
             $keyAltId = $this->getAltIdCacheKey($input);
 
@@ -121,7 +121,7 @@ trait CardCacheTrait
             $input['card'][Card\Entity::TOKEN_PROVIDER]   = $data[Card\Entity::TOKEN_PROVIDER];
         }
 
-        if ($input['card'][Card\Entity::TRIVIA] == 3){
+        if ($input['card'][Card\Entity::TRIVIA] === '2'){
 
             $altIdData = $this->getAltIdDetailsFromCache($input);
 

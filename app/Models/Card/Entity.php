@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
     const VAULT_TOKEN                           = 'vault_token';
     const VAULT                                 = 'vault';
     const TRIVIA                                = 'trivia';
+    const ALT_ID                                = 'alt_id';
     const FLOWS                                 = 'flows';
     const GLOBAL_FINGERPRINT                    = 'global_fingerprint';
     const REFERENCE1                            = 'reference1';
@@ -1602,6 +1603,16 @@ class Entity extends Base\PublicEntity
             if($this->getNetwork() != Card\Network::getFullName(Network::DICL)) {
                 $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
             }
+        }
+
+        if ($data[Card\Entity::TRIVIA] === '2')
+        {
+            $data['expiry_month'] = empty($data['token_expiry_month']) ? $data['expiry_month'] : intval($data['token_expiry_month']);
+            $data['expiry_year']  = empty($data['token_expiry_year']) ? $data['expiry_year'] : intval($data ['token_expiry_year']);
+            if($this->getNetwork() != Card\Network::getFullName(Network::DICL)) {
+                $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
+            }
+            $data[Card\Entity::ALT_ID] = 1;
 
         }
 

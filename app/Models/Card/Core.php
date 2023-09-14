@@ -695,7 +695,7 @@ class Core extends Base\Core
         $card->setVault($vault);
     }
 
-    public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $terminalGatewayInput)
+    public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $gatewayInput, array & $terminalGatewayInput)
     {
         $response = null;
         try {
@@ -724,8 +724,18 @@ class Core extends Base\Core
             $terminalGatewayInput['card'][Card\Entity::EXPIRY_MONTH] = $response['alt_id']['expiry_month'];
             $terminalGatewayInput['card'][Card\Entity::EXPIRY_YEAR] = $response['alt_id']['expiry_year'];
             $terminalGatewayInput['card'][Card\Entity::CRYPTOGRAM_VALUE] = $response['alt_id']['cryptogram_value'];
-            $terminalGatewayInput['card'][Card\Entity::TRIVIA] = 3;
+            $terminalGatewayInput['card'][Card\Entity::TRIVIA] = '2';
+            $terminalGatewayInput['card'][Card\Entity::ALT_ID] = 1;
+
             $terminalGatewayInput['alt_id_data'] = $response;
+
+            $gatewayInput['card'][Card\Entity::NUMBER] = $response['alt_id']['value'];
+            $gatewayInput['card'][Card\Entity::EXPIRY_MONTH] = $response['alt_id']['expiry_month'];
+            $gatewayInput['card'][Card\Entity::EXPIRY_YEAR] = $response['alt_id']['expiry_year'];
+            $gatewayInput['card'][Card\Entity::CRYPTOGRAM_VALUE] = $response['alt_id']['cryptogram_value'];
+            $gatewayInput['card'][Card\Entity::TRIVIA] = '2';
+            $gatewayInput['card'][Card\Entity::ALT_ID] = 1;
+            $gatewayInput['alt_id_data'] = $response;
         }
         return $response;
     }
