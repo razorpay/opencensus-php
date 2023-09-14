@@ -383,6 +383,12 @@ class Validator extends Base\Validator
             }
         }
 
+        // Validation of amount is not needed in case of dcc_inv and dcc_crn invoice types
+        if(empty($input["type"]) === false and
+            (in_array($input["type"], Type::getDCCEInvoiceTypes(), true) === true)) {
+            return;
+        }
+
         // further validations: that means amount is > 0 and allowed, do further validations
 
         $this->checkIfAmountIsExpectedInInput($input);

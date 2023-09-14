@@ -55,6 +55,7 @@ final class Constants
         self::STATE_CODE    =>  '29',
     ];
 
+    const BUYER_DEFAULT_SUFFIX = "name";
     const BUYER_DETAILS = 'buyer_details';
     const UNREGISTERED_PERSON = 'URP';
     const PLACE_OF_SUPPLY = 'place_of_supply';
@@ -74,7 +75,7 @@ final class Constants
     const ASSESSABLE_VALUE = 'assessable_value';
     const TOTAL_ITEM_VALUE = 'total_item_value';
     const SERIAL_NUMBER = '1';
-    const DESCRIPTION = 'Service fee in relation to Dynamic Currency Conversion services';
+    const DESCRIPTION = 'Service fee in relation to Dynamic Currency Conversion services (Pay in Native Currency)';
     const SERVICE = 'Y';
     const ITEM_CODE = '997119';
 
@@ -96,4 +97,8 @@ final class Constants
     const OPGSP_INVOICE_NUMBER = 'invoice_number';
     const INVOICE_NUMBER_LENGTH = 40;
     const MUTEX_MERCHANT_PAYMENT_DOCUMENT_UPLOAD_PREFIX = 'merchant_payment_document_upload_';
+
+    const NON_RETRYABLE_ERROR_CODES = [
+        self::BUILDING_REQUEST_DATA_FAILED
+    ];
 }

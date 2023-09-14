@@ -883,7 +883,10 @@ class CrossBorderCommonUseCases extends Job
         // update status to failed with error code
         $eInvoiceCore->updateStatusAndError($paymentEInvoice, Status::FAILED, $errorCode);
 
-        $this->checkRetry();
+        if (in_array($errorCode, Constants::NON_RETRYABLE_ERROR_CODES) == false)
+        {
+            $this->checkRetry();
+        }
     }
 
     private function disableODSForOpgspMerchant($mode, $merchantId)

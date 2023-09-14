@@ -33,12 +33,14 @@ class PaymentEInvoiceTest extends TestCase
     use TestsWebhookEvents;
 
     const PAYMENT_AMOUNT = 100000;
+    const MINIMUM_PAYMENT_AMOUNT = 1000;
     const PAYMENT_CURRENCY = 'INR';
     const PAYMENT_GATEWAY_CURRENCY = 'USD';
     const DCC_MARK_UP_PERCENT = 8;
     const FOREX_RATE = 10;
     const COUNTRY_CODE = 'us';
     const REFUND_AMOUNT = 50000;
+    const GATEWAY = 'hitachi';
 
     const INVOICE_REF_NUM = '4fb6f33102dd5c8f950bbab6313bc3f5606a4959c334c94fd5f1ad57e038448b';
 
@@ -86,17 +88,18 @@ class PaymentEInvoiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->createRequiredEntities();
+        $this->createRequiredEntities(self::PAYMENT_AMOUNT);
         $this->setUpEInvoiceClientMock();
         $this->ba->privateAuth();
     }
 
     // creates payment, payment_meta and address entities
-    protected function createRequiredEntities()
+    protected function createRequiredEntities($amount)
     {
         $paymentAttributes = [
             'amount' => self::PAYMENT_AMOUNT,
             'currency' => self::PAYMENT_CURRENCY,
+            'gateway' => self::GATEWAY
         ];
         $this->payment = $this->fixtures->create('payment:captured', $paymentAttributes);
 
@@ -186,6 +189,21 @@ class PaymentEInvoiceTest extends TestCase
         $this->assertEquals(Status::FAILED, $invoice[Entity::STATUS]);
         $this->assertArrayNotHasKey(Constants::IRN, $invoice[Entity::NOTES]);
         $this->assertEquals(Constants::BUILDING_REQUEST_DATA_FAILED, $invoice[Entity::COMMENT]);
+    }
+
+    public function testDCCInvoiceWithSmallAmount()
+    {
+
+        $this->createRequiredEntities(self::MINIMUM_PAYMENT_AMOUNT);
+
+        $invoice = $this->generateDCCEInvoice(Constants::PAYMENT_FLOW);
+
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::ENTITY_ID]);
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::REF_NUM]);
+        $this->assertEquals(Status::GENERATED, $invoice[Entity::STATUS]);
+        $this->assertEquals(Type::DCC_INV, $invoice[Entity::TYPE]);
+        $this->assertEquals(self::INVOICE_REF_NUM, $invoice[Entity::NOTES][Constants::IRN]);
+        $this->assertEmpty($invoice[Entity::COMMENT]);
     }
 
     // failed invoice in case of error response

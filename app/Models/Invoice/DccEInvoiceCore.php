@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Country;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Constants\Mode;
 use RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
@@ -248,6 +249,10 @@ class DccEInvoiceCore extends Core
 
     public function dispatchForInvoice($referenceId, $referenceType)
     {
+        if($this->mode != Mode::LIVE && $this->env != 'testing')
+        {
+            return;
+        }
         $data = [
             'action' => CrossBorderCommonUseCases::GENERATE_DCC_E_INVOICE,
             Constants::REFERENCE_ID => $referenceId,
@@ -319,6 +324,16 @@ class DccEInvoiceCore extends Core
                 $customerDetails[Constants::LOCATION] = $customerCountryName;
             }
         }
+
+        if(empty($customerDetails[Constants::LEGAL_NAME]))
+        {
+            $customerDetails[Constants::LEGAL_NAME] = Constants::BUYER_DEFAULT_SUFFIX;
+        }
+        elseif(strlen($customerDetails[Constants::LEGAL_NAME])< 3)
+        {
+            $customerDetails[Constants::LEGAL_NAME] = $customerDetails[Constants::LEGAL_NAME] . " ". Constants::BUYER_DEFAULT_SUFFIX;
+        }
+
         // if any of these are not set then throw error as these are mandatory fields (ideally this should never happen)
         if (empty($customerDetails[Constants::LEGAL_NAME]) or
             empty($customerDetails[Constants::ADDRESS_1]) or

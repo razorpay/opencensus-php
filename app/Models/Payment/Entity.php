@@ -6727,6 +6727,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return Carbon::createFromTimestamp($this->getCreatedAt(), $timeZone)->format('dS M, Y H:i:s A ')  . Timezone::getTimeZoneAbbrevation($timeZone);
     }
 
+    public function shouldCreateDCCEInvoice()
+    {
+        if ($this->getGateway() != Gateway::HITACHI)
+        {
+            return false;
+        }
+        return true;
+    }
+
     // Return fee in payment currency
     // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
     public function getFeeInMcc()

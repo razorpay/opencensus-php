@@ -4551,7 +4551,8 @@ trait Refund
         $payment = $this->retrieve($id);
 
         if ($payment->isDCC() === true
-            and ($payment->isMethodInternationalApp() or $payment->isCard()))
+            and $payment->isCard()
+            and $payment->shouldCreateDCCEInvoice())
         {
             try
             {
