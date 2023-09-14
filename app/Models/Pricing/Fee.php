@@ -9,8 +9,10 @@ use RZP\Exception\LogicException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
@@ -23,7 +25,10 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Partner\Config\Core as PartnerCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
+use RZP\Models\Merchant\MerchantApplications\Entity as ApplicationEntity;
 
 use Carbon\Carbon;
 
@@ -560,6 +565,61 @@ class Fee extends Base\Core
         return self::DEFAULT_PRICING_PLAN_ID;
     }
 
+    protected function getCustomPricingPlanForOauth(PublicEntity $entity)
+    {
+        try
+        {
+            $entityOriginCore = new EntityOrigin\Core();
+
+            $entityOrigin = $entity->entityOrigin;
+
+            if (empty($entityOrigin) === true)
+            {
+                $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
+            }
+
+            $origin     = optional($entityOrigin)->origin;
+            $originType = optional($origin)->getEntityName();
+
+            if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION))
+            {
+                return null;
+            }
+
+            $properties = [
+                'id'            => $origin->getId(),
+                'experiment_id' => app('config')->get('app.platform_partner_oauth_custom_pricing_plan')
+            ];
+
+            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled)
+            {
+                $application = (new ApplicationRepo())->fetchMerchantApplicationByAppIdAndType($origin->getId(), ApplicationEntity::OAUTH);
+
+                if (empty($application) === false)
+                {
+                    $partnerConfig = (new PartnerCore())->fetch($origin, $entity->merchant);
+
+                    return optional($partnerConfig)->getDefaultPlanId();
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED);
+            $this->trace->critical(
+                TraceCode::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_EXCEPTION,
+                [
+                    'id'      => $entity->getId(),
+                    'type'    => $entity->getEntityName(),
+                    'message'    => $e->getMessage(),
+                ]);
+        }
+
+        return null;
+    }
+
     public function getProductForEntity(PublicEntity $entity): string
     {
         // Source entities which creates transaction on multiple balance have balance itself.
@@ -576,6 +636,10 @@ class Fee extends Base\Core
 
     protected function getCustomPricingPlan(PublicEntity $entity)
     {
+        if (($entity->getEntityName() === EntityConstants::PAYMENT))
+        {
+            return $this->getCustomPricingPlanForOauth($entity);
+        }
         return null;
     }
 

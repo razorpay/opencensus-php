@@ -121,9 +121,9 @@ class Repository extends Base\Repository
     public function fetchMerchantApplicationByAppIdAndType(string $applicationId, string $type) : Entity|null
     {
         return $this->newQuery()
-            ->where(Entity::APPLICATION_ID, $applicationId)
-            ->where(Entity::TYPE, $type)
-            ->first();
+                    ->where(Entity::APPLICATION_ID, $applicationId)
+                    ->where(Entity::TYPE, $type)
+                    ->first();
     }
 
     /**

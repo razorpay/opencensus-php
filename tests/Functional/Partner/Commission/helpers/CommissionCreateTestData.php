@@ -590,6 +590,19 @@ return [
         ],
     ],
 
+    'testPlatformPartnerCustomPricingPlan' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testExplicitForRecordOnly' => [
         'request' => [
             'method' => 'POST',

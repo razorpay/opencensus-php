@@ -12,6 +12,8 @@ final class Metric
     const PAYMENT_COMMISSION_FAILED_TOTAL        = 'payment_commission_failed_total';
     const PAYMENT_COMMISSION_CREATE_FAILED       = 'payment_commission_create_failed';
 
+    const OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED     = 'oauth_transaction_default_pricing_fetch_failed';
+
     const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
     const COMMISSION_FAILED_TOTAL = 'commission_failed_total';
     const COMMISSION_TRANSACTION_JOB_FAILED_TOTAL = 'commission_transaction_job_failed_total';

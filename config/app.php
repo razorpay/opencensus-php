@@ -407,6 +407,8 @@ return array(
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
+    'platform_partner_oauth_custom_pricing_plan' => env('PLATFORM_PARTNER_OAUTH_CUSTOM_PRICING_PLAN'),
+
     'partner_entities_partnership_service_sync' => env('PARTNER_ENTITIES_PARTNERSHIP_SERVICE_SYNC'),
 
     'enable_merchant_dashboard_timeout_experiment_id' => env('ENABLE_MERCHANT_DASHBOARD_TIMEOUT_EXPERIMENT_ID'),

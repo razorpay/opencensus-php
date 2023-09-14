@@ -2485,6 +2485,66 @@ class CommissionCreateTest extends TestCase
         return [$payment, $commission, $commissionComponent];
     }
 
+
+    public function testPlatformPartnerCustomPricingPlan()
+    {
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $input = [
+            "experiment_id" => "Mb8g2Q7MqDUKOz",
+            "id"            => $application->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $client = $this->getAppClientByEnv($application);
+
+        $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+            ],
+            $client);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $payment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->setSubmerchantPrivateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $testData['request']['url'] = '/payments/'.$response['razorpay_payment_id'].'/capture';
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
     /***
      * This function validates the following
      * 1. Create subM payment and capture the payment
