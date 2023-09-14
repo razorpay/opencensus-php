@@ -1,13 +1,33 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, waitFor, userEvent } from 'test-utils';
-import { state } from './mocks/fixtures/Sidebar';
-import SidebarV2 from 'merchant/components/SidebarV2';
-import * as fetchNavigationItems from 'merchant/reducers/leftNav';
 import * as devices from 'merchant/components/Home/data';
+import SidebarV2 from 'merchant/components/SidebarV2';
 import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import * as SidebarUtils from 'merchant/components/SidebarV2/utils/Sidebar';
+import * as fetchNavigationItems from 'merchant/reducers/leftNav';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { render, screen, waitFor, userEvent } from 'test-utils';
+
+import { state } from './mocks/fixtures/Sidebar';
+
+jest.mock(
+  'merchant/components/SidebarV2/components/ActivationProgress',
+  () =>
+    ({ onSidebarActivationClick }) =>
+      (
+        <>
+          <div>Activation Progress Bar</div>
+          <button onClick={onSidebarActivationClick}>Click Activation</button>
+        </>
+      ),
+);
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
 
 describe('SidebarV2', () => {
   const fetchNavigationSpy = jest.spyOn(fetchNavigationItems, 'fetchLeftNavItems');
@@ -48,6 +68,7 @@ describe('SidebarV2', () => {
           ...state,
           session: {
             user: {
+              ...state.session.user,
               isOnboardingV2Enabled: true,
               isAllowedView: () => true,
             },
@@ -66,6 +87,7 @@ describe('SidebarV2', () => {
           ...state,
           session: {
             user: {
+              ...state.session.user,
               isOnboardingV2Enabled: true,
               isAllowedView: () => true,
             },
@@ -96,6 +118,7 @@ describe('SidebarV2', () => {
           ...state,
           session: {
             user: {
+              ...state.session.user,
               isActivationFormFullView: true,
               isAllowedView: () => true,
             },
@@ -123,6 +146,7 @@ describe('SidebarV2', () => {
           ...state,
           session: {
             user: {
+              ...state.session.user,
               isActivationFormFullView: false,
               isAllowedView: () => true,
             },
@@ -150,6 +174,7 @@ describe('SidebarV2', () => {
           ...state,
           session: {
             user: {
+              ...state.session.user,
               isActivationFormFullView: false,
               isAllowedView: () => true,
               user: {

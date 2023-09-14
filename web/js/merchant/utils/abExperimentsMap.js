@@ -519,12 +519,6 @@ export default {
     // prod
     'L3DutoiWP8H6Zn',
   ],
-  partnerships_invite_flow: [
-    // beta
-    'LyzXsFptQEsxOe',
-    // prod
-    'LyzRiHbeLOmhM2',
-  ],
   bundle_pricing: [
     // beta
     'LEgIE3J0zaDwz1',

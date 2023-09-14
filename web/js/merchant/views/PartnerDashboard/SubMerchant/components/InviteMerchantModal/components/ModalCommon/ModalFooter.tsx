@@ -1,33 +1,15 @@
 import React from 'react';
 import { Box, ModalFooter as BladeModalFooter } from '@razorpay/blade/components';
-import styled from 'styled-components';
-
-// This represents a ModalFooter container with absolute position
-const StyledFooter = styled.div`
-  position: absolute;
-  height: 76px;
-  width: 100%;
-  left: 0;
-  bottom: 0;
-`;
-
-// Note: ModalFooterPlaceholder is a placeholder to correct scrolling height in the DOM
-// for ModalBody as in our use-case, the ModalFooter is inside ModalBody.
-// The height represents a placeholder for Buttons with height 36px;
-const ModalFooterPlaceholder = styled.div`
-  height: 36px;
-  width: '100%';
-  visibility: 'hidden';
-`;
 
 type ModalFooterProps = { children: React.ReactNode };
 // Note: Blade's ModalFooter couldn't be used as an indirect child which is needed for multi-step form inside modal body.
 const ModalFooter = ({ children }: ModalFooterProps): JSX.Element => (
-  <StyledFooter>
+  // This represents a ModalFooter container with absolute position
+  <Box position="absolute" height="76px" width="100%" left="0px" bottom="0px">
     <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%" padding="spacing.5">
       {children}
     </Box>
-  </StyledFooter>
+  </Box>
 );
 
 // This component is needed to bypass Blade Modal's children validation check:
@@ -47,7 +29,10 @@ export const ConditionalModalFooter = ({
   if (shouldShowFooter)
     return (
       <BladeModalFooter>
-        <ModalFooterPlaceholder />
+        {/* // Note: below is a placeholder to correct scrolling height in the DOM for ModalBody
+            // because in our use-case, the ModalFooter is inside ModalBody.
+            // The placeholder represents Buttons with height 36px; */}
+        <Box backgroundColor="surface.background.level2.lowContrast" height="36px" width="100%" />
       </BladeModalFooter>
     );
   return null;

@@ -1,6 +1,6 @@
 import { SpiltzContextState } from 'common/splitz/types';
-import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import * as merchantStore from 'merchant/store';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 const userSpy = jest.spyOn(merchantStore, 'getUser');
 userSpy.mockImplementation(() => ({
   isPartnershipsInviteFlowEnabled: true,
@@ -16,8 +16,7 @@ jest.mock('common/splitz', () => ({
   }),
 }));
 
-// TODO: fix failing test
-describe.skip('usePartnerDashboardExperiments', () => {
+describe('usePartnerDashboardExperiments', () => {
   test('should return correct output for isEasierAccessToSubmerchantKycEnabled', () => {
     let experiments = usePartnerDashboardExperiments();
     expect(experiments.isEasierAccessToSubmerchantKycEnabled).toBe(true);

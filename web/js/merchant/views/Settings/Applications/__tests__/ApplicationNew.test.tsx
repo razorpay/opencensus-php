@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render, screen } from 'common/services/test/test-utils';
 import ApplicationNew from 'merchant/views/Settings/Applications/new';
 
@@ -29,27 +30,22 @@ const state = {
 
 describe('Application New', () => {
   const renderApp = () => {
-    render(
-      <ApplicationNew
-        splitz={{ abExperiments: { Partnerships_oauth_phantom: { variables: { result: 'on' } } } }}
-      />,
-      {
-        initialState: state,
-        historyOptions: {
-          initialEntries: [
-            {
-              pathname: '/partners/applications/test-id',
-              params: { id: 'test-id' },
-            },
-          ],
-        },
-        path: '/partners/applications/:id',
+    render(<ApplicationNew />, {
+      initialState: state,
+      historyOptions: {
+        initialEntries: [
+          {
+            pathname: '/partners/applications/test-id',
+            params: { id: 'test-id' },
+          },
+        ],
       },
-    );
+      path: '/partners/applications/:id',
+    });
   };
 
   // TODO: fix this test case
-  test.skip('should render applicationForm', () => {
+  test('should render applicationForm', () => {
     renderApp();
     expect(screen.getByText('Onboarding UI Configurator')).toBeInTheDocument();
     expect(screen.getByText('Name')).toBeInTheDocument();

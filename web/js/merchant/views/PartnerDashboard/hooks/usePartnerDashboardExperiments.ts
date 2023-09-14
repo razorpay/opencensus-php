@@ -1,13 +1,12 @@
 import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { getUser } from 'merchant/store';
-
-const isVariantResultOn = (variant) => variant?.variables?.result === 'on';
 
 /**
  * Accepts `user` to access any getters such as partner_type, isOrgRzp, older experiments, etc.
  */
 const isEasierAccessToSubmerchantKycEnabled = ({ variant, user }) => {
-  return user.isPartnershipsInviteFlowEnabled && isVariantResultOn(variant);
+  return user.isPartnershipsInviteFlowEnabled && isExperimentEnabled(variant);
 };
 
 /**
@@ -22,7 +21,6 @@ const usePartnerDashboardExperiments = (): Record<string, boolean> => {
       partnerships_easier_access_to_submerchant_kyc,
     } = {},
   } = useSplitzService();
-
   return {
     isEasierAccessToSubmerchantKycEnabled: isEasierAccessToSubmerchantKycEnabled({
       variant: partnerships_easier_access_to_submerchant_kyc,

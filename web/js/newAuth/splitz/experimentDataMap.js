@@ -14,13 +14,6 @@
 */
 
 export default {
-  new_partner_signup: {
-    stage_exp_id: 'KZ3T8q3CYvdx4z',
-    prod_exp_id: 'LUAS1Of9UtpYoU',
-    default_variant: 'not_exposed',
-    experiment_variable: 'exposed',
-    trackImpression: true,
-  },
   partner_onboard_all_as_resellers: {
     stage_exp_id: 'JpWqxoqQa6aMOZ',
     prod_exp_id: 'JpbtDw1u1tmAH2',

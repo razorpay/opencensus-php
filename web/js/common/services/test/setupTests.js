@@ -44,11 +44,6 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
   selfServeTrackResult: jest.fn(),
 }));
 
-// Note: this mock is added to mimic user getters for experiments to return undefined by default.
-jest.mock('common/splitz', () => ({
-  ...jest.requireActual('common/splitz'),
-  useSplitzService: () => ({ abExperiments: {} }),
-}));
 // jest.mock('merchant/views/Transactions/v2/common/utils', () => ({
 //   ...jest.requireActual('merchant/views/Transactions/v2/common/utils'),
 //   isTransactionsV2Enabled: (_) => true,

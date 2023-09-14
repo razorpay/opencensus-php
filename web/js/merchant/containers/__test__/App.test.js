@@ -1,13 +1,19 @@
-import { screen, waitFor, userEvent, delay } from 'test-utils';
+import { getInitialUserOrgState } from 'common/tests/utils';
+import * as trackEvents from 'common/utils/analytics';
+import * as utilTracker from 'common/utils/trackers';
 import {
   renderApp,
   userDetails,
   orgDetails,
 } from 'merchant/containers/__test__/mocks/fixtures/App';
-import * as utilTracker from 'common/utils/trackers';
-import * as trackEvents from 'common/utils/analytics';
-import { getInitialUserOrgState } from 'common/tests/utils';
+import { screen, waitFor, userEvent, delay } from 'test-utils';
 const analyticsTrackSpy = jest.spyOn(trackEvents, 'analyticsTrack');
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
 
 describe('Idle timer', () => {
   beforeAll(() => {

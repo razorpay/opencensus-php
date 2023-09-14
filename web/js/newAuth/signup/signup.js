@@ -1,33 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider } from 'styled-components';
-import QueryString from 'query-string';
+import { Button } from '@razorpay/blade/components';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
-import Size from '@razorpay/blade-old/src/atoms/Size';
-import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Text from '@razorpay/blade-old/src/atoms/Text';
+import QueryString from 'query-string';
+import { ThemeProvider } from 'styled-components';
+
+import { FullPageLoader } from 'common/components/Loader';
+import { Modal, ModalBody } from 'common/components/Modal';
+import { ModalHeader, ModalFooter } from 'common/components/Modal/Styled';
+import { setCookie } from 'common/utils/cookies';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { fetchOrg } from 'newAuth/apis';
+import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { ContentContainer } from 'newAuth/commonStyles';
-import { AbsoluteView, RelativeView, Container, DisableSignupContainer } from './styles';
-import Header from './components/Header';
-import InfoContainer from './components/InfoContainer';
-import RefereeBanner from './components/RefereeBanner';
+import { isSignupEnabled, isShowResumeOnboarding } from 'newAuth/splitz/index';
+import { trackWithSegment } from 'newAuth/trackEvents';
 import {
   getURLQueryParams,
   isPasswordUXImprovementEnabled,
   isTestEnvironment,
   getHostName,
 } from 'newAuth/utils';
-import { setCookie } from 'common/utils/cookies';
-import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
-import { fetchOrg } from 'newAuth/apis';
-import { FullPageLoader } from 'common/components/Loader';
+
+import Header from './components/Header';
+import InfoContainer from './components/InfoContainer';
 import PartnerSignup from './components/PartnerSignup';
-import { Modal, ModalBody } from 'common/components/Modal';
-import { ModalHeader, ModalFooter } from 'common/components/Modal/Styled';
-import { Button } from '@razorpay/blade/components';
-import { trackWithSegment } from 'newAuth/trackEvents';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { isNewPartnerSignup, isSignupEnabled, isShowResumeOnboarding } from 'newAuth/splitz/index';
+import RefereeBanner from './components/RefereeBanner';
+import { AbsoluteView, RelativeView, Container, DisableSignupContainer } from './styles';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
@@ -63,7 +65,7 @@ const SignUp = () => {
       actionName: 'Loaded',
       location: '',
       properties: {
-        mobileSignup: isNewPartnerSignup(),
+        mobileSignup: true,
       },
     });
   }, []);
@@ -168,7 +170,7 @@ const SignUp = () => {
       actionName: 'Clicked',
       location: '',
       properties: {
-        mobileSignup: isNewPartnerSignup(),
+        mobileSignup: true,
       },
     });
   };
@@ -188,7 +190,7 @@ const SignUp = () => {
     disableSignup = false;
   }
 
-  if (!disableSignup && isSigningUpAsPartner && isNewPartnerSignup())
+  if (!disableSignup && isSigningUpAsPartner)
     return (
       <>
         <PartnerSignup />

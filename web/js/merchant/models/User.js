@@ -1260,10 +1260,7 @@ export default class User {
   }
 
   get isPartnershipsInviteFlowEnabled() {
-    const variant = getSplitzExperimentVariant('partnerships_invite_flow');
-    const isExperimentEnabled = variant?.variables?.result === 'on';
-    if (variant.name === 'whitelist') return isExperimentEnabled;
-    return isExperimentEnabled && this.partner_type === 'reseller' && this.isOrgRZP;
+    return this.partner_type === 'reseller' && this.isOrgRZP;
   }
 
   get isAddReplyMigrationActive() {

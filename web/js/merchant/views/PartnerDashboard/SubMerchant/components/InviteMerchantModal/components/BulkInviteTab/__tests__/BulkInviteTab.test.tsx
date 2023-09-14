@@ -1,40 +1,66 @@
-import React from 'react';
-import { render, screen, userEvent, server, waitFor } from 'test-utils';
-import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
-import { getInitialUserOrgState } from 'common/tests/utils';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import React, { useState } from 'react';
 import { rest } from 'msw';
-import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+import { getInitialUserOrgState } from 'common/tests/utils';
 import { fileUploadResponse } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
+import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
+import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, userEvent, server, waitFor } from 'test-utils';
 
 const getHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'getHasSelectedKycAccess');
 const setHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'setHasSelectedKycAccess');
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
+const trackInviteFlowValidationErrorSpy = jest.spyOn(analytics, 'trackInviteFlowValidationError');
+const DummyBatchValidate = ({
+  validateBatch,
+  onValidation,
+  onValidationFail,
+  clickToUploadAnalytics = () => {},
+  sampleUrl,
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationError, setValidationError] = useState('');
+  return (
+    <div>
+      <input
+        type="file"
+        data-testid="upload-input"
+        onChange={() => {
+          setIsLoading(true);
+          validateBatch()
+            .then((response) => {
+              setIsLoading(false);
+              onValidation(response.data, 'uploadFile');
+              return response.data;
+            })
+            .catch((error) => {
+              setIsLoading(false);
+              const errorMsg = error.errors[0] ?? '';
+              setValidationError(errorMsg);
+              if (onValidationFail) onValidationFail(errorMsg);
+              return error;
+            });
+          clickToUploadAnalytics();
+        }}
+      />
+      <div>
+        {/* from instructions */}
+        <a href={sampleUrl}>
+          <strong>sample file</strong>
+        </a>
+        {/* Mimic validation errors */}
+        <div>{isLoading ? 'Dummy Loading' : validationError}</div>
+      </div>
+    </div>
+  );
+};
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
   __esModule: true,
-  default: ({ validateBatch, onValidation, clickToUploadAnalytics = () => {}, sampleUrl }) => {
-    return (
-      <div>
-        <input
-          type="file"
-          data-testid="upload-input"
-          onChange={() => {
-            validateBatch();
-            onValidation({ file_id: 'files1234', processable_count: 2 }, 'uploadFile');
-            clickToUploadAnalytics();
-          }}
-        />
-        <div>
-          {/* from instructions */}
-          <a href={sampleUrl}>
-            <strong>sample file</strong>
-          </a>
-        </div>
-      </div>
-    );
-  },
+  default: DummyBatchValidate,
 }));
 
 const isPartner = jest.fn();
@@ -73,6 +99,9 @@ describe('BulkInviteTab', () => {
     const file = new File([blob], 'hello.xlsx', { type: 'image/csv' });
     expect(uploadButton).toBeInTheDocument();
     await userEvent.upload(uploadButton, file);
+    await waitFor(() => {
+      expect(screen.queryByText('Dummy Loading')).not.toBeInTheDocument();
+    });
   };
 
   const useValidateBatchSuccessHandler = () => {
@@ -84,6 +113,21 @@ describe('BulkInviteTab', () => {
             status_code: 200,
             success: true,
             data: fileUploadResponse,
+          }),
+          ctx.delay(50),
+        );
+      }),
+    );
+  };
+  const useValidateBatchErrorHandler = () => {
+    server.use(
+      rest.post('*/merchant/api/test/batches/validate', (req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            status_code: 400,
+            success: false,
+            errors: ['bulk validation error', 'Status Code: 400'],
           }),
           ctx.delay(50),
         );
@@ -122,6 +166,19 @@ describe('BulkInviteTab', () => {
       }),
     );
   };
+
+  test('should fire analytics on file validation error', async () => {
+    useValidateBatchErrorHandler();
+    renderApp();
+    await userUploadFile();
+    expect(screen.getByText('bulk validation error')).toBeInTheDocument();
+    expect(trackInviteFlowValidationErrorSpy).toHaveBeenCalledWith({
+      errorMessage: 'bulk validation error',
+      fieldEdited: 'file',
+      inviteFlow: 'BULK_UPLOAD',
+      productType: 'primary',
+    });
+  });
 
   test('should invite submerchants successfully after uploading file and clicking on send invites', async () => {
     getHasSelectedKycAccessSpy.mockImplementation(() => true);

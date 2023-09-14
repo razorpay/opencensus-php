@@ -1,10 +1,10 @@
 import React from 'react';
+
 import 'react-dates/initialize';
 import { render, screen, waitFor } from 'common/services/test/test-utils';
-import EarningsDailyList from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
-import { REQUEST_EPOCH_APRIL_2023 } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/fixtures';
-
 import { getInitialUserOrgState } from 'common/tests/utils';
+import { REQUEST_EPOCH_APRIL_2023 } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/fixtures';
+import EarningsDailyList from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 
 const defaultProps = {
   location: {
@@ -26,10 +26,12 @@ describe('test suite for Earnings List', () => {
     render(<EarningsDailyList {...defaultProps} />, {
       initialState: { session: state },
     });
-    await waitFor(() => {
-      expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('₹ 40.00');
-      expect(screen.getByText('Mar 27, 2023')).toBeInTheDocument();
-    });
+    // Lazy loaded components
+    await waitFor(() => expect(screen.queryByRole('loader')).not.toBeInTheDocument());
+    // API call
+    await waitFor(() => expect(screen.queryByTestId('spinner')).not.toBeInTheDocument());
+    expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('₹ 40.00');
+    expect(screen.getByText('Mar 27, 2023')).toBeInTheDocument();
   });
 
   test('should render daily earnings for curlec', async () => {
@@ -37,9 +39,11 @@ describe('test suite for Earnings List', () => {
     render(<EarningsDailyList {...defaultProps} />, {
       initialState: { session: state },
     });
-    await waitFor(() => {
-      expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('RM 40.00');
-      expect(screen.getByText('Mar 27, 2023')).toBeInTheDocument();
-    });
+    // Lazy loaded components
+    await waitFor(() => expect(screen.queryByRole('loader')).not.toBeInTheDocument());
+    // API call
+    await waitFor(() => expect(screen.queryByTestId('spinner')).not.toBeInTheDocument());
+    expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('RM 40.00');
+    expect(screen.getByText('Mar 27, 2023')).toBeInTheDocument();
   });
 });

@@ -8,7 +8,10 @@ import { CommonApiResponse, FormikHandleChange, UseFormikReturnType } from 'comm
 import { validatePartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import KYCAccessCheckbox from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/KYCAccessCheckbox';
-import { trackBulkFlowCTAClicked } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
+import {
+  trackBulkFlowCTAClicked,
+  trackInviteFlowValidationError,
+} from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -49,6 +52,14 @@ const BulkInviteForm = ({
       handleChange({ name: 'processable_count', value: Number(response.processable_count) });
     }
   };
+  const onValidationFail = (errorMessage) => {
+    trackInviteFlowValidationError({
+      inviteFlow,
+      fieldEdited: 'file',
+      errorMessage,
+      productType,
+    });
+  };
 
   const onFileRemove = () => {
     handleChange({ name: 'file_id', value: '' });
@@ -73,6 +84,7 @@ const BulkInviteForm = ({
               onFileRemove={onFileRemove}
               sampleUrl={sampleUrl}
               sampleFileDownloadAnalytics={sampleFileDownloadAnalytics}
+              onValidationFail={onValidationFail}
               validateBatch={validatePartnerSubmerchantReferralInvitesBatch}
               batchTypeText="text"
               maxRows={500}
