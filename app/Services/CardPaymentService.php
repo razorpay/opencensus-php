@@ -638,7 +638,20 @@ class CardPaymentService
 
         if ($this->action === Action::AUTHORIZE && $input['payment']['gateway'] === gateway::AXIS_TOKENHQ) {
 
+          if (!isset($input['card']['tokenised']) || $input['card']['tokenised'] === false) {
+                $this->trace->info(
+                    TraceCode::ISSUER_TOKENIZATION_PLAIN_CARD_NUMBER,
+                    [
+                        'payment_id' => $input['payment']['id'],
+                    ]);
+                return;
+            }
+            
             $token = (new repository())->find($input['token']['id']);
+
+            if (empty($token)){
+                throw new \Exception("Token entity not found for axis_tokenhq");
+            }
 
             $networkToken = (new Core())->fetchToken($token, false);
 
