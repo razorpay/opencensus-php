@@ -96,6 +96,8 @@ class Validator extends Base\Validator
         Entity::NOTES                           => 'sometimes|notes',
         Entity::TYPE                            => 'sometimes|string',
         Entity::BANK_NAME                       => 'sometimes|string',
+        Entity::IBAN                            => 'sometimes|string',
+        Entity::BANK_SORT_CODE                  => 'sometimes|string',
     ];
 
     protected static $editRules = [

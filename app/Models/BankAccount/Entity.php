@@ -30,6 +30,9 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CODE              = 'beneficiary_code';
     const IFSC_CODE                     = 'ifsc_code';
     const BANK_NAME                     = 'bank_name';
+    const IBAN                          = "iban";
+    // BANK_SORT_CODE/ Transit / BSB NO.
+    const BANK_SORT_CODE                = "bank_sort_code";
     const ACCOUNT_NUMBER                = 'account_number';
     const BENEFICIARY_NAME              = 'beneficiary_name';
     const REGISTERED_BENEFICIARY_NAME   = 'registered_beneficiary_name';

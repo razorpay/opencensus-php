@@ -585,6 +585,8 @@ class Core extends Base\Core
             $bankValidator = 'addInternationalBankAccount';
             $notes = [];
             $notes[Entity::BANK_NAME] = $input[Entity::BANK_NAME];
+            $notes[Entity::IBAN] = $input[Entity::IBAN];
+            $notes[Entity::BANK_SORT_CODE] = $input[Entity::BANK_SORT_CODE];
             $input[Entity::NOTES] = $notes;
         }
         // if live mode and input does not already contain notes, copy test mode notes
