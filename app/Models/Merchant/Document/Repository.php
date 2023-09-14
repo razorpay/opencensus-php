@@ -81,6 +81,34 @@ class Repository extends Base\Repository
             ->first();
     }
 
+
+    public function getDocumentsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
+    {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_DOCUMENT_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
+            $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
+            (new MerchantDocumentSDKWrapper())->findDocumentByMerchantIdCallback($merchantId),
+            $this->findDocumentByMerchantIdFromDatabaseCallBack($merchantId)
+        );
+    }
+
+    private function findDocumentByMerchantIdFromDatabaseCallBack(string $merchantId): \Closure
+    {
+        return function () use ($merchantId) {
+            return $this->findDocumentByMerchantIdFromDatabase($merchantId);
+        };
+    }
+
+    public function findDocumentByMerchantIdFromDatabase(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereNull(Entity::DELETED_AT)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->orderBy(Entity::ID, 'desc')
+            ->get();
+    }
+
     /**
      * @param $fileStoreId
      *

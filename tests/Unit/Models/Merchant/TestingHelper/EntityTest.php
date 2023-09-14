@@ -105,7 +105,6 @@ class RepositoryTestHelper extends TestCase
 
             //TestCase6 - call is going to asv
             $associatedEntity->unsetRelation($relationName);
-
             $entityResponse = $asvResponseEntity->$responseSetterFunctionName([$entityProto1]);
             $this->setEntityMockClientWithIdAndResponse($data["merchant_id"], $entityResponse, null, "getByMerchantId", 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
@@ -118,7 +117,6 @@ class RepositoryTestHelper extends TestCase
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
             $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
-
 
             //TestCase8 - Not found in asv;
             $associatedEntity->unsetRelation($relationName);
@@ -138,12 +136,18 @@ class RepositoryTestHelper extends TestCase
         }
     }
 
-    private function createEntityInDatabase($entityName, $json, $entity)
+    public function createEntityInDatabase($entityName, $json, $entity)
     {
         $entityArray = json_decode($json, true);
         $entity->setRawAttributes($entityArray);
+        $entityArray = $entity->toArray();
+
+        if(array_key_exists('percentage_ownership', $entityArray)) {
+            $entityArray['percentage_ownership'] = $entity->getAttributes()['percentage_ownership'];
+        }
+
         $this->fixtures->create($entityName,
-            $entity->toArray(),
+            $entityArray
         );
     }
 
@@ -158,7 +162,7 @@ class RepositoryTestHelper extends TestCase
         return $entityProto;
     }
 
-    protected function setEntityMockClientWithIdAndResponse($id, $response, $error, $method, $count, $entity, $setterFunction, $mockBuilderInterface)
+    public function setEntityMockClientWithIdAndResponse($id, $response, $error, $method, $count, $entity, $setterFunction, $mockBuilderInterface)
     {
         $entityMockClient = $this->getMockClient($mockBuilderInterface);
         $entityMockClient->expects($this->exactly($count))->method($method)->with($id, $entity->getDefaultRequestMetaData())->willReturn([$response, $error]);

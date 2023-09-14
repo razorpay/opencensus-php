@@ -13,6 +13,7 @@ use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakeholderSDKWrapper;
+use RZP\Trace\TraceCode;
 
 
 class Repository extends Base\Repository
@@ -45,6 +46,31 @@ class Repository extends Base\Repository
             (new StakeholderSDKWrapper())->getByMerchantIdIgnoreInvalidArgumentCallback($merchantId),
             $this->fetchStakeholdersDatabaseCallback($merchantId)
         );
+    }
+
+    public function getStakeholderForMerchantIdForImplicitJoin(string $merchantId, string $entity)
+    {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_STAKEHOLDER_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
+            $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
+            (new StakeholderSDKWrapper())->findOneByMerchantIdCallback($merchantId),
+            $this->findOneStakeholdersDatabaseCallback($merchantId)
+        );
+    }
+
+    public function findOneStakeholdersDatabaseCallback(string $merchantId): \Closure
+    {
+        return function() use ($merchantId) {
+            return $this->findOneStakeholdersDatabase($merchantId);
+        };
+    }
+
+    public function findOneStakeholdersDatabase(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->get()
+            ->first();
     }
 
     public function fetchStakeholdersDatabaseCallback(string $merchantId): \Closure

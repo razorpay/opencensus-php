@@ -8,14 +8,17 @@ use Rzp\Accounts\Merchant\V1\Stakeholder;
 use Rzp\Accounts\Merchant\V1\StakeholderResponse;
 use Rzp\Accounts\Merchant\V1\StakeholderResponseByMerchantId;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakeholderWrapper;
 use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
 use RZP\Models\Merchant\Stakeholder\Repository;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 
-class RepositoryTest extends TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
 
     private $stakeholderEntityJson1 = '{
@@ -98,6 +101,29 @@ class RepositoryTest extends TestCase
                         "aadhaar_verification_with_pan_status": "verfified",
                         "bvs_probe_id": "123f4"
      }';
+
+    private $merchantEntityJson1 = '{
+        "id": "CzmiBzNQPErfdT",
+        "org_id": "100000razorpay",
+        "default_refund_speed": "normal",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "country_code": "IN"
+     }';
+
+    private $merchantDetailEntityJson1 = '{
+        "merchant_id": "CzmiBzNQPErfdT",
+        "additional_websites": "[\"https://razorpay.in\"]",
+        "steps_finished": "[1,2,3]",
+        "kyc_clarification_reasons": "{\"nc_count\": 1, \"additional_details\": [], \"clarification_reasons\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}, \"clarification_reasons_v2\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}}",
+        "kyc_additional_details": "{\"business_description\": \"description\"}",
+        "custom_fields": "{\"tnc\":{\"accepted\":1,\"ip_address\":\"201.189.12.23\",\"time\":1561110415,\"url\":\"https:\\/\\/rtll.com\\/tnc\",\"user_agent\":\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_14_4)\"},\"apps\":[{\"name\":\"Ratnalal Shopping App\",\"links\":{\"android\":\"https:\\/\\/playstore.google.com\\/appId\\/122\",\"ios\":\"https:\\/\\/appstore.com\\/appId\\/122\"}}]}",
+        "client_applications": "{\"ios\": [{\"url\": \"appstore.acme.org\", \"name\": \"Acme\"}], \"android\": [{\"url\": \"playstore.acme.org\", \"name\": \"Acme\"}]}",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "fund_addition_va_ids": "{\"fee_credit\": \"va_LIc0SnP6OMuXxH\"}",
+        "industry_category_code_type": "iIfMMCYyTFbVSgHjgxBo"
+    }';
 
     private $sampleSpltizOutput = [
         'status_code' => 200,
@@ -387,6 +413,43 @@ class RepositoryTest extends TestCase
 
     }
 
+    public function testStakeholderAssociation()
+    {
+        $entitiesData = [
+            [
+                "relationName" => "stakeholder",
+                "asvEntity" => new StakeholderWrapper(),
+                "asvResponseEntity" => new StakeholderResponseByMerchantId(),
+                "setterFunctionName" => 'setStakeholder',
+                "responseSetterFunctionName" => 'setStakeholders',
+                "entityRepo" => new Repository(),
+                "entityRepoName" =>  'stakeholder',
+                "entityName" => "stakeholder",
+                "entityData" => $this->stakeholderEntityJson1,
+                "entityClass" => new StakeholderEntity(),
+                "entityProtoClass"  => new \Rzp\Accounts\Merchant\V1\Stakeholder(),
+                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Detail\Repository(),
+                "AssociatedEntityName" => "merchant_detail",
+                "AssociatedEntityData" => $this->merchantDetailEntityJson1,
+                "AssociatedEntityClass" =>  new MerchantDetailEntity(),
+                "mockBuilderInterface" => "Razorpay\Asv\Interfaces\StakeholderInterface",
+                "merchant_id" => "CzmiBzNQPErfdT",
+                "shouldEntityNeedsToBeCreated" => true,
+                "isDependentEntity" => true,
+                "dependentEntity" => [
+                    [
+                        "dependentEntityName" => "merchant",
+                        "dependentEntityData" => $this->merchantEntityJson1,
+                        "dependentEntityClass" => new MerchantEntity(),
+
+                    ]
+                ]
+            ]
+        ];
+
+        $this->runTestsForImplicitJoin($entitiesData);
+    }
+
     private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null)
     {
         if ($columns === null) {
@@ -510,7 +573,7 @@ class RepositoryTest extends TestCase
         return $splitz;
     }
 
-    private function getMockAsvRouterInRepository($method, $count, $response, $error)
+    public function getMockAsvRouterInRepository($method, $count, $response, $error)
     {
         $asvRouterMock = $this->getAsvRouteMock([$method]);
         if ($error === null) {

@@ -123,4 +123,26 @@ class MerchantDocument extends Base
             return $this->getById($id, $requestMetadata);
         };
     }
+
+    public function findDocumentByMerchantId(string $merchantId, ?RequestMetadata $requestMetadata = null) : ?PublicCollection
+    {
+        try {
+            $merchantDocumentsByMerchantId = $this->getByMerchantId($merchantId, $requestMetadata);
+        } catch (\Exception $e) {
+            if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ARGUMENT || $e->getCode() == ErrorCode::BAD_REQUEST_NO_RECORD_FOUND_FOR_ID ) {
+                return (new MerchantDocumentEntity)->newCollection([]);
+            }
+            throw $e;
+        }
+
+        return $merchantDocumentsByMerchantId;
+    }
+
+
+    public function findDocumentByMerchantIdCallback(string $merchantId, ?RequestMetadata $requestMetadata = null): \Closure
+    {
+        return function () use ($merchantId, $requestMetadata) {
+            return $this->findDocumentByMerchantId($merchantId, $requestMetadata);
+        };
+    }
 }

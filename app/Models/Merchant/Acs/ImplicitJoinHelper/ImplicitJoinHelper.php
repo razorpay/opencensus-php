@@ -55,5 +55,16 @@ class ImplicitJoinHelper
     {
         return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant_business_detail', 'getBusinessDetailsForMerchantIdForImplicitJoin');
     }
+
+    public function getStakeholderAttributeByMerchantId($classInstance, $entityName, $relationName = 'stakeholder')
+    {
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'stakeholder', 'getStakeholderForMerchantIdForImplicitJoin');
+    }
+
+    public function getMerchantDocumentsAttributeByMerchantId($classInstance, $entityName, $relationName = 'merchantDocuments')
+    {
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant_document', 'getDocumentsForMerchantIdForImplicitJoin');
+    }
+
 }
 

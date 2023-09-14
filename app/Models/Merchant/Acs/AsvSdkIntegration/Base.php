@@ -252,6 +252,29 @@ class Base
         };
     }
 
+    public function findOneByMerchantIdCallback(string $merchantId, ?RequestMetadata $requestMetadata = null): \Closure
+    {
+        return function() use ($merchantId, $requestMetadata) {
+            return $this->findOneByMerchantId($merchantId, $requestMetadata);
+        };
+    }
+
+    public function findOneByMerchantId($merchantId, $requestMetadata)
+    {
+        try {
+            $entityByMerchantId = $this->getByMerchantId($merchantId, $requestMetadata);
+        } catch (\Exception $e) {
+            if($e->getCode() == ErrorCode::BAD_REQUEST_NO_RECORD_FOUND_FOR_ID ||
+                $e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ARGUMENT) {
+                return null;
+            }
+
+            throw $e;
+        }
+
+        return $entityByMerchantId[0];
+    }
+
     /**
      * @throws BadRequestException
      * @throws BaseException|\Exception

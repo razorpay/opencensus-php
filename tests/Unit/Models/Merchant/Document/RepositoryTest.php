@@ -11,11 +11,13 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
 use RZP\Models\Merchant\Document\Repository;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 
-class RepositoryTest extends TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
 
     private $merchantDocumentEntityJson1 = '{
@@ -55,6 +57,15 @@ class RepositoryTest extends TestCase
             "audit_id": "testtesttestid",
             "metadata": null
         }';
+
+    private $merchantEntityJson1 = '{
+        "id": "D2fahy3beSAu0S",
+        "org_id": "100000razorpay",
+        "default_refund_speed": "normal",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "country_code": "IN"
+     }';
 
     private $sampleSpltizOutput = [
         'status_code' => 200,
@@ -223,6 +234,115 @@ class RepositoryTest extends TestCase
 
     }
 
+    public function testMerchantDocumentAssociation()
+    {
+        $entitiesData = [
+            [
+                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Repository(),
+                "AssociatedEntityName" => "merchant",
+                "AssociatedEntityData" => $this->merchantEntityJson1,
+                "AssociatedEntityClass" =>  new MerchantEntity(),
+                "merchant_id" => "D2fahy3beSAu0S",
+                "shouldEntityNeedsToBeCreated" => true,
+            ]
+        ];
+
+        for ($i = 0; $i < count($entitiesData); $i++) {
+            $data = $entitiesData[$i];
+
+            $this->createEntityInDatabase($data["AssociatedEntityName"], $data["AssociatedEntityData"], $data["AssociatedEntityClass"]);
+
+            if($data["shouldEntityNeedsToBeCreated"])
+            {
+                $this->createMerchantDocumentInDatabase($this->merchantDocumentEntityJson1);
+            }
+
+            $entityRepo = $data["AssociatedEntityRepo"];
+            $entity = $entityRepo->find($data["merchant_id"]);
+            $merchantDocument1 = $this->getmerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+            $merchantDocument1Array = $merchantDocument1->toArray();
+            $merchantDocumentProto1 = $this->getMerchantDocumentProtoFromJson($this->merchantDocumentEntityJson1);
+
+            // TestCase1 - when route belongs to exclusive flow - splitz off, data will be fetched from db
+            $this->setSplitzWithOutputForBulk(["false", "false"], 0);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            // TestCase2 - when route belongs to exclusive flow -splitz on, data will be fetched from db
+            $entity->unsetRelation('merchantDocuments');
+            $this->setSplitzWithOutputForBulk(["true", "true"], 0);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+
+            //TestCase3 both experiment is false, data will be fetched from db
+            $entity->unsetRelation('merchantDocuments');
+            $this->setSplitzWithOutputForBulk(["false", "false"],   1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            //TestCase4 - experiment respons - false, true, data will be fetched from db
+            $entity->unsetRelation('merchantDocuments');
+            $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            //TestCase5 - experiment respons - true, false. data will be fetched from db
+            $entity->unsetRelation('merchantDocuments');
+            $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            //TestCase6 - call is going to asv, data will be fetched from asv
+            $entity->unsetRelation('merchantDocuments');
+            $merchantDocumentResponseByMerchantId = (new MerchantDocumentResponseByMerchantId())->setDocuments([$merchantDocumentProto1]);
+            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], $merchantDocumentResponseByMerchantId, null, "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            //TestCase7 - should go to account service - Exception occurs fallback to DB.  data will be fetched from db
+            $entity->unsetRelation('merchantDocuments');
+            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
+
+            //TestCase8 - Not found in asv;  data will be null
+            $entity->unsetRelation('merchantDocuments');
+            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            app('repo')->merchant_document = $merchantDocumentRepo;
+            $this->assertEquals(count($entity->merchantDocuments), 0);
+
+            //TestCase9 - invalid argument in asv; data will be null
+            $entity->unsetRelation('merchantDocuments');
+            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), "getByMerchantId", 1);
+            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+            $merchantDocumentRepo = new Repository();
+            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+            app('repo')->merchant_document = $merchantDocumentRepo;
+            $this->assertEquals(count($entity->merchantDocuments), 0);
+        }
+    }
+
+    private function updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocumentEntity1Array) {
+        app('repo')->merchant_document = $merchantDocumentRepo;
+        $documents = $entity->merchantDocuments->toArray();
+        $documents[0]["audit_id"] = "testtesttestid";
+        $this->assertEquals($merchantDocumentEntity1Array, $documents[0]);
+    }
+
+
     private function splitzShouldThrowException($count = 1)
     {
         $splitzMock = $this->createSplitzMock();
@@ -241,7 +361,7 @@ class RepositoryTest extends TestCase
         return $splitz;
     }
 
-    private function getMockAsvRouterInRepository($method, $count, $response, $error)
+    public function getMockAsvRouterInRepository($method, $count, $response, $error)
     {
         $asvRouterMock = $this->getAsvRouteMock([$method]);
         if ($error === null) {

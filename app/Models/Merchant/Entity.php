@@ -50,6 +50,7 @@ use RZP\Models\Terminal;
 use RZP\Models\User;
 use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Activation as PartnerActivation;
@@ -262,6 +263,7 @@ class Entity extends Base\PublicEntity
     const ACTION                    = 'action';
     const MEDIUM_SIZE               = 'medium';
     const MERCHANT_DETAIL           = 'merchant_detail';
+    const MERCHANT                  = 'merchant';
     const MERCHANT_BUSINESS_DETAIL  = 'merchant_business_detail';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
@@ -1917,6 +1919,11 @@ class Entity extends Base\PublicEntity
                 $this->getId(),
                 Merchant1ccConfig\Type::SHIPPING_METHOD_PROVIDER
             );
+    }
+
+    public function getMerchantDocumentsAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantDocumentsAttributeByMerchantId($this, self::MERCHANT);
     }
 
     public function setBrandColor($brandColor)
