@@ -7,6 +7,7 @@ use Throwable;
 use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
 use Illuminate\Http\Request;
+use RZP\Base\RuntimeManager;
 use Razorpay\Edge\Passport\Passport;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -82,6 +83,12 @@ class EdgeProxyController extends Controller
         if (empty($hostCfg))
         {
             throw new IntegrationException(null, ErrorCode::SERVER_ERROR_EDGE_PROXY_NO_CONFIG);
+        }
+
+        if (empty($routeCfg[self::TIMEOUT]) === false)
+        {
+            // additional 10seconds added
+            RuntimeManager::setMaxExecTime($routeCfg[self::TIMEOUT]+10);
         }
 
         $options = empty($routeCfg[self::TIMEOUT]) ? [] : [self::TIMEOUT => $routeCfg[self::TIMEOUT]];
