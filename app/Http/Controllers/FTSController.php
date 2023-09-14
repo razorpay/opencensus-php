@@ -87,7 +87,7 @@ class FTSController extends Controller
 
     public function updateTestTransactionStatus()
     {
-        $response = $this->app['fts_fund_transfer']->getTriggerStatus($this->input);
+        $response = $this->app['fts_fund_transfer']->updateTestTransactionStatus($this->input);
 
         return ApiResponse::json($response);
     }
