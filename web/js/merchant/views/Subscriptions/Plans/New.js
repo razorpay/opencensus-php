@@ -1,28 +1,29 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
-import AsyncButton from 'react-async-button';
+
 import Input from 'common/new-ui/Input';
+import Alert from 'common/ui/Forms/Alert';
 import InputField from 'common/ui/Forms/InputField';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
-import Alert from 'common/ui/Forms/Alert';
-import { required } from 'common/utils/validators';
-import { fetchPlan, savePlan } from 'merchant/reducers/plans';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import FormItem from 'merchant/components/FormItem';
-import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
-
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
   getURLQueryParams,
   paiseToRupees,
 } from 'common/utils/rzp-utils';
-import analytics from 'merchant/views/Subscriptions/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { required, validateAmount } from 'common/utils/validators';
+import FormItem from 'merchant/components/FormItem';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
+import { fetchPlan, savePlan } from 'merchant/reducers/plans';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
 
 const selector = formValueSelector('newPlan');
 
@@ -302,7 +303,10 @@ export default class NewPlan extends Component {
                       component={InputGroupField}
                       suffix="per unit"
                       class="form-control"
-                      validate={required('Billing amount is required')}
+                      validate={[
+                        required('Billing amount is required'),
+                        (value) => validateAmount(value, null, currency),
+                      ]}
                       placeholder="0.00"
                       onBlur={() => analytics.track('plan.create.amount', this.cloneOptions)}
                     />

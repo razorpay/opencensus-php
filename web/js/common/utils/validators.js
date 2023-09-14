@@ -308,9 +308,10 @@ export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLen
 export function validateAmount(val, minAmountAllowed, currency = 'INR') {
   if (val) {
     const { decimals } = getCurrencyConfig(currency);
+    const decimalPart = val?.split('.')?.[1] ?? '';
     const amountPattern = `^[0-9]+(.([0-9]){1,${decimals}})?$`;
     const regex = new RegExp(amountPattern);
-    const validPattern = 123.456789;
+    const validPattern = 123.450;
 
     if (!regex.test(Number(val))) {
       return `Amount must be a number in the format ${validPattern.toFixed(decimals)}`;
@@ -318,6 +319,10 @@ export function validateAmount(val, minAmountAllowed, currency = 'INR') {
 
     if (typeof minAmountAllowed !== 'undefined' && Number(val) < Number(minAmountAllowed)) {
       return `Amount must be at least ${minAmountAllowed}`;
+    }
+
+    if (decimals === 3 && decimalPart.length === 3 && decimalPart[2] != 0) {
+      return 'Last digit should be 0 for three decimal currencies';
     }
   }
 }

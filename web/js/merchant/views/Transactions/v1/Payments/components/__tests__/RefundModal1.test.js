@@ -1,12 +1,14 @@
 import '@testing-library/jest-dom/extend-expect';
-import { screen, userEvent, delay, waitFor } from 'test-utils';
+import { getSplitzExperiments } from 'common/utils/__test__/mocks/fixtures';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
+import User from 'merchant/models/User';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import {
   renderApp,
   payment,
   session,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/RefundModal';
-import User from 'merchant/models/User';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { screen, userEvent, delay, waitFor } from 'test-utils';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -445,6 +447,10 @@ describe('RefundModal', () => {
           },
         },
       });
+
+      const refundInput = screen.getByTestId('refund-amount');
+      await userEvent.type(refundInput, '1.123');
+
       const issueRefund = screen.getByRole('button', {
         name: /Issue Full refund/,
       });
@@ -453,5 +459,67 @@ describe('RefundModal', () => {
         screen.getByText('Amount can only be a Number with atmost 2 decimal places.'),
       ).toBeInTheDocument();
     });
+  });
+
+  describe('Tests for Internation amount refund', () => {
+    beforeEach(() => {
+      window.rzp_user = {
+        splitz_experiments: getSplitzExperiments(abExperimentsMap.n_exponent_support),
+      };
+    });
+
+    test('should not allow to issue refunds when last digit of amount is not zero for 3 decimal currencies', async () => {
+      renderApp({
+        initialState: {
+          session: {
+            user: new User(),
+          },
+          payment: {
+            ...payment,
+            payment: {
+              ...payment.payment,
+              currency: 'KWD',
+              amount: 1001,
+              amount_refunded: 0,
+            },
+          },
+        },
+      });
+      const issueRefund = screen.getByRole('button', {
+        name: /Issue Full refund/,
+      });
+      await userEvent.click(issueRefund);
+      await waitFor(() =>
+        expect(
+          screen.getByText('Last digit should be 0 for three decimal currencies'),
+        ).toBeInTheDocument(),
+      );
+    });
+  });
+
+  test('should allow to issue refunds when last digit of amount is zero for 3 decimal currencies', async () => {
+    renderApp({
+      initialState: {
+        session: {
+          user: new User(),
+        },
+        payment: {
+          ...payment,
+          payment: {
+            ...payment.payment,
+            currency: 'KWD',
+            amount: 21010,
+            amount_refunded: 0,
+          },
+        },
+      },
+    });
+    const issueRefund = screen.getByRole('button', {
+      name: /Issue Full refund/,
+    });
+    await userEvent.click(issueRefund);
+    expect(
+      screen.queryByText('Last digit should be 0 for three decimal currencies'),
+    ).not.toBeInTheDocument();
   });
 });

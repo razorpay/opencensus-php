@@ -15,9 +15,11 @@ import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
   rupeesToPaise,
-  paiseToRupees,
   titleCase,
   getCommonAnalyticsProperties,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  getCurrencyConfig,
 } from 'common/utils/rzp-utils';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
@@ -41,13 +43,19 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 export const isPartialPayment = (props) => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded;
-  const amountEntered = rupeesToPaise(props.payable_amount);
+  const amountEntered = i18CurrencyConversionFromCommonUnitToMinorUnit(
+    props.payable_amount,
+    props.payment?.currency,
+  );
 
   return amountEntered < refundableAmount;
 };
 
 export const amountValidation = (props) => {
   const value = props.payable_amount || '';
+  const currency = props.payment?.currency || 'INR';
+  const decimalPart = value.toString()?.split('.')[1] ?? '';
+  const { decimals } = getCurrencyConfig(currency);
 
   if (!value) {
     return 'Amount is required';
@@ -57,19 +65,24 @@ export const amountValidation = (props) => {
     return `Amount can't be less than 1`;
   }
 
-  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
-    return 'Amount can only be a Number with atmost 2 decimal places.';
+  if (isNaN(value) || decimalPart.length > decimals) {
+    return `Amount can only be a Number with atmost ${decimals} decimal places.`;
   }
+
+  if (decimals === 3 && decimalPart.length === 3 && decimalPart[2] != 0) {
+    return 'Last digit should be 0 for three decimal currencies';
+  }
+
   if (value < 0) {
     return `Amount can't be negative.`;
   }
 
   const refundableAmount = props.payment.amount - props.payment.amount_refunded;
 
-  if (rupeesToPaise(value) > refundableAmount) {
+  if (i18CurrencyConversionFromCommonUnitToMinorUnit(value, currency) > refundableAmount) {
     return (
       `Amount can't be greater than the total Refundable` +
-      ` Amount (${paiseToRupees(refundableAmount)}).`
+      ` Amount (${i18CurrencyConversionFromMinorUnitToCommonUnit(refundableAmount, currency)}).`
     );
   }
 
@@ -147,7 +160,10 @@ class RefundModal extends Component {
     initialize({
       comment: '',
       partial: false,
-      amount: `${(payment?.amount - payment?.amount_refunded) / 100}`,
+      amount: `${i18CurrencyConversionFromMinorUnitToCommonUnit(
+        payment?.amount - payment?.amount_refunded,
+        payment?.currency,
+      )}`,
       reverse_all: false,
     });
 
@@ -217,7 +233,7 @@ class RefundModal extends Component {
           };
         } else {
           data = {
-            amount: rupeesToPaise(props.amount),
+            amount: i18CurrencyConversionFromCommonUnitToMinorUnit(props.amount, payment.currency),
             comment: props.comment,
             reverse_all: props.reverse_all ? '1' : '0',
             speed: speedValue,
@@ -882,6 +898,7 @@ class RefundModal extends Component {
                         }`}
                       />
                       <Field
+                        data-testid="refund-amount"
                         name="amount"
                         component={InputField}
                         onFocus={() => {

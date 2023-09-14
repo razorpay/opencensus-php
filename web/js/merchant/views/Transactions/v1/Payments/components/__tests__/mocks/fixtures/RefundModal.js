@@ -1,8 +1,9 @@
 import React from 'react';
-import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModal';
 import { render } from 'test-utils';
+
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import * as showWhenUtils from 'merchant/components/ShowWhen';
+import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModal';
 
 export const showWhenUtilSpy = jest.spyOn(showWhenUtils, 'showWhenUtil');
 
