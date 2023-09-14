@@ -56,7 +56,7 @@ class Service
             self::PATH => 'twirp/rzp.rto_prediction.merchant_order_review_automation.v1.MerchantOrderReviewAutomationAPI/UpsertRuleConfigs',
         ],
         self::CREATE_JOB_EXECUTIONS => [
-            self::PATH => '/twirp/rzp.rto_prediction.job_executions.v1.JobExecutionApi/Create',
+            self::PATH => 'twirp/rzp.rto_prediction.job_executions.v1.JobExecutionApi/Create',
         ]
     ];
 
