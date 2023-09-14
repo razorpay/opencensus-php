@@ -45,6 +45,7 @@ class Processor extends Base\Processor
 
         $this->setMerchantInfoInResponse($preferencesResponse);
         $this->setMerchantFeaturesInResponse($preferencesResponse);
+        $this->setExperimentsInResponse($preferencesResponse);
 
         // if order id and customer id are empty
         if(isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
@@ -274,7 +275,7 @@ class Processor extends Base\Processor
     {
         $key     = DcsConfig\Constants::UpiInAppDisplayControls;
         $fields  = Feature::TURBO_UPI_FEATURES;
-
+        $merchantId = '';
         try
         {
             $mode       = app('rzp.mode') ?? Mode::LIVE;
@@ -286,12 +287,30 @@ class Processor extends Base\Processor
         {
             $this->trace()->traceException(
                 $ex,
-                TraceCode::FAILED_TO_FETCH_CONFIGS_FROM_DCS,
                 Logger::ERROR,
+                TraceCode::FAILED_TO_FETCH_CONFIGS_FROM_DCS,
                 [
                     Constants::MERCHANT_ID => $merchantId ?? null,
                     'mode'                 => $mode
                 ]
+            );
+        }
+    }
+
+    private function setExperimentsInResponse(&$preferencesResponse)
+    {
+        try
+        {
+            $preferencesResponse[Constants::METADATA] = [
+                Constants::X_PG_SERVICE => Constants::API
+            ];
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace()->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ADD_TURBO_METADATA
             );
         }
     }

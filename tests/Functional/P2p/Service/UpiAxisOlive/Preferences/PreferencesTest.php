@@ -55,6 +55,8 @@ class PreferencesTest extends TestCase
 
         $this->assertArrayHasKey('popular_banks', $response);
 
+        $this->assertArrayHasKey('metadata', $response);
+
         $this->assertEquals(4, count($response['popular_banks']));
 
         $this->assertArraySelectiveEquals($banklist, $response['popular_banks']);
@@ -64,6 +66,8 @@ class PreferencesTest extends TestCase
         $expectedMerchantName = $merchant->getDisplayNameElseName();
 
         $this->assertEquals($expectedMerchantName, $response['merchant']['display_name']);
+
+        $this->assertEquals('api', $response['metadata']['X-PG-Service']);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()

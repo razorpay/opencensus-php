@@ -10308,6 +10308,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BLOCK_LOGS_EXCEPTION                                  = 'BLOCK_LOGS_EXCEPTION';
 
     const FAILED_TO_FETCH_CONFIGS_FROM_DCS                       = 'FAILED_TO_FETCH_CONFIGS_FROM_DCS';
+    const FAILED_TO_ADD_TURBO_METADATA                           = 'FAILED_TO_ADD_TURBO_METADATA';
     const ASV_WRITE_ERROR                                        = 'ASV_WRITE_ERROR';
 
     const ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE                    = 'ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE';

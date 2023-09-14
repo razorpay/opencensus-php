@@ -8,6 +8,9 @@ class Constants
     const FEATURES     = 'features';
     const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
+    const METADATA     = 'metadata';
+    const X_PG_SERVICE = 'X-PG-Service';
+    const API          = 'api';
     private static array $popularBanksListInProd = [
         [
             "priority"     => "0",
