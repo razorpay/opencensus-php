@@ -267,6 +267,69 @@ class CommissionCreateTest extends TestCase
 
     }
 
+    public function testImplicitVariableOnPaymentCaptureWithSignUpsource()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commissions[0][Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commissions[0][Commission\Entity::FEE] - $commissions[0][Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
+
+    }
+
+    public function testSkipCommissionWithDefaultSignUpsource()
+    {
+        $testData = $this->setUpCommissionCreate([], false);
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(0, $commissions);
+    }
+
 
     /***
      * This function validates the following
@@ -3091,7 +3154,7 @@ class CommissionCreateTest extends TestCase
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
     }
 
-    protected function setUpCommissionCreate($paymentAttributes = [])
+    protected function setUpCommissionCreate($paymentAttributes = [], $mockSourceId = true)
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
 
@@ -3109,6 +3172,15 @@ class CommissionCreateTest extends TestCase
         $this->createEntityOrigin('payment', $payment->getId());
 
         $this->setSubmerchantPrivateAuth();
+
+        if($mockSourceId)
+        {
+            $this->mockPartnershipsServiceTreatment([], Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'getSubmSignupSource');
+        }
+        else
+        {
+            $this->mockPartnershipsServiceTreatment([], '', 'getSubmSignupSource');
+        }
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
@@ -3140,6 +3212,8 @@ class CommissionCreateTest extends TestCase
         $this->createEntityOrigin('payment', $payment->getId());
 
         $this->setSubmerchantPrivateAuth();
+
+        $this->mockPartnershipsServiceTreatment([],Constants::DEFAULT_PLATFORM_MERCHANT_ID,'getSubmSignupSource');
 
         $testData = $this->testData['testImplicitCommissionFullRefund'];
 
@@ -3209,6 +3283,8 @@ class CommissionCreateTest extends TestCase
         $this->createEntityOrigin('payment', $payment->getId());
 
         $this->setSubmerchantPrivateAuth();
+
+        $this->mockPartnershipsServiceTreatment([],$partner->getId(),'getSubmSignupSource');
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];

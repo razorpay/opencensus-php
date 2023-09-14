@@ -80,6 +80,8 @@ class PartnershipsService extends Base\Service
 
     const GET_REFERRAL_LINK_WITH_KYC_ACCESS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/FindOrCreate';
 
+    const GET_SUBM_SIGNUP_SOURCE = '/twirp/rzp.commissions.settings.v1.SettingsAPI/Get';
+
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -299,6 +301,22 @@ class PartnershipsService extends Base\Service
     public function getReferralLinkWithKycAccessConsent($parameters)
     {
         return $this->sendRequestWithRetry($parameters, self::GET_REFERRAL_LINK_WITH_KYC_ACCESS, Requests::POST);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return string | null
+     */
+    public function getSubmSignupSource(string $merchantId) : mixed
+    {
+        $parameters = [
+            'entity_id'  => $merchantId,
+            'entity_type'=> 'merchant',
+            'name'       => 'SIGNUP_SOURCE'
+        ];
+        $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST);
+        return empty($response) ? "" : $response['value'];
     }
 
     /**

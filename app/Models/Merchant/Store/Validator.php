@@ -38,6 +38,7 @@ class Validator extends Base\Validator
         ConfigKey::SHOW_FTUX_FINAL_SCREEN                          => 'filled|bool',
         ConfigKey::SHOW_FIRST_PAYMENT_BANNER                       => 'filled|bool',
         ConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER          => 'filled|string|in:pending,pending_seen,pending_ack,no_banner,success,rejected',
+        ConfigKey::SUBM_SIGNUP_SOURCE                              => 'filled|string',
     ];
 
     protected static $fetchRules  = [

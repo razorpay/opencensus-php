@@ -45,6 +45,10 @@ class Constants
 
     const ADJUSTMENT_TDS_DESCRIPTION = 'Tds deduction on commission payout';
 
+    const NEW_COMMISSION_LOGIC_TIMESTAMP = 1693872000;
+    const DEFAULT_SIGNUP_SOURCE = 'rzpDefaultPartner';
+
+
     // line item names
     const COMMISSION = 'commission';
     const ADJUSTMENT = 'adjustment';

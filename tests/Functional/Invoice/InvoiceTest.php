@@ -27,6 +27,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -42,6 +43,7 @@ class InvoiceTest extends TestCase
     use InvoiceTestTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use MocksPartnershipsService;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -103,6 +105,8 @@ class InvoiceTest extends TestCase
         $client = $this->setUpPartnerSubMerchantConfig(Constants::DEFAULT_MERCHANT_ID, $subMerchantId);
 
         $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->mockPartnershipsServiceTreatment([],Constants::DEFAULT_MERCHANT_ID,'getSubmSignupSource');
 
         $this->startTest();
 

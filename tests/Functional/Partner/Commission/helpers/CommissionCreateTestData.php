@@ -97,6 +97,32 @@ return [
         ],
     ],
 
+    'testImplicitVariableOnPaymentCaptureWithSignUpsource' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testSkipCommissionWithDefaultSignUpsource' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testImplicitCommissionFullRefund' => [
         'request' => [
             'method' => 'POST',

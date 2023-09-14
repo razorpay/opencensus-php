@@ -411,6 +411,27 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns the referred app associated between submerchant and partner
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param string          $partnerID
+     *
+     * @return mixed
+     */
+    public function getReferredAppOfSubmerchantWithPartnerId(Merchant\Entity $subMerchant, string $partnerID)
+    {
+        $accessMaps = $this->repo
+                          ->merchant_access_map
+                          ->getMappingByApplicationType($subMerchant->getId(), MerchantApplications\Entity::REFERRED);
+
+        $accessMap = $accessMaps->where(Entity::ENTITY_OWNER_ID, $partnerID)->first();
+
+        $partnerApp = optional($accessMap)->entity;
+
+        return $partnerApp;
+    }
+
+    /**
      * Returns the first aggregator partner associated with the submerchant.
      *
      * @param Merchant\Entity $subMerchant

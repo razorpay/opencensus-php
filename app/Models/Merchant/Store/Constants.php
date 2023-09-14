@@ -28,6 +28,8 @@ class Constants
     const MTU_POPUP_TTL_IN_SECONDS                               = 7776000;
     const FTUX_POPUP_TTL_IN_SECONDS                              = 2592000;
     const UPI_TERMINAL_BANNER_TTL_IN_SECONDS                     = 2592000;
+    const SIGNUP_SOURCE_TTL_IN_SECONDS                           = 217600;
+
 
     const PUBLIC                                                 = 'public';
     const INTERNAL                                               = 'internal';

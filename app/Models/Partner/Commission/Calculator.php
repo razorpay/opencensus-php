@@ -5,6 +5,7 @@ namespace RZP\Models\Partner\Commission;
 use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Store\ConfigKey;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
@@ -24,7 +25,9 @@ use RZP\Constants as BaseConstants;
 use RZP\Models\Transaction\FeeBreakup;
 use RZP\Models\Partner\Commission\Component;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 /**
@@ -62,6 +65,11 @@ class Calculator extends Base\Core
      * @var Merchant\Entity|null
      */
     protected $partner = null;
+
+    /**
+     * @var null
+     */
+    protected $signUpSourceId = null;
 
     /**
      * @var OAuthApp\Entity|null
@@ -293,6 +301,14 @@ class Calculator extends Base\Core
     }
 
     /**
+     * @return string | null
+     */
+    public function getSignUpSourceId()
+    {
+        return $this->signUpSourceId;
+    }
+
+    /**
      * @return bool
      */
     public function isPartnerOriginated(): bool
@@ -411,6 +427,14 @@ class Calculator extends Base\Core
     }
 
     /**
+     * @param string $signUpSourceId
+     */
+    public function setSignUpSourceId(string $signUpSourceId)
+    {
+        $this->signUpSourceId = $signUpSourceId;
+    }
+
+    /**
      * @param bool $isPartnerOriginated
      */
     public function setIsPartnerOriginated(bool $isPartnerOriginated)
@@ -451,6 +475,9 @@ class Calculator extends Base\Core
 
         // partner's submerchant that this source entity belongs to
         $this->setSubMerchant($this->getSource()->merchant);
+
+        // signup source for the submerchant
+        $this->setSignUpSourceContext();
 
         // partner's internal oauth app
         $this->setPartnerAppContext();
@@ -1231,6 +1258,64 @@ class Calculator extends Base\Core
         $this->setExplicitPricingPlan($pricingPlan);
     }
 
+    protected function setSignUpSourceContext()
+    {
+        $sourcePartnerId = null;
+        $submerchant = $this->getSubMerchant();
+
+        if($submerchant->getCountry() != 'MY' && $submerchant->getCreatedAt() > constants::NEW_COMMISSION_LOGIC_TIMESTAMP && $this->isNewCommissionLogicExpEnabled($submerchant->getId()))
+        {
+            try
+            {
+                // get from redis
+                // if not found
+                // fetch signup source from partnership service
+                $store = new StoreCore();
+                $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
+                [ConfigKey::SUBM_SIGNUP_SOURCE], StoreConstants::INTERNAL);
+
+                $sourcePartnerId = $data[ConfigKey::SUBM_SIGNUP_SOURCE] ?? null;
+
+                if (is_null($sourcePartnerId) === true)
+                {
+
+                        $sourcePartnerId = $this->app->partnerships->getSubmSignupSource($this->getSubMerchant()->getId());
+                        $sourcePartnerId = $sourcePartnerId !== "" ? $sourcePartnerId : constants::DEFAULT_SIGNUP_SOURCE;
+                        // store razorpay as partner to avoid calls to prts service incase of null ambiguity
+                        $input = [
+                            StoreConstants::NAMESPACE     => ConfigKey::ONBOARDING_NAMESPACE,
+                            ConfigKey::SUBM_SIGNUP_SOURCE => $sourcePartnerId
+                        ];
+                        $store->updateMerchantStore($this->merchant->getId(), $input, StoreConstants::INTERNAL);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SUBM_SIGNUP_SOURCE_FETCH_ERROR, ['merchant_id'=>$submerchant->getId()]);
+            }
+
+        }
+        $this->setSignUpSourceId($sourcePartnerId);
+    }
+
+    /**
+    * checks if new commission logic is enabled for a partner
+    * @param string $merchantId
+    *
+    * @return bool
+    */
+    private function isNewCommissionLogicExpEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.new_commission_logic_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable(
+            $properties, 'enable', TraceCode::NEW_COMMISSION_LOGIC_SPLITZ_ERROR
+        );
+    }
+
     protected function setPartnerAppContext()
     {
         $sourceEntity = $this->getSource(); // payment, refund, etc
@@ -1281,8 +1366,15 @@ class Calculator extends Base\Core
         }
         else
         {
-            $partnerApp = $merchantAccessMapCore->getReferredAppOfSubmerchant($submerchant);
-
+            $signUpSourcePartnerId = $this->getSignUpSourceId();
+            if(empty($signUpSourcePartnerId) == false && $signUpSourcePartnerId!= constants::DEFAULT_SIGNUP_SOURCE)
+            {
+                $partnerApp = $merchantAccessMapCore->getReferredAppOfSubmerchantWithPartnerId($submerchant,$signUpSourcePartnerId);
+            }
+            else
+            {
+                $partnerApp = $merchantAccessMapCore->getReferredAppOfSubmerchant($submerchant);
+            }
             $this->setIsPartnerOriginated(false);
         }
 
@@ -1320,6 +1412,16 @@ class Calculator extends Base\Core
                 'The partner application does not have an owner merchant',
                 null,
                 $traceData);
+        }
+
+        $signUpSourcePartnerId = $this->getSignUpSourceId();
+        if(empty($signUpSourcePartnerId) == false && $partner->getCreatedAt() > constants::NEW_COMMISSION_LOGIC_TIMESTAMP && $partner->getId() != $signUpSourcePartnerId)
+        {
+            // skip commission flow
+            $this->trace->info(TraceCode::SKIP_COMMISSION_CALCULATION_SIGNUP_SOURCE_NOT_MATCHED, [
+                'partnerId'  => $partner->getId(),
+            ]);
+            return;
         }
 
         //Block commissions when partner itself is submerchant.

@@ -30,6 +30,7 @@ class ConfigKey
     const REFERRAL_AMOUNT_CURRENCY     = 'referral_amount_currency';
     const IS_SIGNED_UP_REFEREE         = 'is_signed_up_referee';
     const POLICY_DATA                  = 'policy_data';
+    const SUBM_SIGNUP_SOURCE           = 'subm_signup_source';
 
     const WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT     = 'website_incomplete_soft_nudge_count';
     const WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP = 'website_incomplete_soft_nudge_timestamp';
@@ -199,7 +200,13 @@ class ConfigKey
             self::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => [
                 Constants::STORE => Constants::REDIS,
                 Constants::TTL   => Constants::UPI_TERMINAL_BANNER_TTL_IN_SECONDS
-            ]
+            ],
+            self::SUBM_SIGNUP_SOURCE => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::SIGNUP_SOURCE_TTL_IN_SECONDS
+            ],
         ]
     ];
 
