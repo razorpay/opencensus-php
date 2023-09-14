@@ -28,6 +28,7 @@ class CommissionCreateEventDataUtil
         {
             $payload = $commission->attributesToArray();
             $payload['commission_component'] = $components[$index]->attributesToArray();
+            $payload['notes'] = (object) ($payload['notes']);
             $commissionsPayload[] = $payload;
         }
 

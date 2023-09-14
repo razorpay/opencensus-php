@@ -220,6 +220,7 @@ return [
                         'credit'               => 944,
                         'tax'                  => 144,
                         'fee'                  => 944,
+                        'notes'                => [],
                         'commission_component' => [
                             'pricing_type'    => 'fixed',
                             'pricing_feature' => 'payment',
@@ -259,17 +260,18 @@ return [
                         'credit'               => 944,
                         'tax'                  => 144,
                         'fee'                  => 944,
+                        'notes'                => [],
                         'commission_component' => [
-                            'pricing_type'    => 'fixed',
+                            'pricing_type'    => 'variable',
                             'pricing_feature' => 'payment',
                             'merchant_pricing_plan_rule_id' => '1ABp2Xd3t5aRPX',
                             'merchant_pricing_percentage' => 200,
                             'merchant_pricing_fixed' => 0,
                             'merchant_pricing_amount' =>  8000,
-                            'commission_pricing_plan_rule_id' => 'C6rNP4gZXcnZWM',
-                            'commission_pricing_percentage' => 20,
+                            'commission_pricing_plan_rule_id' => '1ABp2Xd3t5aRQX',
+                            'commission_pricing_percentage' => 180,
                             'commission_pricing_fixed' =>  0,
-                            'commission_pricing_amount' =>  800,
+                            'commission_pricing_amount' =>  7200,
                         ]
                     ]
                 ]
@@ -298,6 +300,7 @@ return [
                         'tax'                  => 144,
                         'fee'                  => 944,
                         'source_id'            => 'MLZBpXJVMuWbqM',
+                        'notes'                => [],
                         'commission_component' => [
                             'pricing_type'    => 'fixed',
                             'pricing_feature' => 'payment',

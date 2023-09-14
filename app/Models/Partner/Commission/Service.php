@@ -204,10 +204,10 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput('calculate_commission', $input);
 
-        $response =  $this->core()->calculateCommission($input);
+        $result =  $this->core()->calculateCommission($input);
+        $response = $this->applyResponseTransformation($result);
 
-        return $this->applyResponseTransformation($response);
-
+        return $response;
     }
 
     private function applyResponseTransformation(array $response): array
@@ -215,13 +215,14 @@ class Service extends Base\Service
 
         if($response['success'])
         {
-            $commissionData = $response['data'];
             $transformedResponse  = [];
-            $commissions          = $commissionData['commissions'];
-            $commissionComponents = $commissionData['commission_components'];
+            $commissions          = $response['data']['commissions'];
+            $commissionComponents = $response['data']['commission_components'];
+
             for ($i = 0; $i < sizeof($commissions); $i++)
             {
                 $commissionArray                         = $commissions[$i]->attributesToArray();
+                $commissionArray['notes']                = (object) ($commissionArray['notes']);
                 $commissionComponentsArray               = $commissionComponents[$i]->attributesToArray();
                 $commissionArray['commission_component'] = $commissionComponentsArray;
                 $transformedResponse[]                   = $commissionArray;
