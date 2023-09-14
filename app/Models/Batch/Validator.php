@@ -1214,9 +1214,29 @@ class Validator extends Base\Validator
     ];
 
     protected static $partnerSubmerchantReferralInviteConfigRules = [
-        Header::REFERRAL_PRODUCT => 'required|string|in:primary',
-        Header::REQUEST_KYC_ACCESS => 'sometimes|boolean',
+        Header::REFERRAL_PRODUCT   => 'required|string|in:primary',
+        Header::REQUEST_KYC_ACCESS => 'sometimes|boolean|required_without:metadata',
+        Header::METADATA           => 'sometimes|array|required_without:request_kyc_access|custom',
     ];
+
+    // The metadata for config is dynamic in nature. With current PP invite flow adding the following validation rules
+    // The following rules tend to change if more usecases are added for invite flow
+    protected static $partnerInviteMetadataRules = [
+        Header::OAUTH_REFERRAL => 'sometimes|boolean',
+        Header::CLIENT_ID      => 'string|required_with:oauth_referral',
+        Header::APPLICATION_ID => 'string|required_with:oauth_referral',
+        Header::REDIRECT_URI   => 'string|required_with:oauth_referral',
+        Header::SCOPE          => 'string|required_with:oauth_referral',
+    ];
+
+    public function validateMetadata($attribute, $value)
+    {
+        // If metadata is sent in partner referral invite, validate it with required fields
+        if(empty($value) === false)
+        {
+            $this->validateInput('partner_invite_metadata', $value);
+        }
+    }
 
     public function validateConfig($attribute, $value)
     {

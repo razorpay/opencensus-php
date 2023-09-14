@@ -9,7 +9,7 @@ class PartnerSubmerchantReferralInvite extends Base
     public function addSettingsIfRequired(& $input)
     {
         $config = $input['config'] ?? [];
-        if (empty($config) !== true)
+        if (empty($config) == false)
         {
             (new Validator())->validateInput('partner_submerchant_referral_invite_config', $config);
         }

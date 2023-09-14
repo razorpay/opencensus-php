@@ -196,6 +196,12 @@ class Header
     const REF_CODE           = 'ref_code';
     const REFERRAL_PRODUCT   = 'product';
     const REQUEST_KYC_ACCESS = 'request_kyc_access';
+    const METADATA           = 'metadata';
+    const CLIENT_ID          = 'client_id';
+    const APPLICATION_ID     = 'application_id';
+    const OAUTH_REFERRAL     = 'oauth_referral';
+    const REDIRECT_URI       = 'redirect_uri';
+    const SCOPE              = 'scope';
 
     //
     // Mpan Bulk creation headers
