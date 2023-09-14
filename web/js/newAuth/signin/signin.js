@@ -43,6 +43,7 @@ const Signin = () => {
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
   });
+  const [captchaDisabled, setDisabledCaptcha] = useState(false);
   const [orgData, setOrgData] = useState(
     /** @type {import("./types").TransformedOrgData} */
     ({}),
@@ -50,15 +51,19 @@ const Signin = () => {
   const [isFetchingOrgData, setFetchingOrgData] = useState(true);
 
   useEffect(() => {
-    // Only fetch org data if it's a banking url
+    /* dont show loader in case org is razorpay but still 
+       fetch org in background to check only for captcha 
+       so that it can toggled based on response 
+    */
     if (getHostName() === DEFAULT_ORG_DATA.hostname) {
       setOrgData(transformFetchOrgData(DEFAULT_ORG_DATA));
       setFetchingOrgData(false);
-      return;
     }
-    setFetchingOrgData(true);
     fetchOrg()
       .then((res) => {
+        if (res?.data?.configurations?.disable_captcha) {
+          setDisabledCaptcha(true);
+        }
         const response = transformFetchOrgData(res.data);
         setOrgData(response);
       })
@@ -147,7 +152,7 @@ const Signin = () => {
                           oneTapInfo={oneTapInfo}
                           theme={getTheme(orgData)}
                           isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
-                          skipCaptcha={isTestEnvironment()}
+                          skipCaptcha={isTestEnvironment() || captchaDisabled}
                         />
                       </CommanderShieldThemeWrapper>
                       <CaptchaTextView>

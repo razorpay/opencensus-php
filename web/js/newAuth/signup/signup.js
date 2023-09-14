@@ -34,6 +34,7 @@ const SignUp = () => {
   const [orgName, setOrgName] = useState();
   const [isFetchingOrgData, setFetchingOrgData] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [captchaDisabled, setDisabledCaptcha] = useState(false);
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
@@ -116,6 +117,9 @@ const SignUp = () => {
       .then((res) => {
         const isProgramDsCheck = res?.data?.features?.indexOf('program_ds_check') > -1;
         setOrgName(res?.data?.custom_code);
+        if (res?.data?.configurations?.disable_captcha) {
+          setDisabledCaptcha(true);
+        }
         setProgramDsCheck(isProgramDsCheck);
         setFetchingOrgData(false);
       })
@@ -242,7 +246,7 @@ const SignUp = () => {
                             authClientId={window.OAUTH_CLIENT_ID}
                             oneTapInfo={oneTapInfo}
                             showPasswordRules={isPasswordUXImprovementEnabled()}
-                            skipCaptcha={isTestEnvironment()}
+                            skipCaptcha={isTestEnvironment() || captchaDisabled}
                             autoReadOtpSignup
                             showMobileSignup
                             orgName={orgName}
