@@ -20,6 +20,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Payout\BatchHelper;
 
 class PayoutsBatchTest extends TestCase
 {
@@ -518,5 +519,63 @@ class PayoutsBatchTest extends TestCase
                 array_slice($fileContent, 1)
             )
         );
+    }
+
+    public function testCreatePayoutsBatchWithoutSkipWorkflow()
+    {
+        $customTestData = $this->testData['testCreatePayoutsBatchWithoutSkipWorkflow'];
+        $entry = $customTestData['request']['content'];
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+        $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+            'account_number' => '9177278012',
+        ]);
+
+        $fundAccount =['id'=>'10000000'];
+        $input = BatchHelper::getPayoutInput($entry, $fundAccount, $merchant);
+        $this->assertNotContains('skip_workflow', array_keys($input));
+    }
+
+    public function testCreatePayoutsBatchWithSkipWorkflow()
+    {
+        $customTestData = $this->testData['testCreatePayoutsBatchWithSkipWorkflowKey'];
+        $entry = $customTestData['request']['content'];
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+        $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+            'account_number' => '9177278012',
+        ]);
+
+        $fundAccount =['id'=>'10000000'];
+        $input = BatchHelper::getPayoutInput($entry, $fundAccount, $merchant);
+        $this->assertEquals(true, $input['skip_workflow']);
+    }
+
+    public function testCreatePayoutsBatchWithSkipWorkflowFalse()
+    {
+        $customTestData = $this->testData['testCreatePayoutsBatchWithoutSkipWorkflow'];
+        $entry = $customTestData['request']['content'];
+        $entry['payout']['skip_workflow'] = "false";
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+        $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+            'account_number' => '9177278012',
+        ]);
+
+        $fundAccount =['id'=>'10000000'];
+        $input = BatchHelper::getPayoutInput($entry, $fundAccount, $merchant);
+        $this->assertNotContains('skip_workflow', array_keys($input));
     }
 }

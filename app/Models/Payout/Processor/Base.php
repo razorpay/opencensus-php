@@ -2036,7 +2036,7 @@ class Base extends BaseCore
         //
         // Skip workflow for internally created payouts
         //
-        if (($this->isInternal === true)and
+        if (($this->isInternal === true) and
             ($enableWorkflowForInternalContact === false))
         {
             $this->workflowFeature = Payout\WorkflowFeature::SKIP_FOR_INTERNAL_PAYOUT;

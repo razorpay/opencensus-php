@@ -1834,7 +1834,7 @@ class Route
         'bulk_payout_validate'                     => ['post',  'xperience/bulk-payouts/validate',           'XperienceController@createBulkPayout'                 ],
         'bulk_payout_fetch_rows'                   => ['get',   'xperience/bulk-payouts/{id}/rows',          'XperienceController@getBulkPayoutRows'                ],
         'bulk_payout_process'                      => ['post',  'xperience/bulk-payouts/{id}/process',       'XperienceController@processBulkPayout'                ],
-        'bulk_payouts_migrate_admin'               => ['get',     'xperience/bulk-payouts/migrate',                 'XperienceController@migrateBulkPayouts'        ],
+        'bulk_payouts_migrate_admin'               => ['post',  'xperience/bulk-payouts/migrate',                 'XperienceController@migrateBulkPayouts'        ],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -10239,7 +10239,7 @@ class Route
         'get_non_3ds_details'                        => Permission::VIEW_ALL_WORKFLOW,
 
         // xperience admin routes
-        'bulk_payouts_migrate_admin'                => Permission::MIGRATE_BULK_PAYOUTS,
+        'bulk_payouts_migrate_admin'                => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
         // Self serve workflow admin routes
         'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,

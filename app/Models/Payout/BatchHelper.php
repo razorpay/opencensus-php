@@ -47,7 +47,7 @@ class BatchHelper
             PayoutModel\Entity::FUND_ACCOUNT_ID => $fundAccount[FundAccount\Entity::ID],
             PayoutModel\Entity::MODE            => $entry[self::PAYOUT][self::MODE],
             PayoutModel\Entity::REFERENCE_ID    => $entry[self::PAYOUT][self::REFERENCE_ID],
-            PayoutModel\Entity::SKIP_WORKFLOW   => $entry[self::PAYOUT][self::SKIP_WORKFLOW],
+
         // Notes is optional.
             PayoutModel\Entity::NOTES           => $entry[self::NOTES] ?? [],
             PayoutModel\Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
@@ -62,7 +62,6 @@ class BatchHelper
         {
             $input[PayoutModel\Entity::AMOUNT] = $entry[self::PAYOUT][self::AMOUNT];
         }
-
         if ((isset($entry[self::PAYOUT][self::SCHEDULED_AT]) === true) and
             (empty($entry[self::PAYOUT][self::SCHEDULED_AT]) === false))
         {
@@ -72,6 +71,10 @@ class BatchHelper
         $input[PayoutModel\Entity::NOTES] = self::formatNotesInput($input[PayoutModel\Entity::NOTES]);
 
         $input[PayoutModel\Entity::ORIGIN] = PayoutModel\Entity::DASHBOARD;
+
+        if(isset($entry[self::PAYOUT][self::SKIP_WORKFLOW]) and $entry[self::PAYOUT][self::SKIP_WORKFLOW] === 'true'){
+            $input[PayoutModel\Entity::SKIP_WORKFLOW] = true;
+        }
         // Returns removing attributes with empty values.
         return array_filter($input);
     }

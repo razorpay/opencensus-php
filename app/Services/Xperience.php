@@ -71,6 +71,7 @@ class Xperience
     const FILE                     = 'file';
     const USER_DETAILS             = 'user_details';
     const USER_EMAIL               = 'user_email';
+    const USER_MOBILE              = 'user_mobile';
     const USER_NAME                = 'user_name';
     const USER_ROLE                = 'user_role';
     const TOKEN                    = 'token';
@@ -373,8 +374,9 @@ class Xperience
         $request = [
             self::BULK_PAYOUT_IDS => $input[self::BULK_PAYOUT_IDS],
             self::USER_COMMENT    => $input[self::USER_COMMENT],
-            self::USER_EMAIL      => $user->getEmail(),
             self::USER_NAME       => $user->getName(),
+            self::USER_EMAIL      => $user->getEmail(),
+            self::USER_MOBILE     => $user->getContactMobile(),
             self::USER_ROLE       => $ba->getUserRole(),
             self::OTP             => $input[self::OTP],
             self::TOKEN           => $input[self::TOKEN],

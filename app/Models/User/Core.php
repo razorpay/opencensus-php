@@ -5303,7 +5303,7 @@ class Core extends Base\Core
 
             case Constants::APPROVE_BULK_PAYOUTS:
                 $smsPayload['sender'] = 'RZPAYX';
-                $smsPayload['templateName'] = 'sms.user.approve_bulk_payouts';
+                $smsPayload['templateName'] = 'sms.user.approve_bulk_payout_v2';
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;
         }

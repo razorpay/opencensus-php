@@ -423,5 +423,82 @@ return [
                 'status' => 'Accepted'
             ],
         ],
+    ],
+    'testCreatePayoutsBatchWithoutSkipWorkflow' => [
+        'request'  => [
+            'content' => [
+                'payout'      => [
+                        'account_number'       => '2224440041626905',
+                        'amount'               => 1000,
+                        'currency'             => 'INR',
+                        'mode'                 => 'NEFT',
+                        'purpose'              => 'payout',
+                        'reference_id'         => 'MFN1234',
+                        'queue_if_low_balance' => false,
+                        'fund_account'         => [
+                            'account_type' => 'bank_account',
+                            'bank_account' => [
+                                'name'           => 'Gaurav Kumar',
+                                'ifsc'           => 'HDFC0001234',
+                                'account_number' => '1121431121541121',
+                            ],
+                            'contact'      => [
+                                'name'         => 'Gaurav Kumar',
+                                'email'        => 'gaurav.kumar@example.com',
+                                'contact'      => '9876543210',
+                                'type'         => 'vendor',
+                                'reference_id' => 'Acme Contact ID 12345',
+                                'notes'        => [
+                                    'notes_key_1' => 'Tea, Earl Grey, Hot',
+                                    'notes_key_2' => 'Tea, Earl Grey... decaf.',
+                                ],
+                            ],
+                        ],
+                        'narration'            => 'dummy',
+
+                ],
+                'razorpayx_account_number' => '9177278012',
+                'merchant_id'              => '10000000000000',
+                'idempotency_key'          => 'dummy',
+            ]
+        ]
+    ], 'testCreatePayoutsBatchWithSkipWorkflowKey' => [
+        'request'  => [
+            'content' => [
+                'payout'      => [
+                    'account_number'       => '2224440041626905',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'mode'                 => 'NEFT',
+                    'purpose'              => 'payout',
+                    'reference_id'         => 'MFN1234',
+                    'skip_workflow'        => 'true',
+                    'queue_if_low_balance' => false,
+                    'narration'            => 'dummy',
+                    'fund_account'         => [
+                        'account_type' => 'bank_account',
+                        'bank_account' => [
+                            'name'           => 'Gaurav Kumar',
+                            'ifsc'           => 'HDFC0001234',
+                            'account_number' => '1121431121541121',
+                        ],
+                        'contact'      => [
+                            'name'         => 'Gaurav Kumar',
+                            'email'        => 'gaurav.kumar@example.com',
+                            'contact'      => '9876543210',
+                            'type'         => 'vendor',
+                            'reference_id' => 'Acme Contact ID 12345',
+                            'notes'        => [
+                                'notes_key_1' => 'Tea, Earl Grey, Hot',
+                                'notes_key_2' => 'Tea, Earl Grey... decaf.',
+                            ],
+                        ],
+                    ],
+                ],
+                'razorpayx_account_number' => '9177278012',
+                'merchant_id'              => '10000000000000',
+                'idempotency_key'          => 'dummy',
+            ]
+        ]
     ]
 ];
