@@ -1751,6 +1751,7 @@ class Gateway
             self::BILLDESK_OPTIMIZER,
             self::CCAVENUE,
             self::OPTIMIZER_RAZORPAY,
+            self::UPI_KOTAK,
         ],
 
         Method::AEPS => [
