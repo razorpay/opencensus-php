@@ -1151,7 +1151,9 @@ class Repository extends Base\Repository
 
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
-        if(Country::matches($merchant->getCountry() , Country::MY)){
+        $mode = $this->app['basicauth']->getMode();
+
+        if(Country::matches($merchant->getCountry() , Country::MY) && $mode == Mode::LIVE){
             $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT_MY];
         }
 
