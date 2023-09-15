@@ -59,9 +59,9 @@ export const StyledTable = styled.div(
       }
     }
     tbody > tr:hover {
+      cursor: pointer;
       .ClipboardCustom {
         opacity: 1;
-        cursor: pointer;
       }
       background-color: ${theme.colors.surface.background.level3.lowContrast};
       border-bottom: 1px solid rgba(121, 135, 156, 0.18);
@@ -149,7 +149,11 @@ export const StyledSearchByFilter = styled.div(
   [data-blade-component='select-input'] button {
     min-width: 110px;
   }
+  [data-blade-component='textinput'] {
+    width: 200px;
+  }
   @media screen and (max-width: ${theme.breakpoints.m}px) {
+    width: 100%;
     [data-blade-component='select-input'] button {
       min-width: 88px;
       max-width: 88px;
@@ -158,9 +162,8 @@ export const StyledSearchByFilter = styled.div(
       text-overflow: ellipsis;
       padding-right: ${theme.spacing[0]};
     }
-    [data-blade-component='textinput'] + button {
-      padding-left: ${theme.spacing[2]}px;
-      padding-right: ${theme.spacing[2]}px;
+    [data-blade-component='textinput'] {
+      width: 100%;
     }
   }
   .country-code-input > div > span {

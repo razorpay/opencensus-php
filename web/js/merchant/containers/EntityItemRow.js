@@ -3,9 +3,17 @@ import { connect } from 'react-redux';
 
 class EnityItemRow extends Component {
   render() {
-    const { id, luminateRowId, activeEntityId, activeSecEntityId, rowClasses = '' } = this.props;
+    const {
+      id,
+      luminateRowId,
+      activeEntityId,
+      activeSecEntityId,
+      rowClasses = '',
+      onRowClick,
+    } = this.props;
     return (
       <tr
+        onClick={() => onRowClick?.(id)}
         className={`${luminateRowId === id ? 'luminate' : ''}${
           activeEntityId === id || activeSecEntityId === id ? ' active' : ''
         }${rowClasses ?? ''}`}

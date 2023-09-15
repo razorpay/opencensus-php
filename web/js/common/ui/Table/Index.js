@@ -1,5 +1,5 @@
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 export default ({
   rows,
@@ -14,6 +14,7 @@ export default ({
   mobileColumns,
   customMobileRow,
   onCellClick,
+  onRowClick,
 }) => {
   const rowItems = [];
   const cols = isMobileResolution && mobileColumns ? mobileColumns : columns;
@@ -47,7 +48,12 @@ export default ({
         isMobileResolution && customMobileRow ? (
           customMobileRow(item)
         ) : (
-          <EntityItemRow key={`${item.id}_${index}`} id={item.id} rowClasses={item.rowClass}>
+          <EntityItemRow
+            onRowClick={onRowClick}
+            key={`${item.id}_${index}`}
+            id={item.id}
+            rowClasses={item.rowClass}
+          >
             {cols.map((column, index) => (
               <td class={column.columnClass ? column.columnClass : ''} key={index}>
                 {column.value(item, onCellClick)}

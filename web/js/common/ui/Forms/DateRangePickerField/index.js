@@ -1,21 +1,17 @@
 import { Component } from 'react';
-import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
+import { DateRangePicker } from 'react-dates';
 
 let numInstances = 1;
-const prefix = 'drp';
 
+// eslint-disable-next-line react/no-unsafe
 export default class DateRangePickerField extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      focused: null,
-      from:
-        props.startDate ||
-        moment()
-          .endOf('day')
-          .subtract(30, 'days'),
+      focused: props.defaultFocusedInput || null,
+      from: props.startDate || moment().endOf('day').subtract(30, 'days'),
       to: props.endDate || moment().endOf('day'),
     };
 
@@ -29,28 +25,24 @@ export default class DateRangePickerField extends Component {
     });
   }
 
-  onDatesChange = dates => {
+  onDatesChange = (dates) => {
     this.setState(
       {
         from: dates.startDate,
         to: dates.endDate,
       },
       () => {
-        if (
-          dates.startDate &&
-          dates.endDate &&
-          this.props.onDatesChange
-        ) {
+        if (dates.startDate && dates.endDate && this.props.onDatesChange) {
           this.props.onDatesChange({
             from: dates.startDate.unix(),
             to: dates.endDate.unix(),
           });
         }
-      }
+      },
     );
   };
 
-  onFocusChange = focused => {
+  onFocusChange = (focused) => {
     this.setState({ focused }, () => {
       if (this.props.onFocusChange) {
         this.props.onFocusChange(focused);
@@ -59,8 +51,10 @@ export default class DateRangePickerField extends Component {
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    let startDate = this.state.from,
-      endDate = this.state.to;
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    let startDate = this.state.from;
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    let endDate = this.state.to;
 
     if (
       nextProps.startDate &&
@@ -80,23 +74,12 @@ export default class DateRangePickerField extends Component {
   }
 
   render() {
-    let {
-      style,
-      startDate,
-      endDate,
-      onDatesChange,
-      onFocusChange,
-      ...otherProps
-    } = this.props;
+    const { style, startDate, endDate, onDatesChange, onFocusChange, ...otherProps } = this.props;
 
-    let from = this.state.from;
+    const from = this.state.from;
 
     return (
-      <div
-        class={`daterangepicker-container ${
-          this.state.focused ? 'datepicker--focused' : ''
-        }`}
-      >
+      <div class={`daterangepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}>
         <i class="i i-date-range" />
         <DateRangePicker
           startDateId={`${this.id}-startdate`}
@@ -106,8 +89,8 @@ export default class DateRangePickerField extends Component {
           onDatesChange={this.onDatesChange}
           onFocusChange={this.onFocusChange}
           focusedInput={this.state.focused}
-          isOutsideRange={day => moment().isBefore(day)}
-          initialVisibleMonth={_ => from}
+          isOutsideRange={(day) => moment().isBefore(day)}
+          initialVisibleMonth={(_) => from}
           hideKeyboardShortcutsPanel={true}
           readOnly={true}
           {...otherProps}

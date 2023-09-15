@@ -1,6 +1,6 @@
-import Spinner from 'common/ui/Spinner';
-import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
+import Spinner from 'common/ui/Spinner';
 import Table from 'common/ui/Table/Index';
 
 /*
@@ -34,6 +34,7 @@ export default function DataTable(props) {
     customMobileRow,
     mobileColumns,
     onCellClick,
+    onRowClick,
     hasMoreData = true,
   } = props;
 
@@ -63,6 +64,7 @@ export default function DataTable(props) {
         customMobileRow={customMobileRow}
         isMobileResolution={isMobileResolution}
         onCellClick={onCellClick}
+        onRowClick={onRowClick}
       />
       {!progressLoader && loading && (
         <div style={{ padding: 77 }} class="text-center">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
@@ -11,6 +11,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import {
   CUSTOM,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
+  LAST_7_DAYS,
   MOBILE_CALENDAR_NUMBER_OF_MONTHS,
   mobileBreakoints,
 } from 'merchant/views/Transactions/v2/common/constants';
@@ -33,7 +34,6 @@ import {
   refundsDurationSectionName,
   statusSectionName,
   searchBySectionName,
-  defaultCustomDuration,
   searchByOptionsMap,
 } from './constants';
 import { Duration, RefundsListFilterProps } from './types';
@@ -65,6 +65,7 @@ const RefundsListFilter = ({
   const [searchByValue, setSearchByValue] = useState(defaultSearchByValue);
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
+  const defaultFocusedInput = useRef<'startDate' | null>(null);
   const { refundsDurationOptions, statusOptions, searchByOptions } = getOptions(isMobile);
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
@@ -91,10 +92,12 @@ const RefundsListFilter = ({
   const onDurationChange = ([{ title, value }]: Option[]) => {
     trackDurationFilter({ dateRange: title, pathname });
     if (value === CUSTOM) {
-      setShowDateRangePicker(true);
+      defaultFocusedInput.current = 'startDate';
       setDate({
-        ...defaultCustomDuration,
+        from: getFromTime(LAST_7_DAYS).unix(),
+        to: endOfDay.unix(),
       });
+      setShowDateRangePicker(true);
       return;
     }
     setShowDateRangePicker(false);
@@ -160,6 +163,7 @@ const RefundsListFilter = ({
                     disabled={loading}
                     numberOfMonths={numberOfMonths}
                     withPortal={isMobile}
+                    defaultFocusedInput={defaultFocusedInput.current}
                   />
                 </SuspenseWithLoader>
               </div>
@@ -186,6 +190,7 @@ const RefundsListFilter = ({
             bottomSheetTitle={searchBySectionName}
           />
           <TextInput
+            showClearButton
             label=""
             defaultValue={defaultSearchByValue}
             placeholder="Search"

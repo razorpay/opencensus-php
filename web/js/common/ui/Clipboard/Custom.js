@@ -29,7 +29,8 @@ export default class Clipboard extends Component {
     }
   }
 
-  copyToClipboard() {
+  copyToClipboard(e) {
+    e.stopPropagation();
     if (this.props.isWebView) {
       dispatchWebViewEvent({
         eventType: 'COPY',

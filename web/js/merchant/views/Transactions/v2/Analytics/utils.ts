@@ -45,8 +45,10 @@ export const getOptions = (
   defaultDuration: Option;
   defaultDate: Duration;
 } => {
+  const overviewDuration = sessionStorage.getItem('overviewDuration');
+  const preSelectedDurationOption = overviewDuration && JSON.parse(overviewDuration);
   const endOfDay = moment().endOf('day');
-  const defaultDuration = durationSectionOptions[0];
+  const defaultDuration = preSelectedDurationOption || durationSectionOptions[0];
   const defaultDate = {
     from: getFromTime(defaultDuration.value as DurationOption['value']).unix(),
     to: endOfDay.unix(),

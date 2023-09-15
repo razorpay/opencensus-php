@@ -60,12 +60,12 @@ export enum SearchQueryParam {
   CONTACT = 'contact',
   COUNTRY_CODE = 'country_code',
   ORDER_ID = 'order_id',
-  VA_TRANSACTION_ID = 'va_transaction_id',
   PAYMENT_ID = 'payment_id',
   STATUS = 'status',
   FROM = 'from',
   TO = 'to',
   METHOD = 'method',
+  PUBLIC_STATUS = 'public_status',
 }
 
 export const MOBILE_CALENDAR_NUMBER_OF_MONTHS = 1;

@@ -12,8 +12,10 @@ import {
   Tooltip,
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
-import { withRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
+import { withRouter } from 'react-router-dom';
+
+import { paiseToRupees } from 'common/utils/rzp-utils';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
 import {
   BottomCardWrapper,
@@ -26,7 +28,6 @@ import {
 } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
-import { paiseToRupees } from 'common/utils/rzp-utils';
 
 import CardFooter from './CardFooter';
 import CardIcon from './CardIcon';
@@ -44,8 +45,9 @@ const BottomOverviewCard = ({
   const goToEntityPage = () => {
     track({
       objectName: `${name} Tab`,
-      properties: { overviewDate: durationOption?.title, section: 'Overview' },
+      properties: { overviewDate: durationOption.title, section: 'Overview' },
     });
+    sessionStorage.setItem('overviewDuration', JSON.stringify(durationOption));
     history.push(cardLink[name], { prevPath: location.pathname });
   };
   if (isLoading) {

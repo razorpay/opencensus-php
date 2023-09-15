@@ -1,10 +1,12 @@
 import qs from 'query-string';
 
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, decodeSensitiveFields } from 'common/utils/rzp-utils';
+import { SearchQueryParamType } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/types';
 
-import { TransactionsEntityRoute, TransactionsPagesMap } from './constants';
+import { LAST_7_DAYS, TransactionsEntityRoute, TransactionsPagesMap } from './constants';
 import { Track, TrackSearchButton } from './types';
+import { endOfDay, getFromTime } from './utils';
 
 export const track = ({
   objectName,
@@ -158,6 +160,45 @@ export const trackDetailsClick = ({
     properties: {
       section,
       ...properties,
+    },
+  });
+};
+
+export const trackNoSearchResult = ({ section }: { section: string }): void => {
+  const search = decodeSensitiveFields(qs.parse(location.search)) as Record<
+    SearchQueryParamType,
+    string | null
+  >;
+  const {
+    from,
+    to,
+    status,
+    method,
+    id,
+    email,
+    contact,
+    country_code: countryCode,
+    order_id: orderId,
+    payment_id: paymentId,
+    public_status,
+  } = search;
+
+  track({
+    objectName: 'No Transaction Entities',
+    actionName: 'Found',
+    properties: {
+      section,
+      from: from || getFromTime(LAST_7_DAYS).unix(),
+      to: to || endOfDay.unix(),
+      status,
+      public_status,
+      method,
+      id,
+      email,
+      contact,
+      countryCode,
+      orderId,
+      paymentId,
     },
   });
 };

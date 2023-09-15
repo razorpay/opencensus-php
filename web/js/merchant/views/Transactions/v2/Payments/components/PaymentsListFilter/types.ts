@@ -11,11 +11,11 @@ const {
   CONTACT,
   COUNTRY_CODE,
   ORDER_ID,
-  VA_TRANSACTION_ID,
   PAYMENT_ID,
   STATUS,
   FROM,
   TO,
+  PUBLIC_STATUS,
 } = SearchQueryParam;
 
 export type SearchQueryParamType =
@@ -27,7 +27,11 @@ export type SearchQueryParamType =
   | typeof COUNTRY_CODE
   | typeof ORDER_ID
   | typeof PAYMENT_ID
-  | typeof VA_TRANSACTION_ID;
+  | typeof FROM
+  | typeof TO
+  | typeof STATUS
+  | typeof METHOD
+  | typeof PUBLIC_STATUS;
 
 interface SearchArgs {
   [STATUS]: string;

@@ -1,6 +1,6 @@
 import { screen, waitFor, userEvent } from 'test-utils';
 
-import { renderApp } from './mocks/fixtures/PaymentsList';
+import { renderApp, handleDetailsClickSpy } from './mocks/fixtures/PaymentsList';
 
 describe('PaymentsList', () => {
   test('should render Payments List Filter', async () => {
@@ -31,5 +31,17 @@ describe('PaymentsList', () => {
     await waitFor(() => {
       expect(screen.getByText('Payments Table')).toBeInTheDocument();
     });
+  });
+
+  test('should allow to click on Payments Table Row', async () => {
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByText('Payments Table')).toBeInTheDocument();
+    });
+    const tableRow = screen.getByRole('button', {
+      name: 'Table Row',
+    });
+    tableRow.click();
+    expect(handleDetailsClickSpy).toBeCalled();
   });
 });

@@ -22,7 +22,7 @@ const RefundsTable = (props: RefundsTableProps): JSX.Element => {
         columns={columns}
         EmptyComponent={EmptyComponent}
         customClass="transactions-table-v2"
-        limit={10}
+        limit={25}
         {...props}
       />
     </StyledTable>

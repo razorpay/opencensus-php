@@ -8,7 +8,34 @@ import { paymentMethodOptionsMap } from 'merchant/views/Transactions/v2/Payments
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
 
-import { DetailsProps } from './types';
+import { DetailsProps, HandleDetailsClickParams } from './types';
+
+export const handleDetailsClick = ({
+  history,
+  itemId,
+  baseUrl,
+  initiatePage,
+  prevPath,
+  isButton,
+}: HandleDetailsClickParams): void => {
+  const { hash } = window.location;
+  const { method } = qs.parse(location.search);
+  const paymentMethodSelected =
+    (typeof method === 'string' && paymentMethodOptionsMap[method]) || paymentMethodOptionsMap.all;
+  let url = `${baseUrl}/${itemId}?init_page=${initiatePage}`;
+  if (hash) {
+    url += hash;
+  }
+  track({
+    objectName: `Transaction Details ${isButton ? 'Button' : 'Row'}`,
+    properties: {
+      paymentMethodSelected,
+      transactionIDActual: itemId,
+      section: initiatePage,
+    },
+  });
+  history.push(url, { prevPath });
+};
 
 const Details = ({
   history,
@@ -19,30 +46,13 @@ const Details = ({
 }: DetailsProps): JSX.Element => {
   const isMobile = useMobile([...mobileBreakoints, 'l']);
   const linkText = isMobile ? '' : 'Details';
-  const handleDetailsClick = () => {
-    const { hash } = window.location;
-    const { method } = qs.parse(location.search);
-    const paymentMethodSelected =
-      (typeof method === 'string' && paymentMethodOptionsMap[method]) ||
-      paymentMethodOptionsMap.all;
-    let url = `${baseUrl}/${itemId}?init_page=${initiatePage}`;
-    if (hash) {
-      url += hash;
-    }
-    track({
-      objectName: 'Transaction Details Button',
-      properties: {
-        paymentMethodSelected,
-        transactionIDActual: itemId,
-        section: initiatePage,
-      },
-    });
-    history.push(url, { prevPath });
-  };
   return (
     <Link
       variant="button"
-      onClick={handleDetailsClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleDetailsClick({ history, itemId, baseUrl, initiatePage, prevPath, isButton: true });
+      }}
       icon={ChevronRightIcon}
       iconPosition="right"
     >

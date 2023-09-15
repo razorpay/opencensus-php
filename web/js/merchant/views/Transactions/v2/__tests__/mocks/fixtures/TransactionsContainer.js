@@ -1,4 +1,5 @@
 import { render } from 'test-utils';
+
 import TransactionsContainer from 'merchant/views/Transactions/v2/TransactionsContainer';
 import 'jest-location-mock';
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
@@ -30,6 +31,8 @@ jest.mock('merchant/views/Transactions/v2/Landing', () => () => <div>Landing</di
 jest.mock('merchant/views/Transactions/v2/EntitiesOverview', () => () => (
   <div>EntitiesOverview</div>
 ));
+
+window.scrollTo = jest.fn();
 
 export const renderApp = ({ pathname } = {}) => {
   return render(<TransactionsContainer />, {

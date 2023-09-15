@@ -29,16 +29,22 @@ export const makeIdLink =
     if (page) selfServeInitiateData.page = page;
     if (window && window.session_id) selfServeInitiateData.props.sessionId = window.session_id;
 
-    url = `${url}?init_point=${initiatePoint}&init_page=${initiatePage}`;
-    // #hash must come after the query params: https://stackoverflow.com/a/12683131/6127580
-    if (hash) {
-      url += hash;
-    }
+    const search = `?init_point=${initiatePoint}&init_page=${initiatePage}`;
 
     const onLinkClick = () => selfServeTrackInitiate(selfServeInitiateData);
 
     return (
-      <Link to={url} onClick={onLinkClick}>
+      <Link
+        to={{
+          pathname: url,
+          search,
+          hash,
+          state: {
+            prevPath: initiatePoint,
+          },
+        }}
+        onClick={onLinkClick}
+      >
         {element}
       </Link>
     );

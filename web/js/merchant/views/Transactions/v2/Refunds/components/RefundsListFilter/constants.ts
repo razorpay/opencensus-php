@@ -1,9 +1,5 @@
 import { durationOptionsMap } from 'merchant/views/Transactions/v2/common/constants';
-import {
-  endOfDay,
-  generateOptions,
-  getFromTime,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { generateOptions } from 'merchant/views/Transactions/v2/common/utils';
 
 export const refundsDurationOptionsMap = { ...durationOptionsMap };
 export const refundsDurationSectionOptions = generateOptions(refundsDurationOptionsMap);
@@ -16,10 +12,6 @@ export const refundsDurationOptions = [
     },
   },
 ];
-export const defaultCustomDuration = {
-  from: getFromTime('last90Days').unix(),
-  to: endOfDay.unix(),
-};
 
 export const statusOptionsMap = {
   all: 'All',

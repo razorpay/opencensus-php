@@ -1,5 +1,6 @@
 import { screen, waitFor, userEvent } from 'test-utils';
-import { renderApp } from './mocks/fixtures/RefundsList';
+
+import { handleDetailsClickSpy, renderApp } from './mocks/fixtures/RefundsList';
 
 describe('RefundsList', () => {
   test('should render Refunds List Filter', async () => {
@@ -30,5 +31,17 @@ describe('RefundsList', () => {
     await waitFor(() => {
       expect(screen.getByText('Refunds Table')).toBeInTheDocument();
     });
+  });
+
+  test('should allow to click on Refunds Table Row', async () => {
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByText('Refunds Table')).toBeInTheDocument();
+    });
+    const tableRow = screen.getByRole('button', {
+      name: 'Table Row',
+    });
+    tableRow.click();
+    expect(handleDetailsClickSpy).toBeCalled();
   });
 });

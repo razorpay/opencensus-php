@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
@@ -16,6 +16,7 @@ import {
   mobileBreakoints,
   MOBILE_CALENDAR_NUMBER_OF_MONTHS,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
+  LAST_7_DAYS,
 } from 'merchant/views/Transactions/v2/common/constants';
 import {
   StyledDateRangePicker,
@@ -77,6 +78,7 @@ const PaymentsListFilter = ({
   const isContactSearch = searchBy === SearchQueryParam.CONTACT;
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
+  const defaultFocusedInput = useRef<'startDate' | null>(null);
   const { paymentDurationOptions, paymentMethodOptions, statusOptions, searchByOptions } =
     getOptions(isMobile);
   const numberOfMonths = isMediumDesktopAndMobile
@@ -109,6 +111,11 @@ const PaymentsListFilter = ({
   const onDurationChange = ([{ title, value }]: Option[]) => {
     trackDurationFilter({ dateRange: title, pathname });
     if (value === CUSTOM) {
+      defaultFocusedInput.current = 'startDate';
+      setDate({
+        from: getFromTime(LAST_7_DAYS).unix(),
+        to: endOfDay.unix(),
+      });
       setShowDateRangePicker(true);
       return;
     }
@@ -191,6 +198,7 @@ const PaymentsListFilter = ({
                     disabled={loading}
                     numberOfMonths={numberOfMonths}
                     withPortal={isMobile}
+                    defaultFocusedInput={defaultFocusedInput.current}
                   />
                 </SuspenseWithLoader>
               </div>
@@ -234,6 +242,7 @@ const PaymentsListFilter = ({
             />
           ) : null}
           <TextInput
+            showClearButton
             label=""
             defaultValue={defaultSearchByValue}
             placeholder="Search"
