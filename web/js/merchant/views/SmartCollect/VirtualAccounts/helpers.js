@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 export const DESCRIPTOR_LENGTH_VPA = 20;
 export const DESCRIPTOR_LENGTH_BANK_ACCOUNT = 16;
 export const MERCHANT_PREFIX_MIN_LENGTH_VPA = 4;
@@ -117,3 +118,12 @@ export function getStyle_CustomPrefixInput_VPA(rzp_prefix, handle) {
 
   return styles;
 }
+
+export const isAxisBank = (bankAccount) => {
+  if (!bankAccount) return false;
+  return bankAccount.bank_name?.toLowerCase() === 'axis bank';
+};
+export const isRBLBank = (bankAccount) => {
+  if (!bankAccount) return false;
+  return bankAccount.bank_name?.toLowerCase() === 'rbl bank';
+};

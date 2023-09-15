@@ -1,6 +1,9 @@
 import React from 'react';
+import { Link as BladeLink } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
+import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
 import Button from 'common/new-ui/Button';
@@ -10,6 +13,9 @@ import Alert from 'common/new-ui/Alert';
 import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
+import { AXIS_BANK_MIGRATION_FAQ } from 'merchant/constants/urls';
+import { isAxisBank, isRBLBank } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
@@ -54,7 +60,7 @@ const _paymentId = () => {
     fetchFeatureStatus,
   },
 )
-export default class extends React.Component {
+class VirtualAccountDetails extends React.Component {
   state = {
     isEditSingleVaMid: false,
   };
@@ -148,20 +154,24 @@ export default class extends React.Component {
       user,
       isTestMode,
       updateCloseByDate,
+      splitz,
     } = this.props;
     const isClosed = virtualaccount.status === 'closed';
 
+    let isRblAccountMigrationEnabled = false;
+    if (splitz) {
+      const {
+        abExperiments: { rbl_account_migration },
+      } = splitz;
+
+      isRblAccountMigrationEnabled = rbl_account_migration.variables.result === 'on';
+    }
+    // bankAccount1 : new/latest account
+    // bankAccount2 : old account
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(virtualaccount);
-    const isYesBankOrICICIValidation = (bankName) => {
-      if (bankName?.toLowerCase() === 'yes bank' || bankName?.toLowerCase() === 'icici bank') {
-        return true;
-      }
-      return false;
-    };
     const hasBankAccount = bankAccount1 || bankAccount2;
-    const isYesBankorICICI =
-      isYesBankOrICICIValidation(bankAccount1?.bank_name) ||
-      isYesBankOrICICIValidation(bankAccount2?.bank_name);
+    const isRblAccountMigrated =
+      isRblAccountMigrationEnabled && isAxisBank(bankAccount1) && isRBLBank(bankAccount2);
 
     const valueToCopy = getVirtualAccountDetailsToCopy({
       bankAccount1,
@@ -173,7 +183,7 @@ export default class extends React.Component {
       upiAddress,
     });
     const showTestPaymentBtn = mode === 'test' && virtualaccount.status === 'active';
-    const yesBankExpiryDate = new Date('2022-01-31');
+    const rblBankExpiryDate = new Date('2023-11-01');
     let closeByContent = () => <span>No closing date</span>;
     if (!isClosed && this.state.isEditSingleVaMid) {
       closeByContent = () => (
@@ -209,20 +219,18 @@ export default class extends React.Component {
             </div>
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                {isYesBankorICICI && (
+                {isRblAccountMigrated && (
                   <Alert.Warning iconBefore="i-warning">
                     Share new customer identifier details with your customers to accept payments.
-                    Your older customer identifiers will not accept payments from 31 Jan 2022.
-                    <a
-                      class="redirect-text"
-                      alt="yes bank moratorium razorpay"
+                    Your older customer identifiers will not accept payments from 1 Nov 2023.
+                    <BladeLink
                       target="_blank"
-                      href="https://razorpay.com/docs/smart-collect/pa-pg-migration/#frequently-asked-questions-faqs"
+                      href={AXIS_BANK_MIGRATION_FAQ}
                       rel="noreferrer noopener"
                     >
                       {' '}
                       Why ?
-                    </a>
+                    </BladeLink>
                   </Alert.Warning>
                 )}
                 <div class="VirtualAccountDetails">
@@ -235,7 +243,7 @@ export default class extends React.Component {
                       </b>
                     }
                   >
-                    {isYesBankorICICI ? (
+                    {isRblAccountMigrated ? (
                       <CustomClipboard
                         value={valueToCopy}
                         onCopy={() => {
@@ -243,7 +251,7 @@ export default class extends React.Component {
                         }}
                       >
                         <div style={{ fontSize: '12px' }}>
-                          {new Date() > yesBankExpiryDate ? 'Expired' : 'Expires on 31 Jan'}
+                          {new Date() > rblBankExpiryDate ? 'Expired' : 'Expires on 1 Nov'}
                         </div>
                       </CustomClipboard>
                     ) : (
@@ -260,8 +268,8 @@ export default class extends React.Component {
 
                   <div class="divider" />
                   <AccountDetails
-                    bankAccount1={bankAccount2 ? bankAccount2 : bankAccount1}
-                    upiAddress={bankAccount2 === undefined ? upiAddress : null}
+                    bankAccount1={bankAccount2 || bankAccount1}
+                    upiAddress={!bankAccount2 && upiAddress}
                   />
                   {bankAccount2 && (
                     <div>
@@ -395,6 +403,8 @@ export default class extends React.Component {
     );
   }
 }
+
+export default withSplitzService(VirtualAccountDetails);
 
 const AllowedPayersList = ({ allowedPayers }) => (
   <table class="allowed-payers-list">

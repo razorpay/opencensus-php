@@ -77,6 +77,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/smartcollect'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'rbl_account_migration',
+          experimentId: {
+            beta: 'MbParid2BNlpve',
+            production: 'MbPd1lnvPzPzSo',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       matchByDashboard: ['linkedAccount'],
       routesToMatch: ['/reports'],
       abExperiments: [
