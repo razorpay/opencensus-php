@@ -4053,10 +4053,7 @@ class Service extends Base\Service
             return $response;
         }
 
-        //Can add more data here in future if needed related to transaction
-        $transaction_data ['transaction_id'] = $transaction->getId();
-
-        $response['transaction_data'] = $transaction_data;
+        $response['transaction_data'] = $transaction;
 
         return $response;
     }
