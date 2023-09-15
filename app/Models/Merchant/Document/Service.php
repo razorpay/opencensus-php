@@ -412,8 +412,8 @@ class Service extends Base\Service
             // Fetch Internal FIRS Documents
             $internalFirsDocumentInput = array(
                 "merchantId"=> $merchantId,
-                "month"     => $input['month'],
-                "year"      => $input['year'],
+                "month"     => intval($input['month']),
+                "year"      => intval($input['year']),
                 "type"      => DocumentConstants::FIRS_INTERNAL_AMEX_DOCUMENT_TYPE
             );
 
