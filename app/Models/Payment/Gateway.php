@@ -619,6 +619,7 @@ class Gateway
     * since their verify API's stop working after a certain time
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
+        self::UPI_KOTAK,
         self::UPI_SBI,
         self::CARD_FSS,
         self::AXIS_MIGS,
