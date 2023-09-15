@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Order\OrderMeta;
@@ -364,6 +365,10 @@ class OrderController extends Controller
 
     protected function pushForBarricade($data): void
     {
+
+        if ($this->app['rzp.mode'] !== Mode::LIVE ){
+            return;
+        }
 
         $data['action'] = [
             'action' => self::BARRICADE_MERCHANT_INTEGRATION_ORDER_FETCH
