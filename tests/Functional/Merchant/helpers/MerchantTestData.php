@@ -13801,6 +13801,34 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForCurrencyCloudWithAmountGreaterThanMaxAmount' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCurrencyCloudWithAmountLessThanMinAmount' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCurrencyCloudEnabledWithoutPL' => [
         'request' => [
             'url' => '/preferences',

@@ -133,7 +133,7 @@ class CheckoutInternationalPreferencesTest extends TestCase {
             'swift'=> 0,
         ];
         $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
-        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2', 'amount' => '200000', 'currency' => 'USD']);
 
         $this->fixtures->create('merchant_international_integrations', [
             InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
@@ -160,7 +160,7 @@ class CheckoutInternationalPreferencesTest extends TestCase {
             'swift'=> 0,
         ];
         $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
-        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2', 'amount' => '200000', 'currency' => 'USD']);
 
         $this->fixtures->create('merchant_international_integrations', [
             InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
@@ -186,7 +186,7 @@ class CheckoutInternationalPreferencesTest extends TestCase {
             'swift'=> 1,
         ];
         $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
-        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2', 'amount' => '200000', 'currency' => 'USD']);
 
         $this->fixtures->create('merchant_international_integrations', [
             InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
@@ -206,6 +206,63 @@ class CheckoutInternationalPreferencesTest extends TestCase {
         $this->assertEquals(0,$response['methods']['intl_bank_transfer']['usd']);
         $this->assertEquals(1,$response['methods']['intl_bank_transfer']['swift']);
     }
+
+    public function testGetCheckoutPreferencesForCurrencyCloudWithAmountGreaterThanMaxAmount()
+    {
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift'=> 1,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2', 'amount' => '9000000', 'currency' => 'USD']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response['methods']['intl_bank_transfer']);
+        $this->assertEmpty($response['methods']['intl_bank_transfer']);
+    }
+
+    public function testGetCheckoutPreferencesForCurrencyCloudWithAmountLessThanMinAmount()
+    {
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift'=> 1,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2', 'amount' => '100000', 'currency' => 'USD']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response['methods']['intl_bank_transfer']);
+        $this->assertEmpty($response['methods']['intl_bank_transfer']);
+    }
+
 
     public function testGetCheckoutPreferencesForCurrencyCloudEnabledWithoutPL()
     {

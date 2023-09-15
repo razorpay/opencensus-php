@@ -1713,6 +1713,62 @@ class MethodsTest extends TestCase
             $offer1,
             $offer2,
         ],[
+            'amount' => '200000',
+            'currency' => 'USD',
+            'product_type' => ProductType::PAYMENT_LINK_V2
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = ['order' => $order->toArray()];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportWithOrderAmountGreaterThanMaxAmount(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->enablePaytm();
+        $this->fixtures->merchant->enableIntlBankTransfer();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ],[
+            'amount' => '9000000',
+            'currency' => 'USD',
+            'product_type' => ProductType::PAYMENT_LINK_V2
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = ['order' => $order->toArray()];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportWithOrderAmountLessThanMinAmount(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->enablePaytm();
+        $this->fixtures->merchant->enableIntlBankTransfer();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ],[
+            'amount' => '100000',
+            'currency' => 'USD',
             'product_type' => ProductType::PAYMENT_LINK_V2
         ]);
 

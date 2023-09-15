@@ -665,6 +665,15 @@ class Checkout
         if ($productType !== ProductType::PAYMENT_LINK_V2)
         {
             $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = [];
+            return;
+        }
+
+        $amountInINR = (new \RZP\Models\Currency\Core())->convertAmount($order->getAmount(), $order->getCurrency(), Currency::INR);
+
+        if ($amountInINR > Payment\Processor\IntlBankTransfer::MAX_INTL_BANK_TRANSFER_AMOUNT ||
+            $amountInINR < Payment\Processor\IntlBankTransfer::MIN_INTL_BANK_TRANSFER_AMOUNT)
+        {
+            $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = [];
         }
     }
 
