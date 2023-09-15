@@ -103,6 +103,8 @@ class PaymentLinkService
             // Return fee in payment currency
             // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
             $data[Entity::PAYMENT]['fee_in_mcc'] = $payment->getFeeInMcc() ?? 0;
+            $data[Entity::PAYMENT]['customer_fee'] = $payment->getConvenienceFee() ?? 0;
+            $data[Entity::PAYMENT]['customer_fee_gst'] = $payment->getConvenienceFeeGst() ?? 0;
 
             $this->trace->info(
                 TraceCode::ORDER_NOTIFY_REQUEST_FOR_PAYMENT_V2,
