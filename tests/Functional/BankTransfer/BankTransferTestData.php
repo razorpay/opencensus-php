@@ -2774,4 +2774,15 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testRblToAxisMigration' => [
+        "job_mode" => "sync",
+        "gateway" => "bt_rbl",
+        "from_time" => null,
+        "to_time" => null,
+        "limit" => 1,
+        "process_count" => 1,
+        "merchant_ids" => []
+    ],
+
 ];

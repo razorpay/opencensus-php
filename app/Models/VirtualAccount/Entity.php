@@ -394,7 +394,8 @@ class Entity extends Base\PublicEntity
 
             $bankAccount2Array[] = $bankAccount2;
 
-            if ($ifsc === Provider::IFSC[Provider::RBL])
+            if ($ifsc === Provider::IFSC[Provider::AXIS]
+                or $ifsc === Provider::IFSC[Provider::RBL])
             {
                 $receivers = array_merge($bankAccount2Array, $receivers);
             }

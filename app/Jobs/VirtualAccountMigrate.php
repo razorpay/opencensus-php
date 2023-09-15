@@ -29,6 +29,11 @@ class VirtualAccountMigrate extends Job
     private $afterId;
 
     /**
+     * @var string
+     */
+    private $nextAfterId;
+
+    /**
      * @var int
      */
     private $fromTime;
@@ -43,6 +48,8 @@ class VirtualAccountMigrate extends Job
      */
     private $batchSize;
 
+    private $ifscCode;
+
     /**
      * @var array
      */
@@ -51,19 +58,23 @@ class VirtualAccountMigrate extends Job
     public function __construct(
         string $mode,
         string $afterId,
+        string $nextAfterId,
         int $fromTime,
         int $toTime,
         int $batchSize,
+        string $ifscCode,
         array $merchantIds = [])
     {
         parent::__construct($mode);
 
         $this->afterId = $afterId;
+        $this->nextAfterId = $nextAfterId;
 
         $this->fromTime = $fromTime;
         $this->toTime   = $toTime;
 
         $this->batchSize   = $batchSize;
+        $this->ifscCode = $ifscCode;
         $this->merchantIds = $merchantIds;
     }
 
@@ -72,13 +83,14 @@ class VirtualAccountMigrate extends Job
         parent::handle();
 
         $tracePayload = [
-            'job_attempts' => $this->attempts(),
-            'mode'         => $this->mode,
-            'after_id'     => $this->afterId,
-            'from_time'    => $this->fromTime,
-            'to_time'      => $this->toTime,
-            'batch_size'   => $this->batchSize,
-            'merchant_ids' => $this->merchantIds,
+            'job_attempts'  => $this->attempts(),
+            'mode'          => $this->mode,
+            'after_id'      => $this->afterId,
+            'next_after_id' => $this->nextAfterId,
+            'from_time'     => $this->fromTime,
+            'to_time'       => $this->toTime,
+            'batch_size'    => $this->batchSize,
+            'merchant_ids'  => $this->merchantIds,
         ];
 
         $this->trace->debug(TraceCode::VA_MIGRATE_JOB_TRIGGERED, $tracePayload);
@@ -102,11 +114,13 @@ class VirtualAccountMigrate extends Job
 
     private function migrate()
     {
-        (new VirtualAccount\Core)->migrateYesbankVirtualAccounts(
+        (new VirtualAccount\Core)->migrateRblBankVirtualAccounts(
             $this->afterId,
+            $this->nextAfterId,
             $this->fromTime,
             $this->toTime,
             $this->batchSize,
+            $this->ifscCode,
             $this->merchantIds);
     }
 }

@@ -990,6 +990,12 @@ class Service extends Base\Service
         return $va;
     }
 
+    /* Bulk migration to RBL to Axis */
+    public function bulkMigrateRblBank(array $input)
+    {
+        return (new Core)->bulkMigrateRblBank($input);
+    }
+
     protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)

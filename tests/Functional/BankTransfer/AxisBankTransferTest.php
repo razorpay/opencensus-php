@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Cache;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\VirtualAccount;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -383,8 +384,8 @@ class AxisBankTransferTest extends TestCase
         return $bankAccount['account_number'];
     }
 
-    public function testBankTransferAxisImps() {
-
+    public function testBankTransferAxisImps()
+    {
         $testData = $this->testData['testBankTransferAxis'];
 
         $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
@@ -475,6 +476,129 @@ class AxisBankTransferTest extends TestCase
         $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
         $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
 
+    }
+
+    public function testRblToAxisMigration()
+    {
+        $this->fixtures->merchant->on('live')->createAccount('migrateMerchnt');
+        $this->fixtures->merchant->on('live')->enableMethod('migrateMerchnt', 'bank_transfer');
+
+        // Virtual Account's with a migratable bank account
+        $virtualAccount = $this->fixtures->on('live')->create(
+            'virtual_account',
+            [
+                'merchant_id' => 'migrateMerchnt',
+                'status' => 'active',
+            ]
+        );
+        $bankAccount = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'merchant_id' => 'migrateMerchnt',
+                'entity_id' => $virtualAccount->getId(),
+                'type' => 'virtual_account',
+                'account_number' => '2223330075206730',
+                'ifsc_code' => 'RATN0VAAPIS',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id' => $bankAccount->getId()]
+        );
+
+        $virtualAccountCreatedAt = $virtualAccount->getAttribute('created_at');
+
+        // Create Input body and trigger Migration Job
+        $input = $this->testData[__FUNCTION__];
+        $input['merchantIds'] = ['migrateMerchnt'];
+        $input['from_time'] = $virtualAccountCreatedAt;
+        $input['to_time'] = $virtualAccountCreatedAt;
+
+        $response = (new VirtualAccount\Core)->bulkMigrateRblBank($input);
+
+        $this->assertNotNull($response);
+        $this->assertTrue($response['Success']);
+        $this->assertNotNull($response['next_after_id']);
+
+        // Validate creation of bank_account_2 and attributes
+        $migratedVirtualAccount = $this->getDbEntityById(
+            'virtual_account',
+            $virtualAccount->getAttribute('id'),
+            'live'
+        );
+
+        $bankAccount2Id = $migratedVirtualAccount->getAttribute('bank_account_id_2');
+
+        $this->assertNotNull($bankAccount2Id);
+
+        $bankAccount2 = $this->getDbEntityById(
+            'bank_account',
+            $bankAccount2Id,
+            'live'
+        );
+
+        // Assert Axis IFSC code to migrated account IFSC
+        $this->assertEquals('UTIB000RAZP', $bankAccount2['ifsc_code']);
+
+    }
+
+    public function testRblToAxisMigrationWithInvalidAccountPrefix()
+    {
+        // As part of RBL to Axis migration, we only migrate bank accounts with certain prefixes
+        // Valid Account number prefixes: "2223", "2224", "VAJSWCA"
+        $this->fixtures->merchant->on('live')->createAccount('migrateMerchnt');
+        $this->fixtures->merchant->on('live')->enableMethod('migrateMerchnt', 'bank_transfer');
+
+        // Virtual Account's with a non-migratable bank account
+        $virtualAccount = $this->fixtures->on('live')->create(
+            'virtual_account',
+            [
+                'merchant_id' => 'migrateMerchnt',
+                'status' => 'active',
+            ]
+        );
+
+        $bankAccount = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'merchant_id' => 'migrateMerchnt',
+                'entity_id' => $virtualAccount->getId(),
+                'type' => 'virtual_account',
+                'account_number' => '7878780085114245',
+                'ifsc_code' => 'RATN0VAAPIS',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id' => $bankAccount->getId()]
+        );
+
+        $virtualAccountCreatedAt = $virtualAccount->getAttribute('created_at');
+
+        // Create Input body and trigger Migration Job
+        $input = $this->testData['testRblToAxisMigration'];
+        $input['merchantIds'] = ['migrateMerchnt'];
+        $input['from_time'] = $virtualAccountCreatedAt;
+        $input['to_time'] = $virtualAccountCreatedAt;
+
+        $response = (new VirtualAccount\Core)->bulkMigrateRblBank($input);
+
+        $this->assertNotNull($response);
+        $this->assertTrue($response['Success']);
+        $this->assertNotNull($response['next_after_id']);
+
+        // Validate that non-eligible virtual account wasn't migrated
+        $nonMigratedVirtualAccount = $this->getDbEntityById(
+            'virtual_account',
+            $virtualAccount->getAttribute('id'),
+            'live'
+        );
+
+        $this->assertNull($nonMigratedVirtualAccount->getAttribute('bank_account_id_2'));
     }
 
 }

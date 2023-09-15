@@ -474,4 +474,54 @@ class Repository extends Base\Repository
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->get();
     }
+
+    /*
+     * SELECT `virtual_accounts`.*
+     * FROM `virtual_accounts`
+     * INNER JOIN `bank_accounts` ON (`virtual_accounts`.`bank_account_id` = `bank_accounts`.`id`) OR (`virtual_accounts`.`bank_account_id_2` = `bank_accounts`.`id`)
+     * WHERE `ifsc_code` = ?
+     * AND `virtual_accounts`.`id` > ?
+     * AND `status` = ?
+     * AND `bank_account_id` IS NOT NULL
+     * AND `virtual_accounts`.`created_at` BETWEEN ? AND ?
+     * AND `virtual_accounts`.`merchant_id` IN (?)
+     * ORDER BY `virtual_accounts`.`id` ASC LIMIT 1000
+     */
+    public function getMigrateQuery(string $afterId, string $fromTime, string $toTime, int $limit, array $merchantIds = [], $ifscCode = null)
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $virtualAccountAttrs            = $this->repo->virtual_account->dbColumn('*');
+        $virtualAccountIdCol            = $this->repo->virtual_account->dbColumn(Entity::ID);
+        $virtualAccountBankAccountIdCol = $this->repo->virtual_account->dbColumn(Entity::BANK_ACCOUNT_ID);
+        $virtualAccountBankAccountId2Col = $this->repo->virtual_account->dbColumn(Entity::BANK_ACCOUNT_ID2);
+        $virtualAccountCreatedAt        = $this->repo->virtual_account->dbColumn(Entity::CREATED_AT);
+        $bankAccountIdColumn            = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $query->select($virtualAccountAttrs)
+            ->join(Table::BANK_ACCOUNT,
+                function ($join) use ($virtualAccountBankAccountIdCol, $virtualAccountBankAccountId2Col, $bankAccountIdColumn)
+            {
+                $join->on($virtualAccountBankAccountIdCol, '=', $bankAccountIdColumn)
+                ->orOn($virtualAccountBankAccountId2Col, '=', $bankAccountIdColumn);
+            })
+            ->where(BankAccount\Entity::IFSC_CODE, $ifscCode)
+            ->where($virtualAccountIdCol, '>', $afterId)
+            ->where(Entity::STATUS, Status::ACTIVE)
+            ->whereBetween($virtualAccountCreatedAt, [$fromTime, $toTime])
+            ->orderBy($virtualAccountIdCol);
+
+        if (empty($merchantIds) === false)
+        {
+            $merchantIdCol = $this->repo->virtual_account->dbColumn(Entity::MERCHANT_ID);
+            $query->whereIn($merchantIdCol, $merchantIds);
+        }
+
+        $query->limit($limit);
+
+        return $query;
+
+    }
+
 }

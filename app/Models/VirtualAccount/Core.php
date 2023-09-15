@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\AppsRiskCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\VirtualAccountTpv;
@@ -948,5 +949,235 @@ class Core extends Base\Core
                 TraceCode::APPS_RISK_CHECK_SQS_PUSH_FAILED,
                 $request);
         }
+    }
+
+    protected function getNextBatchIdForRblBankMigrate(BuilderEx $subQuery)
+    {
+        // get the max(id) from the dataset, will be used as the "after_id" for the next batch
+        $afterId = \DB::table(\DB::raw("({$subQuery->toSql()}) as sub"))
+            ->mergeBindings($subQuery->getQuery())
+            ->max(Entity::ID);
+
+        // For logging and debugging
+        $sqlWithBindings = str_replace_array('?', $subQuery->getBindings(), $subQuery->toSql());
+
+        $this->trace->info(TraceCode::VA_MIGRATE_AFTER_ID_RETRIEVED, [
+            'after_id' => $afterId,
+            'raw_sql'  => $sqlWithBindings
+        ]);
+
+        return $afterId;
+    }
+
+    public function migrateRblBankToAxisIfsc(Entity $virtualAccount)
+    {
+
+        $validPrefixes = ["2223", "2224", "VAJSWCA"];
+
+        $bankAccount = $virtualAccount->bankAccount;
+        $bankAccount2 = $virtualAccount->bankAccount2;
+
+        $migratableIfsc = Provider::IFSC[Provider::RBL];
+
+        // Following bankAccount|bankAccount2 will get checked
+        // rbl | otherBank - fail
+        // otherBank | otherBank - fail
+        // rbl | null - pass
+        // otherBank | rbl - pass
+        // null | rbl - pass
+        if ($virtualAccount->hasBankAccount2() === true)
+        {
+            if ($bankAccount2->getIfscCode() !== $migratableIfsc)
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            if ($bankAccount === null or $bankAccount->getIfscCode() !== $migratableIfsc)
+            {
+                return 0;
+            }
+        }
+
+        // Only accounts with  2223, 2224, VAJSWCA prefix can be migrated
+        $accountPrefix = substr($bankAccount->getAccountNumber(), 0, 4);
+
+        if (in_array($accountPrefix, $validPrefixes))
+        {
+            if ($virtualAccount->hasBankAccount2() === true)
+            {
+                $newBankAccount = $bankAccount2->replicate();
+            }
+            else
+            {
+                $newBankAccount = $bankAccount->replicate();
+            }
+
+            $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
+
+            $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
+            {
+                // If virtual account was migrated to RBL
+                // Then we set RBL bank account to virtualAccount->bankAccount
+                if ($virtualAccount->hasBankAccount2() === true)
+                {
+                    $virtualAccount->bankAccount()->associate($bankAccount2);
+                }
+
+                // set Axis to bankAccount2
+                $this->repo->saveOrFail($newBankAccount);
+
+                $virtualAccount->bankAccount2()->associate($newBankAccount);
+
+                $this->repo->saveOrFail($virtualAccount);
+            });
+
+            $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
+                [
+                    'va_id'             => $virtualAccount->getPublicId(),
+                    'merchant_id'       => $virtualAccount->getMerchantId(),
+                    'old_bank_account'  => $bankAccount->getAccountNumber(),
+                    'old_ifsc'          => $bankAccount->getIfscCode(),
+                    'new_bank_account2' => $newBankAccount->getAccountNumber(),
+                    'new_ifsc'          => $newBankAccount->getIfscCode(),
+
+                ]);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    public function migrateRblBankVirtualAccounts(
+        string $afterId,
+        string $nextAfterId,
+        int $fromTime,
+        int $toTime,
+        int $limit,
+        string $ifscCode,
+        array $merchantIds = [])
+    {
+        $baseQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
+
+        $startTime = millitime();
+
+        $sqlWithBindings = str_replace_array('?', $baseQuery->getBindings(), $baseQuery->toSql());
+
+        $this->trace->info(TraceCode::VA_MIGRATE_INITIATED, [
+            'after_id' => $afterId,
+            'next_after_id' => $nextAfterId,
+            'raw_sql'  => $sqlWithBindings
+        ]);
+
+        $virtualAccounts = $baseQuery->get();
+        $count = 0;
+
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            try
+            {
+                $whetherMigrated = $this->repo->transaction(function() use ($virtualAccount)
+                {
+                    return $this->migrateRblBankToAxisIfsc($virtualAccount);
+                });
+
+                $count += $whetherMigrated;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $this->trace->info(TraceCode::VA_MIGRATE_TIME,
+            [
+                'time_taken'    => millitime() - $startTime,
+                'migrated'      => $count,
+            ]);
+    }
+
+    public function bulkMigrateRblBank(array $input): array
+    {
+        $this->trace->debug(TraceCode::VA_MIGRATE_REQUEST, ['input' => $input]);
+
+        // job_mode => sync or async
+        $jobMode = $input['job_mode'] ?? '';
+        $gateway = $input['gateway'] ?? '';
+
+        if ($jobMode !== 'sync')
+        {
+            throw new Exception\BadRequestValidationFailureException('Unknown job_mode: ' . $jobMode);
+        }
+
+        $ifscCode = null;
+
+        if ($gateway == Gateway::BT_RBL)
+        {
+            $ifscCode = Provider::IFSC[Provider::RBL];
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Right Now we are not supporting this provider for migration' . $gateway);
+        }
+
+        // default whitespace ' ' is on purpose
+        $afterId = $input['after_id'] ?? ' ';
+        $nextAfterId = ' ';
+
+        $fromTime     = $input['from_time'];
+        $toTime       = $input['to_time'];
+        $limit        = $input['limit'] ?? 1000;
+        $processTimes = $input['process_count'] ?? 1;  // Number of Batches
+        $merchantIds  = $input['merchant_ids'] ?? [];
+
+        for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++)
+        {
+            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING,
+                [
+                    'after_id'     => $afterId,
+                    'job_mode'     => $jobMode,
+                    'from_time'    => $fromTime,
+                    'count'        => $currentCount,
+                    'merchant_ids' => $merchantIds,
+                ]);
+
+            $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
+
+            // get the max(id) of the above dataset. This is used as the $afterId for the next run.
+            $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
+
+            if ($jobMode === 'sync')
+            {
+                $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+            }
+            elseif ($jobMode === 'async')
+            {
+                VirtualAccountMigrate::dispatch(
+                    $this->mode,
+                    $afterId,
+                    $nextAfterId,
+                    $fromTime,
+                    $toTime,
+                    $limit,
+                    $ifscCode,
+                    $merchantIds);
+            }
+
+            // Check if all done
+            if ($currentCount === $processTimes)
+            {
+                break;
+            }
+
+            $afterId = $nextAfterId;
+        }
+
+        return [
+            'Success' => true,
+            'next_after_id' => $nextAfterId
+        ];
+
     }
 }

@@ -322,6 +322,13 @@ class VirtualAccountController extends Controller
         );
     }
 
+    public function migrateRblToAxis()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->bulkMigrateRblBank($input));
+    }
+
     public function createForInternal()
     {
         $input = Request::all();

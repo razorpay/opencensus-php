@@ -2334,6 +2334,8 @@ class Route
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
 
+        'migrate_virtual_account_rbl_axis'        =>  ['post',     'migrate_rbl',                                    'VirtualAccountController@migrateRblToAxis'                         ],
+
         // Dummy routes to test Account Auth
         'admin_dummy_account_test'                 => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
@@ -5632,6 +5634,7 @@ class Route
         'order_transfer_process_failed',
         'payment_transfer_process_pending',
         'payment_transfer_process_pending_key_merchants',
+        'migrate_virtual_account_rbl_axis',
         'merchant_mtu_update',
         'webhook_send_email',
         'transaction_settled_data_fix',
@@ -15444,6 +15447,7 @@ class Route
             'order_transfer_process_failed',
             'payment_transfer_process_pending',
             'payment_transfer_process_pending_key_merchants',
+            'migrate_virtual_account_rbl_axis',
             'transfer_settlement_status_update',
             'banking_account_statement_process_cron',
             'banking_account_statement_process_pool',
