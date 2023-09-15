@@ -27,6 +27,17 @@ const initState = {
 };
 const MockedComponent = () => <div>Mocked Component</div>;
 
+const variantOn = { variables: { result: 'on' } };
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      magic_analytics_setting: variantOn,
+    },
+  }),
+  withSplitzService: jest.fn(),
+}));
+
 const App = ({ state = {}, ...props }) => {
   return (
     <Provider store={storeWithInitialState({ ...initState, ...state })}>

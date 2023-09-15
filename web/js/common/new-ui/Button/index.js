@@ -80,7 +80,7 @@ export class AsyncBtn extends React.PureComponent {
       children = (
         <span className="btn-pending">
           {pendingState}
-          {showLoader && <span className="spin-btn white" />}
+          {showLoader && <span className="spin-btn white" data-testid="async-btn-spinner" />}
         </span>
       );
     }

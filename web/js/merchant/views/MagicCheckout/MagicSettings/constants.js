@@ -1,16 +1,50 @@
-import WoocSettingsForm from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/SettingsForm';
-import WoocSettingsCard from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingCard';
-import WoocShippingTabForm from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingForm';
-
-import NativeSettingsForm from 'merchant/views/MagicCheckout/MagicSettings/containers/native/SettingsForm';
-import NativeSettingsCard from 'merchant/views/MagicCheckout/MagicSettings/containers/native/SettingsCard';
-import NativePlatform from 'merchant/views/MagicCheckout/MagicSettings/components/native/Platform';
-
-import ShopifySettingsForm from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsForm';
-import ShopifySettingsCard from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsCard';
-
-import WoocommerceModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Woocommerce';
+import lazy from 'merchant/routes/LazyLoader';
 import NativeModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Native';
+import WoocommerceModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Woocommerce';
+
+const WoocSettingsForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/SettingsForm'
+  ),
+);
+
+const WoocSettingsCard = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingCard'
+  ),
+);
+
+const WoocShippingTabForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingForm'
+  ),
+);
+
+const NativeSettingsForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/native/SettingsForm'
+  ),
+);
+const NativeSettingsCard = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/native/SettingsCard'
+  ),
+);
+const NativePlatform = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/components/native/Platform'
+  ),
+);
+const ShopifySettingsForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsForm'
+  ),
+);
+const ShopifySettingsCard = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsCard'
+  ),
+);
 
 const cdnBaseUrl = window.cdnBaseUrl || 'https://cdn.razorpay.com';
 

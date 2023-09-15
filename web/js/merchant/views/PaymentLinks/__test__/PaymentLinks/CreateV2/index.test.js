@@ -213,6 +213,7 @@ describe('Payment Link Create V2 Unit Test', () => {
       amount: 20000,
     });
     expect(track.lj.form.create).toHaveBeenCalled();
+    await waitFor(() => expect(onCloseMock).toHaveBeenCalledTimes(1));
   });
 
   test('should be able to create payment Link successfully', async () => {

@@ -1,11 +1,15 @@
+import lazy from 'merchant/routes/LazyLoader';
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import MagicSettings from 'merchant/views/MagicCheckout/Settings';
 import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
 import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
-import CODOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab';
 import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
 import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
 import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
+
+const CODOrdersTab = lazy(() =>
+  import(/* webpackChunkName: "MagicCODOrdersTab" */ 'merchant/views/MagicCheckout/CODOrdersTab'),
+);
 
 /**
  * Order of tabs:

@@ -10,6 +10,7 @@ import {
   COMPONENTS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { analyticsTrack } from 'common/utils/analytics';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const MagicSettings = ({ settings, openModal, closeModal }) => {
   const [platform, setPlatform] = useState(PLATFORMS_DROPDOWN[0].name);
@@ -61,19 +62,21 @@ const MagicSettings = ({ settings, openModal, closeModal }) => {
   );
 
   return (
-    <div>
-      <div className="selection-container platform-input-container display-flex align-center bg-settings font-normal">
-        <label className="font-normal">Platform</label>
-        <Input.Select
-          name="platform"
-          className="select-platform-dropdown"
-          value={platform}
-          options={PLATFORMS_DROPDOWN}
-          onChange={onPlatformChange}
-        />
+    <SuspenseWithLoader type="center">
+      <div>
+        <div className="selection-container platform-input-container display-flex align-center bg-settings font-normal">
+          <label className="font-normal">Platform</label>
+          <Input.Select
+            name="platform"
+            className="select-platform-dropdown"
+            value={platform}
+            options={PLATFORMS_DROPDOWN}
+            onChange={onPlatformChange}
+          />
+        </div>
+        {Component}
       </div>
-      {Component}
-    </div>
+    </SuspenseWithLoader>
   );
 };
 

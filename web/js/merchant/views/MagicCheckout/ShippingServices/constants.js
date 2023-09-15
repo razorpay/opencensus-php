@@ -1,7 +1,18 @@
 import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
-import ShipRocketModal from 'merchant/views/MagicCheckout/ShippingServices/ShipRocketAccountModal/';
-import DelhiveryModal from 'merchant/views/MagicCheckout/ShippingServices/DelhiveryAccountModal';
 import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
+import lazy from 'merchant/routes/LazyLoader';
+
+const ShipRocketModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/ShipRocketAccountModal'
+  ),
+);
+
+const DelhiveryModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/DelhiveryAccountModal'
+  ),
+);
 
 export const RULE_TYPES_RADIO_INPUT = [
   {

@@ -75,6 +75,7 @@ import {
   magicPrepayCODOrdersReducer,
   magicPrepayCODOrderInfoReducer,
 } from 'merchant/reducers/magicCheckout/prepayCOD/orderConversionTab/reducers';
+import { magicAnalyticsSettingsReducer } from 'merchant/reducers/magicCheckout/analyticsSettings/reducer';
 import { rtoHistoryUploadReducer } from 'merchant/reducers/magicCheckout/rtoHistoryUpload/reducer';
 import {
   magicCODOrdersReducer,
@@ -265,6 +266,7 @@ export default combineReducers({
   magicRTOAnalytics: magicRTOAnalyticsReducer,
   magicPrepayCODOrders: magicPrepayCODOrdersReducer,
   magicPrepayCODOrderInfo: magicPrepayCODOrderInfoReducer,
+  magicAnalyticsSettings: magicAnalyticsSettingsReducer,
   magicCODOrders: magicCODOrdersReducer,
   magicCODOrderInfo: magicCODOrderInfoReducer,
   magicCODOrdersAutomation: magicCODOrdersAutomationReducer,

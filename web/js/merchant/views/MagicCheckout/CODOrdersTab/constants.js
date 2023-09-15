@@ -1,7 +1,28 @@
-import ReviewOrders from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/ReviewOrdersTab';
-import ApprovedOrders from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/ApprovedOrdersTab';
-import CanceledOrders from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/CanceledOrdersTab';
-import OnHoldOrders from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/OnHoldOrdersTab';
+import lazy from 'merchant/routes/LazyLoader';
+
+const ReviewOrders = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCODOrders" */ 'merchant/views/MagicCheckout/CODOrdersTab/tabs/ReviewOrdersTab'
+  ),
+);
+
+const ApprovedOrders = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCODOrders" */ 'merchant/views/MagicCheckout/CODOrdersTab/tabs/ApprovedOrdersTab'
+  ),
+);
+
+const CanceledOrders = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCODOrders" */ 'merchant/views/MagicCheckout/CODOrdersTab/tabs/CanceledOrdersTab'
+  ),
+);
+
+const OnHoldOrders = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCODOrders" */ 'merchant/views/MagicCheckout/CODOrdersTab/tabs/OnHoldOrdersTab'
+  ),
+);
 
 export const TABS = [
   {

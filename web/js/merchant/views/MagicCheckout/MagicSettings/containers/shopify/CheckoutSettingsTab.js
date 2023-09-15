@@ -27,7 +27,7 @@ import {
 import 'merchant/views/MagicCheckout/css/settings/checkout.styl';
 import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
-const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => {
+const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExperiments }) => {
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [analyticSettings, setAnalyticSettings] = useState([]);
   const [giftCard, setGiftCard] = useState({});
@@ -39,6 +39,10 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
   const isFormView = !currentView.includes(CARD);
   const showAllFormView = localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const showCTA = isFormView || showAllFormView;
+
+  //hiding the analytics settings section in the store setting tab, as a separate tab for analytics settings was added
+  const isAnalyticsSettingExperimentEnabled =
+    abExperiments?.magic_analytics_setting?.variables?.result === 'on';
 
   useEffect(() => {
     const { isShopifyMagicEnabled } = user;
@@ -134,8 +138,8 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
             settings={settings}
           />
         )}
-        {showAllFormView && <hr />}
-        {showSettings(ANALYTICS) && (
+        {!isAnalyticsSettingExperimentEnabled && showAllFormView && <hr />}
+        {!isAnalyticsSettingExperimentEnabled && showSettings(ANALYTICS) && (
           <AnalyticsWrapper
             analyticSettings={analyticSettings}
             setCurrentView={setCurrentView}

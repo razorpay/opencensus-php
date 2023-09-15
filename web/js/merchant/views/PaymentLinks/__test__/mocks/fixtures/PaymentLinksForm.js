@@ -15,6 +15,7 @@ const mockObj = {
 };
 
 jest.mock('common/utils/rzp-utils', () => ({
+  ...jest.requireActual('common/utils/rzp-utils'),
   findBy: () => jest.fn(() => mockObj),
   getCommonAnalyticsProperties: jest.fn(),
 }));

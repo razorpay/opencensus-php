@@ -1,3 +1,4 @@
+import lazy from 'merchant/routes/LazyLoader';
 import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponGCSetting';
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
@@ -11,6 +12,12 @@ import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/co
 import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation';
 
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
+
+const AnalyticsSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicAnalyticsSettings" */ 'merchant/views/MagicCheckout/AnalyticsSettings'
+  ),
+);
 
 export const PLATFORMS = {
   SHOPIFY: 'shopify',
@@ -57,6 +64,14 @@ export const TABS = {
       Component: ConfigDashboard,
       condition: (_user) => _user.isMagicPrepayCODEnabled,
     },
+    {
+      className: 'analytics-settings',
+      path: '/magic/settings/analytics-settings',
+      label: 'Analytics settings',
+      Component: AnalyticsSettings,
+      condition: (_, abExperiments) =>
+        abExperiments?.magic_analytics_setting?.variables?.result === 'on',
+    },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
     {
@@ -101,6 +116,14 @@ export const TABS = {
       label: 'Convert COD to Prepaid',
       Component: ConfigDashboard,
       condition: (_user) => _user.isMagicPrepayCODEnabled,
+    },
+    {
+      className: 'analytics-settings',
+      path: '/magic/settings/analytics-settings',
+      label: 'Analytics settings',
+      Component: AnalyticsSettings,
+      condition: (_, abExperiments) =>
+        abExperiments?.magic_analytics_setting?.variables?.result === 'on',
     },
   ],
   [PLATFORMS.NATIVE]: [

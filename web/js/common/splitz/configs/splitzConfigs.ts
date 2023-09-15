@@ -210,5 +210,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [/^\/magic(?:\/.*)?$/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'magic_analytics_setting',
+          experimentId: {
+            beta: 'MWKHCSGKltMkYQ',
+            production: 'MWVoZbRUxayCAu',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

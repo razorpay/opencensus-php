@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import SideNav from 'merchant/views/MagicCheckout/OrderStatusUpload/components/SideNav';
 import MainContent from 'merchant/views/MagicCheckout/OrderStatusUpload/components/MainContent';
 import OrderInfoSlider from 'merchant/views/MagicCheckout/CODOrdersTab/orderInfoDrawer';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { updateFilters as updateOrderFilters } from 'merchant/reducers/magicCheckout/codOrders/action';
 import { TABS } from 'merchant/views/MagicCheckout/CODOrdersTab/constants';
@@ -39,7 +41,7 @@ const CODOrdersTab = ({ updateFilters }) => {
     );
 
   return (
-    <>
+    <SuspenseWithLoader type="center">
       <div className="display-flex nav-container cod-orders-container">
         <SideNav tabs={TABS} onTabClick={(id) => setActiveNav(id)} activeNav={activeNav} />
         <MainContent activeNav={activeNav} render={setContent} />
@@ -51,7 +53,7 @@ const CODOrdersTab = ({ updateFilters }) => {
           requiredOrderId={requiredOrderId}
         />
       )}
-    </>
+    </SuspenseWithLoader>
   );
 };
 

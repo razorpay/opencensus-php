@@ -8,10 +8,15 @@ describe('testing constants', () => {
       isMagicCODEngineEnabled: true,
       role: 'owner',
     };
+
+    const abExperiments = {
+      magic_analytics_setting: { variables: { result: 'on' } },
+    };
+
     Object.keys(TABS).forEach((platform) => {
       TABS[platform].forEach((item) => {
         if (item.condition) {
-          expect(item.condition(user)).toBeTruthy();
+          expect(item.condition(user, abExperiments)).toBeTruthy();
         }
       });
     });
