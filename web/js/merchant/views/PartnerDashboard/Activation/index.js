@@ -490,7 +490,7 @@ const Activation = (props) => {
     analyticsTrack({
       objectName: 'Partner KYC Form',
       actionName: 'Opened',
-      section: tabs[activeTab],
+      screen: tabs[activeTab],
       properties: {
         partnerID: props.user?.merchant.id,
         section: tabs[activeTab],

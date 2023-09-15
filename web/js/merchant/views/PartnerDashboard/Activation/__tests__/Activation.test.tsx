@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { render, screen, userEvent } from 'common/services/test/test-utils';
-import Activation from 'merchant/views/PartnerDashboard/Activation';
 import * as trackEvents from 'common/utils/analytics';
+import Activation from 'merchant/views/PartnerDashboard/Activation';
 const analyticsTrackSpy = jest.spyOn(trackEvents, 'analyticsTrack');
 
 describe('<Activation /> ', () => {
@@ -37,6 +38,13 @@ describe('<Activation /> ', () => {
       kycStatusModalType: '',
     };
     render(<Activation {...props} />);
+    expect(analyticsTrackSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionName: 'Opened',
+        objectName: 'Partner KYC Form',
+        screen: 'Contact Details',
+      }),
+    );
     expect(screen.getByText('Partner KYC Form')).toBeInTheDocument();
   });
 

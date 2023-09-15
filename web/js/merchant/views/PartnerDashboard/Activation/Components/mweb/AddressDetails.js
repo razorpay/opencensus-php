@@ -86,9 +86,9 @@ const AddressDetails = ({ isFormLocked, partnerID, showNotification }) => {
 
   useEffect(() => {
     analyticsTrack({
-      objectName: 'partnerships.partner_KYC',
-      actionName: 'form_open',
-      screen: 'Partner KYC Address Details',
+      objectName: 'Partner KYC Form',
+      actionName: 'Opened',
+      screen: 'Address Details',
       properties: {
         partnerID,
         section: 'Address Details',

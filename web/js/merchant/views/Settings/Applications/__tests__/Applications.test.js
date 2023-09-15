@@ -44,7 +44,7 @@ describe('ApplicationContainer', () => {
     expect(analytics.analyticsTrackWithUserInfo).toBeCalledTimes(2);
     expect(analytics.analyticsTrackWithUserInfo).toBeCalledWith({
       screen: 'Partnership',
-      action: 'Clicked',
+      actionName: 'Clicked',
       objectName: 'Revoke access Cta',
       properties: {
         applicationName: partnerApplications[0].name,

@@ -15,7 +15,7 @@ interface Application {
 export const trackApplicationActions = (application: Application) => {
   return analyticsTrackWithUserInfo({
     screen: 'Partnership',
-    action: 'Clicked',
+    actionName: 'Clicked',
     objectName: 'Revoke access Cta',
     properties: {
       applicationName: application.name,
