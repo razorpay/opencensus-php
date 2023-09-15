@@ -28,6 +28,7 @@ use App\Providers;
 use App\Transaction;
 use App\User\Helper;
 use App\Http\ApiUrl;
+use App\Http\Headers;
 use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Mailers\MiscMailer;
@@ -1696,7 +1697,12 @@ class Service extends Base\Service
             $apiURL = substr($apiBaseUrl, 0, -4);
 
             $options = [
-                'timeout' => Config::get('api.request_timeout')
+                'timeout' => Config::get('api.request_timeout'),
+                'headers' => [
+                    Headers::DEV_SERVE_USER => Request::header(Headers::DEV_SERVE_USER),
+                    Headers::X_RAZORPAY_REQUEST_ID => Request::header(Headers::X_RAZORPAY_REQUEST_ID),
+                    'X-Request-TraceId' => app('request')->requestId,
+                ],
             ];
 
             $shouldRetry = true;
