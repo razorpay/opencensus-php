@@ -132,7 +132,10 @@ export const getCustomConfigs = (session?: SessionReducerState): CustomConfigTyp
 
   const customConfigs: any = [];
 
-  if (user.isOrgAllowedFunctionality('monthlyInvoice')) {
+  if (
+    Boolean(user?.isOrgAllowedFunctionality) &&
+    user.isOrgAllowedFunctionality('monthlyInvoice')
+  ) {
     customConfigs.push(CUSTOM_CONFIG_MAP.monthlyInvoice);
   } else if (user.findTag('borking_report')) {
     customConfigs.push(CUSTOM_CONFIG_MAP.broking);

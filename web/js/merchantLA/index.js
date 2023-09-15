@@ -1,3 +1,4 @@
+import './public-paths';
 import 'regenerator-runtime/runtime.js'; // eslint-disable-line
 import 'core-js/es/map';
 import 'core-js/es/set';
@@ -21,8 +22,6 @@ import '../../dashboard.font';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
-
-__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`; // eslint-disable-line
 
 capturePrometheusMetric({
   name: Metrics.PAGE_VIEW,
