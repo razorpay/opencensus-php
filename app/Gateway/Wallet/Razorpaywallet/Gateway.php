@@ -88,7 +88,6 @@ class Gateway extends Base\Gateway
 
         $data = [
             'merchant_id'   => $input['merchant']->getId(),
-            'user_id'       => $input['payment']['reference14'],
             'refund_id'     => $input['refund']['id'],
             'payment_id'    => $input['payment']['id'],
             'amount'        => $input['amount'],
@@ -99,6 +98,15 @@ class Gateway extends Base\Gateway
         {
             $data['notes'] = json_encode($input['refund']['notes']);
         }
+
+        if ((isset($input['payment']['reference14']) === true)) {
+            $data['user_id']  = $input['payment']['reference14'];
+        }
+
+        if ((isset($input['payment']['contact']) === true)) {
+            $data['contact']  = $input['payment']['contact'];
+        }
+
 
         $response = App::getFacadeRoot()['wallet_api']->refund($data);
 
