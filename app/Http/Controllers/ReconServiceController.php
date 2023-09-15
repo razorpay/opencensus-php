@@ -67,6 +67,8 @@ class ReconServiceController extends Controller
             '^reports\/[[:alnum:]]{14}\/retry',
             '^records$',
             '^art_summary$',
+            '^transactional_workflows$',
+            '^transactional_workflow_actions$',
         ],
         self::POST => [
             '^output_email$',
