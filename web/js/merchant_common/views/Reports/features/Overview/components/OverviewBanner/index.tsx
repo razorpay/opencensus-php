@@ -15,24 +15,20 @@ import {
   FileTextIcon,
   Box,
 } from 'merchant_common/views/Reports/components';
-import { useTheme } from 'merchant_common/views/Reports/hooks';
+import { useReportsSplitzExperiments, useTheme } from 'merchant_common/views/Reports/hooks';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { openModal } from 'merchant_common/reducers/modals';
 
-const mapStateToProps = ({ session }) => {
-  const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);
-  return { isSchedulesEnabled };
-};
-
 const mapDispatchToProps = (dispatch) => ({
   openModal: (modal) => dispatch(openModal(modal)),
 });
 
-const OverviewBannerComponent = ({ loading, openModal, isSchedulesEnabled }): JSX.Element => {
+const OverviewBannerComponent = ({ loading, openModal }): JSX.Element => {
   const { theme } = useTheme();
   const dashboardType = useDashboardType();
+  const { isSchedulesEnabled } = useReportsSplitzExperiments();
 
   const handleDownloadClick = () => {
     trackOverviewSection({
@@ -114,4 +110,4 @@ const OverviewBannerComponent = ({ loading, openModal, isSchedulesEnabled }): JS
   );
 };
 
-export const OverviewBanner = connect(mapStateToProps, mapDispatchToProps)(OverviewBannerComponent);
+export const OverviewBanner = connect(null, mapDispatchToProps)(OverviewBannerComponent);
