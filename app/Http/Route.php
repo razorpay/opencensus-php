@@ -8741,6 +8741,8 @@ class Route
 
     protected static $splitPaymentRoutes = [
         'payment_create_ajax',
+        'payment_create_checkout',
+        'payment_create_fees'
     ];
 
     public static $routePermission = [
