@@ -161,8 +161,8 @@ export const CardWrapper = styled.div<{
 `;
 
 export const BoxContainer = styled.div(
-  ({ disableMarginTop }: { disableMarginTop?: boolean }) => `
-  margin-top: ${!disableMarginTop ? '-10px' : 'initial'};
+  ({ disableMarginTop, isRefund }: { disableMarginTop?: boolean; isRefund?: boolean }) => `
+  margin-top: ${!disableMarginTop ? '-10px' : isRefund ? '8px' : '4px'};
 `,
 );
 

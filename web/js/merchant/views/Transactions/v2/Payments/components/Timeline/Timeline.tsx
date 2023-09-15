@@ -40,10 +40,9 @@ import {
   IBankTransfer,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
 
-interface EntityStatusTimelineProps {
+interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
   bankTransfer: IBankTransfer;
-  history: RouteComponentProps['history'];
   paymentIdDetails: IPaymentDetails;
   user: Record<string, string>;
   fetchPaymentsTimelineData: () => Promise<void>;
@@ -59,6 +58,7 @@ const EntityStatusTimeline = ({
   fetchPaymentsTimelineData,
   reFetchPageDetails,
   showNotification,
+  location: { pathname },
 }: EntityStatusTimelineProps): JSX.Element => {
   const [timelineData, setTimelineData] = useState<TimelineJourneyPoint[]>([]);
   const [isTimelineCollapsed, setisTimelineCollapsed] = useState<boolean>(true);
@@ -198,15 +198,20 @@ const EntityStatusTimeline = ({
                   : 'A technical issue occurred. Kindly ask the customer to retry the payment'}
               </Text>
             </StyledGradientBox>
-            {journeyPoint.metadata?.payment?.error_code ? (
-              <Box paddingTop="spacing.2" paddingBottom="spacing.2">
-                <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
-                  If the amount was deducted from the customer’s bank account, it will be credited
-                  to them within 5-7 working days
-                </Text>
-              </Box>
-            ) : null}
+            <Box paddingTop="spacing.2" paddingBottom="spacing.2">
+              <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+                If the amount was deducted from the customer’s bank account, it will be credited to
+                them within 5-7 working days
+              </Text>
+            </Box>
           </>
+        ) : null}
+        {journeyPoint.status === 'auth-failed' ? (
+          <StyledGradientBox>
+            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+              This payment will be refunded within 72 hours
+            </Text>
+          </StyledGradientBox>
         ) : null}
       </StyledJourneyMetadata>
     );
@@ -231,7 +236,9 @@ const EntityStatusTimeline = ({
             icon={ChevronRightIcon}
             variant="button"
             onClick={() => {
-              history.push(`/settlements/${journeyPoint.metadata.settlementId}`);
+              history.push(`/settlements/${journeyPoint.metadata.settlementId}`, {
+                prevPath: pathname,
+              });
               trackDetailsClick({
                 objectName: 'View Settlement Details',
                 properties: {
@@ -248,16 +255,21 @@ const EntityStatusTimeline = ({
   };
 
   const getRefundsJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
+    const refund = journeyPoint.metadata.refund;
+    const amount = refund?.amount;
+
     return (
       <StyledJourneyMetadata>
-        <Box paddingBottom="spacing.2">
+        {amount && (
+          <Box paddingBottom="spacing.2">
+            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+              Amount: <Amount value={amount} />
+            </Text>
+          </Box>
+        )}
+        {refund?.created_at && (
           <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
-            Amount: <Amount value={journeyPoint.metadata.amount} />
-          </Text>
-        </Box>
-        {journeyPoint.timestamp && (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
-            {getHumanReadableTimestamp(journeyPoint.timestamp)}
+            Issued on {getHumanReadableTimestamp(refund?.created_at)}
           </Text>
         )}
         {journeyPoint.metadata.failureReason && (
@@ -267,7 +279,7 @@ const EntityStatusTimeline = ({
             </Text>
           </StyledGradientBox>
         )}
-        <Box testID="collapsible-refunds-timeline" paddingTop="spacing.3" marginBottom="spacing.3">
+        <Box testID="collapsible-refunds-timeline" paddingTop="spacing.3" marginBottom="spacing.8">
           <Collapsible
             direction="bottom"
             onExpandChange={() => {

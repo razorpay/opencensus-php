@@ -35,7 +35,7 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
     ].includes(status)
   ) {
     return `${theme.colors.feedback.background.notice.lowContrast}`;
-  } else if (status === PaymentStatus.FAILED) {
+  } else if (status === PaymentStatus.FAILED || status === 'auth-failed') {
     return `${theme.colors.feedback.background.negative.lowContrast}`;
   } else {
     return `${theme.colors.feedback.background.neutral.lowContrast}`;

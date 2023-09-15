@@ -33,7 +33,18 @@ export interface DateInfo {
   time: string;
 }
 
-export interface LayoutPropsInterface extends RouteComponentProps {
+type LocationState =
+  | undefined
+  | {
+      prevPath?: string;
+    };
+
+export interface LayoutPropsInterface
+  extends RouteComponentProps<
+    Record<string, string | undefined>,
+    Record<string, unknown>,
+    LocationState
+  > {
   children: React.ReactNode;
   settlementId: string;
 }

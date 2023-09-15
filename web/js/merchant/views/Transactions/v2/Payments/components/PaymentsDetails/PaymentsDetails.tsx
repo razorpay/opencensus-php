@@ -123,6 +123,13 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   };
 
   useEffect(() => {
+    // TODO:find a permanent solution
+    // for some reason, page is opening with a downward scroll, adding a temporary solution
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: 'smooth',
+    });
     fetchDetails();
   }, []);
 

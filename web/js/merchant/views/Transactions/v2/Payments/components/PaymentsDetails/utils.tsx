@@ -1,8 +1,11 @@
 import React from 'react';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
-import { titleCase } from 'common/utils/rzp-utils';
-import { trackDetailsCopy } from 'merchant/views/Transactions/v2/common/tracking';
+import { titleCase, getFormattedAmount } from 'common/utils/rzp-utils';
+import {
+  trackDetailsCopy,
+  trackDetailsClick,
+} from 'merchant/views/Transactions/v2/common/tracking';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import {
   IPaymentDetails,
@@ -12,7 +15,7 @@ import {
   DisputeStatus,
 } from './types';
 import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
-import { Theme, BadgeProps } from '@razorpay/blade/components';
+import { Theme, BadgeProps, Text, Link, ChevronRightIcon } from '@razorpay/blade/components';
 import Lottie from 'react-lottie';
 import AuthorizedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Authorized';
 import CapturedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Captured';
@@ -178,7 +181,6 @@ export const getRefundsTimelineData = (
         timestamp: getRefundTimestamp(refund),
         metadata: {
           statusInfo: titleCase(refund.status),
-          amount: refund.amount,
           refundId: refund.id,
           refund,
         },
@@ -244,11 +246,14 @@ export const getPaymentTimelineData = (
           },
         });
       } else {
-        if (shouldHideCapturePaymentAction(payment, bankTransferData)) {
+        if (
+          shouldHideCapturePaymentAction(payment, bankTransferData) &&
+          payment.status !== 'refunded'
+        ) {
           paymentIdTimelineData.push({
             id: 2,
             entity: 'Payment',
-            status: 'failed',
+            status: 'auth-failed',
             title: 'Payment failed',
             timestamp: null,
             metadata: {
@@ -368,7 +373,7 @@ export const getBadgeIcon = (status: IPaymentDetails['status']): JSX.Element => 
   return <Lottie options={lottieDefaultOptions} />;
 };
 
-export const useTime = (timestamp: number): [string, string] => {
+export const getTime = (timestamp: number): [string, string] => {
   const [createdDay, createdTime] = moment.unix(timestamp).format('ddd MMM D,hh:mma').split(',');
   return [createdDay, createdTime];
 };
@@ -379,4 +384,102 @@ export const onCopy = (objectName, properties) => (id: string) => {
     objectName,
     properties,
   });
+};
+
+export const getRefundsOverviewDetails = (paymentRefundDetails) => {
+  if (paymentRefundDetails.length === 0) return null;
+
+  if (paymentRefundDetails.length === 1) {
+    const refund = paymentRefundDetails[0];
+    const createdAt = getTime(refund.created_at).join(', ');
+    return (
+      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)} issued on {createdAt}
+      </Text>
+    );
+  } else {
+    return (
+      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+        Multiple refunds issued to the customer
+      </Text>
+    );
+  }
+};
+
+export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) => {
+  const disputes = paymentDetails.disputes.items;
+
+  if (disputes.length === 0) return null;
+
+  if (disputes.length === 1) {
+    const dispute = disputes[0];
+    const createdAt = getTime(dispute.created_at).join(', ');
+    let info = `Refund of ₹${getFormattedAmount(
+      dispute.amount,
+      dispute.currency,
+    )} issued on ${createdAt}`;
+
+    switch (dispute.status) {
+      case 'open':
+        info = `Dispute of ₹${getFormattedAmount(
+          dispute.amount,
+          dispute.currency,
+        )} initiated by the issusing bank.`;
+        break;
+      case 'closed':
+        info = `Dispute of ₹${getFormattedAmount(
+          dispute.amount,
+          dispute.currency,
+        )} has been closed`;
+        break;
+      case 'won':
+        info = `You've won the chargeback for contesting dispute of ₹${getFormattedAmount(
+          dispute.amount,
+          dispute.currency,
+        )}.`;
+        break;
+      case 'lost':
+        info = `You've lost the chargeback for contesting dispute of ₹${getFormattedAmount(
+          dispute.amount,
+          dispute.currency,
+        )}. The amount is being refunded to the customer`;
+        break;
+      case 'under_review':
+        info = `Your documents are under review for contesting dispute of ₹${getFormattedAmount(
+          dispute.amount,
+          dispute.currency,
+        )}.`;
+        break;
+      default:
+        break;
+    }
+    return (
+      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+        {info}{' '}
+        <Link
+          iconPosition="right"
+          icon={ChevronRightIcon}
+          variant="button"
+          onClick={() => {
+            trackDetailsClick({
+              objectName: 'View Dispute Details',
+              properties: {
+                disputeStatus: dispute.status,
+              },
+            });
+            viewDisputeCallback?.(`/disputes/${dispute.id}`);
+          }}
+          size="small"
+        >
+          View details
+        </Link>
+      </Text>
+    );
+  } else {
+    return (
+      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+        Multiple disputes exist for this payment
+      </Text>
+    );
+  }
 };

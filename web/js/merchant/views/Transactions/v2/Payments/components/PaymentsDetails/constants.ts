@@ -23,20 +23,19 @@ export const tooltipContent = {
 
 export const ERROR_DESCRIPTION_CONTENT_MAP = {
   'You may have cancelled the payment or there was a delay in response from the UPI app.':
-    'Payment was unsuccessful as it was cancelled or there was a delay in response from UPI. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as it was cancelled or there was a delay in response from UPI.',
   'Payment failed. Please try again with another bank account.':
-    'Payment was unsuccessful as we experienced a few issues with the bank server or wallet gateway. Your customer will have to retry the payment. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as we experienced a few issues with the bank server or wallet gateway. Your customer will have to retry the payment.',
   'Payment was unsuccessful as you could not pay with the UPI app within time.':
-    'Payment was unsuccessful as it was cancelled or there was a delay in response from UPI. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as it was cancelled or there was a delay in response from UPI.',
   "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.":
-    'Payment was unsuccessful as it was declined by the bank. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as it was declined by the bank.',
   'Your payment has been cancelled. Try again or complete the payment later.':
-    'Payment was unsuccessful as it was cancelled by the customer. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as it was cancelled by the customer.',
   'Payment processing failed due to error at bank or wallet gateway':
-    'Payment was unsuccessful as we experienced a few issues with the bank server or wallet gateway. Your customer will have to retry the payment. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
+    'Payment was unsuccessful as we experienced a few issues with the bank server or wallet gateway. Your customer will have to retry the payment.',
   'Payment was unsuccessful as your account does not pass the risk checks done by your bank. Try using another account.':
-    'Payment was unsuccessful as it was declined by the bank. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days',
-  'This payment will be refunded within 72 hours': 'This payment will be refunded within 72 hours',
+    'Payment was unsuccessful as it was declined by the bank.',
 };
 
 export const REFUND_ELIBILITY_TEXT = {

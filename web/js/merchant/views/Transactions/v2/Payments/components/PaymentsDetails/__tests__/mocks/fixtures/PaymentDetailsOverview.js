@@ -100,6 +100,7 @@ export const capturedPaymentProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
+  paymentIdRefundDetails: [],
 };
 
 export const createdPaymentProps = {
@@ -181,6 +182,7 @@ export const createdPaymentProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
+  paymentIdRefundDetails: [],
 };
 
 export const refundedPaymentProps = {
@@ -262,6 +264,68 @@ export const refundedPaymentProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
+  paymentIdRefundDetails: [
+    {
+      acquirer_data: {
+        arn: '10000000000000',
+      },
+      amount: 500,
+      batch_id: null,
+      created_at: 1694423672,
+      currency: 'INR',
+      entity: 'refund',
+      id: 'rfnd_MayWBQzP1Zr6bL',
+      notes: {
+        comment: '',
+      },
+      payment_id: 'pay_MZlxMnP1ldqr90',
+      receipt: null,
+      speed: 'normal',
+      speed_processed: 'normal',
+      speed_requested: 'optimum',
+      status: 'processed',
+    },
+    {
+      acquirer_data: {
+        arn: '10000000000000',
+      },
+      amount: 300,
+      batch_id: null,
+      created_at: 1694423552,
+      currency: 'INR',
+      entity: 'refund',
+      id: 'rfnd_MayU4aOt5yTgRq',
+      notes: {
+        comment: '',
+      },
+      payment_id: 'pay_MZlxMnP1ldqr90',
+      receipt: null,
+      speed: 'normal',
+      speed_processed: 'normal',
+      speed_requested: 'optimum',
+      status: 'processed',
+    },
+    {
+      acquirer_data: {
+        arn: '10000000000000',
+      },
+      amount: 200,
+      batch_id: null,
+      created_at: 1694423443,
+      currency: 'INR',
+      entity: 'refund',
+      id: 'rfnd_MayS9EZQnMoMQc',
+      notes: {
+        comment: '',
+      },
+      payment_id: 'pay_MZlxMnP1ldqr90',
+      receipt: null,
+      speed: 'normal',
+      speed_processed: 'normal',
+      speed_requested: 'optimum',
+      status: 'processed',
+    },
+  ],
 };
 
 export const failedPaymentProps = {
@@ -343,6 +407,7 @@ export const failedPaymentProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
+  paymentIdRefundDetails: [],
 };
 
 export const authorizedPaymentProps = {
@@ -424,4 +489,5 @@ export const authorizedPaymentProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
+  paymentIdRefundDetails: [],
 };

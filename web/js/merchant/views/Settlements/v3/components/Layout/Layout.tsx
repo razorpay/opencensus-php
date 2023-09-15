@@ -1,12 +1,22 @@
-import { ChevronLeftIcon, ExternalLinkIcon, Heading, Link, Box } from '@razorpay/blade/components';
-import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
 import React from 'react';
+import { ChevronLeftIcon, ExternalLinkIcon, Heading, Link, Box } from '@razorpay/blade/components';
 import { withRouter } from 'react-router-dom';
 
-const Layout = ({ children, history, settlementId }: LayoutPropsInterface): JSX.Element => {
+import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
+
+const Layout = ({
+  children,
+  history,
+  settlementId,
+  location: { state: { prevPath } = {} },
+}: LayoutPropsInterface): JSX.Element => {
   const handleGoBack = (): void => {
+    if (prevPath) {
+      history.goBack();
+    }
     history.push('/settlements');
   };
+
   return (
     <Box
       display="flex"

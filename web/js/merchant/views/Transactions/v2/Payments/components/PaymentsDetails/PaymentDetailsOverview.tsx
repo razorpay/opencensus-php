@@ -41,10 +41,16 @@ import {
   StyledAmountContainer,
   StyledAmountWrapper,
 } from './styled';
-import { IPaymentDetails } from './types';
+import { IPaymentDetails, IPaymentIdRefundDetails } from './types';
 
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import { getBadgeIcon, getBaseVariant, useTime } from './utils';
+import {
+  getBadgeIcon,
+  getBaseVariant,
+  getTime as useTime,
+  getRefundsOverviewDetails,
+  getDisputesOverviewDetails,
+} from './utils';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
 
 const OverviewIcon = ({ status }) => {
@@ -54,6 +60,7 @@ const OverviewIcon = ({ status }) => {
 
 interface IPaymentDetailsOverview extends RouteComponentProps {
   paymentDetails: IPaymentDetails;
+  paymentIdRefundDetails: IPaymentIdRefundDetails;
   fetchHolidayList: () => Promise<Record<string, string>>;
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
@@ -62,11 +69,13 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
 
 function PaymentDetailsOverview({
   paymentDetails,
+  paymentIdRefundDetails,
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
   openModal,
   history,
+  location: { pathname },
 }: IPaymentDetailsOverview) {
   const [isOpen, setIsOpen] = useState(false);
   const toggleDeductions = () => {
@@ -100,6 +109,8 @@ function PaymentDetailsOverview({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settlementId]);
+
+  const viewDisputeCallback = (route: string) => history.push(route);
 
   return (
     <Box testID="payment-details-overview">
@@ -174,7 +185,7 @@ function PaymentDetailsOverview({
               </Box>
             )}
           </Box>
-          {paymentDetails?.status === 'failed' && paymentDetails?.error_description ? (
+          {paymentDetails?.status === 'failed' && paymentDetails?.error_description && (
             <Box marginTop="spacing.5">
               <Divider marginBottom="spacing.3" />
               <Text type="normal" variant="body" size="small" weight="bold" contrast="low">
@@ -183,10 +194,23 @@ function PaymentDetailsOverview({
                   : 'A technical issue occurred. Kindly ask the customer to retry the payment'}
               </Text>
             </Box>
-          ) : null}
+          )}
+          {(paymentDetails?.status === 'refunded' || paymentIdRefundDetails.length > 0) &&
+            paymentDetails.disputes.items.length === 0 && (
+              <Box marginTop="spacing.5">
+                <Divider marginBottom="spacing.3" />
+                {getRefundsOverviewDetails(paymentIdRefundDetails)}
+              </Box>
+            )}
+          {paymentDetails.disputes.items.length > 0 && (
+            <Box marginTop="spacing.5">
+              <Divider marginBottom="spacing.3" />
+              {getDisputesOverviewDetails(paymentDetails, viewDisputeCallback)}
+            </Box>
+          )}
         </CardBody>
       </Card>
-      <BoxContainer>
+      <BoxContainer disableMarginTop>
         <CardWrapper enableBorderTopRadius>
           <Card padding="spacing.5" elevation="none">
             <CardBody>
@@ -292,7 +316,9 @@ function PaymentDetailsOverview({
                 icon={ChevronRightIcon}
                 iconPosition="right"
                 onClick={() => {
-                  history.push(`/settlements/${paymentDetails?.transaction?.settlement_id}`);
+                  history.push(`/settlements/${paymentDetails?.transaction?.settlement_id}`, {
+                    prevPath: pathname,
+                  });
                 }}
               >
                 View details

@@ -35,12 +35,12 @@ export const StyledVerticalPath = styled.div<{ height: number }>`
 
 export const StyledJourneyMetadata = styled.div.attrs({ className: 'timeline-journey-meta' })`
   min-height: 40px;
-  width: 300px;
   top: 20px;
   left: -20px;
   border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
   padding-left: 24px;
   stroke-width: 1px;
+  width: 100%;
 `;
 
 export const StyledText = styled.p`
@@ -64,7 +64,7 @@ export const StyledStatusSubText = styled.p`
 `;
 
 export const StyledGradientBox = styled.div`
-  border-radius: ${({ theme }) => `${theme.spacing[2]}`};
+  border-radius: ${({ theme }) => `${theme.spacing[2]}px`};
   background: linear-gradient(90deg, rgba(245, 74, 42, 0.09) 0%, rgba(255, 255, 255, 0) 100%);
   margin: 8px 0 2px 0;
   padding: 8px;
@@ -110,7 +110,7 @@ export const getStatusIcon = (status: string): JSX.Element => {
     ].includes(status)
   ) {
     return <ClockIcon color="feedback.icon.notice.lowContrast" size="small" />;
-  } else if (status === PaymentStatus.FAILED) {
+  } else if (status === PaymentStatus.FAILED || status == 'auth-failed') {
     return <CloseIcon color="feedback.icon.negative.lowContrast" size="small" />;
   }
 

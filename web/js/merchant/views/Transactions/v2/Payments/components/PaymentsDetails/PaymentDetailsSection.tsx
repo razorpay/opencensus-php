@@ -226,6 +226,18 @@ function PaymentDetailsSection({
                         </Text>
                       </Box>
                     )}
+                    {/* if nothing exists, show -- */}
+                    {!notes.name && !contact && !email && (
+                      <Text
+                        type="normal"
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        contrast="low"
+                      >
+                        --
+                      </Text>
+                    )}
                   </Box>
                 </RowWrapper>
                 <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />

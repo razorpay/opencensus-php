@@ -36,7 +36,7 @@ import {
   isGatewaySupportingRefund,
   isPaymentThroughSeamlessProviders,
   onCopy,
-  useTime,
+  getTime as useTime,
 } from './utils';
 import {
   fetchInstantRefundFeeFn,
@@ -183,7 +183,7 @@ function PaymentRefundDetails({
       {subsequentRefunds.length > 0 && (
         <>
           {subsequentRefunds.map((subRefund) => (
-            <BoxContainer key={subRefund.id}>
+            <BoxContainer key={subRefund.id} disableMarginTop isRefund>
               <PaymentRefundContent
                 enableBorderTopRadius
                 enableBorderBottomRadius={!hasFooter}
