@@ -67,7 +67,7 @@ class Calculator extends Base\Core
     protected $partner = null;
 
     /**
-     * @var null
+     * @var string| null
      */
     protected $signUpSourceId = null;
 
@@ -1294,6 +1294,10 @@ class Calculator extends Base\Core
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::SUBM_SIGNUP_SOURCE_FETCH_ERROR, ['merchant_id'=>$submerchant->getId()]);
             }
 
+        }
+        if(empty($sourcePartnerId))
+        {
+            return;
         }
         $this->setSignUpSourceId($sourcePartnerId);
     }
