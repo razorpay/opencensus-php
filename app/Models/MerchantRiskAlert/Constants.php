@@ -5,6 +5,7 @@ namespace RZP\Models\MerchantRiskAlert;
 class Constants
 {
     const RISK_CLARIFICATION                    = 'Risk Clarification';
+    const RAZORPAY_ACCOUNT_REVIEW               = 'Razorpay Account Review';
     const MERCHANT_FOH_KEY                      = 'merchant_foh';
     const MERCHANT_INTERNATIONAL_KEY            = 'merchant_international';
     const MERCHANT_LIVE_KEY                     = 'merchant_live';
