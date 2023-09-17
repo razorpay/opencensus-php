@@ -2770,6 +2770,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const QUEUE_JOB_RELEASE_ALL                                 = 'QUEUE_JOB_RELEASE_ALL';
 
+    const ART_RECON_SQS_RAW_VARIANT                             = 'ART_RECON_SQS_RAW_VARIANT';
+
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';

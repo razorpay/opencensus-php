@@ -2,10 +2,18 @@
 
 namespace RZP\SqsRawSubscriber\Queue\Jobs;
 
+use App;
+
 use Aws\Sqs\SqsClient;
+use Illuminate\Support\Str;
 use Illuminate\Queue\Jobs\SqsJob;
 use Illuminate\Container\Container;
 use Illuminate\Queue\CallQueuedHandler;
+
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class SqsRawJob extends SqsJob
 {
@@ -56,17 +64,68 @@ class SqsRawJob extends SqsJob
             // If there is a command available, we resolve the job instance for it from
             // the service container, passing in the payload of the sqs message.
 
-            $command = $this->makeCommand($commandName, $body);
+            $jobInstance = $this->makeCommand($commandName, $body);
 
             // The instance for the job will then be serialized and the body of
             // the job is reconstructed.
 
-            $job['Body'] = json_encode(
-                [
-                    'displayName' => $commandName,
-                    'job' => CallQueuedHandler::class . '@call',
-                    'data' => compact('commandName', 'command'),
-                ]);
+            $command = serialize($jobInstance);
+
+            $jobBodySet = false;
+
+            if ($commandName == 'RZP\\Jobs\\ArtReconProcess')
+            {
+                try
+                {
+                    $app = App::getFacadeRoot();
+
+                    $variant = $app->razorx->getTreatment(
+                        'ArtReconProcess',
+                        RazorxTreatment::ADD_TIMEOUT_FOR_SQS_RAW,
+                        Mode::LIVE
+                    );
+
+                    app('trace')->info(TraceCode::ART_RECON_SQS_RAW_VARIANT, [
+                        'key'         => 'ArtReconProcess',
+                        'variant'     => $variant,
+                        'timeout_set' => $jobInstance->timeout ?? null
+                    ]);
+
+                    /**
+                     * While initialising timeout for the message, we either set the timeout from the
+                     * payload or from the options we set while executing the command queue:work.
+                     *
+                     * Passing timeout in the payload, so that it doesn't default back to 60s
+                     */
+                    if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+                    {
+                        $job['Body'] = json_encode(
+                            [
+                                'displayName' => $commandName,
+                                'uuid'        => (string) Str::uuid(),
+                                'timeout'     => $jobInstance->timeout ?? null,
+                                'job'         => CallQueuedHandler::class . '@call',
+                                'data'        => compact('commandName', 'command'),
+                            ]);
+
+                        $jobBodySet = true;
+                    }
+                }
+                catch (\Throwable $exception)
+                {
+                    app('trace')->traceException($exception, Trace::ERROR, TraceCode::ART_RECON_SQS_RAW_VARIANT);
+                }
+            }
+
+            if ($jobBodySet === false)
+            {
+                $job['Body'] = json_encode(
+                    [
+                        'displayName' => $commandName,
+                        'job'         => CallQueuedHandler::class . '@call',
+                        'data'        => compact('commandName', 'command'),
+                    ]);
+            }
         }
 
         return $job;
@@ -77,9 +136,8 @@ class SqsRawJob extends SqsJob
      *
      * @param string $commandName
      * @param array $body
-     * @return string
      */
-    protected function makeCommand(string $commandName, array $body): string
+    protected function makeCommand(string $commandName, array $body)
     {
         if($commandName == 'RZP\\Jobs\\MerchantFirsDocuments' or
             $commandName == 'RZP\\Jobs\\ArtReconProcess')
@@ -94,9 +152,7 @@ class SqsRawJob extends SqsJob
             'payload' => $payload
         ];
 
-        $instance = $this->container->make($commandName, $data);
-
-        return serialize($instance);
+        return $this->container->make($commandName, $data);
     }
 
     /**

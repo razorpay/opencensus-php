@@ -529,6 +529,9 @@ final class RazorxTreatment
     //Experiment to control graceful shutdown of queues by removing acquired mutex locks
     const RELEASE_ALL_JOB_MUTEX_LOCKS = 'release_all_job_mutex_locks';
 
+    //Experiment to add timeouts to SQS raw queues
+    const ADD_TIMEOUT_FOR_SQS_RAW = 'add_timeout_for_sqs_raw';
+
     // Experiment to use secure context for OTP generation
     const SECURE_OTP_CONTEXT = 'secure_otp_context';
 
