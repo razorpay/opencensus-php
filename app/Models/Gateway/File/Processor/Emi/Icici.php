@@ -229,6 +229,11 @@ class Icici extends Base
                     $finalTid = $mid;
                     $finalMid = $mid;
                 }
+                else if($gateway === 'cybersource' && $payment_acquirer === 'axis')
+                {
+                    $finalTid = $tid;
+                    $finalMid = $mid;
+                }
                 else
                 {
                     $this->trace->info(TraceCode::PAYMENT_WITH_INCORRECT_TID, [
