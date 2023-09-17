@@ -1267,4 +1267,11 @@ class Authorization
 
         $this->basicAuth($key , $pwd);
     }
+
+    public function reportingAppAuth($hostname = null, $mode = 'test'): void
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.reporting')['secret'], $hostname);
+
+        $this->proxy = false;
+    }
 }

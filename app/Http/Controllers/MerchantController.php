@@ -1836,7 +1836,9 @@ class MerchantController extends Controller
 
     public function getAssociatedAccounts(string $merchantId)
     {
-        $data = $this->service()->fetchAssociatedAccounts($merchantId);
+        $input = Request::all();
+
+        $data = $this->service()->fetchAssociatedAccounts($merchantId, $input);
 
         return ApiResponse::json($data);
     }

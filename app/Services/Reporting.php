@@ -55,6 +55,8 @@ class Reporting implements ExternalService
     const CONFIGS       = 'configs';
     const SCHEDULES     = 'schedules';
 
+    const REPORT_TYPE = 'report_type';
+
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
     const PARTNER       = 'partner';

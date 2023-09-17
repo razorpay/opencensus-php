@@ -45,6 +45,7 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\User\Core as UserCore;
 use RZP\Models\User\Service as UserService;
+use RZP\Services\Reporting;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -7951,17 +7952,24 @@ class Service extends Base\Service
 
     /**
      * Fetches submerchant / linked / referred accounts for parent account.
+     * @throws \Exception
      */
-    public function fetchAssociatedAccounts(string $merchantId)
+    public function fetchAssociatedAccounts(string $merchantId, ?array $input = null): array
     {
         $associatedAccounts = [];
 
         $merchant = $this->repo->merchant->findorFailPublic($merchantId);
 
-        if ($merchant->isMarketplace() === true)
+        (new Validator)->validateInput('fetch_associated_accounts', $input);
+
+        $reportType = $input[Reporting::REPORT_TYPE] ?? null;
+
+        // don't fetch linked accounts for report type as partner
+        if ($merchant->isMarketplace() === true && $reportType !== Reporting::PARTNER)
         {
             // linked accounts
             $associatedAccounts = $merchant->accounts()->get()->getIds();
+
             $this->trace->info(TraceCode::ASSOCIATED_ACCOUNTS_FOR_MARKET_PLACE_FEATURE_MERCHANT,
                 [
                     'partner_id'           => $merchantId,
@@ -7973,6 +7981,7 @@ class Service extends Base\Service
         {
             // submerchant accounts
             $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
+
             $associatedAccounts = $submerchants->getIds();
 
             $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
@@ -8258,7 +8267,7 @@ class Service extends Base\Service
         return (in_array($org, \RZP\Models\Admin\Org\Constants:: ALLOW_TO_BUSINESS_BANKING, true) and
             (Merchant\Detail\BusinessType::isUnregisteredBusiness($businessType) === false));
     }
-    
+
     /**
      * @throws Throwable
      * @throws BadRequestException
@@ -8321,7 +8330,7 @@ class Service extends Base\Service
                         // This will return from the transaction, but the loop while loop continues
                         return;
                     }
-    
+
                     if ($ex->errorInfo[1] == 1062)
                     {
                         throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
@@ -8329,7 +8338,7 @@ class Service extends Base\Service
                             null,
                             "Duplicate entry exists");
                     }
-                    
+
                     throw $ex;
                 }
 
@@ -8414,13 +8423,13 @@ class Service extends Base\Service
                         $ex,
                         Trace::ERROR,
                         TraceCode::ERROR_DUE_TO_ISOLATION_LEVEL);
-                    
+
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                       null,
                       null,
                       "Duplicate entry exists");
                 }
-    
+
                 throw $ex;
             }
         }

@@ -2,49 +2,49 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
-use Config;
 use DB;
 use Mail;
 use Event;
 use Queue;
+use Config;
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use App\User\Constants;
-use RZP\Services\Elfin\Impl\Gimli;
-use RZP\Tests\Traits\MocksPartnershipsService;
-use RZP\Services\Elfin\Service as ElfinService;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Feature\Core;
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Models\Feature\Entity as FeatureEntity;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant;
-use RZP\Models\Pricing\DefaultPlan;
-use RZP\Models\User\BankingRole;
-use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Models\Merchant\Metric as MerchantMetric;
+use RZP\Models\Feature\Core;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
-use Illuminate\Http\UploadedFile;
+use RZP\Models\User\BankingRole;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
-use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Pricing\DefaultPlan;
 use RZP\Services\Mock\Settlements\Api;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Mail\Merchant\PartnerOnBoarded;
-use RZP\Models\Merchant\MerchantApplications;
-use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\Merchant\MerchantTest;
-use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Models\Merchant\MerchantApplications;
+use RZP\Tests\Traits\MocksPartnershipsService;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Tests\Functional\Merchant\MerchantTest;
+use RZP\Models\Feature\Entity as FeatureEntity;
+use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
+use RZP\Tests\Functional\Partner\Constants as PartnerConstants;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
 
@@ -3288,6 +3288,86 @@ class PartnerTest extends OAuthTestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/submerchant/partner_feature_check/' . 'route_partnerships';
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAssociatedAccountsForPartnerReport()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::MARKETPLACE], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        // linked account
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->merchant->edit('10000000000001', ['parent_id' => PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/' . PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID. '/associated_accounts';
+
+        $this->ba->reportingAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAssociatedAccountsForMerchantReport()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::MARKETPLACE], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        // linked account
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->merchant->edit('10000000000001', ['parent_id' => PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/' . PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID. '/associated_accounts';
+
+        $this->ba->reportingAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAssociatedAccountsWithoutReportTypeFromInput()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::MARKETPLACE], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        // linked account
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->merchant->edit('10000000000001', ['parent_id' => PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/' . PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID. '/associated_accounts';
+
+        $this->ba->reportingAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAssociatedAccountsWithInvalidReportType()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::MARKETPLACE], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        // linked account
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->merchant->edit('10000000000001', ['parent_id' => PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/' . PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID. '/associated_accounts';
+
+        $this->ba->reportingAppAuth();
 
         $this->startTest($testData);
     }

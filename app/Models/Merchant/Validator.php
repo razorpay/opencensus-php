@@ -4,23 +4,16 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Hash;
+use Carbon\Carbon;
+use FuzzyWuzzy\Fuzz;
 
-use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Base\PublicCollection;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base;
-use Carbon\Carbon;
-use RZP\Constants\Country;
 use RZP\Exception;
-use RZP\Models\Bank\BankCodes;
-use RZP\Models\Order\Status;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
-use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\User;
-use FuzzyWuzzy\Fuzz;
+use RZP\Models\Address;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -30,33 +23,41 @@ use RZP\Models\Admin\Org;
 use RZP\Models\User\Role;
 use RZP\Models\Settlement;
 use RZP\Constants\Product;
+use RZP\Constants\Country;
 use RZP\Models\Admin\Admin;
-use RZP\Models\Merchant\Credits as FundCredits;
-use RZP\Models\Address;
+use RZP\Models\Bank\IFSC;
+use RZP\Services\Reporting;
+use RZP\Models\Adjustment;
+use RZP\Models\Order\Status;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Event;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\Merchant\Credits as FundCredits;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\VirtualAccount\Entity as VAEntity;
 use RZP\Models\Admin\Permission\Name as Permission;
 use \RZP\Models\Workflow\Action\Core as ActionCore;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\VirtualAccount\Entity as VAEntity;
-use RZP\Models\Adjustment;
-use RZP\Models\Payment;
-use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
 
 /**
  * Class Validator
@@ -807,6 +808,10 @@ class Validator extends Base\Validator
 
     protected static $businessTypeValidators = [
         'business_type',
+    ];
+
+    protected static array $fetchAssociatedAccountsRules = [
+        Reporting::REPORT_TYPE => 'sometimes|nullable|string|in:partner,merchant'
     ];
 
     /**

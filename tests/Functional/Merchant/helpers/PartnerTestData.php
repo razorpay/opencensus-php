@@ -3177,4 +3177,78 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchAssociatedAccountsForPartnerReport' => [
+        'request'  => [
+            'url'     => '/merchant/:id/associated_accounts',
+            'method'  => 'GET',
+            'content' => [
+                'report_type'  => 'partner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts' =>  [
+                    0 => '100submerchant'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchAssociatedAccountsForMerchantReport' => [
+        'request'  => [
+            'url'     => '/merchant/:id/associated_accounts',
+            'method'  => 'GET',
+            'content' => [
+                'report_type'  => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts' =>  [
+                    0 => '10000000000001'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchAssociatedAccountsWithoutReportTypeFromInput' => [
+        'request'  => [
+            'url'     => '/merchant/:id/associated_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts' =>  [
+                    0 => '10000000000001'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchAssociatedAccountsWithInvalidReportType' => [
+        'request'  => [
+            'url'     => '/merchant/:id/associated_accounts',
+            'method'  => 'GET',
+            'content' => [
+                'report_type'  => 'route',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected report type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
