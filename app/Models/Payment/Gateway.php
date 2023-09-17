@@ -3432,6 +3432,7 @@ class Gateway
         IFSC::SBIN,
         IFSC::BARB,
         IFSC::FDRL,
+        IFSC::IDFB,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3451,6 +3452,7 @@ class Gateway
         IFSC::STCB,
         IFSC::IDFB,
         IFSC::FDRL,
+        IFSC::IDFB,
     ];
 
     public static $emiBanksUsingCardAndEmiTerminals = [

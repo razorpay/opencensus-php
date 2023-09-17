@@ -342,4 +342,11 @@ class EmiTest extends TestCase
         $plan = $this->getDbLastEntityToArray('emi_plan');
         $this->assertEquals($plan['id'], $content['id']);
     }
+
+    public function testAddIDFBEmiPlansWithMerchant()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

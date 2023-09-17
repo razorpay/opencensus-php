@@ -948,6 +948,37 @@ class GatewayEmiFileTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
     }
 
+    public function testGenerateEmiFileForIdfc()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $this->createDependentEntitiesForIdfc();
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'idfc_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+    }
+
     protected function createDependentEntities($cobrandingPartner)
     {
         $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
@@ -1105,6 +1136,98 @@ class GatewayEmiFileTest extends TestCase
                 'method'           => 'emi',
                 'status'           => 'captured',
                 'bank'             => 'FDRL',
+                'gateway'          => 'hitachi',
+                'terminal_id'      => $terminal['id'],
+                'card_id'          => $card['id'],
+                'emi_plan_id'      => '90101010101011',
+                'captured_at'      => Carbon::now(Timezone::IST)->getTimestamp(),
+                'reference2'       => '1038203',
+            ]
+        );
+    }
+
+    protected function createDependentEntitiesForIdfc()
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => Payment\Gateway::HITACHI,
+            'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
+            'enabled'               => 0,
+            'emi'                   => 0,
+        ]);
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                 => '90101010101011',
+                'duration'           => '9',
+                'rate'               => '1400',
+                'methods'            => 'creditcard',
+                'bank'               => 'IDFB',
+                'min_amount'         => '300000',
+                'issuer_plan_id'     => '85009',
+                'merchant_id'        => '100000Razorpay',
+                'cobranding_partner' => null,
+            ]);
+
+        // Enable EMI on iin
+        $this->fixtures->create('iin',
+            [
+                'iin'                => '999999',
+                'category'           => 'STANDARD',
+                'network'            => 'Visa',
+                'type'               => 'credit',
+                'country'            => 'IN',
+                'issuer_name'        => 'IDFC First Bank',
+                'issuer'             => 'IDFB',
+                'cobranding_partner' => null,
+                'emi'                => 1,
+                'trivia'             => 'random trivia'
+            ]);
+
+        $card = $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'name'              =>  'test',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'IDFB',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'credit',
+                'vault'             =>  'visa',
+                'iin'               =>  '0',
+                'vault_token'       =>  'pay_sampletoken',
+            ]
+        );
+
+        $this->fixtures->payment->create(
+            [
+                'merchant_id'      => '10000000000000',
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'method'           => 'emi',
+                'status'           => 'captured',
+                'bank'             => 'IDFB',
+                'gateway'          => 'hitachi',
+                'terminal_id'      => $terminal['id'],
+                'card_id'          => $card['id'],
+                'emi_plan_id'      => '90101010101011',
+                'captured_at'      => Carbon::now(Timezone::IST)->getTimestamp(),
+                'reference2'       => '1038203',
+            ]
+        );
+
+        $this->fixtures->payment->create(
+            [
+                'merchant_id'      => '10000000000000',
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'method'           => 'emi',
+                'status'           => 'captured',
+                'bank'             => 'IDFB',
                 'gateway'          => 'hitachi',
                 'terminal_id'      => $terminal['id'],
                 'card_id'          => $card['id'],

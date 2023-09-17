@@ -84,4 +84,6 @@ class Constants
 
     const FEDERAL_EMI_FILE_JOB_NAME   = 'federal_emi_push';
 
+    const IDFC_EMI_FILE_JOB_NAME      = 'idfc_emi_push';
+
 }

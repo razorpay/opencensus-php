@@ -140,6 +140,7 @@ class Constants
             self::YESB,
             self::SBI_NCE,
             self::FEDERAL,
+            self::IDFC,
         ],
         Type::COMBINED => [
             self::KOTAK,

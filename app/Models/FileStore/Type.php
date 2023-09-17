@@ -267,6 +267,7 @@ class Type
     const RECON_AUTOMATIC_FILE_FETCH        = 'recon_automatic_file_fetch';
     const INDUS_IND_DEBIT_EMI_FILE          = 'indusind_debit_emi_file';
     const FEDERAL_EMI_FILE                  = 'federal_emi_file';
+    const IDFC_EMI_FILE                     = 'idfc_emi_file';
 
     const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
     const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
@@ -488,6 +489,7 @@ class Type
             self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
+            self::IDFC_EMI_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -696,6 +698,7 @@ class Type
         self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
         self::INDUS_IND_DEBIT_EMI_FILE,
         self::FEDERAL_EMI_FILE,
+        self::IDFC_EMI_FILE,
     ];
 
     /**
@@ -767,6 +770,7 @@ class Type
             self::HSBC_EMI_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
+            self::IDFC_EMI_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
