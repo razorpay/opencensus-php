@@ -2948,6 +2948,8 @@ class PartnerExperienceTest extends OAuthTestCase
             ->willReturn([]);
         $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
 
+        $beforeMigrationPartnerConfig = $this->getDbEntities('partner_config');
+
         $this->startTest();
 
         Event::assertDispatched(TransactionalClosureEvent::class);
@@ -2958,12 +2960,18 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals('pure_platform', $partner->getPartnerType());
 
         $this->assertEquals([], $this->getDbEntities('merchant_application')->toArray());
-        $this->assertEquals([], $this->getDbEntities('partner_config')->toArray());
         $this->assertEquals([], $this->getDbEntities('merchant_access_map')->toArray());
         $this->assertEquals([], $this->getDbEntities('partner_kyc_access_state')->toArray());
         $this->assertEquals([], $subMerchant->tagNames());
         $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $partnerId, 'user_id' => 'MerchantUser01']);
         $this->assertEquals('easy_onboarding', $userDeviceDetails['signup_campaign']);
+
+        // validate if default partner config created for pure platform partner
+        $partnerConfig = $this->getDbEntities('partner_config');
+
+        $this->assertCount(2, $partnerConfig);
+        $this->assertEquals($beforeMigrationPartnerConfig[0]['id'], $partnerConfig[0]['id']);
+        $this->assertEquals($beforeMigrationPartnerConfig[1]['id'], $partnerConfig[1]['id']);
     }
 
     public function testMigrateResellerToPurePlatformJobSent(): void
@@ -3981,6 +3989,167 @@ class PartnerExperienceTest extends OAuthTestCase
         $response = $this->startTest($testData);
 
         $this->assertEmpty($response['application']);
+    }
+
+    public function testFetchPlatformPartnerConfig()
+    {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $this->createPurePlatformPartnerWithDefaultConfig();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/partner_configs?partner_id=' . self::DEFAULT_MERCHANT_ID;
+        $this->ba->adminAuth($liveMode);
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * tests if partner level config is cascaded to application when partner level config is edited from admin dashboard
+     **/
+    public function testEditPlatformPartnerConfig()
+    {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $partnerConfig =  $this->createPurePlatformPartnerWithDefaultConfig();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/partner_configs/' . $partnerConfig[0]['id'];
+        $this->ba->adminAuth($liveMode);
+
+        $this->startTest($testData);
+
+        $partnerConfig = $this->getDbEntities('partner_config');
+
+        $partnerConfig->toArray();
+
+        $this->assertEquals($partnerConfig[0]['commissions_enabled'], $partnerConfig[1]['commissions_enabled']);
+
+    }
+
+    /**
+     * tests if partner level overriden subm config is cascaded to application when subm authorizes a new oauth app
+     **/
+    public function testPartnerConfigCreateDuringOAuthAppMerchantMap()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
+        $testDataToReplace = [
+            'request'  => [
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+
+        $this->createConfigForPlatformPartner('10000000000000','10000000000000');
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getLastEntity(
+            'merchant_access_map',
+            true,
+            'live');
+
+        $testMapping = $this->getLastEntity(
+            'merchant_access_map',
+            true,
+            'test');
+
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
+
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
+
+        $partnerconfig = $this->getDbLastEntity('partner_config');
+
+        $this->assertNotEmpty($partnerconfig);
+        $this->assertEquals('merchant', $partnerconfig['entity_type']);
+        $this->assertEquals('application', $partnerconfig['origin_type']);
+        $this->assertEquals('10000000000000', $partnerconfig['entity_id']);
+    }
+
+    /**
+     * tests if partner level config is cascaded to application when a new application is created
+    **/
+    public function testCascadePartnerConfigDuringCreateApplication()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'name'     => 'fdsfsd',
+            'website'  => 'https://www.example.com',
+            'logo_url' => '/logo/app_logo.png',
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $res = $this->setAuthServiceMockDetail(
+            'applications',
+            'POST',
+            $requestParams,
+            1,
+            ['id' => '8ckeirnw84ifke']);
+
+        $this->createPurePlatformPartnerWithDefaultConfig();
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'pure_platform']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $partnerConfig = $this->getDbEntities('partner_config');
+
+        $partnerConfig->toArray();
+
+        $this->assertEquals($partnerConfig[2]['entity_id'], '8ckeirnw84ifke');
+
+        $this->assertEquals($partnerConfig[2]['entity_type'], 'application');
+    }
+
+    private function createPurePlatformPartnerWithDefaultConfig()
+    {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData['testCreatePurePlatformPlatformRequest'];
+
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest(
+            self::ACTIVATION,
+            true,
+            Merchant\Constants::PURE_PLATFORM);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+        $this->mockAllSplitzTreatment();
+
+        $attributes = array_merge([], ['merchant_id' => self::DEFAULT_MERCHANT_ID, 'partner_type' => Merchant\Constants::PURE_PLATFORM, 'type' => 'partner']);
+
+        $application = $this->createOAuthApplication($attributes);
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $this->assertTrue($merchant->isPartner());
+
+        // validate if default partner config created for pure platform partner
+        $partnerConfig = $this->getDbEntities('partner_config');
+
+        $this->assertNotEmpty($partnerConfig);
+        $this->assertEquals("merchant", $partnerConfig[0]['entity_type']);
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $partnerConfig[0]['entity_id']);
+        $this->assertEquals("application", $partnerConfig[1]['entity_type']);
+        $this->assertEquals($application->getId(), $partnerConfig[1]['entity_id']);
+
+        return $partnerConfig;
     }
 
     public function mockDcsFetchConfiguration() {

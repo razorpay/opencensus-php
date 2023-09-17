@@ -6,6 +6,8 @@ use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Razorpay\OAuth\Application;
+use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 
 class Service extends Base\Service
 {
@@ -47,6 +49,11 @@ class Service extends Base\Service
         $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
 
         $mapping     = $this->core()->addMappingForOAuthApp($entityOwner, $merchant, $input);
+
+        // if overriden sub merchant config is present at partner level cascade to application
+        // when sub merchant authorizes the application
+        $application = (new Application\Repository)->find($input[Entity::APPLICATION_ID]);
+        (new PartnerConfigCore)->createSubMerchantOverridenConfigForApplication($merchant,$entityOwner,$application);
 
         if ($consent === true and $input['env'] === 'prod')
         {

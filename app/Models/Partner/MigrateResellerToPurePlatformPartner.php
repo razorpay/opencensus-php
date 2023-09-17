@@ -6,6 +6,7 @@ use Event;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Entity;
 use RZP\Exception\LogicException;
@@ -13,6 +14,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\PartnerMigrationAuditJob;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Partner\Config as PartnerConfig;
 
 class MigrateResellerToPurePlatformPartner extends Core
 {
@@ -82,11 +84,16 @@ class MigrateResellerToPurePlatformPartner extends Core
             $this->repo->transactionOnLiveAndTest(function () use (
                 $partner, $existingAppId, $configs, $accessMaps, $subMs, $kyc_states
             ) {
-                $this->deleteOldRelations($partner, $existingAppId, $configs, $accessMaps, $kyc_states);
+                $isDefautConfigExpEnabled = (new MerchantCore)->isCreateDefaultPartnerConfigExpEnabled($partner->getId());
+                $this->deleteOldRelations($partner, $existingAppId, $configs, $accessMaps, $kyc_states, $isDefautConfigExpEnabled);
                 $this->removeRefTagsForSubMerchant($partner, $subMs);
 
                 $partner->setPartnerType(MerchantConstants::PURE_PLATFORM);
                 $this->repo->merchant->saveOrFail($partner);
+                if($isDefautConfigExpEnabled)
+                {
+                    $this->createPartnerConfig($partner, $configs);
+                }
                 (new Partner\Core())->updateSignupCampaignForPartner($partner);
                 $this->notifyPartnerAboutSwitch($partner);
             });
@@ -153,12 +160,15 @@ class MigrateResellerToPurePlatformPartner extends Core
      */
     private function deleteOldRelations(
         Entity           $partner, string $existingAppId, PublicCollection $configs,
-        PublicCollection $accessMaps, PublicCollection $kycStates
+        PublicCollection $accessMaps, PublicCollection $kycStates, bool $isDefautConfigExpEnabled,
     )
     {
-        $configs->each(function ($config) {
-            $this->repo->partner_config->deleteOrFail($config);
-        });
+        if($isDefautConfigExpEnabled == false)
+        {
+            $configs->each(function ($config) {
+                $this->repo->partner_config->deleteOrFail($config);
+            });
+        }
         $kycStates->each(function ($kycState) {
             $this->repo->partner_kyc_access_state->deleteOrFail($kycState);
         });
@@ -169,6 +179,37 @@ class MigrateResellerToPurePlatformPartner extends Core
         app('authservice')->deleteApplication($existingAppId, $partner->getId());
     }
 
+
+    /**
+     * Creates default partner config for pureplatform partner
+     * @param Entity $partner
+     * @param PublicCollection $configs
+     *
+     * @return void
+     * @throws LogicException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    private function createPartnerConfig(Entity $partner, PublicCollection $configs): void
+    {
+        if(count($configs) == 0)
+        {
+            $defaultConfig = $this->getPartnerDefaultConfig($partner);
+            (new PartnerConfig\Service())->create($defaultConfig);
+            return ;
+        }
+        foreach ($configs as $config)
+        {
+            if(empty($config['origin_type']) == false)
+            {
+                $config->origin()->associate($partner);
+            }
+            else
+            {
+                $config->entity()->associate($partner);
+            }
+            $this->repo->partner_config->saveOrFail($config);
+        }
+    }
     /**
      * Fetches partner related entities (partner configs, access maps, sub-merchants and kyc states) on live,
      * and returns them.

@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::SETTLE_TO_PARTNER       => 'sometimes|boolean',
         Entity::TDS_PERCENTAGE          => 'sometimes|integer',
         Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
-        Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
+        Entity::DEFAULT_PAYMENT_METHODS => 'nullable|sometimes|array|custom',
         Entity::SUB_MERCHANT_CONFIG     => 'nullable|array',
         Entity::PARTNER_METADATA        => 'nullable|array|custom'
     ];

@@ -1533,6 +1533,16 @@ class Core extends Detail\Core
 
     public function getPartnerDefaultConfig(Merchant\Entity $partner): array
     {
+        if($partner->isPurePlatformPartner())
+        {
+            $defaultConfig = (new PartnerConfig\Core)->fetchConfigForPlatformPartner($partner);
+            if(empty($defaultConfig) == false)
+            {
+                $defaultConfig                                      =  $defaultConfig->toBuildArray();
+                $defaultConfig[PartnerConfig\Constants::PARTNER_ID] = $partner->getId();
+                return $defaultConfig;
+            }
+        }
         $env = ($this->app->isProduction()) ? Environment::PRODUCTION : Environment::DEV;
         $defaultPlanId = DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
             $partner->getCountry()

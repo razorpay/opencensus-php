@@ -94,6 +94,69 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetch default and overridden configs of the pure platform partner
+     *
+     * @param   string          $partnerId
+     * @param   string|null     $mode
+     * @return  Base\PublicCollection
+     */
+    public function fetchAllConfigForPlatformPartner(string $partnerId, string $mode = null)
+    {
+        $defaultConfig = function ($query) use ($partnerId)
+        {
+            $query->where(Entity::ENTITY_ID, $partnerId)
+                  ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                  ->whereNull(Entity::ORIGIN_ID)
+                  ->whereNull(Entity::ORIGIN_TYPE);
+        };
+
+        $overriddenConfig = function ($query) use ($partnerId)
+        {
+            $query->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                  ->where(Entity::ORIGIN_TYPE, Constants::MERCHANT)
+                  ->where(Entity::ORIGIN_ID,   $partnerId);
+        };
+
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        return $query->where($defaultConfig)
+                     ->orWhere($overriddenConfig)
+                     ->orderBy(Entity::CREATED_AT, 'desc')
+                     ->orderBy(Entity::ID, 'desc')
+                     ->get();
+    }
+
+    /**
+     * @param string $partnerId
+     * @param string $subMerchantId
+     *
+     * @return null|Entity
+     */
+    public function getPartnerSubMerchantConfig(string $partnerId, string $subMerchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->where(Entity::ENTITY_ID, $subMerchantId)
+                    ->where(Entity::ORIGIN_TYPE, Constants::MERCHANT)
+                    ->where(Entity::ORIGIN_ID, $partnerId)
+                    ->first();
+    }
+
+    /**
+     * @param string $partnerId
+     *
+     * @return null|Entity
+     */
+    public function getPlatformPartnerDefaultConfig(string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->where(Entity::ENTITY_ID, $partnerId)
+                    ->whereNull(Entity::ORIGIN_ID)
+                    ->whereNull(Entity::ORIGIN_TYPE)
+                    ->first();
+    }
+
+    /**
      * Fetch default and overridden configs in sync for given applicationIDs.
      * It fails if data is not in sync in test and live DB.
      *

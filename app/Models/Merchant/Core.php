@@ -3966,6 +3966,21 @@ class Core extends Base\Core
                     ];
 
                     $this->trace->count(Metric::PARTNER_CONFIG_CREATE_TOTAL, $dimensionsForDefaultPartnerConfig);
+                } else
+                {
+                    if($this->isCreateDefaultPartnerConfigExpEnabled($merchant->getId()) == false)
+                    {
+                        return;
+                    }
+                    $this->trace->info(
+                        TraceCode::CREATING_PURE_PLATFORM_DEFAULT_PARTNER_CONFIG,
+                        [
+                            'partner_id'    => $merchant->getId(),
+                        ]);
+                    // create default partner config for pure platform partner
+                    $defaultConfig = (new Partner\Core())->getPartnerDefaultConfig($merchant);
+                    (new PartnerConfig\Service())->create($defaultConfig);
+
                 }
             });
         });
@@ -3977,6 +3992,18 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * @param string $partnerId
+     * @return bool
+     */
+    public function isCreateDefaultPartnerConfigExpEnabled(string $partnerId) : bool
+    {
+        $properties = [
+            'id' => $partnerId,
+            'experiment_id' =>  $this->app['config']->get('app.default_config_for_platform_partners_experiment_id')
+        ];
+        return $this->isSplitzExperimentEnable($properties,'enable');
+    }
     /**
      * Creates a merchant_application for a given merchant and applicationId provided
      *

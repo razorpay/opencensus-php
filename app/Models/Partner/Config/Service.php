@@ -45,7 +45,17 @@ class Service extends Base\Service
     {
         $application = $this->getApplicationFromInput($input);
         $subMerchant = $this->getSubMerchantFromInput($input);
-
+        // if application is not found check if it is pure platform partner
+        // As we can create default config at partner level instead of app
+        if(empty($application) === true)
+        {
+            $partner = $this->getPartnerFromInput($input);
+            if(empty($partner) == false && $partner->isPurePlatformPartner())
+            {
+                $config = (new Core)->createDefaultConfigForPurePlatform($partner, $subMerchant, $input);
+                return $config->toArrayPublic();
+            }
+        }
         $config = (new Core)->create($application, $input, $subMerchant);
 
         return $config->toArrayPublic();
@@ -54,11 +64,11 @@ class Service extends Base\Service
     /**
      * @param array $input
      *
-     * @return OAuthApp\Entity
+     * @return OAuthApp\Entity|null
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function getApplicationFromInput(array $input): OAuthApp\Entity
+    public function getApplicationFromInput(array $input): mixed
     {
         $this->validateConfigInput($input);
 
@@ -84,13 +94,7 @@ class Service extends Base\Service
                 // Block pure platform if partner id is sent instead of app id
                 if ($partnerMerchant->isNonPurePlatformPartner() === false)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PARTNER_ID_SENT_FOR_PURE_PLATFORM,
-                        Constants::PARTNER_ID,
-                        [
-                            Constants::PARTNER_ID         => $partnerMerchant->getId(),
-                            Merchant\Entity::PARTNER_TYPE => $partnerMerchant->getPartnerType(),
-                        ]);
+                    return $application;
                 }
 
                 $application = (new Merchant\Core())->fetchPartnerApplication($partnerMerchant);
@@ -98,6 +102,29 @@ class Service extends Base\Service
         }
 
         return $application;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return Merchant\Entity | null
+     * @throws Exception\BadRequestException
+     */
+    protected function getPartnerFromInput(array $input): mixed
+    {
+        $this->validateConfigInput($input);
+
+        $partner = null;
+
+        if (empty($input[Constants::PARTNER_ID]) === false)
+        {
+            $partnerId = $input[Constants::PARTNER_ID];
+            $partnerId = Account\Entity::verifyIdAndSilentlyStripSign($partnerId);
+
+            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+        }
+
+        return $partner;
     }
 
     /**
@@ -140,9 +167,26 @@ class Service extends Base\Service
 
         $application = $this->getApplicationFromInput($input);
         $subMerchant = $this->getSubMerchantFromInput($input);
+        $partner     = $this->getPartnerFromInput($input);
 
         $core       = new Core;
         $configData = null;
+        if(empty($partner) == false && $partner->isPurePlatformPartner())
+        {
+            if(empty($subMerchant) == true)
+            {
+                $configs = $core->fetchAllConfigForPlatformPartner($partner);
+                $configData = optional($configs)->toArrayPublicEmbedded();
+            } else
+            {
+                $config = $core->fetchConfigForPlatformPartner($partner, $subMerchant);
+                $configData = optional($config)->toArrayPublic();
+            }
+            if(empty($configData) == false)
+            {
+                return $configData;
+            }
+        }
 
         if (empty($subMerchant) === true and $this->app['basicauth']->isAdminAuth() === true)
         {

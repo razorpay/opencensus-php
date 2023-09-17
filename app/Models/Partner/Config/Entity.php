@@ -321,6 +321,16 @@ class Entity extends PublicEntity
         return ($this->getAttribute(self::EXPLICIT_SHOULD_CHARGE) === false);
     }
 
+    public function isPlatformPartnerDefaultConfig(): bool
+    {
+        return $this->getEntityType() == Constants::MERCHANT && empty($this->getAttribute(self::ORIGIN_TYPE)) ;
+    }
+
+    public function isPlatformPartnerDefaultOverridenConfig(): bool
+    {
+        return $this->getEntityType() == Constants::MERCHANT && $this->getAttribute(self::ORIGIN_TYPE) == Constants::MERCHANT ;
+    }
+
     public function toArrayPublic(): array
     {
         $app = App::getFacadeRoot();
@@ -403,5 +413,16 @@ class Entity extends PublicEntity
         }
 
         return ($merchant->merchantDetail->getBusinessName())??($merchant->getName());
+    }
+
+    public function toBuildArray()
+    {
+        $buildExclusionArray = ['id', 'entity_type', 'entity_id', 'origin_type', 'origin_id', 'created_at', 'updated_at', 'deleted_at'];
+        $response = parent::toArrayPublic();
+        foreach ($buildExclusionArray as $key=>$name)
+        {
+            unset($response[$name]);
+        }
+        return $response;
     }
 }

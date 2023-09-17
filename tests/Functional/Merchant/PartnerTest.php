@@ -490,6 +490,13 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals(0, count($merchantApplications));
 
         $this->assertTrue($merchant->isPartner());
+
+        // validate if default partner config created for pure platform partner
+        $partnerConfig = $this->getDbLastEntity('partner_config');
+
+        $this->assertNotEmpty($partnerConfig);
+        $this->assertEquals("merchant", $partnerConfig['entity_type']);
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $partnerConfig['entity_id']);
     }
 
     public function testApprovingPurePlatformDeactivationRequest()

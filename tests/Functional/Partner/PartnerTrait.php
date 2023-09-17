@@ -240,6 +240,32 @@ trait PartnerTrait
         return $this->fixtures->create('partner_config', $attributes);
     }
 
+    public function createConfigForPlatformPartner($partnerId, $submerchantId = null, $attributes = [])
+    {
+        if ($submerchantId === null)
+        {
+            $attributes[PartnerConfig\Entity::ENTITY_TYPE] = PartnerConfig\Constants::MERCHANT;
+            $attributes[PartnerConfig\Entity::ENTITY_ID]   = $partnerId;
+
+            $attributes[PartnerConfig\Entity::ORIGIN_TYPE] = null;
+            $attributes[PartnerConfig\Entity::ORIGIN_ID]   = null;
+        }
+        else
+        {
+            $attributes[PartnerConfig\Entity::ENTITY_TYPE] = PartnerConfig\Constants::MERCHANT;
+            $attributes[PartnerConfig\Entity::ENTITY_ID]   = $submerchantId;
+
+            $attributes[PartnerConfig\Entity::ORIGIN_TYPE] = PartnerConfig\Constants::MERCHANT;
+            $attributes[PartnerConfig\Entity::ORIGIN_ID]   = $partnerId;
+        }
+
+        $defaultAttributes = $this->getDefaultPartnerConfigAttributes();
+
+        $attributes        = array_merge($defaultAttributes, $attributes);
+
+        return $this->fixtures->create('partner_config', $attributes);
+    }
+
     protected function getDefaultPartnerConfigAttributes()
     {
         return [

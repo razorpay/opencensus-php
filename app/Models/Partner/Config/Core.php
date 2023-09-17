@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -137,6 +138,77 @@ class Core extends Base\Core
     }
 
     /**
+     * If submerchant config is present, returns it. Else returns associated partners config
+     *
+     * @param Merchant\Entity $partner
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return mixed
+     */
+    public function fetchConfigForPlatformPartner(Merchant\Entity $partner, Merchant\Entity $subMerchant = null): mixed
+    {
+        if (empty($subMerchant) == true)
+        {
+            return $this->repo->partner_config->getPlatformPartnerDefaultConfig($partner->getId());
+        }
+        return $this->repo->partner_config->getPartnerSubMerchantConfig($partner->getId(), $subMerchant->getId());
+    }
+
+    /**
+     * Fetch all default and overridden configs for pure platform partner at partner level
+     *
+     * @param Merchant\Entity $partner
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchAllConfigForPlatformPartner(Merchant\Entity $partner)
+    {
+        return $this->repo->partner_config->fetchAllConfigForPlatformPartner($partner->getId());
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param Merchant\Entity $subMerchant
+     * @param array           $input
+     *
+     * @return Entity
+     */
+    public function createDefaultConfigForPurePlatform(Merchant\Entity $partner, Merchant\Entity $subMerchant = null, array $input): Entity
+    {
+        // add validation
+        $config = new Entity;
+
+        $config->build($input);
+
+        if (empty($subMerchant) === true)
+        {
+            $config->entity()->associate($partner);
+        }
+        else
+        {
+            $config->entity()->associate($subMerchant);
+            $config->origin()->associate($partner);
+        }
+
+        $this->repo->saveOrFail($config);
+        // cascade partner level config created to all the apps
+        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId(), 'partner');
+        foreach ($apps as $app)
+        {
+            $this->create($app, $input, $subMerchant);
+        }
+
+        $this->trace->info(
+            TraceCode::PURE_PLATFORM_DEFAULT_PARTNER_CONFIG_CREATED,
+            [
+                'input' => $input,
+                'id'    => $config->getId(),
+            ]);
+
+        return $config;
+    }
+
+    /**
      * @param string $id
      * @param array $input
      *
@@ -158,11 +230,9 @@ class Core extends Base\Core
 
         $this->buildPartnerMetadata($config, $input);
 
-        list($application, $submerchant) = $this->getEntitiesFromConfig($config);
+        list($partner, $submerchant) = $this->getEntitiesFromConfig($config);
 
         $config->edit($input, 'edit');
-
-        $partner = (new Merchant\Core)->getPartnerFromApp($application);
 
         $validator->validatePolicyUrlInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
 
@@ -171,6 +241,11 @@ class Core extends Base\Core
         $validator->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
+
+        if($config->isPlatformPartnerDefaultConfig() || $config->isPlatformPartnerDefaultOverridenConfig())
+        {
+            $this->cascadePlatformPartnerConfig($partner, $submerchant, $input);
+        }
 
         $this->trace->info(
             TraceCode::PARTNER_CONFIG_EDITED,
@@ -325,10 +400,12 @@ class Core extends Base\Core
     {
         $subMerchant     = null;
         $application     = null;
+        $partner         = null;
         $applicationRepo = new Application\Repository;
 
         $entityType = $config->getEntityType();
         $entityId   = $config->getEntityId();
+        $originType = $config->getAttribute(Entity::ORIGIN_TYPE);
 
         switch ($entityType)
         {
@@ -337,13 +414,30 @@ class Core extends Base\Core
                 break;
 
             case Constants::MERCHANT:
-                $originId    = $config->getOriginId();
-                $application = $applicationRepo->findOrFail($originId);
-                $subMerchant = $this->repo->merchant->findOrFail($entityId);
+                if ($originType == Constants::MERCHANT  )
+                {
+                    $originId    = $config->getOriginId();
+                    $partner     = $this->repo->merchant->findOrFail($originId);
+                    $subMerchant = $this->repo->merchant->findOrFail($entityId);
+                }
+                else if($originType == null)
+                {
+                    $partner = $this->repo->merchant->findOrFail($entityId);
+                }
+                else
+                {
+                    $originId    = $config->getOriginId();
+                    $application = $applicationRepo->findOrFail($originId);
+                    $subMerchant = $this->repo->merchant->findOrFail($entityId);
+                }
                 break;
         }
+        if(empty($partner) == true)
+        {
+            $partner = (new Merchant\Core)->getPartnerFromApp($application);
+        }
 
-        return [$application, $subMerchant];
+        return [$partner, $subMerchant];
     }
 
     /**
@@ -616,6 +710,51 @@ class Core extends Base\Core
         if (empty($existingMetadata) === false)
         {
             $input[Entity::PARTNER_METADATA] = array_merge($existingMetadata, $input[Entity::PARTNER_METADATA]);
+        }
+    }
+
+    /**
+     * While submerchant authorizes oauth application we need to create sub merchant overriden config for oauth application
+     * if sub merchant config is overriden for default platform partner
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param Merchant\Entity $partner
+     * @param Application\Entity $application
+     *
+     * @return void
+     * @throws BadRequestException
+     */
+    public function createSubMerchantOverridenConfigForApplication(Merchant\Entity $subMerchant, Merchant\Entity $partner, Application\Entity $application): void
+    {
+        $overridenConfig = $this->fetchConfigForPlatformPartner($partner,$subMerchant);
+        if(empty($overridenConfig) == false)
+        {
+            $configArray =  $overridenConfig->toBuildArray();
+            $configArray[Constants::APPLICATION_ID] = $application->getId();
+            $this->create($application,$configArray, $subMerchant);
+        }
+    }
+
+    /**
+     * Cascades partner level config changes to all application level configs for platform partners
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param Merchant\Entity $partner
+     * @param Entity $defaultConfig
+     * @param array $input
+     *
+     * @return void
+     */
+    private function cascadePlatformPartnerConfig(Merchant\Entity $partner, Merchant\Entity $subMerchant = null, array $input): void
+    {
+        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId(), 'partner');
+        foreach ($apps as $app)
+        {
+            $config = $this->fetch($app, $subMerchant);
+            if (!empty($config))
+            {
+                $this->edit($config->getId(), $input);
+            }
         }
     }
 }

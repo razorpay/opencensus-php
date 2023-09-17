@@ -2126,4 +2126,83 @@ return [
             ]
         ]
     ],
+
+    'testFetchPlatformPartnerConfig' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'entity_type' => 'merchant',
+                    'entity_id'   => '10000000000000',
+                ]
+            ],
+        ],
+    ],
+
+    'testEditPlatformPartnerConfig' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'PUT',
+            'content' => [
+                'commissions_enabled'  => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'commissions_enabled'  => false
+            ],
+        ],
+    ],
+
+    'testCreatePurePlatformPlatformRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testCascadePartnerConfigDuringCreateApplication' => [
+        'request'  => [
+            'url'     => '/oauth/applications',
+            'method'  => 'POST',
+            'content' => [
+                'name'     => 'fdsfsd',
+                'website'  => 'https://www.example.com',
+                'logo_url' => '/logo/app_logo.png'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPartnerConfigCreateDuringOAuthAppMerchantMap' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications',
+            'method'  => 'POST',
+            'content' => [
+                'application_id' => '10000000000App',
+                'partner_id'     => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id' => '10000000000000',
+                'entity_id'   => '10000000000App',
+                'entity_type' => 'application',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
