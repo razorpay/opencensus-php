@@ -46,7 +46,7 @@ const ContestDispute = (props) => {
     if (!canUserTakeAction) {
       return null;
     }
-    if (data?.amount?.includes('.')) {
+    if (data?.amount?.includes?.('.')) {
       data.amount = rupeesToPaise(data.amount);
     }
 

@@ -12,7 +12,7 @@ const initialState = {
 export const fetchLeftNavItems = () => {
   return {
     type: FETCH_LEFT_NAV_ITEMS,
-    payload: merchantFetch({ absUrl: '/merchant/navigation', timeout: 2000 }),
+    payload: merchantFetch({ absUrl: '/merchant/navigation', timeout: 4000 }),
   };
 };
 

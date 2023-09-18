@@ -1,8 +1,15 @@
 import React from 'react';
 import { render, screen } from 'test-utils';
 import { OverviewBanner } from 'merchant_common/views/Reports/features/Overview/components/OverviewBanner';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 
 const push = jest.fn();
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
 
 describe('OverviewCardSkeleton', () => {
   test('should render card component without any error', () => {

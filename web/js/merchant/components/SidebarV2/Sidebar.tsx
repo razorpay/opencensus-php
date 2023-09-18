@@ -73,7 +73,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
       fetchLeftNavItems();
       setTimeout(() => {
         setIsTwoSecondsTimeoutReached(true);
-      }, 2000);
+      }, 4000);
     } else {
       setIsTwoSecondsTimeoutReached(true);
       setCacheLeftNavItems(leftNavItemsCache);

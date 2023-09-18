@@ -30,7 +30,7 @@ const currencies = {
 const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
 export function getCurrency(currencyISO) {
-  return window.currencyList[currencyISO] || {};
+  return window.currencyList?.[currencyISO] || {};
 }
 
 export function getCurrencySymbol(currency) {

@@ -85,4 +85,52 @@ module.exports = [
     limit: '7 KB',
     gzip: true,
   },
+  {
+    name: 'Transaction',
+    path: 'js/merchant/Transactions.*.js',
+    limit: '64 KB',
+    gzip: true,
+  },
+  {
+    name: 'Help Section',
+    path: 'js/merchant/new-help-section.*.js',
+    limit: '3 KB',
+    gzip: true,
+  },
+  {
+    name: 'Settlements',
+    path: 'js/merchant/Settlements.*.js',
+    limit: '48 KB',
+    gzip: true,
+  },
+  {
+    name: 'Account and settings home',
+    path: 'js/merchant/AccountAndSettingsHome.*.js',
+    limit: '12 KB',
+    gzip: true,
+  },
+  {
+    name: 'Payment Links',
+    path: 'js/merchant/PaymentLinks.*.js',
+    limit: '18 KB',
+    gzip: true,
+  },
+  {
+    name: 'Payment Pages',
+    path: 'js/merchant/PaymentPages.*.js',
+    limit: '26 KB',
+    gzip: true,
+  },
+  {
+    name: 'Payment Button',
+    path: 'js/merchant/PaymentButton.3a22b9f1.js',
+    limit: '18 KB',
+    gzip: true,
+  },
+  {
+    name: 'Invoices',
+    path: 'js/merchant/Invoices.*.js',
+    limit: '32 KB',
+    gzip: true,
+  },
 ];
