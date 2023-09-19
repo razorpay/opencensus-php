@@ -176,6 +176,14 @@ describe('Tests for validateAmount', () => {
     };
   });
 
+  test('function should handle different input types gracefully', () => {
+    expect(validateAmount(123.123, 100, 'INR')).toBe(
+      'Amount must be a number in the format 123.45',
+    );
+
+    expect(validateAmount(123.12, 100, 'INR')).toBe(undefined);
+  });
+
   test('function should return error when amount is invalid', () => {
     expect(validateAmount('123.123', 100, 'INR')).toBe(
       'Amount must be a number in the format 123.45',

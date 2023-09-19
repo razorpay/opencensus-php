@@ -308,7 +308,7 @@ export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLen
 export function validateAmount(val, minAmountAllowed, currency = 'INR') {
   if (val) {
     const { decimals } = getCurrencyConfig(currency);
-    const decimalPart = val?.split('.')?.[1] ?? '';
+    const decimalPart = val?.toString()?.split('.')?.[1] ?? '';
     const amountPattern = `^[0-9]+(.([0-9]){1,${decimals}})?$`;
     const regex = new RegExp(amountPattern);
     const validPattern = 123.45;
