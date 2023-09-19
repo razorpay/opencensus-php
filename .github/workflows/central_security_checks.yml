@@ -10,4 +10,5 @@ jobs:
     uses: razorpay/security-action/.github/workflows/central_security_checks_prod.yml@master
     with:
       SEMGREP_MANDATORY: 'true'
+      RUNNER_NAME: 'X64'
     secrets: inherit
