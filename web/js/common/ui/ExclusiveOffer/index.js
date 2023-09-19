@@ -133,10 +133,6 @@ const ExclusiveOffer = ({
             />
           </div>
           <div
-            className="exclusive-offer-modal-self-serve-divider"
-            id="exclusive-offer-modal-self-serve-divider"
-          />
-          <div
             id="exclusive-offer-modal-self-serve-footer"
             style={{ background: exclusive_offers?.offer?.background_color }}
           >

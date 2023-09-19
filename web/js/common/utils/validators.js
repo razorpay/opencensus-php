@@ -311,7 +311,7 @@ export function validateAmount(val, minAmountAllowed, currency = 'INR') {
     const decimalPart = val?.split('.')?.[1] ?? '';
     const amountPattern = `^[0-9]+(.([0-9]){1,${decimals}})?$`;
     const regex = new RegExp(amountPattern);
-    const validPattern = 123.450;
+    const validPattern = 123.45;
 
     if (!regex.test(Number(val))) {
       return `Amount must be a number in the format ${validPattern.toFixed(decimals)}`;
