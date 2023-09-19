@@ -291,6 +291,10 @@ export const NO_GRAPH_DATA = {
   customTitle: 'No data to display',
   customSubtitle: `There is no data available for the selected date-range.
                   Please modify the date-range and try again.`,
+  preMagicSubtitle:
+    'No pre onboarding RTO data available. Please upload pre-Magic delivery data in the Delivery Status tab.',
+  postMagicSubtitle:
+    'No delivery data available. Please upload Monthly delivery and Pre-Magic delivery data in Delivery Status tab.',
 };
 
 export const LINE_CHART_GRAPH_COLOR = {

@@ -119,3 +119,33 @@ export const MANUAL_RISK_ORDER_SPLIT_DATA = JSON.parse(`[{
     }
   ]
 }]`);
+
+export const PREPAY_INSIGHTS_DATA = [
+  {
+    label: 'COD to Prepaid Conversion',
+    value: '10 %',
+  },
+  {
+    label: '% of COD orders converted to Prepaid',
+    value: '₹ 1',
+  },
+  {
+    label: 'Total discount provided to customers',
+    value: '₹ 17',
+  },
+];
+
+export const PREPAY_INSIGHTS_EMPTY_DATA = [
+  {
+    label: 'COD to Prepaid Conversion',
+    value: '--',
+  },
+  {
+    label: '% of COD orders converted to Prepaid',
+    value: '--',
+  },
+  {
+    label: 'Total discount provided to customers',
+    value: '--',
+  },
+];

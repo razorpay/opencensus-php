@@ -33,6 +33,7 @@ const RTOAnalytics = ({
   fetchProviders,
   user,
   isManualReviewOpted,
+  isPrepayCODOpted,
 }) => {
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
   const [requestCount, setRequestCount] = useState(0);
@@ -174,7 +175,13 @@ const RTOAnalytics = ({
             {activeTab.label === 'Risk Report' && isManualReviewOpted ? <RiskReportBanner /> : null}
             <Header isManualReviewOpted={isManualReviewOpted} />
             <div className="charts-data">
-              {<Component user={user} isManualReviewOpted={isManualReviewOpted} />}
+              {
+                <Component
+                  user={user}
+                  isManualReviewOpted={isManualReviewOpted}
+                  isPrepayCODOpted={isPrepayCODOpted}
+                />
+              }
             </div>
           </div>
         </>
@@ -199,6 +206,7 @@ const mapStateToProps = (state) => ({
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   isManualReviewOpted: state.magicCheckout.cod_order_control,
+  isPrepayCODOpted: state.magicCheckout.one_cc_prepay_cod_conversion,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RTOAnalytics);

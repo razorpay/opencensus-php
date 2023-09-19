@@ -54,7 +54,10 @@ export const fetchWidgetData = (
 
   return {
     type: ACTIONS.FETCH_WIDGET_DATA,
-    widget,
+    widget:
+      widget === 'rto_rate' && additionalInfo?.premagic_flag
+        ? 'pre_vs_post_magic_rto_rate'
+        : widget,
     payload: merchantFetch({
       url: '1cc/rto_prediction_service/dashboard',
       method: 'post',

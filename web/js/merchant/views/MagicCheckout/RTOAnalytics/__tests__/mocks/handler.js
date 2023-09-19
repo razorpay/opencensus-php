@@ -117,3 +117,66 @@ export const rtoRateHandlers = [
     );
   }),
 ];
+
+export const preAndPostMagicRTORateHandlers = [
+  rest.post('*/merchant/api/test/1cc/rto_prediction_service/dashboard', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        success: true,
+        status_code: 200,
+        data: JSON.parse(`{
+          "data": [
+            {
+              "name": "RTO rate",
+              "aggregation_type": "monthly",
+              "updated_at": "1694071500",
+              "premagic_rto_rate": {
+                "rto_rate": 27.23,
+                "reduction_percentage": -27.23
+              }
+            }
+          ]
+        }`),
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.post('*/merchant/api/test/1cc/rto_prediction_service/dashboard', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        success: true,
+        status_code: 200,
+        data: JSON.parse(`{
+          "data": [
+            {
+              "name": "RTO rate",
+              "aggregation_type": "monthly",
+              "updated_at": "1694071500",
+              "rto_rate": [
+                {
+                  "prepaid_rto_rate": 67,
+                  "total_rto_rate": 27,
+                  "cod_rto_rate": 5,
+                  "period": 1688169600
+                },
+                {
+                  "prepaid_rto_rate": 67,
+                  "total_rto_rate": 37,
+                  "cod_rto_rate": 5,
+                  "period": 1693526400
+                }
+              ],
+              "premagic_rto_rate": {
+                "rto_rate": 27.23,
+                "reduction_percentage": 27.23
+              }
+            }
+          ]
+        }`),
+      }),
+      ctx.delay(50),
+    );
+  }),
+];

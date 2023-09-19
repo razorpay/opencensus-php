@@ -3,6 +3,7 @@ import { ACTIONS } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 import {
   lifeTimeWidgetsDataFormatter,
   widgetsDataFormatter,
+  preVsPostMagicRTORateFormatter,
 } from 'merchant/reducers/magicCheckout/rtoAnalytics/utils';
 
 const defaultWidgetState = {
@@ -67,6 +68,12 @@ const initialState = {
   rto_by_ip: {
     ...lifetimeWidgetsDefaultState,
   },
+  prepay_order: {
+    ...defaultWidgetState,
+  },
+  pre_vs_post_magic_rto_rate: {
+    ...defaultWidgetState,
+  },
   timedWidgetsFetching: false,
 };
 
@@ -116,7 +123,9 @@ export default function magicRTOAnalyticsReducer(state = initialState, action) {
         },
       } = action;
 
-      const updatedObj = widgetsDataFormatter(widgetData);
+      const updatedObj = widgetData?.[0]?.hasOwnProperty('premagic_rto_rate')
+        ? preVsPostMagicRTORateFormatter(widgetData[0])
+        : widgetsDataFormatter(widgetData);
 
       return merge(state, { ...updatedObj, timedWidgetsFetching: false });
     }

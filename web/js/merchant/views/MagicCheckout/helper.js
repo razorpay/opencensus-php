@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 
 export const onWheelPreventChange = (e) => {
   // Prevent the input value change
@@ -51,4 +52,25 @@ export const getTimeInSeconds = (durationVal) => {
   const duration = moment.duration(moment(timeString, timeFormat).format('H:m')).asSeconds();
 
   return duration;
+};
+
+/**
+ *
+ * @param {Array} defaultDuration having values to define a default range
+ * @returns {object} of startTime and endtime where endtime is the current time
+ * and start time is set according to the default duration provided.
+ */
+export const getStartAndEndTime = (defaultDuration) => {
+  const endDate = moment();
+  const defaultDiff =
+    endDate.unix() -
+    endDate
+      .clone()
+      .add(...defaultDuration)
+      .unix();
+  const startDate = getStartDateFromDiff(defaultDiff, endDate);
+  const start = startDate.toDate().getTime();
+  const end = endDate.toDate().getTime();
+
+  return { startTime: start, endTime: end };
 };

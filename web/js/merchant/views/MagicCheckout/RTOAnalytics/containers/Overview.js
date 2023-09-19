@@ -2,8 +2,10 @@ import CODPrepaidOrders from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/
 import FeedbackRate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate';
 import RTORate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RTORate';
 import ManualReviewOrderSplit from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/ManualReviewOrderSplit';
+import PrepayInsignts from 'merchant/views/MagicCheckout/RTOAnalytics/common/PrepayInsights';
+import PreAndPostMagic from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/PreAndPostMagic';
 
-const OverviewTab = ({ isManualReviewOpted }) => {
+const OverviewTab = ({ isManualReviewOpted, isPrepayCODOpted }) => {
   return (
     <div className="overview-container">
       <RTORate />
@@ -11,6 +13,8 @@ const OverviewTab = ({ isManualReviewOpted }) => {
         <FeedbackRate />
         <CODPrepaidOrders />
       </div>
+      {isPrepayCODOpted ? <PrepayInsignts /> : null}
+      <PreAndPostMagic />
       {isManualReviewOpted ? <ManualReviewOrderSplit /> : null}
     </div>
   );

@@ -16,6 +16,7 @@ export const WIDGETS = [
   'cod_rate',
   'risky_orders',
   'manual_risk_order_split',
+  'prepay_order',
 ];
 
 export const WIDGETS_MAP = {
@@ -31,6 +32,7 @@ export const WIDGETS_MAP = {
   'COD vs Prepaid Orders': 'cod_rate',
   'RTO Rate': 'rto_rate',
   'Manual Risk Order Split': 'manual_risk_order_split',
+  'Prepay Order': 'prepay_order',
 };
 
 const LIFETIME_WIDGETS = ['rto_by_ip', 'rto_by_zipcode'];
@@ -113,4 +115,19 @@ export const lifeTimeWidgetsDataFormatter = (attributeData, widget, widgetData) 
   updateObj[widget].updatedAt = widgetData?.updatedAt;
 
   return updateObj;
+};
+
+export const preVsPostMagicRTORateFormatter = (widgetData) => {
+  const { premagic_rto_rate, rto_rate, updated_at } = widgetData || {};
+
+  return {
+    pre_vs_post_magic_rto_rate: {
+      data: {
+        premagic_rto_rate,
+        postmagic_rto_rate: rto_rate,
+      },
+      updatedAt: Number(updated_at),
+      loading: false,
+    },
+  };
 };
