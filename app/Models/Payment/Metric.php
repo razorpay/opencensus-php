@@ -96,6 +96,21 @@ class Metric extends Base\Core
 
     const CRED_ELIGIBILITY_REQUEST_COUNT                   = 'cred_eligibility_request_count';
 
+    const SPLIT_PAYMENT_CREATED_COUNT                      = 'split_payment_created_count';
+    const SPLIT_PAYMENT_REQUEST_COUNT                      = 'split_payment_request_count';
+    const SPLIT_PAYMENT_FAILED_COUNT                       = 'split_payment_failed_count';
+    const SPLIT_PAYMENT_REQUEST_TIME                       = 'split_payment_request_time';
+
+    const REFUND_SPLIT_PAYMENT_COUNT                       = 'refund_split_payment_request_count';
+    const REFUND_SPLIT_PAYMENT_PROCESSED_COUNT             = 'refund_split_payment_processed_count';
+    const REFUND_SPLIT_PAYMENT_FAILED_COUNT                = 'refund_split_payment_failed_count';
+    const REFUND_SPLIT_PAYMENT_REQUEST_TIME                = 'refund_split_payment_request_time';
+
+    const AUTO_CAPTURE_SPLIT_PAYMENT_COUNT                 = 'autocapture_split_payment_request_count';
+    const AUTO_CAPTURE_SPLIT_PAYMENT_PROCESSED_COUNT       = 'autocapture_split_payment_processed_count';
+    const AUTO_CAPTURE_SPLIT_PAYMENT_FAILED_COUNT          = 'autocapture_split_payment_failed_count';
+    const AUTO_CAPTURE_SPLIT_PAYMENT_REQUEST_TIME          = 'autocapture_split_payment_request_time';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);

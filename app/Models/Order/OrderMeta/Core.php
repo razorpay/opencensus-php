@@ -51,7 +51,6 @@ class Core extends Base\Core
      */
     public function createAndSaveOrderMeta(Order\Entity $order, array $input)
     {
-        $this->createAndSaveSplitPaymentOrderMeta($order);
         $this->createAndSave1CCOrderMetaData($order, $input);
         $this->createAndSaveOfflineConfigMetaData($order,$input);
         return $this->createAndSaveTaxInvoice($order, $input);
@@ -454,11 +453,31 @@ class Core extends Base\Core
         return self::MUTEX_PREFIX_1CC . $orderId;
     }
 
-    public function createAndSaveSplitPaymentOrderMeta(Order\Entity $order)
+    public function getSplitPaymentMeta(Order\Entity $order)
     {
-        if ($this->isLiveMode() === true)
+        return array_first($order->orderMetas, function ($orderMeta) {
+            if ($orderMeta->getType() === Type::SPLIT_PAYMENT_INFO) {
+                return true;
+            }
+        }, null);
+    }
+
+    public function addRelationToSplitPaymentMeta(Order\Entity $order, array $relation = [])
+    {
+        $this->trace->info(TraceCode::SPLIT_PAYMENT_META_ADD_RELATION, [
+            'order' => $order,
+            'relation' => $relation,
+        ]);
+
+        if (
+            $this->merchant === null or
+            $this->merchant->isFeatureEnabled(FeatureConstants::RAZORPAY_WALLET) === false
+        )
         {
-            return null;
+            $this->trace->info(TraceCode::SPLIT_PAYMENT_FEATURE_DISABLED, [
+                'merchant_id' => $this->merchant->getId()
+            ]);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED);
         }
 
         $properties = [
@@ -471,25 +490,90 @@ class Core extends Base\Core
         // Ensuring split payment meta is created only for enabled merchants on test mode.
         if ($splitPaymentExpEnabled === false)
         {
-            return null;
+            $this->trace->info(TraceCode::SPLIT_PAYMENT_EXPERIMENT_DISABLED, [
+                'merchant_id' => $this->merchant->getId()
+            ]);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_NOT_ALLOWED);
         }
 
-        if (
-            $this->merchant === null or
-            $this->merchant->isFeatureEnabled(FeatureConstants::RAZORPAY_WALLET) === false
-        )
+        $orderMeta = $this->getSplitPaymentMeta($order);
+
+        if (isset($orderMeta) === true)
         {
-            return null;
+            $existingRelationMap = [];
+            if (empty($orderMeta->getValue()['relations']) === false)
+            {
+                $existingRelationMap = $orderMeta->getValue()['relations'];
+            }
+            $relations = array_merge($existingRelationMap, $relation);
+            $orderMeta->setValue(array_merge($orderMeta->getValue(), ['relations' => $relations]));
+
+            return $this->updateOrderMeta($order, $orderMeta);
         }
 
         $orderMetaInput = [
             Entity::ORDER_ID => $order->getId(),
             Entity::TYPE     => Order\OrderMeta\Type::SPLIT_PAYMENT_INFO,
             Entity::VALUE    => [
-                'is_split_payment' => true
+                'relations'  => $relation
             ],
         ];
 
-        return $this->saveOrderMeta($orderMetaInput);
+        return $this->createOrderMeta($order, $orderMetaInput);
+    }
+
+    public function updateOrderMeta(Order\Entity $order, Order\OrderMeta\Entity $orderMeta)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::ORDER_META_UPDATE_REQUEST, [
+                'order_id'   => $order->getId(),
+                'order_meta' => $orderMeta
+            ]);
+            if ($order->isExternal() === true)
+            {
+                $orderMetaInput = [
+                    Entity::ORDER_ID => $orderMeta->getOrderId(),
+                    Entity::TYPE     => $orderMeta->getType(),
+                    Entity::VALUE    => $orderMeta->getValue(),
+                    Entity::ID       => $orderMeta->getId()
+                ];
+                return $this->app['pg_router']->updateInternalOrderMeta($orderMetaInput, $orderMeta->getId());
+            }
+
+            return $this->repo->order_meta->saveOrFail($orderMeta);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::ORDER_META_UPDATE_FAILED, [
+                'error' => $e
+            ]);
+            throw $e;
+        }
+
+    }
+
+    public function createOrderMeta(Order\Entity $order, array $orderMetaInput)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::ORDER_META_CREATE_REQUEST, [
+                'order_id'   => $order->getId(),
+                'order_meta' => $orderMetaInput
+            ]);
+            if ($order->isExternal() === true)
+            {
+                return $this->app['pg_router']->createInternalOrderMeta($orderMetaInput, $order->getId());
+            }
+
+            return $this->saveOrderMeta($orderMetaInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::ORDER_META_CREATE_FAILED, [
+                'error' => $e
+            ]);
+            throw $e;
+        }
     }
 }

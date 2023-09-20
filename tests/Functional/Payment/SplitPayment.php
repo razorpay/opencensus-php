@@ -44,7 +44,7 @@ class SplitPayment extends TestCase
         {
             $defaultAttributes[$key] = $value;
         }
-        $this->order = $this->fixtures->order->createOrderWithSplitPayments($defaultAttributes);
+        $this->order = $this->fixtures->order->create($defaultAttributes);
 
         $payment = $this->getDefaultPaymentArrayNeutral();
         unset($payment['bank']);
@@ -97,7 +97,7 @@ class SplitPayment extends TestCase
     public function testSplitPaymentCancellation()
     {
         // create fixtures for order, payment
-        $order = $this->fixtures->order->createOrderWithSplitPayments([
+        $order = $this->fixtures->order->create([
             'amount' => 1000
         ]);
         $payment = $this->fixtures->create(
@@ -110,7 +110,7 @@ class SplitPayment extends TestCase
                 'amount' => 900,
                 'order_id'  => $order['id']
             ]);
-        $this->fixtures->create(
+        $walletPayment = $this->fixtures->create(
             'payment',
             [
                 'created_at' => time() - 10 * 60,
@@ -121,6 +121,11 @@ class SplitPayment extends TestCase
                 'order_id'  => $order['id']
             ]
         );
+        $this->fixtures->order->createOrderMeta($order['id'], [
+            'relations' => [
+                $payment['id'] => $walletPayment['id'],
+            ]
+        ]);
 
         // initiate cancel action
         $requestData = [
@@ -139,11 +144,11 @@ class SplitPayment extends TestCase
         {
             if ($payment['wallet'] === 'razorpaywallet')
             {
-                self::assertEquals($payment['status'], 'refunded');
+                self::assertEquals('refunded', $payment['status']);
             }
             else
             {
-                self::assertEquals($payment['status'], 'failed');
+                self::assertEquals('failed', $payment['status']);
             }
         }
     }
@@ -151,7 +156,7 @@ class SplitPayment extends TestCase
     public function testSplitPaymentTimeout()
     {
         // create fixtures for order, payment
-        $order = $this->fixtures->order->createOrderWithSplitPayments([
+        $order = $this->fixtures->order->create([
             'amount' => 1000
         ]);
         $payment = $this->fixtures->create(
@@ -163,7 +168,7 @@ class SplitPayment extends TestCase
                 'amount' => 900,
                 'order_id'  => $order['id']
             ]);
-        $this->fixtures->create(
+        $walletPayment = $this->fixtures->create(
             'payment',
             [
                 'created_at' => time() - 10 * 60,
@@ -174,6 +179,11 @@ class SplitPayment extends TestCase
                 'order_id'  => $order['id']
             ]
         );
+        $this->fixtures->order->createOrderMeta($order['id'], [
+            'relations' => [
+                $payment['id'] => $walletPayment['id'],
+            ]
+        ]);
 
         // hit timeout request
         $testData = $this->testData[__FUNCTION__];
@@ -191,11 +201,85 @@ class SplitPayment extends TestCase
         {
             if ($payment['wallet'] === 'razorpaywallet')
             {
-                self::assertEquals($payment['status'], 'refunded');
+                self::assertEquals('refunded', $payment['status'], );
             }
             else
             {
-                self::assertEquals($payment['status'], 'failed');
+                self::assertEquals('failed', $payment['status']);
+            }
+        }
+    }
+
+    public function testSplitPaymentRetry()
+    {
+        // create fixtures for order, payment
+        $order = $this->fixtures->order->create([
+            'amount' => 1000
+        ]);
+        $payment = $this->fixtures->create(
+            'payment',
+            [
+                'created_at' => Carbon::now()->subMinutes(15)->getTimestamp(),
+                'status' => 'created',
+                'method' => 'upi',
+                'amount' => 900,
+                'order_id'  => $order['id']
+            ]);
+        $walletPayment = $this->fixtures->create(
+            'payment',
+            [
+                'created_at' => time() - 10 * 60,
+                'status' => 'refunded',
+                'method' => 'wallet',
+                'wallet' => 'razorpaywallet',
+                'amount' => 100,
+                'order_id'  => $order['id']
+            ]
+        );
+        $this->fixtures->order->createOrderMeta($order['id'], [
+            'relations' => [
+                $payment['id'] => $walletPayment['id'],
+            ]
+        ]);
+
+        $defaultPayment = $this->getDefaultPaymentArrayNeutral();
+        $defaultPayment['order_id'] = 'order_' . $order['id'];
+        $defaultPayment['wallet_amount'] = 100;
+        $defaultPayment['wallet_user_id'] = 'iuser_I9eCvXfHx7nzZF';
+        $defaultPayment['amount'] = 900;
+        unset($defaultPayment['bank']);
+
+        $this->payment = $defaultPayment;
+        $this->startTest();
+
+        // assert payment statuses
+        $response = $this->getEntities('payment', [
+            'order_id' => 'order_'.$order['id']
+        ]);
+        self::assertEquals(4, $response['count']);
+        foreach ($response['items'] as $item)
+        {
+            if ($item['wallet'] === 'razorpaywallet')
+            {
+                if ($item['id'] === 'pay_'.$walletPayment['id'])
+                {
+                    self::assertEquals('refunded', $item['status']);
+                }
+                else
+                {
+                    self::assertEquals('authorized', $item['status']);
+                }
+            }
+            else
+            {
+                if ($item['id'] === 'pay_'.$payment['id'])
+                {
+                    self::assertEquals('created', $item['status'], );
+                }
+                else
+                {
+                    self::assertEquals('authorized', $item['status']);
+                }
             }
         }
     }
@@ -218,7 +302,7 @@ class SplitPayment extends TestCase
 
     public function testSplitPaymentWithFullAmountPositive()
     {
-        $this->order = $this->fixtures->order->createOrderWithSplitPayments([
+        $this->order = $this->fixtures->order->create([
             'amount' => 1000
         ]);
 
@@ -233,7 +317,7 @@ class SplitPayment extends TestCase
 
     public function testSplitPaymentWithFullAmountNegative()
     {
-        $this->order = $this->fixtures->order->createOrderWithSplitPayments([
+        $this->order = $this->fixtures->order->create([
             'amount' => 1000
         ]);
 

@@ -1267,20 +1267,6 @@ class Entity extends Base\PublicEntity
         return $arrayPublic;
     }
 
-    public function hasSplitPayments()
-    {
-        $orderMetas = $this->orderMetas;
-        foreach ($orderMetas as $meta)
-        {
-            if (($meta->getType() === OrderMeta\Type::SPLIT_PAYMENT_INFO) and
-                ($meta->getValue()['is_split_payment'] === true))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public function toRTOEligibilityArray()
     {
         $arrayInternal = $this->toArrayInternal();
@@ -1300,5 +1286,23 @@ class Entity extends Base\PublicEntity
         }
 
         return $arrayInternal;
+    }
+
+    public function hasSplitPaymentMeta()
+    {
+        $splitPaymentMeta = array_first($this->orderMetas, function ($orderMeta)
+        {
+            if ($orderMeta->getType() === Type::SPLIT_PAYMENT_INFO)
+            {
+                return true;
+            }
+        }, null);
+
+        if (empty($splitPaymentMeta) === false)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

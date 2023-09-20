@@ -381,7 +381,8 @@ class Validator extends Base\Validator
 
         $isOrderAuthorized = (
                                 ($order->isAuthorized() === true) and
-                                ($order->isPartialPaymentAllowed() === false)
+                                ($order->isPartialPaymentAllowed() === false) and
+                                ($order->hasSplitPaymentMeta() === false)
                             );
 
         if (($isOrderPaid === true) or ($isOrderAuthorized === true))
@@ -427,13 +428,23 @@ class Validator extends Base\Validator
         $orderAmountDue = $order->getAmountDue($payment);
 
         if (($order->merchant->isFeatureEnabled(Feature\Constants::RAZORPAY_WALLET) === true) and
-            isset($input[Payment\Entity::WALLET_AMOUNT]))
+            (isset($input[Payment\Entity::WALLET_AMOUNT]) === true or isset($input[Payment\Entity::SPLIT_AMOUNT]) === true))
         {
-            $paymentAmount = $paymentAmount + $input[Payment\Entity::WALLET_AMOUNT];
+            if (($input[Payment\Entity::METHOD] === Payment\Entity::WALLET) and
+                $input[Payment\Entity::WALLET] === Payment\Processor\Wallet::RAZORPAYWALLET)
+            {
+                $paymentAmount = $input[Payment\Entity::AMOUNT] + $input[Payment\Entity::SPLIT_AMOUNT];
+            }
+            else
+            {
+                $paymentAmount = $input[Payment\Entity::AMOUNT] + $input[Payment\Entity::WALLET_AMOUNT];
+            }
+
             if ($paymentAmount === $orderAmountDue)
             {
                 return true;
             }
+
             return false;
         }
 

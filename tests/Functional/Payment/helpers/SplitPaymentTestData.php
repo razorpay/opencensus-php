@@ -185,7 +185,22 @@ return [
             ],
         ],
     ],
-    'testSplitPaymentLateAuth' => [
+    'testSplitPaymentCancellation' => [
+        'request' => [
+            'url' => '/payments/:id/cancel',
+            'method' => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER
+        ]
+    ],
+    'testSplitPaymentRetry' => [
         'request' => [
             'url' => '/payments/create/ajax',
             'method' => 'POST',
@@ -211,19 +226,4 @@ return [
             'status_code' => 200,
         ]
     ],
-    'testSplitPaymentCancellation' => [
-        'request' => [
-            'url' => '/payments/:id/cancel',
-            'method' => 'GET',
-            'content' => []
-        ],
-        'response' => [
-            'content' => [],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER
-        ]
-    ]
 ];

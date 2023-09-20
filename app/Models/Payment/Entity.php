@@ -265,6 +265,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const OPTIMIZER_PROVIDER = 'optimizer_provider';
     const WALLET_AMOUNT = 'wallet_amount';
+    const WALLET_USER_ID = 'wallet_user_id';
+    const SPLIT_AMOUNT = 'split_amount';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -6894,7 +6896,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return ($this->order->hasSplitPayments() === true) and ($this->getAmount() < $this->order->getAmount());
+        $amount = $this->getAdjustedAmountWrtCustFeeBearer();
+        $amount = $this->getAmountWithoutConvenienceFeeIfApplicable($amount, $this->order);
+        if ($amount === $this->order->getAmount())
+        {
+            return false;
+        }
+
+        if ($this->order->hasSplitPaymentMeta() === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /** isCollectExpiryDisabled() verifies if the

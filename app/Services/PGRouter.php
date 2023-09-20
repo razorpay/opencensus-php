@@ -80,6 +80,10 @@ class PGRouter
 
     const PGRouterUpdateInternalOrder = 'v1/internal/orders/%s';
 
+    const PGRouterUpdateInternalOrderMeta = 'v1/internal/order_metas/%s';
+
+    const PGRouterCreateInternalOrderMeta = 'v1/internal/orders/%s/order_meta';
+
     const PGRouterUpdateCurrencyRoute   = 'v1/update/currency/rate';
 
     const PGRouterPaymentCreateJson = 'v1/payments/create/json';
@@ -643,6 +647,26 @@ class PGRouter
         return $this->forceFillOrderFromResponse($response);
     }
 
+    public function createInternalOrderMeta(array $input, $orderId, bool $throwExceptionOnFailure = true, $timeout = self::DEFAULT_REQUEST_TIMEOUT)
+    {
+        $endpoint = 'v1/internal/orders/' . $orderId . '/order_meta';
+        $this->currentEndPoint = self::PGRouterCreateInternalOrderMeta;
+
+        $response = $this->sendRequest($endpoint, Requests::POST, $input, $throwExceptionOnFailure, $timeout, true);
+
+        return $this->forceFillOrderMetaFromResponse($response);
+    }
+
+    public function updateInternalOrderMeta(array $input, $orderMetaId, bool $throwExceptionOnFailure = true, $timeout = self::DEFAULT_REQUEST_TIMEOUT)
+    {
+        $endpoint = 'v1/internal/order_metas/'.$orderMetaId;
+        $this->currentEndPoint = self::PGRouterUpdateInternalOrderMeta;
+
+        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, $timeout, true);
+
+        return $this->forceFillOrderMetaFromResponse($response);
+    }
+
     public function updateCurrencyCache(array $input, bool $throwExceptionOnFailure = false)
     {
         $endpoint = 'v1/update/currency/rate';
@@ -657,6 +681,18 @@ class PGRouter
         $response['body'] = $orderAttributes;
 
         return $this->forceFillOrderFromResponse($response);
+    }
+
+    private function forceFillOrderMetaFromResponse($response)
+    {
+        if ((empty($response) === false) and
+            (isset($response['body']) === true))
+        {
+
+            return (new Order\OrderMeta\Entity)->forceFill($response['body']);
+        }
+
+        return null;
     }
 
     private function forceFillOrderFromResponse($response)
