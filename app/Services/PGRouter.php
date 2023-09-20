@@ -3,8 +3,10 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use RZP\Exception;
 use RZP\Error\Error;
+use RZP\Http\RequestHeader;
 use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Order;
@@ -835,6 +837,9 @@ class PGRouter
         $headers[self::X_MODE]              = $this->mode;
         $headers[self::X_REQUEST_ID]        = $this->request->getId();
         $headers[self::X_REQUEST_TASK_ID]   = $this->request->getTaskId();
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         $this->headers = $headers;
     }
@@ -931,7 +936,7 @@ class PGRouter
             ];
 
             $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
-            
+
             throw new $exception;
         }
 
