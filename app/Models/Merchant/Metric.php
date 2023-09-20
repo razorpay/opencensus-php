@@ -57,6 +57,8 @@ final class Metric
     const SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL = "submerchant_signup_linking_success_total";
     const SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL = "submerchant_signup_linking_failure_total";
 
+    const SUBM_SIGNUP_LINKING_PP_REFERRAL_FAILURE_TOTAL = "subm_signup_linking_pp_referral_failure_total";
+
     const EASY_KYC_ACCESS_REFERRAL_FETCH_FAILURE_TOTAL = "easy_kyc_access_referral_fetch_failure_total";
 
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';

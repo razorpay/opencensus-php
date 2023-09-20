@@ -646,14 +646,17 @@ class Service extends Base\Service
         $partnerReferralCode = $input['partner_referral_code'] ??'';
         $sourceAppId         = $input['source_app_id'] ?? '';
 
+        $isOauthReferral      = $input['oauth_referral']?? false;
+
         unset($input['partner_referral_code']);
         unset($input['source_app_id']);
+        unset($input['oauth_referral']);
 
         $verifySuccess = $this->core->verifySignupOtp($input);
 
         unset($input[Entity::SKIP_SMS_REQUEST]);
 
-        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId) {
+        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
 
             if ($verifySuccess === true) {
 
@@ -731,6 +734,7 @@ class Service extends Base\Service
                 $signupMethod = Constants::OTP;
                 $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
                 $this->processReferralCode($merchantData['id'], $partnerReferralCode);
+                $this->linkSubMerchantToPlatformPartner($merchantData['id'], $sourceAppId, $isOauthReferral);
                 $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
                 $response = $data;
 
@@ -928,6 +932,40 @@ class Service extends Base\Service
                                              'message'      => 'Error occurred while linking subM during signUp'
                                          ]);
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL);
+        }
+    }
+
+    private function linkSubMerchantToPlatformPartner(string $merchantId, string $sourceAppId = null , bool $isOauthReferral = false): void
+    {
+        try
+        {
+            if ( $isOauthReferral === false || (empty($sourceAppId) === true) )
+            {
+                return;
+            }
+
+            $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
+
+            $input = [
+                Merchant\Constants::PARTNER_ID       => $merchantApp[0][Merchant\Constants::MERCHANT_ID],
+                Merchant\Constants::APPLICATION_ID   => $sourceAppId,
+            ];
+
+            $accessMapService = new Merchant\AccessMap\Service();
+
+            $accessMapService->mapOAuthApplication($merchantId, $input);
+
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e,
+                Logger::ERROR,
+                TraceCode::SUBM_SIGNUP_LINKING_PP_REFERRAL_FAILURE,
+                [
+                    'merchant_id'  => $merchantId,
+                    'message'      => 'Error occurred while linking subM during signUp for pp referral flow'
+                ]);
+            $this->trace->count(Merchant\Metric::SUBM_SIGNUP_LINKING_PP_REFERRAL_FAILURE_TOTAL);
         }
     }
 

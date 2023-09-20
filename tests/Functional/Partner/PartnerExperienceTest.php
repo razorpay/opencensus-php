@@ -3832,6 +3832,58 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
     }
 
+    public function testLinkSubMerchantForPPReferralFlow()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $this->mockDcsFetchConfiguration();
+
+        $testData = & $this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $partnerMerchant = $this->createPartner('pure_platform');
+
+        $partnerId = $partnerMerchant['id'];
+
+        $application = DB::Connection('auth')
+                ->table('applications')
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+        $testData['request']['content']['source_app_id'] = $application->id;
+
+        $testData['request']['content']['oauth_referral'] = true;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerId,
+                'merchant_id' => $createdSubM['id']
+            ]);
+        $this->assertNotNull($accessMap);
+
+        $this->assertEquals($partnerId, $accessMap['entity_owner_id']);
+    }
+
 
     // The following testcase would create a merchant for the subM, wouldn't attach the subM to partner as the experiment is disabled
     public function testUserRegisterWithMobileWithReferralCodeWithExperimentDisable()
