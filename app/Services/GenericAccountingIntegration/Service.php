@@ -61,7 +61,7 @@ class Service {
 
     function makePayoutRequestBody(PayoutEntity $payout)
     {
-        return [
+        $requestBody = [
             "id"                     => $payout->getPublicId(),
             "reference_id"           => $payout->getReferenceId(),
             "merchant_id"            => $payout->getMerchantId(),
@@ -79,8 +79,13 @@ class Service {
             "processed_at"           => $payout->getProcessedAt(),
             "reversed_at"            => $payout->getReversedAt(),
             "narration"              => $payout->getNarration(),
-            "notes"                  => $payout->getNotes(),
         ];
+
+        if (empty($payout->getNotes()) === false) {
+            $requestBody["notes"] = $payout->getNotes();
+        }
+
+        return $requestBody;
     }
 
     /**
