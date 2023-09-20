@@ -32,6 +32,8 @@ class Metric extends Base\Core
     const MERCHANT_PLATFORM_FEE_FETCH_REQUEST      = 'merchant_platform_fee_fetch_request';
     const MERCHANT_PLATFORM_FEE_FETCH_FAILURE      = 'merchant_platform_fee_fetch_failure';
     const MERCHANT_PLATFORM_FEE_FETCH_TIME_IN_MS   = 'merchant_platform_fee_fetch_time_in_ms';
+    const IS_SYNC_PROCESSING_ENABLED               = 'is_sync_processing_enabled';
+    const PAYMENT_TRANSFERS_CREATE_LATENCY         = 'payment_transfers_create_latency';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -71,12 +73,13 @@ class Metric extends Base\Core
         $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
     }
 
-    public function pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category)
+    public function pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category, $isSyncProcessingEnabled)
     {
         $dimensions = [
-            self::TRANSFER_ROUTE     => $this->getRouteName(),
-            self::TRANSFER_SOURCE    => $sourceType,
-            self::MERCHANT_CATEGORY  => $category,
+            self::TRANSFER_ROUTE              => $this->getRouteName(),
+            self::TRANSFER_SOURCE             => $sourceType,
+            self::MERCHANT_CATEGORY           => $category,
+            self::IS_SYNC_PROCESSING_ENABLED  => $isSyncProcessingEnabled,
         ];
 
         $this->trace->histogram(self::TRANSFER_PROCESSING_TIME, $processingTime, $dimensions);
@@ -91,11 +94,12 @@ class Metric extends Base\Core
         $this->trace->histogram(self::BATCH_TRANSFER_PROCESSING_TIME, $processingTime, $dimensions);
     }
 
-    public function pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime)
+    public function pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime, $isSyncProcessingEnabled)
     {
         $dimensions = [
-            self::TRANSFER_ROUTE  => $this->getRouteName(),
-            self::TRANSFER_SOURCE => $sourceType,
+            self::TRANSFER_ROUTE             => $this->getRouteName(),
+            self::TRANSFER_SOURCE            => $sourceType,
+            self::IS_SYNC_PROCESSING_ENABLED => $isSyncProcessingEnabled,
         ];
 
         $this->trace->histogram(self::TRANSFER_PROCESSING_TIME_FOR_CF_AND_SL, $processingTime, $dimensions);
@@ -140,6 +144,17 @@ class Metric extends Base\Core
     public function pushSemaphoreAcquireFailureMetrics()
     {
         $this->trace->count(self::SEMAPHORE_ACQUIRE_FAILURE);
+    }
+
+    public function pushPaymentTransfersCreateLatencyMetrics($startTime, $isSyncProcessingEnabled)
+    {
+        $latency = get_diff_in_millisecond($startTime);
+
+        $dimensions = [
+            self::IS_SYNC_PROCESSING_ENABLED => $isSyncProcessingEnabled
+        ];
+
+        $this->trace->histogram(self::PAYMENT_TRANSFERS_CREATE_LATENCY, $latency, $dimensions);
     }
 
     private function getCreateDefaultDimensions(array $input = [])

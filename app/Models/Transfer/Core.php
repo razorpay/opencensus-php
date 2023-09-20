@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use Razorpay\Trace\Logger;
 use Neves\Events\TransactionalClosureEvent;
 
+use App;
 use RZP\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
@@ -1274,6 +1275,8 @@ class Core extends Base\Core
             $isCapitalFloatOrSliceRouteMerchant = (($merchant->isCapitalFloatRouteMerchant() === true) or
                                                    ($merchant->isSliceRouteMerchant() === true));
 
+            $isSyncProcessingEnabled = $this->isSyncProcessingEnabled($transfer->merchant);
+
             if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
             {
                 (new Metric())->pushTransferProcessingBatchTimeMetrics($sourceType, $processingTime);
@@ -1281,11 +1284,11 @@ class Core extends Base\Core
             else if (($isCapitalFloatOrSliceRouteMerchant === true) and
                      ($this->isLiveMode() === true))
             {
-                (new Metric())->pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime);
+                (new Metric())->pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime, $isSyncProcessingEnabled);
             }
             else
             {
-                (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category);
+                (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime, $category, $isSyncProcessingEnabled);
             }
         }
     }
@@ -1675,5 +1678,16 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    private function isSyncProcessingEnabled($merchant)
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
+            $this->mode
+        );
+
+        return ($variant === 'on');
     }
 }

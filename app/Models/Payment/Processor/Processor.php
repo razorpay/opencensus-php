@@ -5071,6 +5071,8 @@ class Processor
      */
     public function transfer(string $id, array $input)
     {
+        $startTime = microtime(true);
+
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_REQUEST,
             ['payment_id' => $id, 'input' => $input]);
@@ -5086,9 +5088,11 @@ class Processor
 
         $deadLockRetryAttempts = 1;
 
+        $merchantHasSyncProcessingEnabled = false;
+
         $transfers = $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input, $deadLockRetryAttempts)
+            function() use ($payment, $input, $deadLockRetryAttempts, & $merchantHasSyncProcessingEnabled)
             {
                 $this->repo->reload($payment);
 
@@ -5115,14 +5119,12 @@ class Processor
                     }
                 }
 
-                $asyncTransfer = true;
+                $processTransferInSync = true;
 
-                if ($this->checkIfPaymentTransferSyncProcessingAllowed($input, $payment) === true)
-                {
-                    $asyncTransfer = false;
-                }
+                [$merchantHasSyncProcessingEnabled, $processTransferInSync] =
+                    $this->checkIfPaymentTransferSyncProcessingAllowed($input, $payment);
 
-                if ($asyncTransfer === false)
+                if ($processTransferInSync === true)
                 {
                     try
                     {
@@ -5143,12 +5145,12 @@ class Processor
                         // experiment to decide whether the transfer should be dispatched to queue
                         if ($this->checkIfTransferSyncProcessingViaCronIsEnabled() === false)
                         {
-                            $asyncTransfer = true;
+                            $processTransferInSync = false;
                         }
                     }
                 }
 
-                if ($asyncTransfer === true)
+                if ($processTransferInSync === false)
                 {
                     (new TransferCore())->dispatchForTransferProcessing(TransferConstant::PAYMENT, $payment);
 
@@ -5163,12 +5165,14 @@ class Processor
                 return $transfers;
             });
 
+        (new TransferMetric())->pushPaymentTransfersCreateLatencyMetrics($startTime, $merchantHasSyncProcessingEnabled);
+
         $this->logRoutePartnershipV1Guard($payment, $transfers, $input);
 
         return $transfers;
     }
 
-    protected function checkIfPaymentTransferSyncProcessingAllowed(array $input, Payment\Entity $payment): bool
+    protected function checkIfPaymentTransferSyncProcessingAllowed(array $input, Payment\Entity $payment): array
     {
         $transfersCount = count($input);
 
@@ -5205,10 +5209,10 @@ class Processor
             and ($txnAndBalanceUpdated === true)
             and ($isCustomerWalletTransfer === false))
         {
-            return true;
+            return [$isExperimentEnabled, true];
         }
 
-        return false;
+        return [$isExperimentEnabled, false];
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use App;
 use RZP\Error\ErrorCode;
 
 class Utility
@@ -19,6 +20,16 @@ class Utility
 
     public function isRetryableError($ex)
     {
+        $app = App::getFacadeRoot();
+
+        if ($app->runningInQueue() === false)
+        {
+            // If this flow is invoked via cron APIs, we will not be retrying it. This retry functionality
+            // is supported only for transfers processed done via the workers (see TransferProcess.php and
+            // other subclasses)
+            return false;
+        }
+
         return (in_array($ex->getMessage(), $this->errorMessageToRetryDelayInSecsMap, true) or
                 in_array($ex->getCode(), $this->errorCodeToRetryDelayInSecsMap, true));
     }
