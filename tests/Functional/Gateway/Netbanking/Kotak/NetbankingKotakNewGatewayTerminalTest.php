@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Kotak;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Services\RazorXClient;
@@ -54,6 +56,10 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
         $this->terminal = $this->fixtures->create(
             'terminal:shared_netbanking_kotak_terminal',
             $terminalAttrs);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testPayment()
@@ -63,14 +69,6 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity1'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPartnerPayment()
@@ -86,18 +84,12 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertSame('authorized', $payment['status']);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity1'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['Amount'] = '1';
@@ -135,17 +127,11 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
         $order = $this->createTpvOrderForBank('KKBK');
 
-        $payment = $this->doNetbankingKotakAuthAndCapturePayment($order);
+        $this->doNetbankingKotakAuthAndCapturePayment($order);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentTpvNewNetbankingEntity1'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertSame('captured', $payment['status']);
     }
 
     protected function createTpvOrderForBank($bank)
@@ -185,6 +171,8 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
     public function testVerifyFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -269,6 +257,8 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
     public function testVerifyCallbackFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::VERIFY)
@@ -293,6 +283,8 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
     public function testFailedPaymentVerifyCallback()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -321,6 +313,8 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
     public function testFailedPaymentCallbackWithError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -345,6 +339,8 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
     public function testFailedPaymentCallbackWithRandomError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -507,5 +503,26 @@ class NetbankingKotakNewGatewayTerminalTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        $this->ba->publicCallbackAuth();
+
+        $response = $this->sendRequest($data);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }

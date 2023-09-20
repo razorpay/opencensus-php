@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
@@ -539,5 +540,24 @@ class NetbankingKotakCombinedFileTest extends TestCase
         $this->assertCount(2, $refundsFileContents);
 
         $this->assertEquals($refundsFileName, explode('|', $refundsFileContents[0])[0]);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        $response = $this->sendRequest($data);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }

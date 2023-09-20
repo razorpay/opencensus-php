@@ -2,11 +2,11 @@
 
 namespace RZP\Services\Mock\NbPlus;
 
-use App;
 use Razorpay\IFSC\Bank;
-use \WpOrg\Requests\Response;
+use WpOrg\Requests\Response;
 
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Netbanking as NB;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Services\NbPlus\Netbanking as NetbankingBase;
 
@@ -14,13 +14,18 @@ class Netbanking extends NetbankingBase
 {
     use DbEntityFetchTrait;
 
-    static $staticCallbackRouteMap = [
+    static array $staticCallbackRouteMap = [
         Payment\Gateway::NETBANKING_KVB    => 'gateway_payment_static_callback_post',
         Payment\Gateway::NETBANKING_CANARA => 'gateway_payment_callback_canara_post',
-        Payment\Gateway::NETBANKING_KOTAK  => 'gateway_payment_callback_kotak_corp_post',
+        Payment\Gateway::NETBANKING_KOTAK  => [
+            NB::KKBK_C => 'gateway_payment_callback_kotak_corp_post',
+            Bank::KKBK => 'gateway_payment_callback_kotak',
+        ],
         Payment\Gateway::NETBANKING_RBL    => 'gateway_payment_static_callback_post',
         Payment\Gateway::NETBANKING_UCO    => 'gateway_payment_static_callback_post',
-        Payment\Gateway::NETBANKING_HDFC   => 'gateway_payment_static_callback_post',
+        Payment\Gateway::NETBANKING_HDFC   => [
+            NB::HDFC_C => 'gateway_payment_static_callback_post'
+        ],
     ];
 
     public function sendRawRequest($request)
@@ -207,7 +212,7 @@ class Netbanking extends NetbankingBase
                     'next' => [
                         'redirect' => [
                             'url' => $this->app['api.route']->getUrlWithPublicAuth(
-                                self::$staticCallbackRouteMap[$gateway],
+                                self::$staticCallbackRouteMap[$gateway][$input['input']['payment']['bank']] ?? self::$staticCallbackRouteMap[$gateway],
                                 [
                                     'method'    => $input['input']['payment']['method'],
                                     'gateway'   => $input['gateway'],
@@ -258,7 +263,7 @@ class Netbanking extends NetbankingBase
 
     protected function makeJsonResponse(array $content)
     {
-        $response = new \WpOrg\Requests\Response();
+        $response = new Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

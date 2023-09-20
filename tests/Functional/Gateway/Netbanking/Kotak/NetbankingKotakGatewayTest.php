@@ -55,19 +55,11 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doNetbankingKotakAuthAndCapturePayment();
+        $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPartnerPayment()
@@ -83,18 +75,12 @@ class NetbankingKotakGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertSame('authorized', $payment['status']);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['Amount'] = '1';
@@ -132,17 +118,11 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $order = $this->createTpvOrderForBank('KKBK');
 
-        $payment = $this->doNetbankingKotakAuthAndCapturePayment($order);
+        $this->doNetbankingKotakAuthAndCapturePayment($order);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentTpvNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertSame('captured', $payment['status']);
     }
 
     protected function createTpvOrderForBank($bank)
@@ -182,6 +162,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testVerifyFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -266,6 +248,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testVerifyCallbackFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::VERIFY)
@@ -290,6 +274,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testFailedPaymentVerifyCallback()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -318,6 +304,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -342,6 +330,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithRandomError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -491,5 +481,26 @@ class NetbankingKotakGatewayTest extends TestCase
         {
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        $this->ba->publicCallbackAuth();
+
+        $response = $this->sendRequest($data);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }

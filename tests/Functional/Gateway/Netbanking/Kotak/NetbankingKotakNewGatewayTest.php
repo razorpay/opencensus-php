@@ -65,14 +65,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPartnerPayment()
@@ -90,18 +82,12 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertSame('authorized', $payment['status']);
-
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockRazorxTreatment('kotak_new_integration');
 
         $this->mockServerContentFunction(function (&$content, $action = null)
@@ -143,17 +129,11 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
         $order = $this->createTpvOrderForBank('KKBK');
 
-        $payment = $this->doNetbankingKotakAuthAndCapturePayment($order);
+        $this->doNetbankingKotakAuthAndCapturePayment($order);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $payment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentTpvNewNetbankingEntity'], $payment);
-
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertSame('captured', $payment['status']);
     }
 
     protected function createTpvOrderForBank($bank)
@@ -197,6 +177,8 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testVerifyFailed()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockRazorxTreatment('kotak_new_integration');
 
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
@@ -289,6 +271,8 @@ class NetbankingKotakNewGatewayTest extends TestCase
     {
         $this->mockRazorxTreatment('kotak_new_integration');
 
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::VERIFY)
@@ -313,6 +297,8 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentVerifyCallback()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockRazorxTreatment('kotak_new_integration');
 
         $this->mockServerContentFunction(function (&$content, $action = null)
@@ -343,6 +329,8 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockRazorxTreatment('kotak_new_integration');
 
         $this->mockServerContentFunction(function (&$content, $action = null)
@@ -369,6 +357,8 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithRandomError()
     {
+        $this->markTestSkipped('the flow is migrated to nbplus service');
+
         $this->mockRazorxTreatment('kotak_new_integration');
 
         $this->mockServerContentFunction(function (&$content, $action = null)
@@ -533,5 +523,26 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        $this->ba->publicCallbackAuth();
+
+        $response = $this->sendRequest($data);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }
