@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const ACTIVE              = 'active';
     const TYPE                = 'type';
     const BLOCK               = 'block';
-
+    const IS_LOW_COST_OFFER   = 'is_low_cost_offer';
     /**
      * Flag to denote if offer needs to be displayed on checkout always or
      * conditionally when associated with order
@@ -96,6 +96,8 @@ class Entity extends Base\PublicEntity
     const MAX_ORDER_AMOUNT    = 'max_order_amount';
 
     const PRODUCT_TYPE        = 'product_type';
+
+    const LOW_COST_EMI        = 'low_cost_emi';
 
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
@@ -510,6 +512,12 @@ class Entity extends Base\PublicEntity
             $emiPlan = $payment->emiPlan;
 
             $percentDiscount = $emiPlan->getMerchantPayback();
+
+            // If percentRate on offer is not empty, it's a lc emi offer. Hence, we should use percent rate on offer
+            // rather than merchant payback
+            if(empty($this->getPercentRate()) === false) {
+                $percentDiscount = $this->getPercentRate();
+            }
         }
 
         return $this->getDiscountedAmount($amount, $percentDiscount);
@@ -524,6 +532,12 @@ class Entity extends Base\PublicEntity
             $emiPlan = $payment->emiPlan;
 
             $percentDiscount = $emiPlan->getMerchantPayback();
+
+            // If percentRate on offer is not empty, it's a lc emi offer. Hence, we should use percent rate on offer
+            // rather than merchant payback
+            if(empty($this->getPercentRate()) === false) {
+                $percentDiscount = $this->getPercentRate();
+            }
         }
 
         return $this->getDiscount($amount, $percentDiscount);
@@ -676,6 +690,12 @@ class Entity extends Base\PublicEntity
 
     public function toArrayCheckout(int $amount = null)
     {
+        $is_low_cost_offer = false;
+
+        if ($this->getAttribute(self::EMI_SUBVENTION) === true and empty($this->getAttribute(self::PERCENT_RATE) === false)) {
+            $is_low_cost_offer = true;
+        }
+
         $data = [
             self::ID              => $this->getPublicId(),
             self::NAME            => $this->getAttribute(self::NAME),
@@ -687,6 +707,7 @@ class Entity extends Base\PublicEntity
             self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
             self::TYPE            => $this->getAttribute(self::TYPE),
             self::TERMS           => $this->getTerms(),
+            self::IS_LOW_COST_OFFER => $is_low_cost_offer,
         ];
 
         // If this flag is set then amount is to be discounted by us

@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::PRODUCT_TYPE        => 'sometimes|filled|string|in:subscription',
+        Entity::LOW_COST_EMI        => 'sometimes|array',
     ];
 
     protected static $createBulkRules = [
@@ -88,6 +89,8 @@ class Validator extends Base\Validator
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
+        Entity::PERCENT_RATE        => 'sometimes|filled|min:0|max:10000',
+        Entity::LOW_COST_EMI        => 'sometimes|array',
     ];
 
     protected static $editRules = [

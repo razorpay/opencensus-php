@@ -31,6 +31,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'card',
@@ -44,6 +45,7 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -68,6 +70,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_network'     => 'VISA',
@@ -78,6 +81,7 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -105,6 +109,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer over private auth',
                 'payment_method'      => 'card',
@@ -118,6 +123,7 @@ return [
                 'ends_at'             => 1639758568,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -214,17 +220,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid issuer name : XXXX',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200
         ]
     ],
 
@@ -249,6 +250,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'card',
@@ -260,6 +262,7 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -271,7 +274,7 @@ return [
                 'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
                 'payment_network'     => 'VISA',
-                'issuer'              => 'HDFC',
+                'issuer'              => 'ICIC',
                 'percent_rate'        => 1500,
                 'max_payment_count'   => 2,
                 'linked_offer_ids'    => null,
@@ -286,18 +289,20 @@ return [
         ],
         'response' => [
             'content' => [
-                'active'              => true,
-                'name'                => 'Test Offer',
-                'payment_method'      => 'card',
-                'payment_method_type' => 'credit',
-                'payment_network'     => 'VISA',
-                'issuer'              => 'HDFC',
-                'percent_rate'        => 1500,
-                'max_payment_count'   => 2,
-                'linked_offer_ids'    => null,
-                'ends_at'             => 1546300800,
-                'display_text'        => 'Some more details',
-                'terms'               => 'Some more details'
+                [
+                    'active'              => true,
+                    'name'                => 'Test Offer',
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'VISA',
+                    'issuer'              => 'ICIC',
+                    'percent_rate'        => 1500,
+                    'max_payment_count'   => 2,
+                    'linked_offer_ids'    => null,
+                    'ends_at'             => 1546300800,
+                    'display_text'        => 'Some more details',
+                    'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -323,17 +328,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Linked offer ids submitted are not valid',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200
         ]
     ],
 
@@ -357,6 +357,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'iins'            => ['411111'],
@@ -366,6 +367,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -390,6 +392,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'issuer'          => 'HDFC',
@@ -400,6 +403,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -424,6 +428,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -434,6 +439,7 @@ return [
                 'min_amount'          => 500000,
                 'display_text'        => 'HDFC Debit Card Emi Subvention offers',
                 'terms'               => 'Some more details'
+                ]
             ],
         ],
     ],
@@ -459,6 +465,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -467,6 +474,7 @@ return [
                 'display_text'        => 'HDFC Debit Card EMI offers',
                 'terms'               => 'HDFC Debit Card EMI offers',
                 'type'                => 'instant'
+                ]
             ],
         ],
     ],
@@ -492,6 +500,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
                 'active'          => true,
@@ -504,6 +513,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -530,6 +540,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
                 'active'          => true,
@@ -542,6 +553,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -567,6 +579,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'flat_cashback'   => 300,
                 'min_amount'      => 500,
                 'active'          => true,
@@ -578,6 +591,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -604,17 +618,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_OFFER_ALREADY_EXISTS
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS
+            'status_code' => 200
         ]
     ],
 
@@ -639,17 +648,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_CASHBACK_CRITERIA_MISSING,
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CASHBACK_CRITERIA_MISSING
+            'status_code' => 200
         ]
     ],
 
@@ -674,17 +678,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment network for card should be a valid card network code'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -709,17 +708,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'This card payment network is not supported'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -743,17 +737,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid issuer name : airtelhoney',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200
         ]
     ],
 
@@ -778,17 +767,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid issuer name : XXXX'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -814,17 +798,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid payment method: tokens'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -850,17 +829,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid issuer name : HDFD'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -887,17 +861,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK
+            'status_code' => 200
         ]
     ],
 
@@ -923,17 +892,12 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_INVALID_OFFER_DURATION
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION
+            'status_code' => 200
         ]
     ],
 
@@ -957,6 +921,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -965,10 +930,9 @@ return [
                 'min_amount'          => 316389,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
-
-
     ],
 
     'testPaymentMethodTypeForCreditCardOfferCreation' => [
@@ -991,6 +955,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -999,10 +964,9 @@ return [
                 'max_payment_count'   => 2,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
-
-
     ],
 
     'testConflictingEmiSubOffers' => [
@@ -1026,16 +990,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_OFFER_ALREADY_EXISTS
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS
+            'status_code' => 200
         ]
     ],
 
@@ -1059,17 +1019,11 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'error' => [
+            'content' => [[
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Min amount for this offer should be greater than 3191.49'
                 ]
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            ]
         ]
     ],
 
@@ -1094,6 +1048,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -1103,6 +1058,7 @@ return [
                 'emi_durations'       => [6],
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -1129,16 +1085,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                 [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Either issuer or payment network should be sent'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -1161,6 +1113,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'emi',
@@ -1168,6 +1121,7 @@ return [
                 'display_text'    => 'Emi Subvention offers',
                 'terms'           => 'Some more details',
                 'min_amount'      => 300000,
+                ]
             ]
         ]
     ],
@@ -1193,16 +1147,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid issuer name: random'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -1227,16 +1177,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid emi durations given 3, 7, 5'
                 ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200,
         ]
     ],
 
@@ -1560,16 +1506,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment method not enabled for the merchant : card',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'status_code' => 200
         ]
     ],
 
@@ -1594,6 +1536,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'netbanking',
@@ -1605,6 +1548,7 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
+                ]
             ],
         ],
     ],
@@ -1630,17 +1574,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Max cashback should be combined wih percent rate'
                 ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE
-        ],
+            'status_code' => 200,
+        ]
     ],
 
     'testCreateOfferInternationalEmi' => [
@@ -1666,6 +1606,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
@@ -1679,6 +1620,7 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ],
         ],
     ],
@@ -1706,17 +1648,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The payment method type field may be sent only when payment method is card',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
+            'status_code' => 200
+        ]
     ],
 
     'testCreateOfferMinAmount' => [
@@ -1740,17 +1678,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Flat cashback cannot be greater than minimum amount',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
+            'status_code' => 200
+        ]
     ],
 
     'testCreateCardOfferWithInvalidIinLength' => [
@@ -1773,17 +1707,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid IIN : All IINs should have exactly 6 digits',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
+            'status_code' => 200
+        ]
     ],
 
     'testCreateCardOfferWithInvalidFullNetworkName' => [
@@ -1809,17 +1739,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
+                [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment network for card should be a valid card network code',
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
+            'status_code' => 200
+        ]
     ],
 
     'testCreateOfferWithSameIIN' => [
@@ -1846,19 +1772,21 @@ return [
         ],
         'response' => [
             'content' => [
-                'active'              => true,
-                'name'                => 'Test Offer',
-                'payment_method'      => 'card',
-                'payment_method_type' => 'credit',
-                'payment_network'     => 'VISA',
-                'issuer'              => 'HDFC',
-                'international'       => true,
-                'percent_rate'        => 1000,
-                'processing_time'     => 86400,
-                'starts_at'           => 1514764800,
-                'ends_at'             => 1546300800,
-                'display_text'        => 'Some more details',
-                'terms'               => 'Some more details'
+                [
+                    'active'              => true,
+                    'name'                => 'Test Offer',
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'VISA',
+                    'issuer'              => 'HDFC',
+                    'international'       => true,
+                    'percent_rate'        => 1000,
+                    'processing_time'     => 86400,
+                    'starts_at'           => 1514764800,
+                    'ends_at'             => 1546300800,
+                    'display_text'        => 'Some more details',
+                    'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -1941,6 +1869,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'cardless_emi',
@@ -1952,6 +1881,7 @@ return [
                 'type'                =>  'instant',
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],
@@ -1975,6 +1905,7 @@ return [
         ],
         'response' => [
             'content' => [
+                [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'cardless_emi',
@@ -1985,6 +1916,7 @@ return [
                 'type'                =>  'instant',
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
+                ]
             ]
         ]
     ],

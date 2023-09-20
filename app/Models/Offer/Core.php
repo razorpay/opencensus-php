@@ -19,6 +19,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
 use RZP\Error\PublicErrorDescription;
+use RZP\Error\Error;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
@@ -36,7 +37,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input)
+    public function create(array $input): array
     {
         $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
 
@@ -50,38 +51,27 @@ class Core extends Base\Core
             {
                 return $this->repo->transaction(function() use ($input, $merchant)
                 {
-                    if (isset($input[Entity::PRODUCT_TYPE]) === true and
-                        $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
-                    {
-                        $subscriptionInput = array_pull($input, Order\ProductType::SUBSCRIPTION);
+                    $offers_array = array();
+
+                    // Check to find where it's either a nc or lc emi offer
+                    if (isset($input[Entity::EMI_SUBVENTION]) and $input[Entity::EMI_SUBVENTION] == 1) {
+                        $offers_array = $this->createSubventedOffer($input, $offers_array, $merchant);
+
+                    }
+                    else {
+                        try {
+
+                            array_push($offers_array, $this->createOffer($merchant, $input));
+                        }
+                        catch (\Exception $exception) {
+
+                            $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
+                            array_push($offers_array, $error);
+                        }
                     }
 
-                    $this->verifyIdAndStripSignForLinkedOfferIds($input);
+                    return $offers_array;
 
-                    $this->setPaymentMethodTypeForDebitCardIssuers($input);
-
-                    $offer = new Entity;
-
-                    $offer->merchant()->associate($merchant);
-
-                    $offer = $offer->build($input);
-
-                    $this->validateMerchant($merchant, $input);
-
-                    $this->checkConflictingOffers($offer);
-
-                    $this->repo->saveOrFail($offer);
-
-                    if (isset($input[Entity::PRODUCT_TYPE]) and
-                        $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
-                    {
-                        // create entry in subscription_offers_master
-                        $this->addSubscriptionData($offer, $subscriptionInput ?? []);
-                    }
-
-                    $this->traceNonExistingIins($offer, $merchant);
-
-                    return $offer;
                 });
             });
     }
@@ -495,10 +485,6 @@ class Core extends Base\Core
 
     protected function checkConflictingOffers(Entity $offer)
     {
-        // Check to see if there are any offers with same values for the set of attributes
-        // required to uniquely define an offer
-        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
-
         /**
          * This will check if any existing offer with
          * same emi duration exists. For example
@@ -507,8 +493,20 @@ class Core extends Base\Core
          * new offer with same issuer and any emi duration like
          * 3 will fail
          */
+
+        // Check to see if there are any offers with same values for the set of attributes
+        // required to uniquely define an offer
         if ($offer->getEmiSubvention() === true)
         {
+            // percent rate should not be used to check existing subvention offers, hence unsetting it
+            $percent_rate = $offer[Entity::PERCENT_RATE];
+            unset($offer[Entity::PERCENT_RATE]);
+
+            $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
+
+            $offer[Entity::PERCENT_RATE] = $percent_rate;
+
+
             $existingDurations = [];
 
             $existingOffers->each(function ($existingOffer) use(& $existingDurations) {
@@ -524,9 +522,13 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
             }
         }
-        else if($existingOffers->count() > 0)
+        else
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+            $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
+
+            if($existingOffers->count() > 0) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+            }
         }
     }
 
@@ -554,7 +556,6 @@ class Core extends Base\Core
                 'linked_offer_ids are not valid');
         }
     }
-
 
     /**
      * @param array $input
@@ -911,5 +912,95 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function createOffer(Merchant\Entity $merchant, array $input): Entity
+    {
+        if (isset($input[Entity::PRODUCT_TYPE]) === true and
+            $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
+        {
+            $subscriptionInput = array_pull($input, Order\ProductType::SUBSCRIPTION);
+        }
+
+        $this->verifyIdAndStripSignForLinkedOfferIds($input);
+
+        $this->setPaymentMethodTypeForDebitCardIssuers($input);
+
+        $offer = new Entity;
+
+        $offer->merchant()->associate($merchant);
+
+        $offer = $offer->build($input);
+
+        $this->validateMerchant($merchant, $input);
+
+        $this->checkConflictingOffers($offer);
+
+        $this->repo->saveOrFail($offer);
+
+        if (isset($input[Entity::PRODUCT_TYPE]) and
+            $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION) {
+            // create entry in subscription_offers_master
+            $this->addSubscriptionData($offer, $subscriptionInput ?? []);
+        }
+
+        $this->traceNonExistingIins($offer, $merchant);
+
+        return $offer;
+    }
+
+    /**
+     * @param array $input
+     * @param array $offers_array
+     * @param Merchant\Entity $merchant
+     * @return array
+     */
+    protected function createSubventedOffer(array $input, array $offers_array, Merchant\Entity $merchant): array
+    {
+        // If LC emi fields are not populated in the request, even empty emi_durations is acceptable for no cost emi
+        // Otherwise, If LC emi fields are populated, emi durations is mandatory
+        if (empty($input[Entity::LOW_COST_EMI]) === true or empty($input[Entity::EMI_DURATIONS]) === false)
+        {
+            try {
+
+                array_push($offers_array, $this->createOffer($merchant, $input));
+
+            } catch (\Exception $exception) {
+
+                $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
+                array_push($offers_array, $error);
+            }
+        }
+
+        // If the offer has LC emi component, then lc emi key is populated
+        if (empty($input[Entity::LOW_COST_EMI]) === false) {
+
+            $lc_emi_values = $input[Entity::LOW_COST_EMI];
+
+            foreach ($lc_emi_values as $lc_emi) {
+
+                $merchant_subvention =
+                    $lc_emi["discount_to_avail"]["discount_percentage"];
+
+                $tenure = array($lc_emi["tenure"]);
+
+                $input[Entity::EMI_DURATIONS] = $tenure;
+                $input[Entity::PERCENT_RATE] = $merchant_subvention;
+                try {
+                    $lc_emi_offer = $this->createOffer($merchant, $input);
+                    array_push($offers_array, $lc_emi_offer);
+                } catch (\Exception $exception) {
+                    $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
+                    array_push($offers_array, $error);
+                }
+            }
+        }
+        return $offers_array;
     }
 }

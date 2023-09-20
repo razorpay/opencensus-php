@@ -69,6 +69,9 @@ class Service extends Base\Service
             {
                 $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
+                $is_low_cost_emi = false;
+                $lc_emi_offer = null;
+
                 $minOfferAmount = 0;
 
                 if(isset($emiOfferPlans[$plan->getId()]))
@@ -79,15 +82,23 @@ class Service extends Base\Service
                     {
                         if ($offer->getPublicId() === $offerId)
                         {
+                            // If percent rate is present, it's a lc emi. Otherwise, it's a nc emi
+                            $percent_rate = $offer->getPercentRate() ?? $plan->getMerchantPayback();
+
+                            // merchant_borne_low_cost_percentage is populated only in case of lc emi
+                            $is_low_cost_emi = ($offer->getPercentRate() !== null && $offer->getPercentRate() > 0);
+                            $lc_emi_offer = $offer;
+
+                            $minEmiAmount = Calculator::calculateMinAmount($minAmount, $percent_rate);
                             $minOfferAmount = $offer->getMinAmount();
                             break;
                         }
                     }
                 }
 
-                if ($order->getAmount() >= max($minEmiAmount,$minOfferAmount) )
+             if ($order->getAmount() >= max($minEmiAmount,$minOfferAmount))
                 {
-                    $emiOptions[$issuer][] = [
+                    $planOption = [
                         'duration'           => $duration,
                         'interest'           => 0,
                         'subvention'         => Subvention::MERCHANT,
@@ -95,6 +106,12 @@ class Service extends Base\Service
                         'offer_id'           => $emiOfferPlans[$plan->getId()],
                         'merchant_payback'   => $merchant_payback,
                     ];
+
+                    if ($is_low_cost_emi === true){
+                        $planOption['merchant_borne_interest'] = number_format($lc_emi_offer->getPercentRate()/100,2);
+                    }
+
+                    $emiOptions[$issuer][] = $planOption;
                 }
                 else
                 {
@@ -148,7 +165,7 @@ class Service extends Base\Service
                 unset($emiOptions[IFSC::SBIN]);
 
                 unset($emiPlansFormatted[IFSC::SBIN]);
-            }    
+            }
         }
 
         return [

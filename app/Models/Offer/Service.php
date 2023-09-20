@@ -39,7 +39,7 @@ class Service extends Base\Service
     {
         $offer = $this->core->create($input);
 
-        return $offer->toArrayProxy();
+        return $offer;
     }
 
     public function createBulk(array $input)

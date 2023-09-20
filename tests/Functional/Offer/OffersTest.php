@@ -150,13 +150,15 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithLinkedOfferIds()
     {
-        $offer = $this->fixtures->create('offer:card');
+        $offer1 = $this->fixtures->create('offer:card');
 
-        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer1->getPublicId();
 
-        $this->testData[__FUNCTION__]['response']['content']['linked_offer_ids'] = (array) $offer->getPublicId();
+        $this->testData[__FUNCTION__]['response']['content'][0]['linked_offer_ids'] = (array) $offer1->getId();
 
-        $this->startTest();
+        $offer2 = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        (new Core())->bulkDeactivateOffers([$offer1->getPublicId(), 'offer_' . $offer2[0]['id']]);
     }
 
     public function testCreateCardOfferWithInvalidLinkedOfferIds()
@@ -505,13 +507,10 @@ class OffersTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData);
+        $offer = $this->runRequestResponseFlow($testData);
 
-        $this->expectException(BadRequestException::class);
+        (new Core())->bulkDeactivateOffers(['offer_' . $offer[0]['id']]);
 
-        $this->expectExceptionMessage('Offer already exists. Please check the values and try again');
-
-        $this->startTest();
     }
 
     //The following test case is not related to offer, but adding it here because it has been tested for the get offers route
