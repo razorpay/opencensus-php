@@ -223,6 +223,11 @@ return [
         'expected_status' => 'closed'
     ],
 
+    'testReminderCallbackForQrStatusCheck' => [
+        'base_url'   => '/reminders/send/test/qr_code/qr_code_payment_status/',
+        'created_at' => 1589994898,
+    ],
+
 
     'testFetchPaymentsForQrCode' => [
         'entity' => 'collection',

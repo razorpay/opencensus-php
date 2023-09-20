@@ -570,6 +570,8 @@ return array(
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
 
+    'qr_code_status_check_splitz_experiment_id' => env('QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_service_preferences_splitz_experiment_id' => env('CHECKOUT_SERVICE_PREFERENCES_SPLITZ_EXPERIMENT_ID'),
 
     'stop_session_redis_usage_on_customer_fetch_internal_experiment_id' => env('STOP_SESSION_REDIS_USAGE_ON_CUSTOMER_FETCH_INTERNAL_EXPERIMENT_ID'),

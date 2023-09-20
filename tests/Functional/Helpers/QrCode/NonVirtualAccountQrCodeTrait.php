@@ -314,6 +314,65 @@ trait NonVirtualAccountQrCodeTrait
             ->andReturn($output);
     }
 
+    protected function mockSplitzTreatmentForStatusCheck($qrStatusCheckOutput = 'on', $dedicatedTerminalOutput = 'on')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($qrStatusCheckOutput, $dedicatedTerminalOutput) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'MbIfehaPwEDEN6')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $qrStatusCheckOutput,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                if ($input['experiment_id'] === 'DedicatedQrExp')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $dedicatedTerminalOutput,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    "key" => "result",
+                                    "value" => "off"
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+            });
+    }
+
     protected function getDedicatedTerminalSplitzResponseForOnVariant()
     {
         $output = [

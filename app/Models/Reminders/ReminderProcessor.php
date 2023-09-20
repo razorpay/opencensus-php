@@ -32,6 +32,7 @@ abstract class ReminderProcessor
     const CARD_AUTO_RECURRING       = 'card_auto_recurring';
     const SETTLEMENTS               = 'settlements';
     const QR_CODE                   = 'qr_code';
+    const QR_CODE_PAYMENT_STATUS    = 'qr_code_payment_status';
     const COD_PAYMENT_PENDING       = 'cod_payment_pending';
     const CAPTURE_POS_PAYMENT       = 'capture_pos_payment';
 
@@ -43,6 +44,7 @@ abstract class ReminderProcessor
         self::CARD_AUTO_RECURRING       => 'CardAutoRecurringReminderProcessor',
         self::SETTLEMENTS               => 'SettlementReminderProcessor',
         self::QR_CODE                   => 'QrCodeReminderProcessor',
+        self::QR_CODE_PAYMENT_STATUS    => 'QrCodeReminderProcessor',
         self::COD_PAYMENT_PENDING       => 'CoDPaymentPendingProcessor',
         self::CAPTURE_POS_PAYMENT       => 'CapturePosPaymentProcessor',
     ];

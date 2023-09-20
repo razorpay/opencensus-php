@@ -80,6 +80,15 @@ class Service extends QrCode\Service
 
         $this->handleReminderForQrCode($qrCode);
 
+        // Since this is inside NonVirtualAccountQrCode/Service, it is safe to assume that only qrV2 are checked here
+        if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
+            ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
+            ($gateway === \RZP\Models\Payment\Gateway::UPI_ICICI) and
+            ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
+        {
+            $this->triggerQrStatusCheckPostCreate($qrCode);
+        }
+
         $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
 
         $metric->pushCreateLatencyMetrics($input, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
@@ -151,6 +160,8 @@ class Service extends QrCode\Service
         }
 
         $this->handleReminderForQrCode($qrCode);
+
+        // TODO: Add status check here, use a separate config for checkout QRs maybe?
 
         if ($qrCode->isCheckoutQrCode()) {
             (new QrPayment\Service())->setQrCodeStatusAndPaymentIdInCache($qrCode);
@@ -417,6 +428,21 @@ class Service extends QrCode\Service
         return sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $qrCodeId);
     }
 
+    public function getStatusCheckCallbackUrlForReminder($qrCode)
+    {
+        $baseUrl     = Constants::REMINDER_BASE_URL;
+
+        $mode        = $this->mode;
+
+        $entity      = Constants::REMINDER_ENTITY_NAME;
+
+        $namespace   = Constants::REMINDER_NAMESPACE_FOR_STATUS_CHECK;
+
+        $qrCodeId    = $qrCode->getPublicId();
+
+        return sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $qrCodeId);
+    }
+
     private function getRequestSourceViaAuth()
     {
         if ($this->auth->isPublicAuth())
@@ -431,5 +457,86 @@ class Service extends QrCode\Service
         {
             return RequestSource::API;
         }
+    }
+
+    public function triggerQrStatusCheckPostCreate(Entity $qrCode): void
+    {
+        try
+        {
+            $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_INIT, ['id' => $qrCode->getId()]);
+
+            // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs
+            if ($this->evaluateQrCodeEligibilityViaSplitzForStatusCheck($qrCode) === false)
+            {
+                return;
+            }
+
+            $request = [
+                'entity_id'     => $qrCode->getId(),
+                'namespace'     => Constants::REMINDER_NAMESPACE_FOR_STATUS_CHECK,
+                'entity_type'   => Constants::REMINDER_ENTITY_NAME,
+                // Add 180 secs to signify sending reminder after 3 mins of create
+                'reminder_data' => [ENTITY::CREATED_AT => $qrCode->getCreatedAt()],
+                'callback_url'  => $this->getStatusCheckCallbackUrlForReminder($qrCode),
+            ];
+
+            $merchantId = Account::SHARED_ACCOUNT;
+
+            $response = $this->app['reminders']->createReminder($request, $merchantId);
+
+            $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_REMINDER_RESPONSE, $response);
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException($ex,
+                Trace::CRITICAL,
+                TraceCode::QR_CODE_STATUS_CHECK_REMINDER_CREATION_FAILED,
+                $request);
+        }
+    }
+
+    public function evaluateQrCodeEligibilityViaSplitzForStatusCheck(Entity $qrCode): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $qrCode->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.qr_code_status_check_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $qrCode->getMerchantId()]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'merchant_id'   => $qrCode->getMerchantId(),
+                '$response'     => $response
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if (($key == "result") and
+                        ($value == "on"))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::QR_CODE_STATUS_CHECK_SPLITZ_EVALUATE_ERROR
+            );
+        }
+
+        return false;
     }
 }
