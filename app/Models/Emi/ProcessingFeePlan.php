@@ -127,16 +127,29 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::CITI => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::COMBINATION,
+                    self::PERCENTAGE => 1,
+                    self::AMOUNT => 10000
+                ]
+            ]
+        ],
     ];
 
 
     public function getProcessingFeePlan(string $issuer, string $cardType, string $duration): array
     {
         if ((!isset(self:: $plan[$issuer])) || (!isset(self:: $plan[$issuer][$cardType])))
+        {
             return [];
+        }
 
         if (!isset(self:: $plan[$issuer][$cardType][$duration]))
+        {
             $duration = self::DEFAULT;
+        }
 
         return self:: $plan[$issuer][$cardType][$duration];
     }
