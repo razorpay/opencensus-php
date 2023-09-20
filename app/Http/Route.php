@@ -13026,6 +13026,7 @@ class Route
             'card_fetch_multiple',
             'card_issuer_validate',
             'care_service_dashboard_proxy',
+            'care_service_get_dashboard_proxy',
             'care_service_admin_proxy',
             'care_service_dark_proxy',
             'cmma_service_admin_proxy',
