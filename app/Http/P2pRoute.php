@@ -625,4 +625,9 @@ final class P2pRoute
         //
         return self::getFeaturesForRoute($currentRoute);
     }
+
+    public static function getP2PRoutes(): array
+    {
+        return self::$p2pRoutes;
+    }
 }

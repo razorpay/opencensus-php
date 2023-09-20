@@ -1,0 +1,69 @@
+on: [ push ]
+jobs:
+  cancel:
+    runs-on: [ self-hosted ]
+    name: Cancel Previous Runs
+    if: always()
+    timeout-minutes: 1
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          all_but_latest: true
+          workflow_id: "ci_write_meta.yaml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+  write_routes_meta:
+    runs-on: [ self-hosted ]
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_S3_ROLE: arn:aws:iam::101860328116:role/gha-stage-edge-tools-api-meta-action
+      AWS_S3_BUCKET_NAME: rzp-1018-nonprod-edge-tools
+      AWS_DEFAULT_REGION: ap-south-1
+    needs: [ cancel ]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: write and push routes meta file
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: install dependencies
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: write_routes_meta
+        run: php artisan rzp:write_routes_meta
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_S3_ROLE }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          role-duration-seconds: 1200
+      - name: write to s3
+        uses: docker://amazon/aws-cli:2.2.25
+        with:
+          args: s3 cp ./routes_meta.json s3://${{ env.AWS_S3_BUCKET_NAME }}/apistats/${{ steps.extract_branch.outputs.branch }}/routes_meta.json
+

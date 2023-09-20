@@ -5,6 +5,7 @@ namespace RZP\Console\Commands;
 use Illuminate\Routing\Router;
 use Illuminate\Console\Command;
 
+use RZP\Http\P2pRoute;
 use RZP\Http\Route;
 
 class WriteRoutesMeta extends Command
@@ -27,6 +28,8 @@ class WriteRoutesMeta extends Command
      */
     protected $writerFunc;
 
+    protected $writerFuncJSON;
+
     /**
      * Create a new command instance.
      * @return void
@@ -36,6 +39,8 @@ class WriteRoutesMeta extends Command
         parent::__construct();
 
         $this->writerFunc = 'writeToNginxLuaFile';
+
+        $this->writerFuncJSON = 'writeToJSONFile';
     }
 
     public function handle()
@@ -43,6 +48,14 @@ class WriteRoutesMeta extends Command
         $this->info('Reading routes meta');
         // Format: [['methods', 'uri_regex', 'name', auth']].
         $routesMeta = [];
+        $jsonRoutesMeta = [];
+        $v2PrefixRoutesMap = [];
+
+        for ($i = 0; $i < count(Route::$routesWithV2Prefix); $i++) {
+            $v2PrefixRoutesMap[Route::$routesWithV2Prefix[$i]] = true;
+        }
+
+
         foreach (Route::getApiRoutes() as $name => $meta)
         {
             $methods = $meta[0] === 'any' ? Router::$verbs : array_merge(explode(',', $meta[0]), ['HEAD']);
@@ -56,10 +69,66 @@ class WriteRoutesMeta extends Command
             ];
         }
 
+
+        foreach (Route::getApiRoutes() as $name => $meta)
+        {
+            $methods = $meta[0] === 'any' ? Router::$verbs : explode(',', $meta[0]);
+            $methods = array_map(function($v) { return strtoupper($v); }, $methods);
+
+            $apps = [];
+
+            foreach (Route::$internalApps as $appName => $routes) {
+
+                foreach ( $routes as $route )
+                {
+                    if ($route == $name)
+                    {
+                        $apps[] = $appName;
+                    }
+                }
+
+            }
+
+            $prefix = "/v1" ;
+
+            if (isset($v2PrefixRoutesMap[$name])) {
+                $prefix = "/v2";
+            }
+
+            $jsonRoutesMeta[] = [
+                'methods'   => $methods,
+                'uri_regex' => laravelPatternToEdgeRoute($meta[1],$prefix),
+                'name'      => $name,
+                'auth'      => routeNameToEdgeAuth($name),
+                'apps' => $apps
+            ];
+
+
+        }
+
+        foreach (P2pRoute::getP2PRoutes() as $name => $meta)
+        {
+            $methods = $meta[0] === 'any' ? Router::$verbs : explode(',', $meta[0]);
+            $methods = array_map(function($v) { return strtoupper($v); }, $methods);
+
+            $jsonRoutesMeta[] = [
+                'methods'   => $methods,
+                'uri_regex' => laravelPatternToEdgeRoute($meta[1], '/v1/upi'),
+                'name'      => $name,
+                'auth'      => routeNameToEdgeAuthP2P($name),
+            ];
+        }
+
+
         $this->info("Writing routes meta using writer func: {$this->writerFunc}");
         $this->{$this->writerFunc}($routesMeta);
 
         $this->info(sprintf('Wrote total %d routes', count($routesMeta)));
+
+        $this->info("Writing routes meta using writer func: {$this->writerFuncJSON}");
+        $this->{$this->writerFuncJSON}($jsonRoutesMeta);
+
+        $this->info(sprintf('Wrote total %d routes in JSON file', count($jsonRoutesMeta)));
     }
 
     protected function writeToNginxLuaFile(array $routesMeta)
@@ -84,6 +153,40 @@ class WriteRoutesMeta extends Command
 
         file_put_contents(app_path().'/../dockerconf/openresty/routes_meta.lua', $content);
     }
+
+    protected function writeToJSONFile(array $routesMeta)
+    {
+        $content = ' ['.PHP_EOL;
+        foreach ($routesMeta as $index => $meta)
+        {
+
+            $content .= '{'.PHP_EOL;
+            $content .= '       "methods" : ["'.implode("\",\"", $meta['methods']).'"],'.PHP_EOL;
+            $content .= '       "paths" : ["'.$meta['uri_regex'].'"],'.PHP_EOL;
+            $content .= '       "name" : "'.$meta['name'].'",'.PHP_EOL;
+
+            if (array_key_exists("apps", $meta)) {
+                $content .= '       "auth" : ["'.implode("\",\"", $meta['auth']).'"],'.PHP_EOL;
+                $content .= '       "apps" : ["'.implode("\",\"", $meta['apps']).'"]'.PHP_EOL;
+            }
+            else {
+                $content .= '       "auth" : ["'.implode("\",\"", $meta['auth']).'"]'.PHP_EOL;
+            }
+
+            if ($index < sizeof($routesMeta)-1)
+            {
+                $content .= '   },'.PHP_EOL;
+            } else {
+                $content .= '   }'.PHP_EOL;
+            }
+
+        }
+
+        $content .= ']'.PHP_EOL;
+
+        file_put_contents('./routes_meta.json', $content);
+
+    }
 }
 
 function laravelPatternToNonPosixRegex(string $pattern): string
@@ -94,6 +197,11 @@ function laravelPatternToNonPosixRegex(string $pattern): string
     // Because everything is /v1/ is api service.
     // If not so someone please fix it here.
     return '^/v1/'.$pattern.'$';
+}
+
+function laravelPatternToEdgeRoute(string $pattern, string $prefix): string
+{
+    return '~' .$prefix . '/'.$pattern.'/?$';
 }
 
 function routeNameToAuth(string $name): string
@@ -131,4 +239,164 @@ function routeNameToAuth(string $name): string
     {
         return 'unknown';
     }
+}
+
+function isInInternalApps(string $name) : bool {
+    foreach (Route::$internalApps as $appName => $routes) {
+
+        foreach ( $routes as $route )
+        {
+            if ($route == $name)
+            {
+                return true ;
+            }
+        }
+
+    }
+
+    return false ;
+}
+
+function isInInternalAppsWithAppName(string $name, array $apps) : bool {
+    foreach (Route::$internalApps as $appName => $routes) {
+
+        foreach ( $routes as $route )
+        {
+            if ($route == $name && in_array($appName, $apps))
+            {
+                return true ;
+            }
+        }
+
+    }
+
+    return false ;
+}
+
+function routeNameToEdgeAuth(string $name): array
+{
+
+    $authModes = [];
+
+    if (in_array($name, Route::$private) || in_array($name, Route::getOAuthSpecificRoutes()) ) {
+        $authModes[] = 'OAUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$internal) && isInInternalApps($name) ) {
+        $authModes[] = 'INTERNAL_AUTH';
+    }
+
+    if (in_array($name, Route::$admin) && isInInternalAppsWithAppName($name, ['admin_dashboard']) ) {
+        $authModes[] = 'ADMIN_AUTH';
+    }
+
+    if (in_array($name, Route::$private) ) {
+        $authModes[] = 'MERCHANT_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$private) ) {
+        $authModes[] = 'MERCHANT_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$private) ) {
+        $authModes[] = 'PARTNER_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$private) && in_array($name, Route::$partnerCredentialsWithoutSubmerchantIdWhitelist)  ) {
+        $authModes[] = 'PARTNER_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$public) || in_array($name, Route::$publicCallback) || in_array($name, Route::$direct) )  {
+        $authModes[] = 'PUBLIC_OAUTH';
+    }
+
+    if (in_array($name, Route::$public) || in_array($name, Route::$publicCallback) || in_array($name, Route::$direct) )  {
+        $authModes[] = 'PUBLIC_MERCHANT_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$public) || in_array($name, Route::$publicCallback) || in_array($name, Route::$direct) )  {
+        $authModes[] = 'PUBLIC_MERCHANT_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$public) || in_array($name, Route::$publicCallback) || in_array($name, Route::$direct) )  {
+        $authModes[] = 'PUBLIC_PARTNER_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, Route::$public) )  {
+        $authModes[] = 'LEGACY_KEYLESS_AUTH';
+    }
+
+    if ( (in_array($name, Route::$private) || in_array($name, Route::$proxy) )  && (isInInternalApps($name)) ) {
+        $authModes[] = 'PROXY_AUTH';
+    }
+
+    if ( in_array($name, Route::$device) ) {
+        $authModes[] = 'DEVICE_AUTH';
+    }
+
+    if ( in_array($name, Route::$direct) ) {
+        $authModes[] = 'DIRECT_AUTH';
+    }
+
+    return $authModes;
+
+
+}
+
+function routeNameToEdgeAuthP2P(string $name): array
+{
+
+    $authModes = [];
+
+    if (in_array($name, P2pRoute::$private) ) {
+        $authModes[] = 'MERCHANT_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$private) ) {
+        $authModes[] = 'MERCHANT_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$private) ) {
+        $authModes[] = 'PARTNER_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$private)  ) {
+        $authModes[] = 'PARTNER_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$public) || in_array($name, P2pRoute::$direct) )  {
+        $authModes[] = 'PUBLIC_OAUTH';
+    }
+
+    if (in_array($name, P2pRoute::$public) || in_array($name, P2pRoute::$direct) )  {
+        $authModes[] = 'PUBLIC_MERCHANT_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$public)  || in_array($name, P2pRoute::$direct) )  {
+        $authModes[] = 'PUBLIC_MERCHANT_AUTH_WITHOUT_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$public) || in_array($name, P2pRoute::$direct) )  {
+        $authModes[] = 'PUBLIC_PARTNER_AUTH_WITH_IMPERSONATION';
+    }
+
+    if (in_array($name, P2pRoute::$public) )  {
+        $authModes[] = 'LEGACY_KEYLESS_AUTH';
+    }
+
+    if ( (in_array($name, P2pRoute::$private) )  && (isInInternalApps($name)) ) {
+        $authModes[] = 'PROXY_AUTH';
+    }
+
+    if ( in_array($name, P2pRoute::$device) ) {
+        $authModes[] = 'DEVICE_AUTH';
+    }
+
+    if ( in_array($name, P2pRoute::$direct) ) {
+        $authModes[] = 'DIRECT_AUTH';
+    }
+
+    return $authModes;
+
+
 }

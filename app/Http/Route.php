@@ -18902,6 +18902,9 @@ class Route
         return false;
     }
 
+    public static function getOAuthSpecificRoutes() {
+        return self::OAUTH_SPECIFIC_ROUTES;
+    }
     /**
      * Routes which are allowed for split payment.
      *
