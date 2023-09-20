@@ -1352,6 +1352,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublicTokenizedCard($serviceProviderTokens)
     {
+
         $publicArray = parent::toArrayPublic();
 
         if(isset($publicArray[self::SOURCE]))
@@ -1419,6 +1420,14 @@ class Entity extends Base\PublicEntity
                 if (array_key_exists(self::TOKEN_IIN, $provider[self::PROVIDER_DATA]))
                 {
                     $provider[self::PROVIDER_DATA][self::TOKEN_IIN] = substr($provider[self::PROVIDER_DATA][self::TOKEN_IIN], 0, $this->getTokenLengthWithNetwork($provider["provider_name"]));
+                }
+                if (array_key_exists(self::TOKEN_EXPIRY_MONTH, $provider[self::PROVIDER_DATA]))
+                {
+                    $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_MONTH] = $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_MONTH];
+                }
+                if (array_key_exists(self::TOKEN_EXPIRY_YEAR, $provider[self::PROVIDER_DATA]))
+                {
+                    $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_YEAR] = $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_YEAR];
                 }
 
                 if(isset($provider['tokenised_terminal_id'])){
