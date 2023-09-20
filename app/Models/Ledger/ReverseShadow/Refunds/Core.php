@@ -251,9 +251,16 @@ class Core extends Base\Core
 
         $transactionDate = ($refund->getCreatedAt() === 0) ? Carbon::now(Timezone::IST)->getTimestamp() : $refund->getCreatedAt();
 
+        $merchant = $refund->merchant;
+        $currency = "INR";
+        if( $merchant !== null)
+        {
+            $currency = $merchant->getCurrency();
+        }
+
         $refundData = array(
             Constants::MERCHANT_ID                   => $refund->getMerchantId(),
-            Constants::CURRENCY                      => $refund->getCurrency(),
+            Constants::CURRENCY                      => $currency,
             Constants::TRANSACTOR_ID                 => $refund->getPublicId(),
             Constants::TRANSACTOR_EVENT              => $transactorEvent,
             Constants::MONEY_PARAMS                  => $moneyParams,
