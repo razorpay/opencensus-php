@@ -12,6 +12,7 @@ use RZP\Constants\Environment;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\User;
 use RZP\Models\Order;
 use RZP\Services\NoCodeAppsService;
@@ -2916,6 +2917,15 @@ class Core extends Base\Core
 
         $PPIValidator = new PaymentPageItem\Validator();
 
+        if($paymentLink[PaymentLink::VIEW_TYPE] === ViewType::FILE_UPLOAD_PAGE) {
+
+            $otherDetails = $this->getOtherDetailsFilteredKeyValuePairs($input, $paymentLink);
+
+            $lineItemArray = $this->getAllLineItemsNameAmount($input, $paymentLink);
+
+            $this->validateLineItems($otherDetails, $lineItemArray);
+        }
+
         foreach ($input[Entity::LINE_ITEMS] as $lineItem)
         {
             $paymentPageItemId = $lineItem[Entity::PAYMENT_PAGE_ITEM_ID];
@@ -4088,6 +4098,87 @@ class Core extends Base\Core
         }
 
         return $invoice;
+    }
+
+    protected function getOtherDetailsFilteredKeyValuePairs(array $input, Entity $paymentLink) {
+
+        if(isset($input["notes"][PAYMENTLINK::PRI_REF_ID]) === false) {
+            throw new BadRequestValidationFailureException(
+                'primary reference id is not sent in notes'
+            );
+        }
+
+        $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail(
+            $paymentLink->getId(),
+            $input["notes"][PAYMENTLINK::PRI_REF_ID]
+        );
+
+        $paymentPageRecord = $paymentPageRecord->toArray();
+
+        $udfSchema = $paymentLink->getSettingsAccessor()->get(Entity::UDF_SCHEMA);
+
+        $udfSchema = json_decode($udfSchema, true);
+
+        $otherDetails = json_decode($paymentPageRecord['other_details'],true);
+
+        foreach ($udfSchema as $udf)
+        {
+            $udfData[$udf[Entity::NAME]] = $otherDetails[$udf[Entity::TITLE]];
+
+            unset($otherDetails[$udf[Entity::TITLE]]);
+        }
+
+        // Remove all {name: value} pairs of sec_ref_id's from otherdetails
+        foreach ($otherDetails as $key => $value)
+        {
+            if (PaymentPageRecord\Entity::isSecondaryRefId($key) === true)
+            {
+                unset($otherDetails[$key]);
+            }
+        }
+
+        return $otherDetails;
+    }
+
+    protected function getAllLineItemsNameAmount(array $input,Entity $paymentLink){
+
+        $lineItemArray = [];
+
+        foreach ($input[Entity::LINE_ITEMS] as $lineItem) {
+
+            $paymentPageItemId = $lineItem[Entity::PAYMENT_PAGE_ITEM_ID];
+
+            $paymentPageItemId = PaymentPageItem\Entity::verifyIdAndStripSign($paymentPageItemId);
+
+            $paymentPageItem = $this->repo->payment_page_item->findByIdAndPaymentLinkEntityOrFail(
+                $paymentPageItemId,
+                $paymentLink,
+            );
+
+            $name = $paymentPageItem->item->getName();
+
+
+            $amount = $lineItem["amount"];
+
+            $lineItemArray[$name] = $amount;
+        }
+
+        return $lineItemArray;
+    }
+
+    protected function validateLineItems(array $otherDetails, array $lineItemArray){
+
+        foreach ($otherDetails as $key => $value) {
+            if(isset($lineItemArray[$key]) === false) {
+                throw new BadRequestValidationFailureException(
+                    'all the items must be present'
+                );
+            }else if($lineItemArray[$key] !== $value) {
+                throw new BadRequestValidationFailureException(
+                    'amount should be equal to payment page item amount'
+                );
+            }
+        }
     }
 
 }

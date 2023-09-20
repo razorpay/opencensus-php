@@ -5214,6 +5214,46 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderPaymentPageFormBuilder(){
+
+        $res = $this->setUpCreateRecordForFileUpload();
+
+        $paymentPageItem = $this->getDbLastEntity('payment_page_item');
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $res . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItem['id'],
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '883434343',
+                    'email' => 'test@test.com',
+                    'phone' => '1231241234',
+                    'name' => 'pradeep'
+                ]
+            ]
+        ];
+        $this->ba->directAuth();
+
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+
+            $this->assertTrue(false, 'should throw an exception for amount not mismatch');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $e->getCode());
+
+            $this->assertEquals("amount should be equal to payment page item amount", $e->getMessage());
+        }
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createCDSPlan()
