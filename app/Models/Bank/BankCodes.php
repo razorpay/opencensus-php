@@ -31,6 +31,7 @@ class BankCodes
     const IFSC_BDBL = 'BDBL0001379';
     const IFSC_BKDN = 'BKDN0611871';
     const IFSC_BKID = 'BKID0000023';
+    const IFSC_JSFB = 'JSFB0001203';  //This is a dummy mapping, Being added by NBplus as there is no owner for this mapping and NBplus is blocked on this.
     // const IFSC_BMBL = '';
     const IFSC_BNPA = 'BNPA0009009';
     const IFSC_CBIN = 'CBIN0280663';

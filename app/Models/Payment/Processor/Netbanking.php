@@ -211,6 +211,7 @@ class Netbanking
         IFSC::DBSS,
         self::LAVB_R,
         IFSC::SRCB,
+        IFSC::JSFB,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -1181,7 +1182,10 @@ class Netbanking
         Gateway::NETBANKING_JSB =>  [
             'retail'    =>  [
                 IFSC::JSFB,
-            ]
+            ],
+            'tpv' => [
+                IFSC::JSFB,
+            ],
         ],
         Gateway::NETBANKING_IOB => [
             'retail' =>  [

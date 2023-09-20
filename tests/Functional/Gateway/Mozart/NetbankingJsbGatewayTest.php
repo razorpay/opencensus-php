@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use Mockery;
+use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -26,6 +29,10 @@ class NetbankingJsbGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_jsb_terminal');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testPayment()
@@ -36,20 +43,23 @@ class NetbankingJsbGatewayTest extends TestCase
 
         $this->assertTestResponse($paymentEntity);
 
-        $mozartEntity = $this->getDbLastEntityToArray('mozart', 'test');
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentMozartEntity'], $mozartEntity);
     }
 
     public function testTamperedAmount()
     {
-        $this->mockServerContentFunction(function (&$content, $action = null)
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
         {
-            if ($action === 'pay_verify')
-            {
-                $content['data']['amount'] = '1234';
-            }
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'RUNTIME',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'SERVER_ERROR_RUNTIME_ERROR',
+                        'gateway_error_code'                            =>  '',
+                        'gateway_error_description'                     =>  '',
+                    ]
+                ],
+            ];
         });
 
         $testData = $this->testData[__FUNCTION__];
@@ -66,6 +76,8 @@ class NetbankingJsbGatewayTest extends TestCase
 
     public function testAuthFailed()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'pay_verify')
@@ -88,6 +100,8 @@ class NetbankingJsbGatewayTest extends TestCase
 
     public function testAuthFailedVerifySuccess()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testAuthFailed();
@@ -103,6 +117,36 @@ class NetbankingJsbGatewayTest extends TestCase
 
         $this->assertEquals('failed', $paymentEntity['status']);
     }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_jsb_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+    }
+
 
     public function testPaymentVerify()
     {

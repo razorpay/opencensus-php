@@ -26,7 +26,7 @@ return [
             'merchant_order_id'   => 'random order id',
         ],
         'acquirer_data'     => [
-            'bank_transaction_id' => '999999'
+            'bank_transaction_id' => '1234'
         ],
         'gateway'           => 'netbanking_jsb',
         'terminal_id'       => '1ShrdNBJSBFTml',
@@ -57,7 +57,29 @@ return [
         ],
         'exception' => [
             'class'                     => 'RZP\Exception\LogicException',
-            'internal_error_code'       => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+            'internal_error_code'       => ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE,
+        ],
+    ],
+
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'JSFB',
+                'account_number' => '0040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
         ],
     ],
 

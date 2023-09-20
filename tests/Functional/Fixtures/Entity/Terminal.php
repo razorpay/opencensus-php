@@ -132,6 +132,7 @@ class Terminal extends Base
         $this->createSharedNetbankingKvbTpvTerminal();
         $this->createSharedNetbankingSvcTerminal();
         $this->createSharedNetbankingJsbTerminal();
+        $this->createSharedNetbankingJsbTpvTerminal();
         $this->createSharedNetbankingIobTerminal();
         $this->createSharedNetbankingFsbTerminal();
         $this->createSharedNetbankingAusfTerminal();
@@ -4969,6 +4970,24 @@ class Terminal extends Base
         ];
 
         $attributes = array_merge($defaultValues,$attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingJsbTpvTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_JSB_TPV_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_JSB,
+            'gateway_merchant_id'   => 'netbanking_jsb',
+            'netbanking'            => 1,
+            'tpv'                   => 2,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
     }

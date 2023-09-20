@@ -71,6 +71,7 @@ class Shared
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const NETBANKING_ESFB_TPV_TERMINAL       = '100NbEsfbTpvTl';
     const NETBANKING_JSB_TERMINAL            = '1000NbJsbTrmnl';
+    const NETBANKING_JSB_TPV_TERMINAL        = '1000NbJsbTpvTl';
     const NETBANKING_IOB_TERMINAL            = '1000NbIobTrmnl';
     const NACH_CITI_TERMINAL                 = '100NbcitiTrmnl';
     const NACH_ICICI_TERMINAL                = '100NbIcicTrmnl';
