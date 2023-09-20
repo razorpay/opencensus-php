@@ -19,6 +19,88 @@ jobs:
           all_but_latest: true
           workflow_id: "bvt.yaml"
           access_token: ${{ github.token }}
+  # Workflow for checking changes in env.vault.j2 file and checking if deployment went well
+  wait-for-status-check:
+    name: Deploy to devstack
+    env:
+      UPDATED_VAULT: false
+    runs-on: ubuntu-latest
+    needs: [cancel]
+    steps:
+      - name: Retrieve  Current Workflow URL
+        id: workflow_run
+        run: echo "::set-output name=url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Post Workflow Link as Comment
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            `Before BVT workflow, Checking workflow status for deploying to devstack:`  [View the progress here](${{ steps.workflow_run.outputs.url }})
+          allow-repeats: true
+      - name: Check changed files
+        id: Changed_file
+        run: |
+          changed=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/razorpay/api/pulls/${{ github.event.pull_request.number }}/files" | jq -r '.[] | select(.filename == "environment/.env.vault.j2") | .status')
+          echo "Status of 'changed file': $changed"
+
+          if [ "$changed" = "modified" ]; then
+            echo "Status check succeeded."
+            echo "UPDATED_VAULT=true" >> "$GITHUB_ENV"
+          else
+            echo "Found no change in .env.vault.j2."
+          fi
+      - name: Check Status
+        if: env.UPDATED_VAULT == 'true'
+        id: status
+        run: |
+          retries=0
+
+          while [ $retries -lt 11 ]; do
+            status=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/razorpay/api/commits/${{ github.event.pull_request.head.sha }}/status" | jq -r '.statuses[] | select(.context == "Validate deploy to devstack") | .state')
+            echo "Status of 'Validate deploy to devstack': $status"
+
+            if [ "$status" = "success" ]; then
+              echo "Status check succeeded."
+              break
+            else
+              echo "Status check did not succeed. Waiting for 3 minutes before rechecking..."
+              sleep 180
+              echo "Rechecking status..."
+              status=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/razorpay/api/commits/${{ github.event.pull_request.head.sha }}/status" | jq -r '.statuses[] | select(.context == "Validate deploy to devstack") | .state')
+
+              echo "Status of 'Validate deploy to devstack' after rechecking: $status"
+
+              if [ "$status" = "success" ]; then
+                echo "Status check succeeded after rechecking."
+                break
+              else
+                echo "Status check still did not succeed."
+                retries=$((retries + 1))
+                if [ $retries -eq 11 ]; then
+                  echo "Maximum retries reached. Exiting with exit code 1."
+                  echo "VALIDATE_CHECK=false" >> $GITHUB_ENV
+                fi
+              fi
+            fi
+          done
+      - name: Check VALIDATE_CHECK status
+        run: echo $VALIDATE_CHECK
+      - name: Post Workflow Link as Comment
+        if: env.VALIDATE_CHECK == 'false'
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            `Deploy to devstack workflow failed as `Validate deploy to devstack` check was failed :`  [Re-trigger workflow from here](${{ steps.workflow_run.outputs.url }})
+          allow-repeats: true
+      - name: Set Failure Exit Code if validate check fails
+        if: env.VALIDATE_CHECK == 'false'
+        run: exit 1
   # PR Approval Request Workflow
   pull_request_approved:
     env:
@@ -28,7 +110,7 @@ jobs:
       - self-hosted
       - api
       - X64
-    needs: [ cancel ]
+    needs: [ cancel, wait-for-status-check ]
     steps:
       - name: Retrieve Current Workflow URL
         id: workflow_run
