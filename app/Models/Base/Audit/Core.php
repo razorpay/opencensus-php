@@ -37,6 +37,23 @@ class Core extends Base\Core
         $this->userActors = [];
     }
 
+    public function getAuditInfoEntity($id)
+    {
+        $auditInfo = null;
+
+        try
+        {
+            $auditInfo = $this->repo->audit_info->findOrFailPublic($id);
+        }
+        catch (\Throwable $e)
+        {
+            //Do nothing and return null
+        }
+
+        return $auditInfo;
+
+    }
+
     public function create()
     {
         $auditInfo = new Entity;
@@ -63,6 +80,21 @@ class Core extends Base\Core
             Constants::TASK_ID    => $request->getTaskId(),
             Constants::IP         => $clientIpAddress ?? null
         ];
+
+        $auditInfo->setMeta($meta);
+
+        $auditInfo->setConnection(Mode::LIVE);
+
+        $auditInfo->saveOrFail();
+
+        return $auditInfo;
+    }
+
+    public function createWithParams($id, $meta): Entity
+    {
+        $auditInfo = new Entity;
+
+        $auditInfo->setId($id);
 
         $auditInfo->setMeta($meta);
 

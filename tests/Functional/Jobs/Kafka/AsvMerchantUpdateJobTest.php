@@ -40,4 +40,38 @@ class AsvMerchantUpdateJobTest extends TestCase
         $this->assertNull($liveKeyValue);
 
     }
+
+    public function testCreateAuditForEntities(): void
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $testAuditId = "10000000000005";
+        $testAdminId = "admin090012351";
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $payload = [
+            AsvMerchantUpdateJob::MERCHANT_ID => $merchant->getId(),
+            AsvMerchantUpdateJob::ENTITY_NAME => Entity::MERCHANT,
+            'entity' => ['audit_id' => $testAuditId],
+            'metadata' => [
+                'actor'=> [
+                    'id' => $testAdminId,
+                    'type' => 'admin'
+                ],
+                'auth_type' => 'private',
+                'app_name' => 'bvs',
+                'ip' => '127.0.0.1',
+                'task_id' => '5a2d4ab160e2a2c35d4b001b01ea6427'
+            ]
+        ];
+
+        $job = new AsvMerchantUpdateJob($payload);
+
+        $job->handle();
+
+        $auditInfoEntity = (new \RZP\Models\Base\Audit\Repository())->findOrFailPublic($testAuditId, ['*'], 'live');
+        $this->assertNotNull($auditInfoEntity);
+
+    }
 }
