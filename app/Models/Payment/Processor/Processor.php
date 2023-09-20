@@ -6996,7 +6996,36 @@ class Processor
         // Please keep this function at the end of transaction block, as
         // we are updating orders which lies in PG Router service now.
         // This has been done to temporarily handle the distributed transaction failures.
-        $this->updateExternalOrder();
+        if($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ONE_ORDER_ONE_PAYMENT) and
+            $this->order !== null  and
+            !$this->order->isPartialPaymentAllowed())
+        {
+            $mutexKey = $this->order->getId() . "pg_router";
+
+            $this->mutex->acquireAndRelease(
+                $mutexKey,
+                function () use ($input)
+                {
+                   $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+                    if($order->getAttempts() > 0 and
+                        !$order->isPartialPaymentAllowed()){
+                        $errorData = [
+                            'method' => 'pg_router',
+                            'order_id' => $order->getId()
+                        ];
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_RESTRICT_ONE_PAYMENT_TO_AN_ORDER,
+                            null,
+                            $errorData);
+
+                    }
+                    $this->updateExternalOrder();
+                });
+
+        }else {
+            $this->updateExternalOrder();
+        }
 
         $metadata = $payment->getMetadata();
 

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Mode;
+use RZP\Models\Order;
 use RZP\Services\EsClient;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Repository;
@@ -11524,6 +11525,177 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals('100000custgupi', $token->getId());
         $this->assertEquals('100000Razorpay', $token->getMerchantId());
+    }
+
+    public function testCreatePaymentRestrictOnePaymentToAnOrder(): void
+    {
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 1000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['one_order_one_payment']);
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrder')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $orderId, string $merchantId, array $input)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "id"            => $orderId,
+                    "amount"        => 1000,
+                    "amount_paid"   => 0,
+                    "amount_due"    => 1000,
+                    "currency"      => "INR",
+                    "receipt"       => "test_auto_capture_receipt",
+                    "offer_id"      => null,
+                    "status"        => "created",
+                    "attempts"      => 0,
+                    "notes"         => [],
+                    "created_at"    => 1683543840,
+                    "merchant_id"   => "10000000000000"
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $pgService->shouldReceive('fetchOrder')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $orderId, string $merchantId, array $input)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "id"            => $orderId,
+                    "amount"        => 1000,
+                    "amount_paid"   => 0,
+                    "amount_due"    => 1000,
+                    "currency"      => "INR",
+                    "receipt"       => "test_auto_capture_receipt",
+                    "offer_id"      => null,
+                    "status"        => "created",
+                    "attempts"      => 0,
+                    "notes"         => [],
+                    "created_at"    => 1683543840,
+                    "merchant_id"   => "10000000000000"
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $pgService->shouldReceive('updateInternalOrder')
+            ->with(Mockery::type('array'), Mockery::type('string'), Mockery::type('string'), Mockery::type('bool'))
+            ->andReturnUsing(function (array $input, string $orderId, string $merchantId, bool $throwExceptionOnFailure)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "attempts"   => 1,
+                    "status"     => "attempted",
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'created');
+    }
+
+    public function testCreatePaymentRestrictOnePaymentToAnOrderWithAttemptsAs1()
+    {
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 1000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['one_order_one_payment']);
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrder')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $orderId, string $merchantId, array $input)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "id"            => $orderId,
+                    "amount"        => 1000,
+                    "amount_paid"   => 0,
+                    "amount_due"    => 1000,
+                    "currency"      => "INR",
+                    "receipt"       => "test_auto_capture_receipt",
+                    "offer_id"      => null,
+                    "status"        => "created",
+                    "attempts"      => 1,
+                    "notes"         => [],
+                    "created_at"    => 1683543840,
+                    "merchant_id"   => "10000000000000"
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $pgService->shouldReceive('fetchOrder')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $orderId, string $merchantId, array $input)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "id"            => $orderId,
+                    "amount"        => 1000,
+                    "amount_paid"   => 0,
+                    "amount_due"    => 1000,
+                    "currency"      => "INR",
+                    "receipt"       => "test_auto_capture_receipt",
+                    "offer_id"      => null,
+                    "status"        => "created",
+                    "attempts"      => 1,
+                    "notes"         => [],
+                    "created_at"    => 1683543840,
+                    "merchant_id"   => "10000000000000"
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        try {
+            $this->makeRequestParent($request);
+        }catch (Exception\BadRequestException $e)
+        {
+            $this->assertEquals("BAD_REQUEST_RESTRICT_ONE_PAYMENT_TO_AN_ORDER", $e->getError()->getInternalErrorCode());
+        }
     }
 
     protected function mockSession(string $appToken = 'capp_1000000custapp'): void
