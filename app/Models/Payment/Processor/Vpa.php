@@ -395,12 +395,16 @@ trait Vpa
 
         $encryptedVpa = $aesGcmEncryptor->encrypt($response['vpa']).'|'.$params[AesGcmEncryption::IV];
 
-        return [
-            'vpa_token'         => $encryptedVpa,
-            'masked_vpa'        => mask_vpa_for_numeric_mapper($response['vpa']),
-            'success'           => $response['success'],
-            'customer_name'     => $response['customer_name'],
-        ];
+        $encryptedResponse =  [
+                'vpa_token'         => $encryptedVpa,
+                'masked_vpa'        => mask_vpa_for_numeric_mapper($response['vpa']),
+                'success'           => $response['success'],
+                'customer_name'     => $response['customer_name'],
+            ];
+
+        $this->trace->info(TraceCode::VALIDATE_VPA_ENCRYPTED_RESPONSE, $encryptedResponse);
+
+        return $encryptedResponse;
     }
 
     protected function generateIV(): string

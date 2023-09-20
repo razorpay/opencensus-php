@@ -3980,6 +3980,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VALIDATE_VPA_REQUEST                                  = 'VALIDATE_VPA_REQUEST';
     const VPA_ALREADY_VALIDATED                                 = 'VPA_ALREADY_VALIDATED';
     const VALIDATE_VPA_RESPONSE                                 = 'VALIDATE_VPA_RESPONSE';
+    const VALIDATE_VPA_ENCRYPTED_RESPONSE                       = 'VALIDATE_VPA_ENCRYPTED_RESPONSE';
     const VALIDATE_VPA_STATUS_FAILED                            = 'VALIDATE_VPA_STATUS_FAILED';
     const VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE            = 'VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE';
     const FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION         = 'FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION';
