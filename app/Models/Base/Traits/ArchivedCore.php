@@ -68,7 +68,7 @@ trait ArchivedCore
     public function findByPublicIdAndMerchantArchived(
         string $id,
         Merchant\Entity $merchant,
-        array $params = [],): PublicEntity
+        array $params = []): PublicEntity
     {
         $logData = [
             'id'     => $id,

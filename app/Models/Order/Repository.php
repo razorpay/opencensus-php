@@ -15,6 +15,7 @@ use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Offer\EntityOffer;
+use RZP\Models\Base\Traits\ArchivedCore;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Base\Traits\ExternalOrderRepo;
 use RZP\Models\Order\OrderMeta\Order1cc;
@@ -22,7 +23,7 @@ use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
-    use ExternalOrderRepo, ExternalCore;
+    use ExternalOrderRepo, ExternalCore, ArchivedCore;
 
     protected $entity = 'order';
 
@@ -96,111 +97,7 @@ class Repository extends Base\Repository
     {
         if ($entity->isExternal() === false)
         {
-            $currentOrder = $this->newQuery()->where('id', '=', $entity->getId())->get();
-
             parent::saveOrFail($entity, $options);
-
-            try
-            {
-                $mode = App::getFacadeRoot()['rzp.mode'];
-
-                if ((isset($mode) === true) and
-                    ($mode === 'live'))
-                {
-                    $variant = App::getFacadeRoot()->razorx->getTreatment(
-                        $entity->getId(),
-                        Merchant\RazorxTreatment::PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE,
-                        $mode
-                    );
-
-                    if ($variant === 'on')
-                    {
-                        $core = new Core();
-
-                        if (count($currentOrder->toArray()) > 0)
-                        {
-                            $currentOrder = $currentOrder->toArray()[0];
-
-                            if ($currentOrder[Entity::PG_ROUTER_SYNCED] === 1)
-                            {
-                                $updatedOrder = $entity->toArray();
-
-                                unset($updatedOrder['merchant'], $updatedOrder['bank_account'], $updatedOrder['offers']);
-
-                                $data = array_map('unserialize', array_diff_assoc(array_map('serialize', $updatedOrder),
-                                    array_map('serialize', $currentOrder)));
-
-                                $data['id'] = $entity->getId();
-
-                                $data['updated_at'] = $entity->getUpdatedAt();
-
-                                unset($data['merchant'], $data['bank_account'], $data['offers']);
-
-                                if ((isset($data['notes']) === true) and
-                                    (Arr::isAssoc($data['notes']) === false))
-                                {
-                                    $data['notes'] = array_combine($data['notes'], $data['notes']);
-                                }
-
-                                if ((isset($updatedOrder['notes']) === true) and
-                                    (Arr::isAssoc($updatedOrder['notes']) === false))
-                                {
-                                    $updatedOrder['notes'] = array_combine($updatedOrder['notes'], $updatedOrder['notes']);
-                                }
-
-                                if ((isset($data['notes']) === false) or
-                                    (count($data['notes']) === 0))
-                                {
-                                    $data['notes'] = null;
-                                }
-
-                                if ((isset($updatedOrder['notes']) === false) or
-                                    (count($updatedOrder['notes']) === 0))
-                                {
-                                    $updatedOrder['notes'] = null;
-                                }
-
-                                $requestData = [
-                                    'order_update_request' => $data,
-                                    'order_sync_request' => $updatedOrder
-                                ];
-
-                                $requestData['mode'] = $mode;
-
-                                $core->dispatchUpdatedOrderToPGRouter($requestData);
-                            }
-                        }
-                        else
-                        {
-                            $data = $entity->toArray();
-
-                            $data['mode'] = $mode;
-
-                            unset($data['merchant'], $data['bank_account'], $data['offers']);
-
-                            if ((isset($data['notes']) === true) and
-                                (Arr::isAssoc($data['notes']) === false)) {
-                                $data['notes'] = array_combine($data['notes'], $data['notes']);
-                            }
-
-                            $core->dispatchOrderToPGRouter($data);
-
-                            $entity->setAttribute(Entity::PG_ROUTER_SYNCED, true);
-
-                            parent::saveOrFail($entity, $options);
-                        }
-                    }
-                }
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    null,
-                    null,
-                    ['order_id' => $entity->getId()]
-                );
-            }
         }
         else
         {
@@ -212,7 +109,12 @@ class Repository extends Base\Repository
     {
         if ($order->isExternal() === false)
         {
-            return parent::save($order, $options);
+            try
+            {
+                // Changed from save -> saveOrFail and ignoring exception as only saveOrFail is overridden as of now for dual write
+                return parent::saveOrFail($order, $options);
+            }
+            catch (\Throwable $exception) {}
         }
 
         $order = $this->saveExternalEntity($order);

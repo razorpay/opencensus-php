@@ -1048,6 +1048,7 @@ class Entity
     const ARCHIVED_ENTITIES = [
         self::CARD,
         self::PAYMENT,
+        self::ORDER,
     ];
 
     public static $namespace = [

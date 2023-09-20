@@ -8,7 +8,6 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Offer;
 use RZP\Trace\TraceCode;
-use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Transfer;
@@ -22,10 +21,12 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Order\OrderMeta\Type;
+use RZP\Models\Base\Traits\DualWrite;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
 
 /**
@@ -41,7 +42,7 @@ use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, ExternalOwner, ExternalEntity;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite;
 
     /**
      *
