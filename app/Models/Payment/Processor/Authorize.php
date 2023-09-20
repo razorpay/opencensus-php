@@ -6064,7 +6064,7 @@ trait Authorize
         $saveMethod = $payment->getSave();
 
         if (($payment->isMethodCardOrEmi() === false) or
-            ($this->app['basicauth']->isPrivateAuth() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false && $payment->isMoto() === false) or
             ((empty($input[Payment\Entity::TOKEN]) === true) && ($saveMethod === false)))
         {
             $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
