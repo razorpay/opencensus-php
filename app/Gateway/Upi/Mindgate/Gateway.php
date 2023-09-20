@@ -1715,19 +1715,20 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
-        if (($content[ResponseFields::STATUS] === Status::FAILURE) or
-            ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
-        {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
-                                   ->toArray();
-        }
 
         if ((isset($content[ResponseFields::RESPCODE]) === true) and
             ($content[ResponseFields::RESPCODE] === 'U48'))
         {
             return $scroogeResponse->setSuccess(false)
                                    ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
+                                   ->toArray();
+        }
+
+        if (($content[ResponseFields::STATUS] === Status::FAILURE) or
+            ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
                                    ->toArray();
         }
 
