@@ -2009,11 +2009,23 @@ class Core extends Base\Core
 
         $dispute = $this->repo->dispute->findByIdAndMerchantId($disputeId, $this->merchant->getId());
 
-        $dispute = $this->repo->transaction(function () use ($dispute, $input) {
-            $evidence = (new Evidence\Core)->handlePatchDisputeEvidence($dispute, $input);
+        $mutexKey = DisputeConstants::DISPUTE_CONTEST_BY_MUTEX_PREFIX . $disputeId;
 
-            return $dispute->refresh();
-        });
+        $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($dispute, $input)
+            {
+                $dispute = $this->repo->transaction(function () use ($dispute, $input) {
+                    $evidence = (new Evidence\Core)->handlePatchDisputeEvidence($dispute, $input);
+
+                    return $dispute->refresh();
+                });
+
+            },
+            DisputeConstants::DISPUTE_CONTEST_BY_MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            DisputeConstants::DISPUTE_CONTEST_BY_MUTEX_ACQUIRE_RETRY_LIMIT
+        );
 
         return $dispute;
     }

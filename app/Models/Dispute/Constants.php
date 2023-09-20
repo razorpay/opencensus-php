@@ -90,4 +90,10 @@ Razorpay';
     const VARIANT_ENABLE = 'enable';
 
     const TYPE_STRING    = 'string';
+
+    const DISPUTE_CONTEST_BY_MUTEX_PREFIX              = 'dispute_contest_by_';
+
+    const DISPUTE_CONTEST_BY_MUTEX_TIMEOUT             = 60; // seconds
+
+    const DISPUTE_CONTEST_BY_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
 }
