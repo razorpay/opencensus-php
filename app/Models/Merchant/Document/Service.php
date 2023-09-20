@@ -449,6 +449,13 @@ class Service extends Base\Service
         (new Validator)->validateInput('firsDocumentDownloadRequest',$input);
 
         $document = $this->repo->merchant_document->findDocumentById($input['document_id']);
+        if (!isset($document)){
+            $internalFirsDocumentId = array(
+                "document_id"=> $input['document_id'],
+                "merchant_id"=> $this->merchant->getId(),
+            );
+            $document =  $this->app['payments-cross-border']->getInternalFIRSDocumentByReference($internalFirsDocumentId);
+        }
         $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
 
         $documentMetaData = [
