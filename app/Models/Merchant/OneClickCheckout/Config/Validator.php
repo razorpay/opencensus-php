@@ -38,6 +38,7 @@ class Validator extends Base\Validator
         "one_cc_capture_gstin"           => 'sometimes|boolean',
         "one_cc_capture_order_instructions"  => 'sometimes|boolean',
         'one_cc_prepay_cod_conversion'       => 'sometimes|array',
+        "shipping_engine"                => 'sometimes|boolean',
     ];
 
     protected static $shopifyRules = [
@@ -62,6 +63,7 @@ class Validator extends Base\Validator
         "cod_engine"                     => 'sometimes|boolean',
         "cod_engine_type"                => 'sometimes|string|in:slab_eligibility,slab_charges,location,product',
         'one_cc_prepay_cod_conversion'   => 'sometimes|array',
+        "shipping_engine"                => 'sometimes|boolean',
     ];
 
     protected static $shippingProviderRules = [

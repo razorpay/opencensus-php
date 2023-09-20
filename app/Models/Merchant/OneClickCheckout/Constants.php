@@ -38,8 +38,12 @@ class Constants
     const ONE_CC_HANDLE_DIGITAL_PRODUCT     = 'one_cc_handle_digital_product';
     const ONE_CC_GUPSHUP_CREDENTIALS        = 'one_cc_gupshup_credentials';
     const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
-    const COD_ENGINE                        = 'cod_engine';
-    const COD_ENGINE_TYPE                   = 'cod_engine_type';
+
+    // Shipping, serviceability and cod engine settings in MCS.
+    const COD_ENGINE       = 'cod_engine';
+    const COD_ENGINE_TYPE  = 'cod_engine_type';
+    const SHIPPING_ENGINE  = 'shipping_engine';
+
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
     const ONE_CC_COUPON_ENGINE             = "onc_cc_coupon_engine";
     // Settings and workflows defined for retargeting engine.
@@ -172,6 +176,7 @@ class Constants
         self::ONE_CC_PREPAY_COD_CONVERSION,
         self::ONE_CC_COUPON_ENGINE,
         self::RETARGETING_SETTINGS,
+        self::SHIPPING_ENGINE,
     ];
 
     /**
@@ -204,7 +209,7 @@ class Constants
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
         self::ONE_CC_BUY_NOW_BUTTON,
-        self::COD_ENGINE
+        self::COD_ENGINE,
     ];
 
     const COMMON_CONFIGS = [
@@ -216,7 +221,8 @@ class Constants
        self::ONE_CC_CAPTURE_GSTIN,
        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
        self::ONE_CC_PREPAY_COD_CONVERSION,
-        self::ONE_CC_COUPON_ENGINE,
+       self::ONE_CC_COUPON_ENGINE,
+       self::SHIPPING_ENGINE,
     ];
 
     const INTELLIGENCE_CONFIGS = [
