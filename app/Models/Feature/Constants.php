@@ -466,6 +466,9 @@ class Constants
      */
     const GENERATE_PARTNER_INVOICE        = 'generate_partner_invoice';
 
+    const NC_EMAIL_OPT_OUT                = 'nc_email_opt_out';
+    const NC_WHATSAPP_OPT_OUT             = 'nc_whatsapp_opt_out';
+
     /**
      * Feature flag to decide whether commission payout should happen
      * manually via ops or automatically

@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 use RZP\Models\Merchant\Detail\Entity as DEEntity;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Notifications\BaseNotificationService;
@@ -75,10 +76,16 @@ class EmailNotificationService extends BaseNotificationService
 
         foreach ($partners as $partner)
         {
-//            if (empty($partner->getEmail()) === true)
-//            {
-//                continue;
-//            }
+            if (in_array($this->event, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION_EVENTS) === true)
+            {
+                $isOptedOut = (new PartnerCore())->isMerchantOptedOutNcNotifications($partner->getId(), $merchant->getId(), 'email');
+
+                if ($isOptedOut === true)
+                {
+                    continue;
+                }
+            }
+
             $payload = [
                 DEConstants::PARTNER  => [
                     MerchantEntity::ID    => $partner->getId(),

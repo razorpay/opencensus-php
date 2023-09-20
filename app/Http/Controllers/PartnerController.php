@@ -151,6 +151,16 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateNcOptOutForPartner()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateNcOptOutForPartner($input);
+
+        return ApiResponse::json($response);
+
+    }
+
     public function getOauthApplicationDetails()
     {
         $input = Request::all();

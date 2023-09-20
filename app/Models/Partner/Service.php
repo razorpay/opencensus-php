@@ -615,6 +615,13 @@ class Service extends Base\Service
         return $isSelfServe;
     }
 
+    public function updateNcOptOutForPartner(array $input)
+    {
+        $this->core->updateNcOptOutForPartner($input);
+
+        return ['success' => true];
+    }
+
     public function getApplicationsDetailsForPayment(array $input)
     {
         (new Validator())->validateInput('get_app_name', $input);

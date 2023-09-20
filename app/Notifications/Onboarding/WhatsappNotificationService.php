@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
 use RZP\Notifications\BaseNotificationService;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Notifications\Onboarding\Constants as OnboardingConstants;
 
 class WhatsappNotificationService extends BaseNotificationService
@@ -93,7 +94,11 @@ class WhatsappNotificationService extends BaseNotificationService
 
                     $partnerContactMobile = $partner->merchantDetail ? $partner->merchantDetail->getContactMobile() : null;
 
-                    if ($notificationBlocked === true || empty($partnerContactMobile) === true)
+                    $isNCEvent = in_array($this->event, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION_EVENTS);
+
+                    $isOptedOut = ($isNCEvent && (new PartnerCore())->isMerchantOptedOutNcNotifications($partner->getId(), $merchant->getId(), 'whatsapp'));
+
+                    if ($notificationBlocked === true || empty($partnerContactMobile) === true || $isOptedOut === true)
                     {
                         continue;
                     }

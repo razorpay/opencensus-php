@@ -47,10 +47,11 @@ class Service extends Base
      * @param string $variant
      * @param bool $isAssignment
      * @param string $mode
+     * @param array|null $featureMap
      * @throws Exception\ServerErrorException
      * @throws \Exception|\Throwable
      */
-    public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST)
+    public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST, array $featureMap = null)
     {
         try {
             $dimension = [
@@ -99,7 +100,9 @@ class Service extends Base
             {
                 $key = DCSConstants::$featureToDCSKeyMapping[$dcsFeatureName];
                 $data = DataFormatter::toKeyMapWithOutId($key);
-                $request = [ $actualDcsFeatureName => $isAssignment];
+
+                $featureValue = (empty($featureMap) === true)?$isAssignment : $featureMap;
+                $request = [ $actualDcsFeatureName => $featureValue];
                 $this->trace->info(TraceCode::DCS_SERVICE_REQUEST, [
                     'action' => 'assign',
                     'featureDetails' => $request,
@@ -886,6 +889,43 @@ class Service extends Base
     {
         $res = $this->fetchByFeatureName($apiFeatureName,$entityType, $mode);
         return $res->pluck(Entity::ENTITY_ID)->toArray();
+    }
+
+    public function fetchFeatureValueByEntityIdAndName(string $entityId, string $apiFeatureName, string $mode = Mode::TEST)
+    {
+        $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
+        $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
+        $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
+        $data = DataFormatter::toKeyMapWithOutId($key);
+
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURE_VALUE],
+            function() use ($entityId, $actualDcsFeatureName,$apiFeatureName, $data, $mode)
+            {
+                $res = null;
+
+                $response = $this->client($mode)->fetchMultiple($data, [$entityId], [$actualDcsFeatureName]);
+                if ($response === null)
+                {
+                    return null;
+                }
+
+                $kvs =  $response->getKvs() == null ? []: $response->getKvs();
+                foreach ($kvs as $kv)
+                {
+                    $key = $kv->getKey();
+                    $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
+
+                    if (array_key_exists($actualDcsFeatureName, $features))
+                    {
+                        $res = $features[$actualDcsFeatureName];
+                        break;
+                    }
+                }
+
+                return $res;
+            });
+
+        return $response;
     }
 
     public function getDcsProxyVariant($featureName, $mode)

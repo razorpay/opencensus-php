@@ -1569,4 +1569,18 @@ class Core extends Base\Core
 
         return $feature;
     }
+
+    public function createFeatureWithFeatureMap(array $input, string $mode = null, $featureMap = null)
+    {
+        $feature = (new Entity)->build($input);
+        $feature->setEntityId($input[Entity::ENTITY_ID]);
+        $feature->setEntityType($input[Entity::ENTITY_TYPE]);
+        if ($mode !== null) {
+            $feature->setConnection($mode);
+        }
+
+        $feature->generateId();
+
+        $this->repo->feature->assignOrEditValueOnDCS($feature, false, $featureMap);
+    }
 }

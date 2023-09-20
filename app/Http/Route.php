@@ -3253,6 +3253,8 @@ class Route
         'partner_kyc_access_consent'              => ['post',     'partner/kyc_access',                             'PartnerKycAccessController@CreateAndUpdateKycAccess'                ],
         'get_partner_kyc_access_status'           => ['get',      'partner/kyc_access',                             'PartnerKycAccessController@getKycAccessStatus'                      ],
 
+        'nc_notifications_opt_out'                => ['post',     'partner/nc_notifications/opt_out',               'PartnerController@updateNcOptOutForPartner'                         ],
+
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         //partnership service usecase routes
@@ -10986,6 +10988,8 @@ class Route
         'merchant_tnc_details',
         'partner_kyc_approve_reject',
         'partner_kyc_approve_reject_cors',
+
+        'nc_notifications_opt_out',
 
         // Payout Links Shopify Integration
         'payout_links_shopify_app_install',

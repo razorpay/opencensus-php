@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner;
 
 use RZP\Models\Merchant;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Models\Merchant\Invoice\TaxName;
 
@@ -66,6 +67,11 @@ class Constants
             'subject'   => self::PURE_PLATFORM_TO_RESELLER_PARTNER_SWITCH_EMAIL_SUBJECT,
             'docs_link' => self::RESELLER_DOCS_LINK
         ]
+    ];
+
+    const NEEDS_CLARIFICATION_OPT_OUT_FEATURE = [
+        'email'         => FeatureConstants::NC_EMAIL_OPT_OUT,
+        'whatsapp'      => FeatureConstants::NC_WHATSAPP_OPT_OUT,
     ];
 
     const RESELLER_TO_PURE_PLATFORM_MIGRATE               = "reseller_to_pure_platform_migrate";

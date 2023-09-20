@@ -23,6 +23,7 @@ use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntit
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\User\Role;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant as Merchant;
 use RZP\Models\DeviceDetail;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -42,6 +43,7 @@ use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\EntityOrigin\Constants as EOConstants;
 use RZP\Models\Pricing\Calculator\Tax\IN\Utils as TaxUtils;
 use RZP\Exception\BadRequestException;
@@ -1660,6 +1662,90 @@ class Core extends Detail\Core
             }
         }
         return $result;
+    }
+
+    public function updateNcOptOutForPartner(array $input)
+    {
+        $featureName   = PartnerConstants::NEEDS_CLARIFICATION_OPT_OUT_FEATURE[$input['channel']];
+        $partnerId     = $input['partner_id'];
+        $subMerchantId = $input['submerchant_id'];
+
+        try
+        {
+            $dcs = $this->app['dcs'];
+            $response =  $dcs->fetchFeatureValueByEntityIdAndName( $partnerId, $featureName, Mode::LIVE);
+
+            if (empty($response) === false and $response[$subMerchantId] === true)
+            {
+                return;
+            }
+
+            $featureMap = [
+                $subMerchantId => true
+            ];
+
+            foreach ($response as $key => $value)
+            {
+                $featureMap[$key] = $value;
+            }
+
+            $data = [
+                'name'         => $featureName,
+                'entity_id'    => $partnerId,
+                'entity_type'  => 'merchant',
+            ];
+
+            $this->trace->info(TraceCode::NC_OPT_OUT_EDIT_DCS_REQUEST,
+                [
+                    'feature_map' => $featureMap,
+                    'data'        => $data,
+                ]);
+
+            (new FeatureCore())->createFeatureWithFeatureMap($data, Mode::LIVE, $featureMap);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::NC_OPT_OUT_DCS_REQUEST_EXCEPTION,
+                [
+                   'data' => $input,
+                ]
+            );
+        }
+    }
+
+    public function isMerchantOptedOutNcNotifications(string $partnerId, string $subMerchantId, string $channel): bool
+    {
+        $featureName   = PartnerConstants::NEEDS_CLARIFICATION_OPT_OUT_FEATURE[$channel];
+
+        $response = null;
+
+        try
+        {
+            $dcs = $this->app['dcs'];
+            $response =  $dcs->fetchFeatureValueByEntityIdAndName( $partnerId, $featureName, Mode::LIVE);
+
+            if (empty($response) === false and $response[$subMerchantId] === true)
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::NC_OPT_OUT_DCS_REQUEST_EXCEPTION,
+                [
+                    'channel'          => $channel,
+                    'partnerId'        => $partnerId,
+                    'subMerchantId'    => $subMerchantId,
+                ]
+            );
+        }
+        return false;
     }
 
     public function buildPartnershipResponseForMerchant(Merchant\Entity $merchant, array $entities): array

@@ -321,4 +321,6 @@ class HyperTrace
     const DCS_FETCH_FEATURE                                                                     = 'dcs.fetch.feature';
     const DCS_EDIT_FEATURE                                                                      = 'dcs.edit.feature';
     const DCS_FETCH_FEATURES_AGGREGATE                                                          = 'dcs.fetch.feature.aggregate';
+
+    const DCS_FETCH_FEATURE_VALUE                                                               = 'dcs.fetch.feature.value';
 }

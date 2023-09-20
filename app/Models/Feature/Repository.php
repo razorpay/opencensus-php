@@ -393,6 +393,18 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function assignOrEditValueOnDCS(Entity $feature, string $mode, array $featureMap)
+    {
+        try
+        {
+            $this->assignOnDCS($feature, $mode, false, $featureMap);
+        }
+        catch (\Throwable $e)
+        {
+            throw $e;
+        }
+    }
+
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)
@@ -622,7 +634,7 @@ class Repository extends Base\Repository
         return [true, $featureList->toArray()];
     }
 
-    private function assignOnDCS(Entity $entity, $mode, $sync = false)
+    private function assignOnDCS(Entity $entity, $mode, $sync = false, $featureMap = null)
     {
         if (Service::isDcsFeature($entity->getName()) === true)
         {
@@ -636,7 +648,7 @@ class Repository extends Base\Repository
                 $variant = $this->getDcsEditVariant($entity->getName(), $mode);
             }
 
-            $dcs->editFeature($entity, $variant, true, $mode);
+            $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
         }
     }
 
