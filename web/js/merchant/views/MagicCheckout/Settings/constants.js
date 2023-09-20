@@ -223,3 +223,6 @@ export const COD_SETTINGS_INFO = `Use this setting to enable COD on your store a
 showing COD to customers based on location, products, etc. as well as for setting the
 COD fees. Please note that this will override any COD settings on your
 Shopify/WooC store.`;
+
+export const UPDATE_WOOC_PLUGIN_MSG =
+  'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';

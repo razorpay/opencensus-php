@@ -59,3 +59,7 @@ export const SAVE_MODAL_TEXTS = {
 export const GLOBAL_KEY = 'International';
 
 export const MAX_FEE_RULES = 20;
+
+export const NOTIFICATION_MSGS = {
+  credentialsModalClose: 'Advance setting not configured. Please provide API credentials.',
+};

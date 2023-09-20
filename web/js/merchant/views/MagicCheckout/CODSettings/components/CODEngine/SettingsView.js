@@ -55,7 +55,6 @@ function SettingsView({
         fetchConfig();
       })
       .then(() => {
-        console.log(configs);
         updateEngineConfig({
           engine: COD_ENGINES.BASIC,
           cod_engine_type: COD_ENGINE_TYPES.SLAB_ELIGIBILITY,

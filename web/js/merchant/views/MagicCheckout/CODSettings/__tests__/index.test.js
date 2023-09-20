@@ -5,6 +5,7 @@ import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
 import { storeWithInitialState } from 'merchant/store';
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
+import { UPDATE_WOOC_PLUGIN_MSG } from 'merchant/views/MagicCheckout/Settings/constants';
 
 const initState = {
   magic_settings: {
@@ -50,9 +51,25 @@ const App = ({ state = {}, ...props }) => {
 describe('COD Engine', () => {
   test('should render cod engine tabs', async () => {
     render(<App />);
+
+    //should not show update plugin message if platform isn't woocommerce
+    expect(screen.queryByText(UPDATE_WOOC_PLUGIN_MSG)).not.toBeInTheDocument();
+
     const CODEngineTab = await screen.findByText('Magic COD');
     const BlockListTab = await screen.findByText('Block List');
     expect(CODEngineTab).toBeInTheDocument();
     expect(BlockListTab).toBeInTheDocument();
+  });
+
+  test('should show update plugin message if platform is woocommerce', () => {
+    const customState = {
+      ...initState,
+      magic_settings: {
+        ...initState.magic_settings,
+        platform: 'woocommerce',
+      },
+    };
+    render(<App state={customState} />);
+    expect(screen.getByText(UPDATE_WOOC_PLUGIN_MSG)).toBeInTheDocument();
   });
 });

@@ -71,7 +71,8 @@ export const formatResponse = (data) => {
       mappingValidation = false;
     }
   }
-  let editMode = !zones || !fee_rules || zones?.length === 0 || fee_rules?.length === 0;
+  let editMode =
+    !configs.cod_engine || !zones || !fee_rules || zones?.length === 0 || fee_rules?.length === 0;
   if (configs.engine === COD_ENGINES.ADVANCED) {
     if (
       (configs.cod_engine_type === COD_ENGINE_TYPES.LOCATION && !hasFeeRules) ||

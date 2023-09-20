@@ -23,12 +23,15 @@ import {
   deleteCategory,
   createCategory,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 
 import {
   POPOVER_CONTENT,
   MODAL_MODES,
   COD_ENGINE_TYPES,
+  NOTIFICATION_MSGS,
 } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 const ProductsModal = lazy(
   () => import(/* webpackChunkName: "MagicCODCategorySettings" */ './Modal'),
@@ -41,6 +44,13 @@ const ConfirmationModal = lazy(
     ),
 );
 
+const CredentialsModal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "MagicCODCategorySettings" */ 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Woocommerce'
+    ),
+);
+
 const CategorySettings = ({
   codEngineConfig,
   validateConfig,
@@ -50,6 +60,10 @@ const CategorySettings = ({
   showNotification,
   openModal,
   closeModal,
+  isManualReviewOpted,
+  isPrepayCODOpted,
+  updateSettings,
+  platform,
 }): JSX.Element => {
   const { item_categories, configs, validations, zones } = codEngineConfig;
   const { cod_engine_type: codEngineType } = configs;
@@ -58,6 +72,8 @@ const CategorySettings = ({
   const [canCreateCategories, setCanCreateCategories] = useState(
     configs.cod_engine_type === COD_ENGINE_TYPES.PRODUCT && item_categories.length > 0,
   );
+
+  const hasWoocommerceCredentials = isManualReviewOpted || isPrepayCODOpted;
 
   useEffect(() => {
     if (!validations.item_categories) {
@@ -97,6 +113,16 @@ const CategorySettings = ({
     updateEngineConfig(payload);
   };
 
+  const showAlertNotification = () => {
+    showNotification({
+      type: 'neutral',
+      message: NOTIFICATION_MSGS.credentialsModalClose,
+      closeTimeout: 10000,
+      className: 'magic-notification',
+    });
+    closeModal();
+  };
+
   const handleToggleClick = (toggleState) => {
     if (item_categories.length === 0 && toggleState) {
       createCategoryAction({
@@ -116,6 +142,48 @@ const CategorySettings = ({
         });
     } else {
       updateEngineType(toggleState);
+    }
+  };
+
+  const updateConfiguration = (payload: Record<string, any>, toggleState: boolean) => {
+    const params = {
+      platform,
+      ...payload,
+    };
+    updateSettings(params, false).then(() => {
+      showNotification({
+        type: 'success',
+        message: 'Credentials saved successfully.',
+      });
+      handleToggleClick(toggleState);
+      closeModal();
+    });
+  };
+
+  const openCredsModal = (toggleState: boolean) => {
+    openModal({
+      size: 'large',
+      className: `woocommerceManualSettingModal`,
+      component: (
+        <SuspenseWithLoader type="center">
+          <CredentialsModal
+            platform="woocommerce"
+            submitCredentials={(payload: Record<string, any>) =>
+              updateConfiguration(payload, toggleState)
+            }
+            modalDesc="Magic checkout needs your Woocommerce credentials to create product categories."
+            customCloseModal={showAlertNotification}
+          />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+
+  const handleSwitchMode = (toggleState: boolean) => {
+    if (toggleState && platform === PLATFORMS.VALUES.WOOCOMMERCE && !hasWoocommerceCredentials) {
+      openCredsModal(toggleState);
+    } else {
+      handleToggleClick(toggleState);
     }
   };
 
@@ -190,7 +258,7 @@ const CategorySettings = ({
       <div>
         <div className="cod-settings-toggle">
           <div className="slabs-radio">
-            <SettingsToggle setting={{ value: canCreateCategories }} onToggle={handleToggleClick} />
+            <SettingsToggle setting={{ value: canCreateCategories }} onToggle={handleSwitchMode} />
           </div>
           {canCreateCategories ? (
             <div className="cod-options-container">
@@ -224,6 +292,9 @@ const CategorySettings = ({
 
 const mapStateToProps = (state) => ({
   codEngineConfig: state.magicCODEngine,
+  isManualReviewOpted: state.magicCheckout.cod_order_control,
+  isPrepayCODOpted: state.magicCheckout.one_cc_prepay_cod_conversion,
+  platform: state.magic_settings.platform,
 });
 
 const mapDispatchToProps = (dispatch) =>
@@ -236,6 +307,7 @@ const mapDispatchToProps = (dispatch) =>
       updateEngineConfig,
       deleteCategoryAction: deleteCategory,
       createCategoryAction: createCategory,
+      updateSettings: updateMagicSettings,
     },
     dispatch,
   );

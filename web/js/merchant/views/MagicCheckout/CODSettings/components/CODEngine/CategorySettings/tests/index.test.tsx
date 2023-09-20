@@ -50,6 +50,13 @@ const initState = {
       item_categories: true,
     },
   },
+  magic_settings: {
+    platform: 'shopify',
+  },
+  magicCheckout: {
+    cod_order_control: false,
+    one_cc_prepay_cod_conversion: false,
+  },
 };
 
 const openModalSpy = jest.spyOn(ModalActions, 'openModal');
@@ -91,6 +98,32 @@ describe('testing category settings', () => {
     userEvent.click(toogleSwitch);
     await waitFor(() => {
       expect(showNotificationSpy).toHaveBeenCalled();
+    });
+  });
+
+  test('should open credentials modal while enabling product categories if platform is woocommerce', async () => {
+    const customState = {
+      ...initState,
+      magic_settings: {
+        platform: 'woocommerce',
+      },
+      magicCODEngine: {
+        ...initState.magicCODEngine,
+        configs: {
+          ...initState.magicCODEngine.configs,
+          cod_engine_type: 'location',
+        },
+      },
+    };
+    render(<App state={customState} />);
+
+    const toogleSwitch = screen.getByRole('button', {
+      name: 'Toggle click',
+    });
+
+    await userEvent.click(toogleSwitch);
+    await waitFor(() => {
+      expect(openModalSpy).toHaveBeenCalled();
     });
   });
 });

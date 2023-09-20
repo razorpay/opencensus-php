@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import lazy from 'merchant/routes/LazyLoader';
 import { Box, Text } from '@razorpay/blade/components';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -13,7 +14,11 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { SWITCH_TEXTS, COD_SETTINGS_INFO } from 'merchant/views/MagicCheckout/Settings/constants';
+import {
+  SWITCH_TEXTS,
+  COD_SETTINGS_INFO,
+  UPDATE_WOOC_PLUGIN_MSG,
+} from 'merchant/views/MagicCheckout/Settings/constants';
 import {
   updateEngineConfig,
   fetchConfig,
@@ -24,6 +29,16 @@ import {
 const CODSettings = lazy(() =>
   import(/* webpackChunkName: "CODSettings" */ 'merchant/views/MagicCheckout/CODSettings'),
 );
+
+const StyledPluginUpdateWrapper = styled.div`
+  margin: 16px 0;
+  padding: 8px;
+  border: 1px solid #bd7a03;
+  border-left: 3px solid #bd7a03;
+  border-radius: 4px;
+  background: #fff;
+  color: #435775;
+`;
 
 const CODSettingsTab = ({
   settings,
@@ -133,6 +148,9 @@ const CODSettingsTab = ({
           <Text type="subdued" size="small">
             {COD_SETTINGS_INFO}
           </Text>
+          {settings.platform === PLATFORMS.VALUES.WOOCOMMERCE && (
+            <StyledPluginUpdateWrapper>{UPDATE_WOOC_PLUGIN_MSG}</StyledPluginUpdateWrapper>
+          )}
         </Box>
       </div>
       <div className="cod-settings">
