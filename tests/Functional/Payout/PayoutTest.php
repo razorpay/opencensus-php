@@ -4703,9 +4703,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('payout', $thirdPendingPayout['id'], ['created_at' => strtotime(('-100 days'), time())]);
 
-        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
+        //$merchantUser = $this->getDbEntities('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->first()->toArray();
 
-        $userId = $merchantUser['user_id'];
+        //$userId = $merchantUser['user_id'];
+
+        $userId = 'MerchantUser01';
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $userId);
 
@@ -18266,6 +18268,8 @@ class PayoutTest extends OAuthTestCase
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
+        $testData['response']['content']['id'] = $user->getId();
+
         $this->ba->proxyAuth('rzp_live');
 
         $response = $this->startTest();
@@ -18289,6 +18293,8 @@ class PayoutTest extends OAuthTestCase
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
+
+        $testData['response']['content']['id'] = $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
 
@@ -18326,6 +18332,8 @@ class PayoutTest extends OAuthTestCase
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
+
+        $testData['response']['content']['id'] = $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
 
@@ -18379,6 +18387,8 @@ class PayoutTest extends OAuthTestCase
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
+
+        $testData['response']['content']['id'] = $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
 
