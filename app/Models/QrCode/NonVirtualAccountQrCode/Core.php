@@ -3,13 +3,17 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+
 use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\HyperTrace;
+use RZP\Jobs\QrStatusCheck;
 use RZP\Models\EntityOrigin;
+use RZP\Constants\HyperTrace;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrPaymentRequest\Type;
@@ -242,5 +246,43 @@ class Core extends QrCode\Core
         }
 
         return $customer;
+    }
+
+    /**
+     * This function manages the dispatch of the QR Status Check job to its SQS queue.
+     * This is a unique ID job. That is, it ensures that multiple messages are not pushed for the same QR Code ID.
+     * On production, we only dispatch messages in live mode. Thus, we have NOT created a prod queue for this in test mode.
+     * Also read, app\Jobs\QrStatusCheck
+     *
+     * @param string $id The ID of the QR code to be dispatched.
+     * @return bool If the dispatch was successful or not.
+     */
+    public function dispatchQrCodeToStatusCheckQueue(string $id): bool
+    {
+        $this->trace->info(TraceCode::QR_STATUS_CHECK_JOB_DISPATCH_INIT, ['id' => $id]);
+
+        try
+        {
+            // We are only dispatching in live mode on prod.
+            if ((($this->isEnvironmentProduction() === true) and ($this->isLiveMode() === true)) or
+                ($this->isEnvironmentProduction() === false))
+            {
+                QrStatusCheck::dispatch($this->mode, $id);
+
+                $this->trace->info(
+                    TraceCode::QR_STATUS_CHECK_MESSAGE_DISPATCHED,
+                    [
+                        'id'  => $id,
+                        'env' => $this->env,
+                    ]
+                );
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::QR_STATUS_CHECK_DISPATCH_FAILED, ['id' => $id]);
+        }
+
+        return false;
     }
 }

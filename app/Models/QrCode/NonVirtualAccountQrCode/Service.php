@@ -21,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Trace\Tracer;
 
 class Service extends QrCode\Service
@@ -538,5 +539,122 @@ class Service extends QrCode\Service
         }
 
         return false;
+    }
+
+    /**
+     * Check if it has been 12 hours since QR code creation, we will not do QR Code status check post this.
+     * We expect the recon flow to now bring in any payment data later if needed.
+     *
+     * @param Entity $qrCode The QR Code entity to check
+     * @return bool Returns true if the time has exceeded
+     */
+    protected function checkIfQrCodeStatusCheckTimeHasExceeded(Entity $qrCode): bool
+    {
+        $qrCodeCreatedAt     = Carbon::createFromTimestamp($qrCode->getCreatedAt());
+        $currentTime         = Carbon::now();
+
+        // if the current time and time of creation are more than 12 hours apart, we stop status check.
+        if ($currentTime->diffInHours($qrCodeCreatedAt) > 12)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * When we receive a callback from Reminders, we check if we actually need to perform a status check on the QR or
+     * not. We perform the following checks-
+     * 1. If a payment already exists against the QR or not.
+     * 2. If the QR has expired or not.
+     * 3. If it has been too long since the creation of the QR or not.
+     *
+     * @param string $qrCodeId The ID of the QR code to be validated
+     * @return bool Returns true if the QR needs to be dispatched for Status Check
+     */
+    protected function validateQrForStatusCheckInit(string $qrCodeId): bool
+    {
+        /**
+         * @var $qrCode Entity
+         */
+        $qrCode = $this->repo->qr_code->find($qrCodeId);
+
+        if (empty($qrCode) === true)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_NOT_FOUND,
+                [
+                    'id' => $qrCodeId,
+                ]
+            );
+
+            return false;
+        }
+        $this->app['basicauth']->setMerchantById($qrCode->getMerchantId());
+
+        // Check if there are no payments associated
+        if ($qrCode->getPaymentsCountReceived() > 0) {
+
+            $this->trace->info(
+                TraceCode::PAYMENT_ALREADY_EXISTS_FOR_QR_CODE,
+                [
+                    'qr_code_id' => $qrCodeId,
+                ]
+            );
+
+            return false;
+        }
+
+        if ($qrCode->isClosed() === true)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_CLOSED,
+                [
+                    'qr_code_id' => $qrCodeId,
+                ]
+            );
+
+            return false;
+        }
+
+        if ($this->checkIfQrCodeStatusCheckTimeHasExceeded($qrCode) === true)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_STATUS_CHECK_TIME_EXCEEDED,
+                [
+                    'qr_code_id' => $qrCodeId,
+                ]
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $id The ID of the QR code to be checked
+     * @param array $input The input received in the Reminders service callback request
+     * @return bool To be consumed by the Reminders service. True indicates no reminders are needed further
+     */
+    public function initQrStatusCheck(string $id, array $input): bool
+    {
+        Entity::silentlyStripSign($id);
+
+        $response = false;
+
+        // If the validations fail, we return true to reminders to stop sending further reminders
+        if ($this->validateQrForStatusCheckInit($id) === false)
+        {
+            $response = true;
+        }
+        else
+        {
+            $response = (new Core())->dispatchQrCodeToStatusCheckQueue($id);
+        }
+
+        $this->trace->info(TraceCode::QR_STATUS_CHECK_RESPONSE, ['id' => $id, 'response' => $response]);
+
+        return $response;
     }
 }

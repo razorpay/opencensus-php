@@ -50,6 +50,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const FUND_MANAGEMENT_PAYOUT_INITIATE             = 'fund_management_payout_initiate';
     const FTS_FUND_TRANSFER                           = 'fts_fund_transfer';
 
+    const QR_STATUS_CHECK                             = 'qr_status_check';
+
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
@@ -64,7 +66,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING,
         self::FUND_MANAGEMENT_PAYOUT_CHECK,
         self::FUND_MANAGEMENT_PAYOUT_INITIATE,
-        self::FTS_FUND_TRANSFER
+        self::FTS_FUND_TRANSFER,
+        self::QR_STATUS_CHECK,
     ];
 
     /**

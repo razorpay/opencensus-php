@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Icici\Fields;
 
 return [
@@ -224,8 +225,89 @@ return [
     ],
 
     'testReminderCallbackForQrStatusCheck' => [
-        'base_url'   => '/reminders/send/test/qr_code/qr_code_payment_status/',
-        'created_at' => 1589994898,
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReminderCallbackForQrStatusCheckWhenQrIsAlreadyClosed' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+        ],
+    ],
+
+    'testReminderCallbackForQrStatusCheckWhenItHasBeenMoreThan12Hours' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+        ],
+    ],
+
+    'testReminderCallbackForQrStatusCheckWhenAPaymentAlreadyExists' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchWhenDuplicateCallbacksAreReceivedAtTheSameTime' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
     ],
 
 

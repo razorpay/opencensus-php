@@ -4228,6 +4228,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_REMINDER_RESPONSE                             = 'QR_CODE_REMINDER_RESPONSE';
     const QR_CODE_CLOSE_REQUEST_REMINDER                        = 'QR_CODE_CLOSE_REQUEST_REMINDER';
     const QR_CODE_STATUS_CHECK_CALLBACK_INIT                    = 'QR_CODE_STATUS_CHECK_CALLBACK_INIT';
+    const QR_CODE_NOT_FOUND                                     = 'QR_CODE_NOT_FOUND';
+    const PAYMENT_ALREADY_EXISTS_FOR_QR_CODE                    = 'PAYMENT_ALREADY_EXISTS_FOR_QR_CODE';
+    const QR_CODE_CLOSED                                        = 'QR_CODE_CLOSED';
+    const QR_CODE_STATUS_CHECK_TIME_EXCEEDED                    = 'QR_CODE_STATUS_CHECK_TIME_EXCEEDED';
+    const QR_STATUS_CHECK_JOB_DISPATCH_INIT                     = 'QR_STATUS_CHECK_JOB_DISPATCH_INIT';
+    const QR_STATUS_CHECK_MESSAGE_DISPATCHED                    = 'QR_STATUS_CHECK_MESSAGE_DISPATCHED';
+    const QR_STATUS_CHECK_DISPATCH_FAILED                       = 'QR_STATUS_CHECK_DISPATCH_FAILED';
+    const QR_STATUS_CHECK_RESPONSE                              = 'QR_STATUS_CHECK_RESPONSE';
+    const QR_STATUS_CHECK_HANDLER_INIT                          = 'QR_STATUS_CHECK_HANDLER_INIT';
     const GENERATE_BHARAT_QR_CODE                               = 'GENERATE_BHARAT_QR_CODE';
     const GENERATE_UPI_QR_CODE                                  = 'GENERATE_UPI_QR_CODE';
     const QR_CODE_CREATE_TERMINAL                               = 'QR_CODE_CREATE_TERMINAL';

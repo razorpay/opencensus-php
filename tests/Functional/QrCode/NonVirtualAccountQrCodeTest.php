@@ -2,17 +2,21 @@
 
 namespace Functional\QrCode;
 
+use Queue;
 use Carbon\Carbon;
+
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\QrStatusCheck;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\Mock\Reminders;
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
@@ -3604,6 +3608,12 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(1, $remindersCallCount);
     }
 
+    /**
+     * Tests how failure in sending create reminders request is handled.
+     * This failure should not affect QR create.
+     *
+     * @return void
+     */
     public function testQrStatusCheckReminderRequestFailure()
     {
         $terminal = $this->fixtures->create(
@@ -3635,6 +3645,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(0, $remindersCallCount);
     }
 
+    /**
+     * Tests that Reminder create request is not sent for static QRs.
+     *
+     * @return void
+     */
     public function testQrStatusCheckReminderRequestForMultipleUseQr()
     {
         $terminal = $this->fixtures->create(
@@ -3664,6 +3679,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(0, $remindersCallCount);
     }
 
+    /**
+     * Tests if splitz experiment is working or not.
+     *
+     * @return void
+     */
     public function testQrStatusCheckReminderRequestWhenSplitzIsDisabled()
     {
         $terminal = $this->fixtures->create(
@@ -3724,6 +3744,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(0, $remindersCallCount);
     }
 
+    /**
+     * Tests that we are not trying status check for Bharat QRs.
+     *
+     * @return void
+     */
     public function testQrStatusCheckReminderRequestForBharatQr()
     {
         $terminal = $this->fixtures->create(
@@ -3754,9 +3779,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * testReminderCallbackForQrStatusCheck tests if processing the callback from Reminders is working fine or not.
+     * When we dispatch, we do not check immediately if a payment exists or not, so the response to Reminders will be
+     * ['success' => false]. This means, Reminders service can send one more callback.
+     *
+     * @return void
      */
     public function testReminderCallbackForQrStatusCheck()
     {
@@ -3790,21 +3817,245 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $qrCodeId = $qrCode['id'];
 
-        $testData = $this->testData[__FUNCTION__];
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
-        $testData['created_at'] = $qrCode['created_at'];
-
-        $callback_url = $testData['base_url'] . $qrCodeId;
-
-        $request = [
-            'method' => 'POST',
-            'url'    => $callback_url,
-        ];
+        Queue::fake();
 
         $this->ba->reminderAppAuth();
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->startTest();
 
-        $this->assertTrue($response['success']);
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    /**
+     * Test whether the closure of a QR code is handled properly for status check.
+     * The response will be ['success' => true], as we want to stop reminders once a QR code is closed.
+     *
+     * @return void
+     */
+    public function testReminderCallbackForQrStatusCheckWhenQrIsAlreadyClosed()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $this->closeQrCode($qrCodeId, 'live', 'LiveAccountMer');
+
+        Queue::fake();
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        Queue::assertPushed(QrStatusCheck::class, 0);
+    }
+
+    /**
+     * Test that QR status check is not triggered if it has been more than 12 Hours since QR code creation.
+     * The response will be ['success' => true], as we want to stop reminders after 12 hours have passed.
+     *
+     * @return void
+     */
+    public function testReminderCallbackForQrStatusCheckWhenItHasBeenMoreThan12Hours()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        Queue::fake();
+
+        $newTime = $currentTime->addHours(13);
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        Queue::assertPushed(QrStatusCheck::class, 0);
+    }
+
+    /**
+     * Test that QR status check is not triggered if a payment for that QR already exists.
+     * The response will be ['success' => true], as we want to stop reminders once a payment is already created.
+     *
+     * @return void
+     */
+    public function testReminderCallbackForQrStatusCheckWhenAPaymentAlreadyExists()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        // Marking as multiple use so that the payment creation step (needed for test setup) does not close the QR.
+        // Ideally, in such scenarios, QR status check is not supposed to work.
+        // Treat this as a way to mock the way of creating an already present payment
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'multiple_use',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeId = $qrCode['id'];
+
+        $request = [
+            'url'     => '/callback/upi_icici',
+            'method'  => 'post',
+            'content' => [
+                Fields::MERCHANT_ID         => '403343',
+                Fields::SUBMERCHANT_ID      => '78965412',
+                Fields::TERMINAL_ID         => '5411',
+                Fields::BANK_RRN            => '000011100101',
+                Fields::MERCHANT_TRAN_ID    => 'RZP' . substr($qrCodeId, strlen('qr_')) . 'qrv2',
+                Fields::PAYER_NAME          => 'Ria Garg',
+                Fields::PAYER_VA            => 'random@icici',
+                Fields::PAYER_AMOUNT        => '1.00',
+                Fields::TXN_STATUS          => 'SUCCESS',
+                Fields::TXN_INIT_DATE       => '20200601085714',
+                Fields::TXN_COMPLETION_DATE => '20200601085715',
+                Fields::RESPONSE_CODE       => '',
+            ],
+        ];
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment   = $this->getDbLastEntity('payment', 'live');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')), $qrPayment['merchant_reference']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        Queue::fake();
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        Queue::assertPushed(QrStatusCheck::class, 0);
+    }
+
+    public function testQrStatusCheckDispatchWhenDuplicateCallbacksAreReceivedAtTheSameTime()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        Queue::fake();
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+        $this->startTest();
+
+        // Assert that only one job was pushed.
+        Queue::assertPushed(QrStatusCheck::class, 1);
     }
 }
