@@ -12744,6 +12744,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            '1cc_rto_dashboard_list',
             'bulk_auto_create_iir',
             'toggle_dashboard_captcha',
             'dispute_ingestion',
