@@ -4868,6 +4868,12 @@ class Service extends Base\Service
         }
         else if ($eventType === "mail")
         {
+            if($payment->isFpx() && $payment->isFailed() && $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION){
+                $this->trace->info(TraceCode::FPX_B2B_EMAIL_SUPPRESS, [
+                    'payment_id' => $payment['id'],
+                ]);
+                return;
+            }
             (new Notify($payment))->trigger($event);
         }
     }
@@ -4942,6 +4948,12 @@ class Service extends Base\Service
             }
             else if ($eventType === "mail")
             {
+                if($payment->isFpx() && $payment->isFailed() && $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION){
+                    $this->trace->info(TraceCode::FPX_B2B_EMAIL_SUPPRESS, [
+                        'payment_id' => $payment['id'],
+                    ]);
+                    return;
+                }
                 (new Notify($payment))->trigger($event);
             }
         }
