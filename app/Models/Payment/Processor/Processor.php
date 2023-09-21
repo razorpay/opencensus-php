@@ -8038,6 +8038,15 @@ class Processor
      */
     protected function shouldAutoCapture(Payment\Entity $payment): array
     {
+        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::LRS_ENABLED_MERCHANT;
+
+            return $response;
+        }
+
         if (
             ($payment->isRazorpaywalletPayment() === true) and
             ($payment->isSplitPayment() === true)

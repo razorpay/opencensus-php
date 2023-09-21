@@ -11147,6 +11147,11 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'payments_cross_border_service' => [
+            'payment_capture',
+            'internal_payment_authorize_refund',
+        ],
+
         'xperience' => [
             'merchant_fetch_internal_users',
         ],

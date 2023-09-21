@@ -1455,6 +1455,7 @@ return [
         'mock'      => env('PAYMENTS_CROSS_BORDER_SERVICE_MOCK', false),
         'username'  => env('PAYMENTS_CROSS_BORDER_SERVICE_KEY', 'api_user'),
         'password'  => env('PAYMENTS_CROSS_BORDER_SERVICE_SECRET', 'RANDOM_PXB_SECRET'),
+        'secret'    => env('PAYMENTS_CROSS_BORDER_SERVICE_SECRET_KEY'),
         'url'       => [
             'live' => env('PAYMENTS_CROSS_BORDER_SERVICE_LIVE_URL'),
             'test' => env('PAYMENTS_CROSS_BORDER_SERVICE_TEST_URL'),

@@ -1712,7 +1712,7 @@ class BasicAuth
 
     protected function verifyInternalAppSecret(string $password = null)
     {
-       
+
         $secret = $password ?? $this->authCreds->getSecret();
 
         $internalApps = $this->internalAppConfigs;
@@ -2115,6 +2115,11 @@ class BasicAuth
     public function isCmmaApp(): bool
     {
         return ($this->getInternalApp() === 'cmma');
+    }
+
+    public function isCrossBorderApp(): bool
+    {
+        return ($this->getInternalApp() === 'payments_cross_border_service');
     }
 
     public function isWorkflowsServiceApp(): bool
@@ -3606,5 +3611,5 @@ class BasicAuth
             return '';
         }
     }
-    
+
 }

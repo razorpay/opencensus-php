@@ -1640,6 +1640,8 @@ class Validator extends Base\Validator
 
             $this->failIfIntlBankTransferUnexpectedPayment($payment);
 
+            $this->failIfLRSEnabledPayment($payment);
+
             $this->captureAmountValidate($payment, $amount);
 
             $this->captureCurrencyValidate($payment, $currency);
@@ -2091,6 +2093,15 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function failIfLRSEnabledPayment(Entity $payment)
+    {
+        $app = App::getFacadeRoot();
+        if ($payment->merchant->isLRSEducationFlowEnabled() === true and
+            !$app['basicauth']->isCrossBorderApp())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_CAPTURE);
+        }
+    }
 
     protected function failIfSmartCollectUnexpectedPayment(Entity $payment)
     {

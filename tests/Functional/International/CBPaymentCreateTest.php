@@ -6,6 +6,8 @@ use Mockery;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Address\Type;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -32,8 +34,12 @@ class CBPaymentCreateTest extends TestCase
     use TerminalTrait;
     use HeimdallTrait;
 
+    protected $testData = null;
+    protected $payment = null;
+
     protected function setUp(): void
     {
+        $this->testDataFilePath = __DIR__ . '/helpers/CBPaymentCreateTestData.php';
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -867,5 +873,117 @@ class CBPaymentCreateTest extends TestCase
         $lastPayment = $this->getLastEntity('payment');
 
         $this->assertSame('authorized', $lastPayment['status']);
+    }
+
+    public function testLRSEducationPaymentCaptureFailure()
+    {
+        $this->captureLRSPayment($this->makeLRSAuthPayment());
+    }
+
+    public function testLRSEducationPaymentInternalCapture()
+    {
+        $this->captureLRSPayment($this->makeLRSAuthPayment(), true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+    }
+
+    public function testLRSEducationRefund()
+    {
+        $this->makeLRSAuthPayment();
+        $this->gateway = Gateway::UPI_MINDGATE;
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundAuthorizedPayment($this->payment['payment_id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+    }
+
+    protected function makeLRSAuthPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_education_flow', 'tpv']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['currency'] = 'USD';
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+            'bank_account' => [
+                'account_number' => '765432123456789',
+                'name' => 'test user',
+                'ifsc' => 'ICIC0006561',
+            ],
+        ]);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+
+        $this->payment = $this->doAuthPaymentViaAjaxRoute($payment);
+        return $payment;
+    }
+
+    protected function captureLRSPayment($payment, $internal=false)
+    {
+        $this->ba->privateAuth();
+        $this->startTest($this->payment['payment_id'], $payment['amount'], $internal);
+    }
+
+    public function startTest($id = null, $amount = null, $internal = false)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+        $name = $trace[2]['function'];
+
+        $testData = $this->testData[$name];
+
+        $this->setRequestData($testData['request'], $id, $amount, $internal);
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function setRequestData(& $request, $id = null, $amount = null, $internal = false)
+    {
+        $this->checkAndSetIdAndAmount($id, $amount);
+
+        $request['content']['amount'] = $amount;
+
+        $url = '/payments/'.$id.'/capture';
+        if ($internal)
+        {
+            $this->ba->paymentsCrossBorderAppAuth();
+        }
+
+        $this->setRequestUrlAndMethod($request, $url, 'POST');
+    }
+
+    protected function checkAndSetIdAndAmount(& $id = null, & $amount = null)
+    {
+        if ($id === null)
+        {
+            $id = $this->payment['id'];
+        }
+
+        if ($amount === null)
+        {
+            if (isset($this->payment['amount']))
+                $amount = $this->payment['amount'];
+        }
     }
 }

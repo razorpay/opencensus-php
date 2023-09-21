@@ -86,6 +86,7 @@ class Constants
     const BANK_TRANSFER_PAYMENT                     = 'Bank Transfer Payment';
     const PAYMENT_STATUS_AUTHENTICATED              = 'Payment Status Authenticated';
     const INTL_BANK_TRANSFER_PAYMENT                = 'International Bank Transfer Payment';
+    const LRS_ENABLED_MERCHANT                      = 'LRS flow enabled on merchant';
     const UPI_TRANSFER_PAYMENT                      = 'UPI Transfer Payment';
     const PAYMENT_LINK_WITH_FEATURE                 = 'Payment Link with Merchant Feature PAYMENT_PAGES_NO_CAPTURE enabled';
     const PAYMENT_STATUS_NOT_AUTHORIZED             = 'Payment should be in authorized status.';

@@ -191,6 +191,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function paymentsCrossBorderAppAuth($hostname = null, $mode = 'test'): void
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.payments_cross_border_service')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function cardPaymentsInternalAppAuth($hostname = null, $mode = 'test'): void
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.card_payment_service')['secret'], $hostname);
