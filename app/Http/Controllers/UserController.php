@@ -626,9 +626,12 @@ class UserController extends Controller
         {
             return true;
         }
-
+    
+        $submitted = $details['submitted'] ?? null;
+        $activationStatus = $details['activation_status'] ?? null;
+        
 //      WEBSITE_COMPLIANCE_FLOW_EXP is true
-        if (($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2' or $details['submitted'] == 1) and $details['activation_status'] != 'activated') {
+        if (($activationFormMilestone === 'L1' or $activationFormMilestone === 'L2' or $submitted === 1) and $activationStatus !== 'activated') {
             return true;
         };
 
