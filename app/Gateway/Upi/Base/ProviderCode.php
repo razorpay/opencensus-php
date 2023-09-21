@@ -484,6 +484,7 @@ class ProviderCode
         ProviderPsp::BHIM_CENT_UPI_APP,
         ProviderPsp::FINCARE_BANK,
         ProviderPsp::INDUSIND_BANK_APP,
+        ProviderPsp::SAMSUNG_PAY,
     ];
 
     /**
@@ -541,6 +542,7 @@ class ProviderCode
         self::CENTRALBANK   => ProviderPsp::BHIM_CENT_UPI_APP,
         self::FINCAREBANK   => ProviderPsp::FINCARE_BANK,
         self::INDIE         => ProviderPsp::INDUSIND_BANK_APP,
+        self::PINGPAY       => ProviderPsp::SAMSUNG_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

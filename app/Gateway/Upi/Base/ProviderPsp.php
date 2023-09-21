@@ -45,6 +45,7 @@ class ProviderPsp
     const BHIM_CENT_UPI_APP = 'bhim_cent_upi_app';
     const FINCARE_BANK      = 'fincare_bank';
     const INDUSIND_BANK_APP = 'indusind_bank_app';
+    const SAMSUNG_PAY       = 'samsung_pay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
