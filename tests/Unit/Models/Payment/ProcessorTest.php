@@ -454,4 +454,53 @@ class ProcessorTest extends TestCase
         $processor->setPayment($payment);
         self::assertEquals($payment, $processor->getPayment());
     }
+
+    public function testCheckMerchantPermissionsForNonActivatedMerchantLiveModeRblOnBas()
+    {
+        // prepare basicAuth mock
+        $authMock = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['isProductBanking','isProxyAuth'])
+            ->getMock();
+
+        $authMock->method('isProductBanking')
+            ->willReturn(true);
+
+        $authMock->method('isProxyAuth')
+            ->willReturn(true);
+
+        $this->app->instance('basicauth', $authMock);
+
+        // set app mode
+        $this->app['rzp.mode'] = 'live';
+
+        // create required fixtures
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => false
+        ]);
+
+        $payment = $this->fixtures->create('payment');
+
+        $accountNumber = '2224440041626905';
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => $accountNumber,
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'merchant_id'       => $merchant->getId(),
+            'account_number'    => $accountNumber,
+            'balance_id'        => $balance->getId(),
+            'channel'           => 'rbl',
+            'status'            => 'active',
+        ]);
+
+        // create an object & access functions to assert that checkMerchantPermissions has not failed
+        $processor = new ProcessorMock($merchant);
+        $processor->setPayment($payment);
+        self::assertEquals($payment, $processor->getPayment());
+    }
 }

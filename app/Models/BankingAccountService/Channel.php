@@ -22,6 +22,7 @@ class Channel
         self::ICICI,
         self::YESBANK,
         self::AXIS,
+        self::RBL,
     ];
 
     public static function getDirectTypeChannels(): array

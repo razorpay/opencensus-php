@@ -86,7 +86,7 @@ class BankingAccountService
     }
 
     /**
-     * Fetches icici ca
+     * Fetches account details from banking-account-service
      *
      * @param string $merchantId
      *
@@ -98,16 +98,28 @@ class BankingAccountService
 
         $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
-        if (count($balances) === 0)
+        // filtering balances here to avoid RBL CAs present on API from being included in BAS call
+        $filteredBalances = [];
+
+        foreach ($balances as $balance)
+        {
+            // $balance->bankingAccount would be empty for CAs stored in BAS
+            if (empty($balance->bankingAccount) === true) 
+            {
+                $filteredBalances[] = $balance;
+            } 
+        }
+
+        if (count($filteredBalances) === 0)
         {
             return [];
         }
 
         $this->isBusinessExists($merchantId);
         $account = [];
-        foreach ($balances as $balance)
+        foreach ($filteredBalances as $balance)
         {
-            $account = $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $balance->getAccountNumber(), $balance->getChannel());
+            $account = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $balance->getAccountNumber(), $balance->getChannel());
             if ($account[Constants::STATUS] === "ACTIVE")
             {
                 return $account;
@@ -214,6 +226,22 @@ class BankingAccountService
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
         return $response['data'];
+    }
+
+    // defining a separate function to avoid breakage of existing expectations 
+    public function fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $accountNumber, $channel)
+    {
+        $businessId = $this->getBusinessId($merchantId);
+
+        $path = 'business/' . $businessId . '/composite-banking-accounts/' . $accountNumber;
+
+        $headers = [
+            Fields::CHANNEL => $channel,
+        ];
+
+        $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
+
+        return $response['data']; 
     }
 
     /**
@@ -779,7 +807,7 @@ class BankingAccountService
      * @param string $referenceNumber Banking Account Reference Number
      *
      * @param array $input Input
-     * 
+     *
      * @throws \Throwable
      */
     public function patchRBLApplicationCompositeByReferenceNumber(string $referenceNumber, array $input)

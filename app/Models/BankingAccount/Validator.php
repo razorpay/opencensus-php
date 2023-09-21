@@ -97,6 +97,13 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|string',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|string',
         Entity::BENEFICIARY_NAME                => 'sometimes|nullable|custom',
+        Entity::ACCOUNT_CURRENCY                => 'sometimes|nullable|string',
+        Entity::BANK_INTERNAL_STATUS            => 'sometimes|nullable|string',
+        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'sometimes|nullable|string',
+        Entity::SUB_STATUS                      => 'sometimes|nullable|custom',
+        Entity::USERNAME                        => 'sometimes|nullable|string',
+        Entity::PASSWORD                        => 'sometimes|nullable|string',
+        Entity::REFERENCE1                      => 'sometimes|nullable|string'
     ];
 
     protected static $createLeadFromRblRules = [

@@ -2293,7 +2293,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::BANKING_ACCOUNT_ID] = optional($this->bankingAccount)->getPublicId();
 
-        //In case of CAs implemented in BAS (ICICI, Axis, Yesbank) banking_account_id is fetched from banking account service.
+        //In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL Migration) banking_account_id is fetched from banking account service.
         //banking_account_id is cached for subsequent calls
         if (empty($attributes[self::BANKING_ACCOUNT_ID]) === true and
             $this->isBalanceAccountTypeDirect() === true and

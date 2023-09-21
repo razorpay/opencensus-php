@@ -231,20 +231,53 @@ class Core extends Base\Core
 
         $channel = strtolower($basBankingAccount['partner_bank']);
 
-        $input = [
-            BankingAccountEntity::CHANNEL      => $channel,
-            BankingAccountEntity::ACCOUNT_TYPE => 'current',
-            BankingAccountEntity::ACCOUNT_IFSC => $basBankingAccount['ifsc'],
-        ];
+        switch($channel)
+        { 
+            case Channel::RBL:
 
-        if (empty($basBankingAccount['account_number']) === false)
-        {
-            $input[BankingAccountEntity::ACCOUNT_NUMBER] = $basBankingAccount['account_number'];
-        }
+                $input = [
+                    BankingAccountEntity::CHANNEL                           => $channel,
+                    BankingAccountEntity::ACCOUNT_TYPE                      => 'current',
+                    BankingAccountEntity::ACCOUNT_IFSC                      => $basBankingAccount['ifsc'],
+                    BankingAccountEntity::ACCOUNT_NUMBER                    => $basBankingAccount['account_number'],
+                    BankingAccountEntity::ACCOUNT_CURRENCY                  => $basBankingAccount['account_currency'],
+                    BankingAccountEntity::BANK_INTERNAL_STATUS              => $basBankingAccount['bank_status'],
+                    BankingAccountEntity::BANK_INTERNAL_REFERENCE_NUMBER    => $basBankingAccount['application_number'],
+                    BankingAccountEntity::BANK_REFERENCE_NUMBER             => $basBankingAccount['application_tracking_id'],
+                    BankingAccountEntity::BENEFICIARY_EMAIL                 => $basBankingAccount['beneficiary_email'],
+                    BankingAccountEntity::BENEFICIARY_MOBILE                => $basBankingAccount['beneficiary_mobile'],
+                    BankingAccountEntity::BENEFICIARY_CITY                  => $basBankingAccount['beneficiary_city'],
+                    BankingAccountEntity::BENEFICIARY_STATE                 => $basBankingAccount['beneficiary_state'],
+                    BankingAccountEntity::BENEFICIARY_COUNTRY               => $basBankingAccount['beneficiary_country'],
+                    BankingAccountEntity::BENEFICIARY_ADDRESS1              => $basBankingAccount['beneficiary_address1'],
+                    BankingAccountEntity::BENEFICIARY_ADDRESS2              => $basBankingAccount['beneficiary_address2'],
+                    BankingAccountEntity::BENEFICIARY_ADDRESS3              => $basBankingAccount['beneficiary_address3'],
+                    BankingAccountEntity::BENEFICIARY_NAME                  => $basBankingAccount['beneficiary_name'],
+                    BankingAccountEntity::BENEFICIARY_PIN                   => $basBankingAccount['beneficiary_pin'],
+                    BankingAccountEntity::FTS_FUND_ACCOUNT_ID               => $basBankingAccount['fts_fund_account_id'],
+                    BankingAccountEntity::PINCODE                           => $basBankingAccount['pincode'],
+                    BankingAccountEntity::SUB_STATUS                        => $basBankingAccount['sub_status'],
+                    
+                    BankingAccountEntity::USERNAME                          => $basBankingAccount['auth_username'],
+                    BankingAccountEntity::PASSWORD                          => $basBankingAccount['auth_password'],
+                    BankingAccountEntity::REFERENCE1                        => $basBankingAccount['corp_id']
+                ];
 
-        if (empty($basBankingAccount['beneficiary_name']) === false)
-        {
-            $input[BankingAccountEntity::BENEFICIARY_NAME] = $basBankingAccount['beneficiary_name'];
+                if(isset($basBankingAccount['metadata']['account_open_date']))
+                {
+                    $input[Entity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['account_open_date'];
+                }
+                
+                break;
+            default:
+
+                $input = [
+                    BankingAccountEntity::CHANNEL           => $channel,
+                    BankingAccountEntity::ACCOUNT_TYPE      => 'current',
+                    BankingAccountEntity::ACCOUNT_IFSC      => $basBankingAccount['ifsc'],
+                    BankingAccountEntity::ACCOUNT_NUMBER    => $basBankingAccount['account_number'],
+                    BankingAccountEntity::BENEFICIARY_NAME  => $basBankingAccount['beneficiary_name']
+                ];
         }
 
         $ba->build($input);
@@ -274,7 +307,7 @@ class Core extends Base\Core
     }
 
     /**
-     * In case of CAs implemented in BAS (ICICI, Axis, Yesbank) balance exists but not banking_account entity.
+     * In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL Migration) balance exists but not banking_account entity.
      * We make a call to banking account service to fetch the banking account id.
      *
      * @param string $balanceId

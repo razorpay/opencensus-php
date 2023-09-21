@@ -8173,7 +8173,12 @@ class Core extends Base\Core
     {
         $activatedBankingAccountExists = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_FETCH_BANKING_ACCOUNT_BY_MERCHANT_ID_ACCOUNT_TYPE_CHANNEL_AND_STATUS], function () use ($merchant)
         {
-            // handling the filtering here instead of the repo layer to help with API-decomp for current-accounts
+            /*
+             * $merchant->bankingAccounts only returns RBL CAs in API DB. If no activated RBL CAs are returned here,
+             * check for active RBL bankingAccountStatementDetails as active statement-details exist only for activated
+             * un-terminated CAs
+             */
+            // 1. check RBL accounts in API DB
             foreach ($merchant->bankingAccounts as $bankingAccount)
             {
                 if ($bankingAccount->getChannel() === BankingAccount\Channel::RBL &&
@@ -8182,6 +8187,15 @@ class Core extends Base\Core
                 {
                     return true;
                 }
+            }
+
+            // 2. check if there is any active RBL bankingAccountStatementDetails for current-account.
+            $statementDetails = (new \RZP\Models\BankingAccountStatement\Details\Repository())->getDirectBasDetailEntityByMerchantIdAndChannel(
+                $merchant->getId(),
+                \RZP\Models\BankingAccountStatement\Details\Channel::RBL,
+            );
+            if (!empty($statementDetails)) {
+                return true;
             }
 
             return false;
@@ -8210,7 +8224,7 @@ class Core extends Base\Core
         }
         else
         {
-            // ICICI, Axis, Yes Bank (CAs implemented in BAS)
+            // ICICI, Axis, Yes Bank, RBL Migration (CAs implemented in BAS)
             $repo = new BalanceRepo();
 
             $balance = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_GET_BALANCE_BY_MERCHANT_ID_CHANNELS_AND_ACCOUNT_TYPE], function () use ($repo, $merchant)

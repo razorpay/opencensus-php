@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Mail;
+use Mockery;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Mail\BankingAccount\Activation\StatusChange;
@@ -1933,6 +1934,160 @@ class BankingAccountServiceTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testFetchAccountDetailsRblCaExistsOnAPI()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $balance = $this->fixtures->create('balance',
+        [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => '2224440041626905',
+            'balance'           => 200,
+            'channel'           => 'rbl',
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'channel'               => 'rbl',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchant->getId(),
+            'status'                => 'activated',
+            'balance_id'            => $balance->getId(),
+        ]);
+
+        $response = (new \RZP\Services\BankingAccountService($this->app))->fetchAccountDetails($merchant->getId());
+
+        $this->assertEmpty($response);
+    }
+
+    public function testFetchAccountDetailsRblCaExistsOnBAS()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => $merchant->getId(),
+            'business_type'     => '2',
+            'bas_business_id'   => 'GvZfe7jTGCWNKO',
+        ]);
+
+        $balance = $this->fixtures->create('balance',
+        [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => '2224440041626905',
+            'balance'           => 200,
+            'channel'           => 'rbl',
+        ]);
+
+        $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial();
+
+        $basMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails')->andReturns([
+            'id'                          => 'GvZfe7jTGCWNTO',
+            'account_number'              => '2224440041626905',
+            'status'                      => 'ACTIVE',
+            'account_type'                => 'current',
+            'partner_bank'                => 'rbl'
+        ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        $response = $basMock->fetchAccountDetails($merchant->getId());
+
+        $this->assertEquals([
+            'id'                          => 'GvZfe7jTGCWNTO',
+            'account_number'              => '2224440041626905',
+            'status'                      => 'ACTIVE',
+            'account_type'                => 'current',
+            'partner_bank'                => 'rbl'
+        ], $response);
+    }
+
+    public function testGenerateInMemoryBankingAccountForRBL()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $balance = $this->fixtures->create('balance',
+        [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => '2224440041626905',
+            'balance'           => 200,
+            'channel'           => 'rbl',
+        ]);
+
+        $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), [
+            'partner_bank'      => Channel::RBL,
+            'ifsc'              => 'dummy-ifsc1',
+            'account_number'    => '2224440041626905',
+            'account_currency'  => 'INR',
+            'metadata'        => [
+                'account_open_date' => 1690000123
+            ],
+            'bank_status'                   => 'dummy-bank-status',
+            'application_number'            => 'dummy-application-number',
+            'application_tracking_id'       => 'dummy-application-tracking-id',
+            'beneficiary_email'             => 'test@gmail.com',
+            'beneficiary_mobile'            => '9876543210',
+            'beneficiary_city'              => 'Bengaluru',
+            'beneficiary_state'             => 'Karnataka',
+            'beneficiary_country'           => 'India',
+            'beneficiary_address1'          => 'address-1',
+            'beneficiary_address2'          => 'address-2',
+            'beneficiary_address3'          => 'address-3',
+            'beneficiary_name'              => 'rzp',
+            'beneficiary_pin'               => (int)'560038',
+            'fts_fund_account_id'           => 'dummy-fund1234',
+            'pincode'                       => '560038',
+            'sub_status'                    => 'test_account',
+
+            'auth_username'                 => 'username',
+            'auth_password'                 => 'password',
+            'corp_id'                       => 'corp',
+
+            'status'                        => 'ACTIVE',
+            'id'                            => 'randomBaAccId8'
+        ]);
+
+        $this->assertNotEmpty($ba->balance);
+        
+        $this->assertNotEmpty($ba->merchant);
+
+        $this->assertArraySelectiveEquals([
+            Entity::CHANNEL                     => 'rbl',
+            Entity::ACCOUNT_TYPE                => 'current',
+            Entity::ACCOUNT_IFSC                => 'dummy-ifsc1',
+            Entity::ACCOUNT_NUMBER              => '2224440041626905',
+            Entity::ACCOUNT_ACTIVATION_DATE     => 1690000123,
+            Entity::BANK_INTERNAL_STATUS        => 'dummy-bank-status',
+            Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'dummy-application-number',
+            Entity::BANK_REFERENCE_NUMBER       => 'dummy-application-tracking-id',
+            Entity::BENEFICIARY_EMAIL           => 'test@gmail.com',
+            Entity::BENEFICIARY_MOBILE          => '9876543210',
+            Entity::BENEFICIARY_CITY            => 'Bengaluru',
+            Entity::BENEFICIARY_STATE           => 'Karnataka',
+            Entity::BENEFICIARY_COUNTRY         => 'India',
+            Entity::BENEFICIARY_ADDRESS1        => 'address-1',
+            Entity::BENEFICIARY_ADDRESS2        => 'address-2',
+            Entity::BENEFICIARY_ADDRESS3        => 'address-3',
+            Entity::BENEFICIARY_NAME            => 'rzp',
+            Entity::BENEFICIARY_PIN             => 560038,
+            Entity::FTS_FUND_ACCOUNT_ID         => 'dummy-fund1234',
+            Entity::PINCODE                     => '560038',
+            Entity::SUB_STATUS                  => 'test_account',
+            Entity::USERNAME                    => 'username',
+            Entity::PASSWORD                    => 'password',
+            Entity::REFERENCE1                  => 'corp',
+            Entity::ID                          => 'randomBaAccId8',
+            Entity::STATUS                      => 'activated',
+            Entity::MERCHANT_ID                 => $merchant->getId(),
+            Entity::BALANCE_ID                  => $balance->getId()
+        ], $ba->toArray());
+        
+    }
 
     private function assertNotificationsForStatusChange(array $bankingAccount, string $status)
     {
