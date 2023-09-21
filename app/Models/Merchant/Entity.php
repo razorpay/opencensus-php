@@ -1414,6 +1414,12 @@ class Entity extends Base\PublicEntity
             ]);
     }
 
+    public function getMerchantDetailAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantDetailAttributeById($this, self::MERCHANT);
+    }
+
+
     public function suspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, time());

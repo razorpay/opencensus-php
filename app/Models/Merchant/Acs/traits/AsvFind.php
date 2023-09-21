@@ -136,5 +136,31 @@ trait AsvFind
 
         return $this->findOrFailPublicDatabase($id, $columns, $connectionType);
     }
+
+    public function findDatabase($id, $columns = array('*'), string $connectionType = null)
+    {
+        return parent::find($id, $columns, $connectionType);
+    }
+
+    public function findForImplicitJoin($id, string $entityName, $columns = array('*'), string $connectionType = null)
+    {
+        $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
+
+        if ($shouldCallAsv === true) {
+
+            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
+
+            try {
+                return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
+            } catch (\Exception $e) {
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
+                    "id" => $id,
+                    "functionIdentifier" => $functionIdentifier,
+                ]);
+            }
+        }
+
+        return $this->findDatabase($id, $columns, $connectionType);
+    }
 }
 

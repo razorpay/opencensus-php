@@ -263,7 +263,43 @@ class AsvRouter
                 $entityName
             );
 
+            $this->trace->info(TraceCode::ASV_IMPLICIT_JOIN_ROUTER_RESULT, [
+                'isImplicitJoinRoutedToASV' => $resp,
+                'function_identifier' => $repoClass . '::' . $functionName,
+            ]);
+
             return $resp;
+        } catch (\Throwable $e) {
+            $this->trace->traceException
+            (
+                $e,
+                Trace::WARNING,
+                TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION,
+                [
+                    'flow' => 'implicit_join'
+                ]
+            );
+            return false;
+        }
+    }
+
+    public function shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, $repoClass, $functionName): bool {
+        try {
+            if ($connectionType != null || $columns != array("*") || !is_string($id)) {
+                $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
+                    "connection_type" => $connectionType,
+                    "function_identifier" => $repoClass . "::" . $functionName,
+                    "columns" => $columns,
+                    "id" => $id
+                ]);
+
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED_TO_ASV, [
+                    "function_identifier" => $repoClass . "::" . $functionName,
+                ]);
+                return false;
+            }
+
+            return $this->shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName);
         } catch (\Throwable $e) {
             $this->trace->traceException
             (

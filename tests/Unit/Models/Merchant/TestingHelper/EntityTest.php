@@ -67,6 +67,8 @@ class RepositoryTestHelper extends TestCase
             $responseSetterFunctionName= $data["responseSetterFunctionName"];
             $asvResponseEntity = $data["asvResponseEntity"];
             $mockBuilderInterface = $data["mockBuilderInterface"];
+            $asvMockMethod = $data["asvMockMethod"] ?? 'getByMerchantId';
+
 
             $associatedEntity = $entityRepo->find($data["merchant_id"]);
             $entity1 = $this->getEntityForJson($data["entityData"], $data["entityClass"]);
@@ -105,22 +107,30 @@ class RepositoryTestHelper extends TestCase
 
             //TestCase6 - call is going to asv
             $associatedEntity->unsetRelation($relationName);
-            $entityResponse = $asvResponseEntity->$responseSetterFunctionName([$entityProto1]);
-            $this->setEntityMockClientWithIdAndResponse($data["merchant_id"], $entityResponse, null, "getByMerchantId", 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
+            if ($asvMockMethod == "getByMerchantId")
+            {
+                $entityResponse = $asvResponseEntity->$responseSetterFunctionName([$entityProto1]);
+            }
+            else
+            {
+                $entityResponse = $asvResponseEntity->$responseSetterFunctionName($entityProto1);
+            }
+
+            $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], $entityResponse, null, $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
             $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
 
             //TestCase7 - should go to account service - Exception occurs fallback to DB
             $associatedEntity->unsetRelation($relationName);
-            $this->setEntityMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getByMerchantId", 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
+            $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
             $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
 
             //TestCase8 - Not found in asv;
             $associatedEntity->unsetRelation($relationName);
-            $this->setEntityMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getByMerchantId", 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
+            $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
             $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
             app('repo')->$repoName = $entityRepo;
@@ -128,7 +138,7 @@ class RepositoryTestHelper extends TestCase
 
             //TestCase9 - invalid argument in asv;
             $associatedEntity->unsetRelation($relationName);
-            $this->setEntityMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), "getByMerchantId", 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
+            $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
             $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
             app('repo')->$repoName = $entityRepo;
@@ -162,7 +172,7 @@ class RepositoryTestHelper extends TestCase
         return $entityProto;
     }
 
-    public function setEntityMockClientWithIdAndResponse($id, $response, $error, $method, $count, $entity, $setterFunction, $mockBuilderInterface)
+    public function setEntityMockClientWithIdentifierAndResponse($id, $response, $error, $method, $count, $entity, $setterFunction, $mockBuilderInterface)
     {
         $entityMockClient = $this->getMockClient($mockBuilderInterface);
         $entityMockClient->expects($this->exactly($count))->method($method)->with($id, $entity->getDefaultRequestMetaData())->willReturn([$response, $error]);
@@ -189,7 +199,7 @@ class RepositoryTestHelper extends TestCase
         return;
     }
 
-    private function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName) {
+    public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName) {
         app('repo')->$repoName = $entityRepo;
         $entity = $associatedEntity->$relationName->toArray();
         $entity['audit_id'] = "testtesttest";

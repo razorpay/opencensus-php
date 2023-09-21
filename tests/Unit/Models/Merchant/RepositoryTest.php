@@ -10,10 +10,11 @@ use Rzp\Accounts\Merchant\V1\MerchantResponse;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use Rzp\Accounts\Merchant\V1\Merchant as MerchantProto;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
-
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
-class RepositoryTest extends Functional\TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
     use Functional\AsvFindOrFailAndFindOrFailPublicTrait;
 
@@ -89,6 +90,20 @@ class RepositoryTest extends Functional\TestCase
         "audit_id": "M4Au4oJAxUkdNV",
         "country_code": "IN"
      }';
+
+    private $merchantDetailEntityJson1 = '{
+        "merchant_id": "CzmiCwTPCL3t2K",
+        "additional_websites": "[\"https://razorpay.in\"]",
+        "steps_finished": "[1,2,3]",
+        "kyc_clarification_reasons": "{\"nc_count\": 1, \"additional_details\": [], \"clarification_reasons\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}, \"clarification_reasons_v2\": {\"aadhar_front\": [{\"from\": \"admin\", \"nc_count\": 1, \"created_at\": 1663228017, \"is_current\": true, \"reason_code\": \"illegible_doc\", \"reason_type\": \"predefined\"}]}}",
+        "kyc_additional_details": "{\"business_description\": \"description\"}",
+        "custom_fields": "{\"tnc\":{\"accepted\":1,\"ip_address\":\"201.189.12.23\",\"time\":1561110415,\"url\":\"https:\\/\\/rtll.com\\/tnc\",\"user_agent\":\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_14_4)\"},\"apps\":[{\"name\":\"Ratnalal Shopping App\",\"links\":{\"android\":\"https:\\/\\/playstore.google.com\\/appId\\/122\",\"ios\":\"https:\\/\\/appstore.com\\/appId\\/122\"}}]}",
+        "client_applications": "{\"ios\": [{\"url\": \"appstore.acme.org\", \"name\": \"Acme\"}], \"android\": [{\"url\": \"playstore.acme.org\", \"name\": \"Acme\"}]}",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "fund_addition_va_ids": "{\"fee_credit\": \"va_LIc0SnP6OMuXxH\"}",
+        "industry_category_code_type": "iIfMMCYyTFbVSgHjgxBo"
+    }';
 
     /**
      * @throws \Exception
@@ -187,6 +202,56 @@ class RepositoryTest extends Functional\TestCase
             $this->getExceptionForFindOrFailPublicAsv($repo, "getById", "K9UzmvitzJ", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"))
         );
     }
+
+    public function testMerchantAssociation()
+    {
+        Config::set('applications.asv_v2.splitz_experiment_merchant_find_for_implicit_join', 'K1ZaAHZ7Lnumc6');
+        Config::set('applications.asv_v2.splitz_experiment_implicit_join_entity', 'K1ZaAHZ7Lnumc6');
+
+        $entitiesData = [
+            [
+                "relationName" => "merchant",
+                "asvEntity" => new Merchant(),
+                "asvResponseEntity" => new MerchantResponse(),
+                "setterFunctionName" => 'setMerchant',
+                "responseSetterFunctionName" => 'setMerchant',
+                "entityRepo" => new Repository(),
+                "entityRepoName" =>  'merchant',
+                "asvMockMethod" => "getById",
+                "entityName" => "merchant",
+                "entityData" => $this->merchantEntityJson1,
+                "entityClass" => new MerchantEntity(),
+                "entityProtoClass"  => new MerchantProto(),
+                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Detail\Repository(),
+                "AssociatedEntityName" => "merchant_detail",
+                "AssociatedEntityData" => $this->merchantDetailEntityJson1,
+                "AssociatedEntityClass" =>  new MerchantDetailEntity(),
+                "mockBuilderInterface" => "Razorpay\Asv\Interfaces\MerchantInterface",
+                "merchant_id" => "CzmiCwTPCL3t2K",
+                "shouldEntityNeedsToBeCreated" => false,
+                "isDependentEntity" => true,
+                "dependentEntity" => [
+                    [
+                        "dependentEntityName" => "merchant",
+                        "dependentEntityData" => $this->merchantEntityJson1,
+                        "dependentEntityClass" => new MerchantEntity(),
+
+                    ]
+                ]
+            ]
+        ];
+
+        $this->runTestsForImplicitJoin($entitiesData);
+    }
+
+    public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName) {
+        app('repo')->$repoName = $entityRepo;
+        $entity = $associatedEntity->$relationName->toArray();
+        $entity['audit_id'] = "M4Au4oJAxUkdNV";
+        $entityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($entityArray, $entity);
+        $this->assertEquals($entityForFindOrFailArray, $entityArray);
+    }
+
 
     /**
      * @throws \Exception

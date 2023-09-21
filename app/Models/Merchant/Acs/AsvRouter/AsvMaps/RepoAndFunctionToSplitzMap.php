@@ -44,7 +44,8 @@ final class RepoAndFunctionToSplitzMap
         ),
         MerchantRepository::class => array(
             FunctionConstant::FIND_OR_FAIL =>  SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
-            FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID
+            FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
+            FunctionConstant::FIND_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_MERCHANT_FIND_FOR_IMPLICIT_JOIN,
         ),
         AddressRepository::class => array(
             FunctionConstant::GET_BY_STAKEHOLDER_ID => SplitzConstant::SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID,
@@ -58,6 +59,7 @@ final class RepoAndFunctionToSplitzMap
         MerchantDetailRepository::class => array(
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
+            FunctionConstant::FIND_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_MERCHANT_DETAIL_FIND_FOR_IMPLICIT_JOIN,
         ),
     );
 

@@ -38,6 +38,10 @@ final class SplitzConstant
 
     const SPLITZ_IMPLICIT_JOIN_BUSINESS_DETAIL_BY_MERCHANTID = 'splitz_experiment_implicit_join_business_detail_by_merchant_id';
 
+    const SPLITZ_MERCHANT_DETAIL_FIND_FOR_IMPLICIT_JOIN = 'splitz_experiment_merchant_detail_find_for_implicit_join';
+
+    const SPLITZ_MERCHANT_FIND_FOR_IMPLICIT_JOIN = 'splitz_experiment_merchant_find_for_implicit_join';
+
     const SPLITZ_IMPLICIT_JOIN_STAKEHOLDER_BY_MERCHANTID = 'splitz_experiment_implicit_join_stakeholder_by_merchant_id';
 
     const SPLITZ_IMPLICIT_JOIN_DOCUMENT_BY_MERCHANTID = 'splitz_experiment_implicit_join_document_by_merchant_id';

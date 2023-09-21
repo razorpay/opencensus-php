@@ -13,11 +13,10 @@ use Rzp\Accounts\Merchant\V1\MerchantDetailResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDetail as MerchantDetailProto;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
-
-
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
-class RepositoryTest extends Functional\TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
     use Functional\AsvFindOrFailAndFindOrFailPublicTrait;
 
@@ -409,6 +408,49 @@ class RepositoryTest extends Functional\TestCase
         $response = $detailRepository->filterMerchantIdsByActivationStatus($merchantIds, $activationStatusList);
 
         $this->assertCount(2, $response);
+    }
+
+    public function testMerchantDetailAssociation()
+    {
+        Config::set('applications.asv_v2.splitz_experiment_merchant_detail_find_for_implicit_join', 'K1ZaAHZ7Lnumc6');
+        Config::set('applications.asv_v2.splitz_experiment_implicit_join_entity', 'K1ZaAHZ7Lnumc6');
+
+        $entitiesData = [
+            [
+                "relationName" => "merchantDetail",
+                "asvEntity" => new MerchantDetail(),
+                "asvResponseEntity" => new MerchantDetailResponse(),
+                "setterFunctionName" => 'setMerchantDetail',
+                "responseSetterFunctionName" => 'setMerchantDetail',
+                "entityRepo" => new Repository(),
+                "entityRepoName" =>  'merchant_detail',
+                "asvMockMethod" => "getById",
+                "entityName" => "merchant_detail",
+                "entityData" => $this->merchantDetailEntityJson1,
+                "entityClass" => new MerchantDetailEntity(),
+                "entityProtoClass"  => new MerchantDetailProto(),
+                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Repository(),
+                "AssociatedEntityName" => "merchant",
+                "AssociatedEntityData" => $this->merchantEntityJson1,
+                "AssociatedEntityClass" =>  new MerchantEntity(),
+                "mockBuilderInterface" => "Razorpay\Asv\Interfaces\MerchantDetailsInterface",
+                "merchant_id" => "CzmiCwTPCL3t2K",
+                "shouldEntityNeedsToBeCreated" => true,
+                "isDependentEntity" => false,
+                "dependentEntity" => [
+                ]
+            ]
+        ];
+
+        $this->runTestsForImplicitJoin($entitiesData);
+    }
+
+
+    public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName) {
+        app('repo')->$repoName = $entityRepo;
+        $entity = $associatedEntity->$relationName->toArray();
+        $entityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($entityArray, $entity);
+        $this->assertEquals($entityForFindOrFailArray, $entityArray);
     }
 
     /**

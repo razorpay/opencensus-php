@@ -10371,6 +10371,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE                    = 'ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE';
     const ASV_WRITE_REQUEST_ROUTER_RESULT                        = 'ASV_WRITE_REQUEST_ROUTER_RESULT';
+    const ASV_IMPLICIT_JOIN_ROUTER_RESULT                        = 'ASV_IMPLICIT_JOIN_ROUTER_RESULT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
