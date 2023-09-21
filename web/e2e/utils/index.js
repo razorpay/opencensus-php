@@ -23,7 +23,7 @@ const generateRandomName = () => {
   return Math.random().toString(36).slice(2, 15);
 };
 
-const generateRandomEmail = () => {
+export const generateRandomEmail = () => {
   const phone = generateRandomPhoneNumber();
   const name = generateRandomName();
   return `${name}.${phone}@razorpay.com`;
@@ -55,7 +55,7 @@ export const expectSuccessNotification = async ({ page, notificationText }) => {
   ).toBeVisible();
 };
 
-const generateRandomWebsiteUrl = () => {
+export const generateRandomWebsiteUrl = () => {
   const keyword = Math.random().toString(36).substring(2, 9);
   return `https://www.youtube.com/${keyword}`;
 };

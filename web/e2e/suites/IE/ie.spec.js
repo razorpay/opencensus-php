@@ -18,7 +18,7 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });
   // TODO: enable these tests after multiple auth setup is done
-  test('should be able to request for IE @priority=normal', async ({ page }) => {
+  test.skip('should be able to request for IE @priority=normal', async ({ page }) => {
     // navigate to IE Route
     await page.goto(CONSTANTS.IE_TAB_URL);
 

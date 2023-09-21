@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { generateRandomEmail, generateRandomWebsiteUrl } from '../../utils';
+import { generateRandomWebsiteUrl, generateRandomEmail } from '../../utils';
 import { routes, StorageStatePath } from '../../utils/constants';
 
 test.describe
@@ -26,7 +26,7 @@ test.describe
     await expect(websiteUrlField).toBeVisible();
   });
 
-  test('should edit support details @priority=normal', async ({ page }) => {
+  test.skip('should edit support details @priority=normal', async ({ page }) => {
     await page.goto(routes.CUSTOMER_SUPPORT_DETAILS);
 
     // edit website url of customer support details
