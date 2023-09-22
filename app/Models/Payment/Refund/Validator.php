@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Validator extends Base\Validator
 {
@@ -114,6 +115,7 @@ class Validator extends Base\Validator
         'id'                => 'required_without_all:payment_id,refund_id,order_id|alpha_num_underscore',
         'mode'              => 'sometimes|in:live,test',
         'captcha'           => 'required|string|custom',
+        RefundConstants::NEW_REFUND_STATUS_FOR_CUSTOMER_REFUNDS_DETAILS => 'sometimes|bool'
     ];
 
     protected static $verifyInternalRefundGateways = [

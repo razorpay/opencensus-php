@@ -2593,6 +2593,10 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('customer_refunds_details', $input);
 
+        $newRefundStatus = isset($input[RefundConstants::NEW_REFUND_STATUS_FOR_CUSTOMER_REFUNDS_DETAILS]) === true && (bool)$input[RefundConstants::NEW_REFUND_STATUS_FOR_CUSTOMER_REFUNDS_DETAILS];
+
+        unset($input[RefundConstants::NEW_REFUND_STATUS_FOR_CUSTOMER_REFUNDS_DETAILS]);
+
         $mode = $input['mode'] ?? Mode::LIVE;
 
         $this->auth->setModeAndDbConnection($mode);
@@ -2609,29 +2613,30 @@ class Service extends Base\Service
             RefundConstants::PAYMENTS => [],
         ];
 
+        $continueSearch = true;
         switch(true)
         {
             case (empty($input[RefundConstants::PAYMENT_ID]) === false):
                 // Given RZP public payment_id
-                $this->populateDetailsFromPaymentId($input[RefundConstants::PAYMENT_ID], $return);
+                $this->populateDetailsFromPaymentId($input[RefundConstants::PAYMENT_ID], $return, $continueSearch, $newRefundStatus);
 
                 break;
 
             case (empty($input[RefundConstants::REFUND_ID]) === false):
                 // Given RZP public refund_id
-                $this->populateDetailsFromRefundId($input[RefundConstants::REFUND_ID], $return);
+                $this->populateDetailsFromRefundId($input[RefundConstants::REFUND_ID], $return, $continueSearch,$newRefundStatus);
 
                 break;
 
             case (empty($input[RefundConstants::ORDER_ID]) === false):
                 // Given RZP public order_id
-                $this->populateDetailsFromOrderId($input[RefundConstants::ORDER_ID], $return);
+                $this->populateDetailsFromOrderId($input[RefundConstants::ORDER_ID], $return, $continueSearch,$newRefundStatus);
 
                 break;
 
             default:
                 // Given id - could be RZP internal id, UPI RRN, Merchant reference number (from notes)
-                $this->fetchRefundDetailsForCustomerFromId($input, $return);
+                $this->fetchRefundDetailsForCustomerFromId($input, $return, $newRefundStatus);
         }
 
         $this->populateMerchantSupportDetails($return);
@@ -2697,16 +2702,35 @@ class Service extends Base\Service
      * @param array $return
      * @param Payment\Entity $payment
      */
-    protected function populateRefundDetailsForCustomer(array &$return, Payment\Entity $payment)
+    protected function populateRefundDetailsForCustomer(array &$return, Payment\Entity $payment, bool $newRefundStatus = false )
     {
+        
         $refunds = $payment->refunds;
 
         $populateMessages = true;
 
+        $refundsPublic = [];
+
+        foreach ($refunds as $refund)
+        {
+            $refundPublic = $refund->toArrayPublicCustomer($populateMessages);
+
+            $refundStatus = $refund->getStatus();
+
+            if (($newRefundStatus === true) &&
+                ($refundStatus === Status::FAILED or $refundStatus === Status::REVERSED))
+            {
+                $refundPublic[RefundConstants::STATUS] = Status::FAILED;
+            }
+
+            $refundsPublic[] = $refundPublic;
+        }
+
         array_push($return[RefundConstants::PAYMENTS], [
-            RefundConstants::REFUNDS => isset($refunds) ? $refunds->toArrayPublicCustomer($populateMessages) : [],
+            RefundConstants::REFUNDS => $refundsPublic,
             RefundConstants::PAYMENT => isset($payment) ? $payment->toArrayPublicCustomer($populateMessages) : [],
         ]);
+
     }
 
     /**
@@ -2714,13 +2738,13 @@ class Service extends Base\Service
      * @param array $return
      * @param bool $continueSearch
      */
-    protected function populateDetailsFromPaymentId($id, array &$return, bool &$continueSearch = true)
+    protected function populateDetailsFromPaymentId($id, array &$return, bool &$continueSearch = true, bool $newRefundStatus = false)
     {
         $payment = $this->getPaymentFromPaymentIdForCustomerDetails($id);
 
         if (empty($payment) === false)
         {
-            $this->populateRefundDetailsForCustomer($return, $payment);
+            $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
 
             $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
 
@@ -2733,7 +2757,7 @@ class Service extends Base\Service
      * @param array $return
      * @param bool $continueSearch
      */
-    protected function populateDetailsFromRefundId($id, array &$return, bool &$continueSearch = true)
+    protected function populateDetailsFromRefundId($id, array &$return, bool &$continueSearch = true, bool $newRefundStatus = false)
     {
         $refund = $this->getRefundFromRefundIdForCustomerDetails($id);
 
@@ -2741,7 +2765,7 @@ class Service extends Base\Service
         {
             $payment = $refund->payment;
 
-            $this->populateRefundDetailsForCustomer($return, $payment);
+            $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
 
             $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
 
@@ -2754,7 +2778,7 @@ class Service extends Base\Service
      * @param array $return
      * @param bool $continueSearch
      */
-    protected function populateDetailsFromOrderId($id, array &$return, bool &$continueSearch = true)
+    protected function populateDetailsFromOrderId($id, array &$return, bool &$continueSearch = true, bool $newRefundStatus = false)
     {
         $order = $this->getOrderFromOrderIdForCustomerDetails($id);
 
@@ -2764,7 +2788,7 @@ class Service extends Base\Service
 
             foreach ($payments as $payment)
             {
-                $this->populateRefundDetailsForCustomer($return, $payment);
+                $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
             }
 
             $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
@@ -2779,7 +2803,7 @@ class Service extends Base\Service
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\InvalidArgumentException
      */
-    protected function fetchRefundDetailsForCustomerFromId(array $input, array &$return)
+    protected function fetchRefundDetailsForCustomerFromId(array $input, array &$return, bool $newRefundStatus = false)
     {
         $id = $input[RefundConstants::ID];
 
@@ -2791,22 +2815,22 @@ class Service extends Base\Service
             $actions = [Payment\Action::AUTHORIZE, Payment\Action::REFUND];
 
             // Check upi table - authorize action
-            $this->fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, $return, $continueSearch);
+            $this->fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, $return, $continueSearch, $newRefundStatus);
         }
         // check if RZP ID
         else if(Base\UniqueIdEntity::verifyUniqueId($id, false) === true)
         {
             // Check payment/refund/order tables
-            $this->populateDetailsFromPaymentId($id, $return, $continueSearch);
+            $this->populateDetailsFromPaymentId($id, $return, $continueSearch, $newRefundStatus);
 
             if ($continueSearch === true)
             {
-                $this->populateDetailsFromRefundId($id, $return, $continueSearch);
+                $this->populateDetailsFromRefundId($id, $return, $continueSearch, $newRefundStatus);
             }
 
             if ($continueSearch === true)
             {
-                $this->populateDetailsFromOrderId($id, $return, $continueSearch);
+                $this->populateDetailsFromOrderId($id, $return, $continueSearch, $newRefundStatus);
             }
         }
 
@@ -2815,7 +2839,7 @@ class Service extends Base\Service
         {
             (new Validator)->validateCustomerRefundFetchDetailsFromMerchantNotes($id);
 
-            $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return);
+            $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return, $newRefundStatus);
         }
     }
 
@@ -2825,7 +2849,7 @@ class Service extends Base\Service
      * @param array $return
      * @param bool $continueSearch
      */
-    protected function fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, array &$return, bool &$continueSearch = true)
+    protected function fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, array &$return, bool &$continueSearch = true, bool $newRefundStatus = false)
     {
         $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndActions($id, $actions);
 
@@ -2843,7 +2867,7 @@ class Service extends Base\Service
 
             if (empty($payment) === false)
             {
-                $this->populateRefundDetailsForCustomer($return, $payment);
+                $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
 
                 $return[RefundConstants::ID_TYPE] = RefundConstants::NPCI_RRN;
 
@@ -2858,7 +2882,7 @@ class Service extends Base\Service
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\InvalidArgumentException
      */
-    protected function fetchRefundDetailsForCustomerFromMerchantNotes($id, array &$return)
+    protected function fetchRefundDetailsForCustomerFromMerchantNotes($id, array &$return, bool $newRefundStatus = false)
     {
         $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id], null, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -2881,7 +2905,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $exception){}
 
-            $this->populateRefundDetailsForCustomer($return, $payment);
+            $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
 
             $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
         }
@@ -2905,7 +2929,7 @@ class Service extends Base\Service
 
                 $payment = $refund->payment;
 
-                $this->populateRefundDetailsForCustomer($return, $payment);
+                $this->populateRefundDetailsForCustomer($return, $payment, $newRefundStatus);
 
                 $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
             }
