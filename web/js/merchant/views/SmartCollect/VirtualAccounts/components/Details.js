@@ -164,7 +164,7 @@ class VirtualAccountDetails extends React.Component {
         abExperiments: { rbl_account_migration },
       } = splitz;
 
-      isRblAccountMigrationEnabled = rbl_account_migration.variables.result === 'on';
+      isRblAccountMigrationEnabled = rbl_account_migration?.variables?.result === 'on';
     }
     // bankAccount1 : new/latest account
     // bankAccount2 : old account
