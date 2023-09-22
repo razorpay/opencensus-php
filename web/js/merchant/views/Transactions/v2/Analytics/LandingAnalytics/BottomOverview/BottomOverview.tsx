@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
 
-import { ScrollableContainer } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { BottomOverviewProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import { getBottomSectionData } from 'merchant/views/Transactions/v2/Analytics/utils';
+import { ScrollableContainer } from 'merchant/views/Transactions/v2/common/styled';
 
 import BottomOverviewCard from './BottomCard';
 

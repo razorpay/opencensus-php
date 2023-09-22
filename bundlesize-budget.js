@@ -86,9 +86,15 @@ module.exports = [
     gzip: true,
   },
   {
-    name: 'Transaction',
-    path: 'js/merchant/Transactions.*.js',
-    limit: '64 KB',
+    name: 'Transaction V1',
+    path: 'js/merchant/TransactionsV1.*.js',
+    limit: '14 KB',
+    gzip: true,
+  },
+  {
+    name: 'Transaction V2',
+    path: 'js/merchant/TransactionsV2.*.js',
+    limit: '24 KB',
     gzip: true,
   },
   {

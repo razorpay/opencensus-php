@@ -5,23 +5,6 @@ export const OverviewWrapper = styled.div`
   margin: 8px 0 12px 0;
 `;
 
-export const ScrollableContainer = styled.div`
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  background-image: linear-gradient(to right, #fff, #fff), linear-gradient(to right, #fff, #fff),
-    linear-gradient(to right, #0000001a, #fff0), linear-gradient(to left, #0000001a, #fff0);
-  background-position: left center, right center, left center, right center;
-  background-repeat: no-repeat;
-  background-color: #fff;
-  background-size: 20px 100%, 20px 100%, 10px 100%, 10px 100%;
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
 export const LegendDot = styled.div<{ color: string }>`
   width: 8px;
   height: 8px;

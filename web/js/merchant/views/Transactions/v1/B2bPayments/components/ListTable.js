@@ -1,16 +1,27 @@
 import { useMemo, useState, useCallback, useRef } from 'react';
-
-// utils
-import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
-
-// components
-import EntityTable from 'merchant/components/EntityTable';
 import { Button, UploadIcon, PlusIcon, EyeIcon, Link } from '@razorpay/blade/components';
 
-// styles
+import { useSplitzService } from 'common/splitz';
+import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
+import EntityTable from 'merchant/components/EntityTable';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import './styles.styl';
 
-// constants
+const _paymentId = (splitz) => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        'Transactions.Invoices',
+        'invoices-table',
+        splitz,
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
+
 const paymentMethodColumn = {
   title: 'Payment Method',
   value: () => 'Bank Transfer',
@@ -24,6 +35,7 @@ const ListTable = ({
   onBuyerAddressClick,
   ...props
 }) => {
+  const splitz = useSplitzService();
   const [selectedPaymentId, setSelectedPaymentId] = useState(null);
   const fileUploaderRef = useRef(null);
 
@@ -113,7 +125,7 @@ const ListTable = ({
     <>
       <EntityTable
         title="Payments"
-        columns={[paymentId, amount, createdAt, paymentMethodColumn, status, actionColumn]}
+        columns={[_paymentId(splitz), amount, createdAt, paymentMethodColumn, status, actionColumn]}
         {...props}
       />
       <input

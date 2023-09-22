@@ -1,7 +1,15 @@
 import React from 'react';
-import lazy from 'merchant/routes/LazyLoader';
 
-// analytics
+import Button from 'common/new-ui/Button';
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ListContainer from 'merchant/containers/ListContainer';
+import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
+import lazy from 'merchant/routes/LazyLoader';
+import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
+import InfoBanner from 'merchant/views/Transactions/v1/B2bPayments/components/InfoBanner';
+import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
+import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
 import {
   trackFilterSubmit,
   trackSearchClicked,
@@ -12,21 +20,8 @@ import {
   trackInvoiceViewStatus,
   trackShown,
 } from 'merchant/views/Transactions/v1/UploadInvoice/analytics';
-
-// components
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import Button from 'common/new-ui/Button';
-// eslint-disable-next-line no-restricted-imports
-import HeaderAction from 'common/ui/HeaderAction';
-import ListContainer from 'merchant/containers/ListContainer';
 import PaymentTable from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentTable';
-import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
-import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
-import InfoBanner from 'merchant/views/Transactions/v1/B2bPayments/components/InfoBanner';
-import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-
-// actions
-import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
+import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const BulkUploadModal = lazy(() =>
   import(
@@ -35,6 +30,11 @@ const BulkUploadModal = lazy(() =>
 );
 
 class PaymentsListContainer extends ListContainer {
+  getVersion = () => {
+    const { splitz, user } = this.props;
+    return isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+  };
+
   onFilterSubmit = (params) => {
     this.search(params)
       ?.then(() => {
@@ -46,6 +46,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: true,
           status: 'success',
+          version: this.getVersion(),
         });
       })
       .catch(() => {
@@ -57,6 +58,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: false,
           status: 'failure',
+          version: this.getVersion(),
         });
       });
   };
@@ -65,11 +67,14 @@ class PaymentsListContainer extends ListContainer {
     trackSearchClicked({
       paymentId: params.id,
       paymentStatus: params.status,
+      version: this.getVersion(),
     });
   };
 
   onClearAnalytics = () => {
-    trackSearchClear();
+    trackSearchClear({
+      version: this.getVersion(),
+    });
   };
 
   refreshList = () => {
@@ -82,6 +87,7 @@ class PaymentsListContainer extends ListContainer {
     uploadInvoicePending({ id });
     trackInvoiceUploadClick({
       paymentId: id,
+      version: this.getVersion(),
     });
     try {
       await uploadInvoice(id, file);
@@ -94,6 +100,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'success',
+        version: this.getVersion(),
       });
     } catch (err) {
       uploadInvoiceError({ id });
@@ -104,6 +111,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'failure',
+        version: this.getVersion(),
       });
     }
   };
@@ -114,6 +122,7 @@ class PaymentsListContainer extends ListContainer {
     viewInvoicePending({ id });
     trackInvoiceViewClick({
       documentId: id,
+      version: this.getVersion(),
     });
     try {
       const response = await viewInvoice(id);
@@ -122,6 +131,7 @@ class PaymentsListContainer extends ListContainer {
         trackInvoiceViewStatus({
           documentId: id,
           status: 'success',
+          version: this.getVersion(),
         });
         viewInvoiceSuccess({ id });
       }
@@ -139,6 +149,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceViewStatus({
         documentId: id,
         status: 'failure',
+        version: this.getVersion(),
       });
     }
   };
@@ -157,7 +168,9 @@ class PaymentsListContainer extends ListContainer {
   };
 
   componentDidMount() {
-    trackShown();
+    trackShown({
+      version: this.getVersion(),
+    });
   }
 
   render() {
@@ -167,7 +180,7 @@ class PaymentsListContainer extends ListContainer {
     return (
       <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.CROSS_BORDER}>
         <div className="content-wrapper">
-          <HeaderAction>
+          <HeaderActions>
             <div className="btn-toolbar pull-right">
               <a
                 className="btn btn-link"
@@ -177,9 +190,9 @@ class PaymentsListContainer extends ListContainer {
               >
                 Guide to Upload Invoice <i className="i i-external-link" />
               </a>
+              <Button.Primary onClick={this.onBulkUpload}>Bulk Upload</Button.Primary>
             </div>
-            <Button.Primary onClick={this.onBulkUpload}>Bulk Upload</Button.Primary>
-          </HeaderAction>
+          </HeaderActions>
           <ListFilter
             form="uploadInvoicePaymentListFilter"
             count={count}

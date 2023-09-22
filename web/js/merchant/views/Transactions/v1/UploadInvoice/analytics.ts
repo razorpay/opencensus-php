@@ -32,8 +32,8 @@ export const trackSearchClicked = (properties: TrackAnalyticsProperties): void =
   track({ properties, objectName: 'opgsp payments search', actionName: 'clicked' });
 };
 
-export const trackSearchClear = (): void => {
-  track({ objectName: 'opgsp payments search', actionName: 'clear' });
+export const trackSearchClear = (properties: TrackAnalyticsProperties): void => {
+  track({ properties, objectName: 'opgsp payments search', actionName: 'clear' });
 };
 
 export const trackInvoiceUploadClick = (properties: TrackAnalyticsProperties): void => {
@@ -52,6 +52,6 @@ export const trackInvoiceViewStatus = (properties: TrackAnalyticsProperties): vo
   track({ properties, objectName: 'opgsp payments invoice view', actionName: 'result' });
 };
 
-export const trackShown = (): void => {
-  track({ objectName: 'opgsp payments', actionName: 'loaded' });
+export const trackShown = (properties: TrackAnalyticsProperties): void => {
+  track({ properties, objectName: 'opgsp payments', actionName: 'loaded' });
 };

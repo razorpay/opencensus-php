@@ -23,8 +23,8 @@ export const trackSearchClicked = (properties) => {
   track({ properties, objectName: 'b2b payments search', actionName: 'clicked' });
 };
 
-export const trackSearchClear = () => {
-  track({ objectName: 'b2b payments search', actionName: 'clear' });
+export const trackSearchClear = (properties) => {
+  track({ properties, objectName: 'b2b payments search', actionName: 'clear' });
 };
 
 export const trackInvoiceUploadClick = (properties) => {
@@ -43,6 +43,6 @@ export const trackInvoiceViewStatus = (properties) => {
   track({ properties, objectName: 'b2b payments invoice view', actionName: 'result' });
 };
 
-export const trackShown = () => {
-  track({ objectName: 'b2b payments', actionName: 'loaded' });
+export const trackShown = (properties) => {
+  track({ properties, objectName: 'b2b payments', actionName: 'loaded' });
 };

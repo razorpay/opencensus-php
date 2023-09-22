@@ -2,12 +2,10 @@ import React from 'react';
 import { Box, Card, CardBody, Divider } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
-import {
-  BorderWrapper,
-  ScrollableContainer,
-} from 'merchant/views/Transactions/v2/Analytics/styled';
+import { BorderWrapper } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { AnalyticsBoilerPlateProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
+import { ScrollableContainer } from 'merchant/views/Transactions/v2/common/styled';
 
 import CardInfo from './components/CardInfo';
 

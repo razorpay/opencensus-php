@@ -1,11 +1,13 @@
 import React from 'react';
-import { ScrollableContainer } from 'merchant/views/Transactions/v2/Analytics/styled';
-import CapturedPaymentCard from './CapturedPaymentCard';
-import PaymentMethodSplit from './PaymentMethodSplit';
 import { Box } from '@razorpay/blade/components';
+
+import LoadFailed from 'merchant/views/Transactions/v2/Analytics/components/LoadFailed';
 import { CapturePaymentShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
 import { TopOverviewContainerProps } from 'merchant/views/Transactions/v2/Analytics/types';
-import LoadFailed from 'merchant/views/Transactions/v2/Analytics/components/LoadFailed';
+import { ScrollableContainer } from 'merchant/views/Transactions/v2/common/styled';
+
+import CapturedPaymentCard from './CapturedPaymentCard';
+import PaymentMethodSplit from './PaymentMethodSplit';
 
 const TopOverviewContainer = ({
   isPaymentsDataLoading,

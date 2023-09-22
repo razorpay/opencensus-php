@@ -1,19 +1,31 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
 
-// utils
-import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
-
-// components
 import Button from 'common/new-ui/Button';
+import { useSplitzService } from 'common/splitz';
+import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 
-// types
 import type { PaymentItem } from 'merchant/views/Transactions/v1/UploadInvoice/types';
 
 // styles
 import 'merchant/views/Transactions/v1/UploadInvoice/components/styles.styl';
 
-// constants
+const _paymentId = (splitz) => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        'Transactions.UploadInvoices',
+        'upload-invoices-table',
+        splitz,
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
+
 const paymentMethod = {
   title: 'Payment Method',
   value: (item: PaymentItem) =>
@@ -47,6 +59,7 @@ const ListTable = ({
 }: ListTableProps): JSX.Element => {
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const fileUploaderRef = useRef<HTMLInputElement | null>(null);
+  const splitz = useSplitzService();
 
   const handleUploadClick = useCallback((id) => {
     setSelectedPaymentId(id);
@@ -104,7 +117,15 @@ const ListTable = ({
     <>
       <EntityTable
         title="Payments"
-        columns={[paymentId, invoiceNumber, amount, createdAt, paymentMethod, status, actionColumn]}
+        columns={[
+          _paymentId(splitz),
+          invoiceNumber,
+          amount,
+          createdAt,
+          paymentMethod,
+          status,
+          actionColumn,
+        ]}
         {...props}
       />
       <input

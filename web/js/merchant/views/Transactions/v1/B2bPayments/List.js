@@ -2,7 +2,12 @@ import React, { lazy } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-// analytics
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import ListContainer from 'merchant/containers/ListContainer';
+import { b2bActions } from 'merchant/reducers/b2bExports';
+import { fetchB2bPayments } from 'merchant/reducers/collection';
 import {
   trackFilterSubmit,
   trackSearchClicked,
@@ -13,23 +18,14 @@ import {
   trackInvoiceViewStatus,
   trackShown,
 } from 'merchant/views/Transactions/v1/B2bPayments/analytics';
-
-// components
-// eslint-disable-next-line no-restricted-imports
-import HeaderAction from 'common/ui/HeaderAction';
-import ListContainer from 'merchant/containers/ListContainer';
-import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
-import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
 import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
 import InfoBanner from 'merchant/views/Transactions/v1/B2bPayments/components/InfoBanner';
-import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-// actions
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { b2bActions } from 'merchant/reducers/b2bExports';
-import { fetchB2bPayments } from 'merchant/reducers/collection';
+import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
+import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
+import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
+import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 // Lazy loaded components
 const BuyerAddressModalLazy = lazy(() =>
@@ -40,6 +36,11 @@ const BuyerAddressModalLazy = lazy(() =>
 ///- Lazy loaded components
 
 class PaymentsListContainer extends ListContainer {
+  getVersion = () => {
+    const { splitz, user } = this.props;
+    return isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+  };
+
   onFilterSubmit = (params) => {
     this.search(params)
       .then(() => {
@@ -51,6 +52,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: true,
           status: 'success',
+          version: this.getVersion(),
         });
       })
       .catch(() => {
@@ -62,6 +64,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: false,
           status: 'failure',
+          version: this.getVersion(),
         });
       });
   };
@@ -70,11 +73,14 @@ class PaymentsListContainer extends ListContainer {
     trackSearchClicked({
       paymentId: params.id,
       paymentStatus: params.status,
+      version: this.getVersion(),
     });
   };
 
   onClearAnalytics = () => {
-    trackSearchClear();
+    trackSearchClear({
+      version: this.getVersion(),
+    });
   };
 
   onUploadInvoice = async (id, file) => {
@@ -83,6 +89,7 @@ class PaymentsListContainer extends ListContainer {
     uploadInvoicePending({ id });
     trackInvoiceUploadClick({
       paymentId: id,
+      version: this.getVersion(),
     });
     try {
       await b2bActions.uploadInvoice(id, file);
@@ -95,6 +102,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'success',
+        version: this.getVersion(),
       });
     } catch (err) {
       uploadInvoiceError({ id, error: err });
@@ -105,6 +113,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'failure',
+        version: this.getVersion(),
       });
     }
   };
@@ -119,6 +128,7 @@ class PaymentsListContainer extends ListContainer {
     getInvoiceDetailsPending({ id });
     trackInvoiceViewClick({
       documentId: id,
+      version: this.getVersion(),
     });
     try {
       const response = await b2bActions.getInvoiceDetails(id);
@@ -127,6 +137,7 @@ class PaymentsListContainer extends ListContainer {
         trackInvoiceViewStatus({
           documentId: id,
           status: 'success',
+          version: this.getVersion(),
         });
         getInvoiceDetailsSuccess({ id });
       }
@@ -143,6 +154,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceViewStatus({
         documentId: id,
         status: 'failure',
+        version: this.getVersion(),
       });
     }
   };
@@ -164,7 +176,9 @@ class PaymentsListContainer extends ListContainer {
   };
 
   componentDidMount() {
-    trackShown();
+    trackShown({
+      version: this.getVersion(),
+    });
   }
 
   render() {
@@ -174,7 +188,7 @@ class PaymentsListContainer extends ListContainer {
     return (
       <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.CROSS_BORDER}>
         <div className="content-wrapper">
-          <HeaderAction>
+          <HeaderActions>
             <div className="btn-toolbar pull-right">
               <a
                 className="btn btn-link"
@@ -186,7 +200,7 @@ class PaymentsListContainer extends ListContainer {
                 <i className="i i-external-link" />
               </a>
             </div>
-          </HeaderAction>
+          </HeaderActions>
           <ListFilter
             form="b2bPaymentListFilter"
             count={count}
@@ -215,7 +229,7 @@ class PaymentsListContainer extends ListContainer {
   }
 }
 
-const mapStatesToProps = (state) => state.b2bExportsTransactions;
+const mapStatesToProps = (state) => ({ ...state.b2bExportsTransactions, user: state.session.user });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
@@ -235,4 +249,6 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStatesToProps, mapDispatchToProps)(PaymentsListContainer);
+export default withSplitzService(
+  connect(mapStatesToProps, mapDispatchToProps)(PaymentsListContainer),
+);

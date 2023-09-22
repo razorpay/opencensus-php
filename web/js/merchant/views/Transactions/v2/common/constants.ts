@@ -14,6 +14,7 @@ export const mobileBreakoints: Readonly<Array<keyof Theme['breakpoints']>> = [
 
 export enum TransactionsEntityRoute {
   PAYMENTS = '/payments',
+  BATCH_PAYMENTS = '/payments/batchuploads',
   DISPUTES = '/disputes',
   FAILED_PAYMENTS = '/failed-payments',
   ORDERS = '/orders',
@@ -21,10 +22,15 @@ export enum TransactionsEntityRoute {
   BATCH_REFUNDS = '/refunds/batchuploads',
   BATCH_REFUNDS_UPLOAD = '/refunds/batchupload',
   SUCCESS_RATE = '/success-rate',
+  UPLOAD_INVOICES = '/payments/b2b-exports',
+  INVOICES = '/payments/invoices',
 }
 
 export const TransactionsPagesMap = {
   [TransactionsEntityRoute.PAYMENTS]: 'Payments',
+  [TransactionsEntityRoute.BATCH_PAYMENTS]: 'Batch Payments',
+  [TransactionsEntityRoute.UPLOAD_INVOICES]: 'Upload Invoices',
+  [TransactionsEntityRoute.INVOICES]: 'Invoices',
   [TransactionsEntityRoute.DISPUTES]: 'Disputes',
   [TransactionsEntityRoute.FAILED_PAYMENTS]: 'Failed Payments',
   [TransactionsEntityRoute.ORDERS]: 'Orders',

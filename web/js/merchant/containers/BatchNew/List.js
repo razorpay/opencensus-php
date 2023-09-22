@@ -1,20 +1,22 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import HeaderAction from 'common/ui/HeaderAction';
 import { compose, bindActionCreators } from 'redux';
-import DataTable from 'common/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
-import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-import { luminateRow } from 'merchant/reducers/app';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { batchDownload } from 'merchant/reducers/batches';
+
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
-import ShowWhen from 'merchant/components/ShowWhen';
+import DataTable from 'common/ui/Table/DataTable';
+import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
+import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
+import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { DocLink } from 'merchant/components/DocsLink';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ListContainer from 'merchant/containers/ListContainer';
+import { luminateRow } from 'merchant/reducers/app';
+import { batchDownload } from 'merchant/reducers/batches';
+import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
 import track from './track';
 
 const batchStatus = {
@@ -100,53 +102,9 @@ class BatchList extends ListContainer {
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
-        <div class="btn-toolbar pull-right header-btns hidden-xs">
-          {sampleUrl && (
-            <a class="btn btn-link hidden-xs" href={sampleUrl} onClick={this.downloadSampleFile}>
-              Download Sample File
-            </a>
-          )}
-          <ShowWhen additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}>
-            {docUrl && (
-              <DocLink
-                class="btn btn-link hidden-xs"
-                href={docUrl}
-                target="_blank"
-                onClick={this.trackViewDocumentation}
-              >
-                Documentation &nbsp; <i class="i i-external-link" />
-              </DocLink>
-            )}
-          </ShowWhen>
-
-          {showBatchUploadButton &&
-            (this.props.multiBatch ? (
-              <div class="pull-right MultiBatch--action">
-                <div class="btn btn-primary">Upload New Batch</div>
-                <PopoverComponent align="bottom" class="MultiBatch--popover">
-                  <PopoverTitle>
-                    <h4>
-                      <strong>Upload New Batch</strong>
-                    </h4>
-                  </PopoverTitle>
-                  <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
-                </PopoverComponent>
-              </div>
-            ) : (
-              ((session.mode !== 'live' || !user.isRejected) && (
-                <button
-                  class="btn btn-primary pull-right"
-                  onClick={this.openUploadModal(this.props.renderUploadModal)}
-                >
-                  Click here to upload
-                </button>
-              )) ||
-              null
-            ))}
-        </div>
         {/* Mobile Header for New Batch Upload Mobile View */}
-        <HeaderAction responsive>
-          <div className="btn-toolbar pull-right hidden-lg">
+        <HeaderActions>
+          <div className="btn-toolbar pull-right">
             {sampleUrl && (
               <a className="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
                 Download Sample File
@@ -197,7 +155,7 @@ class BatchList extends ListContainer {
                 null
               ))}
           </div>
-        </HeaderAction>
+        </HeaderActions>
 
         <BatchListFilter
           form="batchListFilter"

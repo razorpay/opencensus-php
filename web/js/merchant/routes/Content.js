@@ -34,6 +34,7 @@ import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSch
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import Transactions from 'merchant/views/Transactions';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 
@@ -52,9 +53,6 @@ const AccountAndSettingsHome = lazy(() =>
 
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
-);
-const Transactions = lazy(() =>
-  import(/* webpackChunkName: "Transactions" */ 'merchant/views/Transactions'),
 );
 const Settlements = lazy(() =>
   import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements'),

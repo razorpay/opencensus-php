@@ -60,4 +60,5 @@ export type TrackAnalyticsProperties = {
   count?: PropertyType;
   resultsReturned?: PropertyType;
   status?: 'success' | 'failure';
+  version?: string;
 };

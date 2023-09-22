@@ -1,15 +1,8 @@
-// redux
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-// component
-import PaymentListContainer from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentList';
-
-// actions
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchFA, resetFA } from 'merchant/reducers/payments/details';
+import { withSplitzService } from 'common/splitz';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
-import { openModal } from 'merchant_common/reducers/modals';
 import {
   uploadInvoicePending,
   uploadInvoiceError,
@@ -18,6 +11,10 @@ import {
   viewInvoiceError,
   viewInvoiceSuccess,
 } from 'merchant/reducers/paymentUploadInvoice';
+import { fetchFA, resetFA } from 'merchant/reducers/payments/details';
+import PaymentListContainer from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentList';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const mapStatesToProps = (state) => ({
   ...state.payment,
@@ -45,4 +42,6 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStatesToProps, mapDispatchToProps)(PaymentListContainer);
+export default withSplitzService(
+  connect(mapStatesToProps, mapDispatchToProps)(PaymentListContainer),
+);

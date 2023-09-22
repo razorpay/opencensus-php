@@ -1,6 +1,34 @@
 import { Theme } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { css, FlattenSimpleInterpolation } from 'styled-components';
+
+export const scrollbar = ({ theme }: { theme: Theme }): FlattenSimpleInterpolation => css`
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  background-image: linear-gradient(to right, #fff, #fff), linear-gradient(to right, #fff, #fff),
+    linear-gradient(to right, #0000001a, #fff0), linear-gradient(to left, #0000001a, #fff0);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-color: #fff;
+  background-size: 20px 100%, 20px 100%, 10px 100%, 10px 100%;
+  background-attachment: local, local, scroll, scroll;
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  @media screen and (max-width: ${theme.breakpoints.m}px) {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+`;
 
 export const StyledTable = styled.div(
   ({ theme, loading }: { theme: Theme; loading: boolean }) => `
@@ -180,6 +208,8 @@ export const StyledSearchByFilter = styled.div(
 
 export const StyledTabHeader = styled.header(
   ({ theme }: { theme: Theme }) => `
+  ${scrollbar({ theme })}
+  line-height: ${theme.spacing[10]}px;
   display: flex;
   text-align: center;
   font-size: ${theme.spacing[6]}px;
@@ -187,6 +217,15 @@ export const StyledTabHeader = styled.header(
     color: ${theme.colors.action.text.link.default};
     border-color: ${theme.colors.action.text.link.default};
     pointer-events: none;
+  }
+  @media screen and (max-width: ${theme.breakpoints.m}px) {
+    && {
+      line-height: 44px;
+      font-size: ${theme.spacing[5]}px;
+    }
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 `,
 );
@@ -198,6 +237,9 @@ export const StyledTabItem = styled(NavLink)(
     margin: ${theme.spacing[0]};
     color: ${theme.colors.surface.text.subdued.lowContrast};
     flex: 1;
+    @media screen and (max-width: ${theme.breakpoints.m}px) {
+      padding: ${theme.spacing[0]} 10px ;
+    }
   }
 `,
 );
@@ -209,3 +251,7 @@ export const StyledContent = styled.div(
   }  
 `,
 );
+
+export const ScrollableContainer = styled.div`
+  ${scrollbar}
+`;
