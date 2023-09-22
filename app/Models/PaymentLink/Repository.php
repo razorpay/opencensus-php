@@ -13,6 +13,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Trace\TraceCode;
+use RZP\Base\ConnectionType;
 
 class Repository extends Base\Repository
 {
@@ -33,10 +34,12 @@ class Repository extends Base\Repository
     {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::EXPIRE_BY, '<', $currentTime)
-                    ->get();
+        $replica_data = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+            ->where(Entity::STATUS, '=', Status::ACTIVE)
+            ->where(Entity::EXPIRE_BY, '<', $currentTime)
+            ->get();
+
+        return $replica_data;
     }
 
     /**
