@@ -7,7 +7,7 @@ jest.setTimeout(35000);
 
 describe('GoBack', () => {
   const onClickCb = jest.fn();
-  const renderApp = ({ historyOptions } = {}) =>
+  const renderApp = ({ historyOptions, onClickCb } = {}) =>
     render(<App onClickCb={onClickCb} />, {
       historyOptions,
     });
@@ -18,7 +18,7 @@ describe('GoBack', () => {
   });
 
   test('should call its callback when clicked', async () => {
-    renderApp();
+    renderApp({ onClickCb });
     const GoBackCTA = screen.getByText('Go Back');
     await userEvent.click(GoBackCTA);
     expect(onClickCb).toHaveBeenCalled();
@@ -33,13 +33,14 @@ describe('GoBack', () => {
   });
 
   test('should go to back to previous route when it is clicked with prevPath', async () => {
+    const prevPath = '/previous';
     const historyOptions = {
-      initialEntries: [{ pathname: '/current', state: { prevPath: '/previous' } }],
+      initialEntries: [{ pathname: '/current', state: { prevPath } }],
     };
     const { history } = renderApp({ historyOptions });
-    history.goBack = jest.fn();
+    history.push = jest.fn();
     const GoBackCTA = screen.getByText('Go Back');
     await userEvent.click(GoBackCTA);
-    expect(history.goBack).toHaveBeenCalled();
+    expect(history.push).toHaveBeenCalledWith(prevPath);
   });
 });

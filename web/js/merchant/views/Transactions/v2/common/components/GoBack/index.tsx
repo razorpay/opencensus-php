@@ -17,7 +17,7 @@ const GoBack = ({
   history,
   location: { pathname, state: { prevPath } = {} },
 }: GoBackProps) => {
-  const goBack = () => {
+  const goBack = (): void => {
     const { init_page } = qs.parse(location.search);
     const section = TransactionsPagesMap[pathname] || init_page;
     track({
@@ -25,12 +25,17 @@ const GoBack = ({
       properties: { section },
     });
 
-    if (!prevPath) {
-      history.push(PAYMENTS);
+    // If a parent component is passing the callback, it would mean that the
+    // parent wants control of the routing, better to let the callback take full control
+    // and let it override the default routing
+    // otherwise the component does it's default routing
+    if (onClickCb) {
+      onClickCb();
+    } else if (prevPath) {
+      history.push(prevPath);
     } else {
-      history.goBack();
+      history.push(PAYMENTS);
     }
-    onClickCb?.();
   };
 
   return (

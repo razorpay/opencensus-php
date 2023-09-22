@@ -127,9 +127,9 @@ export interface IPaymentDetails {
   error_step: null | string;
   error_reason: null | string;
   acquirer_data: {
-    auth_code: string;
-    arn: string;
-    rrn: string;
+    auth_code?: string;
+    arn?: string;
+    rrn?: string;
   };
   emi_plan: null;
   disputes: {

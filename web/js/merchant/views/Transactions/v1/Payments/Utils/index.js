@@ -40,7 +40,7 @@ export const makeIdLink =
           search,
           hash,
           state: {
-            prevPath: initiatePoint,
+            prevPath: window.location.pathname.split('/app')[1],
           },
         }}
         onClick={onLinkClick}

@@ -195,6 +195,7 @@ const RefundsListFilter = ({
             defaultValue={defaultSearchByValue}
             placeholder="Search"
             onChange={onSearchByValueChange}
+            onClearButtonClick={() => onSearchByValueChange({})}
           />
           <Button accessibilityLabel="Search" icon={SearchIcon} size="medium" onClick={onSearch} />
         </Box>

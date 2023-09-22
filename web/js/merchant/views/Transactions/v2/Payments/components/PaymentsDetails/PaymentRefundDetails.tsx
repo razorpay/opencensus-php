@@ -88,7 +88,7 @@ function PaymentRefundDetails({
     params: { id: transactionIDActual },
   },
 }: IPaymentRefundDetails): React.ReactElement {
-  const { currency, acquirer_data, refund_status } = paymentDetails!;
+  const { currency, acquirer_data = {}, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
   const subsequentRefunds = paymentIdRefundDetails.slice(1);
 

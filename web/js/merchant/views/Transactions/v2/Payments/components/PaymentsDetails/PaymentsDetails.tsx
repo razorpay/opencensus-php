@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 import PaymentDetailsOverview from './PaymentDetailsOverview';
 import {
   Box,
@@ -18,7 +18,7 @@ import PaymentDetailsTimeline from './PaymentDetailsTimeline';
 import PaymentDetailsSection from './PaymentDetailsSection';
 import PaymentRefundDetails from './PaymentRefundDetails';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import { bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 import {
   fetchPaymentIdDetails,
   fetchPaymentIdRefundDetails,
@@ -263,4 +263,7 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(PaymentsDetails);
+export default compose<any>(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+)(PaymentsDetails);

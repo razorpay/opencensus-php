@@ -37,9 +37,7 @@ export const paymentId = {
 export const bankRRN = {
   title: <Title>Bank RRN</Title>,
   value: (item: Item): JSX.Element => {
-    const {
-      acquirer_data: { arn, rrn },
-    } = item;
+    const { acquirer_data: { arn, rrn } = {} } = item;
     return (
       <div className="bank-rrn">
         <Text testID="bank-rrn">{rrn || arn || '--'}</Text>

@@ -58,7 +58,7 @@ function PaymentDetailsSection({
   }, [isMobile]);
   const {
     id,
-    acquirer_data,
+    acquirer_data = {},
     notes,
     order_id,
     card,

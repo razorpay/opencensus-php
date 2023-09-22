@@ -370,6 +370,8 @@ export const getBadgeIcon = (status: IPaymentDetails['status']): JSX.Element => 
     },
   };
 
+  if (Object.keys(animationData).length === 0) return <div />;
+
   return <Lottie options={lottieDefaultOptions} />;
 };
 

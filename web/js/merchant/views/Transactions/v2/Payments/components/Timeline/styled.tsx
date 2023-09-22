@@ -40,7 +40,7 @@ export const StyledJourneyMetadata = styled.div.attrs({ className: 'timeline-jou
   border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
   padding-left: 24px;
   stroke-width: 1px;
-  width: 100%;
+  width: 300px;
 `;
 
 export const StyledText = styled.p`
