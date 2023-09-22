@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Config;
 use RZP\Trace\TraceCode;
+use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\RateLimiter\FixedWindowLimiter;
@@ -122,5 +123,23 @@ class ApprovedPayoutDistribution extends Job
 
             $this->release();
         }
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }

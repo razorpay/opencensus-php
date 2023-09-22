@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\DB;
 use RZP\Trace\Tracer;
 use RZP\Models\Admin;
@@ -175,5 +176,23 @@ class BankingAccountStatementProcessor extends Job
         $activeDbConnection = array_keys(DB::getConnections());
 
         $this->trace->info(TraceCode::ACTIVE_DB_CONNECTIONS, $activeDbConnection);
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }

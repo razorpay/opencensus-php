@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
+use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
@@ -209,4 +210,21 @@ class BankingAccountStatement extends Job
         }
     }
 
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
+    }
 }

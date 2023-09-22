@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Payout\Entity;
+use RZP\Services\RazorXClient;
 use RZP\Exception\LogicException;
 use RZP\Jobs\Extended\PendingDispatch;
 use RZP\Models\Settlement\SlackNotification;
@@ -204,5 +205,23 @@ class PayoutPostCreateProcessLowPriority extends Job
             [
                 'is_job_deleted' => $isDeleted
             ]);
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }

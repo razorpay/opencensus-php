@@ -8,6 +8,7 @@ use RZP\Jobs\Job as Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Service as PayoutService;
@@ -165,5 +166,23 @@ class FundManagementPayoutInitiate extends Job
         }
 
         return false;
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(\RZP\Jobs\Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }

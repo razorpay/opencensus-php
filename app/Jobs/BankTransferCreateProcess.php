@@ -7,6 +7,7 @@ use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
+use RZP\Services\RazorXClient;
 use RZP\Models\VirtualAccount\Metric;
 use RZP\Error\PublicErrorDescription;
 
@@ -117,5 +118,23 @@ class BankTransferCreateProcess extends Job
 
             throw $ex;
         }
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(\RZP\Jobs\Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }
