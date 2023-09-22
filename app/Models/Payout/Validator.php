@@ -62,6 +62,8 @@ class Validator extends Base\Validator
 
     const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT = 'before_create_fund_account_payout';
 
+    const BEFORE_SMART_ROUTING_PAYOUT = 'before_smart_routing_payout';
+
     const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP = 'before_create_fund_account_payout_with_otp';
 
     const BULK_UPDATE_ATTACHMENTS = 'bulk_update_attachments';
@@ -280,6 +282,11 @@ class Validator extends Base\Validator
         PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
     ];
 
+    protected static $beforeSmartRoutingPayoutRules = [
+        Entity::AMOUNT => 'required|integer|min:100',
+        Entity::MODE   => 'required|string|custom',
+    ];
+
     protected static $payoutServiceCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::MERCHANT_ID          => 'required|string|size:14'
@@ -330,6 +337,10 @@ class Validator extends Base\Validator
         'source_details',
         'tds_details',
         'attachments',
+    ];
+
+    protected static $beforeSmartRoutingPayoutValidators = [
+        'amount',
     ];
 
     protected static $fundAccountPayoutCompositeValidators = [

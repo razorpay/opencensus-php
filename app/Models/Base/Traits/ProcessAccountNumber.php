@@ -18,13 +18,16 @@ trait ProcessAccountNumber
      * Mandate Account number and Replaces it with balance id
      *
      * @param array $input
+     * @param bool  $smartRouting
+     *
+     * @return Merchant\Balance\Entity
      * @throws \RZP\Exception\BadRequestException
      */
-    protected function processAccountNumber(array & $input) : Merchant\Balance\Entity
+    protected function processAccountNumber(array & $input, bool $smartRouting = false) : Merchant\Balance\Entity
     {
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 
-        return $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+        return $merchantValidator->validateAndTranslateAccountNumberForBanking($input, $smartRouting);
     }
 }

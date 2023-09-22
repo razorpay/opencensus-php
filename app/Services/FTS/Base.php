@@ -142,6 +142,8 @@ class Base
 
     const FTS_ROUTING_FETCH_MODE = '/routing/mode_selection';
 
+    const FTS_SMART_ROUTING = '/routing/route_selection';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

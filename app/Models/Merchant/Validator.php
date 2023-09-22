@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
+use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -2625,12 +2626,16 @@ class Validator extends Base\Validator
      * service methods to translate ACCOUNT_NUMBER to BALANCE_ID because beyond
      * service layer repository's fetch etc only understands BALANCE_ID.
      *
+     * if smartRouting is true, we decide the account number and thereafter the
+     * balance id by making a call to FTS to decide basis the routing engine.
+     *
      * @param array $input
+     * @param bool  $smartRouting
      *
      * @return Balance\Entity
      * @throws Exception\BadRequestException
      */
-    public function validateAndTranslateAccountNumberForBanking(array & $input) : Balance\Entity
+    public function validateAndTranslateAccountNumberForBanking(array & $input, bool $smartRouting = false) : Balance\Entity
     {
         $this->validateBusinessBankingActivated();
 
@@ -2640,6 +2645,35 @@ class Validator extends Base\Validator
             ->strict(false)
             ->input($input)
             ->validate();
+
+        $merchant = $this->entity;
+
+        if ($smartRouting === true)
+        {
+            $payoutCore = new Payout\Core();
+
+            $fundAccountType = $payoutCore->fetchDestinationTypeFromPayoutInput($input, $merchant);
+
+            if ($payoutCore->checkIfSmartRoutingForBankingIsApplicable($input, $merchant, $fundAccountType) === true)
+            {
+                try
+                {
+                    return $payoutCore->validateAndTranslateAccountNumberWithSmartRoutingForBanking($input, $merchant, $fundAccountType);
+                }
+                catch (\Throwable $exception)
+                {
+                    $trace = app('trace');
+
+                    $trace->traceException($exception, Trace::ERROR, TraceCode::SMART_ROUTING_FOR_BANKING_EXCEPTION, [
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    $trace->count(Payout\Metric::PAYOUTS_SMART_ROUTING_FAILURES_COUNT);
+
+                    // Let it fallback to default account number which is being sent in the Payout Input if exception is caught
+                }
+            }
+        }
 
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);

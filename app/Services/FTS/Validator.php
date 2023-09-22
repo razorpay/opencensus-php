@@ -33,4 +33,9 @@ class Validator extends Base\Validator
     protected static $fetchModeRules = [
         'selected_mode'   => 'required|string|in:IMPS,NEFT',
     ];
+
+    protected static $smartRoutingRules = [
+        'account_type' => 'required|string|in:direct,shared',
+        'balance_id'   => 'required_if:account_type,direct|string|unsigned_id|nullable',
+    ];
 }

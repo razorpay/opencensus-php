@@ -227,6 +227,15 @@ class FundTransfer extends Base
         return $response['body'];
     }
 
+    public function smartRoutingThroughFts(array $input): array
+    {
+        $response = $this->createAndSendRequest(parent::FTS_SMART_ROUTING, 'POST', $input);
+
+        (new Validator())->setStrictFalse()->validateInput('smart_routing', $response['body']);
+
+        return $response['body'];
+    }
+
     /**
      * @return string
      * @throws LogicException

@@ -103,4 +103,9 @@ class Constants
     public const INCLUDE_MERCHANT_IDS       = 'include_merchant_ids';
 
     public const EXCLUDE_MERCHANT_IDS       = 'exclude_merchant_ids';
+
+    // Payout Smart Routing Constants
+
+    const BALANCE                           = 'balance';
+    const BALANCE_ENTITY                    = 'balance_entity';
 }

@@ -204,6 +204,32 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    /**
+     * Get active BASD entries for given merchant id
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getActiveDirectAccountsForMerchantId(string $merchantId)
+    {
+        $basDetailsAttr = $this->dbColumn('*');
+
+        $statusColumn      = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+
+        $allowedStatuses = Status::getStatusesForActiveCaFlows();
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($basDetailsAttr)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($accountTypeColumn, '=', AccountType::DIRECT)
+                    ->whereIn($statusColumn, $allowedStatuses)
+                    ->distinct()
+                    ->get();
+    }
+
     public function getByAccountNumbersAndPaginationKeyNull(string $channel, array $accountNumbers)
     {
         return $this->newQuery()

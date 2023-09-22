@@ -5,8 +5,10 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Trace\Tracer;
@@ -58,6 +60,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
 use RZP\Mail\PayoutLink\Approval;
+use RZP\Exception\LogicException;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
@@ -9994,6 +9997,392 @@ class Core extends Base\Core
                 'configKey'   => self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY,
                 'merchant_id' => $merchantId
             ]);
+    }
+
+    public function fetchValidDirectAccountsForSmartRouting(
+        &$accountDetailsMap, &$validDirectAccounts, $input, $merchant, $fundAccountType = "")
+    {
+        // Fetch Active BasDetails
+        $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchant->getId());
+
+        /** @var  $activeBasDetail  BankingAccountStatement\Details\Entity */
+        foreach ($activeBasDetails as $activeBasDetail)
+        {
+            $channel = $activeBasDetail->getChannel();
+
+            $bankingAccount = $activeBasDetail->balance->bankingAccount;
+
+            $ftsFundAccountId = optional($bankingAccount)->getFtsFundAccountId();
+
+            // Check if the channel and mode combination is allowed
+            $isChannelAndModeValid = (new Validator())->validateChannelAndModeForPayouts(
+                $merchant->getId(), $channel, $fundAccountType, $input[Entity::MODE], AccountType::DIRECT);
+
+            if ($isChannelAndModeValid === false)
+            {
+                continue;
+            }
+
+            if ((empty($ftsFundAccountId) === true) and
+                (in_array($channel, BankingAccount\Core::$directChannelsForConnectBanking) === true))
+            {
+                $accountNumber = $activeBasDetail->getAccountNumber();
+
+                try
+                {
+                    $ftsFundAccountId = app('banking_account_service')->fetchFtsFundAccountIdFromBas(
+                        $merchant->getId(), $channel, $accountNumber);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        null,
+                        TraceCode::SMART_ROUTING_BAS_FETCH_FAILED,
+                        [
+                            'merchant_id'    => $merchant->getId(),
+                            'bas_details_id' => $activeBasDetail->getId(),
+                            'balance_id'     => $activeBasDetail->getBalanceId(),
+                        ]);
+
+                    $this->trace->count(Metric::SMART_ROUTING_BAS_FETCH_FAILURES_COUNT);
+
+                    throw $ex;
+                }
+            }
+
+            if (empty($ftsFundAccountId) === false)
+            {
+                $accountDetailsMap[$activeBasDetail->getBalanceId()] = [
+                    Entity::CHANNEL                           => $channel,
+                    PayoutConstants::BALANCE_ENTITY           => $activeBasDetail->balance,
+                    PayoutConstants::BALANCE                  => $activeBasDetail->getGatewayBalance(),
+                    FTSConstants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $ftsFundAccountId,
+                ];
+
+                $validDirectAccounts++;
+            }
+        }
+    }
+
+    public function assertPayoutsSmartRoutingFeasibility($validLiteAccounts, $validDirectAccounts, $input, $merchant)
+    {
+        if ($validLiteAccounts >= 2)
+        {
+            // Todo:: This section will be implemented once POBO model is live and we have multiple shared
+            // accounts for a merchant.
+
+            throw new LogicException('Merchant shouldn\'t have more than 1 lite account.', null, [
+                'merchant_id'  => $merchant->getId(),
+                'payout_input' => $input,
+            ]);
+        }
+
+        if (($validDirectAccounts === 0) and
+            ($validLiteAccounts === 0))
+        {
+            throw new LogicException('Merchant doesn\'t have any viable channels for routing.', null, [
+                'merchant_id'  => $merchant->getId(),
+                'payout_input' => $input,
+            ]);
+        }
+    }
+
+    public function initiateSmartRoutingViaFts($merchantId, $accountDetailsMap, $input)
+    {
+        foreach ($accountDetailsMap as $balanceId => $accountDetails)
+        {
+            unset($accountDetails[PayoutConstants::BALANCE_ENTITY]);
+
+            $routingFtsInput[AccountType::DIRECT][$balanceId] = $accountDetails;
+        }
+
+        $routingFtsInput += [
+            Entity::MODE        => $input[Entity::MODE],
+            Entity::AMOUNT      => (int) $input[Entity::AMOUNT], // In paisa
+            Entity::MERCHANT_ID => $merchantId
+        ];
+
+        $this->trace->info(TraceCode::FTS_SMART_ROUTING_PAYLOAD, $routingFtsInput);
+
+        /** @var \RZP\Services\FTS\FundTransfer $transferService */
+        $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+        $transferService->setRequestTimeout(10);
+
+        try
+        {
+            return $transferService->smartRoutingThroughFts($routingFtsInput);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_SMART_ROUTING_FAILED,
+                [
+                    'merchant_id' => $merchantId,
+                ]);
+
+            $this->trace->count(Metric::FTS_SMART_ROUTING_FAILURES_COUNT);
+
+            throw $ex;
+        }
+    }
+
+    public function validateAndTranslateAccountNumberWithSmartRoutingForBanking(
+        array &$input, $merchant, $fundAccountType = "") : Balance\Entity
+    {
+        $startTime = microtime(true);
+
+        // Validates input has valid Amount and Mode.
+        (new Validator())->setStrictFalse()->validateInput(Validator::BEFORE_SMART_ROUTING_PAYOUT, $input);
+
+        $merchantId = $input[Balance\Entity::MERCHANT_ID] ?? null;
+
+        $merchantId = ($merchantId === null) ? $merchant->getId() : $merchantId;
+
+        try
+        {
+            $balance = $this->fetchBalanceBasedOnSmartRoutingForBanking($input, $merchant, $fundAccountType);
+
+            $input[Balance\Entity::BALANCE_ID] = $balance->getId();
+
+            array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
+            array_pull($input, Balance\Entity::MERCHANT_ID);
+
+            $routingResponseTime = get_diff_in_millisecond($startTime);
+
+            $this->trace->info(TraceCode::SMART_ROUTING_FOR_BANKING_RESPONSE_TIME, [
+                PayoutConstants::MERCHANT_ID => $merchantId,
+                Entity::BALANCE_ID           => $input[Balance\Entity::BALANCE_ID],
+                Balance\Entity::ACCOUNT_TYPE => $balance->getAccountType(),
+                'routing_response_time'      => $routingResponseTime,
+            ]);
+
+            $this->trace->histogram(
+                Metric::PAYOUTS_SMART_ROUTING_COMPLETED_DURATION_MS, $routingResponseTime, [
+                'is_error' => false
+            ]);
+
+            $this->trace->count(Metric::TOTAL_SMART_ROUTING_PAYOUTS_COUNT);
+
+            return $balance;
+        }
+        catch (\Throwable $ex)
+        {
+            $routingResponseTime = get_diff_in_millisecond($startTime);
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::SMART_ROUTING_FOR_BANKING_ERROR_RESPONSE_TIME, [
+                PayoutConstants::MERCHANT_ID => $merchantId,
+                'routing_response_time'      => $routingResponseTime,
+            ]);
+
+            $this->trace->histogram(Metric::PAYOUTS_SMART_ROUTING_COMPLETED_DURATION_MS, $routingResponseTime, [
+                'is_error' => true
+            ]);
+
+            throw $ex;
+        }
+    }
+
+    public function fetchBalanceBasedOnSmartRoutingForBanking($input, $merchant, $fundAccountType = "") : Balance\Entity
+    {
+        /**
+         * Stores account identifier to account details Map,
+         * For direct accounts, the account identifier is preferred_source_account_id
+         */
+        $accountDetailsMap = [];
+
+        // Count of valid Direct Accounts for Smart Routing
+        $validDirectAccounts = 0;
+
+        $this->fetchValidDirectAccountsForSmartRouting(
+            $accountDetailsMap, $validDirectAccounts, $input, $merchant, $fundAccountType);
+
+        // Fetch Lite balances
+        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+
+        // Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = count($liteBalances);
+
+        $this->trace->info(TraceCode::PAYOUT_SMART_ROUTING_ACCOUNTS, [
+            'active_direct_accounts' => $validDirectAccounts,
+            'active_lite_accounts'   => $validLiteAccounts,
+        ]);
+
+        $this->assertPayoutsSmartRoutingFeasibility($validLiteAccounts, $validDirectAccounts, $input, $merchant);
+
+        // Check if there is only one active account, in that case we choose it as default and don't call FTS
+        if (($validLiteAccounts + $validDirectAccounts) === 1)
+        {
+            if ($validLiteAccounts === 1)
+            {
+                return $liteBalances->first();
+            }
+            else
+            {
+                return array_first($accountDetailsMap)[PayoutConstants::BALANCE_ENTITY];
+            }
+        }
+
+        // Make a call to FTS to fetch channel according to routing rule engine
+        $routingDetails = $this->initiateSmartRoutingViaFts($merchant->getId(), $accountDetailsMap, $input);
+
+        switch ($routingDetails[Balance\Entity::ACCOUNT_TYPE])
+        {
+            case AccountType::SHARED:
+                return $liteBalances->first();
+
+            case AccountType::DIRECT:
+                if (isset($accountDetailsMap[$routingDetails[Entity::BALANCE_ID]]) === true)
+                {
+                    $selectedAccountDetails = $accountDetailsMap[$routingDetails[Entity::BALANCE_ID]];
+
+                    return $selectedAccountDetails[PayoutConstants::BALANCE_ENTITY];
+                }
+
+                break;
+        }
+
+        throw new LogicException('Invalid response from FTS Routing Engine.', null, [
+            'fts_response' => $routingDetails ?? null,
+            'merchant_id'  => $merchant->getId(),
+            'payout_input' => $input,
+        ]);
+    }
+
+    public function fetchDestinationTypeFromPayoutInput($input, $merchant)
+    {
+        if (isset($input[Entity::FUND_ACCOUNT]) === true)
+        {
+            return $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] ?? "";
+        }
+        else
+        {
+            $fundAccountId = $input[Entity::FUND_ACCOUNT_ID] ?? "";
+
+            $fundAccount = null;
+
+            try
+            {
+                $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $merchant);
+            }
+            catch (\Throwable $ex)
+            {
+                // Ignoring the error here
+                $this->trace->traceException($ex, Trace::ERROR);
+            }
+
+            return optional($fundAccount)->getAccountType() ?? "";
+        }
+    }
+
+    public function checkIfWorkflowIsEnabledForMerchantForSmartRouting($input, $merchant)
+    {
+        $skipWorkflow = null;
+
+        if (array_key_exists(Entity::SKIP_WORKFLOW, $input) === true)
+        {
+            (new Validator)->setStrictFalse()
+                           ->validateInput('skip_workflow', $input);
+
+            $skipWorkflow = isset($input[Entity::SKIP_WORKFLOW]) ? boolval($input[Entity::SKIP_WORKFLOW]) : null;
+        }
+
+        if ($this->isTestMode() === true)
+        {
+            return false;
+        }
+
+        $areWorkflowsEnabled = $merchant->isFeatureEnabled(Feature\Constants::PAYOUT_WORKFLOWS);
+
+        //
+        // Skip workflow if:
+        // workflow is not enabled for the merchant
+        //
+        if ($areWorkflowsEnabled === false)
+        {
+            return false;
+        }
+
+        if ($skipWorkflow !== null)
+        {
+            $hasSkipWorkflowPayoutSpecificFeature = $merchant->isFeatureEnabled(Feature\Constants::SKIP_WF_AT_PAYOUTS);
+
+            if (($hasSkipWorkflowPayoutSpecificFeature === false) or ($skipWorkflow === true))
+            {
+                return false;
+            }
+        }
+
+        $hasSkipWorkflowFeature = $merchant->isFeatureEnabled(Feature\Constants::SKIP_WORKFLOWS_FOR_API);
+
+        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
+
+        //
+        // Skip workflow if:
+        // if the workflow is enabled, if the request is from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($isApiRequest === true) and
+            ($hasSkipWorkflowFeature === true))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function checkIfSmartRoutingForBankingIsApplicable($input, $merchant, $fundAccountType = "")
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        $payoutMode = $input[Entity::MODE] ?? "";
+
+        $currentRoute = $app['api.route']->getCurrentRouteName();
+
+        $isAuthAllowed = (($basicAuth->isProxyAuth() === true) or
+                          ($basicAuth->isPrivateAuth() === true));
+
+        $isScheduledPayout = (isset($input[Entity::SCHEDULED_AT]) === true);
+
+        $isEnvModeAllowed = (($this->isLiveMode() === true) or
+                             (App::environment('testing') === true));
+
+        $isRouteAllowed = Route::isSmartRoutingForBankingEnabledForRoute($currentRoute);
+
+        $isValidMode = Mode::isValidModeForSmartRouting($payoutMode);
+
+        $isFundAccountTypeAllowed = (in_array($fundAccountType,
+                                              [FundAccount\Type::BANK_ACCOUNT, FundAccount\Type::VPA]) === true);
+
+        $isSmartRoutingAllowed = (($isEnvModeAllowed === true) and
+                                  ($isAuthAllowed === true) and
+                                  ($isRouteAllowed === true) and
+                                  ($isFundAccountTypeAllowed === true) and
+                                  ($isValidMode === true) and
+                                  ($isScheduledPayout === false) and
+                                  ($merchant->isFeatureEnabled(Feature\Constants::ENABLE_SMART_ROUTING) === true));
+
+        // Adding this check aside, to avoid calls to DCS for checking if workflows is enabled, if smart routing is not allowed
+        $isSmartRoutingAllowed = ($isSmartRoutingAllowed === true) ?
+            !$this->checkIfWorkflowIsEnabledForMerchantForSmartRouting($input, $merchant) : $isSmartRoutingAllowed;
+
+        $this->trace->info(TraceCode::PAYOUT_SMART_ROUTING_CHECK, [
+            'current_route'         => $currentRoute,
+            'payout_mode'           => $payoutMode,
+            'mode'                  => $this->mode,
+            'is_scheduled_payout'   => $isScheduledPayout,
+            'fund_account_type'     => $fundAccountType,
+            'smart_routing_allowed' => $isSmartRoutingAllowed
+        ]);
+
+        return $isSmartRoutingAllowed;
     }
 
     // Function to check if the entity's transaction id field has been updated

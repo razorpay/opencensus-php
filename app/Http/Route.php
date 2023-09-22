@@ -16977,7 +16977,10 @@ class Route
         'fund_account_validate_fetch_by_id' => 'api_fund_account_validation'
     ];
 
-
+    public static $routeEnabledForBankingSmartRouting = [
+        'payout_create',
+        'payout_create_with_otp'
+    ];
 
     // Sets TRACE level to CRITICAL for these routes
     const CRITICAL_ROUTES = [
@@ -18318,6 +18321,17 @@ class Route
         }
 
          return self::$routeServiceMappingForIpWhitelisting[$route];
+    }
+
+    public static function isSmartRoutingForBankingEnabledForRoute($route = null)
+    {
+        if ((empty($route) === true) or
+            (in_array($route, self::$routeEnabledForBankingSmartRouting, true) === false))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static function getDefaultServicesEligibleForIpWhitelist()

@@ -526,7 +526,7 @@ class Service extends Base\Service
 
         // Only allowed for Rx payouts, mandates account number
         // TODO: Cache the Balance ID
-        $balance = $this->processAccountNumber($input);
+        $balance = $this->processAccountNumber($input, true);
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
@@ -1542,7 +1542,7 @@ class Service extends Base\Service
         $payoutInput = array_except($input, ['otp', 'token']);
 
         // Only allowed for Rx payouts, mandates account number
-        $balance = $this->processAccountNumber($payoutInput);
+        $balance = $this->processAccountNumber($payoutInput, true);
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP, $input);

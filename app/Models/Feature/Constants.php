@@ -1873,6 +1873,11 @@ class Constants
      */
     const ENABLE_APPROVAL_VIA_OAUTH = 'enable_approval_via_oauth';
 
+    /*
+     * This feature will be used for checking if merchant is enabled for RazorpayX Multi Routing
+     */
+    const ENABLE_SMART_ROUTING = 'enable_smart_routing';
+
     /**
      * Feature flag to check push provisioning is enabled for the merchant
      */
@@ -2635,6 +2640,7 @@ class Constants
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT => true,
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
         self::ENABLE_APPROVAL_VIA_OAUTH       => true,
+        self::ENABLE_SMART_ROUTING            => true,
         self::SKIP_KYC_VERIFICATION           => true,
         self::GAI_PAYOUTS_SYNC                => true,
         self::ORG_AUTOMATE_IIR                => true,
@@ -3679,6 +3685,11 @@ class Constants
             'feature'       => self::ENABLE_APPROVAL_VIA_OAUTH,
             'display_name'  => 'Enable Approval via OAuth',
             'documentation' => 'Feature to control payout approvals via Authorized OAuth Tokens'
+        ],
+        self::ENABLE_SMART_ROUTING => [
+            'feature'       => self::ENABLE_SMART_ROUTING,
+            'display_name'  => 'Enable Multi Routing For RazorpayX Merchants',
+            'documentation' => 'Feature to enable multi routing for razorpayx merchants'
         ],
         self::GAI_PAYOUTS_SYNC => [
             'feature'       => self::GAI_PAYOUTS_SYNC,

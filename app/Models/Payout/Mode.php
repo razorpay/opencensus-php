@@ -31,6 +31,14 @@ class Mode
         self::CARD,
     ];
 
+    protected static $supportedModesForSmartRouting = [
+        self::RTGS,
+        self::IMPS,
+        self::NEFT,
+        self::IFT,
+        self::UPI,
+    ];
+
     public static function validateMode(string $mode)
     {
         if (self::isValid($mode) === false)
@@ -42,6 +50,11 @@ class Mode
                     'mode' => $mode,
                 ]);
         }
+    }
+
+    public static function isValidModeForSmartRouting(string $mode)
+    {
+        return (in_array($mode, self::$supportedModesForSmartRouting, true) === true);
     }
 
     protected static function getAllSupportedPayoutChannelsWithModes()

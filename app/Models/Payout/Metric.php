@@ -57,6 +57,10 @@ final class Metric
     const FMP_INITIATE_DISABLE_REDIS_FAILURES_COUNT                 = 'fmp_initiate_disable_redis_failures_count';
     const FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT       = 'fund_management_payout_cron_dispatch_failures_count';
     const FMP_LESS_THAN_FIFTY_PERCENT_LITE_BALANCE_COUNT            = 'fmp_less_than_fifty_percent_lite_balance_count';
+    const PAYOUTS_SMART_ROUTING_FAILURES_COUNT                      = 'payouts_smart_routing_failure_count';
+    const FTS_SMART_ROUTING_FAILURES_COUNT                          = 'fts_smart_routing_failures_count';
+    const SMART_ROUTING_BAS_FETCH_FAILURES_COUNT                    = 'smart_routing_bas_fetch_failures_count';
+    const TOTAL_SMART_ROUTING_PAYOUTS_COUNT                         = 'total_smart_routing_payouts_count';
 
 
     // Payout Service Metrics/Alerts
@@ -103,6 +107,7 @@ final class Metric
     const PAYOUT_CREATED_TO_QUEUED_DURATION_SECONDS                      = 'payout_created_to_queued_duration_seconds.histogram';
     const FUND_MANAGEMENT_PAYOUT_CHECK_COMPLETED_DURATION_SECONDS        = 'fund_management_payout_check_completed_duration_seconds.histogram';
     const FUND_MANAGEMENT_PAYOUT_INITIATED_COMPLETED_DURATION_SECONDS    = 'fund_management_payout_initiated_completed_duration_seconds.histogram';
+    const PAYOUTS_SMART_ROUTING_COMPLETED_DURATION_MS                    = 'payouts_smart_routing_completed_duration_ms.histogram';
 
 
     // Dimension constants
