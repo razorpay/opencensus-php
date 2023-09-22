@@ -222,7 +222,7 @@ trait FraudDetector
                 ]
             );
 
-            (new Payment\Fraud\Notify())->notifyOpsIfNeeded($merchant, $triggeredRules);
+            (new Payment\Fraud\Notify())->notifyOpsIfNeeded($payment->getId(), $merchant, $triggeredRules);
 
             if ($riskData[Risk\Entity::FRAUD_TYPE] === Risk\Type::CONFIRMED)
             {

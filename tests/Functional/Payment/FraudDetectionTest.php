@@ -1267,18 +1267,14 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield', $shieldClient);
 
-        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <!subteam^S0375TGETD0>,<@U042S5040AF>";
-
-        $slackPayload = [
-            'channel' => \Config::get('slack.channels.risk'),
-            'text'    => $slackMessage,
-        ];
+        $actualSlackPayload = [];
 
         $shieldSlackClient = Mockery::mock('RZP\Services\Mock\ShieldSlackClient');
 
         $shieldSlackClient->shouldReceive('sendRequest')->once()
-            ->withArgs(function ($payload) use ($slackPayload) {
-                return $payload === $slackPayload;
+            ->withArgs(function ($payload) use (&$actualSlackPayload) {
+                $actualSlackPayload = $payload;
+                return true;
             })
             ->andReturnUsing(function ($content) {
                 return [
@@ -1323,6 +1319,18 @@ class FraudDetectionTest extends TestCase
         });
 
         $payment = $this->getLastEntity('payment', true);
+
+        $paymentId = $payment['id'];
+        $this->fixtures->stripSign($paymentId);
+        $expectedSlackMessage = sprintf("*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*PaymentId*: `<https://admin-dashboard.razorpay.com/admin/entity/payment/live/%s | %s>`\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <!subteam^S0375TGETD0>,<@U042S5040AF>",
+                                $paymentId, $paymentId);
+
+        $expectedSlackPayload = [
+            'channel' => \Config::get('slack.channels.risk'),
+            'text'    => $expectedSlackMessage,
+        ];
+
+        $this->assertEquals($expectedSlackPayload, $actualSlackPayload);
 
         $riskEntity = $this->getLastEntity('risk', true);
 

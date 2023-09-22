@@ -17,7 +17,7 @@ use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
 
 class Notify
 {
-    const SLACK_HEADLINE_TPL = "*%s (Rules) Triggered*\n\n*MID*: `<%s | %s>` flagged";
+    const SLACK_HEADLINE_TPL = "*%s (Rules) Triggered*\n\n*MID*: `<%s | %s>` flagged\n\n*PaymentId*: `<https://admin-dashboard.razorpay.com/admin/entity/payment/live/%s | %s>`";
 
     const SLACK_RULE_TPL = "\n\n*Shield Id*: `<%s | %s>`\n*Shield Description*: %s";
 
@@ -97,7 +97,7 @@ class Notify
         }
     }
 
-    public function notifyOpsIfNeeded(MerchantEntity $merchant, array $triggeredRules)
+    public function notifyOpsIfNeeded($paymentId, MerchantEntity $merchant, array $triggeredRules)
     {
         try
         {
@@ -122,7 +122,7 @@ class Notify
                         'merchant_id' => $merchant->getId(),
                     ]);
 
-                $this->sendSlackNotification($merchant, $ruleCode, $rulesInfo);
+                $this->sendSlackNotification($paymentId, $merchant, $ruleCode, $rulesInfo);
             }
         }
         catch (\Throwable $e)
@@ -169,7 +169,7 @@ class Notify
         return $rulesGroupedByRuleCode;
     }
 
-    private function sendSlackNotification(MerchantEntity $merchant, string $ruleCode, array $rulesInfo)
+    private function sendSlackNotification($paymentId, MerchantEntity $merchant, string $ruleCode, array $rulesInfo)
     {
         $sendNotification = $this->canSendSlackNotification($merchant, $ruleCode);
 
@@ -186,7 +186,7 @@ class Notify
             return;
         }
 
-        $message = $this->prepareSlackMessage($merchant, $ruleCode, $rulesInfo);
+        $message = $this->prepareSlackMessage($paymentId, $merchant, $ruleCode, $rulesInfo);
 
         $content = [
             'channel' => $this->config->get('slack.channels.risk'),
@@ -210,7 +210,7 @@ class Notify
         ]);
     }
 
-    private function prepareSlackMessage(MerchantEntity $merchant, string $ruleCode, array $rulesInfo): string
+    private function prepareSlackMessage($paymentId, MerchantEntity $merchant, string $ruleCode, array $rulesInfo): string
     {
         $merchantId = $merchant->getId();
 
@@ -218,7 +218,8 @@ class Notify
             self::SLACK_HEADLINE_TPL,
             strtoupper($ruleCode),
             $merchant->getDashboardEntityLink(),
-            $merchantId);
+            $merchantId, $paymentId, $paymentId);
+
 
         $body = '';
 
