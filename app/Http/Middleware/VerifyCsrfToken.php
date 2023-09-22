@@ -19,8 +19,9 @@ class VerifyCsrfToken extends BaseVerifier
     /**
      * Constants
      */
-    const OPERATION_NAME            = 'operationName';
-    const ORGANISATION_INFORMATION  = 'organisationInformation';
+    const OPERATION_NAME                     = 'operationName';
+    const ORGANISATION_INFORMATION           = 'organisationInformation';
+    const ORGANISATION_INFORMATION_BY_DOMAIN = 'organisationInformationByDomain';
 
     /**
      * The URIs that should be excluded from CSRF verification.
@@ -104,7 +105,8 @@ class VerifyCsrfToken extends BaseVerifier
             // If the graph query is to seek org information
             // skip CSRF token check
             if ((isset($queryData) === true) and
-                ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true))
+                ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true) or
+                ($this->isOperationName(self::ORGANISATION_INFORMATION_BY_DOMAIN, $queryData) === true))
             {
                 return $next($request);
             }

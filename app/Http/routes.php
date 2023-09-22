@@ -61,6 +61,12 @@ Route::group(['middleware' => ['web']], function () {
     // Org
     Route::get('/org', 'AdminController@getOrg')->name('get_org');
 
+    Route::group(['middleware'  => ['auth.graph']], function()
+    {
+        Route::get('/org-by-domain', 'AdminController@getOrgByDomainName')->name('get_org_by_domain');
+
+    });
+
     // Growth Public Assets
     Route::post('/v1/growth/assets', 'GenericController@getPublicGrowthAssets')->name('growth_public_assets');
 
@@ -296,11 +302,7 @@ Route::group(['middleware'  => 'graph'], function()
 
 });
 
-Route::group(['middleware'  => ['graph_internal', 'auth.graph']], function()
-{
-    Route::get('/org-by-domain', 'AdminController@getOrgByDomainName')->name('get_org_by_domain');
 
-});
 
 Route::group(['middleware'  =>  'slack'], function ()
 {

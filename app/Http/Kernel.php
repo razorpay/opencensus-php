@@ -58,14 +58,6 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\CacheControl::class,
         ],
 
-        'graph_internal'     => [
-            \App\Http\Middleware\Cors::class,
-            \App\Http\Middleware\EncryptCookies::class,
-            \App\Http\Middleware\StartSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
-            \App\Http\Middleware\CacheControl::class,
-        ],
-
         'web_oauth' => [
             \App\Http\Middleware\Cors::class,
             \App\Http\Middleware\AuthenticateOauth::class,
