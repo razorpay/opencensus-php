@@ -413,12 +413,12 @@ class Validator extends Base\Validator
         'approved_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
         'rejected_payout_count'   => 'required_if:action,bulk_payout_approve|integer',
         'rejected_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
-        'total_payout_amount'     => 'required_if:action,create_payout_batch_v2|integer|min:100',
+        'total_payout_amount'     => 'required_if:action,create_payout_batch_v2',
         'vpa'                     => 'required_if:action,create_composite_payout_with_otp|string|max:100|custom',
         'contact'                 => 'sometimes_if:action,create_payout_link',
         'total_payout_link_amount'=> 'required_if:action,create_bulk_payout_link|integer',
         'whitelisted_ips'         => 'required_if:action,ip_whitelist|array|min:1|max:20',
-        'total_amount'            => 'required_if:action,approve_bulk_payouts|integer',
+        'total_amount'            => 'required_if:action,approve_bulk_payouts',
         'total_count'             => 'required_if:action,approve_bulk_payouts|integer',
     ];
 
