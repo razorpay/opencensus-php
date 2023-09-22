@@ -277,11 +277,20 @@ class Selector extends Base\Core
                     {
                         $newSelectedTerminals = Terminal\Service::getEntityArrayFromTerminalServiceResponse($terminalSetReceivedFromSmartRouting);
 
-                        $this->trace->info(
-                            TraceCode::TERMINALS_SERVICE_PAYMENT_TERMINALS,
-                            [
-                                'data' => $newSelectedTerminals,
-                            ]);
+                        if(count($newSelectedTerminals) != count($terminalSetReceivedFromSmartRouting))
+                        {
+                            $this->trace->info(
+                                TraceCode::TERMINAL_API_TRANSFORM_ERROR,
+                                [
+                                    'payment'     => $payment->getId(),
+                                    'newSelectedTerminals' => $newSelectedTerminals,
+                                    'terminalSetReceivedFromSmartRouting' => $terminalSetReceivedFromSmartRouting,
+                                ]);
+                        }
+
+                        $this->processHitachiOnboarding($newSelectedTerminals);
+
+                        $this->processFulcrumOnboarding($newSelectedTerminals);
                     }
                 }
 
@@ -289,8 +298,22 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $newSelectedTerminals;
                 }
-                else if (($this->shouldFallback()) and ($fetchApiTerminals === true))
+                else if (($this->shouldFallback()))
                 {
+
+                    $allTerminals = $this->repo->useSlave(function ()
+                    {
+                        return $this->getTerminals();
+                    });
+
+                    $allTerminals = array_filter($allTerminals, function ($terminal)
+                    {
+                        $status = $terminal->getStatus();
+
+                        return (($terminal->isEnabled() === true) and
+                            ($status === Status::ACTIVATED));
+                    });
+
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
                     if (empty($sortedTerminals) === false)
@@ -1190,6 +1213,8 @@ class Selector extends Base\Core
     // this is for usemswipeterminal enabled merchant, if the $mswipeTerminalIds are not in fetched list of terminals, we
     // add the merchant as submerchant for all mswipeTerminals. This is a temporary soln, in future we will be modifying
     // fetch terminals to get terminals of parent merchant as well
+
+    //Latest: Mswipe terminals onboard is not used now, this method need to be deprecated
     protected function addMswipeTerminals(&$terminals)
     {
         $merchant = $this->input['merchant'];
@@ -1247,20 +1272,25 @@ class Selector extends Base\Core
             return true;
         }
 
-        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false
-            && $payment[Entity::METHOD] === Method::NETBANKING)
+        //Unit Tests use API Terminals, until all the terminal fetch is mocked in unit test cases
+        if ($this->repo->terminal->isTestEnv())
         {
             return true;
         }
 
-        $merchantId = $payment->getMerchantId();
+        $method = $payment[Entity::METHOD];
 
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);
+        $variantFlag = $this->app->razorx->getTreatment($method, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);
 
         if ($variantFlag === 'proxy_ts')
         {
+
+            $this->app['config']->set('applications.terminals_service.remove_api.'.$method,true);
+
             return false;
         }
+
+        $this->app['config']->set('applications.terminals_service.remove_api.'.$method,false);
 
         return true;
     }

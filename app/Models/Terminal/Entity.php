@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Crypt;
+use RZP\Constants\Environment;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
@@ -15,6 +16,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Payment\Method;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\Metric as TerminalMetric;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Constants\Mode as RzpMode;
@@ -1604,22 +1606,24 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Admin\Org\Entity');
     }
 
+    //Fetch Terminal as array with secrets
+    //Secrets are fetched from terminals service via http call only if proxy_ts is true
+    //the http call to terminals service is made only if secrets are not already populated in the terminal object
     public function toArrayWithPassword(bool $proxy = true)
     {
+
         $terminal = $this->toArray();
-
-
-        $apiTerminalPassword = $this->getGatewayTerminalPasswordAttribute();
-        $apiTerminalPassword2 = $this->getGatewayTerminalPassword2Attribute();
-        $apiTerminalSecret = $this->getGatewaySecureSecretAttribute();
-        $apiTerminalSecret2= $this->getGatewaySecureSecret2Attribute();
-        $apiReconPassword = $this->getGatewayReconPassword();
 
         $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
         $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
         $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
         $terminal[self::GATEWAY_SECURE_SECRET2]      = $this->getGatewaySecureSecret2Attribute();
         $terminal[self::GATEWAY_RECON_PASSWORD]     = $this->getGatewayReconPassword();
+
+        if($this->checkIfAnySecretPreset())
+        {
+            return $terminal;
+        }
 
         if(app()->runningUnitTests() === true)
         {
@@ -1633,46 +1637,15 @@ class Entity extends Base\PublicEntity
 
             try
             {
-                $terminalId = $terminal['id'];
-
-//                $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST, ["Id" => $terminalId]);
-
                 $path = "v2/terminals/credentials/" . $terminal[Entity::ID];
 
                 $response = $app['terminals_service']->proxyTerminalService("", "GET", $path, ['timeout' => 3]);
 
-                // compare secrets
-                $tsTerminalPassword = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD];
-                $tsTerminalPassword2 = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD2];
-                $tsTerminalSecret = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
-                $tsTerminalSecret2 = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2];
-                $tsReconPassword = $response["terminal"]["secrets"][Entity::GATEWAY_RECON_PASSWORD];
-
-                if ((empty($apiTerminalPassword) === false) and ($apiTerminalPassword !== $tsTerminalPassword)) {
-                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password", "id" => $terminalId]);
-                }
-
-                if ((empty($apiTerminalPassword2) === false) and ($apiTerminalPassword2 !== $tsTerminalPassword2)) {
-                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password2", "id" => $terminalId]);
-                }
-
-                if ((empty($apiTerminalSecret) === false) and ($apiTerminalSecret !== $tsTerminalSecret)) {
-                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret", "id" => $terminalId]);
-                }
-
-                if ((empty($apiTerminalSecret2) === false) and ($apiTerminalSecret2 !== $tsTerminalSecret2)) {
-                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret2", "id" => $terminalId]);
-                }
-
-                if ((empty($apiReconPassword) === false) and ($apiReconPassword !== $tsReconPassword)) {
-                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_recon_password", "id" => $terminalId]);
-                }
-
-                $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $tsTerminalPassword;
-                $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $tsTerminalPassword2;
-                $terminal[self::GATEWAY_SECURE_SECRET] = $tsTerminalSecret;
-                $terminal[self::GATEWAY_SECURE_SECRET2] = $tsTerminalSecret2;
-                $terminal[self::GATEWAY_RECON_PASSWORD] = $tsReconPassword;
+                $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD];
+                $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
+                $terminal[self::GATEWAY_SECURE_SECRET] = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
+                $terminal[self::GATEWAY_SECURE_SECRET2] = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2];
+                $terminal[self::GATEWAY_RECON_PASSWORD] = $response["terminal"]["secrets"][Entity::GATEWAY_RECON_PASSWORD];
 
             }
             catch (\Throwable $ex)
@@ -1682,18 +1655,34 @@ class Entity extends Base\PublicEntity
                     Trace::ERROR,
                     TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_FAILED,
                     [
-                        'Id' => $terminalId
+                        'Id' => $terminal[Entity::ID]
                     ]);
 
                 $metricData = [
                     "function" => __FUNCTION__
                 ];
 
-                $app['trace']->count(Metric::TERMINAL_CREDENTIAL_FETCH_FAILURE, $metricData);
+                $app['trace']->count(TerminalMetric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
         return $terminal;
+    }
+
+    private function checkIfAnySecretPreset(): bool
+    {
+
+        if( strlen($this->getGatewayTerminalPasswordAttribute()) > 0 ||
+            strlen($this->getGatewayTerminalPassword2Attribute()) > 0 ||
+            strlen($this->getGatewaySecureSecretAttribute()) > 0 ||
+            strlen($this->getGatewaySecureSecret2Attribute()) > 0 ||
+            strlen($this->getGatewayReconPassword()) > 0 )
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     public function isGateway($gateway)
@@ -2016,5 +2005,48 @@ class Entity extends Base\PublicEntity
 
     public function isSodexo() {
         return ($this->isTypeApplicable(Type::SODEXO) === true);
+    }
+
+    // get credential from terminal service
+    public function populateTerminalSecrets()
+    {
+
+        if($this->checkIfAnySecretPreset())
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            $path = "v2/terminals/credentials/" . $this[Entity::ID];
+
+            $response = $app['terminals_service']->proxyTerminalService("", "GET", $path, ['timeout' => 3]);
+
+            $this->setGatewayTerminalPasswordAttribute($response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD]);
+            $this->setGatewayTerminalPassword2Attribute($response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD2]);
+            $this->setGatewaySecureSecretAttribute($response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET]);
+            $this->setGatewaySecureSecret2Attribute($response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2]);
+            $this->setGatewayReconPasswordAttribute($response["terminal"]["secrets"][Entity::GATEWAY_RECON_PASSWORD]);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $app['trace']->traceException($ex, Trace::ERROR,
+                TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_FAILED,
+                [
+                    'Id' => $this[Entity::ID]
+                ]);
+
+            $metricData = [
+                "function" => __FUNCTION__
+            ];
+
+            $app['trace']->count(TerminalMetric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            throw $ex;
+        }
+
     }
 }

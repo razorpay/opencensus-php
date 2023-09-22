@@ -963,6 +963,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_RULE_FILTER_EXCEPTION                        = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                           = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_API_SELECTION_MISMATCH                       = 'TERMINAL_API_SELECTION_MISMATCH';
+    const TERMINAL_API_TRANSFORM_ERROR                          = 'TERMINAL_API_TRANSFORM_ERROR';
     const TERMINAL_FAILURE                                      = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                         = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                                       = 'TERMINAL_ENABLE';

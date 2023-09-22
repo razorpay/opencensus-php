@@ -66,12 +66,40 @@ class TerminalProcessor extends Base\Core
             $terminalsSelected = $this->filterTerminalForRX($payment, $terminalsSelected);
         }
 
+        $this->populateTerminalSecretsIfApplicable($payment,$terminalsSelected);
+
         if ($options->getMultiple() === false)
         {
             return [head($terminalsSelected)];
         }
 
         return $terminalsSelected;
+    }
+
+    private function populateTerminalSecretsIfApplicable($payment, $terminalsSelected)
+    {
+
+        if($this->repo->terminal->isTestEnv())
+        {
+            return;
+        }
+
+        $removeApiTerminalsTraffic = $this->app['config']->get('applications.terminals_service.remove_api.'.$payment->getMethod());
+
+        if($removeApiTerminalsTraffic)
+        {
+
+            if (count($terminalsSelected) > 0)
+            {
+
+                $firstTerminal = head($terminalsSelected);
+
+                if ($firstTerminal != null)
+                {
+                    $firstTerminal->populateTerminalSecrets();
+                }
+            }
+        }
     }
 
     public function getTerminalFromTerminalIds(array $terminalIds)

@@ -2814,7 +2814,7 @@ class Repository extends Base\Repository
         return true;
     }
 
-    private function isTestEnv() {
+    public function isTestEnv() {
         if ($this->app->runningUnitTests() === true or Environment::isEnvironmentQA($this->app['env']) === true) {
             return true;
         } else {
