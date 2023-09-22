@@ -4,10 +4,8 @@ import ActionToolbar from 'merchant/views/MagicCheckout/ShopifyOrderEditing/comm
 import {
   DATE_FORMAT,
   ORDER_STATUS_COLOR_MAPPING,
-  ORDER_STATUS,
   PAYMENT_STATUS_COLOR_MAPPING,
 } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/constants';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export const razorpayId = {
   title: 'Razorpay Order Id',
@@ -43,16 +41,6 @@ export const orderStatus = {
   title: 'Fulfillment Status',
   value: (item: any) => {
     const status = item.fulfillment_status || '-';
-    if (item.closed) {
-      return (
-        <span className={`status-label ${ORDER_STATUS_COLOR_MAPPING[status]}`}>
-          {status}
-          <Popover>
-            <PopoverBody style={{ textAlign: 'center' }}>This order is archived</PopoverBody>
-          </Popover>
-        </span>
-      );
-    }
     return <span className={`status-label ${ORDER_STATUS_COLOR_MAPPING[status]}`}>{status}</span>;
   },
 };
@@ -67,22 +55,16 @@ export const paymentStatus = {
 
 export const actions = (openOrderEditingModal: { (id: string, display_id: string): void }) => ({
   title: 'Action',
+  columnClass: 'text-center',
   value: (order: any) => {
-    const enabledStatuses = [
-      ORDER_STATUS.UNFULFILLED,
-      ORDER_STATUS.ON_HOLD,
-      ORDER_STATUS.PARTIALLY_FULFILLED,
-    ];
-    const hasDisabledStatus =
-      !enabledStatuses.includes(order.fulfillment_status) ||
-      order.payment_status === 'VOIDED' ||
-      order.closed;
+    const hasDisabledStatus = !order.is_editable;
     return (
       <ActionToolbar
         disableAction={hasDisabledStatus}
         openOrderEditingModal={openOrderEditingModal}
         id={order.platform_order_id}
         display_id={order.display_name}
+        editable_errors={order.editable_errors}
       />
     );
   },

@@ -1,9 +1,14 @@
 import React from 'react';
+
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { ActionToolbarWrapper } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/styled';
+
 interface ActionToolbarProps {
   disableAction: boolean;
   openOrderEditingModal: (id: string, display_id: string) => void;
   id: string;
   display_id: string;
+  editable_errors: string[];
 }
 
 const ActionToolbar: React.FC<ActionToolbarProps> = ({
@@ -11,11 +16,20 @@ const ActionToolbar: React.FC<ActionToolbarProps> = ({
   openOrderEditingModal,
   id,
   display_id,
+  editable_errors = [],
 }) => {
   const toolbarClassName = `action-toolbar${disableAction ? ' disable' : ''}`;
 
   return (
-    <div className={toolbarClassName} data-testid={`edit-${id}`}>
+    <ActionToolbarWrapper className={toolbarClassName} data-testid={`edit-${id}`}>
+      {disableAction && (
+        <Popover>
+          {/* Reason for adding a array is this is the response given to us by shopify and in some cases
+          there are more reasons also, so we decided to show the latest one */}
+          <PopoverBody className="align-center">{editable_errors[0] ?? ''}</PopoverBody>
+        </Popover>
+      )}
+
       <button
         type="button"
         disabled={disableAction}
@@ -24,7 +38,7 @@ const ActionToolbar: React.FC<ActionToolbarProps> = ({
       >
         <i className="i i-pencil-edit" />
       </button>
-    </div>
+    </ActionToolbarWrapper>
   );
 };
 

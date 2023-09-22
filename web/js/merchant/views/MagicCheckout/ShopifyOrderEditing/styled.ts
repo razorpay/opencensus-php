@@ -422,6 +422,7 @@ export const PlaceholderImage = styled.div`
 export const SearchInput = styled.input`
   background: #f6f6f6;
   border: none;
+  width: 100%;
 `;
 
 export const AddItemContainer = styled.div`
@@ -555,4 +556,9 @@ export const PaymentBreakupSubtext = styled.span`
 
 export const SmallText = styled.div`
   font-size: 10px;
+`;
+
+export const ActionToolbarWrapper = styled.div`
+  display: flex;
+  justify-content: center;
 `;
