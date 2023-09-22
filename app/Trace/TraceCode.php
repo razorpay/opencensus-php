@@ -88,6 +88,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
 
+    const SPLITZ_EXPERIMENT_RESULT                              = "SPLITZ_EXPERIMENT_RESULT";
+
     const CARD_NUMBER_DECRYPTION                                = 'CARD_NUMBER_DECRYPTION';
 
     const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
@@ -5349,6 +5351,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_ALT_ID_REQUEST                                  = 'VAULT_ALT_ID_REQUEST';
     const VAULT_ALT_ID_RESPONSE                                 = 'VAULT_ALT_ID_RESPONSE';
     const VAULT_ALT_ID_REQUEST_FETCH_ERROR                      = 'VAULT_ALT_ID_REQUEST_FETCH_ERROR';
+    const ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR                    = 'ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR';
     const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';

@@ -708,20 +708,17 @@ trait Authorize
                 break;
             }
 
-            if(isset($payment->card) && $payment->card->getTrivia()!='1' && $payment->card->getName() == 'testAltIdVISA') {
-            //make condition $payment->card->getTrivia()!='1' to enable alt id
-            //call alt id and set trivia 3 for alt id
-            //experiment to check if we can go ahead with alt id
-            $razorxFeature = "alt_id_".$payment->getGateway();
-            $variant = $this->app->razorx->getTreatment($payment->getId(), $razorxFeature, $this->mode);
-            $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
-                [
-                    'feature'   =>  $razorxFeature,
-                    'variant' => $variant,
-                ]);
-            if ($variant === 'on') {
-                $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput);
-            }}
+            if($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && $payment->card->getTrivia() != '1')
+             {
+                //make condition $payment->card->getTrivia()!='1' to enable alt id
+                //call alt id and set trivia 3 for alt id
+
+                if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
+                    {
+                        $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput);
+                    }
+
+            }
 
             // TODO: This is temporarily added here until we make
             // gateway functions like authorize for bank transfer.
@@ -912,6 +909,59 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    public function isAltIdExperimentEnabled($payment, $experimentId): bool
+    {
+
+       try {
+            $properties = [
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => $this->app['config']->get($experimentId),
+                  'request_data' => json_encode(
+                        [
+                            'merchant_id' => $payment->getMerchantId(),
+                            'issuer'      => $payment->card->getIssuer(),
+                            'gateway'     => $payment->getGateway(),
+                            'network'     => $payment->card->getNetwork(),
+                            'acquirer'    => $payment->terminal->getGatewayAcquirer()
+                        ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_RESULT,
+                    [
+                        'properties'   =>  $properties,
+                        'response'     =>  $response,
+                        'payment_id'   =>  $payment->getId()
+
+                    ]);
+
+            if ($response['response']['variant'] !== null)
+                {
+                    $variables = $response['response']['variant']['variables'] ?? [];
+
+                    foreach ($variables as $variable)
+                    {
+                        $key   = $variable['key'] ?? '';
+                        $value = $variable['value'] ?? '';
+                        if (($key == "result") and
+                            ($value == "on"))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }  catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR
+                    );
+                }
+        return false;
     }
 
     protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput)

@@ -10566,6 +10566,22 @@ class PaymentCreateTest extends TestCase
                     return 'off';
                 }));
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                    "variables" => [
+                    [
+                        'key' => 'result',
+                        'value' => 'on',
+                    ]
+                ]
+                ]
+            ]
+        ];
+
+
+        $this->mockAllSplitzTreatment($output);
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4591560071865620';
         $payment['card']['expiry_year'] = '2028';
