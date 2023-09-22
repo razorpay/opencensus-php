@@ -702,6 +702,11 @@ class Validator extends Base\Validator
             case Payment\Method::NETBANKING:
                 $supportedBanks = $this->merchant->methods->getSupportedBanks();
                 break;
+
+            case Payment\Method::CARD:
+                $supportedBanks = Payment\Processor\CardPayments::getCardTPVSupportedBanks();
+                break;
+
             default:
                 $supportedBanks = Netbanking::getSupportedBanks();
         }
