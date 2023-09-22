@@ -9,6 +9,8 @@ use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession as BaseStartSession;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use Predis\PredisException;
 use Razorpay\Trace\Logger as Trace;
@@ -32,6 +34,8 @@ class StartSession extends BaseStartSession
 
     /** @var Trace $trace */
     protected $trace;
+
+    protected string $route;
 
     protected bool $isSessionPersistent = true;
 
@@ -108,6 +112,21 @@ class StartSession extends BaseStartSession
     /**
      * @inheritDoc
      */
+    protected function getCookieExpirationDate(): \DateTimeInterface|int
+    {
+        if ($this->route === 'customer_logout_global') {
+            // Instruct browser to expire session & delete cookie immediately
+            return Date::instance(
+                Carbon::now()->subRealYears(5) // -5 years
+            );
+        }
+
+        return parent::getCookieExpirationDate();
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function saveSession($request): void
     {
         if (!$this->isSessionPersistent) {
@@ -119,15 +138,15 @@ class StartSession extends BaseStartSession
 
     protected function shouldSaveSession(Request $request): bool
     {
-        $route = optional($request->route())->getName() ?? '';
+        $this->route = optional($request->route())->getName() ?? '';
 
-        if ($this->isRequestFromSdkToPreferences($request, $route)) {
+        if ($this->isRequestFromSdkToPreferences($request, $this->route)) {
             // Do not store a session in cache if the request is coming from
             // PHP SDK to /v1/preferences endpoint
             return false;
         }
 
-        return $this->shouldSaveCustomerSession($request, $route);
+        return $this->shouldSaveCustomerSession($request, $this->route);
     }
 
     protected function isRequestFromSdkToPreferences(Request $request, string $route): bool

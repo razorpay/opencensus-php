@@ -391,6 +391,37 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testLogoutSendsRightAttributesInCookies(): void
+    {
+        $this->mockSession();
+
+        $this->app['config']->set('session.secure', true);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+
+        $headers = $this->response->headers->all();
+
+        $setCookieHeaders = $headers['set-cookie'] ?? [];
+        $this->assertNotEmpty($setCookieHeaders);
+        $this->assertCount(2, $setCookieHeaders);
+        foreach ($setCookieHeaders as $setCookie) {
+            $this->assertThat(
+                $setCookie,
+                $this->logicalOr(
+                    $this->stringStartsWith('razorpay_api_session_v2='),
+                    $this->stringStartsWith('razorpay_api_session='),
+                ),
+            );
+            $this->assertStringContainsStringIgnoringCase('Max-Age=0', $setCookie);
+            $this->assertStringContainsStringIgnoringCase('path=/', $setCookie);
+            $this->assertStringContainsStringIgnoringCase('secure', $setCookie);
+            $this->assertStringContainsStringIgnoringCase('httponly', $setCookie);
+            $this->assertStringContainsStringIgnoringCase('samesite=none', $setCookie);
+        }
+    }
+
     public function testFetchTokenCardRecurring()
     {
         $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');

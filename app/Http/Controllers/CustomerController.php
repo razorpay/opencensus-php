@@ -12,6 +12,7 @@ use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BaseException;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class CustomerController extends Controller
 {
@@ -223,10 +224,10 @@ class CustomerController extends Controller
 
         $data = $this->service(E::APP_TOKEN)->deleteAppTokensForGlobalCustomer($input);
 
-        // Expire razorpay_api_session_v2 cookie along with razorpay_api_session cookie
+        // Expire razorpay_api_session_v2 cookie along with razorpay_api_session
+        // cookie (managed by StartSession middleware)
         return ApiResponse::json($data)
-            ->withoutCookie('razorpay_api_session')
-            ->withoutCookie('razorpay_api_session_v2');
+            ->withCookie(cookie('razorpay_api_session_v2', null, -2628000, null, null, true, true, false, Cookie::SAMESITE_NONE));
     }
 
     public function postBankAccount($id)

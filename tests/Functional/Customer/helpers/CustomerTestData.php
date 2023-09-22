@@ -906,6 +906,20 @@ return [
         ]
     ],
 
+    'testLogoutSendsRightAttributesInCookies' => [
+        'request' => [
+            'url' => '/apps/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'all'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testOtpFlowWithInvalidNumber' => [
         'response' => [
             'content' => [
