@@ -127,7 +127,7 @@ class Core extends Base\Core
             $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($payment->getAmount());
             $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
         }
-        else if($this->isFeeCredits($feeCredits, $commission) === true)
+        else if($this->isFeeCredits($feeCredits, $commission + $tax) === true)
         {
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
@@ -179,7 +179,7 @@ class Core extends Base\Core
 
         $amount = abs($payment->getBaseAmount());
 
-        $fee = $fee - $tax;
+        $commission = $fee - $tax;
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
@@ -194,7 +194,7 @@ class Core extends Base\Core
             if (($payment->isCardlessEmiWalnut369() === true) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
             {
-                $fee = 0;
+                $commission = 0;
                 $tax = 0;
             }
         }
@@ -207,7 +207,7 @@ class Core extends Base\Core
         //Todo: how do we charge this amount from acquirer bank.
         if ($payment->isHdfcNonDSSurcharge() === true)
         {
-            if ($this->isFeeCredits($feeCredits, $fee) === true)
+            if ($this->isFeeCredits($feeCredits, $commission + $tax) === true)
             {
                 $moneyParams[Constants::FEE_CREDITS]                = strval(0);
             }
@@ -230,7 +230,7 @@ class Core extends Base\Core
         }
         else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
         {
-            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment, $fee, $tax);
+            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment, $commission, $tax);
 
             $customerFee = $customerFeeAndGstArray[0];
             $customerTax = $customerFeeAndGstArray[1];
@@ -238,16 +238,16 @@ class Core extends Base\Core
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - ($customerFee + $customerTax));
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee - ($customerFee + $customerTax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission - ($customerFee + $customerTax));
         }
         else if($this->isPostpaid($payment) === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission);
         }
         else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {
@@ -256,38 +256,38 @@ class Core extends Base\Core
             $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
             $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
         }
-        else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $fee, $payment) === true)
+        else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $commission + $tax, $payment) === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
-            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $commission);
         }
         // Normal merchant captured scenario (commissions considered)
         else
         {
             // Use case where amount is less than fee charged, hence we need to deduct more money from merchant balance
             // Use case has method as bank transfer
-            if($amount < ($fee + $tax))
+            if($amount < ($commission + $tax))
             {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($fee + $tax - $amount);
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($commission + $tax - $amount);
             }
             // Use case where amount is 0, happens for first payment in emandate subscriptions
             else if($amount === 0)
             {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($fee + $tax);
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($commission + $tax);
             }
             // Normal use case, amount is greater than (commission and tax)
             // We credit merchant balance in this case after deducting the fee.
             else
             {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $commission - $tax);
             }
 
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
 
             if ($maxNegativeLimit !== null)
             {
