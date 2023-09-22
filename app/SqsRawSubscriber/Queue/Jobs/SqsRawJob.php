@@ -2,18 +2,11 @@
 
 namespace RZP\SqsRawSubscriber\Queue\Jobs;
 
-use App;
-
 use Aws\Sqs\SqsClient;
 use Illuminate\Support\Str;
 use Illuminate\Queue\Jobs\SqsJob;
 use Illuminate\Container\Container;
 use Illuminate\Queue\CallQueuedHandler;
-
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class SqsRawJob extends SqsJob
 {
@@ -71,53 +64,27 @@ class SqsRawJob extends SqsJob
 
             $command = serialize($jobInstance);
 
-            $jobBodySet = false;
-
             if ($commandName == 'RZP\\Jobs\\ArtReconProcess')
             {
-                try
-                {
-                    $app = App::getFacadeRoot();
-
-                    $variant = $app->razorx->getTreatment(
-                        'ArtReconProcess',
-                        RazorxTreatment::ADD_TIMEOUT_FOR_SQS_RAW,
-                        Mode::LIVE
-                    );
-
-                    app('trace')->info(TraceCode::ART_RECON_SQS_RAW_VARIANT, [
-                        'key'         => 'ArtReconProcess',
-                        'variant'     => $variant,
-                        'timeout_set' => $jobInstance->timeout ?? null
+                /**
+                 * While initialising timeout for the message, we either set the timeout from the
+                 * payload or from the options we set while executing the command queue:work.
+                 *
+                 * Passing timeout in the payload, so that it doesn't default back to 60s
+                 *
+                 * Note: Keeping the timeout in Job file has no effect for jobs processed through sqs-raw. It
+                 * needs to be passed explicitly in the payload as done below.
+                 */
+                $job['Body'] = json_encode(
+                    [
+                        'displayName' => $commandName,
+                        'uuid'        => (string) Str::uuid(),
+                        'timeout'     => $jobInstance->timeout ?? null,
+                        'job'         => CallQueuedHandler::class . '@call',
+                        'data'        => compact('commandName', 'command'),
                     ]);
-
-                    /**
-                     * While initialising timeout for the message, we either set the timeout from the
-                     * payload or from the options we set while executing the command queue:work.
-                     *
-                     * Passing timeout in the payload, so that it doesn't default back to 60s
-                     */
-                    if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
-                    {
-                        $job['Body'] = json_encode(
-                            [
-                                'displayName' => $commandName,
-                                'uuid'        => (string) Str::uuid(),
-                                'timeout'     => $jobInstance->timeout ?? null,
-                                'job'         => CallQueuedHandler::class . '@call',
-                                'data'        => compact('commandName', 'command'),
-                            ]);
-
-                        $jobBodySet = true;
-                    }
-                }
-                catch (\Throwable $exception)
-                {
-                    app('trace')->traceException($exception, Trace::ERROR, TraceCode::ART_RECON_SQS_RAW_VARIANT);
-                }
             }
-
-            if ($jobBodySet === false)
+            else
             {
                 $job['Body'] = json_encode(
                     [
