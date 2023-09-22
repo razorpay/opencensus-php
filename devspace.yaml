@@ -9,6 +9,9 @@ dev:
         - op: replace
           path: spec.containers[0].imagePullPolicy
           value: Always
+        - op: replace
+          path: spec.containers[0].resources.requests.cpu
+          value: 500m
 # uncomment only to use remote debugging
   #    replaceImage: c.rzp.io/razorpay/api:devstackxdebug3
   # ports:
