@@ -70,8 +70,7 @@ class Service extends Base
                     $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_TOTAL, $dimension);
                     try
                     {
-                        $this->editProxyFeatures($entity, $isAssignment, $mode);
-
+                        return $this->editProxyFeatures($entity, $isAssignment, $mode);
                     }
                     catch (\Exception $ex)
                     {
@@ -174,7 +173,7 @@ class Service extends Base
      * @param string $mode
      * @throws ProxyApiException
      */
-    public function editProxyFeatures(Entity $entity, bool $isAssignment, string $mode = Mode::TEST)
+    public function editProxyFeatures(Entity $entity, bool $isAssignment, string $mode = Mode::TEST): V1FeatureBulkEditResponse
     {
         $req = [
             "features" => [
@@ -213,6 +212,8 @@ class Service extends Base
 
             throw new ProxyApiException("Response is null or size is greater than 1");
         }
+
+        return $proxyResponse;
     }
 
     private function getByEntityIDAndTypeFromProxy(string $entity_type, string $entity_id,
@@ -547,6 +548,29 @@ class Service extends Base
 
             $enabled_features = $this->fetchByEntityIdAndFeatureNames($entityId, array_keys($dcsFeatures), $mode,
                 true, $entityType, true);
+
+            try
+            {
+                $apiFeatureNames = DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, false,
+                    $this->app->runningUnitTests(), $this->app->isEnvironmentProduction());
+
+                $enabled_features_proxy = $this->fetchByEntityIdAndNamesViaProxy($entityId, $apiFeatureNames, $mode, $entityType);
+
+                $diff = array_diff($enabled_features, $enabled_features_proxy);
+
+                if (sizeof($diff) > 0)
+                {
+                    $this->trace->info(TraceCode::DCS_PROXY_READ_DIFF, [
+                        'diff' => $diff,
+                        'entity_id' => $entityId,
+                        'entity_type' => $entityType,
+                    ]);
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+            }
 
             $this->cache->set($cacheKey, $enabled_features, 30);
         }
@@ -980,5 +1004,52 @@ class Service extends Base
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_ID_NAME_FAILURE);
         }
         return null;
+    }
+
+    /**
+     * @param string $entityId
+     * @param array $apiFeatureNames
+     * @param string $mode
+     * @param string $entityType
+     * @return array
+     */
+    public function fetchByEntityIdAndNamesViaProxy(string $entityId, array $apiFeatureNames, string $mode,
+                                                    string $entityType): array
+    {
+        $names = [];
+        $features = [];
+        try
+        {
+            foreach ($apiFeatureNames as $name)
+            {
+                if ($entityType === Type::PARTNER)
+                {
+                    $names[] = Type::MERCHANT . ":" . $name;
+                }
+                else
+                {
+                    $names[] = $entityType . ":" . $name;
+                }
+            }
+            $input = [
+                'entity_id' => $entityId,
+                'names' => $names,
+            ];
+
+            $proxyResp = $this->client($mode)->aggregateFeatureFetchByEntityIdAndNames($input);
+
+            if (sizeof($proxyResp->getNames()) > 0)
+            {
+                foreach ($proxyResp->getNames() as $name)
+                {
+                    $features[] = str_split($name, ":")[1];
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_ID_NAMES_FAILURE);
+        }
+        return $features;
     }
 }

@@ -223,12 +223,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_PROXY_EDIT_RESPONSE                               = 'DCS_PROXY_EDIT_RESPONSE';
     const DCS_PROXY_DEBUG                                       = 'DCS_PROXY_DEBUG';
     const DCS_PROXY_EDIT_FAILURE                                = 'DCS_PROXY_EDIT_FAILURE';
-    const DCS_READ_PROXY_DIFF                                   = 'DCS_READ_PROXY_DIFF';
+    const DCS_PROXY_READ_DIFF                                   = 'DCS_PROXY_READ_DIFF';
     const DCS_READ_PROXY_ENTITY_ID_NAME_DIFF                    = 'DCS_READ_PROXY_ENTITY_ID_NAME_DIFF';
     const DCS_READ_PROXY_ENTITY_IDS_NAME_DIFF                   = 'DCS_READ_PROXY_ENTITY_IDS_NAME_DIFF';
     const DCS_READ_PROXY_ENTITY_ID_NAMES_DIFF                   = 'DCS_READ_PROXY_ENTITY_ID_NAMES_DIFF';
     const DCS_READ_BY_ENTITY_TYPE_FAILURE                       = 'DCS_READ_BY_ENTITY_TYPE_FAILURE';
     const DCS_READ_BY_ENTITY_ID_NAME_FAILURE                    = 'DCS_READ_BY_ENTITY_ID_NAME_FAILURE';
+    const DCS_READ_BY_ENTITY_ID_NAMES_FAILURE                   = 'DCS_READ_BY_ENTITY_ID_NAMES_FAILURE';
     const DCS_READ_BY_ENTITY_IDS_NAME_FAILURE                   = 'DCS_READ_BY_ENTITY_IDS_NAME_FAILURE';
     // DCS Traces
     const DCS_EXTERNAL_REQUEST_RECEIVED                         = 'DCS_EXTERNAL_REQUEST_RECEIVED';

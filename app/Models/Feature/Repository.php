@@ -636,37 +636,31 @@ class Repository extends Base\Repository
 
     private function assignOnDCS(Entity $entity, $mode, $sync = false, $featureMap = null)
     {
-        if (Service::isDcsFeature($entity->getName()) === true)
+        $dcs = $this->app['dcs'];
+        if ($sync === true)
         {
-            $dcs = $this->app['dcs'];
-            if ($sync === true)
-            {
-                $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
-            }
-            else
-            {
-                $variant = $this->getDcsEditVariant($entity->getName(), $mode);
-            }
-
-            $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
+            $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
         }
+        else
+        {
+            $variant = $this->getDcsEditVariant($entity->getName(), $mode);
+        }
+
+        $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
     }
 
     private function removeOnDCS(Entity $entity, $mode, $sync = false)
     {
-        if (Service::isDcsFeature($entity->getName()) === true)
+        $dcs = $this->app['dcs'];
+        if ($sync === true)
         {
-            $dcs = $this->app['dcs'];
-            if ($sync === true)
-            {
-                $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
-            }
-            else
-            {
-                $variant = $this->getDcsEditVariant($entity->getName(), $mode);
-            }
-            $dcs->editFeature($entity, $variant, false, $mode);
+            $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
         }
+        else
+        {
+            $variant = $this->getDcsEditVariant($entity->getName(), $mode);
+        }
+        $dcs->editFeature($entity, $variant, false, $mode);
     }
 
     private function getAppMode() {
