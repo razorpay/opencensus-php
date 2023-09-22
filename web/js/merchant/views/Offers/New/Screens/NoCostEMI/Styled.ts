@@ -64,7 +64,7 @@ export const StyledOfferForm = styled.div`
 `;
 
 export const StyledOfferModal = styled.div`
-  .Modal-container {
+  .Modal-container--NewSubscriptionLink {
     max-width: 980px;
   }
 `;
