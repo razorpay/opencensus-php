@@ -48,6 +48,20 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $createVirtualAccountObj, Action::CREATE_VIRTUAL_ACCOUNT);
     }
 
+    public function createVirtualAccountForBanking($input)
+    {
+        $createVirtualAccountObj = new CreateVirtualAccountForBanking();
+
+        return $this->processMockResponse($input, $createVirtualAccountObj, Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING);
+    }
+
+    public function closeVirtualAccountForBanking($input)
+    {
+        $closeVirtualAccountForBanking = new CloseVirtualAccountForBanking();
+
+        return $this->processMockResponse($input, $closeVirtualAccountForBanking, Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING);
+    }
+
     public function payInit($input)
     {
         $payInitObj = new PayInitData();
@@ -215,6 +229,8 @@ class Server extends Base\Mock\Server
         if ((isset($input['entities']) === false) and
             (($action === Action::PRE_PROCESS) or
              ($action === Action::CREATE_VIRTUAL_ACCOUNT) or
+                ($action === Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING) or
+                ($action === Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING) or
                 ($action === Action::VERIFY)))
         {
             $input['entities'] = $input;

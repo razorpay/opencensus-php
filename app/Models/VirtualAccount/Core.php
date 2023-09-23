@@ -17,19 +17,23 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\AppsRiskCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Constants\HyperTrace;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Merchant\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\RblVirtualAccountForBanking;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Jobs\RblVirtualAccountCreateProcess;
+use RZP\Models\Payout\Metric as PayoutMetric;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType as QrUsage;
@@ -122,6 +126,41 @@ class Core extends Base\Core
             $this->repo->bank_account->saveOrFail($bankAccount);
 
             RblVirtualAccountCreateProcess::dispatch($this->mode, $virtualAccount->getId());
+        }
+
+        if (($virtualAccount->isBalanceTypeBanking() === true) and
+            ($virtualAccount->bankAccount !== null) and
+            $virtualAccount->bankAccount->getIfscCode() === Provider::getGatewaySyncProviderForRBLBanking())
+        {
+            $bankAccount = $virtualAccount->bankAccount;
+            $bankAccount->setIsGatewaySync(false);
+            $this->repo->bank_account->saveOrFail($bankAccount);
+
+            try
+            {
+                RblVirtualAccountForBanking::dispatch($this->mode,
+                    $virtualAccount->getId(),
+                    Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING);
+
+                $this->trace->info(TraceCode::RBL_VIRTUAL_ACCOUNT_FOR_BANKING_DISPATCH_SUCCESS,
+                [
+                    'virtual_account_id' => $virtualAccount->getId(),
+                    'action'             => Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING,
+                ]);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException(
+                    $throwable,
+                    Trace::ERROR,
+                    TraceCode::RBL_VIRTUAL_ACCOUNT_FOR_BANKING_DISPATCH_FAILURE,
+                    [
+                        'virtual_account_id' => $virtualAccount->getId(),
+                        'action'             => Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING,
+                    ]);
+
+                $this->trace->count(PayoutMetric::RBL_VIRTUAL_ACCOUNT_BANKING_DISPATCH_FAILURE_COUNT);
+            }
         }
 
         return $virtualAccount;
@@ -804,6 +843,40 @@ class Core extends Base\Core
 
             return $virtualAccount;
         });
+
+        $jobName = app('worker.ctx')->getJobName() ?? null;
+
+        if ($jobName !== RblVirtualAccountForBanking::WORKER_RBL_VIRTUAL_ACCOUNT_FOR_BANKING and
+        ($virtualAccount->isBalanceTypeBanking() === true) and
+        ($virtualAccount->bankAccount !== null) and
+        in_array($virtualAccount->bankAccount->getIfscCode(), Provider::getGatewaySyncProvider()))
+        {
+            try
+            {
+                RblVirtualAccountForBanking::dispatch($this->mode,
+                    $virtualAccount->getId(),
+                    Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING);
+
+                $this->trace->info(TraceCode::RBL_VIRTUAL_ACCOUNT_FOR_BANKING_DISPATCH_SUCCESS,
+                    [
+                        'virtual_account_id' => $virtualAccount->getId(),
+                        'action'             => Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING,
+                    ]);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException(
+                    $throwable,
+                    Trace::ERROR,
+                    TraceCode::RBL_VIRTUAL_ACCOUNT_FOR_BANKING_DISPATCH_FAILURE,
+                    [
+                        'virtual_account_id' => $virtualAccount->getId(),
+                        'action'             => Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING,
+                    ]);
+
+                $this->trace->count(PayoutMetric::RBL_VIRTUAL_ACCOUNT_BANKING_DISPATCH_FAILURE_COUNT);
+            }
+        }
 
         return $virtualAccount;
     }

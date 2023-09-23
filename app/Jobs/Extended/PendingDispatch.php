@@ -49,6 +49,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const FUND_MANAGEMENT_PAYOUT_CHECK                = 'fund_management_payout_check';
     const FUND_MANAGEMENT_PAYOUT_INITIATE             = 'fund_management_payout_initiate';
     const FTS_FUND_TRANSFER                           = 'fts_fund_transfer';
+    const RBL_VIRTUAL_ACCOUNT_FOR_BANKING             = 'rbl_virtual_account_for_banking';
 
     const QR_STATUS_CHECK                             = 'qr_status_check';
 
@@ -67,6 +68,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::FUND_MANAGEMENT_PAYOUT_CHECK,
         self::FUND_MANAGEMENT_PAYOUT_INITIATE,
         self::FTS_FUND_TRANSFER,
+        self::RBL_VIRTUAL_ACCOUNT_FOR_BANKING,
         self::QR_STATUS_CHECK,
     ];
 

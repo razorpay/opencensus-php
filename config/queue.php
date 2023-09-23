@@ -647,6 +647,10 @@ return [
         'live'       => env('AWS_RBL_VIRTUAL_ACCOUNT_CREATE_LIVE_QUEUE'),
     ],
 
+    'rbl_virtual_account_for_banking' => [
+        'live'       => env('AWS_RBL_VIRTUAL_ACCOUNT_CREATE_LIVE_QUEUE'),
+    ],
+
     'emandate_files_instrumentation' => [
         'test'       => env('AWS_EMANDATE_FILES_INSTRUMENTATION_TEST_QUEUE'),
         'live'       => env('AWS_EMANDATE_FILES_INSTRUMENTATION_LIVE_QUEUE'),

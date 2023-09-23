@@ -3700,4 +3700,42 @@ class Gateway extends Base\Gateway
         return $res;
     }
 
+    public function createVirtualAccountForBanking($input)
+    {
+        parent::action($input, Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING);
+
+        return $this->rblVirtualAccountProcess($input);
+
+    }
+
+    public function closeVirtualAccountForBanking($input)
+    {
+        parent::action($input, Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING);
+
+        return $this->rblVirtualAccountProcess($input);
+    }
+
+    protected function rblVirtualAccountProcess($input)
+    {
+        $request = $this->getVirtualAccountBankingMozartRequestArray($input);
+
+        $this->traceVirtualAccountCreateRequest($request,
+            TraceCode::GATEWAY_RBL_VIRTUAL_ACCOUNT_FOR_BANKING_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceVirtualAccountResponse($response,
+            TraceCode::GATEWAY_RBL_VIRTUAL_ACCOUNT_FOR_BANKING_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        return $this->getVirtualAccountResponseArray($response);
+    }
+
+    protected function getVirtualAccountBankingMozartRequestArray($input)
+    {
+        $url = $this->getUrlForMozartRequest($input, 'razorpayx');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $input);
+    }
 }

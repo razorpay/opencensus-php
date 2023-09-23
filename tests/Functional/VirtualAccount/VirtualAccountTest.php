@@ -4,20 +4,27 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Hash;
 use Cache;
+use Queue;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Admin;
+use RZP\Jobs\Context;
 use RZP\Services\Mock;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
+use RZP\Models\Payout\Metric;
 use RZP\Models\VirtualAccount;
 use RZP\Services\RazorXClient;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Core;
@@ -29,9 +36,11 @@ use RZP\Models\VirtualAccount\Constant;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\RblVirtualAccountForBanking;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Helpers\Heimdall;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Gateway\Mozart\BTRblBanking\ErrorCode;
 use RZP\Models\QrCode\Repository as QrCodeRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -45,6 +54,7 @@ class VirtualAccountTest extends TestCase
     protected $t2;
     private $vpaTerminal;
     use PaymentTrait;
+    use TestsMetrics;
     use TestsWebhookEvents;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
@@ -2836,6 +2846,188 @@ class VirtualAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateVirtualAccountInBulk_Banking_RBL($skipSetup = false)
+    {
+        Queue::fake();
+
+        $testData = $this->testData['testCreateVirtualAccountInBulkForBanking'];
+
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        if ($skipSetup === false)
+        {
+            $terminalAttributes = [
+                'gateway' => Gateway::RBL,
+                'merchant_id' => '10000000000000',
+                'gateway_merchant_id' => '123456',
+                'type' => [
+                    Type::NON_RECURRING     => '1',
+                    Type::NUMERIC_ACCOUNT   => '1',
+                    Type::BUSINESS_BANKING  => '1',
+                ]
+            ];
+
+            $this->fixtures->on('live')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+            $this->setUpMerchantForBusinessBankingLive(true, 10000000);
+        }
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    "10000000000000" => "123456"
+                ]
+            ]);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest($testData);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account', 'live');
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertNotNull( $virtualAccount['bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+        $this->assertEquals($virtualAccount['status'], 'active');
+
+        $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
+        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+
+        Queue::assertPushed(RblVirtualAccountForBanking::class, 1);
+
+        return $virtualAccount;
+    }
+
+    public function testRblVirtualAccountForBanking_CreateAction_Handle()
+    {
+        $virtualAccount = $this->testCreateVirtualAccountInBulk_Banking_RBL();
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+
+        (new RblVirtualAccountForBanking(Mode::LIVE,
+            $virtualAccount['id'],
+            Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING))->handle();
+
+        $bankAccount->reload();
+        $this->assertEquals(true, $bankAccount['is_gateway_sync']);
+
+        return $virtualAccount;
+    }
+
+    public function testRblVirtualAccountForBanking_CreateAction_Handle_ErrorFromBank()
+    {
+        $virtualAccount = $this->testCreateVirtualAccountInBulk_Banking_RBL();
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $this->app['config']->set('rbl_create_virtual_account.error_code', ErrorCode::ER002);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::RBL_VIRTUAL_ACCOUNT_BANKING_JOB_FAILURES_COUNT,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'action' => Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING
+            ]
+        );
+
+        (new RblVirtualAccountForBanking(Mode::LIVE,
+            $virtualAccount['id'],
+            Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING))->handle();
+
+        $virtualAccount->reload();
+
+        $this->assertEquals($virtualAccount['status'], 'closed');
+
+        $this->assertTrue($boolMetricCaptured);
+    }
+
+    public function testCloseVirtualAccountInBulk_Banking_RBL()
+    {
+        $virtualAccount1 = $this->testCreateVirtualAccountInBulk_Banking_RBL();
+
+        $virtualAccount2 = $this->testCreateVirtualAccountInBulk_Banking_RBL(true);
+
+        $this->app->singleton('worker.ctx', function($app) {
+            return new Context($app);
+        });
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'virtual_account_ids' => [
+                $virtualAccount1->getPublicId(),
+                $virtualAccount2->getPublicId(),
+            ]
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        Queue::assertPushed(RblVirtualAccountForBanking::class, 2);
+
+        $virtualAccount1 = $this->getEntityById('virtual_account', $virtualAccount1['id'], true, 'live');
+        $virtualAccount2 = $this->getEntityById('virtual_account', $virtualAccount2['id'], true, 'live');
+
+        $this->assertEquals($virtualAccount1['status'], 'closed');
+        $this->assertEquals($virtualAccount2['status'], 'closed');
+    }
+
+    public function testRblVirtualAccountForBanking_CloseAction_Handle()
+    {
+        $this->testCloseVirtualAccountInBulk_Banking_RBL();
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account', 'live');
+
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        (new RblVirtualAccountForBanking(Mode::LIVE,
+            $virtualAccount['id'],
+            Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING))->handle();
+    }
+
+    public function testRblVirtualAccountForBanking_CloseAction_Handle_ErrorFromBank()
+    {
+        $this->testCloseVirtualAccountInBulk_Banking_RBL();
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account', 'live');
+
+        $this->app['config']->set('rbl_close_virtual_account.error_code', ErrorCode::ER002);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::RBL_VIRTUAL_ACCOUNT_BANKING_JOB_FAILURES_COUNT,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'action' => Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING
+            ]
+        );
+
+        (new RblVirtualAccountForBanking(Mode::LIVE,
+            $virtualAccount['id'],
+            Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING))->handle();
+
+        $virtualAccount->reload();
+
+        $this->assertEquals($virtualAccount['status'], 'closed');
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function testCloseVirtualAccountInBulk()

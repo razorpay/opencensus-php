@@ -326,4 +326,8 @@ class Provider
         ];
     }
 
+    public static function getGatewaySyncProviderForRBLBanking()
+    {
+        return self::IFSC[Provider::RBL];
+    }
 }

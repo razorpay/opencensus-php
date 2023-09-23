@@ -1525,6 +1525,19 @@ return [
         ],
     ],
 
+    'testCloseVirtualAccountInBulk_Banking_RBL' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking/close/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 2,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testFetchVirtualAccountPayments' => [
         'entity' => 'collection',
         'count'  => 1,
