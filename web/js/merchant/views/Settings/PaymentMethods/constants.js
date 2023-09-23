@@ -16,7 +16,72 @@ export const MERCHANT_DETAILS = 'merchant_details';
 export const ZESTMONEY = 'ZestMoney';
 export const GETSIMPL = 'Simpl';
 export const FLEXIPAY = 'Flexipay';
-export const DISABLED_INSTRUMENT = [ZESTMONEY, GETSIMPL, FLEXIPAY];
+export const PAYTM = 'Paytm';
+export const MAESTRO = 'Maestro';
+export const STATE_BANK_OF_INDIA = 'State Bank of India';
+export const BANK_OF_BAHRAIN_AND_KUWAIT = 'Bank of Bahrain and Kuwait';
+export const BASSEIN_CATHOLIC_CO_OPERATIVE_BANK = 'Bassein Catholic Co-operative Bank';
+export const COSMOS_CO_OPERATIVE_BANK = 'Cosmos Co-operative Bank';
+export const ESAF_SMALL_FINANCE_BANK = 'ESAF Small Finance Bank';
+export const JANTA_SAHAKARI_BANK_PUNE = 'Janata Sahakari Bank (Pune)';
+export const KALUPUR_COMMERCIAL_CO_OPERATIVE_BANK = 'Kalupur Commercial Co-operative Bank';
+export const MEHSANA_URBAN_CO_OPERATIVE_BANK = 'Mehsana Urban Co-operative Bank';
+export const NKGSB_CO_OPERATIVE_BANK = 'NKGSB Co-operative Bank';
+export const NORTH_EAST_SMALL_FINANCE_BANK = 'North East Small Finance Bank';
+export const STATE_BANK_OF_BIKANER_AND_JAIPUR = 'State Bank of Bikaner and Jaipur';
+export const STATE_BANK_OF_HYERADABAD = 'State Bank of Hyderabad';
+export const STATE_BANK_OF_PATIALA = 'State Bank of Patiala';
+export const STATE_BANK_OF_TRAVANCORE = 'State Bank of Travancore';
+export const SURYODAY_SMALL_FINANACE_BANK = 'Suryoday Small Finance Bank';
+export const TAMILNADU_STATE_APEX_CO_OPERATIVE_BANK = 'Tamilnadu State Apex Co-operative Bank';
+export const THANE_BHARAT_SAHAKARI_BANK = 'Thane Bharat Sahakari Bank';
+export const THANE_JANATA_SAHAKARI_BANK = 'Thane Janata Sahakari Bank';
+export const VARACHHA_CO_OPERATIVE_BANK = 'Varachha Co-operative Bank';
+export const ZOROASTRIAN_CO_OPERATIVE_BANK = 'Zoroastrian Co-operative Bank';
+export const PHONEPE = 'Phonepe';
+export const PAYPAL = 'Paypal';
+export const TRUSTLY = 'Trustly';
+export const POLI = 'POLI';
+export const GIROPAY = 'Giropay';
+export const SOFORT = 'Sofort';
+export const SODEXO = 'Sodexo';
+export const STATE_BANK_OF_MYSORE = 'State Bank of Mysore';
+
+export const DISABLED_INSTRUMENT = [
+  ZESTMONEY,
+  GETSIMPL,
+  FLEXIPAY,
+  PAYTM,
+  MAESTRO,
+  STATE_BANK_OF_INDIA,
+  BANK_OF_BAHRAIN_AND_KUWAIT,
+  COSMOS_CO_OPERATIVE_BANK,
+  JANTA_SAHAKARI_BANK_PUNE,
+  MEHSANA_URBAN_CO_OPERATIVE_BANK,
+  NKGSB_CO_OPERATIVE_BANK,
+  NORTH_EAST_SMALL_FINANCE_BANK,
+  STATE_BANK_OF_BIKANER_AND_JAIPUR,
+  STATE_BANK_OF_HYERADABAD,
+  STATE_BANK_OF_MYSORE,
+  STATE_BANK_OF_PATIALA,
+  STATE_BANK_OF_TRAVANCORE,
+  SURYODAY_SMALL_FINANACE_BANK,
+  TAMILNADU_STATE_APEX_CO_OPERATIVE_BANK,
+  THANE_BHARAT_SAHAKARI_BANK,
+  THANE_JANATA_SAHAKARI_BANK,
+  VARACHHA_CO_OPERATIVE_BANK,
+  ZOROASTRIAN_CO_OPERATIVE_BANK,
+  PHONEPE,
+  PAYPAL,
+  TRUSTLY,
+  POLI,
+  GIROPAY,
+  SOFORT,
+  SODEXO,
+  ESAF_SMALL_FINANCE_BANK,
+  KALUPUR_COMMERCIAL_CO_OPERATIVE_BANK,
+];
+
 export const DEACTIVATED = 'deactivated';
 
 export const statusClass = {
