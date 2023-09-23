@@ -8,6 +8,15 @@ class Constants
     const FEATURES     = 'features';
     const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
+
+    // Timeout related constants
+    const TIMEOUTS           = 'timeouts';
+    const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
+
+    private static array $defaultTimeouts = [
+        self::OLIVE_SDK_TIMEOUT => 30
+    ];
+
     const METADATA     = 'metadata';
     const X_PG_SERVICE = 'X-PG-Service';
     const API          = 'api';
@@ -107,5 +116,10 @@ class Constants
         {
             return self::$popularBanksListInUAT;
         }
+    }
+
+    public static function getDefaultTimeoutsForSDK(): array
+    {
+        return self::$defaultTimeouts;
     }
 }

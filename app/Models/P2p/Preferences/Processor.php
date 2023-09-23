@@ -10,11 +10,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Order\Entity as OrderEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\BankAccount as BankAccount;
-use RZP\Exception\P2p\BadRequestException;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Services\Dcs\Configurations as DcsConfig;
 
@@ -101,14 +100,35 @@ class Processor extends Base\Processor
     private function getGatewayPreferencesForSDK()
     {
         return [
-            Entity::GATEWAYS => [
+            Entity::GATEWAYS      => [
                 [
-                    Entity::PRIORITY   => '0',
-                    Entity::GATEWAY    => $this->getGateway(),
+                    Entity::PRIORITY => '0',
+                    Entity::GATEWAY  => $this->getGateway(),
                 ],
             ],
-            Entity::POPULAR_BANKS   => $this->getPopularBankListForSDK(),
+            Entity::POPULAR_BANKS => $this->getPopularBankListForSDK(),
+            Constants::TIMEOUTS   => $this->fetchSDKTimeoutConfigs(),
         ];
+    }
+
+    private function fetchSDKTimeoutConfigs()
+    {
+        $sdkTimeouts =  ConfigKey::get(ConfigKey::UPI_TURBO_SDK_TIMEOUTS, []);
+
+        if (empty($sdkTimeouts) === true)
+        {
+            $sdkTimeouts = Constants::getDefaultTimeoutsForSDK();
+        }
+
+        switch ($this->getGateway())
+        {
+            case EntityConstants::P2M_UPI_AXIS_OLIVE:
+                return [
+                    Constants::OLIVE_SDK_TIMEOUT => $sdkTimeouts[Constants::OLIVE_SDK_TIMEOUT] ?? 0
+                ];
+            default:
+                throw new LogicException("Unknown gateway!");
+        }
     }
 
     private function getPopularBankListForSDK()

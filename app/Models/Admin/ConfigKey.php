@@ -413,6 +413,8 @@ class ConfigKey
 
     const DEFAULT_PRICING_FOR_SWIFT                 = self::PREFIX . 'default_pricing_for_swift';
 
+    const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

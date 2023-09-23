@@ -264,6 +264,7 @@ class Validator extends Base\Validator
         ConfigKey::DEFAULT_PRICING_FOR_ACH                                             => 'filled|array',
         ConfigKey::DEFAULT_PRICING_FOR_SWIFT                                           => 'filled|array',
         ConfigKey::UPI_TURBO_POPULAR_BANK_LIST                                         => 'filled|array',
+        ConfigKey::UPI_TURBO_SDK_TIMEOUTS                                              => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

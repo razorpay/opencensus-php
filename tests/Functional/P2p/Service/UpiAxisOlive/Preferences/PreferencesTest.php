@@ -47,6 +47,8 @@ class PreferencesTest extends TestCase
 
         $banklist = $this->setPopularBankListInRedis();
 
+        $timeouts = $this->setSDKTimeoutConfigsInRedis(30);
+
         $response = $helper->getGatewayPreferences($this->gateway, []);
 
         $this->assertArrayHasKey('customer', $response);
@@ -66,6 +68,10 @@ class PreferencesTest extends TestCase
         $expectedMerchantName = $merchant->getDisplayNameElseName();
 
         $this->assertEquals($expectedMerchantName, $response['merchant']['display_name']);
+
+        $this->assertArrayHasKey('timeouts', $response);
+
+        $this->assertArraySelectiveEquals($timeouts, $response['timeouts']);
 
         $this->assertEquals('api', $response['metadata']['X-PG-Service']);
     }
@@ -191,5 +197,18 @@ class PreferencesTest extends TestCase
         ]);
 
         return $banklist;
+    }
+
+    public function setSDKTimeoutConfigsInRedis($oliveTimeout = 0)
+    {
+        $sdkTimeoutConfigs = [
+            Constants::OLIVE_SDK_TIMEOUT => $oliveTimeout
+        ];
+
+        (new Admin\Service)->setConfigKeys([
+               Admin\ConfigKey::UPI_TURBO_SDK_TIMEOUTS => $sdkTimeoutConfigs
+        ]);
+
+        return $sdkTimeoutConfigs;
     }
 }
