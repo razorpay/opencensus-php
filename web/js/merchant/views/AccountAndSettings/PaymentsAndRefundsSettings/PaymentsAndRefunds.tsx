@@ -38,16 +38,16 @@ import {
 } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/constants/constants';
 const feature = 'allow_cfb_international';
 
-const BalanceSettings = lazy(() =>
-  import(/* webpackChunkName: "BalanceSettings" */ 'merchant/views/Account/Balances'),
+const BalanceSettings = lazy(
+  () => import(/* webpackChunkName: "BalanceSettings" */ 'merchant/views/Account/Balances'),
 );
 
-const CreditsSettings = lazy(() =>
-  import(/* webpackChunkName: "CreditsSettings" */ 'merchant/views/Account/Credits/List'),
+const CreditsSettings = lazy(
+  () => import(/* webpackChunkName: "CreditsSettings" */ 'merchant/views/Account/Credits/List'),
 );
 
-const ReminderSettings = lazy(() =>
-  import(/* webpackChunkName: "ReminderSettings" */ 'merchant/views/Settings/Reminders'),
+const ReminderSettings = lazy(
+  () => import(/* webpackChunkName: "ReminderSettings" */ 'merchant/views/Settings/Reminders'),
 );
 
 const PaymentsAndRefundsSettings = ({

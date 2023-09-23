@@ -24,6 +24,8 @@ import IconSave from 'assets/missed_order/icon-save.svg';
 import track from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/track';
 import Button from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/components/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { Box } from '@razorpay/blade/components';
+import FailedPaymentsRetryCalculator from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/components/FailedPaymentsRetry';
 import 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/missedorder.styl';
 
 const PlanSelection = lazy(() =>
@@ -143,101 +145,106 @@ const MissedOrderPaymentLink = ({
   };
 
   return (
-    <div className="missed-order-wrapper">
-      <div className="panel panel-default">
-        <div className="panel-heading manage-wrapper">
-          <span className="title">
-            <TextHighlighter>Failed Payments Recovery</TextHighlighter>
-            {activeSubscription && (
-              <>
-                <td className="active-wrapper">
-                  <span
-                    className={`active-content ${
-                      effectiveEndDate ? 'inactive-color' : 'active-color'
+    <Box display="flex" flexDirection="column" gap="spacing.6">
+      <div className="missed-order-wrapper">
+        <div className="panel panel-default">
+          <div className="panel-heading manage-wrapper">
+            <span className="title">
+              <TextHighlighter>Failed Payments Recovery</TextHighlighter>
+              {activeSubscription && (
+                <>
+                  <td className="active-wrapper">
+                    <span
+                      className={`active-content ${
+                        effectiveEndDate ? 'inactive-color' : 'active-color'
+                      }`}
+                    >
+                      {effectiveEndDate ? 'INACTIVE' : 'ACTIVE'}
+                    </span>
+                  </td>
+                  <li
+                    className={`date-wrapper ${
+                      freeTrialActive && !effectiveEndDate ? 'free-bill-date' : 'billing-date'
                     }`}
                   >
-                    {effectiveEndDate ? 'INACTIVE' : 'ACTIVE'}
-                  </span>
-                </td>
-                <li
-                  className={`date-wrapper ${
-                    freeTrialActive && !effectiveEndDate ? 'free-bill-date' : 'billing-date'
-                  }`}
-                >
-                  {freeTrialActive && !effectiveEndDate ? (
-                    <span>
-                      <span>Free till</span>&nbsp;
-                      <Time value={renewalDate} format={TIME_FORMAT} />
-                    </span>
-                  ) : (
-                    <span>
+                    {freeTrialActive && !effectiveEndDate ? (
                       <span>
-                        {effectiveEndDate
-                          ? freeTrialActive
-                            ? 'Trial ends on'
-                            : 'Final bill On'
-                          : 'Next billing On'}
+                        <span>Free till</span>&nbsp;
+                        <Time value={renewalDate} format={TIME_FORMAT} />
                       </span>
-                      &nbsp;
-                      <Time value={effectiveEndDate || renewalDate} format={TIME_FORMAT} />
-                    </span>
-                  )}
-                </li>
-              </>
-            )}
-          </span>
-          {activeSubscription && (
-            <div className="manage-btn" onClick={manageSettings}>
-              <i class="i i-settings icon-wrapper" />
-              Manage
-            </div>
-          )}
-        </div>
-
-        <div className="panel-body">
-          <form className="form-horizontal form-btn-align">
-            <div>
-              <div>
-                Revive failed orders by automatically retargeting customers who have not <br />
-                completed the payment process
+                    ) : (
+                      <span>
+                        <span>
+                          {effectiveEndDate
+                            ? freeTrialActive
+                              ? 'Trial ends on'
+                              : 'Final bill On'
+                            : 'Next billing On'}
+                        </span>
+                        &nbsp;
+                        <Time value={effectiveEndDate || renewalDate} format={TIME_FORMAT} />
+                      </span>
+                    )}
+                  </li>
+                </>
+              )}
+            </span>
+            {activeSubscription && (
+              <div className="manage-btn" onClick={manageSettings}>
+                <i class="i i-settings icon-wrapper" />
+                Manage
               </div>
-              {activeSubscription && (
-                <div className="insight-description-wrapper">
-                  <div className="insight-highlight-textarea">
-                    <img className="insight-image-wrapper" src={IconSave} />
-                    <span>
-                      {isInsightsAvailable ? (
-                        <GetInsightAmount amount={insights?.revived_amount} />
-                      ) : (
-                        'No failed orders have been revived yet'
-                      )}
-                    </span>
-                  </div>{' '}
-                  {isInsightsAvailable && (
-                    <div className="manage-btn" onClick={viewInsight}>
-                      View Insights
-                    </div>
-                  )}
+            )}
+          </div>
+
+          <div className="panel-body">
+            <form className="form-horizontal form-btn-align">
+              <div>
+                <div>
+                  Revive failed orders by automatically retargeting customers who have not <br />
+                  completed the payment process
+                </div>
+                {activeSubscription && (
+                  <div className="insight-description-wrapper">
+                    <div className="insight-highlight-textarea">
+                      <img className="insight-image-wrapper" src={IconSave} />
+                      <span>
+                        {isInsightsAvailable ? (
+                          <GetInsightAmount amount={insights?.revived_amount} />
+                        ) : (
+                          'No failed orders have been revived yet'
+                        )}
+                      </span>
+                    </div>{' '}
+                    {isInsightsAvailable && (
+                      <div className="manage-btn" onClick={viewInsight}>
+                        View Insights
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {!activeSubscription && (
+                <div>
+                  <Button
+                    hideIcon
+                    loading={isFetchPlansloading}
+                    buttonText="Get Started"
+                    btnClassName="get-started-btn"
+                    pendingState="Get Started"
+                    onClick={() => planSelection()}
+                  />
+                  <p className="charge-info">- Charges apply -</p>
                 </div>
               )}
-            </div>
-            {!activeSubscription && (
-              <div>
-                <Button
-                  hideIcon
-                  loading={isFetchPlansloading}
-                  buttonText="Get Started"
-                  btnClassName="get-started-btn"
-                  pendingState="Get Started"
-                  onClick={() => planSelection()}
-                />
-                <p className="charge-info">- Charges apply -</p>
-              </div>
-            )}
-          </form>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+      {!activeSubscription || (activeSubscription && effectiveEndDate) ? (
+        <FailedPaymentsRetryCalculator />
+      ) : null}
+    </Box>
   );
 };
 

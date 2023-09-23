@@ -39,3 +39,4 @@ export const UPDATE_SETTLEMENT_CYCLE = 'update-settlement-cycle';
 export const UPDATE_WEBSITE_DETAILS = 'update-website-details';
 export const UPDATE_BANK_ACCOUNT = 'update-bank-account';
 export const ENABLE_2FA = 'enable-2fa';
+export const CHECK_FPR_SAVING = 'check-fpr-saving';
