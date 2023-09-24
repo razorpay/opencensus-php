@@ -81,7 +81,7 @@ class Service {
             "narration"              => $payout->getNarration(),
         ];
 
-        if (empty($payout->getNotes()) === false) {
+        if (count($payout->getNotes()) !== 0) {
             $requestBody["notes"] = $payout->getNotes();
         }
 

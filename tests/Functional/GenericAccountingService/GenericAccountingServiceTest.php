@@ -146,7 +146,7 @@ class GenericAccountingServiceTest extends TestCase
         SourceUpdater::update($payout4);
     }
 
-    public function testMakePayoutRequestBody()
+    public function testMakePayoutRequestBodyWithoutNotes()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
@@ -175,7 +175,8 @@ class GenericAccountingServiceTest extends TestCase
             'user_id'         => 'user_id',
             'mode'            => 'NEFT',
             'narration'       => 'narration',
-            'balance_id'      => 'D6Z9Jfir2egAUX'
+            'balance_id'      => 'D6Z9Jfir2egAUX',
+            'notes'           => []
         ]);
 
         $response = (new Service($this->app))->makePayoutRequestBody($payout);
@@ -198,6 +199,67 @@ class GenericAccountingServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertArrayNotHasKey("notes", $response);
+    }
+
+    public function testMakePayoutRequestBodyWithNotes()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => '1000001contact',
+            ]);
+
+        $this->fixtures->create('balance',
+            [
+                'id'             => 'D6Z9Jfir2egAUX',
+                'account_number' => "2224440041626904",
+                "balance"        => 100000
+            ]
+        );
+
+        $payout = $this->fixtures->create('payout', [
+            'id'              => 'D6Z9Jfir2egAUZ',
+            'status'          => 'processed',
+            'fund_account_id' => 'D6Z9Jfir2egAUT',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'reference_id'    => 'reference_id',
+            'utr'             => 'utr',
+            'user_id'         => 'user_id',
+            'mode'            => 'NEFT',
+            'narration'       => 'narration',
+            'balance_id'      => 'D6Z9Jfir2egAUX',
+            'notes'           => ['title' => 'desc']
+        ]);
+
+        $response = (new Service($this->app))->makePayoutRequestBody($payout);
+
+        $expectedResponse = [
+            'id'                     => 'pout_D6Z9Jfir2egAUZ',
+            'reference_id'           => "reference_id",
+            'merchant_id'            => '10000000000000',
+            'status'                 => 'processed',
+            'banking_account_number' => "2224440041626904",
+            'fund_account_id'        => 'fa_D6Z9Jfir2egAUT',
+            'contact_id'             => 'cont_1000001contact',
+            'utr'                    => "utr",
+            'amount'                 => 100,
+            'user_id'                => "user_id",
+            'mode'                   => "NEFT",
+            'purpose'                => 'refund',
+            'currency'               => 'INR',
+            'narration'              => "narration",
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertArrayHasKey("notes", $response);
+
+        $this->assertArraySelectiveEquals(["title" => "desc"], $response["notes"]->toArray());
     }
 
     /**
