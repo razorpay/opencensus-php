@@ -17,6 +17,7 @@ import {
   Amount,
   useTheme,
 } from '@razorpay/blade/components';
+import { AmountWrapper } from './styled';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import {
@@ -150,7 +151,7 @@ const FailedPaymentsRetry = (): JSX.Element => {
             </Box>
           </ModalBody>
           <ModalFooter>
-            <Box display="flex" gap="spacing.1" alignItems="center">
+            <AmountWrapper>
               <Text weight="bold" size="large" color="feedback.text.positive.lowContrast">
                 Total recovered GMV:
               </Text>
@@ -163,10 +164,10 @@ const FailedPaymentsRetry = (): JSX.Element => {
                     size="heading-small-bold"
                     isAffixSubtle={false}
                   />{' '}
-                  🎉`
+                  🎉
                 </>
               ) : null}
-            </Box>
+            </AmountWrapper>
           </ModalFooter>
         </Modal>
       </Box>
