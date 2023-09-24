@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class StakeholderTest extends OAuthTestCase
 {
@@ -75,6 +76,54 @@ class StakeholderTest extends OAuthTestCase
 
         $testData = $this->testData['testFetchAllAccountStakeholders'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreateStakeholderByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type' => 2,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $expectedMetricData = [
+            'partner_type'   => MerchantConstants::PURE_PLATFORM
+        ];
+
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+        $testData = $this->testData['testCreateStakeholderForCompletelyFilledRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders';
+        $response = $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+        $testData = $this->testData['testFetchStakeholder'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+        $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
+        $testData = $this->testData['testFetchAllAccountStakeholders'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders';
         $this->runRequestResponseFlow($testData);
     }
 

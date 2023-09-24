@@ -514,6 +514,91 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCreateAccountV2ByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('publishOnSns')->twice()->andReturn(null);
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $response = $this->startTest($testData);
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEmpty($stakeholders);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testUpdateAccountV2ByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type'         => 2,
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'mutual_fund',
+        ];
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateAccountV2ByPlatformPartnerWithFeatureNotEnabled()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $testData['response'] = $this->testData['testFetchAccountV2ByPlatformPartnerWithFeatureNotEnabled']['response'];
+        $testData['exception'] = $this->testData['testFetchAccountV2ByPlatformPartnerWithFeatureNotEnabled']['exception'];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchAccountV2ByPlatformPartnerWithFeatureNotEnabled()
     {
         $this->setPurePlatformContext(Mode::TEST, false);
@@ -583,37 +668,6 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
-    // the platform partner should not be allowed to access route other than account_fetch_v2
-    public function testAccessByPlatformPartnerForInvalidRoute()
-    {
-        $this->setPurePlatformContext(Mode::TEST, false);
-
-        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
-
-        $subMerchantDetails = [
-            'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-            'business_type'         => 2,
-            'business_category'     => 'financial_services',
-            'business_subcategory'  => 'mutual_fund',
-        ];
-
-        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant($subMerchantDetails);
-
-        $metricsMock = $this->createMetricsMock();
-
-        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
-
-        $metricCaptured = false;
-
-        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
-
-        $this->startTest($testData);
-    }
-
     public function testDeleteAccountV2()
     {
         $this->setUpPartnerWithKycHandled();
@@ -649,6 +703,23 @@ class AccountV2Test extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId;
+
+        $this->startTest($testData);
+    }
+
+    public function testDeleteAccountV2ByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testDeleteAccountV2'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
     }

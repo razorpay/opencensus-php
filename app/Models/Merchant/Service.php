@@ -598,7 +598,8 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    if ($merchant->isPurePlatformPartner() === true)
+                    if ($merchant->isPurePlatformPartner() === true
+                        && (new Account\Core())->isOnboardingV2ApiRoute() === false)
                     {
                         throw new Exception\BadRequestException(
                             ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);

@@ -186,4 +186,32 @@ class Constants
         Status::ACTIVATED_KYC_PENDING   => Status::ACTIVATED_KYC_PENDING,
         Status::ACTIVATED_MCC_PENDING   => Status::ACTIVATED
     ];
+
+    const V2_ONBOARDING_APIS_LIST = [
+        'account_create_v2',
+        'account_fetch_v2',
+        'account_edit_v2',
+        'account_delete_v2',
+
+        'stakeholder_create_v2',
+        'stakeholder_update_v2',
+        'stakeholder_fetch_v2',
+        'stakeholder_fetch_all_v2',
+
+        'link_account_documents_v2',
+        'link_stakeholder_documents_v2',
+        'get_account_documents_v2',
+        'get_stakeholder_documents_v2',
+
+        'product_config_fetch_v2',
+        'product_config_update_v2',
+        'product_config_create_v2',
+        'business_unit_tnc_fetch_v2',
+
+        'onboarding_webhook_create',
+        'onboarding_webhook_fetch',
+        'onboarding_webhook_fetch_all',
+        'onboarding_webhook_update',
+        'onboarding_webhook_delete'
+    ];
 }

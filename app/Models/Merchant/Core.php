@@ -5022,7 +5022,8 @@ class Core extends Base\Core
             // and we need to know which app mapping is being requested.
             // Hence, throw an error if the application id is missing.
             //
-            if (empty($input[AccessMap\Entity::APPLICATION_ID]) === true)
+            if (empty($input[AccessMap\Entity::APPLICATION_ID]) === true
+                && (new Account\Core)->isOnboardingV2ApiRoute() === false)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
@@ -5033,7 +5034,7 @@ class Core extends Base\Core
                     ]);
             }
 
-            $inputAppId = $input[AccessMap\Entity::APPLICATION_ID];
+            $inputAppId = $input[AccessMap\Entity::APPLICATION_ID] ?? $this->app['basicauth']->getOAuthApplicationId();
 
             // raise an exception if the input app id does not belong to the list of oauth apps created by the partner.
             (new Validator)->validatePartnerApplicationId($inputAppId, $partnerAppIds);
@@ -5279,25 +5280,49 @@ class Core extends Base\Core
      */
     public function fetchPartnerApplication(Entity $merchant, $appType = null)
     {
-        (new Validator)->validateIsNonPurePlatformPartner($merchant);
+        if((new Account\Core)->isOnboardingV2ApiRoute() === false)
+        {
+            (new Validator)->validateIsNonPurePlatformPartner($merchant);
+        }
 
         if ($appType === null)
         {
             $appType = (new MerchantApplications\Core)->getDefaultAppTypeForPartner($merchant);
         }
 
-        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId(), [$appType]);
-
-        if (empty($appIds) === true)
+        if($merchant->isPurePlatformPartner() === true)
         {
-            throw new Exception\LogicException('merchant application not found for the partner');
-        }
+            $appId = $this->app['basicauth']->getOAuthApplicationId();
 
-        // for aggregator and fully_managed partners, there can be two applications.
-        //  - one for referral and one for managed sub-merchants
-        // for other non-pure platform partners there will be only one application
-        // but there can be only one application for each type for non-pure platform partners
-        $appId = $appIds[0];
+            $isAppPresent = (new MerchantApplications\Core())->isMerchantAppPresent($appId);
+
+            if($isAppPresent === false)
+            {
+                throw new Exception\LogicException(
+                    'Server error app not found',
+                    ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
+                    [
+                        Entity::MERCHANT_ID              => $merchant->getId(),
+                        AccessMap\Entity::APPLICATION_ID => $appId,
+                        'App type'                       => MerchantApplicationsEntity::OAUTH
+                    ]);
+            }
+        }
+        else
+        {
+            $appIds = (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId(), [$appType]);
+
+            if (empty($appIds) === true)
+            {
+                throw new Exception\LogicException('merchant application not found for the partner');
+            }
+
+            // for aggregator and fully_managed partners, there can be two applications.
+            //  - one for referral and one for managed sub-merchants
+            // for other non-pure platform partners there will be only one application
+            // but there can be only one application for each type for non-pure platform partners
+            $appId = $appIds[0];
+        }
 
         try
         {

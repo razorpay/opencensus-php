@@ -225,13 +225,18 @@ class Core extends Merchant\Core
         {
             Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId)
             {
-                if ($partner->isPurePlatformPartner() === true && $this->app['request.ctx']->getRoute() === 'account_fetch_v2')
+                if ($partner->isPurePlatformPartner() === true && $this->isOnboardingV2ApiRoute() === true)
                 {
+                    // Note: This feature check exist for Pure-platform partners to access all Onboarding APIs,
+                    // except webhook v2 APIs, since webhook v2 APIs was enabled via OAuth quite a long time ago and may be in use by other partners.
                     Merchant\PhantomUtility::validateCobrandedOnboardingEnabledForPlatformPartner($partner);
 
-                    Entity::verifyIdAndSilentlyStripSign($accountId);
+                    if($this->app['request.ctx']->getRoute() !== 'account_create_v2')
+                    {
+                        Entity::verifyIdAndSilentlyStripSign($accountId);
 
-                    (new Merchant\AccessMap\Core())->validateMerchantMappedToApplication($accountId, $this->app['basicauth']->getOAuthApplicationId());
+                        (new Merchant\AccessMap\Core())->validateMerchantMappedToApplication($accountId, $this->app['basicauth']->getOAuthApplicationId());
+                    }
                 }
                 else
                 {
@@ -258,6 +263,18 @@ class Core extends Merchant\Core
                 }
             });
         }
+    }
+
+    public function isOnboardingV2ApiRoute(): bool
+    {
+        $route = $this->app['request.ctx']->getRoute() ?? null;
+
+        if(in_array($route, Constants::V2_ONBOARDING_APIS_LIST))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateLinkedAccountAccess(Merchant\Entity $partner,string $accountId = null)

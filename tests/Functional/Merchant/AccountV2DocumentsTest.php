@@ -230,6 +230,105 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     }
 
+    public function testPostAccountDocumentByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $subMerchantDetails = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type' => 2,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+
+        $this->updateUploadDocumentData('testPostAccountDocument');
+
+        $metricMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+        $expectedMetricData = $this->getMetricDataForDocumentUpload('merchant', 'shop_establishment_certificate', null);
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
+        $testData    = $this->testData['testPostAccountDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
+
+        $insertedDocument = $this->getDbLastEntity('merchant_document');
+
+        $this->assertEquals('merchant', $insertedDocument['entity_type']);
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $insertedDocument['entity_id']);
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $insertedDocument['merchant_id']);
+
+        $metricCaptured = false;
+        $expectedMetricData = $this->getMetricDataForDocumentFetch('merchant', null);
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testAccountDocumentFetch'];
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/documents';
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testPostStakeholderDocumentByPlatformPartner()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $subMerchantDetails = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type' => 2,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocument');
+
+        $testData    = $this->testData['testPostStakeholderDocument'];
+
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+        ]);
+
+        $metricMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMetricDataForDocumentUpload('stakeholder', 'aadhar_front', null);
+
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
+
+        $insertedDocument = $this->getDbEntity('merchant_document');
+
+        $this->assertEquals('stakeholder', $insertedDocument['entity_type']);
+        $this->assertEquals($stakeholder->getId(), $insertedDocument['entity_id']);
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $insertedDocument['merchant_id']);
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMetricDataForDocumentFetch('stakeholder', null);
+
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testStakeholderDocumentFetch'];
+        $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+    }
+
     public function testEveryDocumentMappedToProofType()
     {
         $missingDocuments = [];
