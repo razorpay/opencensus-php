@@ -110,6 +110,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Payout\PayoutProcessedContactCommunication;
@@ -33457,6 +33458,82 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_HASH, $response);
 
         $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadEmptyFileAttachmentOnPayout()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = 'invoice file.png';
+
+        $localFilePath = $this->createNewFile($fileName, '');
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_EMPTY_FILE_UPLOADED);
+
+        $this->expectExceptionMessage('Empty file uploaded');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testUploadTextFileAttachmentOnPayout()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = 'invoice file.txt';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('Invalid File Extension');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testUploadFileAttachmentWithDoubleExtensionOnPayout()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = 'invoice file.txt.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('Invalid File Extension');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testUploadFileAttachmentWithNoFileOnPayout()
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'    => '/payouts/attachment',
+            'method' => 'POST',
+            'files'  => []
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('No file Uploaded');
+
+        $response = $this->makeRequestAndGetContent($request);
     }
 
     // TODO: Add testcases for other filters

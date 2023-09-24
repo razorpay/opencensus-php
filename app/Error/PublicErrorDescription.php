@@ -1699,6 +1699,7 @@ class PublicErrorDescription
     const SERVER_ERROR_ATTACHMENT_GET_FAILURE                                       = 'Failed to get attachment for payout';
     const BAD_REQUEST_PAYOUT_ATTACHMENT_NOT_ALLOWED_FOR_THIS_ROLE                   = 'Update not allowed for the user role in this state';
     const BAD_REQUEST_INVALID_ATTACHMENT_SIZE                                       = 'File size greater than 5MB cannot be uploaded';
+    const BAD_REQUEST_EMPTY_FILE_UPLOADED                                           = 'Empty file uploaded';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS                        = 'Payout with TDS not supported via private auth';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
     const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';

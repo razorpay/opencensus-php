@@ -10,14 +10,18 @@ trait PayoutAttachmentTrait
      * create new file in Storage
      *
      * @param string $fileName
+     * @param string $data
      *
      * @return string
      */
-    protected function createNewFile(string $fileName)
+    protected function createNewFile(string $fileName, $data = 'hello')
     {
         $localFilePath = __DIR__ . '/../Storage/' . $fileName;
+
         $file = fopen($localFilePath, 'w');
-        fwrite($file, '');
+
+        fwrite($file, $data);
+
         fclose($file);
 
         return $localFilePath;

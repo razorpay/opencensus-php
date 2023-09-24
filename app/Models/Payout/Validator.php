@@ -148,6 +148,20 @@ class Validator extends Base\Validator
 
     const UPDATE_BALANCE_MANAGEMENT_CONFIG = 'update_balance_management_config';
 
+    const PAYOUT_ATTACHMENT = 'payout_attachment';
+
+    const ALLOWED_PAYOUT_ATTACHMENT_FILE_EXTENSIONS = [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'csv',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+    ];
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -204,6 +218,10 @@ class Validator extends Base\Validator
         PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
         PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer',
         Entity::PG_MERCHANT_ID                                     => 'sometimes|unsigned_id',
+    ];
+
+    protected static $payoutAttachmentRules = [
+        'file' => 'required|file'
     ];
 
     protected static $payoutServiceDataMigrationInputRules = [
@@ -1835,6 +1853,29 @@ class Validator extends Base\Validator
                     'id'     => $payout->getId(),
                     'status' => $payout->getStatus(),
                 ]
+            );
+        }
+    }
+
+    public function validateInputForPayoutAttachment($input)
+    {
+        $this->validateInput(self::PAYOUT_ATTACHMENT, $input);
+
+        $inputFile = $input['file'];
+
+        if(sizeof(explode('.', $inputFile->getClientOriginalName())) > 2)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid File Extension'
+            );
+        }
+
+        $extension = strtolower($inputFile->getClientOriginalExtension());
+
+        if (in_array($extension, self::ALLOWED_PAYOUT_ATTACHMENT_FILE_EXTENSIONS) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid File Extension'
             );
         }
     }

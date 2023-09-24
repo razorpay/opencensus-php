@@ -5113,18 +5113,32 @@ class Service extends Base\Service
 
     public function uploadAttachment(array $input): array
     {
-        // only files <= 5MB can be uploaded as attachments
-        if ($input[self::FILE]->getSize() > 5000000)
+        (new Validator)->validateInputForPayoutAttachment($input);
+
+        $inputFile = $input[self::FILE];
+
+        // only files <= 5MB (5*1024*1024) can be uploaded as attachments
+        if ($inputFile->getSize() > 5242880)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ATTACHMENT_SIZE,
                 self::FILE_SIZE,
-                $input[self::FILE_SIZE],
+                $inputFile->getSize(),
                 'File size greater than 5MB cannot be uploaded'
             );
         }
 
-        return $this->payoutDetailsCore->uploadAttachment($input[self::FILE],
+        if ($inputFile->getSize() == 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_FILE_UPLOADED,
+                self::FILE_SIZE,
+                $inputFile->getSize(),
+                'Empty file uploaded'
+            );
+        }
+
+        return $this->payoutDetailsCore->uploadAttachment($inputFile,
             $input['file']->getClientOriginalName(),
             $this->merchant);
     }

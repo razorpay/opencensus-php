@@ -890,6 +890,13 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
+        if (Request::hasFile('file') === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No file Uploaded'
+            );
+        }
+
         return ApiResponse::json($this->service()->uploadAttachment($input));
     }
 
