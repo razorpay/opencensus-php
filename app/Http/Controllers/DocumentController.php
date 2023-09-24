@@ -88,6 +88,15 @@ class DocumentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchPXBDocuments()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchPXBDocuments($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function uploadFilesByAgent()
     {
         $input = Request::all();

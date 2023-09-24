@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\International;
 
 use Functional\Helpers\BvsTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use RZP\Services\Mock\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -133,5 +134,35 @@ class CBMerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
 
         $this->startTest();
+    }
+
+    public function testFetchPXBDocuments()
+    {
+        $this->ba->proxyAuth();
+
+        $mockResponse = [
+            "items" => [
+                [
+                    "id" => "CCOhinUeUsT8HN",
+                    "document_type" => "lrs_swift_copy",
+                    "file_id" => "MQlRFCy5mrJDQT",
+                    "entity_id" => "CCOhinUeUsT8HN",
+                    "document_date" => "1692194209",
+                    "created_at" => "1692194209",
+                    "signed_url" => "https://s3file/test_doc.pdf"
+                ]
+            ],
+            "success" => true
+        ];
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['getDocuments'])->getMock();
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+        $pxbServiceMock->method("getDocuments")
+            ->willReturn($mockResponse);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($mockResponse,$response);
     }
 }

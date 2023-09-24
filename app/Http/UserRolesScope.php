@@ -731,6 +731,7 @@ class UserRolesScope
             'fetch_merchant_sr'                                    => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             'file_get_signed_url'                                  => [Role::OWNER, Role::ADMIN],
             'firs_document_fetch'                                  => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'pxb_document_fetch'                                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'emerchantpay_get_request_data'                        => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'emerchantpay_create_request_data'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'emerchantpay_owner_delete'                            => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],

@@ -374,6 +374,31 @@ class Service extends Base\Service
         return (new Base\PublicCollection($types))->toArrayWithItems();
     }
 
+    public function fetchPXBDocuments(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        try
+        {
+            // Fetch PXB Documents
+            $pxbDocumentInput = array(
+                "merchant_id"=> $merchantId,
+                "type"      => DocumentConstants::LRS_SWIFT_COPY_DOCUMENT_TYPE,
+                "payment_ids" => $input["payment_ids"],
+            );
+
+            return $this->app['payments-cross-border']->getDocuments($pxbDocumentInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR,  [
+                'merchantId'    => $merchantId,
+                "type"      => DocumentConstants::LRS_SWIFT_COPY_DOCUMENT_TYPE,
+            ]);
+        }
+        return ["success" => false];
+    }
+
     //This function fetches all the FIRS documents for that merchant in a particular
     //month and year.
     public function fetchFIRSDocuments(array $input)

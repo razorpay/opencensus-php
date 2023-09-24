@@ -2580,6 +2580,10 @@ class Route
         'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
         'firs_collect_and_zip_cron'                => ['post',      'merchant/firs/collect/cron',                    'DocumentController@collectAndZipFIRSDocuments'                 ],
 
+        // Endpoint to fetch documents from CB service
+        // TODO: Need to remove this endpoint once edge team is live with support of proxy auth
+        'pxb_document_fetch'                      => ['get',       'merchant/pxb/documents',                         'DocumentController@fetchPXBDocuments'                             ],
+
         'automate_merchant_master_firs'            => ['post',      'rbl/update_merchant_master/firs',               'LambdaController@processLambdaMerchantMasterFIRS'                  ],
         // Non 3ds card processing self serve
         'merchant_features_edit'                   => ['post',     'merchant/features/update',                          'MerchantController@addOrRemoveFeaturesForMerchant'                         ],
@@ -6570,6 +6574,7 @@ class Route
         'payment_bulk_update_merchant_document',
         'firs_document_fetch',
         'firs_document_download',
+        'pxb_document_fetch',
         'emerchantpay_get_request_data',
         'emerchantpay_create_request_data',
         'emerchantpay_owner_delete',
@@ -10237,6 +10242,7 @@ class Route
         'firs_document_fetch'                 =>'*',
         'firs_document_download'              =>'*',
 
+        'pxb_document_fetch'                  => '*',
         // Payment Fraud
         'get_fraud_attributes'                              => Permission::GET_FRAUD_ATTRIBUTES,
         'save_payment_fraud'                                => Permission::SAVE_PAYMENT_FRAUD,
@@ -11776,6 +11782,7 @@ class Route
             'user_fetch_purpose_code',
             'firs_document_fetch',
             'firs_document_download',
+            'pxb_document_fetch',
             'emerchantpay_get_request_data',
             'emerchantpay_create_request_data',
             'emerchantpay_owner_delete',
@@ -15042,6 +15049,7 @@ class Route
 
             'firs_document_fetch',
             'firs_document_download',
+            'pxb_document_fetch',
             'country_fetch',
             'state_fetch',
 

@@ -228,4 +228,19 @@ return [
             'class'               => BadRequestException::class,
         ]
     ],
+
+    'testFetchPXBDocuments' => [
+        'request'  => [
+            'url'       => '/merchant/pxb/documents',
+            'method'    => 'GET',
+            'content' => [
+                'payment_ids' => ['x1weraESD3o3uA', 'y2weraESD3o3uB'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
 ];
