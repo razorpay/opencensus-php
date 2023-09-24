@@ -123,6 +123,18 @@ final class Shield
     const BILLING_ADDRESS_COUNTRY     = "billing_address_country";
     const BILLING_ADDRESS_POSTAL_CODE = "billing_address_postal_code";
     const SECURE_3D_INTERNATIONAL     = 'secure_3d_international';
+    const DEVICE_FINGERPRINT          = 'device_fingerprint';
+    const CHECKOUT_SESSION_ID         = 'checkout_session_id';
+    const POSTAL_CODE                 = 'postal_code';
+    const ZIPCODE                     = 'zipcode';
+
+    const CUSTOMER_ORDER_DATA         = 'customer_order_data';
+    const CUSTOMER                    = 'customer';
+    const LINE_ITEMS                  = 'line_items';
+    const LINE_ITEMS_TOTAL            = 'line_items_total';
+    const REFUND_ALLOWED              = 'refund_allowed';
+    const CAMPAIGN                    = 'campaign';
+    CONST SHIPPING_DETAILS            = 'shipping_details';
 
     // Response constants
     const ACTION_KEY              = 'action';

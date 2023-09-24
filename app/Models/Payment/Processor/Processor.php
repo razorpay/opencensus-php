@@ -2312,6 +2312,8 @@ class Processor
         {
             $startTime = microtime(true);
 
+            $this->convertNewFormatToOldFormatIfRequired($input);
+            
             $this->convert3ds2BrowserDetails($input);
 
             $this->validatePaymentForOptimizerOnlyMerchants();
@@ -2808,6 +2810,47 @@ class Processor
         }
     }
 
+    protected function convertNewFormatToOldFormatIfRequired(array & $input)
+    {
+        $deviceFingerprint = $input['device_fingerprint'];
+
+        if(isset($deviceFingerprint) === true)
+        {
+            if(isset($input['ip']) === false && isset($deviceFingerprint['ip']) === true)
+            {
+                $input['ip'] = $deviceFingerprint['ip'];
+                
+                unset($input['device_fingerprint']['ip']);
+            }
+
+            $browser = $deviceFingerprint['browser'];
+
+            unset($input['device_fingerprint']['browser']);
+
+            if(isset($browser) === true)
+            {
+                if(isset($input['user_agent']) === false && isset($browser['user_agent']) === true)
+                {
+                    $input['user_agent'] = $browser['user_agent'];
+                }
+    
+                if(isset($input['referer']) === false && isset($browser['referer']) === true)
+                {
+                    $input['referer'] = $browser['referer'];
+                }
+
+                unset($browser['user_agent']);
+                unset($browser['referer']);
+    
+                if(isset($input['browser']) === false)
+                {
+                    $input['browser'] = $browser;
+                }
+            }
+        }
+    }
+
+    
     protected function logPaymentRespawnEvent(array $request, array $data)
     {
         $merchant = $this->app['basicauth']->getMerchant();

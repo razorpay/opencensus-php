@@ -196,6 +196,8 @@ class Shield
 
         $this->populatePaymentRequestDetails($payment, $payloadDetails);
 
+        $this->populatePaymentOrderRequestDetailsIfApplicable($payment, $payloadDetails);
+
         $payloadDetails[ShieldConstants::PAYMENT_PRODUCT] = $this->getPaymentProduct($payment);
 
         $payloadDetails[ShieldConstants::CREATED_AT] = Carbon::now()->getTimestamp();
@@ -285,14 +287,35 @@ class Shield
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
 
-        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
+        // add checkout session id from device fingerprint
+        if(isset($input[ShieldConstants::DEVICE_FINGERPRINT]) === true && 
+           isset($input[ShieldConstants::DEVICE_FINGERPRINT][ShieldConstants::CHECKOUT_SESSION_ID]) === true)
+        {
+            $payloadDetails[ShieldConstants::CHECKOUT_SESSION_ID] = $input[ShieldConstants::DEVICE_FINGERPRINT][ShieldConstants::CHECKOUT_SESSION_ID];
+        }
+        
+        $billingAddress = null;
+
+        if(isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
         {
             $billingAddress = $input[Address\Type::BILLING_ADDRESS];
+        }
 
+        // Higher priority to merchant passed address in case sent by both merchant and collected from our UI
+        if(isset($input[Payment\Method::CARD][Payment\Entity::BILLING_ADDRESS]) === true)
+        {
+            $billingAddress = $input[Payment\Method::CARD][Payment\Entity::BILLING_ADDRESS];
+        }
+
+        if (isset($billingAddress) === true)
+        {
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_1]      = isset($billingAddress[Address\Entity::LINE1]) ? $billingAddress[Address\Entity::LINE1] : null;
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_2]      = isset($billingAddress[Address\Entity::LINE2]) ? $billingAddress[Address\Entity::LINE2] : null ;
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_CITY]        = isset($billingAddress[Address\Entity::CITY])  ? $billingAddress[Address\Entity::CITY] : null ;
-            $payloadDetails[ShieldConstants::BILLING_ADDRESS_POSTAL_CODE] = isset($billingAddress['postal_code']) ? $billingAddress['postal_code'] : null ;
+            
+            $postalCode = $billingAddress[ShieldConstants::POSTAL_CODE] ?? $billingAddress[ShieldConstants::ZIPCODE] ?? null;
+
+            $payloadDetails[ShieldConstants::BILLING_ADDRESS_POSTAL_CODE] = $postalCode;
 
             $billingState = isset($billingAddress[Address\Entity::STATE]) ? $billingAddress[Address\Entity::STATE] : null;
 
@@ -303,7 +326,7 @@ class Shield
 
             $billingCountry = isset($billingAddress[Address\Entity::COUNTRY]) ? $billingAddress[Address\Entity::COUNTRY] : null ;
 
-            if (strlen($billingCountry) === 2)
+            if (strlen($billingCountry) === 2 || strlen($billingCountry) === 3)
             {
                 $payloadDetails[ShieldConstants::BILLING_ADDRESS_COUNTRY] = strtoupper($billingCountry);
             }
@@ -362,6 +385,37 @@ class Shield
                 break;
 
         }
+    }
+
+    protected function populatePaymentOrderRequestDetailsIfApplicable(Payment\Entity $payment, array & $payloadDetails, $input = [])
+    {
+        if($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
+        {
+            return;
+        }
+
+        $cartInfo = $payment->order->getCartInfoOrderMeta();
+        
+        if(isset($cartInfo) === false)
+        {
+            return;
+        }
+
+        $customerOrderData = array();
+
+        $customerOrderData[ShieldConstants::CUSTOMER] = $cartInfo['customer'] ?? null;
+        $customerOrderData[ShieldConstants::SHIPPING_DETAILS] = $cartInfo['shipping_details'] ?? null;
+        $customerOrderData[ShieldConstants::LINE_ITEMS_TOTAL] = $cartInfo['line_items_total'] ?? null;
+        $customerOrderData[ShieldConstants::LINE_ITEMS] = $cartInfo['line_items'] ?? null;
+        $customerOrderData[ShieldConstants::REFUND_ALLOWED] = $cartInfo['refund_allowed'] ?? null;
+        $customerOrderData[ShieldConstants::CAMPAIGN] = $cartInfo['campaign'] ?? null;
+
+        $payloadDetails[ShieldConstants::CUSTOMER_ORDER_DATA] = $customerOrderData;
     }
 
     protected function populateSecure3dInternationalFlag(Merchant\Entity $merchant, array & $payloadDetails)

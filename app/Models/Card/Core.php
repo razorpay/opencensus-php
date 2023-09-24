@@ -63,6 +63,9 @@ class Core extends Base\Core
             $input[Card\Entity::IS_TOKENIZED_CARD] = true;
         }
 
+        // Unset Billing Address if present in card entity since it's not stored in card entity.
+        unset($input['billing_address']);
+
         $card = (new Card\Entity)->build($input);
 
         $card->merchant()->associate($merchant);

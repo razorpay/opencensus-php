@@ -14,6 +14,7 @@ class Type
 {
     const TAX_INVOICE                 = 'tax_invoice';
     const ONE_CLICK_CHECKOUT          = 'one_click_checkout';
+    const CART_INFO                   = 'cart_info';
     const CUSTOMER_ADDITIONAL_INFO     = 'customer_additional_info';
     const SPLIT_PAYMENT_INFO           = 'split_payment_info';
 
@@ -21,7 +22,8 @@ class Type
     protected $typeMap = [
         self::TAX_INVOICE                 => true,
         self::ONE_CLICK_CHECKOUT          => true,
-        self::CUSTOMER_ADDITIONAL_INFO     => true,
+        self::CUSTOMER_ADDITIONAL_INFO    => true,
+        self::CART_INFO                   => true,
         self::SPLIT_PAYMENT_INFO          => true
     ];
 

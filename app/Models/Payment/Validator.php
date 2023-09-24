@@ -76,6 +76,7 @@ class Validator extends Base\Validator
         'aadhaar.hmac'                  => 'sometimes_if:method,aeps|size:64|string',
         'aadhaar.cert_expiry'           => 'sometimes_if:method,aeps|size:8|string',
         'card'                          => 'sometimes',
+        'card.billing_address'          => 'sometimes',
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
         'emi_duration'                  => 'required_if:method,emi|integer|in:2,3,6,9,12,18,24',
@@ -171,7 +172,8 @@ class Validator extends Base\Validator
         'network_transaction_id'                                     => 'sometimes',
         'payer_account_type'                                         => 'sometimes_if:method,upi|nullable|string|max:20',
         'wallet_amount'                                              => 'sometimes|integer',
-        'split_amount'                                               => 'sometimes|integer'
+        'device_fingerprint'                                          => 'sometimes|array',
+        'split_amount'                                               => 'sometimes|integer',
     ];
 
     protected static $editAcquirerRules = [

@@ -1268,6 +1268,58 @@ class Entity extends Base\PublicEntity
         return $arrayPublic;
     }
 
+    /**
+     * checks if an order meta contains the 1cc meta key
+     * @param void
+     * @return bool
+     */
+    public function isCartInfoOrderMeta(): bool
+    {
+        $isCartInfoOrder = false;
+
+        foreach ($this->orderMetas as $meta)
+        {
+            if ($meta->getType() === OrderMeta\Type::CART_INFO)
+            {
+                $isCartInfoOrder = true;
+                break;
+            }
+        }
+
+        return $isCartInfoOrder;
+    }
+
+    public function getCartInfoOrderMeta()
+    {
+        $orderMetasArray = $this->orderMetas;
+
+        if (($orderMetasArray !== null) and (count($orderMetasArray) > 0))
+        {
+            foreach ($orderMetasArray as $orderMeta) {
+                if ($orderMeta->getType() === Type::CART_INFO)
+                {
+                    return $orderMeta->getValue();
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    public function hasSplitPayments()
+    {
+        $orderMetas = $this->orderMetas;
+        foreach ($orderMetas as $meta)
+        {
+            if (($meta->getType() === OrderMeta\Type::SPLIT_PAYMENT_INFO) and
+                ($meta->getValue()['is_split_payment'] === true))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function toRTOEligibilityArray()
     {
         $arrayInternal = $this->toArrayInternal();
