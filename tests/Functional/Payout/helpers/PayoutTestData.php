@@ -19034,7 +19034,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM.'
                     ],
                 ],
             ],
@@ -19054,7 +19054,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM.'
                     ],
                 ],
             ],
@@ -19074,7 +19074,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 09:13 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 09:13 PM.'
                     ],
                 ],
             ],
@@ -19094,7 +19094,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 09:13 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 09:13 PM.'
                     ],
                 ],
             ],
@@ -19115,7 +19115,7 @@ return [
                     'status_details'  => [
                         'reason' => 'bank_window_closed',
                         'description' => "The NEFT window for the day is closed. Please "
-                                         ."check the status after 09th November 2021, 09:13 PM",
+                                         ."check the status after 09th November 2021, 09:13 PM.",
                     ],
                 ],
             ],
@@ -19136,7 +19136,7 @@ return [
                     'status_details'  => [
                         'reason' => 'bank_window_closed',
                         'description' => "The RTGS window for the day is closed. Please "
-                                          ."check the status after 10th November 2021, 12:33 AM",
+                                          ."check the status after 10th November 2021, 12:33 AM.",
                     ],
                 ],
             ],
@@ -19157,7 +19157,7 @@ return [
                     'status_details'  => [
                         'reason' => 'partner_bank_pending',
                         'description' => "Payout is being processed by our partner bank. Please "
-                            ."check the final status after 10th November 2021, 12:33 AM",
+                            ."check the final status after 10th November 2021, 12:33 AM.",
                     ],
                 ],
             ],
@@ -19177,8 +19177,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'payout_bank_processing',
-                        'description' => 'Payout is being processed by our partner bank. Please check '
-                                            ."the final status after some time"
+                        'description' => 'Payout is being processed by the partner bank. Please check the final status after some time.'
                     ],
                 ],
             ],

@@ -2225,8 +2225,7 @@ final class FactoryData
            'payout_id'    => 'factory:\RZP\Models\Payout\Entity',
             'status'      => 'processing',
             'reason'      => 'payout_bank_processing',
-            'description' => 'Payout is being processed by our partner bank. Please check '
-                              .'the final status after some time',
+            'description' => 'Payout is being processed by the partner bank. Please check the final status after some time.',
         ]);
 
         $factory(\RZP\Models\Settlement\EarlySettlementFeaturePeriod\Entity::class, [
