@@ -200,6 +200,24 @@ class Raven extends Base\Core
             case 'mweb_access_card':
                 return 'sms.checkout.access_saved_card_otp_v6';
 
+            CASE 'verify_coupon_v7':
+                return 'sms.checkout.verify_coupon_otp_v7';
+
+            CASE 'mandatory_login_v7':
+                return 'sms.checkout.mandatory_login_otp_v7';
+
+            CASE 'access_address_v7':
+                return 'sms.checkout.access_address_otp_v7';
+
+            CASE 'save_address_v7':
+                return 'sms.checkout.save_address_otp_v7';
+
+            CASE 'access_card_v7':
+                return 'sms.checkout.access_card_otp_v7';
+
+            CASE 'save_card_v7':
+                return 'sms.checkout.save_card_otp_v7';
+
             default:
                 return 'sms.otp';
         }
@@ -226,6 +244,12 @@ class Raven extends Base\Core
             'mweb_save_card',
             'mweb_access_card',
             'access_saved_wallets',
+            'verify_coupon_v7',
+            'mandatory_login_v7',
+            'access_address_v7',
+            'save_address_v7',
+            'access_card_v7',
+            'save_card_v7',
         ]);
     }
 }

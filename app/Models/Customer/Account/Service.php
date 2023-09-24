@@ -1399,17 +1399,18 @@ class Service extends Base\Service
 
     private function isMWebOtpAutoReadOtpReason(string $otpReason): bool
     {
-        if ($otpReason === 'mweb_save_card')
-        {
-            return true;
-        }
+        $validReasons = [
+            'mweb_save_card',
+            'mweb_access_card',
+            'verify_coupon_v7',
+            'mandatory_login_v7',
+            'access_address_v7',
+            'save_address_v7',
+            'access_card_v7',
+            'save_card_v7',
+        ];
 
-        if ($otpReason === 'mweb_access_card')
-        {
-            return true;
-        }
-
-        return false;
+        return in_array($otpReason, $validReasons, true);
     }
 
 
