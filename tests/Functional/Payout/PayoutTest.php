@@ -103,6 +103,7 @@ use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
 use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -117,6 +118,8 @@ use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Services\PayoutService\CreditTransferPayoutUpdate;
+use RZP\Models\BankAccount\OldNewIfscMapping as OldNewIfscMapping;
+use RZP\Models\BankAccount\DefaultIfscMapping as DefaultIfscMapping;
 use RZP\Models\PayoutsStatusDetails\Entity as PayoutsStatusDetailsEntity;
 use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMapEntity;
@@ -36905,6 +36908,714 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('pending', $payout['status']);
         $this->assertFalse($webhookFired);
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNewBankAccountCreationForNonGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc' => 'LAVB0000735'
+                              ]);
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = 'FINO0001111';
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = $originalValue;
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $this->assertNotEquals($expectedIfscCode, 'FINO0001111');
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithExistingBankAccountForNonGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc' => 'LAVB0000735'
+                              ]);
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $expectedIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = 'FINO0001111';
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = $originalValue;
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals($expectedIfscCode, 'FINO0001111');
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithNewBankAccountCreationForNonGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc' => 'FINO0001111'
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $this->assertNotEquals($expectedIfscCode, 'FINO0001111');
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithExistingBankAccountForNonGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc' => 'FINO0001111'
+                                             ]);
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $expectedIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals($expectedIfscCode, 'FINO0001111');
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithNewBankAccountCreationForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc' => 'HDFC0CKRMAL'
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $expectedIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['HDFC0CKRMAL'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($expectedIfscCode);
+
+        $this->assertEquals(DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND, $defaultIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithExistingBankAccountForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc' => 'HDFC0CKRMAL'
+                                             ]);
+
+        $expectedIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['HDFC0CKRMAL'];
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $expectedIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($expectedIfscCode);
+
+        $this->assertNotEquals($defaultIfscCode, $expectedIfscCode);
+
+        $this->assertEquals(DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND, $defaultIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithNoBankCodeForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc' => 'BARB0SPBMUM'
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithNewBankAccountCreationForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc'      => 'LAVB0000573',
+                                  'bank_code' => 'ABCD',
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $newIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($newIfscCode, 'ABCD');
+
+        $this->assertEquals(DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND, $defaultIfscCode);
+        $this->assertNotEquals($defaultIfscCode, $newIfscCode);
+
+        $this->assertEquals($newIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithNewBankAccountCreationForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc'      => 'LAVB0000573',
+                                  'bank_code' => 'DBSS',
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $newIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($newIfscCode, 'DBSS');
+
+        $this->assertNotEquals($defaultIfscCode, $newIfscCode);
+
+        $this->assertEquals($defaultIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithExistingBankAccountForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc'      => 'LAVB0000573',
+                                                 'bank_code' => 'ABCD',
+                                             ]);
+
+        $newIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($newIfscCode, 'ABCD');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $newIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertEquals(DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND, $defaultIfscCode);
+        $this->assertEquals($newIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithExistingBankAccountForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc'      => 'LAVB0000573',
+                                                 'bank_code' => 'DBSS',
+                                             ]);
+
+        $newIfscCode = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($newIfscCode, 'DBSS');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $defaultIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals($newIfscCode, $defaultIfscCode);
+        $this->assertEquals($defaultIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithBankCodeWithNewBankAccountCreationForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc'      => 'BARB0SPBMUM',
+                                  'bank_code' => 'BGGX',
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('BARB0SPBMUM', 'BGGX');
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals('BARB0SPBMUM', $expectedIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithBankCodeWithExistingBankAccountForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc'      => 'BARB0SPBMUM',
+                                                 'bank_code' => 'BGGX',
+                                             ]);
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('BARB0SPBMUM', 'BGGX');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $expectedIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals('BARB0SPBMUM', $expectedIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithNewBankAccountCreationForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        $this->fixtures->edit('bank_account',
+                              '1000000lcustba',
+                              [
+                                  'ifsc'      => 'YESB0PUCB45',
+                                  'bank_code' => 'YESB',
+                              ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'YESB');
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals('YESB0PUCB45', $expectedIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+    }
+
+    public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithExistingBankAccountForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+                                      ]);
+
+        /** @var BankAccountEntity $bankAccount */
+        $bankAccount = $this->fixtures->edit('bank_account',
+                                             '1000000lcustba',
+                                             [
+                                                 'ifsc'      => 'YESB0PUCB45',
+                                                 'bank_code' => 'YESB',
+                                             ]);
+
+        $expectedIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'YESB');
+
+        $existingBankAccount = $this->fixtures->create('bank_account',
+                                                       [
+                                                           'type'             => $bankAccount->getType(),
+                                                           'entity_id'        => $bankAccount->getEntityId(),
+                                                           'account_number'   => $bankAccount->getAccountNumber(),
+                                                           'ifsc_code'        => $expectedIfscCode,
+                                                           'merchant_id'      => $bankAccount->getMerchantId(),
+                                                           'beneficiary_name' => $bankAccount->getBeneficiaryName(),
+                                                       ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var Attempt\Entity $payoutFta */
+        $payoutFta = $payout->fundTransferAttempts()->first();
+
+        /** @var BankAccountEntity $payoutFtaBankAccount */
+        $payoutFtaBankAccount = $payoutFta->bankAccount;
+
+        /** @var BankAccountEntity $payoutFundAccountBankAccount */
+        $payoutFundAccountBankAccount = $payout->fundAccount->account;
+
+        $this->assertNotEquals($payoutFtaBankAccount->getId(), $payoutFundAccountBankAccount->getId());
+
+        $this->assertNotEquals('YESB0PUCB45', $expectedIfscCode);
+        $this->assertEquals($expectedIfscCode, $payoutFtaBankAccount->getIfscCode());
+
+        $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
     }
 }
 

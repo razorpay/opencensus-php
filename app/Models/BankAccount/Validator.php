@@ -3,11 +3,13 @@
 namespace RZP\Models\BankAccount;
 
 use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Bank\BankInfo;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Bank\IFSC as BankIFSC;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -20,6 +22,7 @@ class Validator extends Base\Validator
     ];
 
     const INVALID_IFSC_CODE_MESSAGE         = 'Invalid IFSC Code in Bank Account';
+    const INVALID_BANK_CODE_MESSAGE         = 'Invalid Bank Code in Bank Account';
     const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $fileUploadRules = [
@@ -139,6 +142,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
         Entity::NAME           => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:3,120|string',
         Entity::ACCOUNT_TYPE   => 'sometimes|nullable|string|custom',
+        Entity::BANK_CODE      => 'sometimes|nullable|alpha_num|size:4',
     ];
 
     protected static $addTpvBankAccountRules = [
@@ -227,6 +231,34 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_IFSC_CODE_MESSAGE);
+        }
+    }
+
+    public function basicValidationOnIfscCode(string $ifscCode)
+    {
+        if ((strlen($ifscCode) !== 11) or
+            ($ifscCode[4] !== '0'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function validateBankCode(string $bankCode, string $ifscCode, $mode = 'test')
+    {
+        // We allow a special IFSC code to pass through
+        if ($this->isSpecialIfscCode($ifscCode, $mode))
+        {
+            return;
+        }
+
+        $bankInformation = (new BankInfo)->getBankInformation($ifscCode);
+
+        if ($bankCode !== strtoupper($bankInformation->getBankCode()))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BANK_CODE_MESSAGE);
         }
     }
 

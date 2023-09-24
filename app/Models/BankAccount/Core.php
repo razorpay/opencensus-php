@@ -225,12 +225,85 @@ class Core extends Base\Core
         $trimmedInput = $this->trimSpaces($input);
 
         $ba = $this->createBankAccountForSource(
-                        $trimmedInput,
-                        $merchant,
-                        $source,
-                        'add_fund_account_bank_account');
+            $trimmedInput,
+            $merchant,
+            $source,
+            'add_fund_account_bank_account');
 
         return $ba;
+    }
+
+    public function useDefaultIfscCodeIfRequired(array $input)
+    {
+        $ifscCode = $input[Entity::IFSC_CODE] ?? ($input[Entity::IFSC] ?? '');
+
+        $ifscCode = strtoupper($ifscCode);
+
+        $bankCode = $input[Entity::BANK_CODE] ?? '';
+
+        $bankCode = strtoupper($bankCode);
+
+        $defaultIfsc = $ifscCode;
+
+        $validator = new Validator;
+
+        try
+        {
+            $validator->validateIfscCode($input, $this->mode);
+        }
+        catch (\Throwable $throwable)
+        {
+            if ($throwable->getMessage() === Validator::INVALID_IFSC_CODE_MESSAGE)
+            {
+                if ($validator->basicValidationOnIfscCode($ifscCode) === false)
+                {
+                    throw $throwable;
+                }
+
+                $defaultIfsc = DefaultIfscMapping::getDefaultIfsc($ifscCode, $bankCode);
+
+                $shouldNotThrowError = ((empty($defaultIfsc) === false) and
+                                        ($defaultIfsc !== DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND) and
+                                        ($defaultIfsc !== $ifscCode));
+
+                if ($shouldNotThrowError === false)
+                {
+                    throw $throwable;
+                }
+            }
+        }
+
+        /*
+         * If $defaultIfsc !== $ifscCode, then it means we got default ifsc using the ifsc code and bank code.
+         * Therefore, verifying bank code again with the same $defaultIfsc code doesn't make sense. So, we validate only
+         * in case of $defaultIfsc === $ifscCode, which means the case where $ifscCode iself was valid.
+         */
+        if ($defaultIfsc === $ifscCode)
+        {
+            try
+            {
+                $validator->validateBankCode($bankCode, $ifscCode, $this->mode);
+            }
+            catch (\Throwable $throwable)
+            {
+                if ($throwable->getMessage() === Validator::INVALID_BANK_CODE_MESSAGE)
+                {
+                    unset($input[Entity::BANK_CODE]);
+                }
+            }
+        }
+
+        if (isset($input[Entity::IFSC_CODE]) === true)
+        {
+            $input[Entity::IFSC_CODE] = $defaultIfsc;
+        }
+
+        if (isset($input[Entity::IFSC]) === true)
+        {
+            $input[Entity::IFSC] = $defaultIfsc;
+        }
+
+        return $input;
     }
 
     public function  editOrgBankAccount(BankAccount\Entity $bankAccount, array $input)

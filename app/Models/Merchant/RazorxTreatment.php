@@ -912,4 +912,8 @@ final class RazorxTreatment
      */
     const REMOVE_API_ROUTER_FALLBACK = 'remove_api_router_fallback';
 
+    /*
+     * Razorx flag to allow default ifsc picking feature for merchant's fund account create and payout create/processing
+     */
+    const ALLOW_DEFAULT_IFSC_CODE = 'allow_default_ifsc_code';
 }

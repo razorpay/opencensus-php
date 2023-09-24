@@ -252,6 +252,7 @@ final class FactoryData
                                                           'beneficiary_email'         => 'random@email.com',
                                                           'beneficiary_mobile'        => '9988776655',
                                                           'beneficiary_pin'           => '100000',
+                                                          'bank_code'                 => null,
                                                       ]
         );
 

@@ -6,11 +6,14 @@ use App;
 use Queue;
 use Mockery;
 
+use Razorpay\IFSC\IFSC;
+
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Models\Card\Entity;
 use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
+use RZP\Models\BankAccount;
 use RZP\Models\Card\Network;
 use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
@@ -25,6 +28,8 @@ use RZP\Models\FundAccount\Core as FundAccountCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\BankAccount\OldNewIfscMapping as OldNewIfscMapping;
+use RZP\Models\BankAccount\DefaultIfscMapping as DefaultIfscMapping;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountsTest extends TestCase
@@ -3381,5 +3386,773 @@ class FundAccountsTest extends TestCase
 
         $this->assertSameSize($fundAccountsBeforeTest, $fundAccountsAfterTest);
         $this->assertEquals('fa_' . $oldestActiveFundAccountId, $response['id']);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscBasicValidationFailure()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountInvalidBankIfsc'];
+
+        // 5th char of ifsc code must always be 0, this is a basic validation
+        $testData['request']['content']['bank_account']['ifsc'] = 'FINO1001111';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO1001111'));
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->startTest();
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBank()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'FINO0001111';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => null,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBankWithCorrectBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'FINO0001111';
+        $testData['request']['content']['bank_account']['bank_code'] = 'FINO';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $this->assertTrue(IFSC::validateBankCode('FINO'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'FINO',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBankWithGrameenBankCode()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountInvalidBankIfsc'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'FINO0001111';
+        $testData['request']['content']['bank_account']['bank_code'] = 'PNSX';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $this->assertTrue(IFSC::validateBankCode('PNSX'));
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->startTest();
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountInvalidBankIfsc'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'BARB0SPBMUM';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('BARB0SPBMUM'));
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->startTest();
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBankWithCorrectBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'PNCX');
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'YESB0PUCB45';
+        $testData['request']['content']['bank_account']['bank_code'] = 'PNCX';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('YESB0PUCB45'));
+
+        $this->assertTrue(IFSC::validateBankCode('PNCX'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'PNCX',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBankWithDifferentGrameenBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'TCBX');
+
+        // This ifsc code is like ifsc codes of Panipat Urban Coop Bank which also uses yesbank rails
+        $testData['request']['content']['bank_account']['ifsc'] = 'YESB0PUCB45';
+
+        // This bank code is for coop bank of rajkot which uses yesbank
+        $testData['request']['content']['bank_account']['bank_code'] = 'TCBX';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('YESB0PUCB45'));
+
+        $this->assertTrue(IFSC::validateBankCode('TCBX'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        // We create it with different bank's bank code because we can't know the correct bank without bank code. It is
+        // upto the merchant to enter correct bank code in this scenario.
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'TCBX',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBankWithMainBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'YESB');
+
+        // This ifsc code is like ifsc codes of Panipat Urban Coop Bank which also uses yesbank rails
+        $testData['request']['content']['bank_account']['ifsc'] = 'YESB0PUCB45';
+
+        // This bank code is for coop bank of rajkot which uses yesbank
+        $testData['request']['content']['bank_account']['bank_code'] = 'YESB';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('YESB0PUCB45'));
+
+        $this->assertTrue(IFSC::validateBankCode('TCBX'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        // We create it with main bank's bank code because there are scenarios where non grameen banks also have alpha
+        // numeric last 6 characters of ifsc code. It is upto the merchant to enter correct bank code in this scenario.
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'YESB',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBank()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = 'FINO0001111';
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111');
+
+        $testData  = $this->testData['testCreateFundAccountBankAccountWithOldIfsc'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000735';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $response = $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = $originalValue;
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '12345678998',
+            'beneficiary_name' => 'Sagnik Saha',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => null,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|12345678998|' . $defaultIfscCode . '|SagnikSaha';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBankWithCorrectBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = 'FINO0001111';
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('FINO0001111', 'FINO');
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000735';
+        $testData['request']['content']['bank_account']['bank_code'] = 'FINO';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $this->assertTrue(IFSC::validateBankCode('FINO'));
+
+        $response = $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = $originalValue;
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'FINO',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBankWithGrameenBankCode()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = 'FINO0001111';
+
+        $testData  = $this->testData['testCreateFundAccountInvalidBankIfsc'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000735';
+        $testData['request']['content']['bank_account']['bank_code'] = 'PNSX';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('FINO0001111'));
+
+        $this->assertTrue(IFSC::validateBankCode('PNSX'));
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000735'] = $originalValue;
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBank()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountInvalidBankIfsc'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000573';
+
+        $newIfsc = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate($newIfsc));
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->startTest();
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBankWithCorrectBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000573';
+        $testData['request']['content']['bank_account']['bank_code'] = 'DBSS';
+
+        $newIfsc = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc($newIfsc, 'DBSS');
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate($newIfsc));
+
+        $this->assertTrue(IFSC::validateBankCode('DBSS'));
+
+        $response = $this->startTest();
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'DBSS',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBankWithDifferentGrameenBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'] = 'YESB0PUCB45';
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'TCBX');
+
+        // This ifsc code is like ifsc codes of Panipat Urban Coop Bank which also uses yesbank rails
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000573';
+
+        // This bank code is for coop bank of rajkot which uses yesbank
+        $testData['request']['content']['bank_account']['bank_code'] = 'TCBX';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('YESB0PUCB45'));
+
+        $this->assertTrue(IFSC::validateBankCode('TCBX'));
+
+        $response = $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'] = $originalValue;
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        // We create it with different bank's bank code because we can't know the correct bank without bank code. It is
+        // upto the merchant to enter correct bank code in this scenario.
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'TCBX',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBankWithMainBankCode()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData  = $this->testData['testCreateFundAccountBankAccount'];
+
+        $originalValue = OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'];
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'] = 'YESB0PUCB45';
+
+        $defaultIfscCode = DefaultIfscMapping::getDefaultIfsc('YESB0PUCB45', 'YESB');
+
+        // This ifsc code is like ifsc codes of Panipat Urban Coop Bank which also uses yesbank rails
+        $testData['request']['content']['bank_account']['ifsc'] = 'LAVB0000573';
+
+        // This bank code is for coop bank of rajkot which uses yesbank
+        $testData['request']['content']['bank_account']['bank_code'] = 'YESB';
+
+        $testData['response']['content']['bank_account']['ifsc'] = $defaultIfscCode;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->assertFalse(IFSC::validate('YESB0PUCB45'));
+
+        $this->assertTrue(IFSC::validateBankCode('YESB'));
+
+        $response = $this->startTest();
+
+        OldNewIfscMapping::$oldToNewIfscMapping['LAVB0000573'] = $originalValue;
+
+        $bankAccountEntity = $this->getDbLastEntity('bank_account');
+
+        $bankAccount = $bankAccountEntity->toArray();
+
+        $bankAccount['bank_code'] = $bankAccountEntity->getAttribute(BankAccount\Entity::BANK_CODE);
+
+        // We create it with main bank's bank code because there are scenarios where non grameen banks also have alpha
+        // numeric last 6 characters of ifsc code. It is upto the merchant to enter correct bank code in this scenario.
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => $defaultIfscCode,
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+            'bank_code'        => 'YESB',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertArrayNotHasKey(BankAccount\Entity::BANK_CODE, $response['bank_account']);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 }

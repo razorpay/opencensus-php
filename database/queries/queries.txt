@@ -7182,3 +7182,6 @@ ALTER TABLE action_state
 
 ALTER TABLE qr_code
     ADD COLUMN mandate_details JSON DEFAULT NULL;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN `bank_code` CHAR(4) DEFAULT NULL;

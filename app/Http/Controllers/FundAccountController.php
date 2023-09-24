@@ -48,7 +48,7 @@ class FundAccountController extends Controller
     public function get(string $id)
     {
         $entity = $this->service()->fetch($id, $this->input);
-        
+
         return ApiResponse::json($entity);
     }
 

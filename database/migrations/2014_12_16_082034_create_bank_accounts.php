@@ -37,6 +37,9 @@ class CreateBankAccounts extends Migration
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH)
                   ->nullable();
 
+            $table->char(BankAccount::BANK_CODE, BankAccount::BANK_CODE_LENGTH)
+                  ->nullable();
+
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
             $table->string(BankAccount::ACCOUNT_TYPE, 255)

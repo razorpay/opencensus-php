@@ -57,11 +57,13 @@ class Entity extends Base\PublicEntity
 
     const NAME                          = 'name';
     const IFSC                          = 'ifsc';
+    const BANK_CODE                     = 'bank_code';
 
     // Mobile Banking Enabled
     const MPIN_SET                      = 'mpin_set';
 
     const IFSC_CODE_LENGTH              = 11;
+    const BANK_CODE_LENGTH              = 4;
 
     const ACCOUNT_NUMBER_LENGTH         = 16;
 
@@ -92,6 +94,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::IFSC,
         self::IFSC_CODE,
+        self::BANK_CODE,
         self::MOBILE_BANKING_ENABLED,
         self::NAME,
         self::NOTES,

@@ -145,6 +145,8 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
+        $this->useDefaultIfscCodeIfRequired($input, $merchant);
+
         $accountDetails = $this->getAccountDetailsForInput($input);
 
         $uniqueHash = null;
@@ -325,6 +327,28 @@ class Core extends Base\Core
                            ]);
 
         return $fundAccount;
+    }
+
+    protected function useDefaultIfscCodeIfRequired(array & $input, Merchant\Entity $merchant)
+    {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        // Check if razorx enabled
+        $razorxResponse = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                             Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
+                                                             $mode);
+
+        if ($razorxResponse !== Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return;
+        }
+
+        if ($input[Entity::ACCOUNT_TYPE] === Type::BANK_ACCOUNT)
+        {
+            $bankAccountInput = (new BankAccount\Core)->useDefaultIfscCodeIfRequired($input[Type::BANK_ACCOUNT]);
+
+            $input[Type::BANK_ACCOUNT] = $bankAccountInput;
+        }
     }
 
     /**

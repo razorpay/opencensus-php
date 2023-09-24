@@ -117,7 +117,7 @@ class Base extends BaseCore
         return;
     }
 
-    protected function getBankAccountToAssociateWithFTA(PublicEntity $bankAccount, Entity  $payout)
+    protected function getBankAccountToAssociateWithFTA(PublicEntity $bankAccount, Entity $payout)
     {
         // We want to swap older IFSC to new IFSC for banks which are getting
         // merged to bigger banks. This is being done for now for IMPS payouts
@@ -125,52 +125,25 @@ class Base extends BaseCore
         // to payouts as bank mergers will continue to happen.
         // Detailed discussion - https://razorpay.slack.com/archives/CM9230B5Y/p1606721863218100
         $ifscCode = $bankAccount->getIfscCode();
+        $bankCode = $bankAccount->getAttribute(BankAccount\Entity::BANK_CODE) ?? '';
 
+        /** @var Merchant\Entity $merchant */
         $merchant = $payout->merchant;
 
         if ($this->isIfscSwappingRequired($ifscCode) === true)
         {
             $ifscCode = $this->getNewIfscMapping($bankAccount->getIfscCode());
-
-            // only below parameters are required for FA payouts
-            $input = [
-                BankAccount\Entity::IFSC_CODE        => $ifscCode,
-                BankAccount\Entity::ACCOUNT_NUMBER   => $bankAccount->getAccountNumber(),
-                BankAccount\Entity::BENEFICIARY_NAME => $bankAccount->getBeneficiaryName(),
-                BankAccount\Entity::TYPE             => $bankAccount->getType(),
-                BankAccount\Entity::ENTITY_ID        => $bankAccount->getEntityId(),
-            ];
-
-            $existingBankAccount = $this->repo->bank_account->fetchBankAccount(
-                $merchant,
-                $input);
-
-            if ($existingBankAccount !== null)
-            {
-                $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
-                                   [
-                                       'bank_account_id' => $existingBankAccount->getId(),
-                                   ]);
-
-                return $existingBankAccount;
-            }
-
-            // The below fields will be filled when bank account gets associated to its source
-            unset($input[BankAccount\Entity::TYPE]);
-            unset($input[BankAccount\Entity::ENTITY_ID]);
-
-            $bankAccount = (new BankAccount\Core)->createBankAccountForSource($input,
-                                                                              $merchant,
-                                                                              $bankAccount->source,
-                                                                              "add_bank_account");
-
-            $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED,
-                               [
-                                   'bank_account_id' => $bankAccount->getId(),
-                               ]);
         }
 
-        return $bankAccount;
+        // Validate Whether IFSC is valid or not from rzp ifsc repo, if not get default IFSC for the bank
+        $ifscCode = $this->validateIfscOrGetDefault($ifscCode, $merchant, $bankCode);
+
+        if ($ifscCode === $bankAccount->getIfscCode())
+        {
+            return $bankAccount;
+        }
+
+        return $this->fetchOrCreateBankAccount($ifscCode, $bankAccount, $merchant);
     }
 
     protected function isIfscSwappingRequired(string $ifsc)
@@ -190,8 +163,8 @@ class Base extends BaseCore
         $newIfsc = BankAccount\OldNewIfscMapping::getNewIfsc($ifsc);
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
-                  'old_ifsc' => $ifsc,
-                  'new_ifsc' => $newIfsc,
+            'old_ifsc' => $ifsc,
+            'new_ifsc' => $newIfsc,
         ]);
 
         return $newIfsc;
@@ -243,5 +216,100 @@ class Base extends BaseCore
         $this->postTransactionCreationProcessing($txn, $payout);
 
         return $txn;
+    }
+
+    /**
+     * @param string $ifscCode
+     *
+     * @return string Valid IFSC or Default IFSC for the bank
+     * Function will check if IFSC is valid or not
+     */
+    private function validateIfscOrGetDefault(string $ifscCode,  Merchant\Entity $merchant, string $bankCode = '')
+    {
+        $ifscValidator = new BankAccount\Validator;
+
+        try
+        {
+            $mode = $this->mode ?? Constants\Mode::LIVE;
+
+            // Check if razorx enabled
+            $razorxResponse = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                                 Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
+                                                                 $mode);
+
+            if ($razorxResponse !== 'on')
+            {
+                return $ifscCode;
+            }
+
+            $ifscValidator->validateIfscCode([BankAccount\Entity::IFSC_CODE => $ifscCode]);
+        }
+        catch (\Throwable $throwable)
+        {
+            if ($throwable->getMessage() === BankAccount\Validator::INVALID_IFSC_CODE_MESSAGE)
+            {
+                $defaultIfscCode = BankAccount\DefaultIfscMapping::getDefaultIfsc($ifscCode, $bankCode);
+
+                if ($defaultIfscCode === BankAccount\DefaultIfscMapping::DEFAULT_IFSC_NOT_FOUND)
+                {
+                    return $ifscCode;
+                }
+
+                return $defaultIfscCode;
+            }
+        }
+
+        return $ifscCode;
+    }
+
+
+    /**
+     * @param string          $ifscCode
+     * @param PublicEntity    $bankAccount
+     * @param Merchant\Entity $merchant
+     *
+     * @return BankAccount\Entity
+     */
+    private function fetchOrCreateBankAccount(string $ifscCode,
+                                              PublicEntity $bankAccount,
+                                              Merchant\Entity $merchant): BankAccount\Entity
+    {
+        $input = [
+            BankAccount\Entity::IFSC_CODE        => $ifscCode,
+            BankAccount\Entity::ACCOUNT_NUMBER   => $bankAccount->getAccountNumber(),
+            BankAccount\Entity::BENEFICIARY_NAME => $bankAccount->getBeneficiaryName(),
+            BankAccount\Entity::TYPE             => $bankAccount->getType(),
+            BankAccount\Entity::ENTITY_ID        => $bankAccount->getEntityId(),
+        ];
+
+        $existingBankAccount = $this->repo->bank_account->fetchBankAccount(
+            $merchant,
+            $input);
+
+        if ($existingBankAccount !== null)
+        {
+            $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
+                               [
+                                   'bank_account_id' => $existingBankAccount->getId(),
+                               ]);
+
+            return $existingBankAccount;
+        }
+
+        // The below fields will be filled when bank account gets associated to its source
+        unset($input[BankAccount\Entity::TYPE]);
+        unset($input[BankAccount\Entity::ENTITY_ID]);
+
+        $bankAccount = (new BankAccount\Core)->createBankAccountForSource($input,
+                                                                          $merchant,
+                                                                          $bankAccount->source,
+                                                                          "add_bank_account");
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED,
+                           [
+                               'bank_account_id' => $bankAccount->getId(),
+                           ]);
+
+        return $bankAccount;
     }
 }
