@@ -565,7 +565,7 @@ trait Authorize
 
     protected function set3ds2AuthenticationParams(array $input, array & $gatewayInput, Payment\Entity $payment)
     {
-        if(!($payment->isCard() === true)){
+        if(!($payment->isCard() === true || $payment->isEmi() === true)){
             return;
         }
         if((isset($input['browser']) === true)){
@@ -11061,7 +11061,7 @@ trait Authorize
         $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
 
         // In case of 3ds/non-headless card payments we return redirect response for /payments/create/ajax
-        if(($payment->isCard() === true) and ($this->isAjaxRoute === true) and (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false))
+        if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isAjaxRoute === true) and (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false))
             and ($this->merchant->Is3dsDetailsRequiredEnabled() === true) and (isset($gatewayInput["fraud_check"]) === false))
         {
             return true;
@@ -11309,7 +11309,7 @@ trait Authorize
     {
         $routeName = $this->app['request.ctx']->getRoute();
         $this->isCheckoutRoute = $this->app['api.route']->isCheckoutPaymentCreateRoute($routeName);
-        if(($payment->isCard() === true) and ($this->isCheckoutRoute === true)){
+        if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isCheckoutRoute === true)){
             $payload = [
                 'merchant_id' => $payment->getMerchantId(),
                 'payment_id' => $payment->getPublicId(),
@@ -11419,7 +11419,7 @@ trait Authorize
             // In case of 3ds/non-headless card payment on /payments/create/ajax route
             // we return redirect response to support 3ds 2.0 payments
             // applicable for 3ds 1.0 payments as well
-            if(($payment->isCard() === true) and ($this->isAjaxRoute === true) and ($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false) and empty($httpMethod)){
+            if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isAjaxRoute === true) and ($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false) and empty($httpMethod)){
                 $data['type'] = 'redirect';
                 $data['request'] = [
                     'url'      => $redirectUrl,
@@ -11926,7 +11926,7 @@ trait Authorize
         }
 
         // payment create /ajax for 3ds2.0
-        if (($payment->isCard() === true) and
+        if (($payment->isCard() === true || $payment->isEmi() == true) and
             (empty($ret['type']) === false) and
             ($ret['type'] === 'redirect'))
         {
@@ -11934,7 +11934,7 @@ trait Authorize
         }
 
         // payment create /checkout for 3ds2.0
-        if (($payment->isCard() === true) and
+        if (($payment->isCard() === true || $payment->isEmi() == true) and
             (empty($ret['type']) === false) and
             ($ret['type'] === 'first'))
         {
