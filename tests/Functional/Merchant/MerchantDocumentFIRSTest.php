@@ -214,6 +214,43 @@ class MerchantDocumentFIRSTest Extends TestCase
 
     }
 
+    public function testDownloadFIRSDocumentsPCB()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'),"MMlRFCy5mrJDQT");
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['getDocuments'])
+            ->getMock();
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+
+        $pxbServiceMock->method("getDocuments")
+            ->willReturn([
+                "items" => [
+                    [
+                        "id" => "MMlRFCy5mrJDQT",
+                        "document_type" => "firs_internal_amex_file",
+                        "file_id" => "MQlRFCy5mrJDQT",
+                        "entity_id" => "CCOhinUeUsT8HN",
+                        "document_date" => "1692194209",
+                        "created_at" => "1692194209"
+                    ]
+                ],
+                "success" => true
+            ]);
+
+        $response = $this->sendRequest($request);
+        $content = $this->getJsonContentFromResponse($response);
+        $this->assertArrayKeysExist($content,['signed_url', 'file_store_id','id', 'document_type', 'merchant_id', 'created_at']);;
+
+    }
+
     /*
      * Disabling Test Case Because removing zipping functionality on merchant dashboard
      * because of already generated ICICI Zipped FIRS Documents

@@ -436,7 +436,7 @@ class Service extends Base\Service
         try {
             // Fetch Internal FIRS Documents
             $internalFirsDocumentInput = array(
-                "merchantId"=> $merchantId,
+                "merchant_id"=> $merchantId,
                 "month"     => intval($input['month']),
                 "year"      => intval($input['year']),
                 "type"      => DocumentConstants::FIRS_INTERNAL_AMEX_DOCUMENT_TYPE
@@ -475,11 +475,39 @@ class Service extends Base\Service
 
         $document = $this->repo->merchant_document->findDocumentById($input['document_id']);
         if (!isset($document)){
-            $internalFirsDocumentId = array(
-                "document_id"=> $input['document_id'],
-                "merchant_id"=> $this->merchant->getId(),
-            );
-            $document =  $this->app['payments-cross-border']->getInternalFIRSDocumentByReference($internalFirsDocumentId);
+            try {
+                $internalFirsDocumentInput = array(
+                    "document_id"=> $input['document_id'],
+                    "merchant_id"=> $this->merchant->getId(),
+                    "type"       => DocumentConstants::FIRS_INTERNAL_DOCUMENT_TYPE
+
+                );
+
+                $internalFirsDocument =  $this->app['payments-cross-border']->getDocuments($internalFirsDocumentInput);
+                $fileStoreId = 'file_'.$internalFirsDocument['items'][0]['file_id'];
+
+                $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $fileStoreId, $this->merchant->getId());
+
+                $documentMetaData = [
+                    Entity::ID              => $internalFirsDocument['items'][0]['id'],
+                    Entity::DOCUMENT_TYPE   => $internalFirsDocument['items'][0]['document_type'],
+                    Entity::MERCHANT_ID     => $internalFirsDocument['items'][0]['entity_id'],
+                    Entity::FILE_STORE_ID   => $internalFirsDocument['items'][0]['file_id'],
+                    Entity::CREATED_AT      => $internalFirsDocument['items'][0]['created_at'],
+                    Entity::SIGNED_URL      => $signedURL['signed_url'],
+                ];
+
+                $this->trace->info(TraceCode::FILES_DOWNLOAD,array_except($documentMetaData,[Entity::SIGNED_URL]));
+
+                return $documentMetaData;
+
+            } catch (\Exception $e) {
+                // trace the error and move to next piece of code
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_GET_DOCUMENT_BY_ID_ERROR,  [
+                    'merchantId'    => $this->merchant->getId(),
+                ]);
+            }
+           return [];
         }
         $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
 

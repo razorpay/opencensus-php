@@ -425,6 +425,17 @@ return [
             ]
         ],
     ],
+    'testDownloadFIRSDocumentsPCB' => [
+        'request'  => [
+            'url'       => '/merchant/firs/content?month=%s&year=%s&document_id=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
 
     'testDownloadFIRSDocumentsZIP' => [
         'request' => [

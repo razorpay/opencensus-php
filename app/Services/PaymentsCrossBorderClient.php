@@ -21,13 +21,11 @@ class PaymentsCrossBorderClient
     const PAYMENTS_CROSS_BORDER = 'PaymentsCrossBorder';
     //get document url
     const GET_DOCUMENTS = 'v1/documents';
-    const GET_DOCUMENT_BY_REFERENCE = 'v1/document-by-reference';
 
     const GET = 'GET';
 
     const PAYMENTS_CROSS_BORDER_URLS = [
         "GET_DOCUMENTS" => self::GET_DOCUMENTS,
-        "GET_DOCUMENT_BY_ID" => self::GET_DOCUMENT_BY_REFERENCE,
     ];
 
     protected $client;
@@ -143,18 +141,4 @@ class PaymentsCrossBorderClient
         }
     }
 
-    public function getInternalFIRSDocumentByReference($input)
-    {
-        $url = self::PAYMENTS_CROSS_BORDER_URLS['GET_DOCUMENT_BY_ID'];
-
-        try {
-            return $this->makeRequest($url, self::GET, $input);
-        } catch (\Throwable $e) {
-            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_GET_DOCUMENT_BY_ID_ERROR,[
-                'error' => $e,
-            ]);
-
-            throw $e;
-        }
-    }
 }

@@ -35,5 +35,6 @@ class Constants
     const SIGNED_URL                 = 'signed_url';
 
     const FIRS_INTERNAL_AMEX_DOCUMENT_TYPE = 'firs_internal_amex_file';
+    const FIRS_INTERNAL_DOCUMENT_TYPE = 'firs_internal_file';
     const LRS_SWIFT_COPY_DOCUMENT_TYPE = 'lrs_swift_copy';
 }
