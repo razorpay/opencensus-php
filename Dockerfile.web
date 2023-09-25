@@ -3,7 +3,7 @@ ARG ARMORY_IMAGE=c.rzp.io/proxy_dockerhub/surnet/alpine-wkhtmltopdf:3.16.2-0.12.
 
 FROM $ARMORY_IMAGE as wkhtmltopdf
 
-FROM --platform=$BUILDPLATFORM $ONGGI_IMAGE as opencensus-ext
+FROM $ONGGI_IMAGE as opencensus-ext
 WORKDIR /
 ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
 RUN set -eux && \
