@@ -109,6 +109,7 @@ class Service extends Base\Service
 
                     if ($is_low_cost_emi === true){
                         $planOption['merchant_borne_interest'] = number_format($lc_emi_offer->getPercentRate()/100,2);
+                        $planOption['interest'] = $plan->getRate() / 100;
                     }
 
                     $emiOptions[$issuer][] = $planOption;
