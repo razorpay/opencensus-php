@@ -7185,3 +7185,6 @@ ALTER TABLE qr_code
 
 ALTER TABLE bank_accounts
     ADD COLUMN `bank_code` CHAR(4) DEFAULT NULL;
+
+ALTER TABLE pricing
+    ADD COLUMN percent_rate_scale_factor INT UNSIGNED DEFAULT 100;
