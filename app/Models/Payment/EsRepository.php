@@ -7,6 +7,9 @@ use RZP\Constants\Es;
 
 class EsRepository extends Base\EsRepository
 {
+    
+    private bool $isExpEnableForESearchSortOnCreatedAtFirst = false;
+
     /**
      * @inheritdoc
      */
@@ -30,6 +33,18 @@ class EsRepository extends Base\EsRepository
         Entity::REFERENCE16,
     ];
 
+    public function setExpForESearchSortOnCreatedAtFirst(bool $expValue): EsRepository
+    {
+        $this->isExpEnableForESearchSortOnCreatedAtFirst = $expValue;
+        
+        return $this;
+    }
+    
+    public  function getExpValueForESearchSortOnCreatedAtFirst(): bool
+    {
+        return $this->isExpEnableForESearchSortOnCreatedAtFirst;
+    }
+    
     public function buildQueryForRecurring(array & $query, string $value)
     {
         $queryValue = (($value === '1') or ($value === true)) ? true : false;
@@ -46,5 +61,15 @@ class EsRepository extends Base\EsRepository
 
         $filter = [Es::RANGE => [Entity::AMOUNT_TRANSFERRED => [Es::GT => 0]]];
         $this->addFilter($query, $filter);
+    }
+    
+    public function getSortParameter(): array
+    {
+        if ($this->getExpValueForESearchSortOnCreatedAtFirst())
+        {
+            return $this->sortByCreatedAtAndThenScore();
+        }
+
+        return $this->getDefaultSortParameter();
     }
 }

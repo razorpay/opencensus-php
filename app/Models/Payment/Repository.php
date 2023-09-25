@@ -74,6 +74,8 @@ class Repository extends Base\Repository
         Card\Entity::LAST4,
     ];
 
+    private bool $isExpEnableForESearchOnCreatedAtFirst = false;
+    
     public const SUCCESSFUL_PAYMENTS_COUNT_SQL = <<<'EOT'
 SELECT
   merchant_id,
@@ -91,6 +93,25 @@ LIMIT
 EOT;
 
 
+    public function setExperimentForESearchOnCreatedAtFirst(bool $expEnableValue): Repository
+    {
+        $this->isExpEnableForESearchOnCreatedAtFirst = $expEnableValue;
+        
+        return $this;
+    }
+    
+    public function getExperimentForESearchOnCreatedAtFirst(): bool
+    {
+        return $this->isExpEnableForESearchOnCreatedAtFirst;
+    }
+    
+    public function setEsRepoIfExist()
+    {
+        $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
+        
+        $this->esRepo = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst);
+    }
+    
     protected function serializeForIndexing(PublicEntity $entity): array
     {
         $serialized = parent::serializeForIndexing($entity);
@@ -586,7 +607,7 @@ EOT;
             ->select($paymentData)
             ->get();
     }
-
+    
     /**
      *  refer: https://razorpay.slack.com/archives/CQ932EVNH/p1624709316068200
      */
@@ -642,7 +663,10 @@ EOT;
             {
                 try
                 {
-                    $paymentIds = (new EsRepository('payment'))->buildQueryAndSearch($params, $merchantId);
+                    $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
+    
+                    $paymentIds = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst)
+                                    ->buildQueryAndSearch($params, $merchantId);
 
                     $paymentIdsFiltered = array_map(
                         function ($res) {
@@ -698,7 +722,7 @@ EOT;
         // such thing.
         if (count($esParams) > 0)
         {
-            return $this->runEsFetch($esParams, $merchantId, $expands,ConnectionType::DATA_WAREHOUSE_ADMIN);
+            return $this->runEsFetch($esParams, $merchantId, $expands, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
 
         // Found a bug where Merchant SDK intg private auth calls were

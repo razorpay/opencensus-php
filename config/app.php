@@ -722,4 +722,6 @@ return array(
     'pp_brand_color_hex' => env('PP_BRAND_COLOR_HEX'),
 
     'transaction_isolation_fallback_query_experiment_id' => env('TRANSACTION_ISOLATION_FALLBACK_QUERY_EXP_ID'),
+    
+    'es_search_on_created_at_then_on_score_experiment_id' => env('ES_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_EXPERIMENT_ID'),
 );

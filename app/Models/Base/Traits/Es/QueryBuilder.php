@@ -206,6 +206,22 @@ trait QueryBuilder
             ],
         ];
     }
+    
+    /**
+     * Sorting is on created_at followed by score of the document.
+     * @return array[]
+     */
+    public function sortByCreatedAtAndThenScore(): array
+    {
+        return [
+            Common::CREATED_AT => [
+                Es::ORDER => Es::DESC,
+            ],
+            Es::_SCORE => [
+                Es::ORDER => Es::DESC,
+            ],
+        ];
+    }
 
     // Helper methods
 

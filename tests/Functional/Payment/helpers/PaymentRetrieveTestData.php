@@ -400,4 +400,70 @@ return [
             ],
         ],
     ],
+  
+    'testSearchEsForNotesSortOnCreatedAtAndThenOnScore' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => ['notes' => 'es_random'],
+        ],
+        'response' => [
+        'content' => ['count' => 2],
+        ],
+    ],
+  
+    'testSearchEsForNotesOnCreatedAtAndThenOnScoreExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'notes.value' => [
+                                    'query' => 'es_random',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+                '_score' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+  
+    'testSearchEsForNotesWithoutExpEnable' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => ['notes' => 'es_random'],
+        ],
+        'response' => [
+            'content' => ['count' => 2],
+        ],
+    ],
 ];
