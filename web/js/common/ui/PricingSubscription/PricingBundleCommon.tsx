@@ -345,13 +345,9 @@ const handleCheckoutPayment =
         const { subscription = {} } = response;
         if (type === PAYMENT_TYPE.PG || !type) {
           // TODO: remove `!type` when add this feature in Mobile
-          const { merchant_id, account_key, payment_subscription_id } = subscription || {};
           const options = {
-            notes: {
-              merchant_id,
-            },
-            key: account_key,
-            subscription_id: payment_subscription_id,
+            key: subscription?.account_key,
+            subscription_id: subscription?.payment_subscription_id,
             name: `Razorpay Pricing Package`,
             description: '18% GST included',
             image: rzpLogo,
