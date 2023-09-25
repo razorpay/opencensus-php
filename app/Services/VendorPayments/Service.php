@@ -113,6 +113,12 @@ class Service
     const LIST_ADDRESS          = 'ListAddress';
 
     const GET_SIGNED_URL  = 'GetSignedURL';
+    const GST_INPUT_CREDIT_GENERATE_OTP             = 'GstInputCreditGenerateOtp';
+    const GST_INPUT_CREDIT_VERIFY_OTP               = 'GstInputCreditVerifyOtp';
+    const GST_INPUT_CREDIT_INTEGRATION_SUMMARY      = 'GstInputCreditIntegrationSummary';
+    const GST_INPUT_CREDIT_SYNC_GSTR2A              = 'GstInputCreditSyncGstr2A';
+    const GST_INPUT_CREDIT_SYNC_GSTR2A_CRON         = 'GstInputCreditSyncGstr2ACron';
+    const GST_INPUT_CREDIT_DISABLE_INTEGRATION      = 'GstInputCreditDisableIntegration';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -1198,6 +1204,50 @@ class Service
     public function searchItems(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SEARCH_ITEMS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function gstInputCreditGenerateOtp(MerchantEntity $merchant, Entity $user, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_GENERATE_OTP);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function gstInputCreditVerifyOtp(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_VERIFY_OTP);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function gstInputCreditIntegrationSummary(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_INTEGRATION_SUMMARY);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function gstInputCreditSync(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_SYNC_GSTR2A);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function gstInputCreditSyncCron()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_SYNC_GSTR2A_CRON);
+
+        return $this->makeRequest(null, $url);
+    }
+
+    public function gstInputCreditDisableIntegration(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_DISABLE_INTEGRATION);
 
         return $this->makeRequest($merchant, $url, $input);
     }

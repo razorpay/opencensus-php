@@ -1158,4 +1158,115 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('searchItems');
     }
+
+    public function testGstInputCreditGenerateOtp()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstrGenerateOtp')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstrGenerateOtp');
+    }
+
+    public function testGstInputCreditVerifyOtp()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstrVerifyOtp')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstrVerifyOtp');
+    }
+
+    public function testGstInputCreditIntegrationStatus()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstrIntegrationStatus')->andReturn([
+            [
+                'gstin' => 'SOMEGSTIN01',
+                'integration_expire_by' => 1694760623,
+                'last_data_sync_time' => 1694765623,
+            ],
+            [
+                'gstin' => 'SOMEGSTIN02',
+                'integration_expire_by' => 1694761623,
+                'last_data_sync_time' => 1694767623,
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstrIntegrationStatus');
+    }
+
+    public function testGstInputCreditSync()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstrSync')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstrSync');
+    }
+
+    public function testGstInputCreditSyncCron()
+    {
+        $this->ba->cronAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstrSyncCron')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstrSyncCron');
+    }
+
+    public function testGstInputCreditDisableIntegration()
+    {
+        $this->ba->cronAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('gstInputCreditDisableIntegration')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('gstInputCreditDisableIntegration');
+    }
 }

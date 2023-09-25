@@ -1205,4 +1205,110 @@ return [
             ]
         ]
     ],
+
+    'testGstInputCreditGenerateOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/gst-input-credit/generate-otp',
+            'content' => [
+                'user_name'         => 'test-user',
+                'merchant_gstin'    => 'SOMEGSTIN01'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testGstInputCreditVerifyOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/gst-input-credit/verify-otp',
+            'content' => [
+                'user_name'         => 'test-user',
+                'merchant_gstin'    => 'SOMEGSTIN01',
+                'otp'               => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testGstInputCreditIntegrationStatus' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/gst-input-credit/integration/summary',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'gstin' => 'SOMEGSTIN01',
+                    'integration_expire_by' => 1694760623,
+                    'last_data_sync_time' => 1694765623,
+                ],
+                [
+                    'gstin' => 'SOMEGSTIN02',
+                    'integration_expire_by' => 1694761623,
+                    'last_data_sync_time' => 1694767623,
+                ]
+            ]
+        ]
+    ],
+
+    'testGstInputCreditSync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/gst-input-credit/sync',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testGstInputCreditSyncCron' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/gst-input-credit/sync-cron',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testGstInputCreditDisableIntegration' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/gst-input-credit/disable',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
 ];

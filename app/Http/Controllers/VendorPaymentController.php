@@ -503,4 +503,34 @@ class VendorPaymentController extends Controller
     {
         return $this->service->searchItems($this->ba->getMerchant(), $this->input);
     }
+
+    public function gstInputCreditGenerateOtp()
+    {
+        return $this->service->gstInputCreditGenerateOtp($this->ba->getMerchant(), $this->ba->getUser(), $this->input);
+    }
+
+    public function gstInputCreditVerifyOtp()
+    {
+        return $this->service->gstInputCreditVerifyOtp($this->ba->getMerchant(), $this->input);
+    }
+
+    public function gstInputCreditIntegrationSummary()
+    {
+        return $this->service->gstInputCreditIntegrationSummary($this->ba->getMerchant(), $this->input);
+    }
+
+    public function gstInputCreditSync()
+    {
+        return $this->service->gstInputCreditSync($this->ba->getMerchant(), $this->input);
+    }
+
+    public function gstInputCreditSyncCron()
+    {
+        return $this->service->gstInputCreditSyncCron();
+    }
+
+    public function gstInputCreditDisableIntegration()
+    {
+        return $this->service->gstInputCreditDisableIntegration($this->ba->getMerchant(), $this->input);
+    }
 }

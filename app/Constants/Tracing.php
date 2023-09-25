@@ -169,6 +169,11 @@ class Tracing
             'vendor_payment_create_address',
             'vendor_payment_edit_address',
             'vendor_payment_list_address',
+            'vendor_payment_gst_input_credit_generate_otp',
+            'vendor_payment_gst_input_credit_verify_otp',
+            'vendor_payment_gst_input_credit_integration_summary',
+            'vendor_payment_gst_input_credit_sync',
+            'vendor_payment_gst_input_credit_disable_integration',
 
             'vendor_invoices_list',
             'vendor_invoice_get_by_id',
