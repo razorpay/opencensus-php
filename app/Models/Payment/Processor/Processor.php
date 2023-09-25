@@ -2313,8 +2313,6 @@ class Processor
             $startTime = microtime(true);
 
             $this->convertNewFormatToOldFormatIfRequired($input);
-            
-            $this->convert3ds2BrowserDetails($input);
 
             $this->validatePaymentForOptimizerOnlyMerchants();
 
@@ -2363,6 +2361,8 @@ class Processor
             else
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
+
+                $this->convert3ds2BrowserDetails($input);
 
                 $payment = $this->buildPaymentEntity($input);
 
@@ -2819,7 +2819,7 @@ class Processor
             if(isset($input['ip']) === false && isset($deviceFingerprint['ip']) === true)
             {
                 $input['ip'] = $deviceFingerprint['ip'];
-                
+
                 unset($input['device_fingerprint']['ip']);
             }
 
@@ -2833,7 +2833,7 @@ class Processor
                 {
                     $input['user_agent'] = $browser['user_agent'];
                 }
-    
+
                 if(isset($input['referer']) === false && isset($browser['referer']) === true)
                 {
                     $input['referer'] = $browser['referer'];
@@ -2841,7 +2841,7 @@ class Processor
 
                 unset($browser['user_agent']);
                 unset($browser['referer']);
-    
+
                 if(isset($input['browser']) === false)
                 {
                     $input['browser'] = $browser;
@@ -2850,7 +2850,7 @@ class Processor
         }
     }
 
-    
+
     protected function logPaymentRespawnEvent(array $request, array $data)
     {
         $merchant = $this->app['basicauth']->getMerchant();
