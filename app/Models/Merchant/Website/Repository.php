@@ -57,7 +57,7 @@ class Repository extends Base\Repository
     {
         return $this->getEntityDetails(
             ASVV2Constant::GET_WEBSITE_BY_MERCHANT_ID,
-            (new SplitzHelper())->isSplitzOnByExperimentName(ASVV2Constant::SPLITZ_WEBSITE_READ_MERCHANTID, $merchantId),
+            true,
             (new MerchantWebsiteSDKWrapper())->getLatestByMerchantIdOrFailCallBack($merchantId),
             $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId)
         );

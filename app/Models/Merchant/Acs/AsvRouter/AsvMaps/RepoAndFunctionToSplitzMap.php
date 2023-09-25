@@ -63,6 +63,10 @@ final class RepoAndFunctionToSplitzMap
         ),
     );
 
+    public const SPLITZ_REMOVAL_MAP = array(
+        SplitzConstant::SPLITZ_WEBSITE_READ_FIND => true,
+    );
+
     public static function getExperimentName(string $repoClass, string $functionName): string
     {
         if (isset(self::MAP[$repoClass]) === true) {
@@ -72,5 +76,10 @@ final class RepoAndFunctionToSplitzMap
         }
 
         throw new \Exception(ErrorCode::ASV_MAPPING_NOT_PRESENT_ERROR);
+    }
+
+    public static function isExperimentRemoved(string $experimentName): bool
+    {
+        return self::SPLITZ_REMOVAL_MAP[$experimentName] ?? false;
     }
 }

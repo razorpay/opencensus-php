@@ -135,6 +135,10 @@ class AsvRouter
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
+            $isExperimentRemoved = AsvMaps\RepoAndFunctionToSplitzMap::isExperimentRemoved($experimentName);
+            if ($isExperimentRemoved === true){
+                return true;
+            }
 
             return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
@@ -182,6 +186,10 @@ class AsvRouter
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
+            $isExperimentRemoved = AsvMaps\RepoAndFunctionToSplitzMap::isExperimentRemoved($experimentName);
+            if ($isExperimentRemoved === true){
+                return true;
+            }
 
             return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
@@ -200,6 +208,11 @@ class AsvRouter
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
+            $isExperimentRemoved = AsvMaps\RepoAndFunctionToSplitzMap::isExperimentRemoved($experimentName);
+            if ($isExperimentRemoved === true){
+                return true;
+            }
+
             return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);

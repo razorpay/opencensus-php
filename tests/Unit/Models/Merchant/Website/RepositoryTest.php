@@ -158,9 +158,9 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantWebsiteResponse->setWebsites([$merchantWebsiteProto3, $merchantWebsiteProto2,$merchantWebsiteProto1]);
 
 
-        // test1: Splitz is on, request should go to account service.
+        // Test1: Splitz is on(No effect should be whether splitz is on or off), request should go to account service. -
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->never())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $merchantWebsiteMockClient  = $this->getMockClient();
         $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bG", $merchantWebsite->getDefaultRequestMetaData())->willReturn([$merchantWebsiteResponse, null]);
@@ -170,14 +170,12 @@ class RepositoryTest extends RepositoryTestHelper
         $website = $repo->getWebsiteDetailsForMerchantId("K4O9sCGihrL2bG");
         self::assertEquals($websiteEntity3->toArray(), $website->toArray());
 
-        // test2: Splitz is off, request not should go to account service.
-        $splitzOff = $this->sampleSpltizOutput;
-        $splitzOff["response"]["variant"]["variables"][0]["value"] = "false";
+        // test2: Splitz is off(No effect should be whether splitz is on or off), request  should go to account service.
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOff);
+        $splitzMock->expects($this->never())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $merchantWebsiteMockClient  = $this->getMockClient();
-        $merchantWebsiteMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantWebsiteResponse, null]);
+        $merchantWebsiteMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bG", $merchantWebsite->getDefaultRequestMetaData())->willReturn([$merchantWebsiteResponse, null]);
         $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
 
         $repo = new Repository();
@@ -185,56 +183,6 @@ class RepositoryTest extends RepositoryTestHelper
         $website['audit_id'] = "testtesttest";
         self::assertEquals($websiteEntity3->toArray(), $website->toArray());
 
-        // test3: Splitz call fails, request not should go to account service.
-        $splitzOff = $this->sampleSpltizOutput;
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("sample"));
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $merchantWebsiteMockClient  = $this->getMockClient();
-        $merchantWebsiteMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantWebsiteResponse, null]);
-        $merchantWebsite->getAsvSdkClient()->setWebsite($merchantWebsiteMockClient);
-
-        $repo = new Repository();
-        $website = $repo->getWebsiteDetailsForMerchantId("K4O9sCGihrL2bG");
-        $website['audit_id'] = "testtesttest";
-        self::assertEquals($websiteEntity3->toArray(), $website->toArray());
-    }
-
-    public function testWebsiteRepositoryFindRequestNotRoutedToAsv()
-    {
-        $repo = new Repository();
-
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson2);
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson3);
-
-        $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
-        $websiteEntity2 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson2);
-        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
-
-        // Find, FindOrFail & FindOrFail public should work fine if splitz is off.
-        $this->setSplitzWithOutput("false", 2);
-        $this->assertEquals($websiteEntity1->toArray(), $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4"));
-
-        // Find, FindOrFail & FindOrFail public should work fine if splitz throws an exception.
-        $this->splitzShouldThrowException(2);
-        $this->assertEquals($websiteEntity3->toArray(), $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS3"));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give columns value, splitz off.
-        $this->setSplitzWithOutput("false", 0);
-        $this->assertEquals(["id" => $websiteEntity3->getId()], $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS3", ["id"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids.
-        $this->setSplitzWithOutput("false", 0);
-        $this->assertEqualsAssociativeByKey([$websiteEntity3->toArray(), $websiteEntity2->toArray()], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS5", "K9UzmvitzJwyS3"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns
-        $this->setSplitzWithOutput("false",0);
-        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns
-        $this->setSplitzWithOutput("false",0);
-        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
     }
 
     public function assertEqualsAssociativeByKey($array1, $array2, $key = "id") {
@@ -250,6 +198,35 @@ class RepositoryTest extends RepositoryTestHelper
         }
 
         self::assertEquals($compareArray1, $compareArray2);
+    }
+    public function testWebsiteRepositoryFindRequestNotRoutedToAsv()
+    {
+        $repo = new Repository();
+
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson2);
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson3);
+
+        $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
+        $websiteEntity2 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson2);
+        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
+
+
+        // Find, FindOrFail & FindOrFail public should work fine if we give columns value, Fetch data from DB
+        $this->setSplitzWithOutput("false", 0);
+        $this->assertEquals(["id" => $websiteEntity3->getId()], $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS3", ["id"]));
+
+        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids, Fetch data from DB
+        $this->setSplitzWithOutput("false", 0);
+        $this->assertEqualsAssociativeByKey([$websiteEntity3->toArray(), $websiteEntity2->toArray()], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS5", "K9UzmvitzJwyS3"]));
+
+        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns, Fetch data from DB
+        $this->setSplitzWithOutput("false",0);
+        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
+
+        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns, Fetch data from DB
+        $this->setSplitzWithOutput("false",0);
+        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
     }
 
     public function testMerchantWebsiteFindOrFailRequestRoutedToAsv() {
@@ -272,21 +249,21 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantWebsiteResponse = (new MerchantWebsiteResponse())->setWebsite($merchantWebsiteProto1);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on.
-        $this->setSplitzWithOutput("true", 2);
+        $this->setSplitzWithOutput("true", 0); // Splitz should never be called
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($websiteEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
-        $this->setSplitzWithOutput("true", 2);
+        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($websiteEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids.
-        $this->setSplitzWithOutput("true", 0);
+        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 0);
         $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
         $this->assertEquals([$websiteEntity1->toArray()], $response);
