@@ -192,6 +192,7 @@ class ProviderCode
     const SHRIRAMHDFCBANK    = 'shriramhdfcbank';
     const FINCAREBANK        = 'fincarebank';
     const INDIE              = 'indie';
+    const YESPAY             = 'yespay';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -375,6 +376,7 @@ class ProviderCode
         self::SHRIRAMHDFCBANK    => IFSC::HDFC,
         self::FINCAREBANK        => IFSC::FINF,
         self::INDIE              => IFSC::INDB,
+        self::YESPAY             => 'NPCI',
     ];
 
     /**

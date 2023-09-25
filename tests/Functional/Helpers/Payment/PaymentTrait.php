@@ -3958,6 +3958,7 @@ trait PaymentTrait
             "shriramhdfcbank",
             "fincarebank",
             "indie",
+            "yespay",
 
         ];
 
