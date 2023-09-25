@@ -1020,7 +1020,7 @@ class Service extends Base
         $features = [];
         try
         {
-            foreach ($apiFeatureNames as $name)
+            foreach ($apiFeatureNames as $name => $value)
             {
                 if ($entityType === Type::PARTNER)
                 {
