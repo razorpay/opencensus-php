@@ -714,7 +714,7 @@ class Service extends Base\Service
 
         $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
 
-        $nectorCoinsResponse = $this->deductNectorCoinsIfApplicabale($order, $fromShopifyApi);
+        $nectorCoinsResponse = $this->deductNectorCoinsIfApplicable($order, $fromShopifyApi);
 
         $orderArray = $order->toArrayPublic();
 
@@ -1454,7 +1454,7 @@ class Service extends Base\Service
         }
     }
 
-    public function deductNectorCoinsIfApplicabale($rzpOrder, $fromShopifyApi) : array{
+    public function deductNectorCoinsIfApplicable($rzpOrder, $fromShopifyApi) : array{
 
         if (!$this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS)){
             return [];

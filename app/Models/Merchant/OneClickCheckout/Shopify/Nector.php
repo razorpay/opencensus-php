@@ -27,6 +27,7 @@ class Nector extends Base\Core
     public function deductNectorPayment($customerMobile, $orderAmountValue, $orderId)
     {
         try {
+            $merchantId = $this->merchant->getId();
 
             $start = millitime();
 
@@ -34,6 +35,7 @@ class Nector extends Base\Core
                 'order_id' => $orderId,
                 'amount' => $orderAmountValue,
                 'mobile' => $customerMobile,
+                'merchant_id' => $merchantId,
             ];
 
             $path = self::MAGIC_CHECKOUT_INTEGRATION_PATH . '/' . self::DEDUCT_NECTOR_COINS;
@@ -59,12 +61,14 @@ class Nector extends Base\Core
     {
         try
         {
+            $merchantId = $this->merchant->getId();
             $start = millitime();
 
             $body = [
                 'order_id' => $orderId,
                 'amount' => $orderAmountValue,
                 'mobile' => $customerMobile,
+                'merchant_id' => $merchantId,
             ];
 
             $path = self::MAGIC_CHECKOUT_INTEGRATION_PATH . '/' . self::REFUND_NECTOR_COINS;
