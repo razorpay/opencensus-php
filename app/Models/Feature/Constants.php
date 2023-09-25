@@ -1984,6 +1984,7 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_ENABLE_NECTOR_COINS,
         self::REMOVE_RAZORPAY_BRANDING,
+        DcsConstants::ShowSingleDCCCurrency,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2662,6 +2663,7 @@ class Constants
         self::DEBIT_CARD_VALIDATION            => true,
         self::REMOVE_RAZORPAY_BRANDING         => true,
         self::BULK_PAYOUT_WORKFLOW            => true,
+        DcsConstants::ShowSingleDCCCurrency   => true,
     ];
 
     // Entity type constants
@@ -3715,6 +3717,11 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW => [
             'feature'       => self::BULK_PAYOUT_WORKFLOW,
             'display_name'  => 'Razorpay X - Bulk Payout Workflows',
+            'documentation' => '',
+        ],
+        DcsConstants::ShowSingleDCCCurrency => [
+            'feature'       => DcsConstants::ShowSingleDCCCurrency,
+            'display_name'  => 'Show only Single Currency on DCC Selection Screen',
             'documentation' => '',
         ],
     ];

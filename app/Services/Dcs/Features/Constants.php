@@ -246,6 +246,8 @@ class Constants
 
     const RestrictOnePaymentOnOneOrder = 'restrict_one_payment_on_one_order';
 
+    const ShowSingleDCCCurrency = 'show_single_dcc_currency';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -469,6 +471,7 @@ class Constants
         self::SrSensitiveBucket4 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
         self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
+        self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -704,6 +707,7 @@ class Constants
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_4                         => self::SrSensitiveBucket4,
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                      => self::RemoveRazorpayBranding,
         APIFeaturesConstants::BULK_PAYOUT_WORKFLOW                          => self::BulkPayoutWorkflow,
+        self::ShowSingleDCCCurrency                                         => self::ShowSingleDCCCurrency,
     ];
 
     /**
@@ -744,6 +748,7 @@ class Constants
         self::OmniMerchantEnabled => 'direct',
         self::DebitCardValidation   => 'direct',
         self::RemoveRazorpayBranding => 'direct',
+        self::ShowSingleDCCCurrency => 'direct',
     ];
 
     /**
