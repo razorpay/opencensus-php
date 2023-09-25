@@ -51,6 +51,10 @@ abstract class Base extends BaseModel\Core
 
     protected $processor;
 
+    const DEFAULT_PERCENT_RATE_SCALE_FACTOR = 100;
+
+    const VALID_PERCENT_RATE_SCALE_FACTOR_VALUES = [100, 1000, 10000, 100000, 1000000];
+
     public function __construct(BaseModel\PublicEntity $entity, string $product)
     {
         parent::__construct();
@@ -584,9 +588,9 @@ abstract class Base extends BaseModel\Core
      * @param int $fixed
      * @return int
      */
-    protected function getUnroundedFees($percent, $fixed)
+    protected function getUnroundedFees($percent, $fixed, $percentScaleFactor)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor);
     }
 
     /**
@@ -595,9 +599,9 @@ abstract class Base extends BaseModel\Core
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor = 100)
     {
-        return (($this->amount * $percent) / 10000) + $fixed;
+        return (($this->amount * $percent) / (100 * $percentScaleFactor)) + $fixed;
     }
 
     protected function traceAllRules($rules)
@@ -674,7 +678,12 @@ abstract class Base extends BaseModel\Core
 
         list($min, $max) = $rule->getMinMaxFees();
 
-        $fee = $this->getUnroundedFees($percent, $fixed);
+        $percentScaleFactor = $rule->getPercentRateScaleFactor();
+        if (in_array($percentScaleFactor, self::VALID_PERCENT_RATE_SCALE_FACTOR_VALUES) === false) {
+            $percentScaleFactor = self::DEFAULT_PERCENT_RATE_SCALE_FACTOR;
+        }
+
+        $fee = $this->getUnroundedFees($percent, $fixed, $percentScaleFactor);
 
         $fee = (int) ceil($fee);
 

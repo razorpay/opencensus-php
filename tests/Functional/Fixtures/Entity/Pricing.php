@@ -27,17 +27,18 @@ class Pricing extends Base
         $accountType = $this->getAccountType($attributes);
 
         $defaultValues = [
-            Entity::CHANNEL             => null,
-            Entity::ACCOUNT_TYPE        => $accountType,
-            Entity::APP_NAME            => null,
-            Entity::PAYMENT_METHOD_TYPE => null,
-            Entity::PAYMENT_NETWORK     => null,
-            Entity::PAYMENT_ISSUER      => null,
-            Entity::PERCENT_RATE        => 0,
-            Entity::FIXED_RATE          => 0,
-            Entity::AMOUNT_RANGE_ACTIVE => 0,
-            Entity::AMOUNT_RANGE_MIN    => null,
-            Entity::AMOUNT_RANGE_MAX    => null,
+            Entity::CHANNEL                     => null,
+            Entity::ACCOUNT_TYPE                => $accountType,
+            Entity::APP_NAME                    => null,
+            Entity::PAYMENT_METHOD_TYPE         => null,
+            Entity::PAYMENT_NETWORK             => null,
+            Entity::PAYMENT_ISSUER              => null,
+            Entity::PERCENT_RATE                => 0,
+            Entity::FIXED_RATE                  => 0,
+            Entity::AMOUNT_RANGE_ACTIVE         => 0,
+            Entity::AMOUNT_RANGE_MIN            => null,
+            Entity::AMOUNT_RANGE_MAX            => null,
+            Entity::PERCENT_RATE_SCALE_FACTOR   => 100,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -61,8 +61,9 @@ class Entity extends Base\PublicEntity
     const AMOUNT_RANGE_MIN     = 'amount_range_min';
     const AMOUNT_RANGE_MAX     = 'amount_range_max';
 
-    const PERCENT_RATE         = 'percent_rate';
-    const FIXED_RATE           = 'fixed_rate';
+    const PERCENT_RATE                  = 'percent_rate';
+    const FIXED_RATE                    = 'fixed_rate';
+    const PERCENT_RATE_SCALE_FACTOR     = 'percent_rate_scale_factor';
 
     // Min And Max Rate
     const MIN_FEE              = 'min_fee';
@@ -135,7 +136,8 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::PAYOUTS_FILTER,
         self::AUDIT_ID,
-        self::FEE_MODEL
+        self::FEE_MODEL,
+        self::PERCENT_RATE_SCALE_FACTOR
     ];
 
     protected $entity = 'pricing';
@@ -173,7 +175,8 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => Type::PRICING,
         self::FEE_BEARER                => FeeBearer::PLATFORM,
         self::PAYOUTS_FILTER            => null,
-        self::FEE_MODEL                 => null
+        self::FEE_MODEL                 => null,
+        self::PERCENT_RATE_SCALE_FACTOR => 100
     ];
 
     protected $proxy = [
@@ -196,7 +199,8 @@ class Entity extends Base\PublicEntity
         self::MIN_FEE,
         self::MAX_FEE,
         self::FEE_BEARER,
-        self::FEE_MODEL
+        self::FEE_MODEL,
+        self::PERCENT_RATE_SCALE_FACTOR
     ];
 
     /**
@@ -205,13 +209,14 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected $casts = [
-        self::PROCURER            => 'string',
-        self::INTERNATIONAL       => 'bool',
-        self::AMOUNT_RANGE_ACTIVE => 'bool',
-        self::PERCENT_RATE        => 'int',
-        self::FIXED_RATE          => 'int',
-        self::MIN_FEE             => 'int',
-        self::EMI_DURATION        => 'int',
+        self::PROCURER                  => 'string',
+        self::INTERNATIONAL             => 'bool',
+        self::AMOUNT_RANGE_ACTIVE       => 'bool',
+        self::PERCENT_RATE              => 'int',
+        self::FIXED_RATE                => 'int',
+        self::MIN_FEE                   => 'int',
+        self::EMI_DURATION              => 'int',
+        self::PERCENT_RATE_SCALE_FACTOR => 'int',
     ];
 
     public static $buyPricingMethods = [
@@ -507,6 +512,11 @@ class Entity extends Base\PublicEntity
     public function getPercentRate()
     {
         return $this->getAttribute(self::PERCENT_RATE);
+    }
+
+    public function getPercentRateScaleFactor()
+    {
+        return $this->getAttribute(self::PERCENT_RATE_SCALE_FACTOR);
     }
 
     public function getMinFee()

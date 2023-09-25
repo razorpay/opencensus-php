@@ -128,6 +128,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::FEE_MODEL,255)
                 ->nullable();
 
+            $table->integer(Pricing::PERCENT_RATE_SCALE_FACTOR)
+                ->unsigned()
+                ->default(100);
+
             $table->index(Pricing::PLAN_ID);
             $table->index([Pricing::PLAN_NAME, Pricing::PLAN_ID]);
             $table->index([Pricing::ORG_ID, Pricing::PLAN_ID]);

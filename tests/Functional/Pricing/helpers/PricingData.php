@@ -38,7 +38,8 @@ return [
                         [
                             'payment_method'        => 'wallet',
                             'payment_network'       => 'paytm',
-                            'percent_rate'          => 1000
+                            'percent_rate'          => 1000,
+                            'percent_rate_scale_factor' => 1000
                         ]
                 ],
             ],
@@ -59,12 +60,14 @@ return [
                         'payment_issuer'        => null,
                         'percent_rate'          => 1000,
                         'type'                  => 'pricing',
+                        'percent_rate_scale_factor' => 1000,
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
                         'payment_method'        => 'netbanking',
                         'percent_rate'          => 1000,
                         'payment_network'       => 'SIBL',
+                        'percent_rate_scale_factor' => 100,
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -78,12 +81,14 @@ return [
                         'amount_range_max'      => null,
                         'min_fee'               => 10,
                         'max_fee'               => 10000,
+                        'percent_rate_scale_factor' => 100,
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
                         'feature'               => 'fund_account_validation',
                         'payment_method'        => 'bank_account',
                         'fixed_rate'            => 1000,
+                        'percent_rate_scale_factor' => 100,
                     ],
                 ],
             ],
@@ -94,7 +99,7 @@ return [
         'request' => [
             'content' => [
                 'plan_name' => 'TestStringifiedPlan2',
-                'rules'     => "[{\r\n\"payment_method\": \"wallet\",\r\n\"payment_network\": \"paytm\",\r\n\"percent_rate\": 1000\r\n }]",
+                'rules'     => "[{\r\n\"payment_method\": \"wallet\",\r\n\"payment_network\": \"paytm\",\r\n\"percent_rate_scale_factor\": 1000,\r\n\"percent_rate\": 1000\r\n }]",
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -113,6 +118,7 @@ return [
                         'payment_issuer'        => null,
                         'percent_rate'          => 1000,
                         'type'                  => 'pricing',
+                        'percent_rate_scale_factor' => 1000,
                     ]
                 ],
             ],

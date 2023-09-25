@@ -963,6 +963,72 @@ class MerchantFeeTest extends TestCase
         return $mock;
     }
 
+    protected function getMockMaxFeePricingRepoWithScaleFactor()
+    {
+        $maxRateRuleForCard = new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaRLMR',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testMaxFee',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 20035,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => 1000,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+            'percent_rate_scale_factor' => 10000,
+        ]);
+
+        $maxRateRuleForWallet = new Pricing\Entity([
+            'id'                  => '1fq0O3dewex3MR',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testMaxFee',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'wallet',
+            'payment_method_type' => null,
+            'payment_network'     => 'mobikwik',
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 3005,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => 2000,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+            'percent_rate_scale_factor' => 1000,
+        ]);
+
+        $pricingRules = [
+            $maxRateRuleForCard,
+            $maxRateRuleForWallet
+        ];
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
+
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
+            function($mock) use ($pricingPlan)
+            {
+                $mock->shouldReceive('getPricingPlanById')
+                    ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                    ->andReturn($pricingPlan);
+            });
+        return $mock;
+    }
+
     /**
      * Credit cards that don't have if have
      * no definite rule to fall back,
@@ -1688,6 +1754,64 @@ class MerchantFeeTest extends TestCase
     public function testInterstateGstForCard()
     {
         $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        // create merchant
+        $merchant = $this->fixtures->create('merchant');
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
+
+        $merchantDetails = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'gstin'       => '20kjsngjk2139',
+            ]);
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            // create payment
+            $amount = $data['amount'];
+
+            $paymentArray = $this->getDefaultPaymentEntityArray();
+
+            $paymentArray['merchant_id'] = $merchant->getId();
+
+            $paymentArray['amount'] = $amount;
+
+            $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
+
+            $payment = new Payment\Entity($paymentArray);
+
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
+
+            $merchant = Merchant\Entity::find('10000000000000');
+
+            $payment->merchant()->associate($merchant);
+
+            $payment->associateTerminal($this->sharpTerminal);
+
+            $card = (new Card\Entity)->build($this->card);
+
+            $payment->card()->associate($card);
+
+            $payment->card->setNetwork('Visa');
+
+            $payment->card->setType($data['card_type']);
+
+            $payment->setBaseAmount($amount);
+
+            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+            $this->assertFeesAndTax(
+                $fee, $tax, $feesSplit->toArray(),
+                $data['fee'], $data['tax'], $data['fee_components']);
+        }
+    }
+
+    // tests for pricing with percent rate scale factor
+    public function testInterstateGstForCardWithPercentScaleFactor()
+    {
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepoWithScaleFactor());
 
         // create merchant
         $merchant = $this->fixtures->create('merchant');

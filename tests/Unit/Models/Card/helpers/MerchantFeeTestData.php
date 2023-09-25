@@ -49,6 +49,29 @@ return [
         ]
     ],
 
+    'testInterstateGstForCardWithPercentScaleFactor' => [
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 21,
+            'tax' => 0,
+            'fee_components' => [
+                'payment' => 21,
+                'tax' => 0,
+            ],
+        ],
+        [
+            'amount' => '225100',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 1180,
+            'tax' => 180,
+            'fee_components' => [
+                'payment' => 1000,
+                'tax' => 180,
+            ]
+        ]
+    ],
+
     'testFeeWithMaxFeeForWallet' => [
         [
             'amount' => 60000,

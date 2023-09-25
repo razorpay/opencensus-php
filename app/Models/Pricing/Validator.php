@@ -66,6 +66,7 @@ class Validator extends Base\Validator
         Entity::PAYOUTS_FILTER          => 'sometimes_if:product,banking',
         Entity::IS_BUY_PRICING_ALLOWED  => 'sometimes',
         Entity::FEE_MODEL               => 'sometimes|nullable|in:prepaid,postpaid',
+        Entity::PERCENT_RATE_SCALE_FACTOR  => 'sometimes|integer|in:100,1000,10000,100000,1000000',
     ];
 
     protected static $editPlanRuleRules = [
@@ -76,7 +77,8 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
         Entity::PROCURER            => 'sometimes',
         Entity::CHANNEL             => 'sometimes',
-        Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid'
+        Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid',
+        Entity::PERCENT_RATE_SCALE_FACTOR  => 'sometimes|integer|max:1000000'
     ];
 
     protected static $pricingPlansSummaryRules = [
@@ -1181,7 +1183,8 @@ class Validator extends Base\Validator
             Pricing\Entity::AMOUNT_RANGE_MAX,
             Pricing\Entity::AMOUNT_RANGE_ACTIVE,
             Pricing\Entity::FIXED_RATE,
-            Pricing\Entity::PERCENT_RATE
+            Pricing\Entity::PERCENT_RATE,
+            Pricing\Entity::PERCENT_RATE_SCALE_FACTOR
         ];
 
         $requiredKeys = array_merge($requiredKeys, Pricing\Entity::$buyPricingMethods);
@@ -1221,7 +1224,7 @@ class Validator extends Base\Validator
         array_walk($groupedRules, function ($rules)
         {
             $validParams = [Entity::AMOUNT_RANGE_MIN, Entity::AMOUNT_RANGE_MAX, Entity::AMOUNT_RANGE_ACTIVE, Entity::FIXED_RATE,
-                Entity::PERCENT_RATE, Entity::MAX_FEE, Entity::MIN_FEE];
+                Entity::PERCENT_RATE, Entity::MAX_FEE, Entity::MIN_FEE, Entity::PERCENT_RATE_SCALE_FACTOR];
 
             $validParams = array_merge(Entity::$buyPricingMethods, $validParams);
 

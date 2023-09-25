@@ -80,16 +80,21 @@ class PayAsYouGo extends Base
      * @param $amount
      * @return float|int
      */
-    private function getUnroundedVASFees(int $fixed, $units, int $percent, $amount): float|int
+    private function getUnroundedVASFees(int $fixed, $units, int $percent, $amount, $percentScaleFactor = 100): float|int
     {
-        return ($fixed * $units) + (($amount * $percent) / 10000);
+        return ($fixed * $units) + (($amount * $percent) / (100 * $percentScaleFactor));
     }
 
     private function calculateRzpVASFee(Pricing\Entity $rule, int $units, $amount)
     {
         list($percent, $fixed) = $rule->getRates();
 
-        $fee = $this->getUnroundedVASFees($fixed, $units, $percent, $amount);
+        $percentScaleFactor = $rule->getPercentRateScaleFactor();
+        if (in_array($percentScaleFactor, self::VALID_PERCENT_RATE_SCALE_FACTOR_VALUES) === false) {
+            $percentScaleFactor = self::DEFAULT_PERCENT_RATE_SCALE_FACTOR;
+        }
+
+        $fee = $this->getUnroundedVASFees($fixed, $units, $percent, $amount, $percentScaleFactor);
 
         $fee = (int) ceil($fee);
 
