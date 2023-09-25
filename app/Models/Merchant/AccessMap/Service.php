@@ -42,6 +42,9 @@ class Service extends Base\Service
     public function mapOAuthApplication(string $merchantId, array $input, bool $consent = false): array
     {
         $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['input' => $input]);
+        $input[Entity::DASHBOARD_ACCESS] = filter_var(
+            $input[Entity::DASHBOARD_ACCESS] ?? false, FILTER_VALIDATE_BOOLEAN
+        );
 
         (new Validator)->validateInput(self::ADD_APP, $input);
 

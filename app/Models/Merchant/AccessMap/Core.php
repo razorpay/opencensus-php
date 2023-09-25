@@ -14,8 +14,11 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\OAuthScopes;
+use RZP\Models\User\Role;
+use RZP\Constants\Product;
 use RZP\Constants\HyperTrace;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantApplications;
 
 use Razorpay\OAuth\Token;
@@ -35,8 +38,15 @@ class Core extends Base\Core
      */
     protected $enable_postgres_outbox;
 
+    /**
+     * @var Merchant\Core
+     */
+    private Merchant\Core $merchantCore;
+
     public function __construct() {
         parent::__construct();
+
+        $this->merchantCore     = new Merchant\Core();
 
         $this->enable_cassandra_outbox = env("ENABLE_CASSANDRA_OUTBOX", true);
 
@@ -164,11 +174,49 @@ class Core extends Base\Core
             Entity::ENTITY_TYPE => Entity::APPLICATION,
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
+        $dashboardAccess = $input[Entity::DASHBOARD_ACCESS] ?? false;
 
-        return Tracer::inspan(['name' => HyperTrace::CREATE_ACCESS_MAP_CORE], function () use($entityOwner, $merchant, $data) {
+        return Tracer::inspan(['name' => HyperTrace::CREATE_ACCESS_MAP_CORE], function () use(
+            $entityOwner, $merchant, $data, $dashboardAccess
+        ) {
+            $merchantMapping =  $this->create($entityOwner, $merchant, $data);
+            if ($dashboardAccess)
+            {
+                $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
+            }
 
-            return $this->create($entityOwner, $merchant, $data);
+            return $merchantMapping;
         });
+    }
+
+    /**
+     * This function creates partner's MerchantUser mapping for subMerchant with Partner role for Primary product.
+     *
+     * @param   Merchant\Entity     $partner
+     * @param   PublicCollection    $subMerchants
+     *
+     * @return  void
+     */
+    private function assignDashboardAccessForSubmerchants(
+        Merchant\Entity $partner, Merchant\Entity $subMerchant
+    )
+    {
+        $subMPrimaryOwner = $subMerchant->primaryOwner(Product::PRIMARY);
+        $doesPartnerHaveAccess = $this->merchantCore->isPartnerUserAddedToSubMUser(
+            $partner, $subMerchant, Product::PRIMARY, [Role::PARTNER]
+        );
+
+        if (
+            ($subMPrimaryOwner !== null) and
+            ($subMPrimaryOwner->getEmail() === $subMerchant->getEmail()) and
+            ($doesPartnerHaveAccess === false)
+        )
+        {
+            // Attaches partners's user to the submerchant account with owner role
+            $this->merchantCore->attachSubMerchantUser(
+                $partner->primaryOwner()->getId(), $subMerchant, Product::PRIMARY, Role::PARTNER
+            );
+        }
     }
 
     /**

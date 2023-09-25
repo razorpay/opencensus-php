@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
 
     const HAS_KYC_ACCESS = 'has_kyc_access';
 
+    const DASHBOARD_ACCESS = 'dashboard_access';
+
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;
 
     protected $generateIdOnCreate = true;

@@ -7,6 +7,7 @@ use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
 use Lcobucci\JWT\Token as JWTToken;
+use RZP\Models\Merchant\Referral\Core;
 use Razorpay\OAuth\Tests\Helpers\OAuthTestHelper;
 
 use Carbon\Carbon;
@@ -268,5 +269,71 @@ trait OAuthTrait
         };
         $this->app['stork_service']
             ->shouldReceive('publishOnSns')->once()->with(Mockery::on($matcher))->andReturn(null);
+    }
+
+    public function createPartnerForOauth($partnerAttributes = [])
+    {
+        $partnerId = $partnerAttributes['id'] ?? '10000000000000';
+        unset($partnerAttributes['id']);
+        $merchantInput = [
+            'id'           => $partnerId,
+            'name'         => 'partner merchant',
+            'website'      => 'https://www.razorpay.com/',
+            'partner_type' => 'pure_platform'
+        ];
+
+        $partnerMerchant = $this->getDbEntity('merchant', ['id' => $partnerId]);
+        if ($partnerMerchant == null)
+        {
+            $partnerMerchant = $this->fixtures->merchant->create($merchantInput);
+        }
+
+        $partnerDetails = [
+            'merchant_id' => $partnerMerchant->getId(),
+            'business_type' => 1,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+        $partnerDetails = $this->fixtures->merchant_detail->createMerchantDetail($partnerDetails);
+        $this->fixtures->on('live')->merchant_detail->createSane($partnerDetails);
+        $this->fixtures->on('test')->merchant_detail->createSane($partnerDetails);
+
+        $partnerUser = $partnerMerchant->primaryOwner();
+        if ($partnerUser === null)
+        {
+            $partnerUser = $this->fixtures->user->createUserForMerchant($partnerMerchant['id']);
+        }
+
+        (new Core())->createOrFetch($partnerMerchant);
+
+        return [$partnerMerchant, $partnerUser];
+    }
+
+    public function createSubMerchantForOauth(bool $userCreate, $subMerchantAttributes = [])
+    {
+        $subMerchantId = $subMerchantAttributes['id'] ?? 'submerchantNum';
+        unset($subMerchantAttributes['id']);
+
+        $this->fixtures->merchant->createAccount($subMerchantId);
+
+        $subMerchant = $this->fixtures->merchant->edit($subMerchantId, $subMerchantAttributes);
+
+        $subMerchantDetails = [
+            'merchant_id' => $subMerchant->getId(),
+            'business_type' => 1,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $subMerchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+        $this->fixtures->on('live')->merchant_detail->createSane($subMerchantDetails);
+        $this->fixtures->on('test')->merchant_detail->createSane($subMerchantDetails);
+
+        if ($userCreate)
+        {
+            $subMUser = $this->fixtures->user->createUserForMerchant($subMerchant['id'], ['email' => $subMerchant['email']]);
+        }
+
+        return $subMerchant;
     }
 }

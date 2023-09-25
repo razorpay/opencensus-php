@@ -5,12 +5,14 @@ namespace RZP\Tests\Functional\OAuth;
 use DB;
 use Carbon\Carbon;
 use RZP\Constants;
+use RZP\Models\Merchant\Referral\Core;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
+use function PHPUnit\Framework\assertNull;
 
 class OAuthAppMerchantMapTest extends OAuthTestCase
 {
@@ -57,6 +59,121 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals($application->getId(), $liveMapping['entity_id']);
 
         $this->assertEquals($application->getId(), $testMapping['entity_id']);
+    }
+
+    public function testOAuthAppMerchantMapWithDashboardAccess()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(true);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications",
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'merchant_id' => $subMerchant->getId(),
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getMapping('live');
+        $testMapping = $this->getMapping('test');
+
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertEquals('partner', $liveUserMapping['role']);
+        $this->assertEquals('partner', $testUserMapping['role']);
+        $this->assertEquals('primary', $liveUserMapping['product']);
+        $this->assertEquals('primary', $testUserMapping['product']);
+    }
+    public function testOAuthAppMerchantMapWithNoDashboardAccess()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(true);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications",
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'merchant_id' => $subMerchant->getId(),
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getMapping('live');
+        $testMapping = $this->getMapping('test');
+
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertNull($liveUserMapping);
+        $this->assertNull($testUserMapping);
+    }
+
+    public function testOAuthAppMerchantMapWithDashboardAccessAndNoSubMPrimaryOwner()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(false);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications",
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'merchant_id' => $subMerchant->getId(),
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getMapping('live');
+        $testMapping = $this->getMapping('test');
+
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertNull($liveUserMapping);
+        $this->assertNull($testUserMapping);
     }
 
     public function testCreateLegalDocsConsentForOAuthAuthorize()
@@ -319,6 +436,15 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
                 Constants\Entity::MERCHANT_ACCESS_MAP,
                 true,
                 $mode);
+
+    }
+
+    protected function getMerchantUserMapping(string $mode, string $userID, string $merchantID)
+    {
+        return $this->getDbEntity(
+            Constants\Entity::MERCHANT_USER,
+            ['user_id' => $userID, 'merchant_id' => $merchantID],
+            $mode);
 
     }
 

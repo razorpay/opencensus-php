@@ -1471,10 +1471,14 @@ class Core extends Detail\Core
     {
         foreach ($subMerchants as $subMerchant)
         {
+            $subMPrimaryOwner = $subMerchant->primaryOwner(Product::PRIMARY);
+            $isPartnerUserAddedToSubMUser = $this->merchantCore->isPartnerUserAddedToSubMUser(
+                $partner, $subMerchant, Product::PRIMARY, [Role::OWNER]
+            );
             if (
-                ($subMerchant->primaryOwner(Product::PRIMARY) !== null) and
-                ($this->merchantCore->isPartnerUserAddedToSubMUser(
-                    $partner, $subMerchant, Product::PRIMARY, [Role::OWNER]) === false)
+                ($subMPrimaryOwner !== null) and
+                ($subMPrimaryOwner->getEmail() === $subMerchant->getEmail()) and
+                ($isPartnerUserAddedToSubMUser === false)
             )
             {
                 // Attaches partners's user to the submerchant account with owner role
@@ -1482,11 +1486,15 @@ class Core extends Detail\Core
                     $partner->primaryOwner()->getId(), $subMerchant, Product::PRIMARY
                 );
             }
+
+            $subMBankingPrimaryOwner = $subMerchant->primaryOwner(Product::BANKING);
+            $isPartnerUserAddedToSubMUser = $this->merchantCore->isPartnerUserAddedToSubMUser(
+                $partner, $subMerchant, Product::BANKING, [Role::OWNER, Role::VIEW_ONLY]
+            );
             if (
-                ($subMerchant->primaryOwner(Product::BANKING) !== null) and
-                ($this->merchantCore->isPartnerUserAddedToSubMUser(
-                        $partner, $subMerchant, Product::BANKING, [Role::OWNER, Role::VIEW_ONLY]
-                    ) === false)
+                ($subMBankingPrimaryOwner !== null) and
+                ($subMBankingPrimaryOwner->getEmail() === $subMerchant->getEmail()) and
+                ($isPartnerUserAddedToSubMUser === false)
             )
             {
                 // Attaches partners's user to the submerchant Banking account with view_only role

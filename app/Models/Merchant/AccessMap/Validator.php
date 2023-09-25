@@ -13,11 +13,12 @@ class Validator extends Base\Validator
 
     // input received from auth service when a new merchant authorizes an application
     protected static $addAppRules = [
-        'application_id' => 'required|alpha_num|size:14',
-        'partner_id'     => 'required|alpha_num|size:14',
-        'env'            => 'sometimes|string',
-        'ip'             => 'sometimes|string',
-        'scope_policies' => 'sometimes|array'
+        'application_id'   => 'required|alpha_num|size:14',
+        'partner_id'       => 'required|alpha_num|size:14',
+        'env'              => 'sometimes|string',
+        'ip'               => 'sometimes|string',
+        'scope_policies'   => 'sometimes|array',
+        'dashboard_access' => 'sometimes|boolean'
     ];
 
     protected static $connectedApplicationsRules = [
