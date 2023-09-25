@@ -27,6 +27,8 @@ class Stork
     const PROCESS_EVENT_REQUEST_TIMEOUT_MS = 350;
     const REPLAY_EVENT_REQUEST_TIMEOUT_MS  = 2000;
 
+    const MERCHANT = 'merchant';
+
     /**
      * @var string
      */
@@ -153,6 +155,7 @@ class Stork
     {
         $input['service'] = $this->service->service;
         $input['owner_id'] = $ownerId;
+        $input['owner_type'] = self::MERCHANT;
 
         // Adding pagination params of stork
         $input['limit'] = $input['limit'] ?? $input['count'] ?? 10;
@@ -179,6 +182,7 @@ class Stork
     {
         $input['service'] = $this->service->service;
         $input['owner_id'] = $ownerId;
+        $input['owner_type'] = self::MERCHANT;
 
         $res = $this->service->request(self::WK_LIST_WITH_SECRET_ROUTE, $input);
         $res = json_decode($res->body, true);
@@ -335,6 +339,18 @@ class Stork
         if (empty($event->context) === false)
         {
             $processEventReq['event']['context'] = $event->context;
+        }
+
+        if($merchant->isOmniEnabled() === true)
+        {
+            if (empty($processEventReq['event']['context']) === false)
+            {
+                $processEventReq['event']['context']['omni_enabled'] = '1';
+            }
+            else
+            {
+                $processEventReq['event']['context'] = [ 'omni_enabled' => '1'];
+            }
         }
 
         $eventTrace = $processEventReq;

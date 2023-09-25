@@ -1910,6 +1910,11 @@ class Constants
 
     const ONE_CC_SHOPIFY_DRAFT_ORDER = 'one_cc_draft_order';
 
+    /**
+     * Feature flag used to identify omni merchants.
+     */
+    const OMNI_ENABLED = 'omni_enabled';
+
     /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
     const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
 
@@ -2653,6 +2658,7 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
         self::ONE_CC_ENABLE_NECTOR_COINS       => true,
+        self::OMNI_ENABLED                     => true,
         self::DEBIT_CARD_VALIDATION            => true,
         self::REMOVE_RAZORPAY_BRANDING         => true,
         self::BULK_PAYOUT_WORKFLOW            => true,

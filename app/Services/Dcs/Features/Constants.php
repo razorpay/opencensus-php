@@ -230,6 +230,8 @@ class Constants
 
     const CorporateBankingEnabled = 'corporate_banking_enabled';
 
+    const OmniMerchantEnabled = 'omni_merchant_enabled';
+
     //debit card tpv feature
     const DebitCardValidation = 'debit_card_validation';
 
@@ -458,13 +460,13 @@ class Constants
         self::OneCCEnablePluginDiscount => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCCShopifyDraftOrder => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::OmniMerchantEnabled => 'rzp/in_store_payments/merchant/omni/OmniFeatures',
         self::DebitCardValidation   => 'rzp/pg/merchant/cards/tpv/AccountValidation',
         self::SrSensitive => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket1 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket2 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket3 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::SrSensitiveBucket4 => 'rzp/pg/merchant/router/CostBasedRouting',
-        self::OneCcEnableNectorCoins => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
         self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
     ];
@@ -693,6 +695,7 @@ class Constants
         APIFeaturesConstants::ONE_CC_ENABLE_PLUGIN_DISCOUNT                 => self::OneCCEnablePluginDiscount,
         APIFeaturesConstants::ONE_CC_SHOPIFY_DRAFT_ORDER                    => self::OneCCShopifyDraftOrder,
         APIFeaturesConstants::ONE_CC_ENABLE_NECTOR_COINS                    => self::OneCcEnableNectorCoins,
+        APIFeaturesConstants::OMNI_ENABLED                                  => self::OmniMerchantEnabled,
         APIFeaturesConstants::DEBIT_CARD_VALIDATION                         => self::DebitCardValidation,
         APIFeaturesConstants::SR_SENSITIVE                                  => self::SrSensitive,
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_1                         => self::SrSensitiveBucket1,
@@ -738,6 +741,7 @@ class Constants
         self::PersonalisationV3Disabled => 'direct',
         self::DirectDebitViaTokenBatch => 'direct',
         self::EnableSettlementByCurrency => 'direct',
+        self::OmniMerchantEnabled => 'direct',
         self::DebitCardValidation   => 'direct',
         self::RemoveRazorpayBranding => 'direct',
     ];

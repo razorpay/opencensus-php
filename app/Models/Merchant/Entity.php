@@ -1258,6 +1258,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::SETTLEMENT_BY_CURRENCY) === true);
     }
 
+    public function isOmniEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::OMNI_ENABLED) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *
