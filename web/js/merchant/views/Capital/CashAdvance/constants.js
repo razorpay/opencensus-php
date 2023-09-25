@@ -55,6 +55,7 @@ export const StatusPillClasses = {
   [REPAYMENT_STATUES.STATUS_UNKNOWN]: 'bg-light',
   [REPAYMENT_STATUES.STATUS_PENDING]: 'bg-warning',
   [REPAYMENT_STATUES.STATUS_COLLECTED]: 'bg-success',
+  [REPAYMENT_STATUES.STATUS_SETTLED]: 'bg-success',
   [REPAYMENT_STATUES.STATUS_FAILED]: 'bg-danger',
   [STATUSES.CREATED]: 'bg-light',
   [STATUSES.INITIATED]: 'bg-light',
@@ -84,6 +85,7 @@ export const STATUS_DESCRIPTIONS = {
 export const STATUS_LABELS = {
   [REPAYMENT_STATUES.STATUS_UNKNOWN]: 'Unknown',
   [REPAYMENT_STATUES.STATUS_PENDING]: 'Pending',
+  [REPAYMENT_STATUES.STATUS_SETTLED]: 'Repaid',
   [REPAYMENT_STATUES.STATUS_COLLECTED]: 'Repaid',
   [REPAYMENT_STATUES.STATUS_FAILED]: 'Failed',
   [STATUSES.CREATED]: 'Requested',
@@ -340,3 +342,6 @@ export const REPAYMENT_PREFERENCES = {
 
 export const TENURE_OPTIONS_90 = [15, 30, 60, 90];
 export const TENURE_OPTIONS_30 = [8, 15, 21, 30];
+
+export const DEV_BASE_URL = 'https://api-web.dev.razorpay.in/v1';
+export const CHECKOUT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';

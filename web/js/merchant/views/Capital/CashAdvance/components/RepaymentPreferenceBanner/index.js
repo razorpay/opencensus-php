@@ -2,12 +2,21 @@ import './style.styl';
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from '../../constants';
-import { setFirstTimeRepaymentPreference, getFirstTimeRepaymentPreference } from '../../utils';
+
+import {
+  CASH_ADVANCE_BASE_URL,
+  CASH_ADVANCE_SECTIONS,
+} from 'merchant/views/Capital/CashAdvance/constants';
+import {
+  setFirstTimeRepaymentPreference,
+  getFirstTimeRepaymentPreference,
+  isLenderLiquiloans,
+} from 'merchant/views/Capital/CashAdvance/utils';
 
 const RepaymentPreferenceBanner = (props) => {
   const { withdrawalConfiguration } = props;
-  const hideSuccessBanner = getFirstTimeRepaymentPreference();
+  const hideSuccessBanner =
+    getFirstTimeRepaymentPreference() && isLenderLiquiloans(withdrawalConfiguration);
 
   useEffect(() => {
     setTimeout(() => {

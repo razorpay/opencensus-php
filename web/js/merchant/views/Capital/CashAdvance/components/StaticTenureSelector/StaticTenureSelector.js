@@ -1,9 +1,10 @@
-import './StaticTenureSelector.styl';
-import moment from 'moment';
-import { classList } from 'common/utils/rzp-utils';
 import React, { useState } from 'react';
+import moment from 'moment';
+
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { TENURE_OPTIONS_30, TENURE_OPTIONS_90 } from '../../constants';
+import { classList } from 'common/utils/rzp-utils';
+import { TENURE_OPTIONS_30, TENURE_OPTIONS_90 } from 'merchant/views/Capital/CashAdvance/constants';
+import './StaticTenureSelector.styl';
 
 const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange, withdrawCTA }) => {
   const defaultValue = isRepaymentFrequencyDays90
@@ -58,7 +59,9 @@ const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange,
             </div>
           );
         })}
-        <div className="static-tenure__cta-container">{withdrawCTA}</div>
+        <div className="static-tenure__cta-container">
+          {withdrawCTA({ tenure: selectedOption })}
+        </div>
       </div>
       <div className="static-tenure__banner">
         <img alt="party_icon" src="/dist/css/assets/capital/party.svg" />

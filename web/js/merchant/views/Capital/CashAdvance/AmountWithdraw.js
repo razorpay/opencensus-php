@@ -1,64 +1,49 @@
 import React from 'react';
+import { Badge, Box, InfoIcon } from '@razorpay/blade/components';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
-import moment from 'moment';
 
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { getFormattedAmountNew, titleCase, classList } from 'common/utils/rzp-utils';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import {
-  createWithdrawal,
-  fetchSeedData,
-  fetchWithdrawalConfiguration,
-  fetchFunctionalWithdrawalConfigByMerchantID,
-  fetchWithdrawals,
-  fetchInstallments,
-  fetchCreditSummary,
-} from 'merchant/reducers/capital/withdrawals';
-import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  CLOSE_OPTIONS,
-  STATUSES,
-  VIEWS,
-  WITHDRAW_ERROR_TYPES,
-  COLLECTIONS_PRODUCT_TYPES,
-  COLLECTIONS_PAYMENT_REFERENCE_TYPE,
-  COLLECTIONS_BALANCE_TYPE,
-  CASH_ADVANCE_FIRST_LOGIN_KEY,
-  REPAYMENT_FREQUENCY_TYPES,
-  ONHOLD_REASONS,
-  REPAYMENT_TYPES,
-  CASH_ADVANCE_PRODUCT_TYPES,
-  CASH_ADVANCE_BASE_URL,
-  CASH_ADVANCE_SECTIONS,
-} from './constants';
-import CreditSummary from './CreditSummary';
-import FungibleCreditSummary from './components/FungibleCreditSummary';
-import WithdrawnAmountSummary from './WithdrawnAmountSummary';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import MinWithdrawAmountModal from './MinWithdrawAmountModal';
-import EnableAutomatedWithdrawModal from './EnableAutomatedWithdrawModal';
-import DisableAutomatedWithdrawModal from './DisableAutomatedWithdrawModal';
-import CancelWithdrawalReasons from './CancelWithdrawalReasons';
-import trackAutomatedCA from './ga/automated';
-import MaxWithdrawError from './MaxWithdrawError';
+import Spinner from 'common/ui/Spinner';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { classList, getFormattedAmountNew, titleCase } from 'common/utils/rzp-utils';
 import Repayments from 'merchant/models/Capital/Repayments';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
+import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
+import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import {
-  loadCheckoutScript,
+  createWithdrawal,
+  fetchCreditSummary,
+  fetchFunctionalWithdrawalConfigByMerchantID,
+  fetchInstallments,
+  fetchSeedData,
+  fetchWithdrawalConfiguration,
+  fetchWithdrawals,
+} from 'merchant/reducers/capital/withdrawals';
+import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
+import {
   checkifDateExpired,
   getDisabledReasons,
   getProductNames,
   getProductType,
   isMerchantNewToCashOnCard,
+  loadCheckoutScript,
 } from 'merchant/views/Capital/utils';
-import { fetchRepayments } from 'merchant/reducers/capital/repayments';
-import Spinner from 'common/ui/Spinner';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import CancelWithdrawalReasons from './CancelWithdrawalReasons';
+import CreditSummary from './CreditSummary';
+import DisableAutomatedWithdrawModal from './DisableAutomatedWithdrawModal';
+import EnableAutomatedWithdrawModal from './EnableAutomatedWithdrawModal';
+import MaxWithdrawError from './MaxWithdrawError';
+import MinWithdrawAmountModal from './MinWithdrawAmountModal';
+import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
 import {
   trackCloseButton,
   trackHideBreakup,
@@ -71,15 +56,36 @@ import {
   trackWithdrawNowConfirm,
   trackWithdrawStatus,
 } from './TrackEvents/trackEvents';
-import { getItem, setItem } from 'common/utils/localStorage';
-import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
-import FirstWithdrawalView from './components/FirstWithdrawal/FirstWithdrawalView';
+import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import CardsDashboardRedirectionModal from './components/CardsDashboardRedirectionModal';
-import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
-import { getFirstTimeRepaymentPreference, isMerchantNew, showSettings } from './utils';
+import FirstWithdrawalView from './components/FirstWithdrawal/FirstWithdrawalView';
+import FungibleCreditSummary from './components/FungibleCreditSummary';
+import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
 import RepaymentPreferenceBanner from './components/RepaymentPreferenceBanner';
 import StaticTenureSelector from './components/StaticTenureSelector';
-import { Badge, Box, InfoIcon } from '@razorpay/blade/components';
+import {
+  CASH_ADVANCE_BASE_URL,
+  CASH_ADVANCE_FIRST_LOGIN_KEY,
+  CASH_ADVANCE_PRODUCT_TYPES,
+  CASH_ADVANCE_SECTIONS,
+  CLOSE_OPTIONS,
+  COLLECTIONS_BALANCE_TYPE,
+  COLLECTIONS_PAYMENT_REFERENCE_TYPE,
+  COLLECTIONS_PRODUCT_TYPES,
+  ONHOLD_REASONS,
+  REPAYMENT_FREQUENCY_TYPES,
+  REPAYMENT_TYPES,
+  STATUSES,
+  VIEWS,
+  WITHDRAW_ERROR_TYPES,
+} from './constants';
+import trackAutomatedCA from './ga/automated';
+import {
+  getFirstTimeRepaymentPreference,
+  isLenderLiquiloans,
+  isMerchantNew,
+  showSettings,
+} from './utils';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -535,7 +541,10 @@ export default class AmountWithdraw extends React.Component {
   };
 
   showSettings = () => {
-    return showSettings(this.props.user, this.getRepaymentFrequency());
+    return (
+      showSettings(this.props.user, this.getRepaymentFrequency()) &&
+      !isLenderLiquiloans(this.props.withdrawalConfigurationDetails)
+    );
   };
 
   confirmWithdraw = () => {
@@ -655,7 +664,7 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
-  withdraw = async () => {
+  withdraw = async ({ tenure }) => {
     if (!this.canWithdraw()) return;
 
     this.gaEventDispatcher({
@@ -687,6 +696,9 @@ export default class AmountWithdraw extends React.Component {
         // BE remove this validation
         comments: {
           message: 'withdrawn',
+        },
+        metadata: {
+          tenure,
         },
       },
     };
@@ -943,7 +955,7 @@ export default class AmountWithdraw extends React.Component {
     return isMerchantNew(this.props.productConfig?.data?.configuration?.live_by_date);
   };
 
-  getWithdrawCTA = () => {
+  getWithdrawCTA = ({ tenure }) => {
     const {
       seedData,
       withdrawalConfigurationDetails: {
@@ -967,6 +979,20 @@ export default class AmountWithdraw extends React.Component {
     }`;
     const isMerchantNew = this.isMerchantNew();
 
+    const isLiquiloansLenderDown =
+      withdrawalConfigurationDetails?.effective_balance === -1 &&
+      withdrawalConfigurationDetails?.lender_balance_diff_reason === 'LENDER_IS_DOWN';
+
+    let withdrawCtaDisabled = false;
+
+    if (isLenderLiquiloans(this.props.withdrawalConfigurationDetails)) {
+      withdrawCtaDisabled = isLiquiloansLenderDown;
+    } else if (isMerchantNew) {
+      withdrawCtaDisabled = true;
+    } else {
+      withdrawCtaDisabled = !canWithdraw;
+    }
+
     return (
       /*eslint-disable */
       <React.Fragment>
@@ -974,7 +1000,7 @@ export default class AmountWithdraw extends React.Component {
           <React.Fragment>
             <AsyncBtn.Primary
               className={withdrawNowClass}
-              disabled={isMerchantNew ? true : !canWithdraw}
+              disabled={withdrawCtaDisabled}
               onClick={this.confirmWithdraw}
             >
               Withdraw Now
@@ -986,12 +1012,18 @@ export default class AmountWithdraw extends React.Component {
               </AsyncBtn.Transparent>
             ) : null}
 
-            {isWithdrawalDisabled && (
+            {isWithdrawalDisabled ? (
               <Popover align="top" parentQuerySelector=".withdrawals__top-summary" theme="dark">
                 <PopoverBody>
                   Your credit line has been disabled as it has reached the end of tenure.
                 </PopoverBody>
               </Popover>
+            ) : (
+              Boolean(withdrawCtaDisabled && isLiquiloansLenderDown) && (
+                <Popover align="top" parentQuerySelector=".withdrawals__top-summary" theme="dark">
+                  <PopoverBody>System is down right now, Please try again in sometime!</PopoverBody>
+                </Popover>
+              )
             )}
           </React.Fragment>
         ) : (
@@ -999,7 +1031,7 @@ export default class AmountWithdraw extends React.Component {
             <AsyncBtn.Primary
               class="btn btn-primary"
               disabled={!this.canWithdraw()}
-              onClick={this.withdraw}
+              onClick={() => this.withdraw({ tenure })}
             >
               Confirm
             </AsyncBtn.Primary>
@@ -1719,7 +1751,7 @@ export default class AmountWithdraw extends React.Component {
             <StaticTenureSelector
               isRepaymentFrequencyDays90={this.isRepaymentFrequencyDays90()}
               handleDueDateChange={this.handleDueDateChange}
-              withdrawCTA={this.getWithdrawCTA()}
+              withdrawCTA={this.getWithdrawCTA}
             />
           )}
         </div>
@@ -1797,6 +1829,8 @@ export default class AmountWithdraw extends React.Component {
       id: withdrawalConfigurationDetails.id,
     });
     this.fetchWithdrawals();
+
+    this.changeView(VIEWS.WITHDRAW);
   };
 
   openRedirectModal = () => {

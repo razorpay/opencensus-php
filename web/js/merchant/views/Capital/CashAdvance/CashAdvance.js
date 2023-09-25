@@ -33,8 +33,9 @@ import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
 import Settings from './views/Settings';
-import { isADayAgo, isMerchantNew, showSettings } from './utils';
+import { isADayAgo, isLenderLiquiloans, isMerchantNew, showSettings } from './utils';
 import Alert from 'common/new-ui/Alert';
+import LlDashboard from './LlDashboard';
 
 const Loader = () => {
   return (
@@ -355,11 +356,9 @@ class CashAdvance extends React.Component {
 
     const locEsignClicked = getItem('loc_esign_clicked');
     const isDateExpired = checkifDateExpired(new Date(due_at));
-    const partner_id =
-      this.props.withdrawalConfiguration && this.props.withdrawalConfiguration.data
-        ? this.props.withdrawalConfiguration.data.configuration.custom_partner_fields.partner_id
-        : '';
-    const showSuccess = locEsignClicked && partner_id === 'GROMOR';
+    const partnerId =
+      this.props?.withdrawalConfiguration?.data?.configuration?.custom_partner_fields?.partner_id;
+    const showSuccess = locEsignClicked && partnerId === 'GROMOR';
     const showBanner = (showSuccess || !isGromorModalOpen) && !isDateExpired;
 
     const hasDisbursedForADayWithdrawals = withdrawalsData?.find(
@@ -369,51 +368,63 @@ class CashAdvance extends React.Component {
     return (
       <div className="cash-advance-container">
         {showBanner && this.renderBanner(showSuccess ? 'signed' : 'unsigned')}
-        <tabbed-container>
-          {hasDisbursedForADayWithdrawals ? (
-            <BladeAlert
-              contrast="low"
-              title="Repayment for your last withdrawal is unavailable"
-              description="Withdrawals and repayments are temporarily down. While we work on fixing this, please reach out to us at capital-support@razorpay.com to repay and clear any pending dues."
-              intent="notice"
-              isFullWidth
-            />
-          ) : null}
-          <h1 className="cash-advance-title">Cash Advance</h1>
-          <header>
-            {withdrawalsData && (
-              <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`}>
-                Overview
-              </NavLink>
+        {isLenderLiquiloans(this.props.withdrawalConfiguration) ? (
+          <LlDashboard />
+        ) : (
+          <tabbed-container>
+            {hasDisbursedForADayWithdrawals ? (
+              <BladeAlert
+                contrast="low"
+                title="Repayment for your last withdrawal is unavailable"
+                description="Withdrawals and repayments are temporarily down. While we work on fixing this, please reach out to us at capital-support@razorpay.com to repay and clear any pending dues."
+                intent="notice"
+                isFullWidth
+              />
+            ) : null}
+            <h1 className="cash-advance-title">Cash Advance</h1>
+            {showLoader ? (
+              <Loader />
+            ) : (
+              <>
+                <header>
+                  {withdrawalsData && (
+                    <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`}>
+                      Overview
+                    </NavLink>
+                  )}
+                  <NavLink
+                    exact
+                    to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`}
+                  >
+                    Withdrawals
+                  </NavLink>
+                  {withdrawalsData && (
+                    <NavLink
+                      exact
+                      to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.REPAYMENTS}`}
+                    >
+                      Repayments
+                    </NavLink>
+                  )}
+                  {this.showSettings() && (
+                    <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}>
+                      Settings
+                    </NavLink>
+                  )}
+                </header>
+                <content className="cash-advance-body">
+                  {this.isMerchantNew() && (
+                    <Alert.Error iconBefore="i-triangle-alert">
+                      The withdrawals are temporarily unavailable due to technical downtime, we are
+                      working to fix this and will reach out to you once this is resolved
+                    </Alert.Error>
+                  )}
+                  {this.renderSection()}
+                </content>
+              </>
             )}
-            <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`}>
-              Withdrawals
-            </NavLink>
-            {withdrawalsData && (
-              <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.REPAYMENTS}`}>
-                Repayments
-              </NavLink>
-            )}
-            {this.showSettings() && (
-              <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}>
-                Settings
-              </NavLink>
-            )}
-          </header>
-          {showLoader ? (
-            <Loader />
-          ) : (
-            <content className="cash-advance-body">
-              {this.isMerchantNew() && (
-                <Alert.Error iconBefore="i-triangle-alert">
-                  The withdrawals are temporarily unavailable due to technical downtime, we are
-                  working to fix this and will reach out to you once this is resolved
-                </Alert.Error>
-              )}
-              {this.renderSection()}
-            </content>
-          )}
-        </tabbed-container>
+          </tabbed-container>
+        )}
       </div>
     );
   }

@@ -81,7 +81,8 @@
     "js/common/splitz",
     "js/merchant/views/POS",
     "js/merchant/views/Settings/Configuration",
-    "js/merchant/views/Offers/New/Screens/NoCostEMI"
+    "js/merchant/views/Offers/New/Screens/NoCostEMI",
+    "js/merchant/views/Capital/CashAdvance/components/WithdrawalDetails/useWithdrawalRepaymentSummary.ts"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

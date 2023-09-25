@@ -1,6 +1,9 @@
 import React from 'react';
+import moment from 'moment';
+
+import DownArrowIcon from 'merchant/views/Capital/components/DownArrowIcon';
+
 import { STATUSES } from './constants';
-import DownArrowIcon from '../components/DownArrowIcon';
 
 function Step({ label, active, date, status, icon }) {
   return (
@@ -28,13 +31,13 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
     if (!withdrawalDetails.repayments) return '--';
 
     const repaymentDates = withdrawalDetails.repayments
-      .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .map(repayment => moment(repayment.created_at));
+      .reduce((acc, curr) => [...acc, ...(curr?.repayment_breakdowns || curr)], [])
+      .map((repayment) => moment(repayment.created_at));
     return moment.max(repaymentDates);
   };
 
-  const getSteps = status => {
-    let steps = [
+  const getSteps = (status) => {
+    const steps = [
       {
         status:
           status === STATUSES.INITIATED || status === STATUSES.CREATED
@@ -86,10 +89,7 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
               active: true,
               date: getLastRepaidDate(),
               icon: (
-                <img
-                  src={`/dist/css/assets/capital/partially_repaid.svg`}
-                  alt="Loading icon"
-                />
+                <img src={`/dist/css/assets/capital/partially_repaid.svg`} alt="Loading icon" />
               ),
             },
           ]
@@ -109,8 +109,8 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
   return (
     <div className="stepper-container">
       <ul className="stepper">
-        {getSteps(status).map(step => (
-          <Step {...step} />
+        {getSteps(status).map((step, idx) => (
+          <Step key={idx} {...step} />
         ))}
       </ul>
     </div>

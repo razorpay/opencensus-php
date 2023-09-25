@@ -1,17 +1,25 @@
-import moment from 'moment';
 import React from 'react';
+import moment from 'moment';
+
+import Amount from 'common/ui/Amount';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { isProductionEnv } from 'common/utils/rzp-utils';
+import Repayments from 'merchant/models/Capital/Repayments';
+import store from 'merchant/store';
+
+import { getNextRepayBreakup } from './OverviewFooter/utils/index';
+import WithdrawalConfig from './WithdrawalConfigModel';
 import {
   BASE_SLIDE_CONTENT_BY_VARIANT,
   CASH_ADVANCE_CAROUSEL_SLIDES,
+  CHECKOUT_SRC,
   COLLECTIONS_BALANCE_TYPE,
+  COLLECTIONS_PAYMENT_REFERENCE_TYPE,
+  COLLECTIONS_PRODUCT_TYPES,
+  DEV_BASE_URL,
   REPAYMENT_FREQUENCY_TYPES,
   SLIDE_COLORS,
 } from './constants';
-import WithdrawalConfig from './WithdrawalConfigModel';
-import Amount from 'common/ui/Amount';
-import { getItem, setItem } from 'common/utils/localStorage';
-import store from 'merchant/store';
-import { getNextRepayBreakup } from './OverviewFooter/utils/index';
 
 export const getSlideByRule = () => {
   return [CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT];
@@ -247,4 +255,99 @@ export const isADayAgo = (date) => {
   if (!date) return false;
   const yesterday = moment().subtract(1, 'd');
   return moment(date).isBefore(yesterday);
+};
+
+export const isLenderLiquiloans = (withdrawalConfiguration) => {
+  return (
+    withdrawalConfiguration?.data?.configuration?.custom_partner_fields?.partner_id === 'LIQUILOANS'
+  );
+};
+
+export const waitUntil = (condition, cb) => {
+  const timer = setInterval(() => {
+    if (condition()) {
+      clearInterval(timer);
+      cb();
+    }
+  }, 100);
+};
+
+export const devStackCheckoutConfig = {
+  api: `${DEV_BASE_URL}/api/`,
+  frameApi: `${DEV_BASE_URL}/api/`,
+  frame: 'https://api-cc.func.razorpay.in/test/checkout.html',
+  js: 'http://checkout.pronav.in/dist/',
+};
+
+const isProd = isProductionEnv();
+
+export const loadCheckoutScript = () => {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve('');
+      return;
+    }
+
+    const scriptAlreadyPresent = document.querySelector(
+      `script[src="https://checkout.razorpay.com/v1/checkout.js"]`,
+    );
+
+    if (!scriptAlreadyPresent) {
+      // for dev ENV
+      if (!isProd) {
+        window.Razorpay = devStackCheckoutConfig;
+      }
+      const script = document.createElement('script');
+      script.src = CHECKOUT_SRC;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    } else {
+      waitUntil(() => window.Razorpay, resolve);
+    }
+  });
+};
+
+export const createAndProcessRepayment = async (paymentParams) => {
+  const repaymentInstance = new Repayments();
+
+  try {
+    const {
+      data: { payment_reference_id: order_id },
+    } = await repaymentInstance.createRepayment(paymentParams);
+    if (!order_id) {
+      return Promise.reject(new Error('No Order Id found'));
+    }
+    return new Promise((resolve, reject) => {
+      const razorpayInstance = new window.Razorpay({
+        order_id,
+        handler: (response) =>
+          repaymentInstance.updateRepayment(response).then(resolve).catch(reject),
+        modal: {
+          ondismiss: reject,
+        },
+      });
+      razorpayInstance.open();
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const handleRepayment = async ({ repayAmount, merchantId, withdrawalId }) => {
+  try {
+    await loadCheckoutScript();
+    const paymentParams = {
+      credit_id: merchantId,
+      product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+      currency: 'INR',
+      payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.ORDER,
+      product_entity_type: 'PRODUCT_ENTITY_TYPE_WITHDRAWAL',
+      product_entity_reference_id: withdrawalId,
+      amount: repayAmount,
+    };
+    return createAndProcessRepayment(paymentParams);
+  } catch (error) {
+    return Promise.reject(error);
+  }
 };
