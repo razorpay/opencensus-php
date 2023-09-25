@@ -168,7 +168,9 @@ class Processor extends Base\Core
 
         if (isset($paymentInput[Payment\Entity::ORDER_ID]) === true)
         {
-            $orderId = Order\Entity::silentlyStripSign($paymentInput[Payment\Entity::ORDER_ID]);
+            $orderId = $paymentInput[Payment\Entity::ORDER_ID];
+            // silentlyStripSign is pass be reference & we don't want to edit payment input
+            Order\Entity::silentlyStripSign($orderId);
 
             $orderMutex =  'callback_order_id_' . $orderId;
         }
@@ -860,7 +862,7 @@ class Processor extends Base\Core
         {
             throw $ex;
         }
-        
+
         $this->trace->info(TraceCode::QR_CODE_PAYMENT_RETRY_STARTED,
                            [
                                'qr_payment' => $qrPayment->getId()

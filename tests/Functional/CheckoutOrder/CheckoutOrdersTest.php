@@ -6,11 +6,13 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
+use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -330,7 +332,7 @@ class CheckoutOrdersTest extends TestCase
             'payment_capture' => 1,
         ]);
 
-        $response = $this->createCheckoutOrder(['order_id' => $order['id']]);
+        $response = $this->createCheckoutOrder(['order_id' => $order->getId()]);
 
         $qrCodeId = $response['qr_code']['id'];
 
@@ -342,7 +344,7 @@ class CheckoutOrdersTest extends TestCase
         $rrn = '000011100101';
         $request['content']['BankRRN'] = $rrn;
         $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
-        $request['content']['PayerAmount'] = $order['amount'] / 100;
+        $request['content']['PayerAmount'] = $order->getAmount() / 100;
 
         $this->makeUpiIciciPayment($request);
 
@@ -640,6 +642,136 @@ class CheckoutOrdersTest extends TestCase
         $this->assertEquals(2000, $feeBreakup[0]['amount']); // 2.00% of 100000
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(360, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
+    }
+
+    /**
+     * Ensure that if a merchant has QrCode pricing defined in their pricing
+     * plan even then the default UPI pricing is only applied & QrV2 pricing
+     * isn't considered for QrV2 payments originating from magic checkout for
+     * merchants who manually capture payments.
+     *
+     * @return void
+     */
+    public function testMerchantSpecificQrCodePricingIsNotChargedForMagicCheckoutOrderQrCodePaymentsInManualCaptureMode(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 200, // 200 base points i.e. 2.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 165, // 165 base points i.e. 1.65%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $magicCheckoutAddOnPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantMagicUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => Feature::MAGIC_CHECKOUT,
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 100, // 100 base points i.e. 1.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $magicCheckoutAddOnPricingPlan);
+
+        $this->fixtures->merchant->addFeatures('magic_checkout');
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 100000,
+            'receipt' => 'R1',
+        ]);
+
+        $this->fixtures->create('order_meta', [
+            'order_id' => $order->getId(),
+            'value'    => ['line_items_total' => $order->getAmount()],
+            'type'     => 'one_click_checkout',
+        ]);
+
+        $response = $this->createCheckoutOrder([
+            'order_id' => $order['id'],
+            'amount' => 100000,
+        ]);
+
+        $qrCodeId = $response['qr_code']['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order['amount'] / 100;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/' . $payment->getPublicId() . '/capture',
+            'content' => ['amount' => 100000, 'currency' => 'INR'],
+        ];
+
+        $this->ba->privateAuth();
+        // Manual Capture Payment
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('amount', $content);
+        $this->assertArrayHasKey('status', $content);
+        $this->assertArrayHasKey('fee', $content);
+        $this->assertArrayHasKey('tax', $content);
+
+        $this->assertEquals('captured', $content['status']);
+        $this->assertEquals(100000, $content['amount']);
+        $this->assertEquals(3540, $content['fee']);
+        $this->assertEquals(540, $content['tax']);
+
+        $payment->refresh();
+        $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payment->getTransactionId()]);
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        // Ensure Default UPI Fees is Charged i.e. 2.00%
+        $this->assertEquals(3540, $payment->getFee());
+        $this->assertEquals(540, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(3, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(2000, $feeBreakup[0]['amount']); // 2.00% of 100000
+        $this->assertEquals('magic_checkout', $feeBreakup[1]['name']);
+        $this->assertEquals(1000, $feeBreakup[1]['amount']); // 1.00% of 100000
+        $this->assertEquals('tax', $feeBreakup[2]['name']);
+        $this->assertEquals(540, $feeBreakup[2]['amount']); // 18% GST on Fee = 18% of 3000
     }
 
     public function testCheckoutOrderPaymentWithCustomerId(): void

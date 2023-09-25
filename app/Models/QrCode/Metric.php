@@ -52,7 +52,7 @@ class Metric extends Base\Core
             Metric::LABEL_USAGE_TYPE    => $input[Entity::REQ_USAGE_TYPE],
             Metric::LABEL_ERROR_MESSAGE => ($errorMessage === null) ? $errorMessage : substr($errorMessage, 0, 100),
             self::LABEL_REQUEST_SOURCE  => $requestSource,
-            self::LABEL_GATEWAY         => $input[Entity::GATEWAY],
+            self::LABEL_GATEWAY         => $input[Entity::GATEWAY] ?? '',
         ];
 
         $metric = Metric::QR_CODE_CREATE_SUCCESS;
