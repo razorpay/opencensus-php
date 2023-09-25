@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Entity;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -17,6 +18,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Service as AdminService;
 
 class PaymentCreateDCCTest extends TestCase
 {
@@ -2245,5 +2247,150 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertTrue($amountDiff >= 0);
         $this->assertTrue($amountDiff <= 20);
+    }
+
+    public function testPaymentCreateWithCurrencyMethodMarkupConfigForDCC()
+    {
+        $cardUSDMarkup = 11;
+        $appGBPMarkup = 13;
+
+        (new AdminService())->setConfigKeys([ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP => [
+            "dcc_markup_card_USD_percent" => $cardUSDMarkup,
+            "dcc_markup_app_GBP_percent" => $appGBPMarkup,
+        ]]);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        
+        // Check Markup Percentage for USD Currency
+        $this->assertEquals($cardUSDMarkup, $responseContent['all_currencies']['USD']['conversion_percentage']);
+
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $cardUSDMarkup);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDynamicMarkupDCCAndMarkupConfig()
+    {
+        $cardGBPMarkup = 11;
+        $appGBPMarkup = 13;
+
+        (new AdminService())->setConfigKeys([ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP => [
+            "dcc_markup_card_GBP_percent" => $cardGBPMarkup,
+            "dcc_markup_app_GBP_percent" => $appGBPMarkup,
+        ]]);
+
+        $dccMarkupPercent = 3.23;
+        $this->fixtures->merchant->addDccPaymentConfig($dccMarkupPercent);
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $dccMarkupPercent);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCS2SRedirectWithDCCCurrencyLevelMarkup()
+    {
+        $cardUSDMarkup = 11;
+        $appGBPMarkup = 13;
+
+        (new AdminService())->setConfigKeys([ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP => [
+            "dcc_markup_card_USD_percent" => $cardUSDMarkup,
+            "dcc_markup_app_GBP_percent" => $appGBPMarkup,
+        ]]);
+
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        // Assert Config Markup
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $cardUSDMarkup);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
     }
 }

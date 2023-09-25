@@ -413,6 +413,8 @@ class ConfigKey
 
     const DEFAULT_PRICING_FOR_SWIFT                 = self::PREFIX . 'default_pricing_for_swift';
 
+    const CURRENCY_METHOD_LEVEL_DCC_MARKUP          = self::PREFIX . 'default_currency_method_level_dcc_markup';
+  
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
 
     const PUBLIC_KEYS = [
@@ -581,6 +583,7 @@ class ConfigKey
         self::DEFAULT_PRICING_FOR_ACH,
         self::DEFAULT_PRICING_FOR_SWIFT,
         self::UPI_TURBO_POPULAR_BANK_LIST,
+        self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
     ];
 
     const REDIS_CONFIG_MAP = [

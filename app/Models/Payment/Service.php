@@ -2634,7 +2634,7 @@ class Service extends Base\Service
             if (($this->isDccEnabledIIN($iinEntity, $merchant) === true)
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
-                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
+                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage(), Payment\Method::CARD);
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
@@ -2679,7 +2679,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
                 // markup of 5 is hardcoded at org-level
-                $currencyInfo = $this->getDCCInfo($amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL);
+                $currencyInfo = $this->getDCCInfo($amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, Payment\Method::WALLET);
 
                 $currencyInfo['wallet_currency'] = Currency\Currency::USD;
 
@@ -2714,7 +2714,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
             // For Method APP Default DCC Markup is set as 6
-            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForApps());
+            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForApps(), Payment\Method::APP);
 
             // First Currency in Currency Map is set as default currency for an app.
             $currencyInfo['app_currency'] = $enabledCurrencyList[0];
@@ -2749,7 +2749,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
             // For Method Intl Bank Transfer Default DCC Markup is set as 3
-            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForIntlBankTransfer());
+            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForIntlBankTransfer(), Payment\Method::INTL_BANK_TRANSFER);
 
             // First Currency in Currency Map is set as default currency for an app.
             $currencyInfo['provider_currency'] = in_array($input['currency'], $enabledCurrencyList, true) ? $input['currency'] : $enabledCurrencyList[0];
@@ -2814,13 +2814,13 @@ class Service extends Base\Service
         return false;
     }
 
-    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
+    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent, $method)
     {
         $dccInfo = [];
 
         $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent);
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method);
 
         $dccInfo['currency_request_id'] = $currencyRequestId;
 
