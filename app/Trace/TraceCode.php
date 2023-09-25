@@ -9094,6 +9094,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_CUSTOMERS_DETAILS_REQUEST                   = 'UPDATE_CUSTOMERS_DETAILS_REQUEST';
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_ERROR             = 'UPDATE_CUSTOMERS_DETAILS_REQUEST_ERROR';
 
+    const UPDATE_ADDRESS_USAGE_ERROR                         = 'UPDATE_ADDRESS_USAGE_ERROR';
     const RESET_ORDER_REQUEST                                = 'RESET_ORDER_REQUEST';
     const RESET_ORDER_REQUEST_ERROR                          = 'RESET_ORDER_REQUEST_ERROR';
 

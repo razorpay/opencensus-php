@@ -273,6 +273,7 @@ final class Metric
     const UPDATE_CUSTOMERS_DETAILS_ERROR_COUNT   = 'update_customers_details_error_count';
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_FAULT_COUNT = 'update_customers_details_request_fault_count';
     const UPDATE_CUSTOMERS_DETAILS_TIME_MILLIS = 'update_customers_details_time_millis';
+    const UPDATE_SHIPPING_ADDRESS_USAGE_REQUEST_ERROR_COUNT   = 'update_shipping_address_usage_request_error_count';
 
     const ONE_CC_VERIFY_OTP_REQUEST_COUNT = 'one_cc_verify_otp_request_count';
     const ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT = 'one_cc_verify_otp_request_fault_count';

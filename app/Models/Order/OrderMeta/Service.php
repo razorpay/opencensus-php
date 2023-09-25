@@ -13,6 +13,7 @@ use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils as OneCcUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
 use RZP\Models\Merchant\Metric;
@@ -65,11 +66,22 @@ class Service extends \RZP\Models\Base\Service
         try {
             $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_REQUEST_COUNT, $dimensions);
 
-            if (!empty($input['customer_details']['shipping_address']['id']) && !empty($input['customer_details']['billing_address'])) {
-                $addressId = $input['customer_details']['shipping_address']['id'];
-                $customer = (new Customer\Service)->getMagicCustomer();
-                $customerId = $customer->getId();
-                (new MagicCheckoutService\Service)->updateAddressUsageToMagicCheckoutService($addressId, $customerId);
+            try {
+                $shouldUpdateUsage = (new OneCcUtils())->canRouteToCheckoutServiceForAddressSorting();
+                if (!empty($input['customer_details']['shipping_address']['id']) && !empty($input['customer_details']['billing_address']) && $shouldUpdateUsage === true) {
+                    $addressId = $input['customer_details']['shipping_address']['id'];
+                    $customer = (new Customer\Service)->getMagicCustomer();
+                    if ($customer != null) {
+                        $customerId = $customer->getId();
+                        (new MagicCheckoutService\Service)->updateAddressUsageToMagicCheckoutService($addressId, $customerId);
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->trace->error(TraceCode::UPDATE_ADDRESS_USAGE_ERROR, [
+                    'error_message' => $e->getMessage(),
+                    'exception'=> $e->getTrace()
+                ]);
+                $this->trace->count(Metric::UPDATE_SHIPPING_ADDRESS_USAGE_REQUEST_ERROR_COUNT, $dimensions);
             }
 
             try {

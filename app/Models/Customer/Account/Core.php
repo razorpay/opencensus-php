@@ -39,8 +39,7 @@ use RZP\Models\Customer\Truecaller\AuthRequest\Metric as TruecallerMetric;
 use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Http\Request\Requests;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils as OneCcUtils;
 
 class Core extends Base\Core
 {
@@ -701,27 +700,6 @@ class Core extends Base\Core
         return (new Client)->sendRequest($path,$input, Requests::POST);
     }
 
-    private function canRouteToCheckoutServiceForSorting(): bool
-    {
-        if (getenv('APP_ENV') === 'testing')
-        {
-           return false;
-        }
-
-        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
-            [
-                'id' => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.magic_address_sorting_experiment_id'),
-                'request_data' => json_encode(
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                    ]),
-            ]
-        );
-
-        return $expResult['variant'] === 'magic';
-    }
-
     /**
      * @throws IntegrationException
      * @throws BadRequestException
@@ -769,7 +747,7 @@ class Core extends Base\Core
         }
         $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
         $addresses = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
-        if ($this->canRouteToCheckoutServiceForSorting() === false) {
+        if ((new OneCcUtils())->canRouteToCheckoutServiceForAddressSorting() === false) {
             return $addresses;
         }
         return $this->sortRZPAddressesFor1CC($addresses, $customer);

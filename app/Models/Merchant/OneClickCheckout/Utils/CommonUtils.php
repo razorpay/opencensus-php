@@ -228,5 +228,26 @@ class CommonUtils extends Base\Core
         return $isTaxExpEnabled;
     }
 
+    public function canRouteToCheckoutServiceForAddressSorting(): bool
+    {
+        if (getenv('APP_ENV') === 'testing')
+        {
+            return false;
+        }
+
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.magic_address_sorting_experiment_id'),
+                'request_data' => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ]
+        );
+
+        return $expResult['variant'] === 'magic';
+    }
+
 
 }
