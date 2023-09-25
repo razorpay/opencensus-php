@@ -32,8 +32,14 @@ class Metric extends Base\Core
     const MERCHANT_PLATFORM_FEE_FETCH_REQUEST      = 'merchant_platform_fee_fetch_request';
     const MERCHANT_PLATFORM_FEE_FETCH_FAILURE      = 'merchant_platform_fee_fetch_failure';
     const MERCHANT_PLATFORM_FEE_FETCH_TIME_IN_MS   = 'merchant_platform_fee_fetch_time_in_ms';
-    const IS_SYNC_PROCESSING_ENABLED               = 'is_sync_processing_enabled';
-    const PAYMENT_TRANSFERS_CREATE_LATENCY         = 'payment_transfers_create_latency';
+    const ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_FAILED  = 'async_balance_update_for_transfer_txn_failed';
+    const ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_SUCCESS = 'async_balance_update_for_transfer_txn_success';
+    const ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_TIME    = 'async_balance_update_for_transfer_txn_time';
+    const TRANSFER_NOT_FOUND                            = 'transfer_not_found';
+    const TXN_NOT_FOUND                                 = 'txn_not_found';
+    const OTHER_ERROR                                   = 'other_error';
+    const IS_SYNC_PROCESSING_ENABLED                    = 'is_sync_processing_enabled';
+    const PAYMENT_TRANSFERS_CREATE_LATENCY              = 'payment_transfers_create_latency';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -132,6 +138,26 @@ class Metric extends Base\Core
         ];
 
         $this->trace->histogram(self::TRANSFERS_PROCESSING_TIME_IN_SYNC, $processingTime, $dimensions);
+    }
+
+    public function pushAsyncBalanceUpdateForTransferTxnFailedMetrics($transferNotFound, $txnNotFound, $otherError)
+    {
+        $dimensions = [
+            self::TRANSFER_NOT_FOUND  => $transferNotFound,
+            self::TXN_NOT_FOUND       => $txnNotFound,
+            self::OTHER_ERROR         => $otherError,
+        ];
+
+        $this->trace->count(self::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_FAILED, $dimensions);
+    }
+
+    public function pushAsyncBalanceUpdateForTransferTxnSuccessMetrics($startTime)
+    {
+        $processingTime = get_diff_in_millisecond($startTime);
+
+        $this->trace->count(self::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_SUCCESS);
+
+        $this->trace->histogram(self::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TXN_TIME, $processingTime);
     }
 
     public function pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs)

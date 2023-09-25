@@ -912,7 +912,23 @@ class Core extends Base\Core
         }
         else
         {
-            list($debit, $fee, $tax, $feesSplit) = $this->calculateTransferFees($txn);
+            if ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz')
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_BALANCE_UPDATE_SKIPPED,
+                    [
+                        'type'           => 'merchant_debit-fee-calculation',
+                        'transaction_id' => $txn->getId(),
+                        'payment_id'     => $transfer->source->getId(),
+                        'transfer_id'    => $transfer->getId(),
+                    ]);
+
+                list($debit, $fee, $tax, $feesSplit) = [$transfer->getAmount(), 0, 0, new PublicCollection()];
+            }
+            else
+            {
+                list($debit, $fee, $tax, $feesSplit) = $this->calculateTransferFees($txn);
+            }
         }
 
         $txn->setCredit(0);
@@ -973,16 +989,39 @@ class Core extends Base\Core
                 'transaction_id' => $txn->getId()
             ]);
 
-        //
-        // Saving the transaction entity here because we create a
-        // credit_transactions record in the next statement which
-        // has a foreign key relation to transaction,
-        //
-        $this->repo->saveOrFail($txn);
+        if ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz')
+        {
+            // skip balance update
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_BALANCE_UPDATE_SKIPPED,
+                [
+                    'type'           => 'merchant_debit',
+                    'transaction_id' => $txn->getId(),
+                    'payment_id'     => $transfer->source->getId(),
+                    'transfer_id'    => $transfer->getId(),
+                ]);
 
-        $this->updateCredits($txn, $transfer);
+            $txn->setBalanceUpdated(false);
 
-        $this->updateBalances($txn, false, true);
+            $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $txn->setSettledAt($settledAt);
+
+            $this->repo->saveOrFail($txn);
+        }
+        else
+        {
+            //
+            // Saving the transaction entity here because we create a
+            // credit_transactions record in the next statement which
+            // has a foreign key relation to transaction,
+            //
+            $this->repo->saveOrFail($txn);
+
+            $this->updateCredits($txn, $transfer);
+
+            $this->updateBalances($txn, false, true);
+        }
 
         $this->dispatchForSettlementBucketing($txn);
 

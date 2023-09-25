@@ -1361,9 +1361,11 @@ class Core extends Base\Core
         else if (($merchant->isCapitalFloatRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+            // TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
-            return;
+            // return;
+
+            // Disabling dispatch to capital float queue as it is re-used for AsyncBalanceUpdateForTransfer job
         }
         else if (($merchant->isSliceRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
@@ -1678,6 +1680,22 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function updateBalanceAsyncForTransferTxn($transaction)
+    {
+        $this->repo->transaction(function () use ($transaction) {
+            $txnCore = (new Transaction\Core());
+
+            $txnCore->updateBalances($transaction, false, true);
+
+            $transaction->setBalanceUpdated(true);
+
+            $transaction->setBalance(null, 0, true); // Check if needed
+
+            $this->repo->saveOrFail($transaction);
+
+        });
     }
 
     private function isSyncProcessingEnabled($merchant)

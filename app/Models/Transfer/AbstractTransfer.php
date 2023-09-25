@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use Exception;
+use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use Throwable;
 use RZP\Constants;
 use RZP\Models\Admin;
@@ -249,6 +250,8 @@ abstract class AbstractTransfer
 
         $deadlockRetryAttempts = 3;
 
+        $originalPaymentAmountTransferred = $payment->getAmountTransferred();
+
         try
         {
             $transfer = $this->repo->transaction(function () use ($payment, $transfer)
@@ -292,6 +295,8 @@ abstract class AbstractTransfer
                 return $transfer;
             }, $deadlockRetryAttempts);
 
+            $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
+
             (new Metric())->pushTransferProcessSuccessMetrics();
 
             $this->fireTransferProcessedWebhookIfApplicable($transfer);
@@ -299,6 +304,26 @@ abstract class AbstractTransfer
         catch (\Exception $ex)
         {
             (new Metric())->pushTransferProcessFailedMetrics($ex);
+
+            $payment = $this->repo->payment->findOrFail($payment->getId());
+
+            if ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
+            {
+                if ($payment->getAmountTransferred() !== $originalPaymentAmountTransferred)
+                {
+                    $payment->setAmountTransferred($originalPaymentAmountTransferred);
+
+                    $this->repo->saveOrFail($payment);
+
+                    $this->trace->info(
+                        TraceCode::PAYMENT_AMOUNT_TRANSFERRED_RESET,
+                        [
+                            'payment_id'       => $payment->getId(),
+                            'original_amount'  => $originalPaymentAmountTransferred,
+                            'transfer_id'      => $transfer->getId(),
+                        ]);
+                }
+            }
 
             throw  $ex;
         }
@@ -560,5 +585,22 @@ abstract class AbstractTransfer
         $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::TRANSFER_PROCESSING_MUTEX_CONFIG]);
 
         return $config;
+    }
+
+    protected function pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer): void
+    {
+        if (($transfer->isProcessed() === true) and ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz'))
+        {
+            $txn = $transfer->transaction;
+
+            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $txn->getId(), $transfer->getId())->delay(10 * 60);
+
+            $this->trace->info(
+                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
+                [
+                    'transfer_id'         => $transfer->getId(),
+                    'transaction_id'      => $txn->getId(),
+                ]);
+        }
     }
 }
