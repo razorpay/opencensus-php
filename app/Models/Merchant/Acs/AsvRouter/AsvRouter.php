@@ -222,12 +222,14 @@ class AsvRouter
                 $this->getRouteOrJobName()
             );
 
-            // To avoid high cardinality metric, we are avoiding function_identifier in metric.
+            // Metric is temporary, will be removed/seperated to avoid highcardinality.
+            // When We ramp up for all entities.
             // Why both metric/log?: It is hard to get insights from logs for over
             // 7 days, hence, also adding a metric.
             $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
                 'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteRequestRouted' => $isRequestRoutedToAsv
+                'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                'identifier' => $repoClass . '::' . $functionName,
             ]);
 
             $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [

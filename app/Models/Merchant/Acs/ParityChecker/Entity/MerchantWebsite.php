@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Acs\ParityChecker\Entity;
 
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Website\Entity;
 use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 use RZP\Models\Merchant\Acs\ParityChecker\ParityInterface;
 use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
@@ -16,6 +17,9 @@ class MerchantWebsite extends Base implements ParityInterface
     {
         parent::__construct($merchantId, $parityCheckMethods);
         $this->website = new \RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite();
+        $this->entityClass = Entity::class;
+        $this->entityRepoClass = \RZP\Models\Merchant\Website\Repository::class;
+        $this->testData = new TestData\MerchantWebsite();
     }
 
     /**

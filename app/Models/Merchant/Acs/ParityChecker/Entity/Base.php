@@ -36,6 +36,9 @@ class Base
     protected $entityRepoClass;
 
     protected $entityClass;
+    protected array $auditedEntityClasses = [
+        \RZP\Models\Merchant\Website\Entity::class,
+    ];
 
     function __construct(string $merchantId, array $parityCheckMethods)
     {
@@ -161,15 +164,22 @@ class Base
 
     public function performParity($unsavedEntity, $apiEntity, $asvEntity, $testDataItem): array
     {
-
         list($apiExceptionMessage, $asvExceptionMessage) = $this->saveAndGetExceptions($apiEntity, $asvEntity);
         $response = $this->compareException($apiExceptionMessage, $asvExceptionMessage, $testDataItem, $apiEntity->getId(), $asvEntity->getId());
         if(!$response['continue']) {
             return $response;
         }
 
-        $response = $this->compareEntity($unsavedEntity, $apiEntity->getId(), $asvEntity->getId());
-        return $response;
+        if($this->checkIfAuditedEntity($unsavedEntity) && !$this->checkAuditUnEqualAndLengthFourteen($unsavedEntity, $apiEntity, $asvEntity)){
+            return [
+                'success' => false,
+                'details' => [
+                    'message' => 'Audit is not equal and length is not 14.',
+                ],
+            ];
+        }
+
+        return $this->compareEntity($unsavedEntity, $apiEntity->getId(), $asvEntity->getId());
     }
 
     public function getEntity($testDataItem) {
@@ -224,6 +234,18 @@ class Base
                     'error' => $e->getMessage(),
                 ]
             ];
+        }
+
+        if($this->checkIfAuditedEntity($entity) and !$this->checkAuditUnEqualAndLengthFourteen($entity, $apiEntity, $asvEntity) ) {
+            return [
+                    "success" => false,
+                    "details" => [
+                        "message" => "Audit mismatch: Length not 14, or not newly generated. For fetched entities.",
+                        "entity" => $entity->toArray(),
+                        "api_entity" => $apiEntity->toArray(),
+                        "asv_entity" => $asvEntity->toArray(),
+                        ],
+                ];
         }
 
         $difference = $this->comparator->getExactDifference(
@@ -361,5 +383,34 @@ class Base
     private function shouldPerformUpdateParity(array $testDataItem): bool
     {
         return array_key_exists(Constant::UPDATE_ATTRIBUTES, $testDataItem);
+    }
+
+    private function checkAuditUnEqualAndLengthFourteen($notSavedEntity, $entity1, $entity2) : bool
+    {
+       if ($notSavedEntity["audit_id"] == $entity1["audit_id"]
+           or $notSavedEntity["audit_id"] == $entity2["audit_id"]
+           or $entity1["audit_id"] == $entity2["audit_id"]
+       ) {
+           return false;
+       }
+
+         if (strlen($entity1["audit_id"]) != 14
+              or strlen($entity2["audit_id"]) != 14
+         ) {
+              return false;
+         }
+
+         return true;
+    }
+
+    private function checkIfAuditedEntity($entity) : bool
+    {
+       foreach ($this->auditedEntityClasses as $auditedEntityClass) {
+           if ($entity instanceof $auditedEntityClass) {
+               return true;
+           }
+       }
+
+       return false;
     }
 }

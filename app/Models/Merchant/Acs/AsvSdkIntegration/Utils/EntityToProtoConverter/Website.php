@@ -27,8 +27,8 @@ class Website implements EntityToProtoConvertorInterface
 
         $rawAttributes = $this->entity->getAttributes();
 
-        $website->setId($rawAttributes[Entity::ID]);
-        $website->setMerchantId($rawAttributes[Entity::MERCHANT_ID]);
+        $website->setId(Helper::notNullCheck($rawAttributes, Entity::ID));
+        $website->setMerchantId(Helper::notNullCheck($rawAttributes, Entity::MERCHANT_ID));
         $website->setDeliverableType(Helper::converToStringValue($rawAttributes, Entity::DELIVERABLE_TYPE));
         $website->setShippingPeriod(Helper::converToStringValue($rawAttributes,Entity::SHIPPING_PERIOD));
         $website->setRefundRequestPeriod(Helper::converToStringValue($rawAttributes, Entity::REFUND_REQUEST_PERIOD));
@@ -38,9 +38,9 @@ class Website implements EntityToProtoConvertorInterface
         $website->setAdminWebsiteDetails(Helper::converToStringValue($rawAttributes, Entity::ADMIN_WEBSITE_DETAILS));
         $website->setAdditionalData(Helper::converToStringValue($rawAttributes, Entity::ADDITIONAL_DATA));
         $website->setStatus(Helper::converToStringValue($rawAttributes, Entity::STATUS));
-        $website->setGracePeriod(Helper::convertToInt32Value($rawAttributes, Entity::GRACE_PERIOD));
-        $website->setSendCommunication(Helper::convertToInt32Value($rawAttributes, Entity::SEND_COMMUNICATION));
-        $website->setAuditId($rawAttributes[Entity::AUDIT_ID]);
+        $website->setGracePeriod(Helper::convertToInt32ValueFromBool($rawAttributes, Entity::GRACE_PERIOD));
+        $website->setSendCommunication(Helper::convertToInt32ValueFromBool($rawAttributes, Entity::SEND_COMMUNICATION));
+        $website->setAuditId($rawAttributes[Entity::AUDIT_ID] ?? "");
 
         $saveRequest->setMerchantWebsite($website);
         return $saveRequest;

@@ -179,7 +179,8 @@ class Base
     {
         $entity->setCreatedAt($fieldFromProtoHelper->getCreatedAt());
         $entity->setUpdatedAt($fieldFromProtoHelper->getUpdatedAt());
-        if ($entity->hasAttribute(self::AUDIT_ID_KEY) === true) {
+
+        if (in_array($entity->getEntityName(),\RZP\Constants\Entity::AUDITED_ENTITIES, true) === true){
             $entity->setAttribute(self::AUDIT_ID_KEY, $fieldFromProtoHelper->getAuditId());
         }
         $entity->setRawAttributes($entity->getAttributes(), true);

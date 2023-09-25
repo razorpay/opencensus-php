@@ -135,7 +135,7 @@ class Base
      * @param bool $nullAndAbsentAreEqual
      * @return array
      */
-    protected function getExactArrayDifference(array $array1, array $array2, string $parentKey = "", bool $nullAndAbsentAreEqual=false): array
+    protected function getExactArrayDifference(array $array1, array $array2, string $parentKey = "", bool $looseComparisonForNullAndBoolean=false): array
     {
         $difference = [];
         foreach($array1 as $key => $value)
@@ -146,7 +146,7 @@ class Base
             }
 
             if(array_key_exists($key, $array2) === false) {
-                if($nullAndAbsentAreEqual){
+                if($looseComparisonForNullAndBoolean){
                     if($value === null){
                        continue;
                     }
@@ -165,7 +165,7 @@ class Base
                 }
                 else
                 {
-                    $childDifference = $this->getExactArrayDifference($value, $array2[$key], $keyWithParent, $nullAndAbsentAreEqual);
+                    $childDifference = $this->getExactArrayDifference($value, $array2[$key], $keyWithParent);
                     foreach($childDifference as $childDifferenceKey => $childDifferenceValue) {
                         $difference[] = $key."->".$childDifferenceValue;
                     }
@@ -173,6 +173,14 @@ class Base
             }
             elseif($array2[$key] !== $value)
             {
+                if($looseComparisonForNullAndBoolean) {
+                    if(gettype($value) === "boolean" || gettype($array2[$key]) === "boolean"){
+                       if($value == $array2[$key]){
+                           continue;
+                       }
+                    }
+                }
+
                 $difference[] = $key;
             }
         }
@@ -193,10 +201,10 @@ class Base
      * @param array $array2
      * @return array
      */
-    public function getExactDifference(array $array1, array $array2, bool $nullAndAbsentAreEqual = false): array {
+    public function getExactDifference(array $array1, array $array2, bool $looseComparisonForNullAndBoolean = false): array {
         $difference = array_values(array_unique(array_merge(
-            $this->getExactArrayDifference($array1, $array2,"", $nullAndAbsentAreEqual),
-            $this->getExactArrayDifference($array2, $array1,"", $nullAndAbsentAreEqual)
+            $this->getExactArrayDifference($array1, $array2,"", $looseComparisonForNullAndBoolean),
+            $this->getExactArrayDifference($array2, $array1,"", $looseComparisonForNullAndBoolean)
         )));
 
         return $difference;

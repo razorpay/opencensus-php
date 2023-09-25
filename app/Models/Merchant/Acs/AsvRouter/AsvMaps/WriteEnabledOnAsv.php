@@ -13,7 +13,7 @@ final class WriteEnabledOnAsv {
     private array $MAP;
 
     public static array $SAVE_OR_FAIL = array(
-        MerchantWebsiteRepository::class => false,
+        MerchantWebsiteRepository::class => true,
         MerchantEmailRepository::class => true,
     );
 

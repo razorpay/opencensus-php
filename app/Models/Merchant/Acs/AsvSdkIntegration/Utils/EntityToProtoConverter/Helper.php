@@ -12,7 +12,8 @@ Class Helper {
 
         return $attributes[$key];
     }
-    static function shouldSetNull($attributes , $key) {
+    static function shouldSetNull($attributes , $key): bool
+    {
         if(!array_key_exists($key, $attributes)) {
             return true;
         }
@@ -24,7 +25,8 @@ Class Helper {
         return false;
     }
 
-    static function converToStringValue($attributes , $key) {
+    static function converToStringValue($attributes , $key): ?\Google\Protobuf\StringValue
+    {
 
         if (self::shouldSetNull($attributes, $key)) {
             return null;
@@ -34,7 +36,18 @@ Class Helper {
         return $stringValue;
     }
 
-    static function convertToInt32Value($attributes , $key){
+    static function convertToInt32ValueFromBool($attributes , $key): ?\Google\Protobuf\Int32Value
+    {
+        if (self::shouldSetNull($attributes, $key)) {
+            return null;
+        }
+        $intValue = new \Google\Protobuf\Int32Value();
+        $intValue->setValue($attributes[$key] ? 1 : 0);
+        return $intValue;
+    }
+
+    static function convertToInt32Value($attributes , $key): ?\Google\Protobuf\Int32Value
+    {
         if (self::shouldSetNull($attributes, $key)) {
             return null;
         }
