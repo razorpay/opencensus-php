@@ -570,6 +570,69 @@ class Core extends Base\Core
         }
     }
 
+    public function internalVerifyOtp1cc($input, $merchant): array
+    {
+        $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_COUNT);
+        $response = [];
+        $ex = [];
+        try {
+
+            $response = $this->verifyOtp($input, $merchant);
+
+            if (empty($response) === false && $response['success'] === 1) {
+
+                $customer = $this->getOrCreateGlobalCustomer($input);
+
+                // record address consented details
+                if ((empty($input['address_consent']) === false) and
+                    (empty($input['address_consent']['device_id']) === false)) {
+                    $addressConsentInput = [
+                        'device_id' => $input['address_consent']['device_id'],
+                    ];
+
+                    (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
+
+                }
+                if (empty($response['addresses']) === false) {
+                    $rzpAddresses = $response['addresses'];
+                } else {
+                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                }
+                $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
+                $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
+                $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+                $response['addresses'] = $addresses;
+                $response['customer_id'] = $customer->getId();
+                $response['1cc_consent_banner_views'] = $addressConsentView;
+                $response['1cc_customer_consent'] = (new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
+            }
+            return $response;
+        } catch (\Throwable $e) {
+            $internalErrorCode = '';
+            if (($e instanceof Exception\BaseException) === true)
+            {
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+            }
+            $dimensions = [
+                'mode' => $this->mode,
+                'internal_error_code' => $internalErrorCode,
+            ];
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INCORRECT_OTP)
+            {
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT, $dimensions);
+            }
+            else
+            {
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT, $dimensions);
+            }
+            $ex = $e;
+            throw $e;
+        } finally {
+            $this->logVerify1ccOtpTrace($input, $response, $ex);
+        }
+    }
+
     protected function logVerify1ccOtpTrace($input, $response, $ex) {
         if (empty($ex) === true){
             $this->trace->info(TraceCode::ONE_CC_VERIFY_OTP_REQUEST,
@@ -751,6 +814,13 @@ class Core extends Base\Core
             return $addresses;
         }
         return $this->sortRZPAddressesFor1CC($addresses, $customer);
+    }
+
+    public function fetchRzpAddressesFor1CCInternal($customer)
+    {
+        $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
+        $addresses = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+        return $addresses;
     }
 
     public function fetchThirdPartyAddressesFor1cc($customer): array
@@ -1586,6 +1656,15 @@ class Core extends Base\Core
         return $this->formatCustomerFor1cc($customer);
     }
 
+    public function fetchGlobalCustomerEntityByID(string $id)
+    {
+        $merchant = $this->getSharedAccount();
+
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $merchant);
+
+        return $customer;
+    }
+
     /**
      * Fetches Customer Details by Input
      *
@@ -1777,5 +1856,12 @@ class Core extends Base\Core
         $response['contact'] = $contact;
 
         $response['email'] = $email;
+    }
+
+    public function getGlobalCustomerByContact($contact)
+    {
+        return $this->repo->customer->findByContactAndMerchant(
+            $contact,
+            $this->getSharedAccount());
     }
 }

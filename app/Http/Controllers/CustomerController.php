@@ -283,11 +283,29 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function internalCreate1CCOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalSendOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function verifyOtp()
     {
         $input = Request::all();
 
         $data = $this->service()->verifyOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalVerify1CCOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalVerify1CCOtp($input);
 
         return ApiResponse::json($data);
     }
@@ -413,6 +431,13 @@ class CustomerController extends Controller
         $addresses = $this->service()->fetchAddresses($customerId, $input);
 
         return ApiResponse::json($addresses);
+    }
+
+    public function internalFetchGlobalAddressesFor1CCCustomer()
+    {
+        $input = Request::all();
+        $addresses = $this->service()->internalFetchGlobalAddressesFor1CCCustomer($input);
+        return ApiResponse::json(["addresses" => $addresses]);
     }
 
     public function putPrimaryAddress($customerId, $addressId)

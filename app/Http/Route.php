@@ -4574,6 +4574,10 @@ class Route
         '1cc_order_edit_add_item_variant'        => ['post', '1cc/magic/platform/order/edit/lineitem/add', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_edit_line_item_quantity'  => ['post', '1cc/magic/platform/order/edit/lineitem/quantity', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_add_custom_item'          => ['post', '1cc/magic/platform/order/edit/lineitem/custom', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        
+        '1cc_internal_otp_create' => ['post', 'internal/1cc/otp/create', 'CustomerController@internalCreate1CCOtp'],
+        '1cc_internal_otp_verify' => ['post', 'internal/1cc/otp/verify', 'CustomerController@internalVerify1CCOtp'],
+        '1cc_internal_fetch_global_addresses' => ['get', 'internal/1cc/customer/addresses', 'CustomerController@internalFetchGlobalAddressesFor1CCCustomer'],
 
         '1cc_coupon_engine_upsert_template'                  => ['put', '1cc/admin/ce/rules/templates', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_get_templates'                    => ['get', '1cc/admin/ce/rules/templates', 'OneClickCheckoutController@handleMerchantDashboardReq'],
@@ -6230,6 +6234,10 @@ class Route
 
         'dispute_bulk_create_internal',
 
+        '1cc_internal_otp_create',
+        '1cc_internal_otp_verify',
+        '1cc_internal_fetch_global_addresses',
+        
         'adj_custom_create_cron',
 
         // Edge
@@ -11113,6 +11121,7 @@ class Route
         'internal_merchant_checkout_preferences',
         'otp_verify',
         '1cc_otp_verify',
+        '1cc_internal_otp_verify',
         'support_page_otp_verify',
         '1cc_customer_truecaller_verify',
         'customer_update_global',
@@ -16614,6 +16623,9 @@ class Route
             '1cc_get_shopify_configs',
             '1cc_get_woocommerce_configs',
             'internal_sign_payload',
+            '1cc_internal_otp_create',
+            '1cc_internal_otp_verify',
+            '1cc_internal_fetch_global_addresses',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

@@ -221,6 +221,22 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function internalFetchGlobalAddressesFor1CCCustomer(array $input): array
+    {
+        $contact = $input['contact'] ?? null;
+        if ($contact != null)
+        {
+            $customer = $this->core->getGlobalCustomerByContact("+91" . $contact);
+        } 
+        else 
+        {
+            $customer = $this->core->fetchGlobalCustomerEntityByID($input['customer_id']);
+        }
+        $rzpAddresses = $this->core->fetchRzpAddressesFor1CCInternal($customer);
+        $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
+        return array_merge($rzpAddresses, $thirdPartyAddresses);
+    }
+
     /**
      * Fetches the both Global & Local Customer details for Checkout based on
      * app_token in session or customer_id.
@@ -586,6 +602,33 @@ class Service extends Base\Service
         $data = $this->core->verifyOtp1cc($input, $this->merchant);
 
         return $data;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function internalSendOtp($input)
+    {
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        return $this->core->sendOtp($input, $this->merchant);
+    }
+
+    public function internalVerify1CCOtp($input)
+    {
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+        unset($input["merchant_id"]);
+        return $this->core->internalVerifyOtp1cc($input, $this->merchant);
     }
 
     /**
