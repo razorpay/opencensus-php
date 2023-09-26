@@ -21,13 +21,14 @@ jobs:
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
-  validate_php_syntax:
+
+  validate-php-syntax-app:
     runs-on:
       - api-public
       - X64
     needs: [ cancel ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/onggi:php-8.1
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -47,8 +48,38 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      - name: validate_php_syntax
-        run: ci-assets/validate_php_syntax.sh
+      - name: validate-php-syntax-app
+        run: ci-assets/validate_php_syntax.sh app
+
+  validate-php-syntax-misc:
+    runs-on:
+      - api-public
+      - X64
+    needs: [ cancel ]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Validate PHP Syntax - Misc
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: validate-php-syntax-misc
+        run: ci-assets/validate_php_syntax.sh misc
+
   build-web:
     runs-on:
       - api-public
@@ -316,7 +347,7 @@ jobs:
       - api-public
       - X64
     name: Regression Suite
-    needs: [ validate_php_syntax, build-web, build-worker, build-checkout ]
+    needs: [ build-web, build-worker, build-checkout, validate-php-syntax-app, validate-php-syntax-misc ]
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Webhook
