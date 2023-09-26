@@ -53,4 +53,13 @@ class GrowthInternalController extends Controller
 
         return ApiResponse::json($response);
     }
+
+
+    public function assignPricingRuleToMerchant() {
+        $input = Request::all();
+
+        $data = $this->service()->assignPricingRuleToMerchant($input);
+
+        return ApiResponse::json($data);
+    }
 }

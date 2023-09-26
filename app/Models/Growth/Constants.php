@@ -20,6 +20,7 @@ class Constants
     const IS_REVERSAL = 'is_reversal';
     const CAMPAIGN_NAME = "campaign_name";
     const EXPIRED_AT = "expired_at";
+    const PRICING_PLAN_ID = "pricing_plan_id";
     const TEMPLATE_NAME = "template_name";
     const EMAIL_SUBJECT = "subject";
 

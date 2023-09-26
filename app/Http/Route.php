@@ -3085,7 +3085,7 @@ class Route
         'growth_pricing_bundle_email'              => ['post',     'growth/pricing_bundle/send_email',         'GrowthInternalController@sendPricingBundleEmail'                         ],
         'growth_pricing_bundle_add_amount_credits' => ['post',     'growth/pricing_bundle/add_amount_credits', 'GrowthInternalController@addAmountCredits'                         ],
         'growth_pricing_bundle_create_transaction' => ['post',     'growth/pricing_bundle/internal_transaction', 'GrowthInternalController@createBundleFeeTransaction'],
-
+        'growth_pricing_bundle_assign_pricing_rule' => ['post', 'growth/pricing_bundle/assign_pricing_rule', 'GrowthInternalController@assignPricingRuleToMerchant'],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -4574,7 +4574,7 @@ class Route
         '1cc_order_edit_add_item_variant'        => ['post', '1cc/magic/platform/order/edit/lineitem/add', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_edit_line_item_quantity'  => ['post', '1cc/magic/platform/order/edit/lineitem/quantity', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_order_edit_add_custom_item'          => ['post', '1cc/magic/platform/order/edit/lineitem/custom', 'OneClickCheckoutController@handleMerchantDashboardReq'],
-        
+
         '1cc_internal_otp_create' => ['post', 'internal/1cc/otp/create', 'CustomerController@internalCreate1CCOtp'],
         '1cc_internal_otp_verify' => ['post', 'internal/1cc/otp/verify', 'CustomerController@internalVerify1CCOtp'],
         '1cc_internal_fetch_global_addresses' => ['get', 'internal/1cc/customer/addresses', 'CustomerController@internalFetchGlobalAddressesFor1CCCustomer'],
@@ -5364,6 +5364,7 @@ class Route
         'growth_pricing_bundle_email',
         'growth_pricing_bundle_add_amount_credits',
         'growth_pricing_bundle_create_transaction',
+        'growth_pricing_bundle_assign_pricing_rule',
 
 
         // cron for generating merchant report
@@ -6237,7 +6238,7 @@ class Route
         '1cc_internal_otp_create',
         '1cc_internal_otp_verify',
         '1cc_internal_fetch_global_addresses',
-        
+
         'adj_custom_create_cron',
 
         // Edge
@@ -16537,6 +16538,7 @@ class Route
             'growth_pricing_bundle_email',
             'growth_pricing_bundle_add_amount_credits',
             'growth_pricing_bundle_create_transaction',
+            'growth_pricing_bundle_assign_pricing_rule',
         ],
 
         'affordability' => [

@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Growth\BundleFee\Entity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -128,6 +129,20 @@ class Service extends Base\Service
             'campaign' => $input[Constants::CAMPAIGN_NAME],
             'expired_at' => $input[Constants::EXPIRED_AT],
         ]);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function assignPricingRuleToMerchant(array $params) {
+
+        (new Validator)->validateInput('assign_pricing_plan', $params);
+        $input = [
+            'pricing_plan_id' => $params['pricing_plan_id'],
+            'caller' => 'pricing_bundle',
+            'spr_approved' => true,
+        ];
+        return (new Merchant\Service)->assignPricingPlan($params['merchant_id'], $input);
     }
 
 }

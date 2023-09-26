@@ -30,4 +30,9 @@ class Validator extends Base\Validator
         Constants::CURRENCY      => 'required|string',
         Constants::IS_REVERSAL   => 'sometimes|boolean',
     ];
+
+    protected static $assignPricingPlanRules = [
+        Constants::MERCHANT_ID => 'required|string|size:14',
+        Constants::PRICING_PLAN_ID => 'required|string|size:14'
+    ];
 }
