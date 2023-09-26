@@ -836,7 +836,6 @@ class Gateway
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
-        IFSC::ESAF,
         IFSC::ESFB,
         IFSC::FDRL,
         IFSC::FINF,
