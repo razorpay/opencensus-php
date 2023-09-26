@@ -28,6 +28,17 @@ trait PaymentPaytmTrait
 
         if ($mock)
         {
+            if (str_contains($response->getContent(), 'mockpaytm') === false)
+            {
+                $response = $this->mockCallbackFromGateway($url, $method, $values);
+
+                $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+                $response->setContent($data);
+
+                return $response;
+            }
+
             $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
 
             return $this->submitPaymentCallbackRedirect($url);

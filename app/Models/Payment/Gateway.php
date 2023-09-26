@@ -4752,6 +4752,7 @@ class Gateway
                 self::NETBANKING_AIRTEL,
                 self::NETBANKING_JSB,
                 self::NETBANKING_KOTAK,
+                self::PAYTM,
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,
