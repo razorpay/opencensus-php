@@ -1,17 +1,12 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker
-ARG ARMORY_IMAGE=c.rzp.io/proxy_dockerhub/surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-small
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
 
-FROM $ARMORY_IMAGE as wkhtmltopdf
-
-FROM $ONGGI_IMAGE
+FROM ${API_BASE_IMAGE}
 
 ARG GIT_COMMIT_HASH
 ARG GIT_USERNAME
 ARG CACHEBUST
 
 WORKDIR /app
-
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
 COPY composer.json composer.lock /app/
 
@@ -30,7 +25,6 @@ COPY . /app/
 
 RUN composer dump-autoload -o
 
-RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}

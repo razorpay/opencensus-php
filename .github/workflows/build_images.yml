@@ -114,9 +114,9 @@ jobs:
             GIT_COMMIT_HASH=${{ github.sha }}
             CACHEBUST=${{ github.sha }}
             GIT_USERNAME=rzp
-            ONGGI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web
-            ARMORY_IMAGE=c.rzp.io/proxy_dockerhub/surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-small
-            OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
+            API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
+            CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
+            OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-opencensus
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -180,10 +180,8 @@ jobs:
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
-            ONGGI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker
             CACHEBUST=${{ github.sha }}
-            ARMORY_IMAGE=c.rzp.io/proxy_dockerhub/surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-small
-            OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
+            API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 

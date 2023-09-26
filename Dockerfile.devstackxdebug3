@@ -1,25 +1,11 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
-ARG ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
+ARG OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-opencensus
+ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
 
-FROM $ARMORY_IMAGE as wkhtmltopdf
+FROM ${OPENCENSUS_IMAGE} as opencensus-ext
+FROM ${CURL_CLI_IMAGE} as curl-cli
 
-FROM $ONGGI_IMAGE as opencensus-ext
-WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
-RUN set -eux && \
-    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
-RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
-
-FROM $ONGGI_IMAGE
-
-RUN apk add --update wget tar \
-    && wget https://curl.haxx.se/download/curl-7.82.0.tar.gz \
-    && tar -xzf curl-7.82.0.tar.gz \
-    && cd curl-7.82.0 \
-    && ./configure --with-ssl --prefix=/usr \
-    && make && make install \
-    && cd .. && rm -rf curl-7.82.0 \
-    && rm -rf /var/lib/apt/lists/*
+FROM ${API_BASE_IMAGE}
 
 ARG GIT_COMMIT_HASH
 ARG GIT_USERNAME
@@ -28,7 +14,7 @@ ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 
 WORKDIR /app
 
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
+COPY --from=curl-cli /usr/bin/curl /usr/bin/
 
 COPY composer.json composer.lock /app/
 
@@ -53,7 +39,6 @@ COPY --chown=apache:www-data . /app/
 RUN cp dockerconf/default.conf dockerconf/mpm.conf /etc/apache2/conf.d/ && \
     composer dump-autoload -o
 
-RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}

@@ -1,24 +1,9 @@
-FROM harbor.razorpay.com/razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
+FROM c.rzp.io/razorpay/onggi-multi-arch:curl-7.82 as curl-cli
+FROM c.rzp.io/razorpay/onggi-multi-arch:php-8.1-opencensus as opencensus-ext
 
-FROM harbor.razorpay.com/razorpay/onggi-multi-arch:php-8.1-api-web as opencensus-ext
-WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
-RUN set -eux && \
-    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
-RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
+FROM c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
 
-FROM harbor.razorpay.com/razorpay/onggi-multi-arch:php-8.1-api-web
-
-RUN apk add --update wget tar \
-    && wget https://curl.haxx.se/download/curl-7.82.0.tar.gz \
-    && tar -xzf curl-7.82.0.tar.gz \
-    && cd curl-7.82.0 \
-    && ./configure --with-ssl --prefix=/usr \
-    && make && make install \
-    && cd .. && rm -rf curl-7.82.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
+COPY --from=curl-cli /usr/bin/curl /usr/bin/
 
 RUN pear81 config-set php_ini /etc/php81/php.ini
 RUN pecl81 install opencensus-alpha
@@ -31,7 +16,6 @@ WORKDIR /app
 
 ARG CACHEBUST
 
-RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}
