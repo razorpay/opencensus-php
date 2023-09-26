@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Jobs\Context as WorkerContext;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Base\Database\Connectors\MySqlConnector;
 
@@ -588,6 +589,24 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function getTransactionLevel()
     {
         return $this->db->transactionLevel();
+    }
+
+    /**
+     * This should only be used in worker context when DB singleton's connection class's
+     * transaction level is not set to 0 at the start of worker processing.
+     */
+    public function resetTransactionLevel(): void
+    {
+        if ((app()->runningInQueue() === true) and
+            ($this->db->transactionLevel() > 0))
+        {
+            $mySqlConnection = $this->db->connection();
+
+            if (method_exists($mySqlConnection, 'setTransaction') === true)
+            {
+                $mySqlConnection->setTransaction(0);
+            }
+        }
     }
 
     public function isTransactionActive()

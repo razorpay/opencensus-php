@@ -524,6 +524,9 @@ final class RazorxTreatment
     const OPTIMISE_INSERTION_LOGIC = 'optimise_insertion_logic';
 
     //Experiment to choose gateway balance in case of CA flows
+    const RESET_TRANSACTION_LEVELS = 'reset_transaction_levels';
+
+    //Experiment to choose gateway balance in case of CA flows
     const USE_GATEWAY_BALANCE = 'use_gateway_balance';
 
     //Experiment to control graceful shutdown of queues by removing acquired mutex locks

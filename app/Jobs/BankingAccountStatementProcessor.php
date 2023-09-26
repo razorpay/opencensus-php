@@ -8,9 +8,11 @@ use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\DB;
 use RZP\Trace\Tracer;
 use RZP\Models\Admin;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Base\Database\Connectors\MySqlConnector;
@@ -60,6 +62,8 @@ class BankingAccountStatementProcessor extends Job
             parent::handle();
 
             $this->traceActiveDbConnections();
+
+            $this->resetTransactionLevel();
 
             $BASCore = new BAS\Core;
 
@@ -193,6 +197,28 @@ class BankingAccountStatementProcessor extends Job
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,
             'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
+    }
+
+    protected function resetTransactionLevel()
+    {
+        $app = App::getFacadeRoot();
+
+        $variant = $app->razorx->getTreatment(
+            $this->getJobName(),
+            RazorxTreatment::RESET_TRANSACTION_LEVELS,
+            $this->mode ?? Mode::LIVE
+        );
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $this->repoManager->resetTransactionLevel();
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_TRANSACTION_STATE, [
+            'variants'            => $variant,
+            'job_name'            => $this->getJobName(),
+            'active_transactions' => $this->repoManager->getTransactionLevel()
         ]);
     }
 }
