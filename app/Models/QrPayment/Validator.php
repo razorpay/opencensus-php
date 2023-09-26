@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY               => 'required|string',
         Entity::PAYER_VPA             => 'sometimes',
         Entity::TRANSACTION_TIME      => 'sometimes|epoch',
-        Entity::PROVIDER_REFERENCE_ID => 'required|string',
+        Entity::PROVIDER_REFERENCE_ID => 'required|string|regex:(^[a-zA-Z0-9]*$)',
         Entity::METHOD                => 'required|string|in:upi,card,bank_transfer',
         Entity::MERCHANT_REFERENCE    => 'required|string',
         Entity::NOTES                 => 'sometimes|string',

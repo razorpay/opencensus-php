@@ -3833,6 +3833,35 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('captured', $response['payment']['status']);
     }
 
+    public function testQrPaymentWithSpecialCharUTR()
+    {
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'multiple_use', 'type' => 'upi_qr',
+                'name' => 'Shah'], 'live','LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $rrn = '3245@790101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
+
+        $this->expectException(ServerErrorException::class);
+
+        $this->expectExceptionMessage('The provider reference id format is invalid.');
+
+        $this->makeUpiIciciPaymentInternal($request);
+    }
+
     public function testPaymentForUnsuccessfulStatusCallback()
     {
         $this->getDedicatedTerminalSplitzResponseForVariantON();
