@@ -13,7 +13,6 @@ use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 use Illuminate\Support\Facades\Config;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Service
 {
@@ -107,95 +106,12 @@ class Service
      * @param $route
      * @return string
      */
-    protected function getUrl($route, $currentJobName ='')
+    protected function getUrl($route)
     {
-        try
-        {
-            if ($this->runExperimentOnNewBeamPushUrl($currentJobName) === true)
-            {
-                $this->trace->info(TraceCode::BEAM_PUSH_TO_NEW_URL,
-                    [
-                        'route'      => $route,
-                        'job_name'   => $currentJobName,
-                    ]);
-
-                return $this->getNewUrl($route);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::BEAM_PUSH_TO_NEW_URL_FAILED,
-                [
-                    'route'      => $route,
-                    'job_name'   => $currentJobName,
-                ]);
-        }
         return trim($this->config['url']) . '/' . $route;
     }
 
-    protected function getNewUrl($route)
-    {
-        return trim($this->config['new_url']) . '/' . $route;
-    }
-
-    protected function shouldMigrateToNewBeamPushURL($currentJobName): bool
-    {
-
-        if ((empty($currentJobName) === true) or
-            (in_array($this->env, [Environment::PRODUCTION, Environment::BETA]) === false))
-        {
-            return false;
-        }
-
-        return $this->isCurrentJobInMigrationList($currentJobName);
-    }
-
-    protected function runExperimentOnNewBeamPushUrl($currentJobName): bool
-    {
-        if ((empty($currentJobName) === true) or
-            (in_array($this->env, [Environment::PRODUCTION, Environment::BETA]) === false))
-        {
-            return false;
-        }
-
-        if (empty($this->app) === true)
-        {
-            $this->app = App::getFacadeRoot();
-        }
-
-        $variant = $this->app->razorx->getTreatment(
-            $currentJobName,
-            RazorxTreatment::MIGRATE_TO_NEW_BEAM_PUSH_URL,
-            $this->mode
-        );
-
-        $this->trace->info(TraceCode::BEAM_MIGRATION_RAZORX_FLAG,
-            [
-               'variant' => $variant
-            ]
-        );
-
-        $result = ($variant === 'on') ? true : false;
-
-        return $result;
-    }
-
-    protected function isCurrentJobInMigrationList($currentJobName) : bool {
-        $migratedJobslist = array( );
-
-        foreach ($migratedJobslist as $value) {
-            if($value == $currentJobName) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo, int $timeout=300)
+    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo)
     {
         $this->trace->info(
             TraceCode::BEAM_METHOD_CALL,
@@ -250,7 +166,7 @@ class Service
 
         $traceData = json_encode($traceData);
 
-        $url = $this->getUrl($route, $currentJobName);
+        $url = $this->getUrl($route);
 
         if(isset($pushData[self::CHOTABEAM_FLAG]) === true and $pushData[self::CHOTABEAM_FLAG] === true)
         {

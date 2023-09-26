@@ -847,7 +847,6 @@ return [
     'beam' => [
         'url'  => env('BEAM_URL'),
         'mock' => env('BEAM_MOCK', false),
-        'new_url'  => env('BEAM_NEW_URL'),
     ],
 
     'chota_beam' => [
