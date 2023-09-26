@@ -9,6 +9,8 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Request;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\ServerErrorException;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Models\Base;
@@ -149,6 +151,9 @@ class Service extends Base\Service
      */
     public function findOrCreateGlobalCustomerForCheckout(array $input): array
     {
+        $isOneCC = (bool) ($input['is_one_cc'] ?? false);
+        unset($input['is_one_cc']);
+
         (new Validator())->validateInput('global_customer_create', $input);
 
         // Parse contact
@@ -191,13 +196,14 @@ class Service extends Base\Service
                 if (isset($token['card'])) {
                     $tokens['items'][$i]['card']['flows'] = (object)($token['card']['flows'] ?? []);
                 }
-                $tokens['items'][$i]['notes'] = (object)($token['notes'] ?? []);
+                $tokens['items'][$i]['notes'] = (object) ($token['notes'] ?? []);
             }
 
             $response['tokens'] = $tokens;
         }
 
-        if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
+        if ($isOneCC === true) {
+            // ToDo: This if block should move to magic-checkout-service
             if (Arr::has($input, 'address_consent.device_id')) {
                 $addressConsentInput = [
                     'device_id' => $input['address_consent']['device_id'],
@@ -579,6 +585,56 @@ class Service extends Base\Service
     public function verifyTrueCallerAuthRequest($input): array
     {
         return $this->core->verifyTrueCallerAuthRequest($input, $this->merchant);
+    }
+
+    /**
+     * This route is added as part of customer session decomposition as customer
+     * session create responsibility moved to checkout-service & global customer
+     * identification responsibility moved to edge.
+     *
+     * @param array $input
+     *
+     * @return array
+     *
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws ServerErrorException
+     */
+    public function verifyTruecallerAuthRequestInternal($input): array
+    {
+        $isOneCc = (bool) ($input['is_one_cc'] ?? false);
+        unset($input['is_one_cc']);
+
+        if ($isOneCc) {
+            $response = $this->core->verifyOneCCTruecallerAuthRequest($input, $this->merchant, true);
+            if (array_key_exists('1cc_consent_banner_views', $response)) {
+                $response['one_cc_consent_banner_views'] = $response['1cc_consent_banner_views'];
+                unset($response['1cc_consent_banner_views']);
+            }
+            if (array_key_exists('1cc_customer_consent', $response)) {
+                $response['one_cc_customer_consent'] = $response['1cc_customer_consent'];
+                unset($response['1cc_customer_consent']);
+            }
+        } else {
+            $response = $this->core->verifyTruecallerAuthRequest($input, $this->merchant, true);
+        }
+
+        if (!empty($response['tokens']['items'])) {
+            $tokens = $response['tokens'];
+
+            // sending notes and card flows as empty object for empty values
+            // without this, php sends them as empty arrays
+            foreach ($tokens['items'] as $i => $token) {
+                if (isset($token['card'])) {
+                    $tokens['items'][$i]['card']['flows'] = (object) ($token['card']['flows'] ?? []);
+                }
+                $tokens['items'][$i]['notes'] = (object)($token['notes'] ?? []);
+            }
+
+            $response['tokens'] = $tokens;
+        }
+
+        return $response;
     }
 
     /**

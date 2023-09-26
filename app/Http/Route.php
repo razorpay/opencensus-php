@@ -1259,6 +1259,7 @@ class Route
         'customer_create'                          => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update_global'                   => ['patch',    'customers',                                      'CustomerController@updateGlobalCustomer'                            ],
         'customer_truecaller_verify'               => ['post',     'customers/truecaller/verify',                    'CustomerController@verifyTruecallerAuthRequest'                    ],
+        'customer_truecaller_verify_internal'      => ['post',     'internal/customers/truecaller/verify',           'CustomerController@verifyTruecallerAuthRequestInternal'            ],
         '1cc_customer_truecaller_verify'           => ['post',     '1cc/customers/truecaller/verify',                'CustomerController@verifyOneCCTruecallerAuthRequest'                    ],
         'customer_truecaller_callback'             => ['post',     'customers/truecaller/callback',                  'CustomerController@handleTruecallerCallback'                                      ],
         'customer_truecaller_auth_internal'        => ['post',     'internal/customers/truecaller/auth',             'CustomerController@createTruecallerAuthRequestInternal'            ],
@@ -7444,6 +7445,7 @@ class Route
         'contact_get_checkout',
         'merchant_policy_details',
         'customer_truecaller_auth_internal',
+        'customer_truecaller_verify_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
         'global_customer_find_or_create_for_checkout',
@@ -16572,6 +16574,7 @@ class Route
             'customer_fetch_internal_for_checkout',
             'global_customer_find_or_create_for_checkout',
             'checkout_1cc_configs_get',
+            'customer_truecaller_verify_internal',
         ],
 
         'wallet_service' => [

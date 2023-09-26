@@ -3,7 +3,9 @@
 namespace RZP\Models\Customer;
 
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\IntegrationException;
+use RZP\Exception\ServerErrorException;
 use RZP\Http\RequestContextV2;
 use Str;
 use http\Url;
@@ -347,7 +349,7 @@ class Core extends Base\Core
      * @throws Exception\ServerErrorException
      * @throws Exception\BadRequestException
      */
-    public function verifyTruecallerAuthRequest(array &$input, $merchant): array
+    public function verifyTruecallerAuthRequest(array &$input, $merchant, $internal = false): array
     {
         $this->trace->info(TraceCode::TRUECALLER_VERIFY_REQUEST, [
             'input' => $input,
@@ -402,31 +404,38 @@ class Core extends Base\Core
 
         $this->trace->count(TruecallerMetric::TRUECALLER_VERIFY_REQUEST_SUCCESS);
 
-        $this->handleTruecallerVerificationSuccess($input, $response, $merchant);
+        $this->handleTruecallerVerificationSuccess($input, $response, $merchant, $internal);
 
         return $response;
     }
 
-    protected function handleTruecallerVerificationSuccess(array $input, array &$response, $merchant): void
+    protected function handleTruecallerVerificationSuccess(array $input, array &$response, $merchant, $internal = false): void
     {
         $customer = $this->getOrCreateGlobalCustomerForTruecaller($response);
 
-        // Create app token for customer
-        $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
+        if (!$internal) {
+            // Create app token for customer
+            $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
+
+            // Put app token details in session so that we may not
+            // need to verify the customer in the future.
+            $this->putAppTokenInSession($appToken);
+
+            if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
+            {
+                $response['device_token'] = $appToken->getDeviceToken();
+            }
+
+            if ($this->isCookieDisabledOnBrowser() === true)
+            {
+                $response['session_id'] = $this->getTemporarySessionToken();
+            }
+        }
 
         // Fetch existing tokens for global customer
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomerForCheckout($customer, $merchant);
 
-        // Put app token details in session so that we may not
-        // need to verify the customer in future.
-        $this->putAppTokenInSession($appToken);
-
         $response['logged_in'] = 1;
-
-        if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
-        {
-            $response['device_token'] = $appToken->getDeviceToken();
-        }
 
         if ($tokens->isNotEmpty() === true)
         {
@@ -452,14 +461,13 @@ class Core extends Base\Core
             $response['tokens'] = $tokens->toArrayPublic();
         }
 
-        if ($this->isCookieDisabledOnBrowser() === true)
-        {
-            $response['session_id'] = $this->getTemporarySessionToken();
-        }
-
         $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
 
         $response['email'] = $customer->getEmail();
+
+        if ($internal) {
+            $response['global_customer_id'] = $customer->getId();
+        }
     }
 
     /**
@@ -467,9 +475,9 @@ class Core extends Base\Core
      * @throws Exception\ServerErrorException
      * @throws Exception\BadRequestException
      */
-    public function verifyOneCCTruecallerAuthRequest($input, $merchant): array
+    public function verifyOneCCTruecallerAuthRequest($input, $merchant, $internal = false): array
     {
-        $response = $this->verifyTruecallerAuthRequest($input, $merchant);
+        $response = $this->verifyTruecallerAuthRequest($input, $merchant, $internal);
 
         if (empty($response) === false && $response['logged_in'] === 1)
         {
@@ -500,6 +508,10 @@ class Core extends Base\Core
             $response['addresses'] = $addresses;
             $response['1cc_consent_banner_views'] = $addressConsentView;
             $response['1cc_customer_consent'] = (new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
+
+            if ($internal && empty($response['global_customer_id'])) {
+                $response['global_customer_id'] = $customer->getId();
+            }
         }
 
         return $response;
@@ -1279,6 +1291,7 @@ class Core extends Base\Core
         $customerId = null;
         $customer = null;
         $appToken = null;
+        $skipException = false;
 
         //
         // If customer_id is present, it means it's a local customer.
@@ -1312,11 +1325,22 @@ class Core extends Base\Core
             $customerId = $input[Payment\Entity::GLOBAL_CUSTOMER_ID];
 
             $merchant = $this->repo->merchant->getSharedAccount();
+
+            $skipException = true;
         }
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
+            try {
+                $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
+            } catch (\Exception $e) {
+                if ($skipException) {
+                    return [null, null];
+                }
+
+                throw $e;
+            }
+
 
             if (($customer->hasGlobalCustomer() === true) and
                 ($followGlobal === true))

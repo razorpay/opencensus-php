@@ -577,6 +577,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function verifyTruecallerAuthRequestInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyTrueCallerAuthRequestInternal($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function verifyOneCCTruecallerAuthRequest()
     {
         $input = Request::all();

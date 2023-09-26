@@ -1826,6 +1826,7 @@ return [
                 'address_consent' => [
                     'device_id' => 'qwertyuiop1234567',
                 ],
+                'is_one_cc' => 1,
             ],
         ],
         'response' => [
