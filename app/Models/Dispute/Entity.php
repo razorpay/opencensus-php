@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const LIFECYCLE               = 'lifecycle';
     const GATEWAY                 = 'gateway';
     const NETWORK                 = 'card_network';
+    const MERCHANT_IDS_FOR_EMAIL  = 'merchant_ids_for_email';
 
     const EMAIL_NOTIFICATION_STATUS = 'email_notification_status';
 

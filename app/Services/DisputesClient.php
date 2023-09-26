@@ -5,6 +5,7 @@ namespace RZP\Services;
 use GuzzleHttp\RequestOptions;
 use Request;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -225,6 +226,20 @@ class DisputesClient
         $featureFlag = sprintf("%s_%s", RazorxTreatment::DISPUTES_DUAL_WRITE_SHADOW_MODE, $this->app['api.route']->getCurrentRouteName());
 
         return $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->app['basicauth']->getMode() ?? Mode::LIVE)
+            === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
+    // reverse shadow enabled implies that dispute service will handle all the business logic, while only entity creation/updation happens on
+    // API monolith
+    public function isReverseShadowEnabled($merchant, $isInternationalPayment = true): bool
+    {
+        if ($isInternationalPayment === true)
+        {
+            return false;
+        }
+
+        return $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) &&
+            $this->app['razorx']->getTreatment($merchant->getId(), RazorxTreatment::DISPUTES_REVERSE_SHADOW, $this->app['basicauth']->getMode() ?? Mode::LIVE)
             === RazorxTreatment::RAZORX_VARIANT_ON;
     }
 

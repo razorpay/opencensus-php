@@ -111,6 +111,15 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createForReverseShadow(string $paymentId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createForReverseShadow($input, $paymentId);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkCreate()
     {
         $input = Request::all();

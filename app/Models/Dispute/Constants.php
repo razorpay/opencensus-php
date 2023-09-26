@@ -14,6 +14,9 @@ class Constants
 
     const DEFAULT_INTERNAL_RESPOND_BY_IN_SECONDS     = (24 * 60 * 60) * 10;
 
+    const REVERSE_SHADOW_RESPONSE   = 'reverse_shadow_response';
+    const CREATE_REQUEST            = 'create_request';
+
     const GATEWAY_DISPUTE_SOURCE_CUSTOMER = 'customer';
 
     const GATEWAY_DISPUTE_SOURCE_NETWORK = 'network';

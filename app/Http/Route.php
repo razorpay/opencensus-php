@@ -2841,6 +2841,7 @@ class Route
         'patch_dispute_contest_by_id'              => ['patch',    'disputes/{id}/contest',                          'DisputeController@patchDisputeContestById',                        ],
         'post_dispute_accept_by_id'                => ['post',     'disputes/{id}/accept',                           'DisputeController@postDisputeAcceptById'                           ],
         'dispute_bulk_create_internal'             => ['post',     'disputes/bulk-create/internal',                  'DisputeController@bulkCreate'                                      ],
+        'payment_dispute_create_internal'          => ['post',     'payments/{paymentId}/disputes/internal',         'DisputeController@createForReverseShadow'                          ],
 
         // disputes service proxy routes
         'dispute_ingestion'                        => ['post',     'disputes/dispute-ingestion/bank-files',           'DisputesProxyController@proxy'],
@@ -6234,6 +6235,7 @@ class Route
         'ca_check_fund_management_payout_cron',
 
         'dispute_bulk_create_internal',
+        'payment_dispute_create_internal',
 
         '1cc_internal_otp_create',
         '1cc_internal_otp_verify',
@@ -16430,6 +16432,7 @@ class Route
         'disputes' => [
             'payment_refund_internal',
             'dispute_bulk_create_internal',
+            'payment_dispute_create_internal',
         ],
 
         'banking_account_service' => [

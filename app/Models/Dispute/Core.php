@@ -127,10 +127,13 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\BadRequestException
      */
+    // $reverseShadowResp = null indicates that reverse shadow mode is not running for the given request.
+    // shadow mode should be disabled when starting with reverse-shadow mode.
     public function create(
         Payment\Entity $payment,
         Reason\Entity $reason,
-        array $input): Entity
+        array $input,
+        array $reverseShadowResp = null): Entity
     {
         $this->trace->info(
             TraceCode::DISPUTE_CREATE_REQUEST,
@@ -143,7 +146,7 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $reason, $input, $isShadowModeDualWrite)
+            function() use ($payment, $reason, $input, $isShadowModeDualWrite, $reverseShadowResp)
             {
                 $input = $this->preProcessInputForCreate($input);
 
@@ -170,22 +173,37 @@ class Core extends Base\Core
 
                 $dispute->setAuditAction(Action::CREATE_DISPUTE);
 
-                $payment->setDisputed(true);
-
-                $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite)
+                if ($reverseShadowResp === null)
                 {
-                    if ($dispute->getDeductAtOnset() === true)
+                    $payment->setDisputed(true);
+                }
+
+                $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite, $reverseShadowResp)
+                {
+                    if ($dispute->getDeductAtOnset() === true && $reverseShadowResp === null)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute, 0, false);
                     }
 
-                    $this->repo->saveOrFail($payment);
+                    if ($reverseShadowResp === null)
+                    {
+                        $this->repo->saveOrFail($payment);
+                    }
+                    else
+                    {
+                        $deductionSourceType = $reverseShadowResp['deduction_source_type'] ?? null;
+                        $deductionSourceId = $reverseShadowResp['deduction_source_id'] ?? null;
+                        $dispute->setId($reverseShadowResp['id']);
+                        $dispute->setDeductionSourceType($deductionSourceType);
+                        $dispute->setDeductionSourceId($deductionSourceId);
+                    }
 
                     $this->repo->saveOrFail($dispute);
 
                     $dispute->refresh();
 
-                    if ($isShadowModeDualWrite === false)
+                    // neither shadow nor reverse shadow mode should be enabled if we want to call the dual-write API
+                    if ($isShadowModeDualWrite === false && $reverseShadowResp === null)
                     {
                         $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::CREATE);
                     }
@@ -201,6 +219,8 @@ class Core extends Base\Core
 
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
+                // dual-write shadow mode should be ramped-down to 0
+                // before ramping up dual-write reverse shadow.
                 if ($isShadowModeDualWrite === true)
                 {
                     $input[Entity::ID] = $dispute->getId();

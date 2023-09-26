@@ -174,13 +174,46 @@ class Service extends Base\Service
             $payment = $this->repo->payment->findByPublicId($paymentId);
         }
 
+        if ($this->app['disputes']->isReverseShadowEnabled($payment->merchant, $payment->isInternational()))
+        {
+            // if dispute service throws an error, dispute is not created in API DB.
+            $reverseShadowResp = $this->app['disputes']->forwardToDisputesService();
+
+            return $this->handleCreate($input, $payment, $reverseShadowResp);
+        }
+        return $this->handleCreate($input, $payment);
+    }
+
+    public function createForReverseShadow(array $input, string $paymentId): array
+    {
+        $this->trace->info(
+        TraceCode::DISPUTE_CREATE_REQUEST_REVERSE_SHADOW,
+        [
+            'input'      => $input,
+        ]);
+
+        $payment = $this->repo->payment->findByPublicId($paymentId);
+
+        $createRequest = $input[DisputeConstants::CREATE_REQUEST];
+
+        (new Validator)->validateInput(Validator::OPERATION_CREATE_FOR_REVERSE_SHADOW, $createRequest);
+
+        $createRequest[Entity::SKIP_EMAIL] = !in_array($payment->merchant->getId(), $createRequest[Entity::MERCHANT_IDS_FOR_EMAIL]);
+
+        unset($createRequest[Entity::MERCHANT_IDS_FOR_EMAIL]);
+
+        return $this->handleCreate($createRequest, $payment, $input[DisputeConstants::REVERSE_SHADOW_RESPONSE]);
+    }
+
+    protected function handleCreate(array $input, Payment\Entity $payment, array $reverseShadowResp = null)
+    {
         (new Validator)->validateInputBeforeBuild($input);
 
         $reason = $this->repo->dispute_reason->findOrFail($input[Entity::REASON_ID]);
 
         $this->addBackfillIfNotPresent($input);
 
-        $dispute = $this->core()->create($payment, $reason, $input);
+        $dispute = $this->core()->create($payment, $reason, $input, $reverseShadowResp);
 
         return $dispute->toArrayAdmin();
     }

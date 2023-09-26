@@ -748,6 +748,9 @@ final class RazorxTreatment
     // Experiment to enable dual writes on dispute service in shadow mode
     const DISPUTES_DUAL_WRITE_SHADOW_MODE = 'disputes_dual_write_shadow_mode';
 
+    // Experiment to enable dual writes on dispute service in shadow mode
+    const DISPUTES_REVERSE_SHADOW = 'disputes_reverse_shadow';
+
     // Experiment to migrate shield international traffic to separate pods
     const SHIELD_INTL_POD = 'shield_intl_pod';
 

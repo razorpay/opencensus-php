@@ -30,6 +30,11 @@ class DisputesClient
         return false;
     }
 
+    public function isReverseShadowEnabled($merchant, $isInternationalPayment = true): bool
+    {
+        return false;
+    }
+
 
     public function sendDualWriteToDisputesService($entityData, $table, $action)
     {

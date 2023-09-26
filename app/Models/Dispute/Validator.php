@@ -19,7 +19,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+    const OPERATION_MERCHANT_EDIT                       = 'merchant_edit';
+    const OPERATION_CREATE_FOR_REVERSE_SHADOW           = 'create_for_reverse_shadow';
 
     // Max allowed file size - 30MB (30*1024*1024).
     const MAX_FILE_SIZE = 31457280;
@@ -46,6 +47,21 @@ class Validator extends Base\Validator
         Entity::MERCHANT_EMAILS . '.*' => 'filled|email',
         Entity::SKIP_EMAIL             => 'sometimes|boolean',
         Entity::BACKFILL               => 'sometimes|boolean',
+        Entity::INTERNAL_RESPOND_BY    => 'sometimes|epoch',
+    ];
+
+    protected static $createForReverseShadowRules = [
+        Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
+        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
+        Entity::PHASE                  => 'required|string|custom',
+        Entity::RAISED_ON              => 'required|epoch',
+        Entity::EXPIRES_ON             => 'required|epoch',
+        Entity::REASON_ID              => 'required|alpha_num|size:14',
+        Entity::AMOUNT                 => 'sometimes|integer|min:100',
+        Entity::GATEWAY_AMOUNT         => 'sometimes|integer|min:1',
+        Entity::GATEWAY_CURRENCY       => 'required_with:gateway_amount|string|size:3|custom',
+        Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
+        Entity::MERCHANT_IDS_FOR_EMAIL => 'sometimes|array',
         Entity::INTERNAL_RESPOND_BY    => 'sometimes|epoch',
     ];
 
