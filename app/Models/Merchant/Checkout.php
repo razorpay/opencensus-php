@@ -807,26 +807,40 @@ class Checkout
         }
 
         // TODO: Rishi to explicitly review this change since it changes existing code
-        if (($merchant->isTPVRequired() === true) and
-            (empty($order->getMethod()) === true))
+        if (empty($order->getMethod()) === true)
         {
-            $methods = [
-                Payment\Method::NETBANKING => $data['methods'][Payment\Method::NETBANKING],
-                Payment\Method::UPI        => $data['methods'][Payment\Method::UPI],
-            ];
+            $methods = [];
 
-            if (empty($data['methods']['upi_intent']) === false)
+            if ($merchant->isTPVRequired() === true)
             {
-               $methods['upi_intent'] = $data['methods']['upi_intent'];
+                $methods = [
+                    Payment\Method::NETBANKING => $data['methods'][Payment\Method::NETBANKING],
+                    Payment\Method::UPI        => $data['methods'][Payment\Method::UPI],
+                ];
+
+                if (empty($data['methods']['upi_intent']) === false)
+                {
+                    $methods['upi_intent'] = $data['methods']['upi_intent'];
+                }
+
+                if (($bankCode !== null) and
+                    (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === false))
+                {
+                    unset($methods[Payment\Method::NETBANKING]);
+                }
+            }
+            // add card as preffered method for debit card tpv merchants
+            if ($merchant->isDebitCardValidationEnabled() === true)
+            {
+                $methods += [
+                    Payment\Method::CARD      => $data['methods'][Payment\Method::CARD],
+                ];
             }
 
-            if (($bankCode !== null) and
-                (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === false))
+            if(!empty($methods))
             {
-                unset($methods[Payment\Method::NETBANKING]);
+                $data['methods'] = $methods;
             }
-
-            $data['methods'] = $methods;
         }
     }
 
