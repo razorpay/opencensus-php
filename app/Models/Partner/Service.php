@@ -27,6 +27,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 
 class Service extends Base\Service
 {
@@ -85,10 +86,9 @@ class Service extends Base\Service
 
         if( empty($input[DEConstants::CONSENT]) === false)
         {
-            $milestone = 'PartnerActivation';
             $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
             $input[DEConstants::USER_ID]     = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
-            CapturePartnershipConsents::dispatch($this->mode, $input, $this->merchant->getId(), $milestone);
+            CapturePartnershipConsents::dispatch($this->mode, $input, $this->merchant->getId(), ConsentConstant::PARTNER_ACTIVATION);
         }
 
         return $response;
@@ -471,7 +471,7 @@ class Service extends Base\Service
                 ]
             ];
 
-            CapturePartnershipConsents::dispatch($mode, $input, $merchantId, Constants::PARTNER_TYPE_SWITCH);
+            CapturePartnershipConsents::dispatch($mode, $input, $merchantId, ConsentConstant::PARTNER_TYPE_SWITCH);
         }
     }
     public function getPartnerSalesPOC()

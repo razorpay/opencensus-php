@@ -186,9 +186,12 @@ class Constants
         ],
     ];
 
-    const TEMPLATE_ID_MAPPING   =  [
-        'https://razorpay.com/privacy/'     => 'merchant_consent_privacy_template_id',
-        'https://razorpay.com/terms/'       => 'merchant_consent_terms_template_id'
+    const TEMPLATE_ID_MAPPING = [
+        'https://razorpay.com/privacy/'                                 => 'merchant_consent_privacy_template_id',
+        'https://razorpay.com/terms/'                                   => 'merchant_consent_terms_template_id',
+        'https://razorpay.com/s/terms/partners/'                        => 'partnership_consent_terms_template_id',
+        'https://razorpay.com/terms/razorpayx/partnership/'             => 'partnership_consent_oauth_template_id',
+        'https://razorpay.com/s/terms/partners/aggregator-and-platform' => 'partnership_consent_switch_template_id',
     ];
 
     const TEMPLATE_ID          = 'template_id';
@@ -206,4 +209,32 @@ class Constants
     const TERMS_OF_SERVICE = 'Terms of Service';
 
     const DOC_NAME = 'document_name';
+
+    const OAUTH               = 'Oauth';
+    const PARTNERSHIP         = 'Partnership';
+    const PARTNER_TYPE_SWITCH = 'Partner_Type_Switch';
+    const PARTNER_ACTIVATION  = 'PartnerActivation';
+
+
+    const PARTNER_DOMAIN_CONSENT_DETAILS = [
+        'email' => [
+            self::PARTNERSHIP         => [
+                'template_name'      => 'email.partnerships_experience.consent_update_partner_type',
+                'template_namespace' => 'partnerships-experience',
+                'subject'            => 'Razorpay Partner Program: Our Terms of Service and Privacy Policy'
+            ],
+            self::PARTNER_TYPE_SWITCH => [
+                'template_name'      => 'email.partnerships_experience.consent_partner_type_switch',
+                'template_namespace' => 'partnerships-experience',
+                'subject'            => 'Razorpay Partner Program: Our Terms of Service and Privacy Policy'
+            ],
+            self::PARTNER_ACTIVATION  => [
+                'template_name'      => 'email.partnerships_experience.consent_partner_activation',
+                'template_namespace' => 'partnerships-experience',
+                'subject'            => 'Razorpay Partner Program: Our Terms of Service and Privacy Policy'
+            ],
+        ],
+
+    ];
+
 }

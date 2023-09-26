@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Consent as Consent;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
@@ -40,6 +41,8 @@ class CapturePartnershipConsents extends Job
 
     protected $milestone;
 
+    protected $app;
+
 
     public function __construct($mode, array $input,  string $merchantId, string $milestone)
     {
@@ -53,7 +56,7 @@ class CapturePartnershipConsents extends Job
     public function handle()
     {
         parent::handle();
-
+        $this->app = App::getFacadeRoot();
         $this->trace->info(
             TraceCode::CAPTURE_CONSENT_ASYNC_JOB,
             [
@@ -125,26 +128,41 @@ class CapturePartnershipConsents extends Job
 
             $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
-            $data = $detailService->getDocumentsDetails($input, $merchant);
+            $isExpEnabled = $this->isPartnerConsentExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId());
 
-            $documents_detail = [];
-            foreach ($data as $document_detail)
+            $legalDocumentsInput = [];
+
+            $data = $detailService->getDocumentsDetails($input, $merchant, $isExpEnabled);
+            if ($isExpEnabled)
             {
-                $content = $document_detail['content'];
-                $strippedContent = str_replace('</path>', '', $content);
-                $document_detail['content'] = preg_replace(self::unicodeRegex, "\xEF\xBF\xBD", $strippedContent);
-                array_push($documents_detail, $document_detail);
-            }
+                //Fetch the notification details from merchant domain
+                $notificationDetails                                    = $detailService->getNotificationDetailsForMerchant(null, $input[DEConstants::USER_ID]);
 
-            $legalDocumentsInput = [
-                DEConstants::DOCUMENTS_DETAIL => $documents_detail
-            ];
+                //Override the notification details as required for partner domain milestones
+                $notificationDetails = $this->overrideNotificationDetails($notificationDetails, $milestone);
+                $legalDocumentsInput[DEConstants::NOTIFICATION_DETAILS] = $notificationDetails;
+                $legalDocumentsInput[DEConstants::DOCUMENTS_DETAIL]     = $data;
+            }
+            else
+            {
+                $documents_detail = [];
+                foreach ($data as $document_detail)
+                {
+                    $content                    = $document_detail['content'];
+                    $strippedContent            = str_replace('</path>', '', $content);
+                    $document_detail['content'] = preg_replace(self::unicodeRegex, "\xEF\xBF\xBD", $strippedContent);
+                    array_push($documents_detail, $document_detail);
+                }
+                $legalDocumentsInput = [
+                    DEConstants::DOCUMENTS_DETAIL => $documents_detail
+                ];
+            }
 
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
             $processor->setMerchant($merchant);
 
-            $response = $processor->processLegalDocuments($legalDocumentsInput);
+            $response = $processor->processLegalDocuments($legalDocumentsInput, 'pg', $isExpEnabled);
 
             $responseData = $response->getResponseData();
 
@@ -152,7 +170,7 @@ class CapturePartnershipConsents extends Job
 
             foreach ($documentDetailsInput as $documentDetailInput)
             {
-                $type = $activationFormMilestone.'_'.$documentDetailInput['type'] ;
+                $type = $activationFormMilestone . '_' . $documentDetailInput['type'];
 
                 $merchantConsentDetail = $this->repoManager->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
 
@@ -219,5 +237,34 @@ class CapturePartnershipConsents extends Job
         {
             $this->release(self::RETRY_INTERVAL);
         }
+    }
+
+    public function isPartnerConsentExperimentEnabled($partnerId, $mileStone, $orgId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partnership_consent_v2_experiment'),
+            'request_data'  => json_encode([
+                                               'mid'       => $partnerId,
+                                               'milestone' => $mileStone,
+                                               'org_id'    => $orgId,
+                                           ]),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    // The following function is used to update the notification details specific to partner domain.
+    private function overrideNotificationDetails(array $notificationDetails, string $milestone): array
+    {
+        if (array_key_exists($milestone, ConsentConstant::PARTNER_DOMAIN_CONSENT_DETAILS['email']))
+        {
+            $milestoneEmailTemplateData                                 = ConsentConstant::PARTNER_DOMAIN_CONSENT_DETAILS['email'][$milestone];
+            $notificationDetails['email_details']['template_name']      = $milestoneEmailTemplateData['template_name'];
+            $notificationDetails['email_details']['template_namespace'] = $milestoneEmailTemplateData['template_namespace'];
+            $notificationDetails['email_details']['subject']            = $milestoneEmailTemplateData['subject'];
+        }
+
+        return $notificationDetails;
     }
 }

@@ -10019,7 +10019,9 @@ class Core extends Base\Core
 
     /**
      * Triggers async Job for capturing IP and create legal documents for Oauth Authorize.
+     *
      * @param string $merchantId
+     * @param array  $data
      */
     public function captureConsentsForOauth(string $merchantId, array $data)
     {
@@ -10050,7 +10052,7 @@ class Core extends Base\Core
             ];
         }
 
-        CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, Constants::OAUTH);
+        CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, ConsentConstant::OAUTH);
     }
 
     /**

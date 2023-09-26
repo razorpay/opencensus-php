@@ -500,6 +500,11 @@ return array(
     'merchant_consent_v2_notification'                      => env('MERCHANT_CONSENT_V2_NOTIFICATION'),
     'merchant_consent_privacy_template_id'                  => env('MERCHANT_CONSENT_PRIVACY_TEMPLATE_ID'),
     'merchant_consent_terms_template_id'                    => env('MERCHANT_CONSENT_TERMS_TEMPLATE_ID'),
+    'partnership_consent_v2_experiment'                     => env('PARTNERSHIP_CONSENT_V2_EXPERIMENT'),
+    'partnership_consent_terms_template_id'                 => env('PARTNERSHIP_CONSENT_TERMS_TEMPLATE_ID'),
+    'partnership_consent_oauth_template_id'                 => env('PARTNERSHIP_CONSENT_OAUTH_TEMPLATE_ID'),
+    'partnership_consent_switch_template_id'                => env('PARTNERSHIP_CONSENT_SWITCH_TEMPLATE_ID'),
+
     'partner_invoice_auto_approval_exp_id'                  => env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
     'user_fetch_merchant_list_limit_exp_id'                 => env('USER_FETCH_MERCHANT_LIST_LIMIT_EXP_ID'),

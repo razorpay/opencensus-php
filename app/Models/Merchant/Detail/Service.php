@@ -4588,19 +4588,32 @@ class Service extends Base\Service
         return $isExpEnabled;
     }
 
-    public function getNotificationDetails($merchant)
+    public function getNotificationDetails($merchant, $acceptanceTimestamp = null)
     {
         $isExpEnabled = $this->isConsentNotificationExperimentEnabled($merchant->getId());
 
+        $notificationDetails = [
+            'send_email'    => false,
+            'send_sms'      => false,
+        ];;
+
         if((new Merchant\Core)->isRegularMerchant($merchant) === false or $isExpEnabled === false)
         {
-            return [
-                'send_email'    => false,
-                'send_sms'      => false,
-            ];
+            return $notificationDetails;
         }
 
-        $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
+        $notificationDetails = $this->getNotificationDetailsForMerchant($acceptanceTimestamp);
+
+        return $notificationDetails;
+
+    }
+
+    public function getNotificationDetailsForMerchant($acceptanceTimestamp = null, $userId = null): array
+    {
+        if (empty($userId) === true)
+        {
+            $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
+        }
 
         try
         {
@@ -4617,7 +4630,7 @@ class Service extends Base\Service
 
         $send_sms = (empty($user) === false and $send_email === false) ? $user['contact_mobile_verified'] : false;
 
-        $email_details = ($send_email === true) ? $this->getEmailDetails() : null;
+        $email_details = ($send_email === true) ? $this->getEmailDetails($acceptanceTimestamp) : null;
 
         $sms_details = ($send_sms === true) ? $this->getSmsDetails() : null;
 
@@ -4629,9 +4642,15 @@ class Service extends Base\Service
         ];
     }
 
-    private function getEmailDetails()
+    private function getEmailDetails($acceptanceTimestamp = null)
     {
         $ownerName = $this->merchant->merchantDetail->getBusinessName();
+
+        $acceptanceTimestamp = $acceptanceTimestamp ?? Carbon::now()->getTimestamp();
+
+        $dateTime = new DateTime("@$acceptanceTimestamp");
+
+        $formattedDateTime = $dateTime->format('Y-m-d H:i:s');
 
         return [
             "owner_id"              =>  $this->merchant->getMerchantId(),
@@ -4645,7 +4664,8 @@ class Service extends Base\Service
                 "name"    => "Razorpay"
             ],
             "params"                =>  [
-                "ownerName" => $ownerName,
+                "ownerName"            => $ownerName,
+                "acceptance_timestamp" => $formattedDateTime,
             ],
             "to"                    =>  [
                 "address"   => $this->merchant->getEmail(),

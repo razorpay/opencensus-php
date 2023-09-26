@@ -164,7 +164,7 @@ class Core extends Base\Core
                                                                  $isExpEnabled,
                                                                  $mapConsentUrlToFileContent, true);
 
-                    $notificationDetail = ($isExpEnabled === true) ?  (new DetailService())->getNotificationDetails($merchant) : null;
+                    $notificationDetail = ($isExpEnabled === true) ?  (new DetailService())->getNotificationDetails($merchant, $consentDetailForMerchant['created_at']) : null;
 
                     $legalDocumentsInput = [
                         DEConstants::DOCUMENTS_DETAIL               => $documents_detail,

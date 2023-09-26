@@ -7573,7 +7573,7 @@ class Service extends Base\Service
                 ]
             ];
 
-            CapturePartnershipConsents::dispatch($mode, $input, $this->merchant->getId(), Constants::PARTNERSHIP);
+            CapturePartnershipConsents::dispatch($mode, $input, $this->merchant->getId(), ConsentConstant::PARTNERSHIP);
         }
 
         return $response;
