@@ -796,7 +796,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getOrderPayload($payment);
 
-        $this->setContextForEvent($payment->getMerchantId(), 'payment', $payment->getId());
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -1079,6 +1079,8 @@ class ApiEventSubscriber extends Base\Core
 
         $payload = $this->getRefundPayload($refund);
 
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
         $this->dispatchEventToStork($payload);
 
         $this->handleQrPaymentUpdate($refund);
@@ -1088,6 +1090,8 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getRefundPayload($refund);
 
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
@@ -1095,12 +1099,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getRefundPayload($refund);
 
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onRefundSpeedChanged(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);
+
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -2219,9 +2227,9 @@ class ApiEventSubscriber extends Base\Core
         return;
     }
 
-    private function setContextForEvent(string $merchantId, string $entityType, string $entityId) : void
+    private function setContextForEntity(string $merchantId, string $entityType, string $entityId) : void
     {
-        $isExpEnabled = (new PartnerCore())->isTransactionIsolationExpEnabled($merchantId);
+        $isExpEnabled = (new PartnerCore())->isTransactionIsolationExpEnabledForSubmerchant($merchantId, $this->event);
 
         $this->trace->debug(TraceCode::TRANSACTION_ISOLATION_EXPERIMENT_ENABLED, [
             'is_exp_enabled' => $isExpEnabled,

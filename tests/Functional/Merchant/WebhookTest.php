@@ -1251,7 +1251,7 @@ class WebhookTest extends TestCase
             function (array $event) use ($expectedEvent)
             {
                 $this->assertArraySelectiveEquals($expectedEvent, $event);
-                $this->assertArrayHasKey('id', $event['context']);
+                $this->assertArrayNotHasKey('context', $event);
             }
         );
 
@@ -1320,6 +1320,211 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testRefundProcessedEventDataForMerchantsLinkedToPartner()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([['variant' => ['name' => 'enable']]]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $context = [
+            'id' => explode("_", $payment['id'])[1],
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $expectedEvent = $this->testData['testRefundProcessedNormalWebhookEventData']['event'];
+
+        $this->expectWebhookEventWithContext(
+            'refund.processed',
+            $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $expectedEvent['event'] = 'refund.created';
+
+        $this->expectWebhookEventWithContext(
+            'refund.created',
+            $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testRefundFailedEventDataForMerchantsLinkedToPartner()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([['variant' => ['name' => 'enable']]]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $context = [
+            'id' => explode("_", $payment['id'])[1],
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $expectedEvent = $this->testData['testRefundFailedWebhookEventData']['event'];
+        $this->expectWebhookEventWithContext('refund.failed',
+                                             $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->refundPayment($payment['id'], 3459);
+    }
+
+    public function testRefundSpeedChangedEventDataForMerchantsLinkedToPartner()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+        $this->mockSplitzTreatmentBulkRequest([['variant' => ['name' => 'enable']]]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $context = [
+            'id' => explode("_", $payment['id'])[1],
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+
+        $expectedEvent = $this->testData['testRefundSpeedChangedWebhookEventData']['event'];
+        $this->expectWebhookEventWithContext(
+            'refund.speed_changed',
+            $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayHasKey('created_at', $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+    }
+
+    public function testRefundProcessedEventDataForMerchantsLinkedToPartnerWithExpDisabled()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([['variant' => null]]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $expectedEvent = $this->testData['testRefundProcessedNormalWebhookEventData']['event'];
+        $this->expectWebhookEventWithContext(
+            'refund.processed',
+            [],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $expectedEvent['event'] = 'refund.created';
+
+        $this->expectWebhookEventWithContext(
+            'refund.created',
+            [],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->refundPayment($payment['id']);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -1329,5 +1534,25 @@ class WebhookTest extends TestCase
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+    }
+
+    protected function createPartnerAndSubmerchantMapping() : string
+    {
+        $partner = $this->fixtures->create('merchant');
+
+        $partnerId = $partner->getId();
+
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return $partnerId;
     }
 }

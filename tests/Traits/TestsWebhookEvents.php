@@ -179,4 +179,65 @@ trait TestsWebhookEvents
             ->shouldNotReceive('request')
             ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350);
     }
+
+    protected function expectWebhookEventWithContext(string $name, ?array $context, callable $matcher = null)
+    {
+        $this->storkMock = $this->storkMock ?: $this->createStorkMock();
+
+        $argMatcher = $this->getArgMatcherForContext($name, $context, $matcher);
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->times(1)
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
+            ->andReturn(new \WpOrg\Requests\Response);
+    }
+
+    protected function getArgMatcherForContext(string $name, ?array $context, callable $matcher = null): Closure
+    {
+        return function(array $arg) use ($name, $context, $matcher)
+        {
+            // $arg['event'] is stork's event struct.
+            if ($name !== $arg['event']['name'])
+            {
+                return false;
+            }
+
+            if ((isset($arg['event']['id']) === false) ||
+                (UniqueIdEntity::verifyUniqueId($arg['event']['id'], false) === false))
+            {
+                return false;
+            }
+
+            if ((isset($arg['event']['context']) === true && empty($context)) ||
+                (isset($arg['event']['context']) === false && !empty($context)))
+            {
+                return false;
+            }
+
+            $result = array_intersect_assoc($arg['event']['context'] ?? [], $context);
+            if ($result !== $context)
+            {
+                return false;
+            }
+
+            // $arg['event']['payload'] is serialized api's event entity OR some unstructured content from mozart(transaction etc).
+            $event = json_decode($arg['event']['payload'], true);
+            if (json_last_error() !== JSON_ERROR_NONE)
+            {
+                $event = $arg['event']['payload'];
+            }
+
+            // The matcher should return boolean and not throw exceptions.
+            // But it has been easier to call assert functions in tests and hence below stuff.
+            try
+            {
+                return (($matcher === null) or ($matcher($event) ?? true));
+            }
+            catch (ExpectationFailedException $e)
+            {
+                return false;
+            }
+        };
+    }
 }

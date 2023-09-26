@@ -15,6 +15,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Base\PublicCollection;
@@ -1889,9 +1890,13 @@ class Core extends Detail\Core
         ];
     }
 
-    public function isTransactionIsolationExpEnabled(string $merchantId) : bool
+    public function isTransactionIsolationExpEnabledForSubmerchant(string $merchantId, string $eventName) : bool
     {
-        $partnerIds = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId)->toArray();
+        $experimentName = PartnerConstants::$transactionIsolationEventToExperimentMap[$eventName];
+
+        $experimentId = $this->app['config']->get($experimentName);
+
+        $partnerIds = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId, true)->toArray();
 
         if (empty($partnerIds))
         {
@@ -1899,8 +1904,6 @@ class Core extends Detail\Core
         }
 
         $properties = [];
-
-        $experimentId = $this->app['config']->get('app.transaction_isolation_for_webhooks_experiment_id');
 
         foreach ($partnerIds as $partnerId)
         {

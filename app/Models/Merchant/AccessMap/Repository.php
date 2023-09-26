@@ -122,13 +122,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntityOwnerIdsForSubmerchant(string $submerchantId)
+    public function fetchEntityOwnerIdsForSubmerchant(string $submerchantId, bool $useSlave = false)
     {
-        return $this->newQuery()
-                    ->select(Entity::ENTITY_OWNER_ID)
-                    ->where(Entity::MERCHANT_ID, $submerchantId)
-                    ->get()
-                    ->pluck(Entity::ENTITY_OWNER_ID);
+        $query = $this->newQuery();
+
+        if ($useSlave)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->select(Entity::ENTITY_OWNER_ID)
+                     ->where(Entity::MERCHANT_ID, $submerchantId)
+                     ->get()
+                     ->pluck(Entity::ENTITY_OWNER_ID);
     }
 
     /**

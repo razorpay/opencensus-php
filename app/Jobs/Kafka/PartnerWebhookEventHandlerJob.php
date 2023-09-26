@@ -10,6 +10,7 @@ use RZP\Models\EntityOrigin\Core;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\EntityOrigin\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
 use RZP\Models\Merchant\WebhookV2\Stork;
@@ -62,7 +63,7 @@ class PartnerWebhookEventHandlerJob extends Job
         {
             $partnerId = $this->getPartnerIdFromAppId($input[EntityOriginConstants::APPLICATION_ID]);
 
-            $isExpEnabled = $this->isTransactionIsolationExpEnabledForPartnerApp($partnerId);
+            $isExpEnabled = $this->isTransactionIsolationExpEnabledForPartnerApp($partnerId, $this->getEventNameFromPayload($input));
 
             if ($isExpEnabled)
             {
@@ -129,13 +130,15 @@ class PartnerWebhookEventHandlerJob extends Job
         return $application->get(0)->getMerchantId();
     }
 
-    private function isTransactionIsolationExpEnabledForPartnerApp(string $partnerId) : bool
+    private function isTransactionIsolationExpEnabledForPartnerApp(string $partnerId, string $eventName) : bool
     {
         $app = App::getFacadeRoot();
 
+        $experimentName = PartnerConstants::$transactionIsolationEventToExperimentMap[$eventName];
+
         $properties = [
             'id' => $partnerId,
-            'experiment_id' => $app['config']->get('app.transaction_isolation_for_webhooks_experiment_id')
+            'experiment_id' => $app['config']->get($experimentName)
         ];
 
         return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
@@ -160,5 +163,10 @@ class PartnerWebhookEventHandlerJob extends Job
         $service = $payload['event']['service'] ?? "";
 
         return str_contains($service, Mode::TEST) ? Mode::TEST : Mode::LIVE;
+    }
+
+    private function getEventNameFromPayload(array $payload) : string
+    {
+        return $payload['event']['name'] ?? "";
     }
 }

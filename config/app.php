@@ -713,7 +713,7 @@ return array(
 
     'url_mismatch_reply_on_ticket_experiment_id' => env('URL_MISMATCH_REPLY_ON_TICKET_EXPERIMENT_ID'),
 
-    'transaction_isolation_for_webhooks_experiment_id' => env('TRANSACTION_ISOLATION_FOR_WEBHOOKS_EXP_ID'),
+    'transaction_isolation_for_order_experiment_id' => env('TRANSACTION_ISOLATION_FOR_ORDER_EXP_ID'),
 
     'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
 
@@ -722,6 +722,8 @@ return array(
     'pp_brand_color_hex' => env('PP_BRAND_COLOR_HEX'),
 
     'transaction_isolation_fallback_query_experiment_id' => env('TRANSACTION_ISOLATION_FALLBACK_QUERY_EXP_ID'),
-    
+
     'es_search_on_created_at_then_on_score_experiment_id' => env('ES_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_EXPERIMENT_ID'),
+
+    'transaction_isolation_for_refund_experiment_id' => env('TRANSACTION_ISOLATION_FOR_REFUND_EXP_ID'),
 );

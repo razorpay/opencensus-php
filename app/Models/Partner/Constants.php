@@ -3,6 +3,8 @@
 namespace RZP\Models\Partner;
 
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
+use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Models\Merchant\Invoice\TaxName;
@@ -116,5 +118,16 @@ class Constants
             'name'     => 'IGST 18%',
             'rate'     => 180000,
         ]
+    ];
+
+    const TRANSACTION_ISOLATION_ORDER_EXPERIMENT = "app.transaction_isolation_for_order_experiment_id";
+    const TRANSACTION_ISOLATION_REFUND_EXPERIMENT = "app.transaction_isolation_for_refund_experiment_id";
+
+    public static array $transactionIsolationEventToExperimentMap = [
+        Event::ORDER_PAID            => self::TRANSACTION_ISOLATION_ORDER_EXPERIMENT,
+        Event::REFUND_PROCESSED      => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
+        Event::REFUND_CREATED        => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
+        Event::REFUND_FAILED         => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
+        Event::REFUND_SPEED_CHANGED  => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
     ];
 }
