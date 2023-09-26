@@ -62,4 +62,7 @@ class Type {
 
     // Settings and workflows defined for retargeting engine.
     const RETARGETING_SETTINGS = "retargeting_settings";
+
+    // For shipping engine in Magic Checkout service [MCS].
+    const SHIPPING_ENGINE = 'shipping_engine';
 }

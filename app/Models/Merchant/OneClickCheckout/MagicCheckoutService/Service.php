@@ -16,6 +16,8 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify;
 class Service extends Base\Service
 {
 
+  const SHIPPING_OPTIONS_PATH = 'v1/shipping/options';
+
   protected $app;
 
   const MAGIC_CHECKOUT_SERVICE_THEME_LIQUID_FILES_FETCH_PATH = 'v1/admin/shopify/theme/liquid_files';
@@ -90,4 +92,8 @@ class Service extends Base\Service
       }
    }
 
+  public function getShippingOptions(array $input): array
+  {
+      return $this->app['magic_checkout_service_client']->sendRequest(self::SHIPPING_OPTIONS_PATH, $input, Requests::POST);
+  }
 }

@@ -1235,6 +1235,55 @@ class Service extends Base\Service
         return array_merge($response, $rates);
     }
 
+    // getTaxDetailsAndIfProductIsDigital returns the tax associated with an address and a checkout.
+    // It also checks if the cart contains any products which do not require shipping - digital products.
+    // The calls are combined to reduce API latency.
+    public function getTaxDetailsAndIfProductIsDigital(string $checkoutId, array $address): array
+    {
+        $response = (new Core)->updateShippingAddress($checkoutId, $address);
+        $response = json_decode($response, true);
+        // Based on logs the checkout response is still available if `errors` or `checkoutUserErrors` exists
+        // for this mutation.
+        $checkout = $response['data']['checkoutShippingAddressUpdateV2']['checkout'];
+        $requiresShipping = $checkout['requiresShipping'];
+        $tax =  ((new Utils)->formatNumber($checkout['totalTax']['amount']) * 100);
+        $taxDetails = [
+            'total_tax'      => $tax,
+            'taxes_included' => $checkout['taxesIncluded'],
+        ];
+        if (empty($response['errors']) === false ||
+            empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
+        {
+            $errorType = (new Shipping)->getValueForErrorTypeDimension($response, 'update_address_failed');
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
+                [
+                    'type'        => $errorType,
+                    'response'    => $response,
+                    'checkout_id' => $checkoutId,
+                    'address'     => $address
+                ]
+            );
+            $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => $errorType]);
+            $shippingResponse = [
+                'evaluate_rates'     => false,
+                'tax_details'        => $taxDetails,
+                'is_digital_product' => false,
+            ];
+            if ($errorType === 'virtual_product_found' || $requiresShipping === false)
+            {
+                $shippingResponse['is_digital_product'] = true;
+            }
+            return $shippingResponse;
+        }
+        $isDigitalProduct = $this->isDigitalProductPresentInCheckout($response);
+        return [
+            'evaluate_rates'     => true,
+            'tax_details'        => $taxDetails,
+            'is_digital_product' => $isDigitalProduct,
+        ];
+    }
+
     private function isDigitalProductPresentInCheckout($checkoutResponse)
     {
         if(empty($checkoutResponse)==false && empty($checkoutResponse['lineItems']) == false)

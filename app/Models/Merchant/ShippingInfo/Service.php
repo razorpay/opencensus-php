@@ -61,7 +61,7 @@ class Service extends Base\Service
      */
     public function getShippingInfo(array $input): array
     {
-        if($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
+        if ($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
         {
             /**
              * For payment_store product, by defauly we want magic checkout to be used
@@ -82,10 +82,12 @@ class Service extends Base\Service
 
         $ex = '';
 
+        // shipping_provider will be `shipping_engine` or `platform` as we are only interested in identifying
+        // the shipping responses which came from shipping engine.
         $dimensions = [
-            'mode' => $this->mode,
+            'mode'              => $this->mode,
+            'shipping_provider' => 'platform',
         ];
-
         $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT, $dimensions);
 
         try {
@@ -131,7 +133,7 @@ class Service extends Base\Service
                 return $orderMeta->getType() === \RZP\Models\Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
             });
 
-            if($orderMeta === null)
+            if ($orderMeta === null)
             {
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
@@ -145,25 +147,24 @@ class Service extends Base\Service
             $productType = $order->getProductType();
             if ($productType == null || $productType !== ProductType::PAYMENT_PAGE)
             {
-            try
-            {
-                $merchantOrderId = $order->getReceipt();
-            }
-            catch (Throwable $e)
-            {
-                $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
-                throw $ex;
-            }
+                try
+                {
+                    $merchantOrderId = $order->getReceipt();
+                }
+                catch (Throwable $e)
+                {
+                    $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+                    throw $ex;
+                }
 
-            if(is_null($merchantOrderId))
-            {
-                $ex = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
-                );
-                throw $ex;
-            }
-
-            $input['order_id'] = $merchantOrderId;
+                if (is_null($merchantOrderId))
+                {
+                    $ex = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+                    );
+                    throw $ex;
+                }
+                $input['order_id'] = $merchantOrderId;
             }
             // Leaving the bulk contract for backward compatibility
             $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
@@ -200,6 +201,7 @@ class Service extends Base\Service
                 $decodedResponse = [self::SHIPPING_INFO_ADDRESSES => [$cachedResponse]];
                 // Not ideal nomenclature but we are doing this as the code is too large to extract "source".
                 $dimensions['platform'] = 'cache';
+                $dimensions['shipping_provider'] = 'cache';
                 $this->recordShippingInfoResp($cachedResponse, $dimensions);
 
                 $cacheTaxDetails = $this->getTaxDetailsFromCache($orderId, $address, $order->getAmount());
@@ -209,7 +211,7 @@ class Service extends Base\Service
                     self::TAX_DETAILS             => $cacheTaxDetails,
                 ];
             }
-            //Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
+            // Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
             if ($productType != null && $productType === ProductType::PAYMENT_PAGE)
             {
                 $dimensions['platform'] = 'others';
@@ -224,22 +226,41 @@ class Service extends Base\Service
             }
             else
             {
+            // Use Magic Checkout providers based on merchant configurations and cart items.
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            $platform = 'unknown';
             if ($platformConfig !== null)
             {
-                $dimensions = array_merge($dimensions, ['platform' => $platformConfig->getValue()]);
+                $platform = $platformConfig->getValue();
+                $dimensions = array_merge($dimensions, ['platform' => $platform]);
             }
             $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
             $shopifyShippingOverride = (new Merchant1ccConfig\Core())->isShopifyShippingOverrideSet($this->merchant->getId());
+            
+            $useShippingEngine = (new MagicCheckoutProvider())->shouldUseShippingEngine();
 
-            // shopify configs take priority over all Rzp serviceability features
-            // The current conditions only allow shopify merchants to have fallback configuration
-            // shopifyShippingOverride allows shopify merchants to use rzp shipping platform
-            if ($platformConfig !== null
-                and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY
-                and $shopifyShippingOverride === false
-            )
+            // If shipping engine is used, we rely on MCS to provide tax details, shipping fee and serviceability.
+            // Shipping engine is applicable for all merchant types - native, WooCommerce, Shopify.
+            if ($useShippingEngine)
             {
+                $dimensions['shipping_provider'] = 'shipping_engine';
+                $decodedResponse = (new MagicCheckoutProvider())->fetchRatesFromShippingEngine(
+                    $order,
+                    $orderMetaArray,
+                    $address,
+                    $platform,
+                    $dimensions);
+
+                $taxDetails = $decodedResponse['tax_details'];
+                unset($decodedResponse['tax_details']);
+
+                $isDigitalProduct = $decodedResponse['is_digital_product'];
+                unset($decodedResponse['is_digital_product']);
+            }
+            else if ($platform === Merchant1ccConfig\Type::SHOPIFY && $shopifyShippingOverride === false)
+            {
+                // The current conditions only allow shopify merchants to have fallback configuration
+                // shopifyShippingOverride allows shopify merchants to use rzp shipping platform
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, $dimensions);
                 $decodedResponse = (new Shopify\Service)->getShippingInfo([
                     'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
@@ -258,6 +279,7 @@ class Service extends Base\Service
                 if (empty($decodedResponse['use_fallback']) === false) {
                     unset($decodedResponse['use_fallback']);
                     if ($shippingMethodProviderConfig !== null) {
+                        $dimensions['shipping_provider'] = 'fallback';
                         $decodedResponse = $this->shippingProviderOldFlow(
                             $shippingMethodProviderConfig,
                             $orderId,
@@ -275,24 +297,8 @@ class Service extends Base\Service
             }
             else
             {
-                $payload = [
-                    'id'            => UniqueIdEntity::generateUniqueId(),
-                    'experiment_id' => $this->app['config']->get('app.1cc_shipping_info_migration_splitz_experiment_id'),
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' =>  $this->merchant->getId(),
-                        ]),
-                ];
-                $evaluationResult = (new SplitzExperimentEvaluator())->evaluateExperiment($payload, true, 'var_on','', $dimensions, TraceCode::SHIPPING_MIGRATION_SPLITZ_ERROR);
-                $this->trace->info(TraceCode::SHIPPING_MIGRATION_SPLITZ_RESPONSE,
-                    array_merge($dimensions,
-                        [
-                            'splitz_evaluation_result' => $evaluationResult,
-                        ])
-                );
-                if (empty($evaluationResult) === false &&
-                    empty($evaluationResult['experiment_enabled']) === false &&
-                    $evaluationResult['experiment_enabled'] === true)
+                $use1ccShippingService = $this->use1ccShippingService($dimensions);
+                if ($use1ccShippingService === true)
                 {
                     try {
                         $decodedResponse = (new Providers())->shippingProviderMigrationFlow(
@@ -381,130 +387,28 @@ class Service extends Base\Service
             // TODO: Remove this once the api contract change is finalized
             $address = $this->convertShippingMethodsToOldFormat($address);
 
-            // Calculating COD Serviceability based on slabs if required.
+            // Calculating COD Serviceability based on slabs store in API monolith if required.
+            $address = $this->applyCodSlabsIfApplicable($address, $orderMeta);
+            } // End using Magic Checkout providers.
 
-            $merchantCodSlabServiceabilityConfig = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
-                $this->merchant->getId(),
-                'cod_slab_serviceability'
-            );
-
-            if ($merchantCodSlabServiceabilityConfig !== null
-                and $merchantCodSlabServiceabilityConfig->getValue() === "1")
+            // Override $address with cod settings if merchant has opted for cod engine.
+            // Digital products are never cod eligible.
+            if ($isDigitalProduct === false)
             {
-                $address['cod'] = $this->getCodServiceabilityFromSlabs($orderMeta->getValue()['line_items_total']);
+                $MagicCheckoutProvider = new MagicCheckoutProvider();
+                $address = $MagicCheckoutProvider->applyCodEngineRulesIfApplicable(
+                    $order,
+                    $orderMetaArray,
+                    $address,
+                    $dimensions);
             }
-
-            }
-
-            $configs = $this->repo->merchant_1cc_configs->findByMerchantAndConfigArray(
-                $this->merchant->getId(),
-                [Merchant1ccConfig\Type::COD_ENGINE, Merchant1ccConfig\Type::COD_ENGINE_TYPE]
-            );
-
-            $codEngineConfigs = array();
-            foreach ($configs as $config) {
-                $codEngineConfigs[$config->getConfig()] = $config->getValue();
-            }
-            // It will be executed if merchant has opted for magic-cod-engine
-            if ($codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE] === '1')
-            {
-                $rzpOrderId = $order->getPublicId();
-                $orderAmount = $orderMetaArray['line_items_total'];
-                $orderAmountInRupee = $orderAmount/pow(10,2);
-                $roundOrderAmount = round($orderAmountInRupee)*100;
-                $products = [];
-                foreach ($orderMetaArray['line_items'] as $lineItems){
-                    $product = array();
-                    $product['id'] = $lineItems['product_id'];
-                    array_push($products, $product);
-                }
-
-                $customerInfo = array();
-                $customerInfo['email'] = $orderMetaArray['customer_details']['email'];
-                $customerInfo['phone'] = $orderMetaArray['customer_details']['contact'];
-                $customerInfo['ip'] = $this->app['request']->ip();
-
-                $inputOrder = [
-                    'id'            => $rzpOrderId,
-                    'amount'        => $roundOrderAmount,
-                    'products'      => $products
-                ];
-                // cod engine uses shopify locations codes , override google location with shopify
-                $stateCode = $stateCodeFromName = (new StateMap)->getPincodeMappedStateCode($address['zipcode']);
-
-                if ($stateCode === null)
-                {
-                    $stateCode = (new StateMap)->getShopifyStateCode($address);
-
-                    $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address);
-                }
-                $location = [
-                    'zipcode'      => $address['zipcode'],
-                    'state_code'   => strtoupper($stateCode ?? $stateCodeFromName),
-                    'country_code' => strtoupper($address['country'])
-                ];
-                $codEngineEvaluateRequest = [
-                    'merchant_id'   => $this->merchant->getMerchantId(),
-                    'type'          => $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE],
-                    'order'         => $inputOrder,
-                    'location'      => $location,
-                    'customer_info' => $customerInfo,
-                ];
-
-                if ($isDigitalProduct === false)
-                {
-                    // default values in case of failures.
-                    $isCodEligible = false;
-                    $codFee = 0;
-                    try
-                    {
-                        $res = $this->app['magic_checkout_cod_engine_service']->evaluate($codEngineEvaluateRequest);
-                        $isCodEligible = $res['cod'];
-                        $codFee = $res['cod_fee'];
-                    }
-                    catch(\Exception $ex){
-                        $this->trace->count(
-                            Metric::MAGIC_COD_ENGINE_EVALUATE_API_ERROR_COUNT,
-                            array_merge($dimensions, ['code' => $ex->getCode()])
-                        );
-
-                        $this->trace->error(TraceCode::MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR,
-                            [
-                                'code'        => $ex->getCode(),
-                                'message'     => $ex->getMessage(),
-                                'merchant_id' => $this->merchant->getMerchantId()
-                            ]
-                        );
-                    }
-                    $this->trace->info(TraceCode::MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS,
-                        [
-                            'response' => $res,
-                        ]
-                    );
-                    $address['cod'] = $isCodEligible;
-                    $address['cod_fee'] = $codFee;
-                    // set cod fee for all shipping methods to support multiple shipping if feature flag is enabled.
-                    if($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING))
-                    {
-                        foreach ($address['shipping_methods'] as &$method)
-                        {
-                            $method['cod'] = $isCodEligible;
-                            $method['cod_fee'] = $codFee;
-                        }
-                    }
-                }
-            }
-
-
             $this->cacheMerchantShippingInfo($orderId, $address, $order->getAmount());
             $this->cacheTaxDetailsForShippingAddress($orderId, $address, $taxDetails, $order->getAmount());
             $this->recordShippingInfoResp($address, $dimensions);
-
             return [
                 self::SHIPPING_INFO_ADDRESSES => [$address],
                 self::TAX_DETAILS => $taxDetails,
             ];
-
         }
         catch (\Throwable $e)
         {
@@ -1314,21 +1218,24 @@ class Service extends Base\Service
 
     // For merchants using single shipping method we take the top level values.
     // In case multiple shipping methods is enabled, we iterate over the loop and record every value.
+    // TODO: Upgrade the metrics to record shipping_provider and cod_provider!
     protected function recordShippingInfoResp(array $address, array $dimensions): void {
       if (empty($address['shipping_methods']) === true) {
         $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_RESPONSE_COUNT, [
-            'serviceable' => $address['serviceable'],
-            'cod'         => $address['cod'],
-            'platform'    => $dimensions['platform'],
+            'serviceable'       => $address['serviceable'],
+            'cod'               => $address['cod'],
+            'platform'          => $dimensions['platform'],
+            'shipping_provider' => $dimensions['shipping_provider']
         ]);
         return;
       }
       $methods = $address['shipping_methods'];
       for ($i=0; $i < count($methods); $i++) {
         $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_RESPONSE_COUNT, [
-            'serviceable' => $methods[$i]['serviceable'],
-            'cod'         => $methods[$i]['cod'],
-            'platform'    => $dimensions['platform'],
+            'serviceable'       => $methods[$i]['serviceable'],
+            'cod'               => $methods[$i]['cod'],
+            'platform'          => $dimensions['platform'],
+            'shipping_provider' => $dimensions['shipping_provider']
         ]);
       }
     }
@@ -1357,5 +1264,43 @@ class Service extends Base\Service
             . $state
             . "_"
             . $address['country'];
+    }
+
+    protected function applyCodSlabsIfApplicable($address, $orderMeta): array
+    {
+        $merchantCodSlabServiceabilityConfig = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
+            $this->merchant->getId(),
+            'cod_slab_serviceability'
+        );
+        if ($merchantCodSlabServiceabilityConfig !== null
+            && $merchantCodSlabServiceabilityConfig->getValue() === '1')
+        {
+            $address['cod'] = $this->getCodServiceabilityFromSlabs($orderMeta->getValue()['line_items_total']);
+        }
+        return $address;
+    }
+
+    // Experiment to route traffic to 1cc-shipping-service as part of API decomp for shipping info API.
+    protected function use1ccShippingService(array $dimensions): bool
+    {
+        $payload = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.1cc_shipping_info_migration_splitz_experiment_id'),
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' =>  $this->merchant->getId(),
+                ]),
+        ];
+        $evaluationResult = (new SplitzExperimentEvaluator())->evaluateExperiment($payload, true, 'var_on','', $dimensions, TraceCode::SHIPPING_MIGRATION_SPLITZ_ERROR);
+        $this->trace->info(TraceCode::SHIPPING_MIGRATION_SPLITZ_RESPONSE,
+            array_merge($dimensions,
+                [
+                    'splitz_evaluation_result' => $evaluationResult,
+                ])
+        );
+        return (
+            empty($evaluationResult) === false &&
+            empty($evaluationResult['experiment_enabled']) === false &&
+            $evaluationResult['experiment_enabled'] === true);
     }
 }

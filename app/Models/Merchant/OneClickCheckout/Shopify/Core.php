@@ -644,8 +644,8 @@ class Core extends Base\Core
     protected function isMaybeCod(array $rate): bool
     {
         return (
-            strpos(strtolower($rate['handle']), 'cash on delivery ') !== false
-            or strpos(strtolower($rate['title']), 'cash on delivery ') !== false
+            strpos(strtolower($rate['handle']), 'cash on delivery') !== false
+            || strpos(strtolower($rate['title']), 'cash on delivery') !== false
         );
     }
 
