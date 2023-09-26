@@ -2597,6 +2597,7 @@ class Constants
         DcsConstants::EligibilityCheckDecline => true,
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout     => true,
+        DcsConstants::RtbWidgetEnabled        => true,
         DcsConstants::CvvLessFlowDisabled     => true,
         DcsConstants::AdminPasswordResetEnabled => true,
         DcsConstants::UpiTurboDisabled => true,

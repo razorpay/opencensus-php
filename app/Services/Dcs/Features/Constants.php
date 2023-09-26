@@ -20,6 +20,7 @@ class Constants
     const EligibilityCheckDecline = 'eligibility_check_decline';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
+    const RtbWidgetEnabled = 'rtb_widget_enabled';
     const UpiNumberDisabled = 'upi_number_disabled';
     const UpiNumberInUpiSectionDisabled = 'upi_number_in_upi_section_disabled';
     const UpiNumberInPreferredSectionDisabled = 'upi_number_in_preferred_section_disabled';
@@ -471,6 +472,7 @@ class Constants
         self::SrSensitiveBucket4 => 'rzp/pg/merchant/router/CostBasedRouting',
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
         self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
+        self::RtbWidgetEnabled => 'rzp/pg/merchant/checkout/Rtb',
         self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures'
     ];
 
@@ -499,6 +501,7 @@ class Constants
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
         self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
+        self::RtbWidgetEnabled                                              => self::RtbWidgetEnabled,
         APIFeaturesConstants::ORG_FRESHDESK_CREATE_TICKET                   => self::OrgFreshdeskCreateTicket,
         APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT                      => self::UpiNumberDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0                         => self::UpiNumberInPreferredSectionDisabled,
@@ -748,6 +751,7 @@ class Constants
         self::OmniMerchantEnabled => 'direct',
         self::DebitCardValidation   => 'direct',
         self::RemoveRazorpayBranding => 'direct',
+        self::RtbWidgetEnabled => 'direct',
         self::ShowSingleDCCCurrency => 'direct',
     ];
 
