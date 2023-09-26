@@ -692,7 +692,9 @@ class Entity extends Base\PublicEntity
     {
         $is_low_cost_offer = false;
 
-        if ($this->getAttribute(self::EMI_SUBVENTION) === true and empty($this->getAttribute(self::PERCENT_RATE) === false)) {
+        if ($this->getAttribute(self::EMI_SUBVENTION) === true and
+            !empty($this->getAttribute(self::PERCENT_RATE)))
+        {
             $is_low_cost_offer = true;
         }
 
