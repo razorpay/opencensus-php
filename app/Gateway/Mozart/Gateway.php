@@ -16,6 +16,7 @@ use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Gateway\Upi\Base\Type;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Upi\Base\Constants;
 use RZP\Models\UpiMandate\Frequency;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -1663,8 +1664,9 @@ class Gateway extends Base\Gateway
 
         $prefix = 'payments';
 
-        if ((isset($input['gateway']['cps_route']) === true) and
-            ($input['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE))
+        if (((isset($input['gateway']['cps_route']) === true) and
+             ($input['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)) or
+            (isset($input[Constants::QR_STATUS_CHECK]) and $input[Constants::QR_STATUS_CHECK] === true))
         {
             $prefix = 'upiPayments';
 

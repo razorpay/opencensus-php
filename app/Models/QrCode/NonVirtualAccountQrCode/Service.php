@@ -572,7 +572,7 @@ class Service extends QrCode\Service
      * @param string $qrCodeId The ID of the QR code to be validated
      * @return bool Returns true if the QR needs to be dispatched for Status Check
      */
-    protected function validateQrForStatusCheckInit(string $qrCodeId): bool
+    public function validateQrForStatusCheckInit(string $qrCodeId): bool
     {
         /**
          * @var $qrCode Entity

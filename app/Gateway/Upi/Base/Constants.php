@@ -22,4 +22,5 @@ class Constants
     const PROMO_INTENT          = 'pri';
     const LAST_SUCCESSFUL_DEBIT = 'lsd';
     const COLLECT               = 'collect';
+    const QR_STATUS_CHECK       = 'qr_status_check';
 }

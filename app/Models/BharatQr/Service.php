@@ -18,6 +18,7 @@ use RZP\Models\QrPayment;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Gateway\Upi\Base\Constants;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Mpan\Entity as MpanEntity;
@@ -85,7 +86,8 @@ class Service extends Base\Service
 
             if (($routeName === 'gateway_payment_callback_post') or
                 ($routeName === 'upi_transfer_process') or
-                ($routeName === 'upi_transfer_process_test'))
+                ($routeName === 'upi_transfer_process_test') or
+                (isset($input[Constants::QR_STATUS_CHECK]) and $input[Constants::QR_STATUS_CHECK] === true))
             {
                 [$terminal, $gatewayResponse] = $this->getDedicatedTerminalAndGatewayResponse($input, $gatewayClass, $gateway);
             }

@@ -5,6 +5,8 @@ namespace RZP\Models\QrPaymentRequest;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Generator;
 
 class Core extends Base\Core
 {
@@ -38,7 +40,7 @@ class Core extends Base\Core
 
         $qrPaymentRequest->setRequestPayload($requestPayload);
 
-        $qrPaymentRequest->findAndSetRequestSource();
+        $qrPaymentRequest->findAndSetRequestSource($requestPayload);
 
         $qrPaymentRequest->setCreated(false);
 
@@ -69,6 +71,42 @@ class Core extends Base\Core
         );
 
         $this->repo->save($qrPaymentRequest);
+    }
+
+    public function qrPaymentStatusCheck($qrCode)
+    {
+        $resp = null;
+
+        $terminal = (new Generator())->fetchDedicatedTerminalFromQrString($qrCode);
+
+        $input = [
+            EntityConstants::QR_CODE  => $qrCode->toArray(),
+            EntityConstants::TERMINAL => $terminal->toArray(),
+            EntityConstants::MERCHANT => $qrCode->merchant,
+        ];
+
+        $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
+
+        if (method_exists($gatewayClass, 'getQrPaymentStatus') === true)
+        {
+            try
+            {
+                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
+
+                $resp = $gatewayClass->getQrPaymentStatus($input);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::QR_STATUS_CHECK_MOZART_SERVICE_UNEXPECTED_RESPONSE,
+                    ['id' => $qrCode->getId()]
+                );
+            }
+        }
+
+        return $resp;
     }
 
     public function getPayerNameBasedOnRefId($reference_id)

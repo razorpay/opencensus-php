@@ -34,6 +34,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Payment\Processor\UpiTrait;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
@@ -746,6 +747,84 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    public function getQrPaymentStatus($input)
+    {
+        $request = [
+            EntityConstants::PAYMENT => [
+                'gateway' => $this->gateway,
+                'id'      => $input[EntityConstants::QR_CODE]['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
+                'amount'  => $input[EntityConstants::QR_CODE]['amount']
+            ],
+            EntityConstants::TERMINAL => $input[EntityConstants::TERMINAL],
+            EntityConstants::MERCHANT => [
+                'id' => $input[EntityConstants::MERCHANT]['id'],
+            ],
+            Fields::TERMINAL_ID => $this->getTerminalId($input),
+            Constants::QR_STATUS_CHECK => true
+        ];
+
+        $result = $this->upiSendGatewayRequest($request,
+                                               TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                                               Action::VERIFY
+        );
+
+        if ((isset($result['data']['meta']['response']['plain']) === true) and
+            (isset($result['data']['meta']['response']['plain'][Fields::SUCCESS]) === true) and
+            ($result['data']['meta']['response']['plain'][Fields::SUCCESS] === 'true'))
+        {
+            $resp = $result['data']['meta']['response']['plain'];
+
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_RESPONSE, [
+                'gateway response' => $resp,
+                'gateway'          => $this->gateway
+            ]);
+
+            if ($resp[Fields::STATUS] === Status::SUCCESS)
+            {
+                $response = [
+                    'callbackData' => $this->parseMozartResp($resp),
+                    'gateway'      => $this->gateway
+                ];
+
+                return $response;
+            }
+        }
+        else
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_INVALID_MOZART_RESPONSE, [
+                'response' => $result,
+                'gateway'  => $this->gateway
+            ]);
+
+            return null;
+        }
+    }
+
+    public function parseMozartResp($data)
+    {
+        $callbackData = [
+            Fields::BANK_RRN            => $data[Fields::ORIGINAL_BANK_RRN],
+            Fields::PAYER_VA            => $data[Fields::VERIFY_PAYER_VA],
+            Fields::TXN_STATUS          => $data[Fields::STATUS],
+            Fields::MERCHANT_ID         => $data[Fields::MERCHANT_ID],
+            Fields::SUBMERCHANT_ID      => $data[Fields::SUBMERCHANT_ID],
+            Fields::TERMINAL_ID         => $data[Fields::TERMINAL_ID],
+            Fields::PAYER_AMOUNT        => $data[Fields::AMOUNT],
+            Fields::TXN_INIT_DATE       => $data[Fields::TXN_INIT_DATE],
+            Fields::TXN_COMPLETION_DATE => $data[Fields::TXN_COMPLETION_DATE],
+            Fields::RESPONSE_CODE       => $data[Fields::RESPONSE],
+            Fields::MERCHANT_TRAN_ID    => $data[Fields::MERCHANT_TRAN_ID]
+        ];
+
+        // For the below fields, we are not getting the data in verify api, so add the data accordingly
+        $callbackData[Fields::PAYER_NAME]         = null;
+        $callbackData[Fields::PAYER_ACCOUNT_TYPE] = null;
+        $callbackData[Fields::PAYER_MOBILE]       = '0000000000';
+        $callbackData[Constants::QR_STATUS_CHECK] = true;
+
+        return $callbackData;
     }
 
     public function getQrRefId($input): string

@@ -58,6 +58,35 @@ class Service extends Base\Service
         return null;
     }
 
+    public function initGatewayCallForQrStatusCheck(string $id): void
+    {
+        /**
+         * @var $qrCode Entity
+         */
+        $qrCode = $this->repo->qr_code->findOrFail($id) ;
+        $this->app['basicauth']->setMerchantById($qrCode->getMerchantId());
+
+        // $callbackData shall store the response received from the gateway
+        $gatewayData = (new Core())->qrPaymentStatusCheck($qrCode);
+
+        if ($gatewayData !== null)
+        {
+            try
+            {
+                (new \RZP\Models\BharatQr\Service())->processPayment($gatewayData['callbackData'], $gatewayData['gateway']);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::QR_STATUS_CHECK_PAYMENT_CREATION_FAILED,
+                    ['id' => $qrCode->getId()]
+                );
+            }
+        }
+    }
+
     public function createFailedQRPaymentRequest($input, $gateway = null)
     {
         $merchantRef = null;

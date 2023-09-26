@@ -29,6 +29,7 @@ use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrCode\Constants as Constants;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Gateway\Upi\Icici\Gateway as IciciGateway;
@@ -294,6 +295,43 @@ class Generator extends QrCode\Generator
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
+    }
+
+    public function fetchDedicatedTerminalFromQrString($qrCode)
+    {
+        $vpa  = $qrCode->getQrVpa();
+
+        if (str_contains($qrCode['qr_string'], '@icici') === true)
+        {
+            $gateway = GATEWAY::UPI_ICICI;
+            $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
+        }
+        elseif (str_contains($qrCode['qr_string'], '@yesbank') === true)
+        {
+            $gateway = GATEWAY::UPI_YESBANK;
+            $params  = array(Terminal\Entity::VPA => $vpa);
+        }
+        else
+        {
+            $gateway = GATEWAY::SHARP;
+            $params  = array(Terminal\Entity::VPA => $vpa);
+        }
+
+        $this->trace->info(TraceCode::QR_CODE_FETCH_TERMINAL_PARAMS, ['gateway' => $gateway, 'params' => $params]);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
+
+        if (($terminal instanceof Terminal\Entity) === false)
+        {
+            throw new Exception\LogicException(
+                TraceCode::QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT,
+                Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                [
+                    'merchant_id' => $qrCode->merchant->getId(),
+                ]);
+        }
+
+        return $terminal;
     }
 
     public function generateUpiQrCodeImage($qrCode)

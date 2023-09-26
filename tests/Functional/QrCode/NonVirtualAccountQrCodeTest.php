@@ -80,7 +80,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
     }
 
     public function testCreateBharatQrCode()
@@ -4057,5 +4056,352 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         // Assert that only one job was pushed.
         Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    // Pending state response from ICICI Status Check API
+    public function testStatusCheckApiPendingResponse()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedQrStatusCheckResponse("PENDING",$qrCodeId,"");
+            }
+        }, 'upi_mozart');
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+
+    }
+
+    //No payment should get created in case of Invalid response from mozart for status check api
+    public function testStatusCheckApiInvalidResponse()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId) {
+            if ($action === 'verify')
+            {
+                $content = [
+                    "data" => []
+                ];
+            }
+        }, 'upi_mozart');
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+
+    }
+
+    //Create payment from status check api
+    public function testStatusCheckApiSuccessResponse()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedQrStatusCheckResponse("SUCCESS", $qrCodeId,
+                                                                 $requestData['content']['BankRRN']);
+            }
+        }, 'upi_mozart');
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+    }
+
+    //Test to verify that only 1 payment gets created even after multiple attempts for success scenerio
+    // We explicitly force set the payment received count to 0 to test duplicate payment creation for this scenerio.
+    public function testStatusCheckApiSuccessResponseMultipleAttempts()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'multiple_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedQrStatusCheckResponse("SUCCESS", $qrCodeId,
+                                                                 $requestData['content']['BankRRN']);
+            }
+        }, 'upi_mozart');
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->fixtures->edit('qr_code',str_after($qrCodeId, 'qr_'),['payments_received_count'=>0],'live');
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount + 1, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        $qrPaymentReqEntity = $this->getDbLastEntity('qr_payment_request', 'live');
+        $this->assertEquals("QR_PAYMENT_DUPLICATE_NOTIFICATION", $qrPaymentReqEntity['failure_reason']);
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+    }
+
+    //Test to verify that exceptions are not propogated to response from mozart for status check api
+    public function testStatusCheckApiExceptionFromMozart()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId) {
+            if ($action === 'verify')
+            {
+                 throw new \ErrorException("invalid response");
+            }
+        }, 'upi_mozart');
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
     }
 }

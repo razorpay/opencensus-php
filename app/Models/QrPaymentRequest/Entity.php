@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Base\Constants;
 
 class Entity extends Base\PublicEntity
 {
@@ -37,6 +38,8 @@ class Entity extends Base\PublicEntity
     const IS_CREATED            = 'is_created';
 
     const REQUEST_PAYLOAD       = 'request_payload';
+
+    const QR_STATUS_CHECK       = 'qr_status_check';
 
     protected static $sign = 'qpr';
 
@@ -169,11 +172,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UPI_ID, $id);
     }
 
-    public function findAndSetRequestSource()
+    public function findAndSetRequestSource(&$input = null)
     {
         $app = App::getFacadeRoot();
 
         $routeName = $app['api.route']->getCurrentRouteName();
+
+        if (isset($input[Constants::QR_STATUS_CHECK]) and $input[Constants::QR_STATUS_CHECK] === true)
+        {
+            $routeName = self::QR_STATUS_CHECK;
+            unset($input[Constants::QR_STATUS_CHECK]);
+        }
 
         $requestSource = [];
 
@@ -195,6 +204,14 @@ class Entity extends Base\PublicEntity
             case 'payment_callback_bharatqr_internal':
                 $requestSource = [
                     'source'        => 'file',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case self::QR_STATUS_CHECK:
+                $requestSource = [
+                    'source'        => self::QR_STATUS_CHECK,
                     'request_from'  => 'bank',
                 ];
 

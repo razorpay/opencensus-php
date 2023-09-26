@@ -310,6 +310,71 @@ return [
         ],
     ],
 
+    'testStatusCheckApiInvalidResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiExceptionFromMozart' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiSuccessResponseMultipleAttempts' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiPendingResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiSuccessResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 
     'testFetchPaymentsForQrCode' => [
         'entity' => 'collection',

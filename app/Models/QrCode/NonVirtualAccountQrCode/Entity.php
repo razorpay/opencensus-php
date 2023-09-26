@@ -422,4 +422,30 @@ class Entity extends QrCode\Entity
             return null;
         }
     }
+
+    public function fetchQrStringMetaData()
+    {
+        $qrString = $this->getAttribute(self::QR_STRING);
+
+        if (isset($qrString) === false)
+        {
+            return null;
+        }
+        $parts = parse_url($qrString);
+        $query = [];
+        parse_str($parts['query'], $query);
+
+        return $query;
+    }
+
+    public function getQrVpa()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+        if (isset($qrMetaData['pa']) === false)
+        {
+            return null;
+        }
+
+        return $qrMetaData['pa'];
+    }
 }

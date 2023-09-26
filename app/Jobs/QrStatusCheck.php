@@ -4,12 +4,16 @@ namespace RZP\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Trace\TraceCode;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as QrService;
+use \RZP\Models\QrPaymentRequest\Service as QrPaymentReqService;
 
 /**
  * QrStatusCheck class is the handler for all QrStatusCheck jobs.
  * Queue name- {env}-api-qr-status-check-live
- * NOTE- There is no test mode queue for this on production. But, we allow test mode queue
+ * NOTE: There is no test mode queue for this on production. But, we allow test mode queue
  * on stage and QA to enable easier testing.
  *
  * This queue implements the ShouldBeUnique interface.
@@ -53,7 +57,27 @@ class QrStatusCheck extends Job implements ShouldBeUnique
     {
         parent::handle();
 
-        // TODO: This handler does nothing for now. This should change once the complete handler logic is written.
-        $this->trace->info(TraceCode::QR_STATUS_CHECK_HANDLER_INIT, ['id' => $this->qrCodeId]);
+        try
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_HANDLER_INIT, ['id' => $this->qrCodeId]);
+
+            if ((new QrService())->validateQrForStatusCheckInit($this->qrCodeId) === true)
+            {
+                (new QrPaymentReqService())->initGatewayCallForQrStatusCheck($this->qrCodeId);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::QR_STATUS_CHECK_HANDLER_FAILURE,
+                ['id' => $this->qrCodeId]
+            );
+        }
+
+        // Irrespective of if there was an exception or not, we shall delete the job.
+        // We expect Reminders to callback again if the operation was not a success.
+        $this->delete();
     }
 }

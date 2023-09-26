@@ -429,4 +429,36 @@ trait NonVirtualAccountQrCodeTrait
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
+    public function getMockedQrStatusCheckResponse($status, $qrCodeId, $rrn)
+    {
+        $content = [
+            'data' => [
+                'meta' => [
+                    'response' => [
+                        'plain' => [
+                            'TxnCompletionDate' => '20230921023436',
+                            'TxnInitDate'       => '20230921023408',
+                            'amount'            => '40.00',
+                            'merchantId'        => '403343',
+                            'merchantTranId'    => str_after($qrCodeId, 'qr_') . "qrv2",
+                            'message'           => 'Transaction Successful',
+                            'payerVA'           => 'razorpay@icici',
+                            'response'          => '0',
+                            'status'            => $status,
+                            'subMerchantId'     => '403343',
+                            'success'           => 'true',
+                            'terminalId'        => '5411',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        if (empty($rrn) === false)
+        {
+            $content['data']['meta']['response']['plain']['OriginalBankRRN'] = $rrn;
+        }
+
+        return $content;
+    }
+
 }
