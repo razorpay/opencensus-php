@@ -646,7 +646,10 @@ class Repository extends Base\Repository
             $variant = $this->getDcsEditVariant($entity->getName(), $mode);
         }
 
-        $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
+        if ($variant !== 'control')
+        {
+            $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
+        }
     }
 
     private function removeOnDCS(Entity $entity, $mode, $sync = false)
@@ -660,7 +663,11 @@ class Repository extends Base\Repository
         {
             $variant = $this->getDcsEditVariant($entity->getName(), $mode);
         }
-        $dcs->editFeature($entity, $variant, false, $mode);
+
+        if ($variant !== 'control')
+        {
+            $dcs->editFeature($entity, $variant, false, $mode);
+        }
     }
 
     private function getAppMode() {

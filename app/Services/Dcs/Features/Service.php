@@ -1042,7 +1042,10 @@ class Service extends Base
             {
                 foreach ($proxyResp->getNames() as $name)
                 {
-                    $features[] = str_split($name, ":")[1];
+                    if (str_contains($name,":") === true)
+                    {
+                        $features[] = explode(":", $name)[1];
+                    }
                 }
             }
         }
