@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Referral\Core;
 use Razorpay\OAuth\Tests\Helpers\OAuthTestHelper;
 
 use Carbon\Carbon;
+use RZP\Services\Partnerships\PartnershipsService;
 use RZP\Services\Stork;
 use RZP\Constants\Timezone;
 use RZP\Services\AuthService;
@@ -206,6 +207,17 @@ trait OAuthTrait
         $this->app->instance('authservice', $authServiceMock);
 
         return $authServiceMock;
+    }
+
+    protected function createPRTSServiceMock(array $withMethods = [])
+    {
+        $prtsMock = $this->getMockBuilder(PartnershipsService::class)
+                                ->setMethods($withMethods)
+                                ->getMock();
+
+        $this->app->instance('partnerships', $prtsMock);
+
+        return $prtsMock;
     }
 
     /**

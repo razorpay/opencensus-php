@@ -37,6 +37,8 @@ class OAuthApplicationController extends Controller
      */
     protected $authservice;
 
+    protected $prtsService;
+
     /**
      * @var MerchantValidator
      */
@@ -49,6 +51,8 @@ class OAuthApplicationController extends Controller
         $this->auth = $this->app['basicauth'];
 
         $this->authservice = $this->app['authservice'];
+
+        $this->prtsService = $this->app['partnerships'];
 
         $this->merchantValidator = (new MerchantValidator);
     }
@@ -237,6 +241,10 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
+        $meta = $input['referral_metadata'] ?? [];
+
+        unset($input['referral_metadata']);
+
         $this->addOrUploadImageIfApplicable($input);
 
         $merchant = $this->auth->getMerchant();
@@ -251,6 +259,11 @@ class OAuthApplicationController extends Controller
         //$this->merchantValidator->validateIsPurePlatformPartner($merchant);
 
         $data = $this->authservice->updateApplication($id, $input, $merchant->getId());
+
+        if (empty($meta) === false)
+        {
+            $this->prtsService->upsertOauthReferralLink($meta);
+        }
 
         return ApiResponse::json($data);
     }

@@ -21,6 +21,7 @@ use RZP\Models\Order\ProductType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\PartnershipServiceAsync;
+use RZP\Models\Merchant\PhantomUtility;
 use RZP\Models\Partner\Commission\Entity;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 use Neves\Events\TransactionalClosureEvent;
@@ -79,6 +80,8 @@ class PartnershipsService extends Base\Service
     CONST DELETE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
 
     const GET_REFERRAL_LINK_WITH_KYC_ACCESS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/FindOrCreate';
+
+    const UPSERT_SETTINGS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/Upsert';
 
     const GET_SUBM_SIGNUP_SOURCE = '/twirp/rzp.commissions.settings.v1.SettingsAPI/Get';
 
@@ -552,6 +555,71 @@ class PartnershipsService extends Base\Service
             ]);
             $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
         }
+    }
+
+
+    public function upsertOauthReferralLink(array $input): void
+    {
+        // Oauth referral link invite flow would be enabled only for phantom enabled partners
+        // The referral link would redirect to subM onboarding in phantom white label UI
+        if (!PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($input['partner_id']))
+        {
+            return;
+        }
+
+        $upsertRequest = [
+            'name'        => 'OAUTH_REFERRAL_LINK',
+            'entity_id'   => $input['application_id'],
+            'entity_type' => 'application',
+            'product'     => 'primary',
+            'meta'        => [
+                'client_id'      => $input['client_id'],
+                'redirect_uri'   => $input['redirect_uri'],
+                'scope'          => $input['scope'],
+                'application_id' => $input['application_id'],
+            ]
+        ];
+
+        $response = $this->sendRequestWithRetry($upsertRequest, self::UPSERT_SETTINGS, Requests::POST);
+
+        //In case the sync call fails, we would want to retry in async
+        if ($response['status_code'] != 200)
+        {
+            $upsertOauthReferralLinkPayload = $upsertRequest['meta'];
+            $upsertOauthReferralLinkPayload['product'] = 'primary';
+            $jobPayload                     = [
+                'payload'    => json_encode($upsertOauthReferralLinkPayload),
+                'event_name' => 'UPSERT_OAUTH_REFERRAL_LINK',
+            ];
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+                try
+                {
+                    // Job will be dispatched only after the transaction commits.
+                    $this->trace->info(TraceCode::PRTS_UPSERT_OAUTH_REFERRAL_LINK_DISPATCHING,
+                                       [
+                                           'mode'    => $this->mode,
+                                           'payload' => $jobPayload,
+                                       ]
+                    );
+                    $messageId = $this->pushRawJob($jobPayload, 'prts_common');
+                    $this->trace->info(TraceCode::PRTS_UPSERT_OAUTH_REFERRAL_LINK_DISPATCHED, [
+                        'payload'   => $jobPayload,
+                        'messageId' => $messageId
+                    ]);
+                    $this->trace->count(Metric::PRTS_UPSERT_OAUTH_REFERRAL_LINK_PUSH, ['success' => true]);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->error(TraceCode::PRTS_UPSERT_OAUTH_REFERRAL_LINK_DISPATCHING_ERROR, [
+                        'error'   => $ex->getMessage(),
+                        'payload' => $jobPayload,
+                    ]);
+                    $this->trace->count(Metric::PRTS_UPSERT_OAUTH_REFERRAL_LINK_PUSH, ['success' => false]);
+                    throw $ex;
+                }
+            }));
+        }
+
     }
 
     private function isDualWriteExpEnabled(Entity $commission): bool

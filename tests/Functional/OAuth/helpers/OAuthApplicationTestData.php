@@ -138,6 +138,26 @@ return [
         ],
     ],
 
+    'testUpdateApplicationForPPInvite' => [
+        'request'  => [
+            'url'     => '/oauth/applications/8ckeirnw84ifke',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'apptestnew',
+                'referral_metadata' => [
+                    'application_id' => '8ckeirnw84ifke',
+                    'client_id'      => '8ckeirnw84ifkf',
+                    'scope'          => 'read_write',
+                    'redirect_uri'   => 'https://kmkapp.dev.com/callback',
+                    'partner_id'     => '8ckeirnw84ifkg'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testUpdateApplicationTypeFail' => [
         'request'  => [
             'url'     => '/oauth/applications/8ckeirnw84ifke',

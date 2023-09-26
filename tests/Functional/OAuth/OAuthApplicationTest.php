@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Services\Partnerships;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -16,8 +18,11 @@ class OAuthApplicationTest extends TestCase
     use OAuthTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use MocksSplitz;
 
     protected $authServiceMock;
+
+    protected   $partnershipsServiceMock;
 
     protected function setUp(): void
     {
@@ -27,7 +32,7 @@ class OAuthApplicationTest extends TestCase
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
-
+        $this->partnershipsServiceMock = $this->createPRTSServiceMock(['pushRawJob', 'sendRequest']);
 
         $this->ba->proxyAuth();
     }
@@ -182,6 +187,45 @@ class OAuthApplicationTest extends TestCase
                                     $requestParams);
 
         $this->startTest();
+    }
+
+    public function testUpdateApplicationForPPInviteExperimentDisable()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $requestParams['name'] = 'apptestnew';
+
+        $this->setAuthServiceMockDetail(
+            'applications/8ckeirnw84ifke',
+            'PATCH',
+            $requestParams);
+
+        $this->partnershipsServiceMock
+            ->expects($this->exactly(0))
+            ->method('sendRequest');
+
+        $testData = $this->testData['testUpdateApplicationForPPInvite'];
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateApplicationForPPInviteExperimentEnable()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $requestParams['name'] = 'apptestnew';
+
+        $this->setAuthServiceMockDetail(
+            'applications/8ckeirnw84ifke',
+            'PATCH',
+            $requestParams);
+
+        $this->mockAllSplitzTreatment();
+        $this->partnershipsServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->willReturn(['status_code' => 200]);
+        $testData = $this->testData['testUpdateApplicationForPPInvite'];
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testUpdateApplicationTypeFail()
