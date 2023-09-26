@@ -448,6 +448,20 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
         ],
-
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::ISG,
+            self::AUTHENTICATION_GATEWAY    => Gateway::ISG,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::ISG,
+            self::AUTHENTICATION_GATEWAY    => Gateway::ISG,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+            self::GATEWAY_AUTH_VERSION      => "v2",
+        ],
     ];
 }
