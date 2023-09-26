@@ -9,9 +9,8 @@ jobs:
     name: Cancel Previous Runs
     if: always()
     runs-on:
-      - self-hosted
       - api
-      - X64
+      - ARM64
     timeout-minutes: 3
     steps:
       - uses: styfle/cancel-workflow-action@0.9.0

@@ -9,7 +9,7 @@ jobs:
   cancel:
     runs-on:
       - api-public
-      - X64
+      - ARM64
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
