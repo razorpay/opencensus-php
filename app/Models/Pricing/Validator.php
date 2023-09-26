@@ -55,7 +55,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT_RANGE_ACTIVE     => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:500000000000',
         Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:500000000000', // max 500 cr
-        Entity::PERCENT_RATE            => 'sometimes|integer|max:20000',
+        Entity::PERCENT_RATE            => 'sometimes|integer|max:100000000',
         Entity::FIXED_RATE              => 'sometimes|integer|max:2500000',
         Entity::MIN_FEE                 => 'sometimes|integer|max:10000000',
         Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:10000000',
@@ -70,7 +70,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editPlanRuleRules = [
-        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
+        Entity::PERCENT_RATE        => 'sometimes|integer|max:100000000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:2500000',
         Entity::MIN_FEE             => 'sometimes|integer|max:10000000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:10000000',
