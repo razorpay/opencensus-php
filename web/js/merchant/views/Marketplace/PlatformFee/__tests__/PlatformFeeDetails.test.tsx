@@ -87,8 +87,9 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
     });
+    expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
     expect(screen.getByText('--')).toBeInTheDocument();
   });
 
@@ -97,8 +98,11 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
     });
+    expect(screen.getByText(data.id)).toBeInTheDocument();
+    expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+    expect(screen.getByText(paiseToRupees(data.amount + data.fees + data.tax))).toBeInTheDocument();
     const reversalButton = screen.getByRole('button', { name: 'Create reversal' });
     expect(reversalButton).toBeInTheDocument();
     await userEvent.click(reversalButton);

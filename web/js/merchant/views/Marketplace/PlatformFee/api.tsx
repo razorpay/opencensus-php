@@ -14,7 +14,7 @@ export const fetchReversals = (id: string) => {
   });
 };
 
-export const fetchTransfers = async (key: string, params: string) => {
+export const fetchTransfers = (key: string, params: string) => {
   return merchantFetch({
     url: `transfers${params}`,
     method: 'get',
