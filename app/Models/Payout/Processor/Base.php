@@ -250,6 +250,8 @@ class Base extends BaseCore
             return $payoutViaMicroservice;
         }
 
+        $payoutEntityCreateAndProcessStartTime = millitime();
+
         /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input, $skipWorkflow)
         {
@@ -360,6 +362,15 @@ class Base extends BaseCore
             return $payout;
         });
 
+        $payoutEntityCreateAndProcessEndTime = millitime();
+
+        $this->trace->histogram(
+            Metric::PAYOUT_ENTITY_CREATE_AND_PROCESS_DURATION,
+            $payoutEntityCreateAndProcessEndTime - $payoutEntityCreateAndProcessStartTime,
+            [
+                Metric::ACCOUNT_TYPE => $this->balance->getAccountType()
+            ]);
+
         if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
             ($payout->isStatusCreated() === true))
         {
@@ -392,7 +403,18 @@ class Base extends BaseCore
 
             if ($isFts === true)
             {
+                $ftsSyncCallStartTime = millitime();
+
                 $this->syncFTSFundTransfer($payout);
+
+                $ftsSyncCallEndTime = millitime();
+
+                $this->trace->histogram(
+                    Metric::PAYOUT_FTS_SYNC_CALL_DURATION,
+                    $ftsSyncCallEndTime - $ftsSyncCallStartTime,
+                    [
+                        Metric::ACCOUNT_TYPE => $this->balance->getAccountType()
+                    ]);
             }
         }
 

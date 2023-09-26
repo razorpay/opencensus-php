@@ -46,6 +46,8 @@ class Base extends FundAccountPayout\Base
     {
         try
         {
+            $payoutEntityProcessStartTime = millitime();
+
             $this->setChannel($payout);
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
@@ -84,6 +86,17 @@ class Base extends FundAccountPayout\Base
                     'payout_service_flag' => $payout->getIsPayoutService(),
                     'payout_balance_type' => $payout->getBalanceType(),
                     'payout_balance_account_type' => $payout->getBalanceAccountType(),
+                ]
+            );
+
+            $payoutEntityProcessEndTime = millitime();
+
+            $this->trace->info(
+                TraceCode::SHARED_ACCOUNT_PAYOUT_ENTITY_PROCESS_DURATION,
+                [
+                    'payout_id'        => $payout->getId(),
+                    'merchant_id'      => $payout->getMerchantId(),
+                    'process_duration' => $payoutEntityProcessEndTime - $payoutEntityProcessStartTime,
                 ]
             );
 
@@ -195,7 +208,16 @@ class Base extends FundAccountPayout\Base
 
         try
         {
+            $ledgerStartTime = millitime();
+
             $ledgerResponse = (new Ledger\Payout($payout))->processPayoutAndCreateJournalEntry($payout);
+
+            $ledgerEndTime = millitime();
+
+            $this->trace->histogram(
+                Metric::PAYOUT_LEDGER_PROCESS_DURATION,
+                $ledgerEndTime - $ledgerStartTime
+            );
 
             if ($payout->getIsPayoutService() === false)
             {

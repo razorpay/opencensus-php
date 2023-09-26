@@ -51,6 +51,8 @@ class Base extends BaseCore
 
     protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
     {
+        $ftaCreateStartTime = millitime();
+
         // For VA to VA transfers using creditTransfer entity we don't create FTA
         if ($payout->isVaToVaPayout() === true)
         {
@@ -99,6 +101,16 @@ class Base extends BaseCore
                         'fta_account_entity'    => $ftaAccountEntity,
                     ]);
         }
+
+        $ftaCreateEndTime = millitime();
+
+        $this->trace->info(
+            TraceCode::PAYOUT_FTA_ENTITY_CREATE_DURATION,
+            [
+                'payout_id'         => $payout->getId(),
+                'merchant_id'       => $payout->getMerchantId(),
+                'fta_creation_time' => $ftaCreateEndTime - $ftaCreateStartTime,
+            ]);
     }
 
     protected function modifyFTAInputForCARDModeIfRequired(array $ftaInput)

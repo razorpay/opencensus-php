@@ -112,6 +112,12 @@ final class Metric
     const FUND_MANAGEMENT_PAYOUT_INITIATED_COMPLETED_DURATION_SECONDS    = 'fund_management_payout_initiated_completed_duration_seconds.histogram';
     const PAYOUTS_SMART_ROUTING_COMPLETED_DURATION_MS                    = 'payouts_smart_routing_completed_duration_ms.histogram';
 
+    // payout create route
+    const COMPOSITE_PAYOUT_CONTACT_FUND_ACCOUNT_CREATE_DURATION          = 'composite_payout_contact_fund_account_create_duration';
+    const FREE_PAYOUT_CHECK_DURATION                                     = 'free_payout_check_duration';
+    const PAYOUT_ENTITY_CREATE_AND_PROCESS_DURATION                      = 'payout_entity_create_and_process_duration';
+    const PAYOUT_LEDGER_PROCESS_DURATION                                 = 'payout_ledger_process_duration';
+    const PAYOUT_FTS_SYNC_CALL_DURATION                                  = 'payout_fts_sync_call_duration';
 
     // Dimension constants
     const SOURCE         = 'source';
@@ -120,6 +126,7 @@ final class Metric
     const DASHBOARD      = 'dashboard';
     const IS_BANKING     = 'is_banking';
     const IS_JOB_DELETED = 'is_job_deleted';
+    const ACCOUNT_TYPE   = 'account_type';
 
     const ERROR_DESCRIPTION = 'error_description';
 

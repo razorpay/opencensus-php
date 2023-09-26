@@ -27,11 +27,15 @@ class Base extends FundAccountPayout\Base
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
+        $payoutEntityProcessStartTime = millitime();
+
         $this->setChannel($payout);
 
         $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
         $holdPayout = $this->holdPayoutIfPartnerBankDown($payout) || $this->holdPayoutIfApplicableAndBeneBankDown($payout);
+
+        $payoutEntityBankHealthCheckEndTime = millitime();
 
         if ($holdPayout === true)
         {
@@ -39,6 +43,8 @@ class Base extends FundAccountPayout\Base
         }
 
         $queued = $this->queueIfLowBalance($payout);
+
+        $payoutEntityAvailableBalanceCheckEndTime = millitime();
 
         if ($queued === true)
         {
@@ -48,6 +54,19 @@ class Base extends FundAccountPayout\Base
         $this->assignFreePayoutIfApplicable($payout);
 
         $this->setFeeAndTaxForPayout($payout);
+
+        $payoutEntityProcessEndTime = millitime();
+
+        $this->trace->info(
+            TraceCode::DIRECT_ACCOUNT_PAYOUT_ENTITY_PROCESS_DURATION,
+            [
+                'payout_id'                    => $payout->getId(),
+                'merchant_id'                  => $payout->getMerchantId(),
+                'channel'                      => $payout->getChannel(),
+                'bank_health_check_time'       => $payoutEntityBankHealthCheckEndTime - $payoutEntityProcessStartTime,
+                'available_balance_check_time' => $payoutEntityAvailableBalanceCheckEndTime - $payoutEntityBankHealthCheckEndTime,
+                'process_duration'             => $payoutEntityProcessEndTime - $payoutEntityProcessStartTime,
+            ]);
 
         $this->createFundTransferAttempt($payout, $ftaAccount);
     }

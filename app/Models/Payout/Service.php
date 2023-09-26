@@ -619,7 +619,15 @@ class Service extends Base\Service
                 return $response;
             }
 
+            $compositePayoutInputCreateStartTime = millitime();
+
             $input = $this->createContactAndFundAccountAndGetPayoutInputForCompositeRequest($input);
+
+            $compositePayoutInputCreateEndTime = millitime();
+
+            $this->trace->histogram(
+                Metric::COMPOSITE_PAYOUT_CONTACT_FUND_ACCOUNT_CREATE_DURATION,
+                $compositePayoutInputCreateEndTime - $compositePayoutInputCreateStartTime);
         }
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);

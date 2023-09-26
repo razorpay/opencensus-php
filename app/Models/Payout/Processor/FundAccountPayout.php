@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Payout\Status;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\CounterHelper;
@@ -319,7 +320,15 @@ class FundAccountPayout extends Base
 
         if ($queuePayoutCreateRequest === false)
         {
+            $freePayoutCheckStartTime = millitime();
+
             $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
+
+            $freePayoutCheckEndTime = millitime();
+
+            $this->trace->histogram(
+                Metric::FREE_PAYOUT_CHECK_DURATION,
+                $freePayoutCheckEndTime - $freePayoutCheckStartTime);
 
             $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
         }
