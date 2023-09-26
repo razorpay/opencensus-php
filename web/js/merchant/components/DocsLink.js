@@ -48,7 +48,7 @@ export function getCustomURL(url) {
 
   if (user.isOrgRZP) return url;
   if (user.isOrgCurlec) {
-    return url.replace(ORG_TO_URL_MAPPING.rzp, ORG_TO_URL_MAPPING[orgCustomCode]);
+    return url ? url.replace(ORG_TO_URL_MAPPING.rzp, ORG_TO_URL_MAPPING[orgCustomCode]) : url;
   }
 
   const urlSplits = url?.split('://');

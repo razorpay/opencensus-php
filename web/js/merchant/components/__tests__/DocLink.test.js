@@ -58,6 +58,21 @@ describe('test for getCustomURL function', () => {
       const testURL = getCustomURL('https://razorpay.com/docs/invoices/');
       expect(testURL).toBe('https://razorpay.com/docs/invoices/');
     });
+
+    test('when merchant is from curlec org and docURL is undefined', () => {
+      updateStore({
+        merchant: {
+          currency: 'MYR',
+          country_code: 'MY',
+        },
+        isOrgRZP: false,
+        isOrgCurlec: true,
+        orgCustomCode: 'curlec',
+      });
+      const testURL = getCustomURL();
+      // should not break if the argument passed is undefined
+      expect(testURL).toBe(undefined);
+    });
   });
 
   describe('test scenarios for merchant', () => {
