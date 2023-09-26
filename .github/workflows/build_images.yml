@@ -80,13 +80,20 @@ jobs:
       - name: validate-php-syntax-misc
         run: ci-assets/validate_php_syntax.sh misc
 
-  build-web:
+  ######## Build Web Multi-Arch Docker Image Natively Without Using Emulation ########
+  build-web-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux-amd64
+          - linux-arm64
     runs-on:
       - api-public
-      - X64
+      - ${{ matrix.platform }}
     needs: [ cancel ]
     continue-on-error: false
-    name: Build Web Harbor
+    name: Build Web Native
     steps:
       - name: Login to Harbor
         uses: docker/login-action@v2
@@ -100,10 +107,9 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:${{ github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.web
-          platforms: linux/arm64,linux/amd64
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             CACHEBUST=${{ github.sha }}
@@ -114,13 +120,47 @@ jobs:
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
-  build-worker:
+  build-web-multiarch:
+  # This action combines the amd64 & arm64 docker images from the previous job (build-web-native) & form a multi-arch docker image
+    needs:
+      - build-web-native
+    name: Build Web Harbor
     runs-on:
       - api-public
-      - X64
+      - linux-arm64
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - uses: docker/metadata-action@v4
+        id: metadata
+        with:
+          images: c.rzp.io/${{ github.repository }}
+          flavor: suffix=-${{ github.sha }}
+      - uses: int128/docker-manifest-create-action@v1
+        with:
+          tags: c.rzp.io/razorpay/api:${{ github.sha }}
+          suffixes: |
+            -linux-amd64
+            -linux-arm64
+
+  ######## Build Worker Multi-Arch Docker Image Natively Without Using Emulation ########
+  build-worker-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux-amd64
+          - linux-arm64
+    runs-on:
+      - api-public
+      - ${{ matrix.platform }}
     needs: [ cancel ]
     continue-on-error: false
-    name: Build Worker Harbor
+    name: Build Worker Native
     steps:
       - name: Login to Harbor
         uses: docker/login-action@v2
@@ -134,10 +174,9 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.worker
-          platforms: linux/amd64,linux/arm64
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
@@ -148,30 +187,63 @@ jobs:
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
-  build-checkout:
+  build-worker-multiarch:
+  # This action combines the amd64 & arm64 docker images from the previous job (build-worker-native) & form a multi-arch docker image
+    needs:
+      - build-worker-native
+    name: Build Worker Harbor
     runs-on:
       - api-public
-      - X64
+      - linux-arm64
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - uses: docker/metadata-action@v4
+        id: metadata
+        with:
+          images: c.rzp.io/${{ github.repository }}
+          flavor: suffix=worker-${{ github.sha }}
+      - uses: int128/docker-manifest-create-action@v1
+        with:
+          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
+          suffixes: |
+            -linux-amd64
+            -linux-arm64
+
+  ######## Build CheckOut Multi-Arch Docker Image Natively Without Using Emulation ########
+  build-checkout-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux-amd64
+          - linux-arm64
+    runs-on:
+      - api-public
+      - ${{ matrix.platform }}
     needs: [ cancel ]
     continue-on-error: false
-    name: Build Checkout Harbor
+    name: Build Checkout Native
     steps:
       - name: Login to Harbor
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.checkout
-          platforms: linux/amd64,linux/arm64
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
@@ -179,12 +251,39 @@ jobs:
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
+  build-checkout-multiarch:
+  # This action combines the amd64 & arm64 docker images from the previous job (build-checkout-native) & form a multi-arch docker image
+    needs:
+      - build-checkout-native
+    name: Build Checkout Harbor
+    runs-on:
+      - api-public
+      - linux-arm64
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - uses: docker/metadata-action@v4
+        id: metadata
+        with:
+          images: c.rzp.io/${{ github.repository }}
+          flavor: suffix=checkout-${{ github.sha }}
+      - uses: int128/docker-manifest-create-action@v1
+        with:
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
+          suffixes: |
+            -linux-amd64
+            -linux-arm64
+
   build-e2e:
     name: E2E test build
     runs-on:
       - api-public
       - X64
-    needs: [ build-web, build-worker, build-checkout ]
+    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -276,7 +375,7 @@ jobs:
     runs-on:
       - api-public
       - X64
-    needs: [ build-web, build-worker, build-checkout ]
+    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -347,7 +446,7 @@ jobs:
       - api-public
       - X64
     name: Regression Suite
-    needs: [ build-web, build-worker, build-checkout, validate-php-syntax-app, validate-php-syntax-misc ]
+    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Webhook
@@ -362,7 +461,7 @@ jobs:
       - self-hosted
       - api
       - X64
-    needs: [ build-web, build-worker, build-checkout ]
+    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Run ITF E2E Tests - Master
