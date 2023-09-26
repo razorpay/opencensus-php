@@ -58,6 +58,20 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`You pay the Razorpay platform fee`)).toBeInTheDocument();
     });
 
+    test('should render App Name', () => {
+      render(<App props={happyFlowProps} />);
+
+      expect(screen.getByText('App Name')).toBeInTheDocument();
+      expect(screen.getByText(`${happyFlowProps.applicationDetails.name}`)).toBeInTheDocument();
+    });
+
+    test('should render App ID', () => {
+      render(<App props={happyFlowProps} />);
+
+      expect(screen.getByText('App ID')).toBeInTheDocument();
+      expect(screen.getByText(`${happyFlowProps.applicationDetails.id}`)).toBeInTheDocument();
+    });
+
     test('should render Customer details', () => {
       render(<App props={happyFlowProps} />);
 

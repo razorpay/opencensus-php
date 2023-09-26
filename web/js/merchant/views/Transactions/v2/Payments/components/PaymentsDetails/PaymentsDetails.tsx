@@ -26,9 +26,15 @@ import {
   fetchInstantRefundFeeFn,
   fetchTransfersFn,
   refundPaymentFn,
+  fetchAppDetails,
 } from 'merchant/views/Transactions/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { IPaymentDetails, IPaymentIdRefundDetails, ICurrentBalance } from './types';
+import {
+  IPaymentDetails,
+  IPaymentIdRefundDetails,
+  ICurrentBalance,
+  ApplicationDetails,
+} from './types';
 import { getErrorMessageFromResponse, deepClone } from 'common/utils/rzp-utils';
 import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
 import { ErrorWrapper, StyledGoBackBtn } from './styled';
@@ -60,6 +66,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [paymentIdDetails, setPaymentIdDetails] = useState<IPaymentDetails | null>(null);
+  const [applicationDetails, setApplicationDetails] = useState<ApplicationDetails | null>(null);
   const [paymentIdRefundDetails, setPaymentIdRefundDetails] =
     useState<IPaymentIdRefundDetails | null>(null);
   const [error, setError] = useState(null);
@@ -75,16 +82,20 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     setIsLoading(true);
     const isPaymentsRoute = location.pathname.includes('/payments');
     const { id } = params;
+    // slicing the pay_ from the payment id
+    const slicedPaymentId = id.slice(4, id.length + 1);
     try {
       if (isPaymentsRoute) {
         // payments route - api call flow
         const responses = await Promise.all([
           fetchPaymentIdDetails(id),
           fetchPaymentIdRefundDetails(id),
+          fetchAppDetails(slicedPaymentId),
         ]);
         setPaymentIdDetails(responses[0].data);
         trackDetailsPageLoad({ latestTransactionStatus: responses[0].data.status });
         setPaymentIdRefundDetails(responses[1].data.items);
+        setApplicationDetails(responses[2]?.data?.application[0]);
       } else {
         // refunds route - api call flow
         const refundResponseDetails = await fetchRefundIdDetails(id);
@@ -207,6 +218,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
             <PaymentDetailsOverview
               paymentDetails={paymentIdDetails}
               paymentIdRefundDetails={paymentIdRefundDetails}
+              applicationDetails={applicationDetails}
             />
             {!isDesktop ? (
               <Box>
@@ -227,7 +239,10 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
                 reFetchPageDetails={reFetchPageDetails}
               />
             )}
-            <PaymentDetailsSection paymentDetails={paymentIdDetails} />
+            <PaymentDetailsSection
+              paymentDetails={paymentIdDetails}
+              applicationDetails={applicationDetails}
+            />
             <PaymentRefundDetails
               paymentDetails={paymentIdDetails}
               paymentIdRefundDetails={paymentIdRefundDetails}

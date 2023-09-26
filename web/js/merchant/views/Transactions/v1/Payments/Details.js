@@ -445,7 +445,6 @@ class PaymentDetailsContainer extends Component {
         message: error,
       };
     }
-
     return (
       <DualDetailView secondaryView={entity_name}>
         <PrimaryView>
