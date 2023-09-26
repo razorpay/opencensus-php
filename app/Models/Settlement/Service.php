@@ -1709,6 +1709,21 @@ class Service extends Base\Service
         return app('settlements_dashboard')->executionRegister($input);
     }
 
+    public function getCreationStatus(array $input) : array
+    {
+        return app('settlements_dashboard')->getCreationStatus($input);
+    }
+
+    public function updateCreationStatus(array $input) : array
+    {
+        return app('settlements_dashboard')->updateCreationStatus($input);
+    }
+
+    public function executionRelease(array $input) : array
+    {
+        return app('settlements_dashboard')->executionRelease($input);
+    }
+
     public function setDCSObject(array $input) : array
     {
         return app('settlements_dashboard')->setDCSObject($input);

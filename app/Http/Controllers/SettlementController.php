@@ -664,6 +664,33 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getCreationStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getCreationStatus($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateCreationStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateCreationStatus($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function executionRelease()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->executionRelease($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function setDCSObject()
     {
         $input = Request::all();

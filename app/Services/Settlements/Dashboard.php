@@ -25,6 +25,9 @@ class Dashboard extends Base
     const BENE_NAME_UPDATE             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/UpdateBeneficiaryName';
 
     const EXECUTION_REGISTER           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
+    const GET_SETTLEMENT_CREATION_STATUS = '/twirp/rzp.settlements.execution.v1.ExecutionService/GetSettlementCreationStatus';
+    const UPDATE_SETTLEMENT_CREATION_STATUS = '/twirp/rzp.settlements.execution.v1.ExecutionService/UpdateSettlementCreationStatus';
+    const EXECUTION_RELEASE           = '/twirp/rzp.settlements.execution.v1.ExecutionService/ReleasePastDatedExecutions';
     const SET_DCS_OBJECT               = '/twirp/rzp.settlements.dcs.v1.DCS/Set';
     const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
     const EXECUTION_RESUME             = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
@@ -437,6 +440,21 @@ class Dashboard extends Base
         $input['options'] = (object) $input['options'];
 
         return $this->makeRequest(self::EXECUTION_REGISTER, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function getCreationStatus(array $input) : array
+    {
+        return $this->makeRequest(self::GET_SETTLEMENT_CREATION_STATUS, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function updateCreationStatus(array $input) : array
+    {
+        return $this->makeRequest(self::UPDATE_SETTLEMENT_CREATION_STATUS, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function executionRelease(array $input) : array
+    {
+        return $this->makeRequest(self::EXECUTION_RELEASE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
