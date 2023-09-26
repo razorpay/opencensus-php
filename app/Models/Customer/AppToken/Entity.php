@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Customer\Entity as CustomerEntity;
 
 /**
@@ -76,4 +77,10 @@ class Entity extends Base\PublicEntity
             $this->setAttribute(self::DEVICE_TOKEN, $deviceToken);
         }
     }
+
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
+    }
+
 }

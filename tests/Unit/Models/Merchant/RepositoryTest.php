@@ -11,6 +11,8 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use Rzp\Accounts\Merchant\V1\Merchant as MerchantProto;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
@@ -103,6 +105,18 @@ class RepositoryTest extends RepositoryTestHelper
         "updated_at": 1687262077,
         "fund_addition_va_ids": "{\"fee_credit\": \"va_LIc0SnP6OMuXxH\"}",
         "industry_category_code_type": "iIfMMCYyTFbVSgHjgxBo"
+    }';
+
+    private $adjustmentEntityJson1 = '{
+        "id": "7wmZhMR5L6cAyu",
+        "merchant_id": "CzmiCwTPCL3t2K",
+        "amount": 100,
+        "currency": "INR",
+        "channel": "kotak",
+        "description": "test",
+        "created_at": 1687262076,
+        "updated_at": 1687262077,
+        "transaction_id": "7wmZhNaE8abtYn"
     }';
 
     /**
@@ -238,9 +252,39 @@ class RepositoryTest extends RepositoryTestHelper
 
                     ]
                 ]
-            ]
-        ];
+            ],
+            [
+                "relationName" => "merchant",
+                "asvEntity" => new Merchant(),
+                "asvResponseEntity" => new MerchantResponse(),
+                "setterFunctionName" => 'setMerchant',
+                "responseSetterFunctionName" => 'setMerchant',
+                "entityRepo" => new Repository(),
+                "entityRepoName" =>  'merchant',
+                "asvMockMethod" => "getById",
+                "entityName" => "merchant",
+                "entityData" => $this->merchantEntityJson1,
+                "entityClass" => new MerchantEntity(),
+                "entityProtoClass"  => new MerchantProto(),
+                "AssociatedEntityRepo" => new \RZP\Models\Adjustment\Repository(),
+                "AssociatedEntityName" => "adjustment",
+                "AssociatedEntityData" => $this->adjustmentEntityJson1,
+                "AssociatedEntityClass" =>  new AdjustmentEntity(),
+                "mockBuilderInterface" => "Razorpay\Asv\Interfaces\MerchantInterface",
+                "merchant_id" => "CzmiCwTPCL3t2K",
+                "id" => "7wmZhMR5L6cAyu",
+                "shouldEntityNeedsToBeCreated" => false,
+                "isDependentEntity" => true,
+                "dependentEntity" => [
+                    [
+                        "dependentEntityName" => "transaction",
+                        "dependentEntityData" => '{"id" : "7wmZhNaE8abtYn", "merchant_id": "CzmiCwTPCL3t2K"}',
+                        "dependentEntityClass" => new TransactionEntity(),
 
+                    ]
+                ]
+            ],
+        ];
         $this->runTestsForImplicitJoin($entitiesData);
     }
 

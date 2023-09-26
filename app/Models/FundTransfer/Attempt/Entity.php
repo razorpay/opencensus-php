@@ -12,7 +12,9 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Services\FTS\Constants as FTSConstants;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
+
 
 /**
  * @property mixed batchFundTransfer
@@ -776,5 +778,10 @@ class Entity extends Base\PublicEntity
     public function setWalletAccountId($walletAccountId)
     {
         $this->setAttribute(self::WALLET_ACCOUNT_ID, $walletAccountId);
+    }
+
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
 }

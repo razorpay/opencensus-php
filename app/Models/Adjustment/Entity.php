@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Models\Settlement;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
+
 
 class Entity extends Base\PublicEntity
 {
@@ -171,6 +173,11 @@ class Entity extends Base\PublicEntity
     public function settlement()
     {
         return $this->belongsTo('RZP\Models\Settlement\Entity');
+    }
+
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
 
     public function setChannel($channel)

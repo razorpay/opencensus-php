@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 /**
  * Class Entity
@@ -400,6 +401,11 @@ class Entity extends Base\PublicEntity
         $basicAuth = app('basicauth');
 
         return $basicAuth->isProxyOrPrivilegeAuth() === true;
+    }
+
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
 
 }

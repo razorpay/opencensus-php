@@ -85,5 +85,10 @@ class ImplicitJoinHelper
     {
         return $this->getRelationAttributeById($classInstance, $entityName, $relationName, 'merchant', 'findForImplicitJoin');
     }
+
+    public function getMerchantAttributeByMerchantId($classInstance, $entityName, $relationName = 'merchant')
+    {
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant', 'findForImplicitJoin');
+    }
 }
 

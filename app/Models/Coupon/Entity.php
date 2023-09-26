@@ -5,6 +5,7 @@ namespace RZP\Models\Coupon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -132,5 +133,10 @@ class Entity extends Base\PublicEntity
     public function isInternal()
     {
         return $this->getAttribute(self::IS_INTERNAL);
+    }
+
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
 }

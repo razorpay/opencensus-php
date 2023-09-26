@@ -47,8 +47,8 @@ class RepositoryTestHelper extends TestCase
             $data = $entitiesData[$i];
             if($data["isDependentEntity"])
             {
-                for ($i = 0; $i < count($data["dependentEntity"]); $i++) {
-                    $dependentData = $data["dependentEntity"][$i];
+                for ($j = 0; $j < count($data["dependentEntity"]); $j++) {
+                    $dependentData = $data["dependentEntity"][$j];
                     $this->createEntityInDatabase($dependentData["dependentEntityName"], $dependentData["dependentEntityData"], $dependentData["dependentEntityClass"]);
                 }
             }
@@ -70,7 +70,7 @@ class RepositoryTestHelper extends TestCase
             $asvMockMethod = $data["asvMockMethod"] ?? 'getByMerchantId';
 
 
-            $associatedEntity = $entityRepo->find($data["merchant_id"]);
+            $associatedEntity = $entityRepo->find($data["id"] ?? $data["merchant_id"] );
             $entity1 = $this->getEntityForJson($data["entityData"], $data["entityClass"]);
             $entity1Array = $entity1->toArray();
             $entityProto1 = $this->getEntityProtoForJson($data["entityData"], $data["entityProtoClass"]);
