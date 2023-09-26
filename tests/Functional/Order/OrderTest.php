@@ -3056,6 +3056,43 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchTPVOrderDetailsForCheckout(): void
+    {
+        $this->fixtures->merchant->addFeatures([
+            FeatureConstants::DEBIT_CARD_VALIDATION,
+            FeatureConstants::ONE_CLICK_CHECKOUT,
+        ]);
+
+        $orderData = [
+            'amount'        => 50000,
+            'receipt'       => 'rcptid42',
+            'bank_account'  => [
+                'account_number'    => '040304030403040',
+                'ifsc'              => 'FDRL0003098',
+                'name'              => 'ThisIsAwesome',
+            ],
+        ];
+
+        $order = $this->createOrder($orderData);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order'] = [
+            'id' => substr($order['id'], 6),
+            'amount' => 50000,
+            'partial_payment'   => false,
+            'currency'          => 'INR',
+            'amount_paid'       => 0,
+            'amount_due'        => 50000,
+            'first_payment_min_amount' => null,
+            'receipt' => 'rcptid42',
+            'bank' => 'FDRL',
+            'account_number' => '040304030403040'
+        ];
+
+        $this->startTest();
+    }
+
     public function testFetchOrderDetailsForCheckoutWithExpandOrder(): void
     {
         $this->fixtures->merchant->addFeatures([

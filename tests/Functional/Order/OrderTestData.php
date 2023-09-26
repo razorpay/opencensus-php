@@ -2667,6 +2667,25 @@ return [
         ],
     ],
 
+    'testFetchTPVOrderDetailsForCheckout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/internal/orders/checkout',
+        ],
+        'response'  => [
+            'content' => [
+                'partial_payment'   => false,
+                'amount'            => 50000,
+                'currency'          => 'INR',
+                'amount_paid'       => 0,
+                'amount_due'        => 50000,
+                'first_payment_min_amount' => null,
+                'bank' => 'FDRL',
+                'account_number' => 'XXXXXXXXXXXXX40',
+            ],
+        ],
+    ],
+
     'testFetchOrderDetailsForCheckoutWithAllPossibleFieldsInResponse' => [
         'request' => [
             'method'  => 'POST',

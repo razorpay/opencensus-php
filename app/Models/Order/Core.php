@@ -457,8 +457,7 @@ class Core extends Base\Core
             }
         }
 
-
-        if ($merchant->isTPVRequired() === true)
+        if ($this->isTpvRequired($orderMethod, $merchant) === true)
         {
             // TODO: Change this after creating bank account entities for all the previous TPV orders
             $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
@@ -522,6 +521,17 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    // check if tpv feature flag is enabled for upi , netbanking
+    // checl if debit_card_validation feature flag is enabled for cards
+    public function isTpvRequired($orderMethod, Merchant\Entity $merchant)
+    {
+        return $merchant->isTPVRequired() ||
+            (
+                $merchant->isDebitCardValidationEnabled() &&
+                (!isset($orderMethod) || $orderMethod === Payment\Method::CARD)
+            );
     }
 
     public function getMaskedAccountNumber($accountNumber)
