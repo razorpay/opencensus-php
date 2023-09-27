@@ -4414,8 +4414,8 @@ trait Refund
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
             $this->mode);
 
         $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
@@ -4453,8 +4453,8 @@ trait Refund
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
             $this->mode);
 
         $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
@@ -4492,8 +4492,8 @@ trait Refund
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS,
+        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
             $this->mode);
 
         $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
@@ -4532,8 +4532,8 @@ trait Refund
         }
 
         $variant = $this->app->razorx->getTreatment(
-            $payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_LA_TRANSFER_REVERSALS,
+            $payment->getMerchantId(),
+            Merchant\RazorxTreatment::SCROOGE_REFUND_LA_TRANSFER_REVERSALS_MID,
             $this->mode
         );
 
