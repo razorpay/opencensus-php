@@ -18,7 +18,16 @@ class PaymentsCrossBorderClient
 
     public function getDocuments($input)
     {
-        return $this->response;
+        return null;
     }
 
+    public function postDCSConfiguration($input)
+    {
+        return null;
+    }
+
+    public function getDCSConfiguration($input)
+    {
+        return null;
+    }
 }

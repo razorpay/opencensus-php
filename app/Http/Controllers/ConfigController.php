@@ -26,6 +26,24 @@ class ConfigController extends Controller
         return ApiResponse::json($configs);
     }
 
+    public function createPaymentConfigForPXB()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createPaymentConfigForPXB($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchPaymentConfigForPXB()
+    {
+        $input = Request::all();
+
+        $configs = $this->service()->fetchPaymentConfigForPXB($input);
+
+        return ApiResponse::json($configs);
+    }
+
     public function fetchPaymentConfigForCheckout()
     {
         $input = Request::all();

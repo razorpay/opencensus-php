@@ -102,6 +102,23 @@ class Service extends Base\Service
         return $config->toArrayPublic();
     }
 
+    public function createPaymentConfigForPXB(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+        $req = [
+            'entity_id' => $merchantId,
+            'feature' => [
+                'lrs_markup_percentage' => $input['config']['lrs_markup_percentage'],
+            ],
+        ];
+        return $this->app['payments-cross-border']->postDCSConfiguration($req);
+    }
+
+    public function fetchPaymentConfigForPXB(array $input)
+    {
+        return $this->app['payments-cross-border']->getDCSConfiguration($this->merchant->getId());
+    }
+
     public function updateLateAuthConfigBulk(array  $input)
     {
         $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_REQUEST, $input);

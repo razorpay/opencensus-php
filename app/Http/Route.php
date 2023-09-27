@@ -83,6 +83,12 @@ class Route
         'delete_payment_config'                    => ['delete',   'payment/config',                                 'ConfigController@deletePaymentConfig'                              ],
         'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
         'sync_pg_router_order_bulk'                => ['post',     'bulk/sync/orders',                               'OrderController@bulkSyncOrderToPgRouter'                          ],
+
+        // TODO: Need to remove below two endpoints once edge team is live with support of proxy auth
+        'create_pxb_payment_config_admin'          => ['post',     'admin/pxb/payment/config',                       'ConfigController@createPaymentConfigForPXB'                              ],
+        'fetch_pxb_payment_config_admin'           => ['get',      'admin/pxb/payment/config',                       'ConfigController@fetchPaymentConfigForPXB'                              ],
+
+
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
 
@@ -7485,6 +7491,8 @@ class Route
         'admin_setl_fetch_source_details',
         'admin_settlement_ondemand_fetch_by_id',
         'setl_merchant_config_get_admin',
+        'create_pxb_payment_config_admin',
+        'fetch_pxb_payment_config_admin',
         //media Service routes
         'media_service_upload_file',
         'media_service_get_bucket',
@@ -9970,6 +9978,8 @@ class Route
         'delete_payment_config'                     => Permission::DELETE_PAYMENT_CONFIG,
         'fetch_payment_config_admin'                => Permission::FETCH_PAYMENT_CONFIG_ADMIN,
         'create_payment_config_admin'               => Permission::CREATE_PAYMENT_CONFIG,
+        'create_pxb_payment_config_admin'           => Permission::CREATE_PAYMENT_CONFIG,
+        'fetch_pxb_payment_config_admin'            => Permission::FETCH_PAYMENT_CONFIG_ADMIN,
         'update_payment_config_admin'               => Permission::UPDATE_PAYMENT_CONFIG,
         'update_late_auth_config_admin_bulk'        => Permission::UPDATE_PAYMENT_CONFIG,
         'create_payment_config_bulk'                => Permission::CREATE_PAYMENT_CONFIG,
@@ -12889,6 +12899,8 @@ class Route
             'admin_setl_fetch_source_details',
             'admin_settlement_ondemand_fetch_by_id',
             'setl_merchant_config_get_admin',
+            'create_pxb_payment_config_admin',
+            'fetch_pxb_payment_config_admin',
             'workflow_needs_merchant_clarification',
             'growth_admin',
             "growth_upload_asset",

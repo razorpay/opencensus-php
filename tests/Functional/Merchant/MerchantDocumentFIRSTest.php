@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use RZP\Services\Mock\PaymentsCrossBorderClient;
+use RZP\Services\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Services\UfhService;

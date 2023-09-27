@@ -21,11 +21,16 @@ class PaymentsCrossBorderClient
     const PAYMENTS_CROSS_BORDER = 'PaymentsCrossBorder';
     //get document url
     const GET_DOCUMENTS = 'v1/documents';
+    const CONFIGURE_DCS = 'v1/configure-dcs';
+    const GET_CONFIGURE_DCS = 'v1/configure-dcs/%s';
 
     const GET = 'GET';
+    const POST = 'POST';
 
     const PAYMENTS_CROSS_BORDER_URLS = [
         "GET_DOCUMENTS" => self::GET_DOCUMENTS,
+        "CONFIGURE_DCS" => self::CONFIGURE_DCS,
+        "GET_CONFIGURE_DCS" => self::GET_CONFIGURE_DCS,
     ];
 
     protected $client;
@@ -141,4 +146,33 @@ class PaymentsCrossBorderClient
         }
     }
 
+    public function postDCSConfiguration($input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['CONFIGURE_DCS'];
+
+        try {
+            return $this->makeRequest($url, self::POST, $input);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_POST_DCS_CONFIG_ERROR,[
+                'input' => $input,
+                'error' => $e,
+            ]);
+        }
+        return ["success" => false];
+    }
+
+    public function getDCSConfiguration($merchantId)
+    {
+        $url = sprintf(self::PAYMENTS_CROSS_BORDER_URLS['GET_CONFIGURE_DCS'], $merchantId);
+
+        try {
+            return $this->makeRequest($url, self::GET);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_GET_DCS_CONFIG_ERROR,[
+                'merchant_id' => $merchantId,
+                'error' => $e,
+            ]);
+        }
+        return ["success" => false];
+    }
 }

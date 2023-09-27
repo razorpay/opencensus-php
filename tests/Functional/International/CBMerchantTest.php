@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\International;
 
 use Functional\Helpers\BvsTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
-use RZP\Services\Mock\PaymentsCrossBorderClient;
+use RZP\Services\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;

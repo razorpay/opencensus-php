@@ -1985,6 +1985,8 @@ class Constants
         self::ONE_CC_ENABLE_NECTOR_COINS,
         self::REMOVE_RAZORPAY_BRANDING,
         DcsConstants::ShowSingleDCCCurrency,
+        DcsConstants::LRSEducationFlow,
+        DcsConstants::LRSImportFeeBreakup,
     ];
 
     const ONE_CC_FEATURES = [
@@ -3723,6 +3725,16 @@ class Constants
         DcsConstants::ShowSingleDCCCurrency => [
             'feature'       => DcsConstants::ShowSingleDCCCurrency,
             'display_name'  => 'Show only Single Currency on DCC Selection Screen',
+            'documentation' => '',
+        ],
+        DcsConstants::LRSEducationFlow => [
+            'feature'       => DcsConstants::LRSEducationFlow,
+            'display_name'  => 'Feature to enable LRS for Education flow',
+            'documentation' => '',
+        ],
+        DcsConstants::LRSImportFeeBreakup => [
+            'feature'       => DcsConstants::LRSImportFeeBreakup,
+            'display_name'  => 'Feature to show fee breakup for LRS transactions',
             'documentation' => '',
         ],
     ];
