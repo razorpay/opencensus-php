@@ -28,17 +28,15 @@ import {
   RowWrapper,
   SectionHeader,
 } from './styled';
-import { IPaymentDetails, ApplicationDetails } from './types';
+import { IPaymentDetails } from './types';
 import { onCopy } from './utils';
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
-  applicationDetails: ApplicationDetails | null;
 }
 
 function PaymentDetailsSection({
   paymentDetails,
-  applicationDetails,
   history,
   location,
   match: {
@@ -251,24 +249,6 @@ function PaymentDetailsSection({
                     {fee_bearer === 'platform'
                       ? 'You pay the Razorpay platform fee'
                       : 'The customer has paid the fees for this payment'}
-                  </Text>
-                </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
-                <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                    App Name
-                  </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
-                    {applicationDetails?.name || `--`}
-                  </Text>
-                </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
-                <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                    App ID
-                  </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
-                    {applicationDetails?.id || `--`}
                   </Text>
                 </RowWrapper>
                 <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />

@@ -520,26 +520,3 @@ export const mockfetchHolidayList = () => {
     }),
   );
 };
-
-export const mockApplicationDetails = () => {
-  return server.use(
-    rest.get('*/merchant/api/:mode/partner/subm_payment/app_details', (req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status_code: 200,
-          success: true,
-          data: {
-            application: [
-              {
-                name: 'whatsapp',
-                id: 'whatsappapplicationid',
-              },
-            ],
-          },
-        }),
-        ctx.delay(50),
-      );
-    }),
-  );
-};

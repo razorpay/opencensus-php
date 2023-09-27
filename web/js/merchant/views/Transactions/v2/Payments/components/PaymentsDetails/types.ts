@@ -234,8 +234,3 @@ export interface ICurrentBalance {
   locked_balance: number;
   last_fetched_at: number;
 }
-
-export interface ApplicationDetails {
-  name: string;
-  id: string;
-}

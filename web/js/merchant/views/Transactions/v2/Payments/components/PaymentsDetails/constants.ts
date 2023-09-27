@@ -19,7 +19,6 @@ export const tooltipContent = {
   rrnARN: 'A unique identifier (Reference Number) which serves as a proof of the refund',
   platformFees: 'Platform fees charged by Razorpay',
   gst: 'Goods and Service Tax (GST)',
-  partnerApplicationFees: 'The fees has been charged for a transaction via partner:',
 };
 
 export const ERROR_DESCRIPTION_CONTENT_MAP = {

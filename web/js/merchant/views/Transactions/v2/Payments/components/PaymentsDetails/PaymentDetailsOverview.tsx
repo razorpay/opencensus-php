@@ -41,7 +41,7 @@ import {
   StyledAmountContainer,
   StyledAmountWrapper,
 } from './styled';
-import { IPaymentDetails, IPaymentIdRefundDetails, ApplicationDetails } from './types';
+import { IPaymentDetails, IPaymentIdRefundDetails } from './types';
 
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import {
@@ -61,7 +61,6 @@ const OverviewIcon = ({ status }) => {
 interface IPaymentDetailsOverview extends RouteComponentProps {
   paymentDetails: IPaymentDetails;
   paymentIdRefundDetails: IPaymentIdRefundDetails;
-  applicationDetails: ApplicationDetails;
   fetchHolidayList: () => Promise<Record<string, string>>;
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
@@ -71,7 +70,6 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
 function PaymentDetailsOverview({
   paymentDetails,
   paymentIdRefundDetails,
-  applicationDetails,
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
@@ -138,17 +136,6 @@ function PaymentDetailsOverview({
                     >
                       {titleCase(status)}
                     </Badge>
-                    {applicationDetails?.name ? (
-                      <Badge
-                        contrast="low"
-                        marginRight="spacing.3"
-                        marginTop="spacing.2"
-                        size="large"
-                        variant={getBaseVariant(status)}
-                      >
-                        Payment initiated via {applicationDetails?.name}
-                      </Badge>
-                    ) : null}
                   </Box>
                   <StyledAmountWrapper type="regular" fontSize={28}>
                     <Amount currency={currency || 'INR'} value={amount} />
@@ -187,17 +174,6 @@ function PaymentDetailsOverview({
                     >
                       {titleCase(status)}
                     </Badge>
-                    {applicationDetails?.name ? (
-                      <Badge
-                        contrast="low"
-                        marginRight="spacing.3"
-                        marginTop="spacing.2"
-                        size="large"
-                        variant={getBaseVariant(status)}
-                      >
-                        Payment initiated via {applicationDetails?.name}
-                      </Badge>
-                    ) : null}
                   </Box>
                 </Box>
                 <OverviewSubtextWrapper isMobile={isMobile}>
@@ -288,14 +264,7 @@ function PaymentDetailsOverview({
                         paddingLeft="spacing.3"
                       >
                         <Text>
-                          Razorpay platform fees{' '}
-                          <Tooltip
-                            type={
-                              applicationDetails?.name ? 'partnerApplicationFees' : 'platformFees'
-                            }
-                            partnerApplicationName={applicationDetails?.name}
-                            size="small"
-                          />
+                          Razorpay platform fees <Tooltip type="platformFees" size="small" />
                         </Text>
                         <Amount value={fee} />
                       </Box>

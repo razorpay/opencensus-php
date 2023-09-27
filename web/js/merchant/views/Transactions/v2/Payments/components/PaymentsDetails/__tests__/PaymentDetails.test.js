@@ -12,7 +12,6 @@ import {
   mockPaymentIdDetails,
   mockPaymentIdRefunds,
   mockRefundIdDetails,
-  mockApplicationDetails,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/handlers';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -97,7 +96,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
     });
     test('should render Payment Details overview component', async () => {
       render(<App props={paymentPageProps} />, { initialState });
@@ -129,7 +127,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
     });
     test('should call Payment fetch API', async () => {
       render(<App props={paymentPageProps} />, { initialState });
@@ -143,7 +140,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
     });
     test('should call Refund fetch API', async () => {
       render(<App props={refundPageProps} />, { initialState });
@@ -157,7 +153,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({ error: 'Internal server error' });
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
     });
     test('should render error state', async () => {
       render(<App props={paymentPageProps} />, { initialState });
@@ -170,7 +165,6 @@ describe('Payment Details component', () => {
     beforeEach(() => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
-      mockApplicationDetails({});
       mockRefundIdDetails({ error: 'Internal server error' });
     });
     test('should render error state', async () => {
@@ -185,7 +179,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
       openModalSpy.mockClear();
     });
 
@@ -208,7 +201,6 @@ describe('Payment Details component', () => {
       mockPaymentIdDetails({});
       mockPaymentIdRefunds({});
       mockRefundIdDetails({});
-      mockApplicationDetails({});
       openModalSpy.mockClear();
     });
 

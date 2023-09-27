@@ -13,17 +13,12 @@ type TooltipContentKeys = keyof typeof tooltipContent;
 
 interface IProps {
   type: TooltipContentKeys;
-  partnerApplicationName?: string;
   size?: IconProps['size'];
 }
 
 function Tooltip(props: IProps): React.ReactElement {
-  const { type, partnerApplicationName, ...restProps } = props;
-  let content = tooltipContent[type] || '';
-
-  if (partnerApplicationName) {
-    content = `${tooltipContent[type]} ${partnerApplicationName}`;
-  }
+  const { type, ...restProps } = props;
+  const content = tooltipContent[type] || '';
   return (
     <TooltipWrapper>
       <BladeTooltip content={content}>

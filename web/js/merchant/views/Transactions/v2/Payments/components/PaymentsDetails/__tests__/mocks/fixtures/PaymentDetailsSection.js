@@ -87,10 +87,6 @@ export const happyFlowProps = {
     gateway_refund_support: true,
     direct_settlement_refund: false,
   },
-  applicationDetails: {
-    name: 'WhatsApp',
-    id: 'testapplicationid',
-  },
   history: {},
   location: {},
 };

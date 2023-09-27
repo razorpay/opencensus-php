@@ -326,10 +326,6 @@ export const refundedPaymentProps = {
       status: 'processed',
     },
   ],
-  applicationDetails: {
-    name: 'WhatsApp',
-    id: 'testapplicationid',
-  },
 };
 
 export const failedPaymentProps = {
