@@ -3390,10 +3390,10 @@ class Core extends Base\Core
                             return null;
                         }
 
-                        $payout->setStatus(Status::FAILED);
-
                         //Failure reason is marked as PARTNER_BANK_DEGRADED since the sla is breached and the bank is still down.
                         $payout->setFailureReason(QueuedReasons::GATEWAY_DEGRADED);
+
+                        $payout->setStatus(Status::FAILED);
 
                         $payout->setStatusCode("PARTNER_BANK_OFFLINE");
 
