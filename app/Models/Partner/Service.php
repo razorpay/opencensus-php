@@ -295,6 +295,13 @@ class Service extends Base\Service
      */
     public function isPartnerTypeSwitchExpEnabled(string $merchantId, bool $toConsiderPartnerOnboardingTs = false): bool
     {
+        $requestData = [ 'mid' => $merchantId ];
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
+            'request_data'  => json_encode($requestData),
+        ];
+
         $partnerOnboardingTs = null;
         if ($toConsiderPartnerOnboardingTs)
         {
@@ -306,13 +313,12 @@ class Service extends Base\Service
             if (empty($partnerConsent))
             {
 //              Partner consent will be absent for Partners that were onboarded before Jan 2023
-                return false;
+                return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
             }
 
             $partnerOnboardingTs = $partnerConsent->getCreatedAt();
         }
 
-        $requestData = [ 'mid' => $merchantId ];
 
         if ($partnerOnboardingTs !== null)
         {
@@ -323,11 +329,7 @@ class Service extends Base\Service
             $requestData = array_merge($requestData, ['flow' => 'admin']);
         }
 
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
-            'request_data'  => json_encode($requestData),
-        ];
+        $properties['request_data'] = json_encode($requestData);
 
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
