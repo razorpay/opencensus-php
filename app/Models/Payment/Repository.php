@@ -2078,12 +2078,17 @@ EOT;
         return $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
     }
 
-    public function fetchCapturedRearchPaymentsTxnNull()
+    public function fetchCapturedRearchPaymentsTxnNull($cpsRoutes, $startTimeOffset, $endTimeOffset)
     {
+        $capturedStartTime = Carbon::today(Timezone::IST)->subMinutes($startTimeOffset)->getTimestamp();
+
+        $capturedEndTime = Carbon::today(Timezone::IST)->subMinutes($endTimeOffset)->getTimestamp();
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->where(Payment\Entity::CPS_ROUTE, '=', 5)
+            ->whereIn(Payment\Entity::CPS_ROUTE, $cpsRoutes)
             ->where(Payment\Entity::STATUS, '=', 'captured')
             ->whereNull(Payment\Entity::TRANSACTION_ID)
+            ->whereBetween(Entity::CAPTURED_AT, [$capturedStartTime, $capturedEndTime])
             ->limit(100)
             ->get();
     }

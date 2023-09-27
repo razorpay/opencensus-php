@@ -559,9 +559,9 @@ class Service extends Base\Service
         {
             $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNullForMerchant($input['merchant_id']);
         }
-        else
+        elseif(empty($input['cps_routes']) === false and empty($input['start_time_offset']) === false and empty($input['end_time_offset']) === false)
         {
-            $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNull();
+            $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNull($input['cps_routes'], $input['start_time_offset'], $input['end_time_offset']);
         }
 
         foreach ($payments as $payment)
@@ -574,7 +574,7 @@ class Service extends Base\Service
 
                 $txn = (new Transaction\Core)->createUpdateLedgerTransaction($rearchPayment);
 
-                array_push($successIds, $rearchPayment->getId());
+                array_push($successIds, $payment->getId());
             }
             catch(\Exception $e)
             {
