@@ -2711,6 +2711,49 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testEcollectAxisBatchCreate' => [
+        'request' => [
+            'url' => '/ecollect/validate/file/axis',
+            'method' => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key' => 'BtAxis/filename.xls',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_axis',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'ecollectAxisBatchData' => [
+        [
+            'Message Type'                      => 'NEFT',
+            'UTR Number'                        => 'RZPY100200300001',
+            'Sender IFSC'                       => 'UTIB0000131',
+            'Sender Acc Type'                   => 'Current Account',
+            'Sender Account Number'             => '999988887777',
+            'Sender Name'                       => 'BharatPe',
+            'Sender Address 1'                  => null,
+            'Beneficiary IFSC'                  => 'UTIB000RAZP',
+            'Beneficiary Account Number'        => '2223330005148068',
+            'Beneficiary Account Name'          => null,
+            'Sender Information'                => null,
+            'Amount'                            => '100',
+            'Transaction Date'                  => '14-02-2020',
+            'Credit Date'                       => '14-02-2020',
+            'Beneficiary Account Type'          => 'Current Account',
+            'Related Reference'                 => null,
+            'Beneficiary Address 1'             => null,
+            'Credit Acc Number - NEFT/RTGS'     => '999988887777666',
+            'Batch Time'                        => '0001',
+        ]
+    ],
+
     'testBankTransferAxisCallbackValidationFailure' => [
         'request' => [
             'url'     => '/ecollect/validate/axis/test',

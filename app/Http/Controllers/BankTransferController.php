@@ -63,6 +63,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processBankTransferFileAxis()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_AXIS);
+
+        return ApiResponse::json($response);
+    }
+
     public function processBankTransferFileYesbank()
     {
         $input = Request::all();

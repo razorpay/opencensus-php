@@ -289,6 +289,17 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
     }
 
+    public function testEcollectAxisBatchCreate()
+    {
+        $data = $this->testData['ecollectAxisBatchData'];
+
+        $this->createExcelFile($data, 'filename', 'files/filestore', extension: 'xls');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
+    }
+
     public function testValidateBankTransferAxisDuplicate()
     {
         $testData = $this->testData['testBankTransferAxis'];

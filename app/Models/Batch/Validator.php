@@ -931,7 +931,6 @@ class Validator extends Base\Validator
         Entity::CONFIG   => 'required|array|custom',
     ];
 
-
     protected static $submerchantTypeUpdateCreateRules = [
         Entity::TYPE     => 'required|in:submerchant_type_update',
         Entity::NAME     => 'filled|string|max:255',
@@ -941,6 +940,14 @@ class Validator extends Base\Validator
 
     protected static $ecollectRblCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_rbl',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
+    protected static $ecollectAxisCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_axis',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',

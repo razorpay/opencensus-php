@@ -1189,6 +1189,31 @@ class Header
     const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
     const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
 
+    const  AXIS_ECOLLECT_MESSAGE_TYPE               = 'Message Type';
+    const  AXIS_ECOLLECT_UTR_NUMBER                 = 'UTR Number';
+    const  AXIS_ECOLLECT_SENDER_IFSC                = 'Sender IFSC';
+    const  AXIS_ECOLLECT_SENDER_ACCOUNT_TYPE        = 'Sender Acc Type';
+    const  AXIS_ECOLLECT_SENDER_ACCOUNT_NUMBER      = 'Sender Account Number';
+    const  AXIS_ECOLLECT_SENDER_NAME                = 'Sender Name';
+    const  AXIS_ECOLLECT_SENDER_ADDRESS             = 'Sender Address 1';
+    const  AXIS_ECOLLECT_BENEFICIARY_IFSC           = 'Beneficiary IFSC';
+    const  AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER = 'Beneficiary Account Number';
+    const  AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NAME   = 'Beneficiary Account Name';
+    const  AXIS_ECOLLECT_SENDER_INFORMATION         = 'Sender Information';
+    const  AXIS_ECOLLECT_AMOUNT                     = 'Amount';
+    const  AXIS_ECOLLECT_TRANSACTION_DATE           = 'Transaction Date';
+    const  AXIS_ECOLLECT_CREDIT_DATE                = 'Credit Date';
+    const  AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE   = 'Beneficiary Account Type';
+    const  AXIS_ECOLLECT_RELATED_REFERENCE          = 'Related Reference';
+    const  AXIS_ECOLLECT_BENEFICIARY_ADDRESS        = 'Beneficiary Address 1';
+    const  AXIS_ECOLLECT_CORPORATE_CODE             = 'CORP_CODE';
+    const  AXIS_ECOLLECT_CLIENT_CODE                = 'CLIENT_CODE';
+    const  AXIS_ECOLLECT_CREDIT_ACCOUNT_NUMBER      = 'Credit Acc Number - NEFT/RTGS';
+    const  AXIS_ECOLLECT_BATCH_TIME                 = 'Batch Time';
+    const  AXIS_ECOLLECT_CIF_ID                     = 'CIF_ID';
+    const  AXIS_ECOLLECT_BRANCH_REFERENCE           = 'BRANCH_REF';
+    const  AXIS_ECOLLECT_STATUS                     = 'STATUS';
+
     // Bank Transfer Edit Payer Bank Account Headers
     const BANK_TRANSFER_EDIT_BANK_TRANSFER_ID       = 'BANK_TRANSFER_ID';
     const BANK_TRANSFER_EDIT_BENEFICIARY_NAME       = 'BENEFICIARY_NAME';
@@ -4685,6 +4710,57 @@ class Header
                 self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
                 self::RBL_ECOLLECT_CORPORATE_CODE,
                 self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::STATUS,
+            ],
+        ],
+
+        Type::ECOLLECT_AXIS => [
+            self::INPUT => [
+                self::AXIS_ECOLLECT_MESSAGE_TYPE,
+                self::AXIS_ECOLLECT_UTR_NUMBER,
+                self::AXIS_ECOLLECT_SENDER_IFSC,
+                self::AXIS_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::AXIS_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_SENDER_NAME,
+                self::AXIS_ECOLLECT_SENDER_ADDRESS,
+                self::AXIS_ECOLLECT_BENEFICIARY_IFSC,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NAME,
+                self::AXIS_ECOLLECT_SENDER_INFORMATION,
+                self::AXIS_ECOLLECT_AMOUNT,
+                self::AXIS_ECOLLECT_TRANSACTION_DATE,
+                self::AXIS_ECOLLECT_CREDIT_DATE,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::AXIS_ECOLLECT_RELATED_REFERENCE,
+                self::AXIS_ECOLLECT_BENEFICIARY_ADDRESS,
+                self::AXIS_ECOLLECT_CORPORATE_CODE,
+                self::AXIS_ECOLLECT_CLIENT_CODE,
+                self::AXIS_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_BATCH_TIME,
+                self::AXIS_ECOLLECT_CIF_ID,
+                self::AXIS_ECOLLECT_BRANCH_REFERENCE,
+                self::AXIS_ECOLLECT_STATUS,
+            ],
+            self::OUTPUT => [
+                self::AXIS_ECOLLECT_MESSAGE_TYPE,
+                self::AXIS_ECOLLECT_UTR_NUMBER,
+                self::AXIS_ECOLLECT_SENDER_IFSC,
+                self::AXIS_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::AXIS_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_SENDER_NAME,
+                self::AXIS_ECOLLECT_SENDER_ADDRESS,
+                self::AXIS_ECOLLECT_BENEFICIARY_IFSC,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_NAME,
+                self::AXIS_ECOLLECT_SENDER_INFORMATION,
+                self::AXIS_ECOLLECT_AMOUNT,
+                self::AXIS_ECOLLECT_TRANSACTION_DATE,
+                self::AXIS_ECOLLECT_CREDIT_DATE,
+                self::AXIS_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::AXIS_ECOLLECT_RELATED_REFERENCE,
+                self::AXIS_ECOLLECT_BENEFICIARY_ADDRESS,
+                self::AXIS_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::AXIS_ECOLLECT_BATCH_TIME,
                 self::STATUS,
             ],
         ],
