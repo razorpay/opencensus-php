@@ -10,6 +10,7 @@ class Validator extends Base\Validator
 
     protected static $sendMailRules = [
         'to_emails'      => 'required|array',
+        'bcc_emails'     => 'sometimes|array',
         'to_emails.*'    => 'required|email',
         'data'          => 'required|array',
         'subject'       => 'required|string',

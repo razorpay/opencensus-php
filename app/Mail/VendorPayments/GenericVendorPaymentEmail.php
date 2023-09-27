@@ -16,11 +16,13 @@ class GenericVendorPaymentEmail extends Mailable
 
     protected $templateName;
 
-    protected $merchantEmail;
+    protected $toEmails;
 
     protected $customSubject;
 
-    public function __construct(array $merchantEmail, string $subject, string $templateName, array $data)
+    protected $bccEmails;
+
+    public function __construct(array $toEmails, array $bccEmails, string $subject, string $templateName, array $data)
     {
         parent::__construct();
 
@@ -30,7 +32,9 @@ class GenericVendorPaymentEmail extends Mailable
 
         $this->templateName = $templateName;
 
-        $this->merchantEmail = $merchantEmail;
+        $this->toEmails = $toEmails;
+
+        $this->bccEmails = $bccEmails;
     }
 
     protected function addAttachments()
@@ -53,7 +57,14 @@ class GenericVendorPaymentEmail extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->merchantEmail);
+        $this->to($this->toEmails);
+
+        return $this;
+    }
+
+    protected function addBcc()
+    {
+        $this->bcc($this->bccEmails);
 
         return $this;
     }

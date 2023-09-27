@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\VendorPayment;
 
 use App;
+use Mail;
 use Mockery;
 use Carbon\Carbon;
 
@@ -229,6 +230,28 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('sendMail');
+    }
+
+    public function testGenericEmailMockingMailService()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        Mail::fake();
+
+        $this->startTest();
+    }
+
+    public function testGenericEmailMockingMailServiceBccEmailsEmpty()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        Mail::fake();
+
+        $this->startTest();
     }
 
     public function testUpcomingMailCronRouteCallsServiceMethod()

@@ -127,6 +127,7 @@ class Service
     const SUBJECT                  = 'subject';
     const NAME                     = 'name';
     const TO_EMAIL                 = 'to_emails';
+    const BCC_EMAIL                = 'bcc_emails';
     const GET_REPORTING_INFO       = 'GetReportingInfo';
     const CONTENT_TYPE             = 'Content-Type';
     const X_APP_MODE               = 'X-App-Mode';
@@ -178,7 +179,10 @@ class Service
     {
         (new Validator())->validateInput(Validator::SEND_MAIL, $input);
 
+        $bccEmails = $input[self::BCC_EMAIL] ?? [];
+
         Mail::queue(new GenericVendorPaymentEmail($input[self::TO_EMAIL],
+                                                  $bccEmails,
                                                   $input[self::SUBJECT],
                                                   $input[self::TEMPLATE_NAME],
                                                   $input[self::DATA]));

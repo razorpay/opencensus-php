@@ -437,6 +437,47 @@ return [
             'content' => []
         ]
     ],
+
+    'testGenericEmailMockingMailService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendMailGeneric',
+            'content' => [
+                'to_emails'     => ['test@gmail.com'],
+                'bcc_emails'    => ['test@gmail.com'],
+                'data'          => ['test data'],
+                'subject'       => 'test subject',
+                'template_name' => 'test template',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testGenericEmailMockingMailServiceBccEmailsEmpty' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendMailGeneric',
+            'content' => [
+                'to_emails'     => ['test@gmail.com'],
+                'bcc_emails'    => [],
+                'data'          => ['test data'],
+                'subject'       => 'test subject',
+                'template_name' => 'test template',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testUpcomingMailCronRouteCallsServiceMethod'          => [
         'request'  => [
             'method'  => 'POST',
