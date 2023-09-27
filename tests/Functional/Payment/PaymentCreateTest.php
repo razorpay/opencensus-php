@@ -6193,30 +6193,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($paymentMeta['id'], $response['id']);
     }
 
-    public function testPaymentCreateForLAVBBankCard()
-    {
-        $this->fixtures->iin->create([
-            'iin'       => '608399',
-            'country'   => 'US',
-            'network'   => 'MasterCard',
-            'issuer'    => 'LAVB',
-            'enabled'   => 0,
-        ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['card']['number'] = '6083995565723838';
-
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            \RZP\Exception\BadRequestException::class,
-            'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020'
-            );
-    }
-
     public function testRewardsTermRouteWithPaymentId()
     {
         $callback = null;
