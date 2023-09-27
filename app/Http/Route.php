@@ -16669,6 +16669,26 @@ class Route
         'edge' => [
             'third_party_authenticate'
         ],
+        'razorassist' => [
+            'merchant_ids_fetch_for_user_contact',
+            'payment_fetch_multiple',
+            'payment_fetch_by_id',
+            'settlement_ondemand_fetch_by_id',
+            'settlement_ondemand_fetch',
+            'payment_refund',
+            'qr_code_create',
+            'payment_links_create',
+            'settlement_ondemand_create',
+            'merchant_fetch_schedule_tasks',
+            'setl_amount',
+            'payment_links_get',
+            'qr_code_fetch',
+            'qr_code_fetch_multiple',
+            'payment_links_fetch_multiple',
+            'refund_fetch_multiple',
+            'refund_fetch_by_id',
+            'payment_fetch_refunds',
+        ],
     ];
 
     //

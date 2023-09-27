@@ -1848,4 +1848,8 @@ return [
     'edge' => [
         'secret'    => env('APP_EDGE_SECRET')
     ],
+
+    'razorassist' => [
+        'secret'    => env('APP_RAZORASSIST_SECRET')
+    ],
 ];
