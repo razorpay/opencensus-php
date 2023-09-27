@@ -4949,7 +4949,9 @@ class Processor
         {
             return;
         }
-        else if ($this->app['request.ctx']->getRoute() === 'proxy_for_activation_status')
+        else if (($this->app['request.ctx']->getRoute() === 'proxy_for_activation_status') ||
+                 (($this->app['worker.ctx']->getJobName() === 'worker:fa_vpa_validation') &&
+                  (new MerchantCore())->isXVaActivated($merchant)))
         {
             // TODO: remove this condition once PG onboarding & VA-activation are resumed.
             return;

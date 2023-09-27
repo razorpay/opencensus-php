@@ -2236,4 +2236,55 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFundAccValidationForVPAWithNonActivatedRxMerchant()
+    {
+        Queue::fake();
+
+        config()->set('gateway.validate_vpa_terminal_ids.live', '100UPIICICITml');
+
+        $this->fixtures->on('live')->create('terminal:shared_upi_icici_terminal', ['used' => true]);
+
+        $this->setUpMerchantForBusinessBankingLive(false, 10000000);
+
+        $this->fixtures->on('live')->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa('rzp_live_TheLiveAuthKey', 'withname@razorpay', 'live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithAccountNumberAndVpa'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'live');
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        $this->fixtures->on('live')->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated' => false,
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'true'
+            ]);
+
+        $faVpaValidation = new FaVpaValidation('live', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']), 'live');
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Rohit', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+    }
 }

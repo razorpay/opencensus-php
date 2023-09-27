@@ -60,9 +60,9 @@ trait FundAccountTrait
         return $content;
     }
 
-    protected function createFundAccountVpa($key = null, $vpaId = 'withname@razorpay')
+    protected function createFundAccountVpa($key = null, $vpaId = 'withname@razorpay', $mode = 'test')
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
+        $this->fixtures->on($mode)->create('contact', ['id' => '1000000contact']);
 
         $request = $this->buildFundAccountRequest(Type::VPA, $vpaId);
 
