@@ -65,6 +65,10 @@ final class RepoAndFunctionToSplitzMap
 
     public const SPLITZ_REMOVAL_MAP = array(
         SplitzConstant::SPLITZ_WEBSITE_READ_FIND => true,
+        SplitzConstant::SPLITZ_BUSINESS_DETAIL_GET_BY_MERCHANT_ID => true,
+        SplitzConstant::SPLITZ_BUSINESS_DETAIL_GET_BY_ID => true,
+        SplitzConstant::SPLITZ_DOCUMENT_GET_BY_ID => true,
+        SplitzConstant::SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID => true,
     );
 
     public static function getExperimentName(string $repoClass, string $functionName): string

@@ -160,9 +160,9 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantbusinessDetailResponse->setBusinessDetails([$merchantbusinessDetailProto3, $merchantbusinessDetailProto2, $merchantbusinessDetailProto1]);
 
 
-        // test1: Splitz is on, request should go to account service.
+        // test1: Splitz is on (No effect of splitz), request should always go to account service.
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->never())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $merchantbusinessDetailMockClient = $this->getMockClient();
         $merchantbusinessDetailMockClient->expects(
@@ -180,14 +180,16 @@ class RepositoryTest extends RepositoryTestHelper
         $businessDetail['audit_id'] = "testtesttest";
         self::assertEquals($businessDetailEntity3->toArray(), $businessDetail->toArray());
 
-        // test2: Splitz is off, request not should go to account service.
+        // test2: Splitz is off (No effect of splitz), request should always go to account service.
         $splitzOff = $this->sampleSpltizOutput;
         $splitzOff["response"]["variant"]["variables"][0]["value"] = "false";
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOff);
+        $splitzMock->expects($this->never())->method('evaluateRequest')->willReturn($splitzOff);
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $merchantbusinessDetailMockClient = $this->getMockClient();
-        $merchantbusinessDetailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantbusinessDetailResponse, null]);
+        $merchantbusinessDetailMockClient->expects($this->exactly(1))->method("getByMerchantId")
+            ->with("K4O9sCGihrL2bG", $merchantbusinessDetail->getDefaultRequestMetaData())
+            ->willReturn([$merchantbusinessDetailResponse, null]);
         $merchantbusinessDetail->getAsvSdkClient()->setbusinessDetail($merchantbusinessDetailMockClient);
 
         $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
@@ -199,25 +201,7 @@ class RepositoryTest extends RepositoryTestHelper
         $businessDetail['audit_id'] = "testtesttest";
         self::assertEquals($businessDetailEntity3->toArray(), $businessDetail->toArray());
 
-        // test3: Splitz call fails, request not should go to account service.
-        $splitzOff = $this->sampleSpltizOutput;
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("sample"));
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $merchantbusinessDetailMockClient = $this->getMockClient();
-        $merchantbusinessDetailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantbusinessDetailResponse, null]);
-        $merchantbusinessDetail->getAsvSdkClient()->setbusinessDetail($merchantbusinessDetailMockClient);
-
-        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-
-        $repo = new Repository();
-        $repo->asvRouter = $asvRouterMock;
-        $businessDetail = $repo->getBusinessDetailsForMerchantId("K4O9sCGihrL2bG");
-        $businessDetail['audit_id'] = "testtesttest";
-        self::assertEquals($businessDetailEntity3->toArray(), $businessDetail->toArray());
-
-        // test4: Splitz is on, save flow is on request should not got asv, should go to db.
+        // test3:  Exclusion flow is on request should not go to asv, should go to db.
         $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0, true);
         $businessDetail = $repo->getBusinessDetailsForMerchantId("K4O9sCGihrL2bG");
         $businessDetail['audit_id'] = "testtesttest";
@@ -234,19 +218,6 @@ class RepositoryTest extends RepositoryTestHelper
         $businessDetailEntity1 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson1);
         $businessDetailEntity2 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson2);
         $businessDetailEntity3 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson3);
-
-        // Find, FindOrFail & FindOrFail public should work fine if splitz is off.
-
-        $repo = $this->getRepoWithSplitzAndSaveFlow("false", 2);
-        $this->assertEquals($businessDetailEntity1->toArray(), $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4"));
-
-        // Find, FindOrFail & FindOrFail public should work fine if save flow is true
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0, true);
-        $this->assertEquals($businessDetailEntity1->toArray(), $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4"));
-
-        // Find, FindOrFail & FindOrFail public should work fine if splitz throws an exception.
-        $repo = $this->getRepoWithSplitzAndSaveFlow("exception", 2);
-        $this->assertEquals($businessDetailEntity3->toArray(), $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS3"));
 
         // Find, FindOrFail & FindOrFail public should work fine if we give columns value, splitz off.
         $repo = $this->getRepoWithSplitzAndSaveFlow("false", 0);
@@ -300,22 +271,22 @@ class RepositoryTest extends RepositoryTestHelper
 
         $merchantbusinessDetailResponse = (new MerchantbusinessDetailResponse())->setbusinessDetail($merchantbusinessDetailProto1);
 
-        // FindOrFail & FindOrFailpublic should work fine if splitz is on.
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
+        // FindOrFail & FindOrFailPublic : Splitz On - Request should always go to asv
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
 
         $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
-        // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
+        // FindOrFail & FindOrFailpublic : Splitz Off - Request should always go to asv  and fallback to db if failure from asv
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
         $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
-        // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids.
+        // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids : request should go to db
         $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
         $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 0);
         $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
