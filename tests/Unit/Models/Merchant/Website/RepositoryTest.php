@@ -589,7 +589,7 @@ class RepositoryTest extends RepositoryTestHelper
             ->getMock();
     }
 
-    private function getWriteMockClient() {
+    protected function getWriteMockClient() {
         return $this->getMockBuilder("Razorpay\Asv\Interfaces\WriteInterface")
             ->enableOriginalConstructor()
             ->getMock();

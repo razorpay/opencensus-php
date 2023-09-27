@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 
 use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 use RZP\Models\Merchant\Website\Repository as MerchantWebsiteRepository;
+use RZP\Models\Merchant\BusinessDetail\Repository as BusinessDetailRepository;
+
 
 
 final class WriteEnabledOnAsv {
@@ -15,6 +17,7 @@ final class WriteEnabledOnAsv {
     public static array $SAVE_OR_FAIL = array(
         MerchantWebsiteRepository::class => true,
         MerchantEmailRepository::class => true,
+        BusinessDetailRepository::class => true,
     );
 
     public static array $DELETE_OR_FAIL = array(

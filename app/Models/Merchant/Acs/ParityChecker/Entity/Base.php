@@ -36,9 +36,6 @@ class Base
     protected $entityRepoClass;
 
     protected $entityClass;
-    protected array $auditedEntityClasses = [
-        \RZP\Models\Merchant\Website\Entity::class,
-    ];
 
     function __construct(string $merchantId, array $parityCheckMethods)
     {
@@ -165,7 +162,7 @@ class Base
     public function performParity($unsavedEntity, $apiEntity, $asvEntity, $testDataItem): array
     {
         list($apiExceptionMessage, $asvExceptionMessage) = $this->saveAndGetExceptions($apiEntity, $asvEntity);
-        $response = $this->compareException($apiExceptionMessage, $asvExceptionMessage, $testDataItem, $apiEntity->getId(), $asvEntity->getId());
+        $response = $this->compareException($apiExceptionMessage, $asvExceptionMessage, $testDataItem, $this->getEntityId($apiEntity), $this->getEntityId($asvEntity));
         if(!$response['continue']) {
             return $response;
         }
@@ -179,7 +176,7 @@ class Base
             ];
         }
 
-        return $this->compareEntity($unsavedEntity, $apiEntity->getId(), $asvEntity->getId());
+        return $this->compareEntity($unsavedEntity, $this->getEntityId($apiEntity), $this->getEntityId($asvEntity));
     }
 
     public function getEntity($testDataItem) {
@@ -203,7 +200,7 @@ class Base
 
         try {
             if($fetch) {
-                $entity = (new $this->entityRepoClass())->findOrFail($entity->getId());
+                $entity = (new $this->entityRepoClass())->findOrFail($this->getEntityId($entity));
             }
         } catch (\Throwable $e) {
             return null;
@@ -405,12 +402,11 @@ class Base
 
     private function checkIfAuditedEntity($entity) : bool
     {
-       foreach ($this->auditedEntityClasses as $auditedEntityClass) {
-           if ($entity instanceof $auditedEntityClass) {
-               return true;
-           }
-       }
+        return in_array($entity->getEntityName(),\RZP\Constants\Entity::AUDITED_ENTITIES, true) === true;
+    }
 
-       return false;
+    private function getEntityId($entity) : string
+    {
+        return  $entity->getAttributes()["id"] ?? ($entity->getAttributes()["merchant_id"] ?? "");
     }
 }

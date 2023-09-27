@@ -10,6 +10,7 @@ class Factory
         return match (get_class($entity)) {
             \RZP\Models\Merchant\Website\Entity::class => new Website($saveResponse),
             \RZP\Models\Merchant\Email\Entity::class => new Email($saveResponse),
+            \RZP\Models\Merchant\BusinessDetail\Entity::class => new BusinessDetail($saveResponse),
             default => null,
         };
     }

@@ -1634,6 +1634,7 @@ return [
         "splitz_experiment_send_write_route_or_worker_to_asv" => env('ASV_SPLITZ_SEND_WRITE_ROUTE_OR_WORKER_TRAFFIC_TO_ASV', ''),
         "splitz_experiment_merchant_website_save_or_fail" => env('ASV_SPLITZ_MERCHANT_WEBSITE_SAVE_OR_FAIL', ''),
         "splitz_experiment_merchant_email_save_or_fail" => env('ASV_SPLITZ_MERCHANT_EMAIL_SAVE_OR_FAIL', ''),
+        "splitz_experiment_merchant_business_detail_save_or_fail" => env('ASV_SPLITZ_MERCHANT_BUSINESS_DETAIL_SAVE_OR_FAIL', ''),
         "splitz_experiment_implicit_join_entity" => env('ASV_SPLITZ_EXPERIEMENT_IMPLICIT_JOIN_ENTITY', ''),
         'splitz_experiment_implicit_join_website_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_IMPLICIT_JOIN_WEBSITE_BY_MERCHANT_ID', ''),
         'splitz_experiment_implicit_join_business_detail_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_IMPLICIT_JOIN_BUSINESS_DETAIL_BY_MERCHANT_ID', ''),

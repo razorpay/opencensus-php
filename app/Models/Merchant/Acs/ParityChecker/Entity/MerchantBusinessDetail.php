@@ -17,6 +17,9 @@ class MerchantBusinessDetail extends Base implements ParityInterface
     {
         parent::__construct($merchantId, $parityCheckMethods);
         $this->businessDetail = new \RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail();
+        $this->entityClass = new BusinessDetailEntity();
+        $this->entityRepoClass = new \RZP\Models\Merchant\BusinessDetail\Repository();
+        $this->testData = new \RZP\Models\Merchant\Acs\ParityChecker\Entity\TestData\BusinessDetail();
     }
 
     /**

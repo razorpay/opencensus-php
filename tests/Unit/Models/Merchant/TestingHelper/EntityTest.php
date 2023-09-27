@@ -231,4 +231,10 @@ class RepositoryTestHelper extends TestCase
             ->onlyMethods($methods)
             ->getMock();
     }
+
+    protected function getWriteMockClient() {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\WriteInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
+    }
 }
