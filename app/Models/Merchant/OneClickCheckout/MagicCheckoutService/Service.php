@@ -67,12 +67,13 @@ class Service extends Base\Service
       $path = $this->getPathFromRouteName($routeName);
       $method = $input['method'];
       $body = $input['body'];
+      $appName = (new Shopify\Service())->getShopifyAppName($input);
       if ($method === 'GET') {
-          [$query, $headers] = (new Shopify\Service())->constructFetchQueryForMagicCheckoutService($merchantId);
+          [$query, $headers] = (new Shopify\Service())->constructFetchQueryForMagicCheckoutService($merchantId, $appName);
           $path = $path . $query;
 
       } else {
-          [$body, $headers] = (new Shopify\Service())->constructPayloadForMagicCheckoutService($merchantId, $body);
+          [$body, $headers] = (new Shopify\Service())->constructPayloadForMagicCheckoutService($merchantId, $body, $appName);
       }
       return $this->app['magic_checkout_service_client']->sendRequest($path, $body, $method, $headers);
   }

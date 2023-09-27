@@ -10,40 +10,36 @@ class Core extends Base\Core
 {
     public function updateShopify1ccConfig(array $input)
     {
-        $encryptedInput = array();
-
+        $appName = $input['app_name'] ?? '';
         $merchantId = $input['merchant_id'];
+        unset($input['merchant_id'], $input['app_name']);
 
-        unset($input['merchant_id']);
-
-        foreach ($input as $key => $value)
-        {
-
+        $encryptedInput = [];
+        foreach ($input as $key => $value) {
             if (in_array($key, Constants::SHOPIFY_AUTH_ENCRYPT)) {
-
                 $value = $this->app['encrypter']->encrypt($value);
             }
-
+            // Prefix the key with app name if it exists
+            $key = $appName ? "{$appName}_{$key}" : $key;
             $encryptedInput[$key] = $value;
         }
 
-        $this->transaction(
-            function () use ($encryptedInput, $merchantId)
-            {
-                $recordsDeleted = $this->repo->merchant_1cc_auth_configs->deleteByMerchantAndPlatform(
-                    $merchantId,
-                    Constants::SHOPIFY
-                );
+        $this->transaction(function () use ($encryptedInput, $merchantId) {
+            foreach ($encryptedInput as $key => $value) {
+                    $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
+                        $merchantId,
+                        Constants::SHOPIFY,
+                        $key
+                    );
 
-                foreach ($encryptedInput as $key => $value)
-                {
-                    if (in_array($key, Constants::SHOPIFY_AUTH) === true)
-                    {
-                        $this->createAndSaveConfig($merchantId, Constants::SHOPIFY, $key, $value);
+                    if ($config !== null) {
+                        $config->delete();
                     }
-                }
+
+                    $this->createAndSaveConfig($merchantId, Constants::SHOPIFY, $key, $value);
             }
-        );
+        });
+
         return ['success' => true];
     }
 

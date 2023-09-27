@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
 
         $app = App::getFacadeRoot();
 
-        if (in_array($config, Constants::ENCRYPTED_FIELDS))
+        if (in_array($config, Constants::ENCRYPTED_FIELDS) || preg_match('/' . implode('|', Constants::ENCRYPTED_FIELDS) . '/', $config))
         {
             $value = $app['encrypter']->decrypt($value);
         }

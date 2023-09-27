@@ -1,7 +1,6 @@
 <?php
 
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
-
 use GuzzleHttp\Client;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Account;
@@ -23,6 +22,7 @@ use RZP\Models\Merchant;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingService;
 use RZP\Models\Key;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -106,7 +106,7 @@ class Service extends Base\Service
                                 ],
                             ];
 
-                             $this->app['rto_prediction_provider_service']->createJobExecutions($jobRequest);
+                            $this->app['rto_prediction_provider_service']->createJobExecutions($jobRequest);
 
                         }
                         catch (\Exception $ex)
@@ -587,11 +587,11 @@ class Service extends Base\Service
             $result[Constants::COD_ENGINE_TYPE] = $codEngineType;
 
             foreach ($configFlagsResponse as $config => $value) {
-            if (in_array($config, Constants::WOOC_SPECIFIC_CONFIGS) === true) {
+                if (in_array($config, Constants::WOOC_SPECIFIC_CONFIGS) === true) {
                     $result[$config] = $value;
                 }
             }
-            
+
         }
 
         if ($merchantPlatform === Constants::NATIVE)
@@ -795,11 +795,11 @@ class Service extends Base\Service
 
                     if (isset($input['reason']))
                     {
-                            $reason = $input['reason'];
+                        $reason = $input['reason'];
 
-                            $flow = Constants::DISABLE_MAGIC_CHECKOUT;
+                        $flow = Constants::DISABLE_MAGIC_CHECKOUT;
 
-                            (new Core())->associateMerchant1ccComments($flow, $reason);
+                        (new Core())->associateMerchant1ccComments($flow, $reason);
                     }
 
                     if (isset($input['additional_reason']))
@@ -863,22 +863,22 @@ class Service extends Base\Service
             }
         }
 
-      /**
-       * config flags which are not feature flags
-       *  will have default value as false, except for fetch coupons
-       */
-       foreach (Constants::COMMON_CONFIGS as $flag)
-       {
-           $response[$flag] = false;
-           if ($flag == Constants::ONE_CC_AUTO_FETCH_COUPONS) {
-               $response[$flag] = true;
-           }
-       }
+        /**
+         * config flags which are not feature flags
+         *  will have default value as false, except for fetch coupons
+         */
+        foreach (Constants::COMMON_CONFIGS as $flag)
+        {
+            $response[$flag] = false;
+            if ($flag == Constants::ONE_CC_AUTO_FETCH_COUPONS) {
+                $response[$flag] = true;
+            }
+        }
 
         /** config flags which are also feature flags
-        *  will have default value of features if config
-        *  not present
-        */
+         *  will have default value of features if config
+         *  not present
+         */
         foreach (Constants::SHOPIFY_SPECIFIC_CONFIGS as $flag)
         {
             $response[$flag] = false;
@@ -893,17 +893,17 @@ class Service extends Base\Service
         if ($platform !== Constants::NATIVE) {
             foreach (Constants::GIFT_CARD_CONFIGS as $flag)
             {
-               $response[$flag] = false;
+                $response[$flag] = false;
             }
         }
 
         if ($internal)
         {
-           foreach (Constants::INTERNAL_CONFIGS as $flag)
-           {
-               $featureStatus = $merchant->isFeatureEnabled($flag);
-               $response[$flag] = $featureStatus;
-           }
+            foreach (Constants::INTERNAL_CONFIGS as $flag)
+            {
+                $featureStatus = $merchant->isFeatureEnabled($flag);
+                $response[$flag] = $featureStatus;
+            }
         }
 
         /**
@@ -1018,12 +1018,13 @@ class Service extends Base\Service
         if (empty($input[Constants::KEYS]) === true) {
             return $result;
         }
-
+        $appName =  (new Shopify\Service())->getShopifyAppName($input);
         $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
 
         $merchantConfigs = $this->get1ccConfigFlagsStatus($this->merchant);
 
         $requestedKeys = explode(',', $input[Constants::KEYS]);
+
 
         foreach ($merchantConfigs as $config => $value)
         {
@@ -1032,9 +1033,14 @@ class Service extends Base\Service
             }
         }
 
-        foreach ($merchantAuthConfigs as $key => $value)
+        foreach (Constants::SHOPIFY_AUTH as $key)
         {
+            $appNameKey = $key;
+            if($appName != '') {
+                $appNameKey = $appName.'_'.$key;
+            }
             if (in_array($key, $requestedKeys) === true) {
+                $value = $merchantAuthConfigs[$appNameKey];
                 $result[$key] = $value;
             }
         }

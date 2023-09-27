@@ -324,7 +324,9 @@ class OneClickCheckoutController extends Controller
 
     public function fetchShopifyMetaFields(string $merchantId)
     {
-        $response = (new Shopify\Service)->fetchShopifyMetaFields($merchantId);
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->fetchShopifyMetaFields($merchantId, $input);
 
         return ApiResponse::json($response, 200);
     }
@@ -340,7 +342,9 @@ class OneClickCheckoutController extends Controller
 
     public function fetchShopifyThemes(string $merchantId)
     {
-        $response = (new Shopify\Service)->fetchShopifyThemes($merchantId);
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->fetchShopifyThemes($merchantId, $input);
 
         return ApiResponse::json($response, 200);
     }

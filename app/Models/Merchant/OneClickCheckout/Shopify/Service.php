@@ -1637,17 +1637,18 @@ class Service extends Base\Service
      * @throws Exception\BadRequestException
      * @throws Throwable
      */
-    public function fetchShopifyMetaFields(string $merchantId): array
+    public function fetchShopifyMetaFields(string $merchantId, array $input): array
     {
 
         try
         {
 
+            $appName = $this->getShopifyAppName($input);
             $this->validateOneCcMerchant($merchantId);
 
             $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_FETCH_META_FIELDS_INFO);
 
-            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId);
+            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId, $appName);
 
             $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH . $query;
 
@@ -1674,14 +1675,15 @@ class Service extends Base\Service
     {
         try
         {
-
+            $appName = $this->getShopifyAppName($input);
             $this->validateOneCcMerchant($merchantId);
 
             (new Validator)->setStrictFalse()->validateInput('updateShopifyMetaFields', $input);
 
             $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_UPDATE_META_FIELDS_INFO, $input);
 
-            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input, $appName);
+
 
             $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH;
 
@@ -1707,17 +1709,18 @@ class Service extends Base\Service
      * @throws Exception\BadRequestException
      * @throws Throwable
      */
-    public function fetchShopifyThemes(string $merchantId): array
+    public function fetchShopifyThemes(string $merchantId, array $input): array
     {
 
         try
         {
 
+            $appName = $this->getShopifyAppName($input);
             $this->validateOneCcMerchant($merchantId);
 
             $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_FETCH_THEMES_INFO);
 
-            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId);
+            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId, $appName);
 
             $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_FETCH_THEME_PATH . $query;
 
@@ -1746,14 +1749,14 @@ class Service extends Base\Service
 
         try
         {
-
+            $appName = $this->getShopifyAppName($input);
             $this->validateOneCcMerchant($merchantId);
 
             $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_INSERT_THEME_INFO, $input);
 
             (new Validator)->setStrictFalse()->validateInput('insertShopifySnippet', $input);
 
-            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input, $appName);
 
             $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_INSERT_SNIPPET;
 
@@ -1782,14 +1785,14 @@ class Service extends Base\Service
 
         try
         {
-
+            $appName = $this->getShopifyAppName($input);
             $this->validateOneCcMerchant($merchantId);
 
             (new Validator)->setStrictFalse()->validateInput('renderMagicSnippet', $input);
 
             $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_RENDER_THEME_INFO, $input);
 
-            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input, $appName);
 
             $path = self::MAGIC_CHECKOUT_SERVICE_RENDER_MAGIC_SNIPPET;
 
@@ -1856,23 +1859,34 @@ class Service extends Base\Service
     }
 
     // returns shopId and oauth token for hitting magic-checkout-service
-    private function getMerchantAuthCredentials(string $merchantId): array
+    private function getMerchantAuthCredentials(string $merchantId, string $appName): array
     {
-        $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $creds = $this->getShopifyAuthByMerchant();
 
-        $client = $this->getShopifyClientByMerchant();
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
+        $accessTokenKey = (OneClickCheckout\Constants::OAUTH_TOKEN);
+        $shopIdKey = (OneClickCheckout\Constants::SHOP_ID);
 
-        $accessToken = $client->getOAuthToken();
+        if ($appName != '')
+        {
+            $accessTokenKey = $appName . "_" . (OneClickCheckout\Constants::OAUTH_TOKEN);
 
-        $shopId = $client->getShopId();
+            $shopIdKey = $appName . "_" . (OneClickCheckout\Constants::SHOP_ID);
+        }
+
+        $accessToken = $creds[$accessTokenKey];
+        $shopId = $creds[$shopIdKey];
 
         return [$shopId, $accessToken];
     }
 
     // constructs query for magic-checkout service
-    public function constructFetchQueryForMagicCheckoutService(string $merchantId): array
+    public function constructFetchQueryForMagicCheckoutService(string $merchantId, string $appName): array
     {
-        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId);
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId, $appName);
 
         $query = "?merchant_id={$merchantId}&shop_id={$shopId}";
 
@@ -1883,9 +1897,9 @@ class Service extends Base\Service
     }
 
     // constructs payload for magic-checkout service
-    public function constructPayloadForMagicCheckoutService(string $merchantId, array $input): array
+    public function constructPayloadForMagicCheckoutService(string $merchantId, array $input, string $appName): array
     {
-        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId);
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials($merchantId, $appName);
 
         $input['shop_id'] = $shopId;
 
@@ -2161,5 +2175,15 @@ class Service extends Base\Service
             $notes['Script_Discount_Title']  = $discountTitle === '' ? 'SPECIAL OFFER' : $discountTitle;
         }
         return $notes;
+    }
+
+    // getShopifyAppName returns the Shopify app name. e.g. sopc etc.
+public function getShopifyAppName(array $input)
+    {
+        if (!isset($input['app_name']))
+        {
+            return '';
+        }
+        return $input['app_name'];
     }
 }

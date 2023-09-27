@@ -76,6 +76,10 @@ class Constants
     const CLIENT_ID                         = 'client_id';
     const DELEGATE_ACCESS_TOKEN             = 'delegate_access_token';
     const ADMIN_ACCESS_TOKEN                = 'admin_access_token';
+    const APP_NAME                          = 'app_name';
+
+    // shopify supported app names
+    const SOPC_APP                          = 'sopc';
 
     // shopify api types
     const STOREFRONT                        = 'storefront';
