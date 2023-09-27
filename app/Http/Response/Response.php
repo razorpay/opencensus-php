@@ -385,6 +385,12 @@ class Response
 
         $this->setRequestIdInHeaders($response, $debug);
 
+        $this->setContentTypeOptionsHeaders($response, $route);
+
+        $this->setContentSecurityPolicyHeaders($response, $route);
+
+        $this->setXSSProtectionHeaders($response, $route);
+
         return $response;
     }
 
@@ -631,6 +637,48 @@ class Response
         if (in_array($route, $routes, true) === true)
         {
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true');
+        }
+    }
+
+    protected function setContentTypeOptionsHeaders($response, $route): void
+    {
+        $routes = [
+            'fund_account_validate',
+            'fund_account_validate_fetch',
+            'fund_account_validate_fetch_by_id',
+        ];
+
+        if (in_array($route, $routes, true) === true)
+        {
+            $response->headers->set(Header::X_CONTENT_TYPE_OPTIONS, "nosniff");
+        }
+    }
+
+    protected function setContentSecurityPolicyHeaders($response, $route): void
+    {
+        $routes = [
+            'fund_account_validate',
+            'fund_account_validate_fetch',
+            'fund_account_validate_fetch_by_id',
+        ];
+
+        if (in_array($route, $routes, true) === true)
+        {
+            $response->headers->set(Header::CONTENT_SECURITY_POLICY, "default-src 'self' https:");
+        }
+    }
+
+    protected function setXSSProtectionHeaders($response, $route): void
+    {
+        $routes = [
+            'fund_account_validate',
+            'fund_account_validate_fetch',
+            'fund_account_validate_fetch_by_id',
+        ];
+
+        if (in_array($route, $routes, true) === true)
+        {
+            $response->headers->set(Header::X_XSS_PROTECTION, "1");
         }
     }
 

@@ -11,6 +11,7 @@ use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
+use RZP\Http\Response\Header;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -66,6 +67,10 @@ class FundAccountValidationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
         $response = $this->startTest();
+
+        $this->assertEquals('nosniff', $this->response->headers->get(Header::X_CONTENT_TYPE_OPTIONS));
+        $this->assertEquals("default-src 'self' https:", $this->response->headers->get(Header::CONTENT_SECURITY_POLICY));
+        $this->assertEquals('1', $this->response->headers->get(Header::X_XSS_PROTECTION));
 
         $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
@@ -225,7 +230,30 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
+        $this->assertEquals('nosniff', $this->response->headers->get(Header::X_CONTENT_TYPE_OPTIONS));
+        $this->assertEquals("default-src 'self' https:", $this->response->headers->get(Header::CONTENT_SECURITY_POLICY));
+        $this->assertEquals('1', $this->response->headers->get(Header::X_XSS_PROTECTION));
+
         $this->assertNotEmpty($response['items'][0]['results']['registered_name']);
+    }
+
+    public function testGetValidation()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $response = $this->createValidationWithFundAccountEntity();
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/fund_accounts/validations/' . $response['id'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $this->assertEquals('nosniff', $this->response->headers->get(Header::X_CONTENT_TYPE_OPTIONS));
+        $this->assertEquals("default-src 'self' https:", $this->response->headers->get(Header::CONTENT_SECURITY_POLICY));
+        $this->assertEquals('1', $this->response->headers->get(Header::X_XSS_PROTECTION));
     }
 
     public function testFundAccValidationOnPrepaidModelWithFeeCredits()
