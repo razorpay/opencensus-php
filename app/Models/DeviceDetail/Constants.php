@@ -4,8 +4,11 @@ namespace RZP\Models\DeviceDetail;
 
 class Constants
 {
-    const EASY_ONBOARDING = 'easy_onboarding';
-    const UNBOUNCE        = 'unbounce';
+    // onboarding source
+    const EASY_ONBOARDING       = 'easy_onboarding';
+    const PHANTOM_ONBOARDING    = 'phantom_onboarding';
+    const UNBOUNCE              = 'unbounce';
+
     const CLIENT_IP       = 'ip';
     const G_CLICK_ID      = 'gclid';
     const SERVICE         = 'service';

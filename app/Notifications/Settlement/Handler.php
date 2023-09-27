@@ -12,7 +12,7 @@ class Handler extends BaseHandler
         Events::FAILED     => [Channel::SMS, Channel::WHATSAPP],
     ];
 
-    protected function getSupportedchannels(string $event)
+    protected function getSupportedChannels(string $event)
     {
         if(isset(self::SUPPORTED_CHANNELS_FOR_EVENTS[$event]))
         {

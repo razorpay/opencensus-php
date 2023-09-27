@@ -981,6 +981,319 @@ class MerchantDetailTest extends OAuthTestCase
 
     }
 
+    // Event - onboarding pause and NC count 2
+    public function testSendNCEmailToSubMerchantOnboardedViaPhantomFlowOfPlatformPartner()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+
+        [$partner, $app] = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // for Phantom, we store the onboarding source in user_device_details table
+        $deviceDetailsData = [
+            'merchant_id' => $merchant->getId(),
+            'signup_campaign' => 'phantom_onboarding'
+        ];
+
+        $this->fixtures->create('user_device_detail', $deviceDetailsData);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        // verify email has been sent
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($app) {
+            $data = $mail->getData();
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // Event - onboarding pause and NC count 2
+    public function testSendNCEmailToSubMerchantOnboardedViaPhantomFlowOfAggregatorPartner()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+
+        [$partner, $app] = $this->createPartnerAndApplication(['partner_type' => 'aggregator']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // for Phantom, we store the onboarding source in user_device_details table
+        $deviceDetailsData = [
+            'merchant_id' => $merchant->getId(),
+            'signup_campaign' => 'phantom_onboarding'
+        ];
+
+        $this->fixtures->create('user_device_detail', $deviceDetailsData);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        // verify email has been sent
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner) {
+            $data = $mail->getData();
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner->getId(), $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // Event - onboarding pause and NC count 2
+    public function testSendNCEmailToSubMerchantNotOnboardedViaPhantomFlow()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+
+        [$partner, $app] = $this->createPartnerAndApplication(['partner_type' => 'aggregator']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        // verify email has been sent
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner) {
+            $data = $mail->getData();
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/onboarding/needs-clarification', $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // Event - onboarding pause and NC count 2
+    public function testSendNCEmailToSubMerchantOnboardedViaPhantomFlowAndMappedToMultiplePartners()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+
+        // map first partner
+        [$partner1, $app1] = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app1->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner1->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // map second partner
+        [$partner2, $app2] = $this->createPartnerAndApplication(['id' => '100nonplatform', 'partner_type' => 'aggregator'], ['id' => '8ckeirnw84ifkf']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app2->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner2->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // for Phantom, we store the onboarding source in user_device_details table
+        $deviceDetailsData = [
+            'merchant_id' => $merchant->getId(),
+            'signup_campaign' => 'phantom_onboarding'
+        ];
+
+        $this->fixtures->create('user_device_detail', $deviceDetailsData);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        // verify email has been sent
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner2) {
+            $data = $mail->getData();
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner2->getId(), $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
     public function testSendEmailFailReminderForNcRevamp()
     {
         Mail::fake();
@@ -1025,8 +1338,8 @@ class MerchantDetailTest extends OAuthTestCase
 
     }
 
-    // for new nc revamp
 
+    // for new nc revamp
     public function testUnderReviewStateChange()
     {
         Mail::fake();

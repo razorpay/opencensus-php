@@ -269,6 +269,7 @@ class Core extends Detail\Core
         {
             return true;
         }
+
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchantId);
 
         $partner = $partners->first();

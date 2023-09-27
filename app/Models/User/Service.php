@@ -658,7 +658,8 @@ class Service extends Base\Service
 
         list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
 
-            if ($verifySuccess === true) {
+            if ($verifySuccess === true)
+            {
 
                 $merchant = null;
 
@@ -688,8 +689,10 @@ class Service extends Base\Service
                     MBD\Constants::OTHERS
                 ];
 
-                foreach ($paymentsAvenueInput as $payInput) {
-                    if (isset($input[$payInput]) === true) {
+                foreach ($paymentsAvenueInput as $payInput)
+                {
+                    if (isset($input[$payInput]) === true)
+                    {
                         $businessDetailsInput[MBD\Entity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
                         unset($input[$payInput]);
                     }
@@ -709,8 +712,9 @@ class Service extends Base\Service
 
                 $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
 
-                if (empty($signupCampaign) === false) {
-                    $ddInput = [
+                if (empty($signupCampaign) === false)
+                {
+                    $deviceDetailInput = [
                         DeviceDetail\Entity::MERCHANT_ID => $merchantData['id'],
                         DeviceDetail\Entity::USER_ID => $user['id'],
                         DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
@@ -721,13 +725,13 @@ class Service extends Base\Service
 
                     $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-                    (new DeviceDetail\Core)->createDeviceDetail($ddInput);
-
+                    (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                 }
 
                 $data = $this->get($user['id']);
 
-                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false) {
+                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
+                {
                     (new Merchant\BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchantData['id'], $businessDetailsInput);
                 }
 

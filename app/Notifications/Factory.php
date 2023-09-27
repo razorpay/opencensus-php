@@ -33,6 +33,7 @@ class Factory
         {
             return $class;
         }
+
         throw new Exception\LogicException($class . ' is not a valid class');
     }
 

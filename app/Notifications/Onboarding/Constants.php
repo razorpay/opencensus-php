@@ -31,5 +31,6 @@ class Constants
     const CONTENT_PARAMS                           = 'contentParams';
 
     const DELIVERY_CALLBACK_REQUESTED              = 'deliveryCallbackRequested';
-    
+
+    const NC_URL                                   = 'ncUrl';
 }

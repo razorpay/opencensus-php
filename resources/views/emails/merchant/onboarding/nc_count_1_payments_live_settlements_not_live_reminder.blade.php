@@ -107,9 +107,8 @@
                                         @endforeach
                                     </table>
                                     <br/>
-                                    <a href="https://easy.razorpay.com/onboarding/needs-clarification" target="_blank"
-                                       style="display: block;text-decoration: none;color: #ffffff;border: none;text-align: center;border-radius: 12px;background: #1566F1;width: 160px;height: 56px;line-height: 56px;margin-bottom: 24px;box-shadow: 0px 8px 16px 4px #1566f133;">
-                                        Resolve Now
+                                     <a href={{{$ncUrl}}} target="_blank" style="display: block;text-decoration: none;color: #ffffff;border: none;text-align: center;border-radius: 12px;background: #1566F1;width: 160px;height: 56px;line-height: 56px;margin-bottom: 24px;box-shadow: 0px 8px 16px 4px #1566f133;">
+                                       Resolve Now
                                     </a>
                                     <div>
                                         Thank You,

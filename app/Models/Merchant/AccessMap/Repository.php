@@ -46,11 +46,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getByMerchantId(string $merchantId)
+    public function getByMerchantId(string $merchantId, bool $fetchLatest = false)
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->first();
+        $query = $this->newQuery()
+                      ->merchantId($merchantId);
+
+        if ($fetchLatest === true)
+        {
+            return $query->get()->last();
+        }
+
+        return $query->first();
     }
 
     public function fetchSubMerchants(array $merchantIdList)

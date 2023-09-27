@@ -2,23 +2,24 @@
 
 namespace RZP\Notifications\Onboarding;
 
+use App;
 use Carbon\Carbon;
+
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Notifications\Channel;
-use RZP\Notifications\Factory;
 use RZP\Models\Merchant\Entity;
-use RZP\Exception\LogicException;
 use RZP\Notifications\BaseHandler;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Core as MCore;
-use RZP\Models\Merchant\Detail\Core as DetailCore;
-use RZP\Models\ClarificationDetail\Core as ClarificationDetailsCore;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\BusinessType;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Constants as MConstants;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\AccessMap\Repository as AccessMapRepo;
+use RZP\Models\ClarificationDetail\Core as ClarificationDetailsCore;
 
 class Handler extends BaseHandler
 {
@@ -107,11 +108,14 @@ class Handler extends BaseHandler
     {
         $events = $this->getEventForActivationStatus($this->activationStatus, $this->merchant);
 
-        $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($this->merchant->id);
+        if ((new PartnerCore())->isSubMerchantNotificationBlocked($this->merchant->id) === true)
+        {
+            return;
+        }
 
         foreach ($events as $event)
         {
-            if (empty($event) === false and $notificationBlocked === false)
+            if (empty($event) === false)
             {
                 $this->sendForEvent($event);
             }
@@ -136,6 +140,8 @@ class Handler extends BaseHandler
 
             if ($notificationBlocked === false)
             {
+                self::updateNCUrlIfApplicable($merchantId, $event, $this->args);
+
                 $this->sendForEvent($event);
             }
         }
@@ -220,6 +226,8 @@ class Handler extends BaseHandler
                   ->addDays(7)
                   ->getTimestamp(), Timezone::IST)->isoFormat('MMM Do YYYY');
 
+        $this->args[MConstants::PARAMS][Constants::NC_URL] = self::getUrlForNCEvent($merchant);
+
         return $events;
     }
 
@@ -271,12 +279,93 @@ class Handler extends BaseHandler
         return $events;
     }
 
-    protected function getSupportedchannels(string $event)
+    protected function getSupportedChannels(string $event)
     {
         if (isset(self::SUPPORTED_CHANNELS_FOR_EVENTS[$event]))
         {
             return self::SUPPORTED_CHANNELS_FOR_EVENTS[$event];
         }
         // TODO: throw exception
+    }
+
+    private static function getUrlForNCEvent(Entity $merchant): string
+    {
+        $isOnboardedViaPhantom = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
+
+        $baseUrl = env('EASY_DASHBOARD_URL');
+        $ncUrl = $baseUrl . '/onboarding/needs-clarification';
+
+        $appId = null;
+        $partnerId = null;
+        $partnerType = null;
+
+        // if the merchant is onboarded via Phantom flow then update the NC url accordingly
+        if ($isOnboardedViaPhantom === true)
+        {
+            $accessMap = (new AccessMapRepo())->getByMerchantId($merchant->getId(), true);
+
+            if (empty($accessMap) === false)
+            {
+                $partner = optional($accessMap)->entityOwner;
+
+                if (empty($partner) === false)
+                {
+                    $partnerType = $partner->getPartnerType();
+
+                    if ($partnerType === MerchantConstants::AGGREGATOR)
+                    {
+                        $partnerId = $partner->getId();
+
+                        $ncUrl = $baseUrl . '/sub-merchant/needs-clarification?partnerId=' . $partnerId;
+                    }
+                    else if ($partnerType === MerchantConstants::PURE_PLATFORM)
+                    {
+                        $appId = $accessMap->getEntityId();
+
+                        $ncUrl = $baseUrl . '/sub-merchant/needs-clarification?applicationId=' . $appId;
+                    }
+                }
+            }
+        }
+
+        $app = App::getFacadeRoot();
+
+        $app['trace']->info(
+            TraceCode::FETCH_NC_URL_FOR_MERCHANT,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'partner_id'        => $partnerId,
+                'partner_app_id'    => $appId,
+                'partner_type'      => $partnerType,
+                'nc_url'            => $ncUrl
+            ]
+        );
+
+        return $ncUrl;
+    }
+
+    // all the events related to needs_clarification activation status should have 'NC_' prefix
+    private static function isNCEvent(string $event): bool
+    {
+        if (str_starts_with($event, Events::NC_EVENTS_PREFIX) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function updateNCUrlIfApplicable(string $merchantId, string $event, array & $args)
+    {
+        if (self::isNCEvent($event) !== true or empty($args[MConstants::PARAMS][Constants::NC_URL]) === false)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['repo']->merchant->findOrFail($merchantId);
+
+        $args[MConstants::PARAMS][Constants::NC_URL] = self::getUrlForNCEvent($merchant);
     }
 }

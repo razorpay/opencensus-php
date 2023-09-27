@@ -36,6 +36,7 @@ class Events
 
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
     const PARTNER_SUBMERCHANT_EVENTS_PREFIX = 'PARTNER_SUBMERCHANT_';
+    const NC_EVENTS_PREFIX                  = 'NC_';
 
     const PAYMENTS_ENABLED                            = 'PAYMENTS_ENABLED';
     const UNREGISTERED_PAYMENTS_ENABLED               = 'UNREGISTERED_PAYMENTS_ENABLED';

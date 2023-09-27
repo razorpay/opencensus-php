@@ -4,18 +4,17 @@
 namespace RZP\Notifications\Onboarding;
 
 use Mail;
-use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
-use RZP\Models\Merchant\AutoKyc\Escalations\Types\Email;
-use RZP\Models\Merchant\Constants;
-use RZP\Mail\Merchant\MerchantOnboardingEmail;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Entity as MerchantEntity;
-
-use RZP\Models\Merchant\Detail\Entity as DEEntity;
-use RZP\Models\Partner\Core as PartnerCore;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Notifications\BaseNotificationService;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Entity as DEEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
 
 class EmailNotificationService extends BaseNotificationService
 {
@@ -178,7 +177,7 @@ class EmailNotificationService extends BaseNotificationService
         return $org;
     }
 
-    protected function getMerchantEmailPayload()
+    protected function getMerchantEmailPayload(): array
     {
         $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);
@@ -188,6 +187,7 @@ class EmailNotificationService extends BaseNotificationService
         {
             $hostname = $org->getPrimaryHostName();
         }
+
         $merchantDetails = $merchant->merchantDetail;
 
         $business_website=empty($merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE))?null:$merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE);
@@ -201,8 +201,10 @@ class EmailNotificationService extends BaseNotificationService
                     DEConstants::HOSTNAME => $hostname,
                 ],
                 DEEntity::BUSINESS_WEBSITE    => $business_website
-            ],
+            ]
         ];
+
+        Handler::updateNCUrlIfApplicable($merchant->getId(), $this->event, $this->args);
 
         $extraData = $this->args[Constants::PARAMS] ?? [];
 

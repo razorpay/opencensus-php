@@ -26,7 +26,7 @@ class Handler extends BaseHandler
         $this->sendForEvent($this->event, false);
     }
 
-    protected function getSupportedchannels(string $event)
+    protected function getSupportedChannels(string $event)
     {
         return Events::SUPPORTED_CHANNELS_FOR_EVENTS[$event];
     }

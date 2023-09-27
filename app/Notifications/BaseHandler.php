@@ -45,12 +45,12 @@ abstract class BaseHandler
      * depending on the event.
      *
      * @param string $event
-     *
+     * @param bool $traceArguments
      * @throws LogicException
      */
-    public function sendForEvent(string $event, bool $traceArguments = true)
+    public function sendForEvent(string $event, bool $traceArguments = true): void
     {
-        $channels = $this->getSupportedchannels($event);
+        $channels = $this->getSupportedChannels($event);
 
         foreach ($channels as $channel)
         {
@@ -65,9 +65,7 @@ abstract class BaseHandler
 
             if ($traceArguments === true)
             {
-                $traceData = array_merge($traceData, [
-                    'merchant' => $this->args,
-                ]);
+                $traceData = array_merge($traceData, ['merchant' => $this->args]);
             }
 
             $this->trace->info(TraceCode::SEND_NOTIFICATION, $traceData);
@@ -82,7 +80,7 @@ abstract class BaseHandler
      *
      * @return mixed
      */
-    protected abstract function getSupportedchannels(string $event);
+    protected abstract function getSupportedChannels(string $event);
 
     /**
      * Utility method to provide namespace of current class

@@ -5690,6 +5690,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_MERCHANT_CONTEXT_JOB_COMPLETION                = 'UPDATE_MERCHANT_CONTEXT_JOB_COMPLETION';
     const UPDATE_ACTIVATION_STATUS_DURATION                     = 'UPDATE_ACTIVATION_STATUS_DURATION';
     const UPDATE_MERCHANT_CONTEXT_METRICS_FAILURE               = 'UPDATE_MERCHANT_CONTEXT_METRICS_FAILURE';
+    const FETCH_NC_URL_FOR_MERCHANT                             = 'FETCH_NC_URL_FOR_MERCHANT';
 
     //route no doc kyc temp logs
     const IS_NO_DOC_GST_VALIDATION_COMPLETED                    = 'IS_NO_DOC_GST_VALIDATION_COMPLETED';
