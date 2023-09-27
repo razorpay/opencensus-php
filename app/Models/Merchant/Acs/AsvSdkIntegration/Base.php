@@ -64,7 +64,8 @@ class Base
     /**
      * @return ASVClient
      */
-    function getAsvSdkClient() {
+    function getAsvSdkClient(): ASVClient
+    {
         return  $this->asvSdkClient;
     }
 

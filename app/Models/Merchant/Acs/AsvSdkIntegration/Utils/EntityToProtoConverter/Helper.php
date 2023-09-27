@@ -55,4 +55,14 @@ Class Helper {
         $intValue->setValue($attributes[$key]);
         return $intValue;
     }
+
+    static function convertToUInt32Value($attributes , $key): ?\Google\Protobuf\UInt32Value
+    {
+        if (self::shouldSetNull($attributes, $key)) {
+            return null;
+        }
+        $intValue = new \Google\Protobuf\UInt32Value();
+        $intValue->setValue($attributes[$key]);
+        return $intValue;
+    }
 }

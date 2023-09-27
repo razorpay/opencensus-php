@@ -10,6 +10,7 @@ class Factory
             \RZP\Models\Merchant\Website\Entity::class => new Website($entity),
             \RZP\Models\Merchant\Email\Entity::class => new Email($entity),
             \RZP\Models\Merchant\BusinessDetail\Entity::class => new BusinessDetail($entity),
+            \RZP\Models\Merchant\Document\Entity::class => new Document($entity),
             default => null,
         };
 

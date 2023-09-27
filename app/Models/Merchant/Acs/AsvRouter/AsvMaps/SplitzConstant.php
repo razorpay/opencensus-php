@@ -47,4 +47,6 @@ final class SplitzConstant
     const SPLITZ_IMPLICIT_JOIN_DOCUMENT_BY_MERCHANTID = 'splitz_experiment_implicit_join_document_by_merchant_id';
 
     const SPLITZ_MERCHANT_BUSINESS_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_business_detail_save_or_fail';
+
+    const SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL = 'splitz_experiment_merchant_document_save_or_fail';
 }
