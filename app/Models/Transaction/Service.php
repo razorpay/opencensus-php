@@ -521,6 +521,38 @@ class Service extends Base\Service
                 "success" => $successIds];
         }
 
+        if (isset($input['payments_arr']) === true and
+            isset($input['only_balance_update']) === true and
+            $input['only_balance_update'] === true)
+        {
+            $paymentsArrString = $input['payments_arr'];
+
+            $paymentsArr = explode(',', $paymentsArrString);
+
+            for ($i = 0; $i < count($paymentsArr); $i++)
+            {
+                try
+                {
+                    $currentPaymentId = $paymentsArr[$i];
+
+                    $payment = $this->repo->payment->findByPublicId($currentPaymentId);
+
+                    $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
+
+                    $paymentProcessor->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+
+                    array_push($successIds, $currentPaymentId);
+                }
+                catch(\Exception $e)
+                {
+                    array_push($failureIds, [$currentPaymentId => $e->getMessage()]);
+                }
+
+            }
+            return ["failures" => $failureIds,
+                "success" => $successIds];
+        }
+
         $payments = null;
 
         if (isset($input['merchant_id']) === true)
