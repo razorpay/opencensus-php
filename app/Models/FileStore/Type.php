@@ -296,6 +296,7 @@ class Type
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
+    const CHOTABEAM_BUCKET_CONFIG               = 'chotabeam_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG_PAYMENTS  = 'batch_service_bucket_config_payments';
@@ -748,6 +749,10 @@ class Type
             self::FUND_TRANSFER_DEFAULT,
         ],
 
+        self::CHOTABEAM_BUCKET_CONFIG => [
+            self::IDFC_EMI_FILE,
+        ],
+
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
             self::ONECARD_EMI_FILE,
@@ -770,7 +775,6 @@ class Type
             self::HSBC_EMI_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
-            self::IDFC_EMI_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

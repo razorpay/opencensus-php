@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
@@ -24,7 +25,7 @@ class Idfc extends Base
 {
     const BANK_CODE = IFSC::IDFB;
     const FILE_TYPE = FileStore\Type::IDFC_EMI_FILE;
-    const FILE_NAME         = 'RAZORPAY_Instalments';
+    const FILE_NAME         = 'Razorpay_instalments';
     const DATE_FORMAT       = 'dmYHis';
     const BEAM_FILE_TYPE    = 'emi';
     const EXTENSION         = FileStore\Format::TXT;
@@ -32,6 +33,7 @@ class Idfc extends Base
     protected $totalAmount;
     protected $emiFilePassword;
     protected $totalTransactions;
+    protected $chotaBeam = true;
 
     public function fetchEntities(): PublicCollection
     {
@@ -195,6 +197,7 @@ class Idfc extends Base
             Service::BEAM_PUSH_JOBNAME        => BeamConstants::IDFC_EMI_FILE_JOB_NAME,
             Service::BEAM_PUSH_BUCKET_NAME    => $bucketConfig['name'],
             Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+            Service::CHOTABEAM_FLAG           => $this->chotaBeam,
         ];
 
         // Retry in 15, 30 and 45 minutes
@@ -240,6 +243,8 @@ class Idfc extends Base
         $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
 
         $bucketConfig = $config[$bucketType];
+
+        $bucketConfig['name'] = Config::get('applications.chota_beam.bucket_name');
 
         return $bucketConfig;
     }

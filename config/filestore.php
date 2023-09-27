@@ -87,6 +87,10 @@ return [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET'),
             'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')
         ],
+        'chotabeam_bucket_config' => [
+            'name'   => env('CHOTABEAM_BUCKET_NAME'),
+            'region' => env('AWS_S3_BEAM_BUCKET_REGION', 'ap-south-1')
+        ],
         'beam_bucket_config' => [
             'name'   => env('AWS_S3_BEAM_BUCKET'),
             'region' => env('AWS_S3_BEAM_BUCKET_REGION', 'ap-south-1')
