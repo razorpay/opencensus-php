@@ -1,12 +1,11 @@
-import { NavLink, Redirect, Switch, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { NavLink, Redirect, Switch, Route } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
+import { useSplitzService } from 'common/splitz';
 import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
-import { useSplitzService } from 'common/splitz';
 import { StyledTabsWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 
 export const TabItem = ({

@@ -250,6 +250,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'magic_shopify_shipping_engine',
+          experimentId: {
+            beta: 'MYEaKTAQCsPIyl',
+            production: 'MYEdnXbyYkrovw',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
   ],

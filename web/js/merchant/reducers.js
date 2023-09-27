@@ -151,6 +151,7 @@ import pluginReducer from 'merchant/reducers/plugins';
 import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
 import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Reports/redux/reducer';
 import { magicCODSettingsReducer } from 'merchant/reducers/magicCheckout/codEngine/reducer';
+import { shippingEngineReducer } from 'merchant/reducers/magicCheckout/shippingEngine/reducer';
 import paymentMetricsReducer from 'merchant/reducers/paymentMetrics';
 
 export default combineReducers({
@@ -272,6 +273,7 @@ export default combineReducers({
   magicCODOrdersAutomation: magicCODOrdersAutomationReducer,
   magicPrepayCODConfigs: magicPrepayCODConfigsReducer,
   magicCODEngine: magicCODSettingsReducer,
+  magicShippingEngine: shippingEngineReducer,
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,
   rtoHistoryUpload: rtoHistoryUploadReducer,
