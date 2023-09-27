@@ -210,8 +210,11 @@ class UserController extends Controller
             {
                 $ttl = 12 * 60;
 
-                Cookie::queue('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
-                Cookie::queue('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+                $id = $details['id'] ?? null;
+                $userId = $details['user']['id'] ?? null;
+                
+                Cookie::queue('rzp_merchant_id',$id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+                Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
             }
         }
 
