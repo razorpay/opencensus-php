@@ -1959,4 +1959,9 @@ final class Constants
     ];
 
     const I18N_MY_ONBOARDING       = "i18n_my_onboarding";
+
+    public const METHODS_OFFERS_API_REQUEST_TYPE = 'request_type';
+    public const CACHEABLE_METHODS = 0;
+    public const EMI_AND_OFFERS = 1;
+    public const APP_META = 2;
 }

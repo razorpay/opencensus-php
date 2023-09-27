@@ -3659,7 +3659,24 @@ class Service extends Base\Service
 
     public function getPaymentMethodsWithOffersForCheckout($input): array
     {
-        return (new Checkout())->getPaymentMethodsWithOffersForCheckout($input, $this->merchant);
+        /**
+         * If requestType not present use the existing functionality to fetch the whole methods, offers data
+         * Else based on the requestType call different functions
+         */
+        if (!isset($input[MerchantConstants::METHODS_OFFERS_API_REQUEST_TYPE])) {
+            return (new Checkout())->getPaymentMethodsWithOffersForCheckout($input, $this->merchant);
+        }
+
+        switch ($input[MerchantConstants::METHODS_OFFERS_API_REQUEST_TYPE]) {
+            case MerchantConstants::CACHEABLE_METHODS:
+                return (new Checkout())->getCacheableMethodsDataForCheckout($this->merchant);
+            case MerchantConstants::EMI_AND_OFFERS:
+                return (new Checkout())->getEmiAndOffersDataForCheckout($this->merchant, $input);
+            case MerchantConstants::APP_META:
+                return (new Checkout())->getAppMetaForCheckout($this->merchant, $input);
+            default:
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
+        }
     }
 
     /**

@@ -325,6 +325,231 @@ class Checkout
         return $data;
     }
 
+    public function getCacheableMethodsDataForCheckout(Entity $merchant): array
+    {
+        $methodsCore = new Methods\Core();
+
+        $data = $methodsCore->getFormattedMethods($merchant);
+
+        $data = $methodsCore->addUpiType($merchant, $data);
+
+        $this->checkAndAddCustomProviders($data);
+
+        $data = $methodsCore->enableOrDisableMethodsBasedOnTerminals($merchant, $data, $this->app['rzp.mode']);
+
+        $expectedAsDictionaries = [
+            'app',
+            'app_meta',
+            'card_networks',
+            'card_subtype',
+            'cardless_emi',
+            'custom_text',
+            'debit_emi_providers',
+            'emi_options',
+            'emi_plans',
+            'emi_types',
+            'fpx',
+            'intl_bank_transfer',
+            'netbanking',
+            'paylater',
+            'recurring',
+            'upi_type',
+            'wallet',
+        ];
+
+        foreach ($expectedAsDictionaries as $key) {
+            // Type-casting these to objects to ensure that empty values go as
+            // `{}` instead of `[]` as these are declared as maps in checkout-service
+            // proto files.
+            if (array_key_exists($key, $data)) {
+                $data[$key] = (object) ($data[$key] ?? []);
+            }
+        }
+
+        return $data;
+    }
+
+    public function getEmiAndOffersDataForCheckout(Entity $merchant, array $input): array
+    {
+        $order = null;
+        $orderAmount = null;
+
+        // create order entity using forcefill
+        if (isset($input['order']))
+        {
+            $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+            $orderAmount = $order->getAmount();
+
+            $this->order = $order;
+        }
+
+        $offers = $this->getValidOffersForCheckout($merchant, $order);
+
+        $emiData = $this->getEmiDataForCheckout($order, $offers);
+
+        $offersData = [];
+        foreach ($offers as $offer)
+        {
+            $offersData[] = $offer->toArrayCheckout($orderAmount);
+        }
+
+        $data = [
+            'offers' => $offersData,
+            'emi_plans' => $emiData['emi_plans'],
+            'emi_options' => $emiData['emi_options'],
+        ];
+
+        $expectedAsDictionaries = [
+            'emi_options',
+            'emi_plans',
+        ];
+
+        foreach ($expectedAsDictionaries as $key) {
+            // Type-casting these to objects to ensure that empty values go as
+            // `{}` instead of `[]` as these are declared as maps in checkout-service
+            // proto files.
+            if (array_key_exists($key, $data)) {
+                $data[$key] = (object) ($data[$key] ?? []);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function getValidOffersForCheckout($merchant, $order): Base\PublicCollection
+    {
+        if (($order !== null) and
+            ($order->hasOffers() === true))
+        {
+            return $this->getValidOffersForOrder($order, $order->offers);
+        }
+
+        return (new Offer\Core())->fetchSharedAccOffersForCheckout($merchant);
+    }
+
+    protected function getEmiDataForCheckout($order, Base\PublicCollection $offers): array
+    {
+        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions();
+        $data['emi_plans'] = $emiPlansAndOptions['plans'];
+        $data['emi_options'] = $emiPlansAndOptions['options'];
+
+        if (($order !== null) &&
+            (count($offers) > 0))
+        {
+            $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order);
+            $data['emi_options'] = $emiPlansAndOptions['options'];
+
+            if ((count($offers) === 1) &&
+                ($order->isOfferForced()))
+            {
+                $data['emi_plans'] = (new Emi\Service())->all();
+            }
+        }
+
+        return $data;
+    }
+
+    public function getAppMetaForCheckout(Entity $merchant, array $input): array
+    {
+        if (!$merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT)) {
+            return [
+                'app_meta' => (object) []
+            ];
+        }
+
+        // create order entity using forcefill
+        if (isset($input['order']))
+        {
+            $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+
+            $this->order = $order;
+        }
+
+        $cred_meta['experiment'] = $input['cred_offer_experiment'] ?? $this->app->razorx->getTreatment(
+                $this->app['request']->getTaskId(),
+                Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
+                $this->app['rzp.mode']
+            );
+
+        $data['customer']['contact'] = $this->getContactForAppMeta($input, $merchant, $data);
+
+        if (empty($data['customer']['contact']) ||
+            (!$this->isCredEligibilityConfigEnabled())) {
+            return [
+                'app_meta' => [
+                    'cred' => $cred_meta
+                ]
+            ];
+        }
+
+        $hit_eligibility = true;
+
+        try {
+            list($credInput, $options) = $this->getInputAndOptionsForCred($input, $data, $merchant);
+
+            $response = (new Payment\Validation\Cred())->processValidation($credInput, $options);
+
+            if (($response['success'] === true) and
+                (empty($response['data']['offer']) === false))
+            {
+                $cred_meta['offer'] = $response['data']['offer'];
+            }
+
+            $hit_eligibility = false;
+
+            $cred_meta['user_eligible'] = true;
+        }
+        catch (Exception\GatewayTimeoutException $timeoutException)
+        {
+            // do nothing, just logging
+            $this->trace->traceException($timeoutException, Trace::WARNING);
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $cred_meta['user_eligible'] = false;
+
+            $hit_eligibility = false;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+        }
+
+        $cred_meta['hit_eligibility'] = $hit_eligibility;
+
+        return [
+            'app_meta' => [
+                'cred' => $cred_meta
+            ]
+        ];
+    }
+
+    protected function getContactForAppMeta(array &$input, $merchant, $data)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
+
+        try {
+            return $this->findContact($input, $merchant, $data);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::FIND_CONTACT_FAILED, [
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+        return '';
+    }
+
+    protected function getValidOffersForOrder($order, $offers): Base\PublicCollection
+    {
+        return $offers->filter(static function ($offer) use ($order) {
+            $checker = new Checker($offer, true);
+
+            return $checker->checkValidityOnOrder($order);
+        })->values();
+    }
+
     protected function getMerchantPaymentMethodsForCheckout(array $input, Merchant\Entity $merchant, ?Order\Entity $order): array
     {
         $methodsCore = new Methods\Core();

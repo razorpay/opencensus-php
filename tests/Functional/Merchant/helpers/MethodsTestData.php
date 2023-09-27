@@ -1055,7 +1055,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1066,7 +1066,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                     'name' => "Test Offer",
@@ -1077,7 +1077,7 @@ return [
                     'type' => "deferred",
                     'original_amount' => 100000,
                     'amount' => 100000,
-                    'terms' => "test terms and conditions",
+                    'terms' => "Terms and Condition",
                     'cashback_amount' => 10000,
                 ]
                 ]
@@ -1108,7 +1108,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1118,7 +1118,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
@@ -1145,7 +1145,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1155,7 +1155,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
@@ -1182,7 +1182,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1192,7 +1192,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
@@ -1219,7 +1219,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1229,7 +1229,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
@@ -1311,7 +1311,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1322,7 +1322,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
@@ -1408,7 +1408,7 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ],
                     [
                         'name' => "Test Offer",
@@ -1419,10 +1419,380 @@ return [
                         'type' => "instant",
                         'original_amount' => 100000,
                         'amount' => 90000,
-                        'terms' => "test terms and conditions",
+                        'terms' => "Terms and Condition",
                     ]
                 ]
             ],
         ],
-    ]
+    ],
+    'testGetCacheableMethodsDataForCheckout' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'debit_card' => true,
+                'credit_card' => true,
+                'prepaid_card' => true,
+                'card_networks' => [
+                    'AMEX' => 0,
+                    'MC' => 1,
+                    'VISA' => 1,
+                ],
+                'card_subtype' => [
+                    'consumer' => 1,
+                    'business' => 0,
+                    'premium' => 0
+                ],
+                'amex' => false,
+                'netbanking' => [
+                    'AUBL' => 'AU Small Finance Bank',
+                    'UTIB' => 'Axis Bank',
+                ],
+                'wallet' => [
+                    'paytm'    => true,
+                    'grabpay'  => true,
+                    'touchngo' => true,
+                    'boost'    => true,
+                    'mcash'    => true
+                ],
+                'emi' => false,
+                'upi' => false,
+                'cardless_emi' => [],
+                'paylater' => [],
+                'google_pay_cards' => false,
+                'app' => [
+                    'cred' => 0,
+                    'twid' => 0,
+                    'trustly' => 0,
+                    'poli' => 0,
+                    'sofort' => 0,
+                    'giropay' => 0
+                ],
+                'gpay' => false,
+                'emi_types' => [
+                    'credit' => false,
+                    'debit' => false
+                ],
+                'debit_emi_providers' => [
+                    'HDFC' => 0,
+                    'KKBK' => 0,
+                    'INDB' => 0
+                ],
+                'intl_bank_transfer' => [],
+                'fpx' => [],
+                'nach' => false,
+                'cod' => false,
+                'offline' => false,
+                'upi_intent' => true,
+                'upi_type' => [
+                    'collect' => 0,
+                    'intent' => 0,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetEmiDataForCheckoutWithForcedEmiSubventionOfferWithMerchantSpecificEmi' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [
+                    [
+                        'name' =>  "Test Offer",
+                        'payment_method' =>  "emi",
+                        'payment_method_type' =>  "credit",
+                        'issuer' =>  "HDFC",
+                        'emi_subvention' => true,
+                        'type' =>  "instant",
+                        'terms' =>  "Terms and Condition",
+                    ]
+                ],
+                'emi_plans' => [
+                    'HDFC' => [
+                        'min_amount' => 25000,
+                        'plans' => [
+                            6 => 12.5,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'HDFC' =>  [
+                        [
+                            'duration' =>  6,
+                            'interest' => 0,
+                            'subvention' =>  "merchant",
+                            'min_amount' =>  100000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testGetEmiDataForCheckoutWithEmiSubventionOfferWithMerchantSpecificEmi' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [
+                    [
+                        'name' =>  "Test Offer",
+                        'payment_method' =>  "emi",
+                        'payment_method_type' =>  "credit",
+                        'issuer' =>  "HDFC",
+                        'emi_subvention' => true,
+                        'type' =>  "instant",
+                        'terms' =>  "Terms and Condition",
+                    ]
+                ],
+                'emi_plans' => [
+                    'HDFC' => [
+                        'min_amount' => 25000,
+                        'plans' => [
+                            6 => 12.5,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'HDFC' =>  [
+                        [
+                            'duration' =>  6,
+                            'interest' => 0,
+                            'subvention' =>  "merchant",
+                            'min_amount' =>  100000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testGetEmiDataForCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [
+                    [
+                        'name' =>  "Test Offer",
+                        'payment_method' =>  "emi",
+                        'payment_method_type' =>  "credit",
+                        'payment_network' =>  "AMEX",
+                        'emi_subvention' => true,
+                        'type' =>  "instant",
+                        'terms' =>  "Terms and Condition",
+                    ],
+                    [
+                        'name' =>  "Test Offer",
+                        'payment_method' =>  "emi",
+                        'payment_method_type' =>  "credit",
+                        'payment_network' =>  "AMEX",
+                        'emi_subvention' => true,
+                        'type' =>  "instant",
+                        'terms' =>  "Terms and Condition",
+                    ]
+                ],
+                'emi_plans' => [
+                    'HDFC' => [
+                        'min_amount' => 300000,
+                        'plans' => [
+                            9 => 12,
+                            6 => 12,
+                        ],
+                    ],
+                    'AMEX' => [
+                        'min_amount' => 300000,
+                        'plans' => [
+                            9 => 12,
+                            6 => 12,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'HDFC' =>  [
+                        [
+                            'duration' =>  9,
+                            'interest' => 12,
+                            'subvention' =>  "customer",
+                            'min_amount' =>  300000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ],
+                        [
+                            'duration' =>  6,
+                            'interest' => 12,
+                            'subvention' =>  "customer",
+                            'min_amount' =>  300000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                    'AMEX' =>  [
+                        [
+                            'duration' =>  9,
+                            'interest' => 0,
+                            'subvention' =>  "merchant",
+                            'min_amount' =>  319149,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ],
+                        [
+                            'duration' =>  6,
+                            'interest' => 0,
+                            'subvention' =>  "merchant",
+                            'min_amount' =>  319149,
+                            'merchant_payback' =>  "6.00",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testGetEmiDataForCheckoutForDebitEmiWithExistingCreditEmi' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [],
+                'emi_plans' => [
+                    'HDFC_DC' => [
+                        'min_amount' => 300000,
+                        'plans' => [
+                            3 => 12,
+                        ],
+                    ],
+                    'HDFC' => [
+                        'min_amount' => 300000,
+                        'plans' => [
+                            3 => 12,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'HDFC_DC' =>  [
+                        [
+                            'duration' =>  3,
+                            'interest' => 12,
+                            'subvention' =>  "customer",
+                            'min_amount' =>  300000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                    'HDFC' =>  [
+                        [
+                            'duration' =>  3,
+                            'interest' => 12,
+                            'subvention' =>  "customer",
+                            'min_amount' =>  300000,
+                            'merchant_payback' =>  "5.18",
+                            'processing_fee_plan' =>  [
+                                'type' =>  "fixed",
+                                'amount' =>  19900,
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testGetOffersDataForCheckoutWithOrder' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_method_type' => "credit",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                        'terms' => "Terms and Condition",
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_method_type' => "credit",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                        'terms' => "Terms and Condition",
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_method_type' => "credit",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "deferred",
+                        'terms' => "Terms and Condition",
+                        'cashback_amount' => 10000,
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

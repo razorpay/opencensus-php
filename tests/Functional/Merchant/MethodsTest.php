@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Merchant;
 use Event;
 
 use Illuminate\Support\Facades\Queue;
+use RZP\Error\ErrorCode;
+use RZP\Exception\GatewayErrorException;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\SubType;
@@ -15,6 +18,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
 use RZP\Constants\Entity as E;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
@@ -24,6 +28,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethods;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
+use RZP\Models\Admin;
+use Mockery;
 
 class MethodsTest extends TestCase
 {
@@ -1866,6 +1872,383 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
+
+    public function testGetCacheableMethodsDataForCheckout(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::MCASH, Wallet::GRABPAY, Wallet::TOUCHNGO, Wallet::BOOST]);
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $this->startTest();
+    }
+
+    public function testGetOffersDataForCheckoutWithOrder(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer3 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'], 'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+                                                              $offer1,
+                                                              $offer2,
+                                                              $offer3,
+                                                          ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'request_type' => 1,
+            'order' => $order->toArray(),
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
+        $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+        $this->assertEquals($offer3->getPublicId(), $response['offers'][2]['id']);
+    }
+
+    public function testGetEmiDataForCheckoutWithForcedEmiSubventionOfferWithMerchantSpecificEmi(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'emi_durations'   => [6],
+            'payment_network' => null,
+            'payment_method_type' => 'credit',
+            'min_amount' => 100000
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'request_type' => 1,
+            'order' => $order->toArray(),
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetEmiDataForCheckoutWithEmiSubventionOfferWithMerchantSpecificEmi(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'emi_durations'   => [6],
+            'payment_network' => null,
+            'payment_method_type' => 'credit',
+            'min_amount' => 100000
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'request_type' => 1,
+            'order' => $order->toArray(),
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetEmiDataForCheckoutWithMultipleSubEmiOffers(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1,'AMEX' => 1]);
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer1 = $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit'
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit',
+            'emi_durations' => [6,9]
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers([
+                                                              $offer1, $offer2
+                                                          ], ['amount' => 400000]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'request_type' => 1,
+            'order' => $order->toArray(),
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetEmiDataForCheckoutForDebitEmiWithExistingCreditEmi(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->enableDebitEmiProviders();
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101310',
+                'merchant_id' => '100000Razorpay',
+                'bank'        => 'HDFC',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $this->startTest();
+    }
+
+    private function mockCredEligibilityResponse($gatewayResponse = null, \Throwable $gatewayException = null, array $pRequest = null)
+    {
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableApp('10000000000000', 'cred');
+
+        $this->fixtures->merchant->addFeatures(['cred_merchant_consent']);
+
+        $this->fixtures->create('terminal:direct_cred_terminal');
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'amount' => '100', 'app_offer' => true]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ENABLE_CRED_ELIGIBILITY_CALL => true]);
+
+        $defaultRequest = [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 2,
+                'customer_id'   => 'cust_1000ggcustomer',
+                'order_id'      => $order->getPublicId(),
+                'order'         => $order->toArray(),
+            ],
+        ];
+
+        $request = $pRequest ?? $defaultRequest;
+
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                   Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway, $action, $input, $mode, $terminal) use ($gatewayResponse, $gatewayException)
+            {
+                if (is_null($gatewayException) === false)
+                {
+                    throw $gatewayException;
+                }
+
+                return $gatewayResponse;
+            });
+
+        $this->app->instance('gateway', $gateway);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                    {
+                        return $feature === $featureUnderTest ? $value : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
+
+    }
+
+    public function testGetCheckoutAppMetaAfterCredEligibility(): void
+    {
+        $response = $this->mockCredEligibilityResponse(
+            null,
+            new GatewayErrorException(ErrorCode::BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE)
+        );
+
+        $this->assertEquals(false, $response['app_meta']['cred']['hit_eligibility']);
+        $this->assertEquals(false, $response['app_meta']['cred']['user_eligible']);
+    }
+
+    public function testGetCheckoutAppMetaAfterCredEligibilityTimeout(): void
+    {
+        $response = $this->mockCredEligibilityResponse(
+            null,
+            new GatewayTimeoutException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT)
+        );
+
+        $this->assertEquals(true, $response['app_meta']['cred']['hit_eligibility']);
+        $this->assertArrayNotHasKey('offer', $response['app_meta']['cred']);
+        $this->assertArrayNotHasKey('user_eligible', $response['app_meta']['cred']);
+    }
+
+    public function testGetCheckoutAppMetaAfterCredEligibilityOffersSubtext(): void
+    {
+        $this->enableRazorXTreatmentForFeature(
+            Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
+            'sub_text'
+        );
+
+        $credOffer = 'pay seamlessly using your CRED coins. #killthebill';
+
+        $gatewayResponse = [
+            'data'    => [
+                'state'       => 'ELIGIBLE',
+                'tracking_id' => 'rand10001',
+                'layout'      => [
+                    'sub_text' => $credOffer,
+                ],
+            ]
+        ];
+
+        $response = $this->mockCredEligibilityResponse($gatewayResponse);
+
+        $this->assertEquals('sub_text', $response['app_meta']['cred']['experiment']);
+        $this->assertEquals(false, $response['app_meta']['cred']['hit_eligibility']);
+        $this->assertEquals($credOffer, $response['app_meta']['cred']['offer']['description']);
+        $this->assertEquals(true, $response['app_meta']['cred']['user_eligible']);
+    }
+
+    public function testGetCheckoutAppMetaAfterCredEligibilityStickyOffersSubtext(): void
+    {
+        $credOffer = 'pay seamlessly using your CRED coins. #killthebill';
+
+        $gatewayResponse = [
+            'data'    => [
+                'state'       => 'ELIGIBLE',
+                'tracking_id' => 'rand10001',
+                'layout'      => [
+                    'sub_text' => $credOffer,
+                ],
+            ]
+        ];
+
+        $request = [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type' => 2,
+                'customer_id' => 'cust_1000ggcustomer',
+                'cred_offer_experiment' => 'subtext',
+            ],
+        ];
+
+        $response = $this->mockCredEligibilityResponse($gatewayResponse, null, $request);
+
+        $this->assertEquals('subtext', $response['app_meta']['cred']['experiment']);
+        $this->assertEquals($credOffer, $response['app_meta']['cred']['offer']['description']);
+        $this->assertEquals(false, $response['app_meta']['cred']['hit_eligibility']);
+        $this->assertEquals(true, $response['app_meta']['cred']['user_eligible']);
     }
 
     public function testEnableBajajPay()
