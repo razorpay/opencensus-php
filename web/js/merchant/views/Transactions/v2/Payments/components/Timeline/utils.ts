@@ -16,6 +16,7 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
   if (
     [
       PaymentStatus.CREATED,
+      PaymentStatus.AUTHENTICATED,
       PaymentStatus.AUTHORIZED,
       PaymentStatus.CAPTURED,
       RefundStatus.PROCESSED,

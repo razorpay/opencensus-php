@@ -85,7 +85,14 @@ export type CardType = 'debit' | 'credit';
 
 export type Currency = 'INR' | 'MYR';
 
-export type Status = 'failed' | 'created' | 'captured' | 'authorized' | 'refunded' | 'pending';
+export type Status =
+  | 'failed'
+  | 'created'
+  | 'captured'
+  | 'authorized'
+  | 'authenticated'
+  | 'refunded'
+  | 'pending';
 
 export interface PaymentsTimeline {
   created_at: number | null;

@@ -9,6 +9,11 @@ export const paymentStatusVariantMap = {
     content:
       'This is the amount collected in your Razorpay balance and will be deposited in your bank account after deductions and adjustments as per your settlement cycle',
   },
+  authenticated: {
+    variant: 'neutral',
+    content:
+      "This is amount that was deducted from the customer(s) account after successful authentication. It'll be added to your Razorpay balance after being captured",
+  },
   authorized: {
     variant: 'neutral',
     content:

@@ -2,6 +2,7 @@ export const tooltipContent = {
   created:
     'Customer payment details have been sent to Razorpay. The payment amount has not been processed yet',
   authorized: `This is amount that was deducted from the customer(s) account after successful authentication. It’ll be added to your Razorpay balance after being captured`,
+  authenticated: `This is amount that was deducted from the customer(s) account after successful authentication. It’ll be added to your Razorpay balance after being captured`,
   captured:
     'This is the amount collected in your Razorpay balance and will be deposited in your bank account after deductions and adjustments as per your settlement cycle',
   refunded: 'This is the amount reversed to acustomer(s) bank account',

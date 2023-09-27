@@ -6,6 +6,7 @@ export enum PaymentStatus {
   FAILED = 'failed',
   CAPTURED = 'captured',
   AUTHORIZED = 'authorized',
+  AUTHENTICATED = 'authenticated',
 }
 
 export enum RefundStatus {
@@ -94,6 +95,7 @@ export interface IPaymentDetails {
   base_amount: number;
   status:
     | PaymentStatus.CREATED
+    | PaymentStatus.AUTHENTICATED
     | PaymentStatus.AUTHORIZED
     | PaymentStatus.CAPTURED
     | PaymentStatus.REFUNDED

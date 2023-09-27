@@ -91,6 +91,7 @@ export const getStatusIcon = (status: string): JSX.Element => {
   if (
     [
       PaymentStatus.CREATED,
+      PaymentStatus.AUTHENTICATED,
       PaymentStatus.AUTHORIZED,
       PaymentStatus.CAPTURED,
       RefundStatus.PROCESSED,

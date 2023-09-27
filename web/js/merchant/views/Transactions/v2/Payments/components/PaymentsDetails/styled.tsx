@@ -10,6 +10,7 @@ export const getOverviewBgColor = (theme: Theme, status: IPaymentDetails['status
   switch (status) {
     case PaymentStatus.CREATED:
       return theme.colors.feedback.background.notice.lowContrast;
+    case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
       return theme.colors.feedback.background.neutral.lowContrast;
     case PaymentStatus.CAPTURED:

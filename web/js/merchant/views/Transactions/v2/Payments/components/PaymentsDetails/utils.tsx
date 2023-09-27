@@ -47,6 +47,7 @@ export const isPaymentEligibleForRefundAsPerStatus = (payment: IPaymentDetails):
   if (
     [
       PaymentStatus.CREATED,
+      PaymentStatus.AUTHENTICATED,
       PaymentStatus.AUTHORIZED,
       PaymentStatus.FAILED,
       PaymentStatus.REFUNDED,
@@ -325,6 +326,7 @@ export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['v
   switch (status) {
     case PaymentStatus.CREATED:
       return 'notice';
+    case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
       return 'neutral';
     case PaymentStatus.CAPTURED:
@@ -345,6 +347,7 @@ export const getBadgeIcon = (status: IPaymentDetails['status']): JSX.Element => 
     case PaymentStatus.CREATED:
       animationData = CreatedAnimationData;
       break;
+    case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
       animationData = AuthorizedAnimationData;
       break;

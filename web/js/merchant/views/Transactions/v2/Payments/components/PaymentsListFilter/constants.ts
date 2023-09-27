@@ -54,6 +54,7 @@ export const paymentMethodOptions = [
 export const statusOptionsMap = {
   [ALL_VALUE]: ALL_LABEL,
   created: 'Created',
+  authenticated: 'Authenticated',
   authorized: 'Authorized',
   captured: 'Captured',
   refunded: 'Refunded',
