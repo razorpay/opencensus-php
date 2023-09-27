@@ -1716,9 +1716,6 @@ class BankingAccountServiceTest extends TestCase
 
             $this->mockSalesForce('sendLeadStatusUpdate', 1);
 
-            $fnName = __FUNCTION__;
-            print "Starting $fnName with status: $status\n";
-
             $this->startTest($testData);
 
             $this->assertNotificationsForStatusChange($testData['request']['content'][0]['banking_account'],$status);
@@ -1982,7 +1979,7 @@ class BankingAccountServiceTest extends TestCase
             'channel'           => 'rbl',
         ]);
 
-        $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial();
+        $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $basMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails')->andReturns([
             'id'                          => 'GvZfe7jTGCWNTO',

@@ -59,6 +59,10 @@ class BankingAccountService
     const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
     const COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER = 'business/%s/composite-applications-by-reference-number/%s';
 
+    const GET_BANKING_ACCOUNT_CREDENTIALS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER = 'merchant/%s/banking_account_by_account_number/%s/credentials';
+    const COMPOSITE_APPLICATION_WITH_MERCHANT_ID_AND_ACCOUNT_NUMBER         = 'merchant/%s/composite-banking-accounts/%s';
+    const GET_BANKING_ACCOUNT_DETAILS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER     = 'merchant/%s/banking_account_by_account_number/%s';
+
     protected $baseUrl;
 
     protected $key;
@@ -96,6 +100,11 @@ class BankingAccountService
     {
         $repo = new BalanceRepo();
 
+        /**
+         * NOTE: __multi_ca__ Optimization
+         * Fetch all activated banking accounts from BAS using merchant ID
+         */
+
         $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
         // filtering balances here to avoid RBL CAs present on API from being included in BAS call
@@ -119,6 +128,10 @@ class BankingAccountService
         $account = [];
         foreach ($filteredBalances as $balance)
         {
+            /**
+             * TODO: __multi_ca__ Return multiple activated accounts
+             * and handle the callers for this function appropriately
+             */
             $account = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $balance->getAccountNumber(), $balance->getChannel());
             if ($account[Constants::STATUS] === "ACTIVE")
             {
@@ -141,30 +154,22 @@ class BankingAccountService
      */
     public function fetchBankingCredentials(string $merchantId, string $channel, string $accountNumber)
     {
-        $businessId = $this->getBusinessId($merchantId);
+        $response = $this->getBankingAccountCredentialsByMerchantIdAndAccountNumber($merchantId, $channel, $accountNumber);
 
-        $path = 'business/' . $businessId . '/banking_account_by_account_number/' . $accountNumber . '/credentials';
-
-        $headers = [
-            Fields::CHANNEL => $channel,
-        ];
-
-        $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
-
-        if (isset($response['data']) === true)
+        if (isset($response[self::DATA]) === true)
         {
             if ($channel === Channel::ICICI)
             {
                 $response = [
-                    Icici\Fields::CORP_ID     => $response['data']['corp_id'] ?? null,
-                    Icici\Fields::CORP_USER   => $response['data']['user_id'] ?? null,
-                    Icici\Fields::URN         => $response['data']['urn'] ?? null,
-                    Icici\Fields::CREDENTIALS => $response['data']['credentials'] ?? null,
+                    Icici\Fields::CORP_ID     => $response[self::DATA]['corp_id'] ?? null,
+                    Icici\Fields::CORP_USER   => $response[self::DATA]['user_id'] ?? null,
+                    Icici\Fields::URN         => $response[self::DATA]['urn'] ?? null,
+                    Icici\Fields::CREDENTIALS => $response[self::DATA]['credentials'] ?? null,
                 ];
             }
             else
             {
-                $response = $response['data'];
+                $response = $response[self::DATA];
             }
 
         }
@@ -213,27 +218,25 @@ class BankingAccountService
         return $ftsFundAccId;
     }
 
+    /**
+     * To be used internally
+     * 
+     * Used by payouts service to read fts_fund_account_id
+     * and to get banking account id using balance id by fetchBankingAccountId which is used from payouts module heavily
+     */
     public function fetchBankingAccountByAccountNumberAndChannel($merchantId, $accountNumber, $channel)
     {
-        $businessId = $this->getBusinessId($merchantId);
-
-        $path = 'business/' . $businessId . '/banking_account_by_account_number/' . $accountNumber;
-
-        $headers = [
-            Fields::CHANNEL => $channel,
-        ];
-
-        $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
-
-        return $response['data'];
+        return $this->getBankingAccountDetailsByMerchantIdAndAccountNumber($merchantId, $accountNumber, $channel);
     }
 
-    // defining a separate function to avoid breakage of existing expectations 
-    public function fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $accountNumber, $channel)
+    /**
+     * defining a separate function to avoid breakage of existing expectations 
+     * This function returns business and banking account application as well 
+     * to create banking account entity equivalent
+     */
+    protected function fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $accountNumber, $channel)
     {
-        $businessId = $this->getBusinessId($merchantId);
-
-        $path = 'business/' . $businessId . '/composite-banking-accounts/' . $accountNumber;
+        $path = sprintf(self::COMPOSITE_APPLICATION_WITH_MERCHANT_ID_AND_ACCOUNT_NUMBER, $merchantId, $accountNumber);
 
         $headers = [
             Fields::CHANNEL => $channel,
@@ -275,7 +278,16 @@ class BankingAccountService
     }
 
     /**
-     *
+     * Consumed in payouts module heavily
+     * 
+     * NOTE: __multi_ca__ there should be only a single function in banking account module
+     * to resolve banking account id for all direct account using balance id
+     * Which considers all complexities like:
+     * - RBL CA on API
+     * - Other CAs on BAS
+     * - RBL CAs on BAS
+     * - RBL CAs migrated to BAS
+     * 
      * @param string $balanceId
      *
      * @return mixed
@@ -579,7 +591,48 @@ class BankingAccountService
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], []);
 
-        return $response['data'];
+        return $response[self::DATA];
+    }
+
+    /**
+     * Returns beneficiary name, email and phone number using business
+     * For RBL, these details are shared by bank through webhook
+     */
+    public function getBusinessDetailsByMerchantIdAndAccountNumber(string $merchantId, string $accountNumber, string $channel)
+    {
+        return $this->getBankingAccountDetailsByMerchantIdAndAccountNumber($merchantId, $accountNumber, $channel);
+    }
+
+    /**
+     * Returns all banking account details
+     * 
+     * Internal to BAS Service
+     */
+    protected function getBankingAccountDetailsByMerchantIdAndAccountNumber(string $merchantId, string $accountNumber, string $channel)
+    {
+        $headers = [
+            Fields::CHANNEL => $channel,
+        ];
+
+        $path = sprintf(self::GET_BANKING_ACCOUNT_DETAILS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER, $merchantId, $accountNumber);
+
+        $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
+
+        return $response[self::DATA];
+    }
+
+    /**
+     * Internal to BAS service
+     */
+    protected function getBankingAccountCredentialsByMerchantIdAndAccountNumber(string $merchantId, string $channel, string $accountNumber)
+    {
+        $headers = [
+            Fields::CHANNEL => $channel,
+        ];
+
+        $path = sprintf(self::GET_BANKING_ACCOUNT_CREDENTIALS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER, $merchantId, $accountNumber);
+
+        return $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
     }
 
     public function getGeneratedRblCredentials(string $bankingAccountId)
@@ -678,6 +731,7 @@ class BankingAccountService
     {
         $merchantId = $merchant->getMerchantId();
 
+        // TODO: Handle multiple CAs
         $bankingAccount = $this->fetchAccountDetails($merchantId);
 
         if (empty($bankingAccount) === false)

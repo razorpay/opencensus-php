@@ -149,10 +149,39 @@ class BankingAccountService
                         Axis\Fields::CORP_CODE      => 'CORP123',
                     ]
                 ];
-
+            case Channel::RBL:
+                return [
+                    'id'                => 'bas30000000000',
+                    'corp_id'           => '',
+                    'user_id'           => '',
+                    'urn'               => '',
+                    'account_number'    => $accountNumber,
+                    Fields::CREDENTIALS => [
+                        "bank_reference_number" => "85001",
+                        RblGateway\Fields::AUTH_USERNAME => 'encryption_123',
+                        RblGateway\Fields::AUTH_PASSWORD  => 'encryption_iv_123',
+                        RblGateway\Fields::CLIENT_ID      => 'client_123',
+                        RblGateway\Fields::CLIENT_SECRET  => 'client_pass',
+                    ]
+                ];
             default:
                 return [];
         }
+    }
+
+
+    public function getBusinessDetailsByMerchantIdAndAccountNumber(string $merchantId, string $accountNumber)
+    {
+        return [
+            'beneficiary_name'      => 'ABC Pvt Ltd',
+            'beneficiary_email'     => 'name.name@abc.com',
+            'beneficiary_mobile'    => '9898989898'
+        ];
+    }
+
+    public function getBankingAccountCredentialsByMerchantIdAndAccountNumber(string $merchantId, $channel = 'icici', string $accountNumber)
+    {
+        return $this->fetchBankingCredentials($merchantId, $channel, $accountNumber);
     }
 
     public function fetchFtsFundAccountIdFromBas($merchantId, string $channel = 'icici', string $accountNumber = '123456')

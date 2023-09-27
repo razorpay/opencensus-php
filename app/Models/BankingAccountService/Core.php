@@ -6,14 +6,12 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Mail;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Base\Common;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Base;
@@ -23,11 +21,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
-use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\XChannelDefinition;
+use RZP\Services\BankingAccountService as BasService;
+use RZP\Services\Mock\BankingAccountService as BasServiceMock;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -265,7 +263,7 @@ class Core extends Base\Core
 
                 if(isset($basBankingAccount['metadata']['account_open_date']))
                 {
-                    $input[Entity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['account_open_date'];
+                    $input[BankingAccountEntity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['account_open_date'];
                 }
                 
                 break;
@@ -431,7 +429,11 @@ class Core extends Base\Core
         //Avoiding failure of /user api if banking account service is down.
         try
         {
-            $bankingAccount = $this->app['banking_account_service']->fetchAccountDetails($merchantId);
+            /** @var BasService|BasServiceMock $bankingAccountService */
+            $bankingAccountService = $this->app['banking_account_service'];
+
+            // TODO: Handle multiple CAs
+            $bankingAccount = $bankingAccountService->fetchAccountDetails($merchantId);
 
             if (empty($bankingAccount) === false)
             {

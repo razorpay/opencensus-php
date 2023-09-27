@@ -74,8 +74,9 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
-use RZP\Models\Workflow\Service\Adapter;
+use RZP\Services\BankingAccountService;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Jobs\PayoutServiceDataMigration;
@@ -113,6 +114,7 @@ use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
+use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
 
 /**
@@ -9696,7 +9698,10 @@ class Core extends Base\Core
         {
             $accountNumber = $directBalance->getAccountNumber();
 
-            $ftsFundAccountId = app('banking_account_service')->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
+            /** @var BankingAccountService|MockBankingAccountService $bankingAccountService */
+            $bankingAccountService = app('banking_account_service');
+
+            $ftsFundAccountId = $bankingAccountService->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
         }
 
         /** @var \RZP\Services\FTS\FundTransfer $transferService */

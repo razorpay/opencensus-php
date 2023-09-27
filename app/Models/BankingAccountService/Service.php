@@ -3,8 +3,6 @@
 namespace RZP\Models\BankingAccountService;
 
 use Illuminate\Http\Request;
-use RZP\Constants\Entity as E;
-use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Product;
 use RZP\Exception;
@@ -12,15 +10,14 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\BankingAccount\Gateway\Processor;
 use RZP\Models\Base;
 use RZP\Models\Card\BuNamespace;
-use RZP\Models\User\Entity as UserEntity;
 use RZP\Services\CardVault as CardVaultService;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\Core;
 use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
 use RZP\Models\Merchant\Attribute\Group as Group;
 use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
 use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetailEntity;
+use RZP\Models\BankingAccountService\Core as BankingAccountServiceCore;
 use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -28,7 +25,6 @@ use RZP\Trace\TraceCode;
 use RZP\Services\BankingAccountService as BasService;
 use RZP\Services\Mock\BankingAccountService as BasServiceMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BusinessPanForExternalRequest;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\PersonalPanForExternalRequest;
 
@@ -39,7 +35,7 @@ class Service extends Base\Service
 
     protected $validator;
 
-    /** @var BasService||BasServiceMock $bankingAccountService */
+    /** @var BasService|BasServiceMock $bankingAccountService */
     protected $bankingAccountService;
 
     /** @var BasDtoAdapter $basDtoAdapter */
@@ -112,7 +108,16 @@ class Service extends Base\Service
         if ($isBusinessCreation === false)
         {
             //pull businessId and validate before forwarding request to banking account service
-            $this->core()->isvalidBusinessId($path);
+
+            /**
+             * NOTE: __multi_ca__ Removing this validation from here 
+             * as there will be multiple business for an MID
+             * and checking business id in the URL belongs to merchant id should be on BAS
+             * 
+             * This would increase latency for calls where this should fail 
+             * but almost no call fails because of this validation
+             * */ 
+            // $this->core()->isvalidBusinessId($path);
 
             $path = Constants::BUSINESS_PATH . '/' . $path;
         }
@@ -188,7 +193,11 @@ class Service extends Base\Service
             $path === Constants::BUSINESS_PATH and
             isset($response['data']) === true)
         {
-            //attaching businessId to the merchant_details entity
+            // attaching businessId to the merchant_details entity
+            /**
+             * NOTE: __multi_ca__ Let this remain
+             * We won't allow creating another business id from merchant dashboard
+             */
             $this->assignBusinessId($input[Constants::MERCHANT_ID], [Constants::BUSINESS_ID => $response['data']['id']]);
         }
 
@@ -229,7 +238,14 @@ class Service extends Base\Service
                                        'business_id' => $response['data']['business_id'],
                                    ]);
 
-                //attaching businessId to the merchant_details entity
+                // attaching businessId to the merchant_details entity
+                /**
+                 * NOTE: __multi_ca__ we will let this remain
+                 * The latest business_id would be set
+                 * This should not cause any problem for multi_ca v1
+                 * as the second business id would be created for all activated merchants
+                 * and FE uses bas_business_id only during onboarding
+                 */
                 $this->assignBusinessId($input[Constants::MERCHANT_ID], [Constants::BUSINESS_ID => $response['data']['business_id']]);
             }
             else
@@ -352,7 +368,8 @@ class Service extends Base\Service
         //To avoid login issue for the merchant if external call to banking_account_service fails.
         try
         {
-            $bas = $this->app['banking_account_service']->fetchAccountDetails($merchantId);
+            // TODO: Handle multiple CAs
+            $bas = $this->bankingAccountService->fetchAccountDetails($merchantId);
 
             $bankingAccounts = $this->core()->attachBasBankingAccount($merchantId, $bas, $bankingAccounts);
         }
@@ -459,7 +476,8 @@ class Service extends Base\Service
         //To avoid login issue for the merchant if external call to banking_account_service fails.
         try
         {
-            $bas = $this->app['banking_account_service']->fetchAccountDetails($merchantId);
+            // TODO: Handle multiple CAs
+            $bas = $this->bankingAccountService->fetchAccountDetails($merchantId);
 
             if (empty($bas) === false)
             {

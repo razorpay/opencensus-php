@@ -580,7 +580,7 @@ class Gateway extends BaseProcessor
 
     protected function validateCredentialsResponse(array $input)
     {
-        (new Validator)->validateInput('icici_credentials', $input);
+        (new Validator)->setStrictFalse()->validateInput('icici_credentials', $input);
 
         if ($this->basDetails->merchant->isFeatureEnabled(Features::ICICI_BAAS) === true)
         {

@@ -43,8 +43,8 @@ abstract class Generator extends Base
 
     protected function getAccountOwnerInfo(basDetailsEntity $basDetails): array
     {
-        /** @var BankingAccountService|\RZP\Services\Mock\BankingAccountService $bas */
-        $bas = app('banking_account_service');
+        /** @var BankingAccountService|\RZP\Services\Mock\BankingAccountService $bankingAccountService */
+        $bankingAccountService = app('banking_account_service');
 
         $fromDate = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
                           ->format(self::DATE_FORMAT);
@@ -58,7 +58,11 @@ abstract class Generator extends Base
 
         $statementPeriod = $fromDate . ' to ' . $toDate;
 
-        $businessDetails = $bas->getBusinessDetails($basDetails->getMerchantId());
+        /** 
+         * Note: __multi_ca__ Replacing with getBusinessDetailsByMerchantIdAndAccountNumber
+         * We also send beneficiary name in details response
+         */
+        $businessDetails = $bankingAccountService->getBusinessDetailsByMerchantIdAndAccountNumber($basDetails->getMerchantId(), $basDetails->getAccountNumber(), $this->channel);
 
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $this->getAccountName($businessDetails),
@@ -75,7 +79,7 @@ abstract class Generator extends Base
 
     public function getAccountName($businessDetails)
     {
-        return $businessDetails[BusinessDetailsInfo::NAME];
+        return $businessDetails[BusinessDetailsInfo::BENEFICIARY_NAME];
     }
 
     protected function accountStatementData()
