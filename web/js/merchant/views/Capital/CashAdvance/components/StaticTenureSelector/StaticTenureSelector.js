@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import moment from 'moment';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -6,15 +6,17 @@ import { classList } from 'common/utils/rzp-utils';
 import { TENURE_OPTIONS_30, TENURE_OPTIONS_90 } from 'merchant/views/Capital/CashAdvance/constants';
 import './StaticTenureSelector.styl';
 
-const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange, withdrawCTA }) => {
-  const defaultValue = isRepaymentFrequencyDays90
-    ? null
-    : TENURE_OPTIONS_30[TENURE_OPTIONS_30.length - 1];
-  const [selectedOption, setSelectedOption] = useState(defaultValue);
+const StaticTenureSelector = ({
+  isRepaymentFrequencyDays90,
+  handleDueDateChange,
+  withdrawCTA,
+  tenure,
+  handleTenureChange,
+}) => {
   const options = isRepaymentFrequencyDays90 ? TENURE_OPTIONS_90 : TENURE_OPTIONS_30;
 
   const handleOptionClick = (val) => {
-    setSelectedOption(val);
+    handleTenureChange(val);
 
     // BE expects due_date to be 1 day less
     // in case of end_day_limit
@@ -38,7 +40,7 @@ const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange,
             </Popover>
           </small>
         </div>
-        {!selectedOption && (
+        {!tenure && (
           <div className="static-tenure__error">Choose a repayment tenure to withdraw</div>
         )}
       </div>
@@ -50,7 +52,7 @@ const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange,
                 'static-tenure__option',
                 index === 0 && 'static-tenure__option--left',
                 index === options.length - 1 && 'static-tenure__option--right',
-                selectedOption === option && 'static-tenure__option--active',
+                tenure === option && 'static-tenure__option--active',
               )}
               key={option}
               onClick={() => handleOptionClick(option)}
@@ -59,9 +61,7 @@ const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange,
             </div>
           );
         })}
-        <div className="static-tenure__cta-container">
-          {withdrawCTA({ tenure: selectedOption })}
-        </div>
+        <div className="static-tenure__cta-container">{withdrawCTA}</div>
       </div>
       <div className="static-tenure__banner">
         <img alt="party_icon" src="/dist/css/assets/capital/party.svg" />

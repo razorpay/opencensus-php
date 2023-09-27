@@ -76,6 +76,7 @@ import {
   REPAYMENT_FREQUENCY_TYPES,
   REPAYMENT_TYPES,
   STATUSES,
+  TENURE_OPTIONS_30,
   VIEWS,
   WITHDRAW_ERROR_TYPES,
 } from './constants';
@@ -201,6 +202,7 @@ export default class AmountWithdraw extends React.Component {
         fetching: this.isCashAdvanceDisabled,
         reasons: [], // product types eg:- [PRODUCT_TYPE_CARDS, ...]
       },
+      tenure: null,
     };
     this.state = this.initialState;
   }
@@ -369,6 +371,9 @@ export default class AmountWithdraw extends React.Component {
       this.setState({
         withdrawalAmount: Math.trunc(maxWithdrawableAmount / 100),
         selectedDueDate: this.isRepaymentFrequencyDays90() ? null : maxDueDate.endOf('day'),
+        tenure: this.isRepaymentFrequencyDays90()
+          ? null
+          : TENURE_OPTIONS_30[TENURE_OPTIONS_30.length - 1],
       });
     }
   };
@@ -664,7 +669,7 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
-  withdraw = async ({ tenure }) => {
+  withdraw = async () => {
     if (!this.canWithdraw()) return;
 
     this.gaEventDispatcher({
@@ -673,7 +678,7 @@ export default class AmountWithdraw extends React.Component {
     });
 
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { withdrawalAmount, selectedDueDate } = this.state;
+    const { withdrawalAmount, selectedDueDate, tenure } = this.state;
 
     const dueDate = this.getDueDate();
 
@@ -955,7 +960,7 @@ export default class AmountWithdraw extends React.Component {
     return isMerchantNew(this.props.productConfig?.data?.configuration?.live_by_date);
   };
 
-  getWithdrawCTA = ({ tenure }) => {
+  getWithdrawCTA = () => {
     const {
       seedData,
       withdrawalConfigurationDetails: {
@@ -1031,7 +1036,7 @@ export default class AmountWithdraw extends React.Component {
             <AsyncBtn.Primary
               class="btn btn-primary"
               disabled={!this.canWithdraw()}
-              onClick={() => this.withdraw({ tenure })}
+              onClick={this.withdraw}
             >
               Confirm
             </AsyncBtn.Primary>
@@ -1696,9 +1701,15 @@ export default class AmountWithdraw extends React.Component {
     );
   }
 
+  handleTenureChange = (tenure) => {
+    this.setState({
+      tenure,
+    });
+  };
+
   getWithdrawalForm(withdrawalAmount, repayableAmount) {
     const { fungibleData } = this.props;
-    const { selectedDueDate } = this.state;
+    const { selectedDueDate, tenure } = this.state;
     const updatedCardLimit =
       (fungibleData?.cards?.available_balance || 0) - Number(withdrawalAmount) * 100;
 
@@ -1751,7 +1762,9 @@ export default class AmountWithdraw extends React.Component {
             <StaticTenureSelector
               isRepaymentFrequencyDays90={this.isRepaymentFrequencyDays90()}
               handleDueDateChange={this.handleDueDateChange}
-              withdrawCTA={this.getWithdrawCTA}
+              tenure={tenure}
+              handleTenureChange={this.handleTenureChange}
+              withdrawCTA={this.getWithdrawCTA()}
             />
           )}
         </div>
@@ -2107,7 +2120,7 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getTopSection = (currentView) => {
-    const { selectedDueDate, withdrawalAmount } = this.state;
+    const { selectedDueDate, withdrawalAmount, tenure } = this.state;
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
       ? this.getRepayableAmount()
@@ -2130,6 +2143,7 @@ export default class AmountWithdraw extends React.Component {
             repaybleAmount={repayableAmount}
             selectedDueDate={selectedDueDate}
             isInterestTypeReducing={this.isInterestTypeReducing()}
+            tenure={tenure}
           />
         );
       default:
