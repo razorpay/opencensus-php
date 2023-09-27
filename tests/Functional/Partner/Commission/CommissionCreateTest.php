@@ -17,6 +17,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Partner;
 use RZP\Constants\Timezone;
+use RZP\Models\Feature;
 use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Traits\MocksSplitz;
@@ -3891,6 +3892,29 @@ class CommissionCreateTest extends TestCase
             'tax_amount'    => 762727,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testCreatePaymentPageWithPartnerRole()
+    {
+        $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'user_id'     => User::MERCHANT_USER_ID,
+                'role'        => 'partner',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_'.Constants::DEFAULT_PLATFORM_MERCHANT_ID, User::MERCHANT_USER_ID);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FILE_UPLOAD_PP],Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        $this->assertEquals($entityArray['view_type'], 'file_upload_page');
     }
 
     private function setupForInvoiceAutoApproval($testData, array $merchantDetail, array $partnerActivation, $merchant = null) {
