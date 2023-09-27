@@ -7727,6 +7727,11 @@ class Processor
 
         $level = 'info';
 
+        if (($this->payment->isRecurring() === true) and ($this->payment->getRecurringType() !== null))
+        {
+            $traceData['recurring_type'] = $this->payment->getRecurringType();
+        }
+
         if ($error->isGatewayError())
         {
             $level = 'critical';
