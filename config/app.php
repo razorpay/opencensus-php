@@ -733,4 +733,6 @@ return array(
     'es_search_on_created_at_then_on_score_experiment_id' => env('ES_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_EXPERIMENT_ID'),
 
     'transaction_isolation_for_refund_experiment_id' => env('TRANSACTION_ISOLATION_FOR_REFUND_EXP_ID'),
+
+    'transaction_isolation_for_payment_experiment_id' => env('TRANSACTION_ISOLATION_FOR_PAYMENT_EXP_ID'),
 );

@@ -1167,4 +1167,56 @@ return [
             ],
         ],
     ],
+
+    'testRefundProcessedEventDataForMerchantsLinkedToPartner' =>  [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'payment.captured',
+            'contains' => ['payment'],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'status'            => 'captured',
+                        'captured'          => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFailedPaymentWebhookWithTransactionIsolation' => [
+        'event' => [
+            'entity' => 'event',
+            'contains' => ['payment'],
+            'event' => 'payment.failed',
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'status' => 'failed',
+                        'captured' => false,
+                    ]
+                ]
+            ]
+        ],
+        'payment_response' => [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\GatewayErrorException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                'gateway_error_code'  => null
+            ],
+        ],
+    ],
+
 ];

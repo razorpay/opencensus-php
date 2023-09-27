@@ -498,6 +498,8 @@ class ApiEventSubscriber extends Base\Core
         }
         else
         {
+            $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
+
             $this->dispatchEventToStork($payload);
         }
 
@@ -530,6 +532,8 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $this->pushForRevival($payment);
+
+        $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -677,6 +681,7 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $payload = $this->getPaymentPayload($payment);
+        $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
         $this->dispatchEventToStork($payload);
     }
 

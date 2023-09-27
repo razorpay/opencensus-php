@@ -16,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
+use Illuminate\Support\Facades\Mail;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -1327,6 +1328,25 @@ class WebhookTest extends TestCase
         $this->mockSplitzTreatmentBulkRequest([['variant' => ['name' => 'enable']]]);
 
         $payment = $this->defaultAuthPayment();
+
+        $context = [
+            'id' => explode("_", $payment['id'])[1],
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $expectedPaymentEvent = $this->testData['testRefundProcessedEventDataForMerchantsLinkedToPartner']['event'];
+
+        $this->expectWebhookEventWithContext(
+            'payment.captured',
+            $context,
+            function (array $event) use ($expectedPaymentEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedPaymentEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->gateway = 'hdfc';
@@ -1344,14 +1364,7 @@ class WebhookTest extends TestCase
             return $content;
         });
 
-        $context = [
-            'id' => explode("_", $payment['id'])[1],
-            'entity_type' => 'payment',
-            'event_type' => 'partnership'
-        ];
-
         $expectedEvent = $this->testData['testRefundProcessedNormalWebhookEventData']['event'];
-
         $this->expectWebhookEventWithContext(
             'refund.processed',
             $context,
@@ -1482,6 +1495,19 @@ class WebhookTest extends TestCase
         $this->mockSplitzTreatmentBulkRequest([['variant' => null]]);
 
         $payment = $this->defaultAuthPayment();
+
+        $expectedPaymentEvent = $this->testData['testRefundProcessedEventDataForMerchantsLinkedToPartner']['event'];
+
+        $this->expectWebhookEventWithContext(
+            'payment.captured',
+            [],
+            function (array $event) use ($expectedPaymentEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedPaymentEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->gateway = 'hdfc';
@@ -1523,6 +1549,75 @@ class WebhookTest extends TestCase
         );
 
         $this->refundPayment($payment['id']);
+    }
+
+    public function testPaymentAuthorizedWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $expectedPaymentEvent = $this->testData['testWebhookEventData'];
+
+        $this->expectWebhookEventWithContext(
+            'payment.authorized',
+            ['entity_type' => 'payment', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedPaymentEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedPaymentEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->doAuthPayment();
+    }
+
+    public function testFailedPaymentWebhookWithTransactionIsolation()
+    {
+        Mail::fake();
+
+        $this->failPaymentOnBankPage = true;
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $paymentData = $this->testData[__FUNCTION__]['payment_response'];
+
+        $expectedPaymentEvent = $this->testData[__FUNCTION__]['event'];
+
+        $this->expectWebhookEventWithContext(
+            'payment.failed',
+            ['entity_type' => 'payment', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedPaymentEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedPaymentEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->runRequestResponseFlow($paymentData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     protected function mockSplitzTreatmentBulkRequest($output)

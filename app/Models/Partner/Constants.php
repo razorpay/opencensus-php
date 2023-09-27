@@ -122,6 +122,7 @@ class Constants
 
     const TRANSACTION_ISOLATION_ORDER_EXPERIMENT = "app.transaction_isolation_for_order_experiment_id";
     const TRANSACTION_ISOLATION_REFUND_EXPERIMENT = "app.transaction_isolation_for_refund_experiment_id";
+    const TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT = "app.transaction_isolation_for_payment_experiment_id";
 
     public static array $transactionIsolationEventToExperimentMap = [
         Event::ORDER_PAID            => self::TRANSACTION_ISOLATION_ORDER_EXPERIMENT,
@@ -129,5 +130,8 @@ class Constants
         Event::REFUND_CREATED        => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
         Event::REFUND_FAILED         => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
         Event::REFUND_SPEED_CHANGED  => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
+        Event::PAYMENT_AUTHORIZED    => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
+        Event::PAYMENT_CAPTURED      => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
+        Event::PAYMENT_FAILED        => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
     ];
 }
