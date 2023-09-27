@@ -46,6 +46,7 @@ class ProviderPsp
     const FINCARE_BANK      = 'fincare_bank';
     const INDUSIND_BANK_APP = 'indusind_bank_app';
     const SAMSUNG_PAY       = 'samsung_pay';
+    const YESPAY_NEXT       = 'yespay_next';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

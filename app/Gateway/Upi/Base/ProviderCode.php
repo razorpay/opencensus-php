@@ -487,6 +487,7 @@ class ProviderCode
         ProviderPsp::FINCARE_BANK,
         ProviderPsp::INDUSIND_BANK_APP,
         ProviderPsp::SAMSUNG_PAY,
+        ProviderPsp::YESPAY_NEXT,
     ];
 
     /**
@@ -545,6 +546,7 @@ class ProviderCode
         self::FINCAREBANK   => ProviderPsp::FINCARE_BANK,
         self::INDIE         => ProviderPsp::INDUSIND_BANK_APP,
         self::PINGPAY       => ProviderPsp::SAMSUNG_PAY,
+        self::YESPAY       => ProviderPsp::YESPAY_NEXT,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
