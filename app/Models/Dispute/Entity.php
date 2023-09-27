@@ -745,7 +745,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_DISPUTE_ID);
     }
 
-    protected function getLifecycle() : array
+    public function getLifecycle() : array
     {
         return $this->getAttribute(self::LIFECYCLE) ?? [];
     }

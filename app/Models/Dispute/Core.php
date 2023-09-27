@@ -268,6 +268,8 @@ class Core extends Base\Core
 
         $parent = $this->checkAndGetParent($input, $dispute);
 
+        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($dispute->payment->isInternational());
+
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
@@ -277,29 +279,49 @@ class Core extends Base\Core
             $dispute->parent()->associate($parent);
         }
 
-        return $this->repo->transaction(function() use ($dispute, $input)
+        $returnParam = $this->repo->transaction(function() use ($dispute, $input, $isShadowModeDualWrite) {
+            $this->handleDisputeClosure($dispute, $input);
+
+            $this->fireDisputeStatusChangeWebhookEvent($dispute);
+
+            $this->repo->saveOrFail($dispute);
+
+            $this->updateCustomerTicketIfApplicable($dispute);
+
+            $this->generateDisputeEvent($dispute);
+
+            $dispute->refresh();
+
+            if ($isShadowModeDualWrite === false)
             {
-                $this->handleDisputeClosure($dispute, $input);
-
-                $this->fireDisputeStatusChangeWebhookEvent($dispute);
-
-                $this->repo->saveOrFail($dispute);
-
-                $this->updateCustomerTicketIfApplicable($dispute);
-
-                $this->generateDisputeEvent($dispute);
-
-                $dispute->refresh();
-
                 $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
+            }
 
-                $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
-                        'status'    =>  $dispute->getStatus(),
+            $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
+                'status' => $dispute->getStatus(),
+            ]);
+
+            return $dispute;
+        });
+
+        if ($isShadowModeDualWrite === true)
+        {
+
+            try
+            {
+                $input = $this->setDeductionSourceTypeAndIdForDisputeService($dispute, $input);
+
+                $this->app['disputes']->forwardToDisputesService($input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->count(Metrics::DISPUTE_DUAL_WRITE_SHADOW_MODE_FAILURE, [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
                 ]);
+            }
+        }
 
-                return $dispute;
-            });
-
+        return $returnParam;
     }
 
     protected function generateDisputeEvent(Entity $dispute)
@@ -2360,6 +2382,34 @@ class Core extends Base\Core
         }
 
         $input[Entity::DEDUCTION_REVERSAL_AT] = time() + DisputeConstants::DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS;
+
+        return $input;
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return array
+     */
+    protected function setDeductionSourceTypeAndIdForDisputeService(Entity $dispute, array $input): array
+    {
+        $input[Entity::ID] = $dispute->getId();
+
+        $lifecycle = $dispute->getLifecycle();
+
+        $lifecycleCreatedTime = $lifecycle[sizeof($lifecycle) - 1][Entity::CREATED_AT];
+
+        // if the lifecycle was created within 1 seconds
+        if ($lifecycleCreatedTime < (time() - (1000)))
+        {
+            if (array_key_exists(Entity::DEDUCTION_SOURCE_ID, $lifecycle[sizeof($lifecycle) - 1][Entity::CHANGE][Entity::LIFECYCLE_NEW]) === true &&
+                empty($lifecycle[sizeof($lifecycle) - 1][Entity::CHANGE][Entity::LIFECYCLE_NEW][Entity::DEDUCTION_SOURCE_ID]) === false)
+            {
+                $input[Entity::DEDUCTION_SOURCE_ID]   = $lifecycle[sizeof($lifecycle) - 1][Entity::CHANGE][Entity::LIFECYCLE_NEW][Entity::DEDUCTION_SOURCE_ID];
+                $input[Entity::DEDUCTION_SOURCE_TYPE] = $lifecycle[sizeof($lifecycle) - 1][Entity::CHANGE][Entity::LIFECYCLE_NEW][Entity::DEDUCTION_SOURCE_TYPE];
+            }
+        }
 
         return $input;
     }
