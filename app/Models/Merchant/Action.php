@@ -24,6 +24,11 @@ class Action
     const ENABLE_PAYOUT                           = 'enable_payout';
     const ENABLE_DIRECT_TRANSFER                  = 'enable_direct_transfer';
     const ENABLE_MARKETPLACE                      = 'enable_marketplace';
+    const DISABLE_ACCEPT_ONLY_3DS_PAYMENTS        = 'disable_accept_only_3ds_payments';
+    const DISABLE_ES_ON_DEMAND                    = 'disable_es_on_demand';
+    const DISABLE_PAYOUT                          = 'disable_payout';
+    const DISABLE_DIRECT_TRANSFER                 = 'disable_direct_transfer';
+    const DISABLE_MARKETPLACE                     = 'disable_marketplace';
     const UPDATED                                 = 'updated';
     const SUBMITTED                               = 'submitted';
     const ACTIVATION_PROGRESS                     = 'activation_progress';
@@ -54,12 +59,20 @@ class Action
         self::LIVE_ENABLE,
     ];
 
-    const RISK_ACTIONS_LIST_FOR_FEATURES = [
+    const RISK_ACTIONS_LIST_FOR_ENABLE_FEATURES = [
         self::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS,
         self::ENABLE_ES_ON_DEMAND,
         self::ENABLE_PAYOUT,
         self::ENABLE_DIRECT_TRANSFER,
         self::ENABLE_MARKETPLACE,
+    ];
+
+    const RISK_ACTIONS_LIST_FOR_DISABLE_FEATURES = [
+        self::DISABLE_ACCEPT_ONLY_3DS_PAYMENTS,
+        self::DISABLE_ES_ON_DEMAND,
+        self::DISABLE_PAYOUT,
+        self::DISABLE_DIRECT_TRANSFER,
+        self::DISABLE_MARKETPLACE,
     ];
 
 

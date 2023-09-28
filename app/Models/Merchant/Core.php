@@ -2850,13 +2850,22 @@ class Core extends Base\Core
             (new Validator())->validateRiskPermissionForAction($merchant, $action, $adminEntity);
         }
 
-        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_FEATURES) === true)
+        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_ENABLE_FEATURES) === true)
         {
             (new Feature\Core)->create([
                 Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
                 Feature\Entity::ENTITY_ID       => $merchant->getId(),
                 Feature\Entity::NAME            => RiskActionConstants::ACTIONS_FEATURES_MAP[$action]
             ], $shouldSync = true);
+
+            return $merchant;
+        }
+
+        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_DISABLE_FEATURES) === true)
+        {
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $merchant->getId(), RiskActionConstants::ACTIONS_FEATURES_MAP[$action]);
+
+            (new Feature\Core)->delete($feature, true);
 
             return $merchant;
         }

@@ -66,9 +66,15 @@ class Core extends Base\Core
             case MerchantAction::ENABLE_PAYOUT:
             case MerchantAction::ENABLE_DIRECT_TRANSFER:
             case MerchantAction::ENABLE_MARKETPLACE:
-                $validator->validateRiskFeatureEnabled(Constants::ACTIONS_FEATURES_MAP[$action]);
+                $validator->validateRiskFeatureEnableOrdDisable(Constants::ACTIONS_FEATURES_MAP[$action], "enable");
                 break;
-
+            case MerchantAction::DISABLE_ACCEPT_ONLY_3DS_PAYMENTS:
+            case MerchantAction::DISABLE_ES_ON_DEMAND:
+            case MerchantAction::DISABLE_PAYOUT:
+            case MerchantAction::DISABLE_DIRECT_TRANSFER:
+            case MerchantAction::DISABLE_MARKETPLACE:
+                $validator->validateRiskFeatureEnableOrdDisable(Constants::ACTIONS_FEATURES_MAP[$action], "disable");
+                break;
         }
     }
 
@@ -130,10 +136,10 @@ class Core extends Base\Core
         }
         else
         {
-            if ($riskAction == Action::ENABLE_ACCEPT_ONLY_3DS_PAYMENTS)
+            if (in_array($riskAction, Constants::DESTRUCTIVE_FEATURES))
             {
                 (new Validator())->validateInput(
-                    Constants::CREATE_ENABLE_FEATURES_RISK_ATTRIBUTES,
+                    Constants::CREATE_DESTRUCTIVE_FEATURES_RISK_ATTRIBUTES,
                     $riskAttributes);
             }
             else if ($riskAction == Action::ENABLE_INTERNATIONAL)

@@ -58,7 +58,7 @@ class Validator extends Base\Validator
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'required|array',
     ];
 
-    protected static $createEnableFeaturesRiskAttributesRules = [
+    protected static $createDestructiveFeaturesRiskAttributesRules = [
         Constants::RISK_REASON           => 'required|string',
         Constants::RISK_SUB_REASON       => 'required|string',
         Constants::RISK_SOURCE           => 'required|string|in:' . Constants::RISK_SOURCES_CSV,
