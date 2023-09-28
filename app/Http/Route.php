@@ -16751,6 +16751,7 @@ class Route
         'customer_fetch_tokens_internal',
         'reconciliate_via_batch_service',
         'customer_truecaller_verify',
+        'customer_truecaller_verify_internal',
         '1cc_customer_truecaller_verify',
     ];
 
