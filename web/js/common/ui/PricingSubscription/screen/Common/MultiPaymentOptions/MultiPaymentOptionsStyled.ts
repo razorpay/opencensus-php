@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
+import styled from 'styled-components';
 
 const StyledRadioBox = styled.div(
   ({
@@ -45,9 +45,10 @@ const StyleModalParent = styled.div`
   }
 `;
 const StyleImageBox = styled.div`
+  width: 650px;
   & img {
-    width: 800px;
-    height: 250px;
+    width: 100%;
+    height: 100%;
   }
 `;
 

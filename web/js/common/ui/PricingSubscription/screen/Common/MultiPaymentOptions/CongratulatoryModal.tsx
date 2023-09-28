@@ -96,16 +96,24 @@ export const CongratulatoryModalContent = ({
   };
   return (
     <Box display="flex" justifyContent="flex-start" testID="modalContentContainer">
-      <Box display="flex" flexDirection="column" alignItems="flex-start" marginBottom="spacing.2">
-        <StyleModalParent>
-          <Title size="large">Congratulations!</Title>
-        </StyleModalParent>
-        <Text marginTop="spacing.6" weight="bold" testID="modalMainHeader">
-          {MODAL_CONTENT[type].header}
-        </Text>
-        <Text marginTop="spacing.4" type="muted" testID="modalSubHeader">
-          {MODAL_CONTENT[type].subHeader}
-        </Text>
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        marginBottom="spacing.2"
+      >
+        <Box>
+          <StyleModalParent>
+            <Title size="large">Congratulations!</Title>
+          </StyleModalParent>
+          <Text marginTop="spacing.6" weight="bold" testID="modalMainHeader">
+            {MODAL_CONTENT[type].header}
+          </Text>
+          <Text marginTop="spacing.4" type="muted" testID="modalSubHeader">
+            {MODAL_CONTENT[type].subHeader}
+          </Text>
+        </Box>
         <Button
           marginTop="spacing.9"
           variant="primary"
