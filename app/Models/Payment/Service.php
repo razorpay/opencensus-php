@@ -2231,13 +2231,16 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        if (isset($entity['card']) and ($this->merchant->Is3dsDetailsRequiredEnabled() === true)){
+        if (isset($entity['card']) and
+           ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)) and
+           ($this->merchant->Is3dsDetailsRequiredEnabled() === true))
+          {
             $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
             if ((isset($authenticationData['success']) === true) and ($authenticationData['success'] === true))
             {
                 $this->addAuthenticationObject($entity, $authenticationData);
             }
-        }
+          }
 
         if (isset($entity['card']) && ($payment->card->isInternational() === false))
         {
