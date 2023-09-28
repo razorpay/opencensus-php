@@ -52,6 +52,13 @@ class JitValidator extends Validator
         return $this;
     }
 
+    public function validators(array $validators)
+    {
+        $this->validators = $validators;
+
+        return $this;
+    }
+
     public function validate($input = null)
     {
         if ($input !== null)
@@ -72,5 +79,18 @@ class JitValidator extends Validator
     protected function callCustomRuleValidatorFunction($func, $attribute, $value, $parameters)
     {
         $this->caller->validateCustom($func, $attribute, $value, $parameters);
+    }
+
+    /**
+     * To add validators support to Jit Validator, we need to call
+     * the runEachValidator function of the caller class which in turn
+     * will internally call the $func which is usually defined as protected.
+     */
+    protected function runValidators($operation, $input)
+    {
+        if (isset($this->validators) === true)
+        {
+            $this->caller->runEachValidator($this->validators, $input);
+        }
     }
 }
