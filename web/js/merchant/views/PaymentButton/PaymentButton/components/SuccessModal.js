@@ -1,14 +1,12 @@
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import GetCodeModal from './GetCodeModal';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
+import React from 'react';
 
-@withRouter
-export default class SuccessModal extends React.Component {
+class SuccessModal extends React.Component {
   onClickButtonSettings = () => {
-    this.props.history.push(
-      `/paymentbuttons/${this.props.paymentButton.id}/payments`
-    );
+    this.props.history.push(`/paymentbuttons/${this.props.paymentButton.id}/payments`);
 
     this.props.updateHighlightButtonSettings(this.props.paymentButton.id);
 
@@ -18,9 +16,7 @@ export default class SuccessModal extends React.Component {
   render() {
     const { paymentButton, isEditExistingId, ...extraProps } = this.props;
 
-    const title = isEditExistingId
-      ? 'Button updated successfully'
-      : 'Button created successfully';
+    const title = isEditExistingId ? 'Button updated successfully' : 'Button created successfully';
 
     const description = (
       <>
@@ -57,9 +53,7 @@ export default class SuccessModal extends React.Component {
         {...extraProps}
       >
         <div class="receipt-description">
-          <div class="description-title">
-            Actions After a Successful Payment
-          </div>
+          <div class="description-title">Actions After a Successful Payment</div>
           <div class="description-list">
             <li> Show a custom message.</li>
             <li> Send automated payment receipts.</li>
@@ -75,3 +69,5 @@ export default class SuccessModal extends React.Component {
     );
   }
 }
+
+export default withRouter(SuccessModal);

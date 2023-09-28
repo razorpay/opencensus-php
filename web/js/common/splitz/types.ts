@@ -1,5 +1,6 @@
 import { ABVariable, ABVariant as DefaultABVariant } from '@razorpay/universe-cli/ab';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import type { PathPattern } from 'react-router-dom';
 
 export enum MandatoryEnvEnum {
   'beta' = 'beta',
@@ -57,12 +58,7 @@ export type ExperimentType = {
   variables: ParsedABVariable;
 };
 
-export type RouteObject = {
-  path: string;
-  exact?: boolean;
-  strict?: boolean;
-};
-
+export type RouteObject = PathPattern;
 export type RouteMatchConfig = RouteObject | string | RegExp;
 
 export type RouteBasedMapConfig = {

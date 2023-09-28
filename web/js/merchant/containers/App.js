@@ -1,6 +1,6 @@
 import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
 import { createSidetab, createPopup } from '@typeform/embed';
 import errorService from '@razorpay/universe-utils/errorService';

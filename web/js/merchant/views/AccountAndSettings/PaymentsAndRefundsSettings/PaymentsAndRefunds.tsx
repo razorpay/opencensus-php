@@ -1,9 +1,9 @@
 import React, { useEffect, Suspense } from 'react';
-import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
+import { Route, NavLink, Routes, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
@@ -36,6 +36,7 @@ import {
   newAndOldRouteMap,
   newRoutes,
 } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/constants/constants';
+
 const feature = 'allow_cfb_international';
 
 const BalanceSettings = lazy(
@@ -50,11 +51,17 @@ const ReminderSettings = lazy(
   () => import(/* webpackChunkName: "ReminderSettings" */ 'merchant/views/Settings/Reminders'),
 );
 
+const PaymentCaptureAndRefund = (props) => (
+  <StyledConfiguration {...props} showPaymentSettings showDefaultRefundSpeed />
+);
+
+const FeeBearer = (props) => <StyledConfiguration {...props} showFeeBearer />;
+
 const PaymentsAndRefundsSettings = ({
   user,
   fetchFeatureByNameFn: fetchFeatureByName,
   featureStatusConfig: { data: featureData, loading: isFeatureLoading },
-  location,
+  location: { pathname },
 }): JSX.Element => {
   useEffect(() => {
     if (!featureData.hasOwnProperty(feature)) {
@@ -63,17 +70,11 @@ const PaymentsAndRefundsSettings = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const PaymentCaptureAndRefund = (props) => (
-    <StyledConfiguration {...props} showPaymentSettings showDefaultRefundSpeed />
-  );
-
-  const FeeBearer = (props) => <StyledConfiguration {...props} showFeeBearer />;
-
   if (!user.isAccountAndSettingsRevampEnabled) {
-    if (newRoutes.includes(location.pathname)) {
-      return <Redirect to={newAndOldRouteMap[location.pathname]} />;
+    if (newRoutes.includes(pathname)) {
+      return <Navigate to={newAndOldRouteMap[pathname]} replace />;
     }
-    return <Redirect to="/dashboard" />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (isFeatureLoading) {
@@ -83,6 +84,10 @@ const PaymentsAndRefundsSettings = ({
       </div>
     );
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/payments-and-refunds-settings/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -94,8 +99,8 @@ const PaymentsAndRefundsSettings = ({
           items={[
             accountAndSettingsLink,
             {
-              label: ROUTE_MAP[location.pathname],
-              link: location.pathname,
+              label: ROUTE_MAP[pathname],
+              link: pathname,
             },
           ]}
         />
@@ -132,33 +137,76 @@ const PaymentsAndRefundsSettings = ({
             <StyledDivider>
               <StyledTabContentContainer className="content">
                 <main>
-                  <Switch>
-                    <Route path={ROUTES_INFO.BALANCES} component={BalanceSettings} />
-                    <Route path={ROUTES_INFO.CREDITS} component={CreditsSettings} />
-                    <Route path={ROUTES_INFO.REMINDERS} component={ReminderSettings} />
-                    <Route path={ROUTES_INFO.TRANSACTION_LIMITS} component={TransactionLimits} />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.FEE_BEARER}
-                      component={FeeBearer}
-                      additionalCondition={(user): boolean =>
-                        shouldShowFeeBearerSelfServe({
-                          user,
-                          allowCFBInternational: featureData[feature],
-                        })
-                      }
-                    />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS}
-                      component={PaymentCaptureAndRefund}
-                      additionalCondition={(user): boolean =>
-                        isPaymentCaptureAndRefundEnabled(user)
+                  <Routes>
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.BALANCES)}
+                      element={
+                        <RouteGuard>
+                          <BalanceSettings />
+                        </RouteGuard>
                       }
                     />
                     <Route
-                      path={ROUTES_INFO.FAILED_PAYMENTS_RETRY}
-                      component={MissedOrderPaymentLink}
+                      path={getRefRoute(ROUTES_INFO.CREDITS)}
+                      element={
+                        <RouteGuard>
+                          <CreditsSettings />
+                        </RouteGuard>
+                      }
                     />
-                  </Switch>
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.REMINDERS)}
+                      element={
+                        <RouteGuard>
+                          <ReminderSettings />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.TRANSACTION_LIMITS)}
+                      element={
+                        <RouteGuard>
+                          <TransactionLimits />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.FEE_BEARER)}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(user): boolean =>
+                            shouldShowFeeBearerSelfServe({
+                              user,
+                              allowCFBInternational: featureData[feature],
+                            })
+                          }
+                        >
+                          <FeeBearer />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS)}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(user): boolean =>
+                            isPaymentCaptureAndRefundEnabled(user)
+                          }
+                        >
+                          <PaymentCaptureAndRefund />
+                        </RouteGuard>
+                      }
+                    />
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.FAILED_PAYMENTS_RETRY)}
+                      element={
+                        <RouteGuard>
+                          <MissedOrderPaymentLink />
+                        </RouteGuard>
+                      }
+                    />
+                  </Routes>
                 </main>
               </StyledTabContentContainer>
             </StyledDivider>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -135,7 +135,7 @@ const CarouselModal = ({
   );
 };
 
-export default withRouter<any, any>(
+export default withRouter<any>(
   connect(null, {
     modalClose: closeModal,
     modalOpen: openModal,

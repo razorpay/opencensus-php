@@ -1,7 +1,8 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
@@ -17,11 +18,10 @@ import {
 } from 'merchant/views/Developers/events';
 import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 
-@withRouter
 @connect((state) => ({ ...state.webhookLogs }), {
   ...WebHooksLogsActions,
 })
-export default class RequestLogs extends ListContainer {
+class RequestLogs extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
@@ -196,3 +196,5 @@ export default class RequestLogs extends ListContainer {
     );
   }
 }
+
+export default withRouter(RequestLogs);

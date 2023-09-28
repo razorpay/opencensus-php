@@ -1,4 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export type User = Record<string, unknown>;
 
@@ -69,6 +69,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   user: User;
   section?: string;
   type?: string;
+  heading: string;
 }
 
 export interface NavLinkProductPropsInterface extends RouteComponentProps {

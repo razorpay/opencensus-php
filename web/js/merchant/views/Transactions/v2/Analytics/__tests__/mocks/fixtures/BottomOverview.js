@@ -57,6 +57,10 @@ export const assertFetchData = async (name) => {
 
 export const assertRedirect = async (name) => {
   await waitFor(() => {
-    expect(history.push).toBeCalledWith(tilesToPath[name], { prevPath: '/' });
+    expect(history.push.mock.calls[0][0]).toMatchObject({
+      hash: '',
+      pathname: tilesToPath[name],
+      search: '',
+    });
   });
 };

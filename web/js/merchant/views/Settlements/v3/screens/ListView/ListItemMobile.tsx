@@ -5,7 +5,8 @@ import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import StatusBadge from 'merchant/views/Settlements/v3/components/StatusBadge';
 import { StyledSettlementRow } from 'merchant/views/Settlements/v3/screens/ListView/styled';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 type Props = RouteComponentProps & {
@@ -79,4 +80,4 @@ const SettlementListItemMobile = ({
   );
 };
 
-export default withRouter<Props, any>(SettlementListItemMobile);
+export default withRouter<Props>(SettlementListItemMobile);

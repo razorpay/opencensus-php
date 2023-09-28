@@ -1,22 +1,27 @@
 import React, { Component } from 'react';
-import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import CreditOffer from '../../components/CreditOffer';
-import SettlementAccountDetails from '../../components/SettlementAccountDetails';
-import RepaymentInformation from '../../components/RepaymentInformation';
+import Modal from 'react-modal';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+
+import Button from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import {
   acceptCreditOffer,
   fetchCreditOffers,
   fetchLoanApplicationMeta,
   getAcceptedOffer,
 } from 'merchant/reducers/capital';
+import {
+  APPLICATION_STATES,
+  CAPITAL_PRODUCT_CODES,
+  HOTJAR_TRIGGERS,
+} from 'merchant/views/Capital/Loans/constants';
+import CreditOffer from 'merchant/views/Capital/components/CreditOffer';
+import { FormLoader } from 'merchant/views/Capital/components/FormSectionLoadingSkeleton';
+import RepaymentInformation from 'merchant/views/Capital/components/RepaymentInformation';
+import RepaymentModal from 'merchant/views/Capital/components/RepaymentModal';
+import SettlementAccountDetails from 'merchant/views/Capital/components/SettlementAccountDetails';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES, HOTJAR_TRIGGERS } from '../constants';
-import Button from 'common/new-ui/Button';
-import RepaymentModal from '../../components/RepaymentModal';
-import Modal from 'react-modal';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { NavLink } from 'react-router-dom';
 
 @connect(
   (state) => ({
@@ -48,12 +53,8 @@ class DisbursalEntity extends Component {
   };
 
   render() {
-    const {
-      credit_offer_details,
-      accepted_offer_details,
-      disbursal_details,
-      lender_details,
-    } = this.props.loanApplicationDetails;
+    const { credit_offer_details, accepted_offer_details, disbursal_details, lender_details } =
+      this.props.loanApplicationDetails;
 
     if (
       credit_offer_details.loading ||
@@ -72,7 +73,7 @@ class DisbursalEntity extends Component {
       <div class="credit-offer-container">
         <Modal
           isOpen={this.state.isModalOpen}
-          class={`Modal Modal--small Modal--confirm`}
+          class="Modal Modal--small Modal--confirm"
           contentLabel="ConfirmModal"
           ariaHideApp={false}
         >
@@ -114,7 +115,7 @@ class DisbursalEntity extends Component {
             Back
           </Button.Transparent>
 
-          <NavLink className="btn btn-outline m-l" exact to={`/capital/loans/overview`}>
+          <NavLink className="btn btn-outline m-l" end to="/capital/loans/overview">
             Go to Repayment Dashboard <i className="i i-chevron-right" />
           </NavLink>
         </div>

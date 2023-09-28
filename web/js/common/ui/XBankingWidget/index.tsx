@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Spinner } from '@razorpay/blade/components';
 import { fallbackViewData } from './fallbackViewData';
 import Onboarding from 'merchant/views/RazorpayXWidget/Onboarding';

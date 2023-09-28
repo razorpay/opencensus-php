@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 
 import Input from 'common/new-ui/Input';
@@ -67,8 +67,7 @@ const Label = ({ text, htmlFor, required: isRequired }) => {
     notes: [],
   },
 })
-@withRouter
-export default class NewPlan extends Component {
+class NewPlan extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -387,3 +386,5 @@ export default class NewPlan extends Component {
 NewPlan.defaultProps = {
   onSave: () => {},
 };
+
+export default withRouter(NewPlan);

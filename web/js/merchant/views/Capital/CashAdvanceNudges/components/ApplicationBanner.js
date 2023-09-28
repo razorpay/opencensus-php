@@ -1,24 +1,25 @@
-import '../styles/ApplicationBanner.styl';
+import 'merchant/views/Capital/CashAdvanceNudges/styles/ApplicationBanner.styl';
 import React, { useEffect, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import {
-  openModal as fnOpenModal,
-  closeModal as fnCloseModal,
-} from 'merchant_common/reducers/modals';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Loader from 'common/ui/Loader';
-import lazy from 'merchant/routes/LazyLoader';
 import LoaderDots from 'common/ui/LoaderDots';
-import { APPLICATION_STATES } from 'merchant/views/Capital/Loans/constants';
+import lazy from 'merchant/routes/LazyLoader';
+import { CASH_ADVANCE_BASE_URL } from 'merchant/views/Capital/CashAdvance/constants';
 import {
   trackUnlockMoreFundsBanner,
   trackKnowMoreCtaClick,
   trackFewStepsLeftBanner,
   trackContinueApplyingCtaClick,
-} from '../analytics';
-import { getExpiresIn } from '../utils';
-import { CASH_ADVANCE_BASE_URL } from '../../CashAdvance/constants';
+} from 'merchant/views/Capital/CashAdvanceNudges/analytics';
+import { getExpiresIn } from 'merchant/views/Capital/CashAdvanceNudges/utils';
+import { APPLICATION_STATES } from 'merchant/views/Capital/Loans/constants';
+import {
+  openModal as fnOpenModal,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
 
 const ProgressModal = lazy(() =>
   import(

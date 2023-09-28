@@ -1,20 +1,8 @@
 // testing utils
 import { render, fireEvent, waitFor, userEvent, screen } from 'test-utils';
 
-// router
-import { MemoryRouter as Router, Route } from 'react-router-dom';
-
-import Wrapper from 'common/components/Bootstrap/Wrapper';
-
 // component
 import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
-
-const context = {
-  org: {
-    id: 'test_org_id',
-  },
-  mode: 'test',
-};
 
 const testTxn = [
   {
@@ -58,13 +46,9 @@ const testTxn = [
 ];
 
 const renderComponent = (props) => {
-  return render(
-    <Wrapper context={context}>
-      <Router initialEntries={['/']}>
-        <Route path="/" component={(routeProps) => <ListTable {...routeProps} {...props} />} />
-      </Router>
-    </Wrapper>,
-  );
+  return render(<ListTable {...props} />, {
+    initialEntries: ['/'],
+  });
 };
 
 describe('Test <ListTable />', () => {

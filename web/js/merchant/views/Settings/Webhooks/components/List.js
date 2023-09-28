@@ -1,5 +1,6 @@
 import React from 'react';
-import { withRouter, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Time from 'common/ui/Time';
 import DataTable from 'common/ui/Table/DataTable';
 const ClickableUrl = {

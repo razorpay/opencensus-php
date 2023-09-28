@@ -6,7 +6,7 @@ import { compose, bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
 import './GSModalStyle.styl';
 

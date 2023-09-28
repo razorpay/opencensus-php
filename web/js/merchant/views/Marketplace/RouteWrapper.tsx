@@ -1,12 +1,13 @@
 import React, { ReactElement } from 'react';
-import { Route, RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { useQuery } from 'react-query';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 interface WrapperProps extends RouteComponentProps {
-  component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | any;
+  children: JSX.Element;
   user: {
     isSubMerchant?: boolean;
   };
@@ -19,21 +20,14 @@ const fetchPlatformFeature = () => {
   });
 };
 
-function Wrapper({ user, component: Component, ...rest }: WrapperProps): ReactElement {
+function Wrapper({ user, children }: WrapperProps): ReactElement {
   const { data, isLoading, isError } = useQuery('platform-check', fetchPlatformFeature, {
     refetchOnWindowFocus: false,
   });
   const isPlatformFeeTabEnabled =
     (user.isSubMerchant && !isLoading && !isError && data?.data?.feature_enabled) || false;
 
-  return (
-    <Route
-      {...rest}
-      render={(props: RouteComponentProps) => (
-        <Component {...props} isPlatformFeeTabEnabled={isPlatformFeeTabEnabled} />
-      )}
-    />
-  );
+  return <RouteGuard>{React.cloneElement(children, { isPlatformFeeTabEnabled })}</RouteGuard>;
 }
 
 export default compose<any>(connect((state) => ({ user: state.session.user })))(Wrapper);

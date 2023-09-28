@@ -42,6 +42,7 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default withSplitzService(
-  connect(mapStatesToProps, mapDispatchToProps)(PaymentListContainer),
-);
+export default connect(
+  mapStatesToProps,
+  mapDispatchToProps,
+)(withSplitzService(PaymentListContainer));

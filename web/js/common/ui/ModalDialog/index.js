@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { isEmpty, isPlainObject } from 'lodash';
 import qs from 'query-string';
 
@@ -31,12 +31,17 @@ class ModalDialog extends Component {
   _prevQueryParams = null;
   defaultOverlayStyle = { ...Modal.defaultStyles.overlay };
 
+  replacePathName = ({ search }) => {
+    const newPath = this.props.history.location.pathname + (search ? `?${search}` : '');
+    this.props.history.replace(newPath);
+  };
+
   addQueryParams = (queryParams) => {
     const params = qs.parse(this.props.location.search);
     Object.entries(queryParams).forEach(([queryParamKey, queryParamValue]) => {
       params[queryParamKey] = queryParamValue;
     });
-    this.props.history.replace({ search: qs.stringify(params) });
+    this.replacePathName({ search: qs.stringify(params) });
   };
 
   removeQueryParams = (queryParams) => {
@@ -44,7 +49,7 @@ class ModalDialog extends Component {
     Object.keys(queryParams).forEach((queryParamKey) => {
       delete params[queryParamKey];
     });
-    this.props.history.replace({ search: isEmpty(params) ? '' : qs.stringify(params) });
+    this.replacePathName({ search: isEmpty(params) ? '' : qs.stringify(params) });
   };
 
   onModalOpen = () => {

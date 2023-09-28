@@ -11,7 +11,7 @@ import moment from 'moment';
 import { ICEnablementWorkflowInfo, User } from 'common/typings';
 import qs from 'query-string';
 import { omit, isEmpty } from 'lodash';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export const getIsInternationalCardsDisabledReason = ({
   user,

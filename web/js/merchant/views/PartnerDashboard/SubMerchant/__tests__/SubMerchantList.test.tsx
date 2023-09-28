@@ -1,23 +1,25 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { render, screen, waitFor, userEvent } from 'common/services/test/test-utils';
 import SubMerchantList from 'merchant/views/PartnerDashboard/SubMerchant/List';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 // TODO : covered only Capital use case, have to cover others later
 
-const isPartner = jest.fn();
+const isPartner = (x) => x !== 'pure_platform';
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
 const instantActivation = { isWhitelistFlow: false };
 const state = {
   session: {
     user: {
+      userRole: 'owner',
+      isAuthenticated: true,
       isOrgRZP: true,
       isPartner,
       isPartnerIntent,
       isFeatureEnabled,
+      findTag: () => false,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
@@ -26,9 +28,7 @@ const state = {
 };
 
 const renderOptions = {
-  historyOptions: {
-    initialEntries: [{ pathname: '/partners/submerchants', state: undefined }],
-  },
+  initialEntries: [{ pathname: '/partners/submerchants', state: undefined }],
   path: '/partners/submerchants',
 };
 
@@ -61,13 +61,12 @@ jest.mock('merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralL
   },
 }));
 
-jest.mock('merchant/components/ShowWhen');
-
 describe('List', () => {
   beforeAll(() => {
     document.execCommand = jest.fn();
     window.rzp_user = {};
     window.rzpQ = {
+      component: () => {},
       merchantActions: () => {
         return {
           initiated: jest.fn(),
@@ -94,12 +93,6 @@ describe('List', () => {
   };
 
   test('should render component with default props', () => {
-    ShowWhen.mockImplementation(({ children, additionalCondition }) => {
-      if (additionalCondition(state.session.user)) {
-        return <div>{children}</div>;
-      }
-      return null;
-    });
     renderApp(renderOptions);
 
     expect(screen.getByText('Payments')).toBeInTheDocument();
@@ -107,7 +100,6 @@ describe('List', () => {
   });
 
   test('should render Add merchant modal after clicking Add button', async () => {
-    ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
     renderApp(renderOptions);
 
     const addButton = screen.getByRole('button', { name: /Add New Clients/i });
@@ -120,7 +112,6 @@ describe('List', () => {
   });
 
   test('should render Refer merchant modal after clicking Refer button', async () => {
-    ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
     renderApp(renderOptions);
 
     const referButton = screen.getByRole('button', { name: /Share Referral Link/i });
@@ -135,11 +126,9 @@ describe('List', () => {
   test('should show modal when addType is passed is history', async () => {
     const capitalRenderOptions = {
       ...renderOptions,
-      historyOptions: {
-        initialEntries: [
-          { pathname: '/partners/submerchants/capital', state: { addType: PRODUCT_TYPE.CAPITAL } },
-        ],
-      },
+      initialEntries: [
+        { pathname: '/partners/submerchants/capital', state: { addType: PRODUCT_TYPE.CAPITAL } },
+      ],
     };
 
     renderApp(capitalRenderOptions);

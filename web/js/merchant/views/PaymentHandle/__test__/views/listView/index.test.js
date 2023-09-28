@@ -22,6 +22,7 @@ describe('Payment Handle List View', () => {
           },
         },
       },
+      renderViaRouteGuard: false,
     });
 
   test('App component should be defined', () => {
@@ -30,8 +31,8 @@ describe('Payment Handle List View', () => {
 
   test('should have Banner title in the document', async () => {
     await server.use(fetchPaymentHandleSuccess());
-    renderApp();
-    const bannerTitle = screen.getByText(
+    await renderApp();
+    const bannerTitle = await screen.findByText(
       'Share your Razorpay.me link with customers as many times as you need to accept payments',
     );
     expect(bannerTitle).toBeInTheDocument();

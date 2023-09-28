@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import VirtualAccountDetails from './components/Details';
@@ -13,7 +13,6 @@ import CreateTestPayment from './components/Modals/CreateTestPayment';
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import moment from 'moment';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -28,7 +27,7 @@ import moment from 'moment';
   },
 )
 @RTracking(() => window.rzpQ.component('VirtualAccountDetailsContainer'))
-export default class VirtualAccountDetailsContainer extends Component {
+class VirtualAccountDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -244,3 +243,5 @@ export default class VirtualAccountDetailsContainer extends Component {
     );
   }
 }
+
+export default withRouter(VirtualAccountDetailsContainer);

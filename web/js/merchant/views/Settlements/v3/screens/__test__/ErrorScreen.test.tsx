@@ -18,7 +18,11 @@ describe('Error Screen', () => {
     const goBackLink = screen.getByRole('button', { name: 'Go back' });
     await userEvent.click(goBackLink);
     expect(historyPushSpy).toHaveBeenCalledTimes(1);
-    expect(historyPushSpy).toHaveBeenCalledWith('/settlements');
+    expect(historyPushSpy).toHaveBeenCalledWith(
+      { hash: '', pathname: '/settlements', search: '' },
+      undefined,
+      {},
+    );
   });
 
   test('should render error screen and refresh page button when api fails due to server error', async () => {

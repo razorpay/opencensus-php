@@ -16,11 +16,17 @@ describe('ProductOnboardingCard - PaymentGatewayCard', () => {
     jest.clearAllMocks();
   });
   test('should render component without errors', () => {
-    expect(() => render(<PaymentGatewayCard history={history} product="PH" />)).not.toThrowError();
+    expect(() =>
+      render(<PaymentGatewayCard history={history} product="PH" />, {
+        renderViaRouteGuard: false,
+      }),
+    ).not.toThrowError();
   });
 
   test('should navigate and trigger event on CTA click', async () => {
-    const { getByRole } = render(<PaymentGatewayCard history={history} product="PG" />);
+    const { getByRole } = render(<PaymentGatewayCard history={history} product="PG" />, {
+      renderViaRouteGuard: false,
+    });
     const cta = getByRole('button');
 
     expect(cta).toBeEnabled();

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
@@ -10,8 +11,6 @@ import {
 import { fetchItems } from 'merchant/reducers/items';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import Invoices from 'merchant/views/Invoices/Invoices/List';
-import Items from 'merchant/views/Invoices/Items/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
@@ -24,10 +23,8 @@ import OnBoarding, {
 
 import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
 
-const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
-
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect(
   (state) => ({
     ...state.session,
@@ -41,7 +38,7 @@ const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
     fetchItems,
   },
 )
-export default class InvoicesContainer extends Component {
+class InvoicesContainer extends Component {
   componentDidMount() {
     if (this.props.invoices.invoices.length) return;
 
@@ -93,7 +90,7 @@ export default class InvoicesContainer extends Component {
 
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.invoicesProductOnBoarding;
-    const { user } = this.props;
+    const { user, children } = this.props;
 
     if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
@@ -126,12 +123,11 @@ export default class InvoicesContainer extends Component {
 
           <TestModeBanner />
 
-          <content>
-            <Route path="/invoices" component={Invoices} />
-            <Route path="/items" render={ItemsComponent} />
-          </content>
+          <content>{children}</content>
         </tabbed-container>
       </React.Fragment>
     );
   }
 }
+
+export default withRouter(InvoicesContainer);

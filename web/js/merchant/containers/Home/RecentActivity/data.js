@@ -31,10 +31,8 @@ const commonMeta = {
         if (['payments', 'settlements', 'refunds'].includes(tabName)) {
           return (
             <Link
-              to={{
-                pathname: `/${tabName}/${value}?init_point=${tabName}-table&init_page=${SelfServeActionPages.HomeRecentactivity}`,
-                state,
-              }}
+              to={`/${tabName}/${value}?init_point=${tabName}-table&init_page=${SelfServeActionPages.HomeRecentactivity}`}
+              state={state}
             >
               <code>{value}</code>
             </Link>
@@ -42,10 +40,8 @@ const commonMeta = {
         } else {
           return (
             <Link
-              to={{
-                pathname: `/${tabName}/${value}`,
-                state: { fromHomePage: true, openedFrom: SelfServeActionPages.HomeRecentactivity },
-              }}
+              to={`/${tabName}/${value}`}
+              state={{ fromHomePage: true, openedFrom: SelfServeActionPages.HomeRecentactivity }}
             >
               <code>{value}</code>
             </Link>

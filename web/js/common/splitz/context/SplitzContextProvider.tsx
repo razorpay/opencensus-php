@@ -1,6 +1,6 @@
 import React, { useEffect, createContext } from 'react';
 import { getVariant, getVariants, initABService } from 'common/splitz/services';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   ActiveDashboardType,
   SpiltzContextState,
@@ -10,6 +10,7 @@ import {
 import { splitzConfig } from 'common/splitz/configs';
 import { API_BASE_URL, REF_MID } from 'common/splitz/constants';
 import { useSplitzReducer } from 'common/splitz/hooks/useSplitzReducer';
+import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 export const SpiltzContext = createContext({} as SpiltzContextState);
 
@@ -18,7 +19,7 @@ const SpiltzServiceProviderComponent = ({
   dashboardType,
   customLoader,
   history,
-}: SpiltzServiceProviderProps): JSX.Element => {
+}: SpiltzServiceProviderProps & WithRouterProps): JSX.Element => {
   const { abExperiments, isInitialized, setABExperiments, setInitialized } = useSplitzReducer();
 
   const isExperimentEvaluated = (experimentHashKey: string) => {

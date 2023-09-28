@@ -1,5 +1,4 @@
 import Onboarding from 'merchant/views/Affordability/AffordabilityWidget/Onboarding';
-import { Switch } from 'react-router-dom';
 
 export const onboarding = {
   affordabilityWidget: {
@@ -14,9 +13,5 @@ export const onboarding = {
 };
 
 export const App = (props) => {
-  return (
-    <Switch>
-      <Onboarding {...props} />
-    </Switch>
-  );
+  return <Onboarding {...props} />;
 };

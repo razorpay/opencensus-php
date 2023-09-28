@@ -36,7 +36,7 @@ describe('Payment Link', () => {
           user: { ...paymentLinkStoreConfiguration, ...state },
         },
       },
-      historyOptions: { initialEntries: ['/paymentlinks'] },
+      initialEntries: ['/paymentlinks'],
       path: '/paymentlinks',
     });
   };
@@ -67,7 +67,7 @@ describe('Payment Link', () => {
     render(<PaymentLink />, {
       initialState: {
         session: {
-          user: { isOrgAxis: false },
+          user: { ...paymentLinkStoreConfiguration, isOrgAxis: false },
         },
         onboarding,
       },
@@ -79,7 +79,11 @@ describe('Payment Link', () => {
     render(<PaymentLink />, {
       initialState: {
         session: {
-          user: { isOrgAxis: true, findTag: jest.fn(() => false) },
+          user: {
+            ...paymentLinkStoreConfiguration,
+            isOrgAxis: true,
+            findTag: jest.fn(() => false),
+          },
           org: {
             custom_code: 'rzp',
           },

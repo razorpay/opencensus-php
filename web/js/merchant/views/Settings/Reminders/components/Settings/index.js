@@ -1,7 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { withRouter, Prompt } from 'react-router-dom';
+// import { Prompt } from 'common/deprecated/Prompt';
+import { withRouter } from 'common/deprecated/withRouter';
 import PropTypes from 'prop-types';
 
 import { findBy, objectDiff, isBlank } from 'common/utils/rzp-utils';
@@ -237,7 +238,8 @@ class ReminderSettings extends React.Component {
 
             {isEnabled && (
               <div class="panel-body">
-                <Prompt when={this.isChanged()} message={this.handleRouteChange} />
+                {/* This can only be used inside a component rendered by a Data Router. */}
+                {/* <Prompt when={this.isChanged()} message={this.handleRouteChange} /> */}
 
                 <ReminderOptionSetting
                   isExpiry
@@ -276,7 +278,6 @@ class ReminderSettings extends React.Component {
 }
 
 export default compose(
-  withRouter,
   connect(
     (state) => {
       return {
@@ -288,4 +289,4 @@ export default compose(
       showNotification,
     },
   ),
-)(ReminderSettings);
+)(withRouter(ReminderSettings));

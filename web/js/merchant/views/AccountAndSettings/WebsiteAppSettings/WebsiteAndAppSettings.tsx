@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Switch, Redirect, Route } from 'react-router-dom';
+import { NavLink, Routes, Navigate, Route } from 'react-router-dom';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import lazy from 'merchant/routes/LazyLoader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -63,7 +63,7 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
     fetchMerchantWebsiteDetails,
     fetchConnectedApplications,
     fetchOauthConnectedApplications,
-    location,
+    location: { pathname },
     applications,
   } = props;
   const { hasConnectedApplications, connectedAppsloading: isConnectedAppsloading } = applications;
@@ -84,11 +84,15 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
   }, []);
 
   if (!user.isAccountAndSettingsRevampEnabled) {
-    if (newRoutes.includes(location.pathname as NewRoutes)) {
-      return <Redirect to={newAndOldRouteMap[location.pathname]} />;
+    if (newRoutes.includes(pathname as NewRoutes)) {
+      return <Navigate to={newAndOldRouteMap[pathname]} replace />;
     }
-    return <Redirect to="/dashboard" />;
+    return <Navigate to="/dashboard" replace />;
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/website-app-settings/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -100,8 +104,8 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
           items={[
             accountAndSettingsLink,
             {
-              label: ROUTE_MAP[location.pathname],
-              link: location.pathname,
+              label: ROUTE_MAP[pathname],
+              link: pathname,
             },
           ]}
         />
@@ -145,37 +149,56 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
             <StyledDivider>
               <StyledTabContentContainer className="content">
                 <main>
-                  <Switch>
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.WEBSITE_APP_SETTINGS}
-                      component={WebsiteAppDetails}
-                      additionalCondition={(user) =>
-                        isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
+                  <Routes>
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.WEBSITE_APP_SETTINGS)}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(user) =>
+                            isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
+                          }
+                        >
+                          <WebsiteAppDetails />
+                        </RouteGuard>
                       }
-                    />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.API_KEYS}
-                      component={APIKeys}
-                      additionalCondition={(user) => isApiKeyEnabled(user)}
-                    />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.WEBHOOKS}
-                      component={Webhooks}
-                      additionalCondition={(user) => isWebhookEnabled(user)}
                     />
                     <Route
-                      path={ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS}
-                      component={BusinessWebsiteDetails}
-                    />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.APPLICATIONS}
-                      component={Applications}
-                      additionalCondition={(user) =>
-                        isApplicationEnabled(user) &&
-                        (isConnectedAppsloading || hasConnectedApplications)
+                      path={getRefRoute(ROUTES_INFO.API_KEYS)}
+                      element={
+                        <RouteGuard additionalCondition={(user) => isApiKeyEnabled(user)}>
+                          <APIKeys />
+                        </RouteGuard>
                       }
                     />
-                  </Switch>
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.WEBHOOKS)}
+                      element={
+                        <RouteGuard additionalCondition={(user) => isWebhookEnabled(user)}>
+                          <Webhooks />
+                        </RouteGuard>
+                      }
+                    />
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS)}
+                      element={<BusinessWebsiteDetails />}
+                    />
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.APPLICATIONS)}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(user) =>
+                            isApplicationEnabled(user) &&
+                            (isConnectedAppsloading || hasConnectedApplications)
+                          }
+                        >
+                          <Applications />
+                        </RouteGuard>
+                      }
+                    />
+                  </Routes>
                 </main>
               </StyledTabContentContainer>
             </StyledDivider>

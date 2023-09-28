@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import errorService from '@razorpay/universe-utils/errorService';
 import { analyticsTrack } from 'common/utils/analytics';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';

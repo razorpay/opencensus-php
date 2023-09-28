@@ -6,7 +6,7 @@ import React from 'react';
 import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
-import { HashRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
 import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
@@ -22,6 +22,9 @@ import '../../dashboard.font';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
+import { redirectToAppRoute } from 'common/utils/redirectToAppRoute';
+
+redirectToAppRoute('/app');
 
 capturePrometheusMetric({
   name: Metrics.PAGE_VIEW,

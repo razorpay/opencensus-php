@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import AllPaymentMetrics from './components/AllPaymentMetrics';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { MetricsDashboard } from './components/styled';

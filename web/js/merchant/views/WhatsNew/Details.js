@@ -4,12 +4,13 @@ import {
   popSlider as popSliderAsProp,
   emptySliderStack,
 } from 'merchant_common/reducers/multiSlider';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
 import { sendDataToSalesForce } from 'common/utils/common-api';
-import { getNotificationTrackingProperties } from '../../../common/ui/WhatsNew/common';
+import { getNotificationTrackingProperties } from 'common/ui/WhatsNew/common';
 import sanitizer, { customWhiteList } from 'common/utils/xss-sanitizer';
 import isObject from 'is-object';
 
@@ -42,7 +43,6 @@ const getCustomWhiteList = () => {
   return l2WhiteList;
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -51,7 +51,7 @@ const getCustomWhiteList = () => {
   { popSlider: popSliderAsProp, emptySliderStack },
 )
 @RTracking(() => window.rzpQ.component('AnnouncementDetails'))
-export default class AnnouncementDetails extends React.Component {
+class AnnouncementDetails extends React.Component {
   lazy = this.props.lazy || this.props.location?.state?.lazy || false;
 
   state = {
@@ -250,3 +250,5 @@ export default class AnnouncementDetails extends React.Component {
     );
   }
 }
+
+export default withRouter(AnnouncementDetails);

@@ -1,12 +1,8 @@
-import { withRouter } from 'react-router-dom';
+/* eslint-disable */
+import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
 import debounce from 'common/utils/debounce';
-import {
-  openModal,
-  closeModal,
-  notifySuccess,
-  notifyError,
-} from 'razorx/components/Modal';
+import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, {
   TextAreaField,
@@ -25,9 +21,8 @@ import SegmentsList from './SegmentsList';
 const COUNT = 10;
 const MIN_NAME_TYPE = 2;
 
-@withRouter
 @observer
-export default class extends React.Component {
+class ExModal extends React.Component {
   state = this.initState();
 
   initState() {
@@ -53,7 +48,7 @@ export default class extends React.Component {
     const isEdit = !!this.props.data;
 
     if (!isEdit) {
-      this.fetchFeaturesList().then(list => {
+      this.fetchFeaturesList().then((list) => {
         if (list) {
           this.defaultFeaturesList = list;
         }
@@ -65,9 +60,9 @@ export default class extends React.Component {
     return rexFetch({
       url: 'feature_flags',
       params: { ...params, count: COUNT },
-    }).then(resp => {
+    }).then((resp) => {
       if (resp) {
-        const featuresList = resp.items.map(f => ({
+        const featuresList = resp.items.map((f) => ({
           name: f.name,
           id: String(f.id),
           variants: f.variants,
@@ -80,7 +75,7 @@ export default class extends React.Component {
     });
   }
 
-  onSubmit = form => {
+  onSubmit = (form) => {
     const isEdit = this.props.data && this.props.data.id;
     let data = form,
       segments;
@@ -94,7 +89,7 @@ export default class extends React.Component {
         return notifyError('Select a Feature');
       }
 
-      segments = this.state.segments.map(s => ({ ...s }));
+      segments = this.state.segments.map((s) => ({ ...s }));
     }
 
     const { description, environment, mode } = data;
@@ -115,9 +110,7 @@ export default class extends React.Component {
         break;
       }
 
-      if (
-        ['contextramp', 'whitelist', 'blacklist'].indexOf(segment.type) > -1
-      ) {
+      if (['contextramp', 'whitelist', 'blacklist'].indexOf(segment.type) > -1) {
         if (typeof segment.ids === 'undefined' || !segment.ids) {
           msg = 'ids cannot be empty';
           break;
@@ -126,7 +119,7 @@ export default class extends React.Component {
         segment.ids = segment.ids
           .trim()
           .split(',')
-          .map(id => id.trim());
+          .map((id) => id.trim());
       }
 
       if (['contextramp', 'ramp'].indexOf(segment.type) > -1) {
@@ -169,7 +162,7 @@ export default class extends React.Component {
       successMsg = `Experiment ${this.props.data.id} is successfully updated`;
     }
 
-    requestFn({ url, data: reqPayload }).then(resp => {
+    requestFn({ url, data: reqPayload }).then((resp) => {
       if (resp) {
         closeModal();
         notifySuccess(successMsg);
@@ -197,7 +190,7 @@ export default class extends React.Component {
     let prepareObj = {};
 
     if (this.props.data) {
-      Object.keys(initJSONObj).forEach(k => {
+      Object.keys(initJSONObj).forEach((k) => {
         prepareObj[k] = this.props.data[k];
       });
     } else {
@@ -211,12 +204,9 @@ export default class extends React.Component {
     this.fetchFeaturesList({ name: val });
   }
 
-  debounce_searchInFeatureList = debounce(
-    this.searchInFeatureList.bind(this),
-    200
-  );
+  debounce_searchInFeatureList = debounce(this.searchInFeatureList.bind(this), 200);
 
-  onInput = val => {
+  onInput = (val) => {
     if (val.length <= MIN_NAME_TYPE) {
       this.setState({ featuresList: this.defaultFeaturesList });
       return;
@@ -229,7 +219,7 @@ export default class extends React.Component {
     this.setState({ selectedFeature: option, segments: null });
   };
 
-  onChangeSegmentsList = segments => {
+  onChangeSegmentsList = (segments) => {
     this.setState({
       segments,
     });
@@ -289,12 +279,7 @@ export default class extends React.Component {
                 required
               />
               {isEdit ? (
-                <Field
-                  label="Feature"
-                  name="feature_id"
-                  defaultValue={feature.name}
-                  readOnly
-                />
+                <Field label="Feature" name="feature_id" defaultValue={feature.name} readOnly />
               ) : (
                 <SearchableSelectField
                   name="feature_id"
@@ -307,9 +292,7 @@ export default class extends React.Component {
                   selected={selectedFeature}
                   onInput={this.onInput}
                   onChange={this.handleSelectFeature}
-                  beforeOptionsComponent={() => (
-                    <div class="heading">Recent</div>
-                  )}
+                  beforeOptionsComponent={() => <div class="heading">Recent</div>}
                 />
               )}
 
@@ -340,3 +323,5 @@ export default class extends React.Component {
     );
   }
 }
+
+export default withRouter(ExModal);

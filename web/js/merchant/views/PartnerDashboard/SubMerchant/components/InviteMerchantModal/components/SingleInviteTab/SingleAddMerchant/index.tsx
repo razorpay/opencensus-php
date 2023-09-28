@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FormikValues, useFormik } from 'formik';
 import { isEmpty } from 'lodash';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 

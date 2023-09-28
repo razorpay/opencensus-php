@@ -1,17 +1,19 @@
 /* eslint-disable react/jsx-key */
 import React, { Component } from 'react';
-import DataList from 'merchant/components/OnBoarding/Slides/DataList';
-import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
-import LeadDetails from './LeadDetails';
-import { withRouter } from 'react-router-dom';
-import Banner from '../components/Banner';
-import Amount from 'common/ui/Amount';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
+import DataList from 'merchant/components/OnBoarding/Slides/DataList';
+import Banner from 'merchant/views/Capital/components/Banner';
+
+import LeadDetails from './LeadDetails';
 
 const PROS = [
   <div class="flex">
-    <img src={'/dist/css/assets/capital/internal_credit.svg'} alt="landing-image" />
+    <img src="/dist/css/assets/capital/internal_credit.svg" alt="landing-image" />
     <div class="p-l m-l m-t">
       <strong>
         <p>Flexible Credit Limit</p>
@@ -22,7 +24,7 @@ const PROS = [
     </div>
   </div>,
   <div class="flex m-t">
-    <img src={'/dist/css/assets/capital/auto_repayment.svg'} alt="landing-image" />
+    <img src="/dist/css/assets/capital/auto_repayment.svg" alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Auto Repayment</p>
@@ -33,7 +35,7 @@ const PROS = [
     </div>
   </div>,
   <div class="flex m-t">
-    <img src={'/dist/css/assets/capital/flexible_interest.svg'} alt="landing-image" />
+    <img src="/dist/css/assets/capital/flexible_interest.svg" alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Pay Interest only on your use </p>
@@ -45,7 +47,6 @@ const PROS = [
   </div>,
 ];
 
-@withRouter
 class Onboarding extends Component {
   render() {
     const {
@@ -61,7 +62,7 @@ class Onboarding extends Component {
       <OnBoardingWrapper class="Withdrawals">
         <div className="Landing--Image">
           <div class="image-wrapper">
-            <img src={'/dist/css/assets/capital/withdrawal_landing.svg'} alt="landing-image" />
+            <img src="/dist/css/assets/capital/withdrawal_landing.svg" alt="landing-image" />
           </div>
         </div>
         <div className="Product--Details">
@@ -160,7 +161,7 @@ class Onboarding extends Component {
           {!hasLOCStage2Feature && !hasWithdrawalConfiguration && leadGenerated && (
             <div className="withdrawal-form-container">
               <div className="lead-generation-message-container text-center">
-                <img src={'/dist/css/assets/capital/lead_generated.svg'} alt="landing-image" />
+                <img src="/dist/css/assets/capital/lead_generated.svg" alt="landing-image" />
                 <p className="m-t">
                   We have successfully collected your details, Our team will reach you back to take
                   forward your application.
@@ -193,7 +194,7 @@ class Onboarding extends Component {
             <div className="btn-toolbar">
               <a
                 className="m-l link"
-                href={'https://razorpay.com/capital/cash-advance/#faqs'}
+                href="https://razorpay.com/capital/cash-advance/#faqs"
                 target="_blank"
                 rel="noreferrer noopener"
               >
@@ -209,4 +210,4 @@ class Onboarding extends Component {
   }
 }
 
-export default Onboarding;
+export default withRouter(Onboarding);

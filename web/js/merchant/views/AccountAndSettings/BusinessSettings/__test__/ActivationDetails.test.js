@@ -18,6 +18,7 @@ describe('ActivationDetails', () => {
       initialState: {
         session: {
           user: {
+            findTag: () => false,
             instantActivation: {
               isL1Submitted: false,
             },

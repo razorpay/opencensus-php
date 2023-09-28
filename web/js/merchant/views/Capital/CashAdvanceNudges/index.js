@@ -2,7 +2,7 @@ import './styles/index.styl';
 import React, { useState, useEffect, Suspense } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   openModal as fnOpenModal,
   closeModal as fnCloseModal,
@@ -16,11 +16,11 @@ import lazy from 'merchant/routes/LazyLoader';
 import { CAPITAL_PRODUCT_CODES, APPLICATION_STATES } from 'merchant/views/Capital/Loans/constants';
 import Loader from 'common/ui/Loader';
 import Lock from './components/Lock';
+import { trackEvent } from './trackingUtils';
 import { getPillContent, getPillVariant, getPillRenderDate, setPillRenderDate } from './utils';
 import { EVENT_TYPES } from './analytics';
 import { PILL_VARIENTS } from './constants';
-import { CASH_ADVANCE_BASE_URL } from '../CashAdvance/constants';
-import { trackEvent } from './trackingUtils';
+import { CASH_ADVANCE_BASE_URL } from 'merchant/views/Capital/CashAdvance/constants';
 
 const ProgressModal = lazy(() =>
   import(
@@ -196,12 +196,10 @@ const mapStateToProps = (state) => ({
   applications: state.loanApplicationDetails.applications,
 });
 
-export default withRouter(
-  connect(mapStateToProps, {
-    openModal: fnOpenModal,
-    closeModal: fnCloseModal,
-    fetchWithdrawalConfig: fnFetchWithdrawalConfig,
-    fetchProducts: fnFetchProducts,
-    getApplications: fnGetApplications,
-  })(CashAdvanceNudge),
-);
+export default connect(mapStateToProps, {
+  openModal: fnOpenModal,
+  closeModal: fnCloseModal,
+  fetchWithdrawalConfig: fnFetchWithdrawalConfig,
+  fetchProducts: fnFetchProducts,
+  getApplications: fnGetApplications,
+})(withRouter(CashAdvanceNudge));

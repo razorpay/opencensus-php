@@ -14,11 +14,6 @@ jest.mock('common/splitz', () => ({
     ),
 }));
 
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  default: ({ children }) => <div>{children}</div>,
-}));
-
 const isPartner = jest.fn();
 const state = {
   session: {
@@ -32,19 +27,16 @@ describe('Application New', () => {
   const renderApp = () => {
     render(<ApplicationNew />, {
       initialState: state,
-      historyOptions: {
-        initialEntries: [
-          {
-            pathname: '/partners/applications/test-id',
-            params: { id: 'test-id' },
-          },
-        ],
-      },
+      initialEntries: [
+        {
+          pathname: '/partners/applications/test-id',
+          params: { id: 'test-id' },
+        },
+      ],
       path: '/partners/applications/:id',
     });
   };
 
-  // TODO: fix this test case
   test('should render applicationForm', () => {
     renderApp();
     expect(screen.getByText('Onboarding UI Configurator')).toBeInTheDocument();

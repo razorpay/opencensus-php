@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import PropTypes from 'prop-types';
@@ -39,7 +39,6 @@ import {
 } from './gaAuth';
 import analytics from 'merchant/views/Subscriptions/analytics';
 
-@withRouter
 @connect(
   (state) => ({
     ...state.registrationLink,
@@ -55,7 +54,7 @@ import analytics from 'merchant/views/Subscriptions/analytics';
   },
 )
 @RTracking(() => window.rzpQ.component('RegistrationLinkDetailsContainer'))
-export default class RegistrationLinkDetailsContainer extends React.Component {
+class RegistrationLinkDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -338,3 +337,5 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     );
   }
 }
+
+export default withRouter(RegistrationLinkDetailsContainer);

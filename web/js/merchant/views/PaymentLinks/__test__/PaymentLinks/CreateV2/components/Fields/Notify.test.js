@@ -1,5 +1,4 @@
 import React from 'react';
-import { getUser } from 'merchant/store';
 import { render, screen } from 'test-utils';
 import Notify from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/Notify';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
@@ -25,12 +24,12 @@ describe('Notify Component Unit test', () => {
   });
 
   const renderApp = (props = {}) => {
-    const user = getUser();
     return render(<Notify {...props} />, {
       initialState: {
         session: {
           user: {
-            ...user,
+            findTag: () => false,
+            isOrgAllowedFunctionality: () => true,
             merchant: {
               product_international: '0000000000',
             },

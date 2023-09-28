@@ -1,5 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
-
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { STATUS_DATA } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
 
 import type { PaymentType } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';

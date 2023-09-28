@@ -1,6 +1,8 @@
 export const initialState = {
   session: {
     user: {
+      findTag: () => false,
+      isOrgAllowedFunctionality: () => true,
       showCSATSurvey() {},
       merchant: {
         id: 'K4NamuuWSvmcmX',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';

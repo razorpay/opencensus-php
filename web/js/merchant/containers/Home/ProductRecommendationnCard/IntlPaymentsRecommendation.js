@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ShimmerWidget from './shimmer';
 import { analyticsFn } from 'merchant/utils/intlPaymentsRecommendation';
 import imgIntlPaymentRecommendation from 'assets/product-recommendation/intl-payment-recommendation.svg';

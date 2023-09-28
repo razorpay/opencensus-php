@@ -9,11 +9,14 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
 import { LayerProvider } from 'common/components/Layer/LayerContext';
+import { redirectToAppRoute } from 'common/utils/redirectToAppRoute';
+
+redirectToAppRoute('/app');
 
 const SignupWrap = () => {
   return (
     <Provider store={store}>
-      <Router basename="/app">
+      <Router>
         <LayerProvider>
           <ReCaptchaV3Provider reCaptchaKey={window.RECAPTCHA_V3_SITE_KEY}>
             <BladeProvider themeTokens={paymentTheme} colorScheme="light">

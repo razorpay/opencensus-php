@@ -1,4 +1,4 @@
-import { NavLink, Redirect, Switch, Route } from 'react-router-dom';
+import { NavLink, Navigate, Routes, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -6,6 +6,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import { useSplitzService } from 'common/splitz';
 import { StyledTabsWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 
@@ -53,7 +54,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
               }
               return (
                 <NavLink
-                  exact
+                  end
                   to={item.path}
                   className="tabs-items pointer padding-16 font-bold"
                   key={item.label}
@@ -63,24 +64,32 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
               );
             })}
           </div>
-          <Switch>
+          <Routes>
             {TABS[platform].map((item) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
+              const isIndex = item.path === '/magic/settings';
               return (
-                <Route exact path={item.path} key={item.path}>
-                  <TabItem
-                    tabContent={item.Component}
-                    tabHeading={item.tabHeading}
-                    showTabHeading={showTabHeading}
-                    className={item.className}
-                    abExperiments={abExperiments}
-                  />
-                </Route>
+                <Route
+                  path={isIndex ? '' : `${item.path.replace('/magic/settings/', '')}/*`}
+                  key={item.path}
+                  index={isIndex}
+                  element={
+                    <RouteGuard>
+                      <TabItem
+                        tabContent={item.Component}
+                        tabHeading={item.tabHeading}
+                        showTabHeading={showTabHeading}
+                        className={item.className}
+                        abExperiments={abExperiments}
+                      />
+                    </RouteGuard>
+                  }
+                />
               );
             })}
-            <Redirect to={redirectPath} />
-          </Switch>
+            <Route index element={<Navigate to={redirectPath} replace />} />
+          </Routes>
         </div>
       </StyledTabsWrapper>
     </SuspenseWithLoader>

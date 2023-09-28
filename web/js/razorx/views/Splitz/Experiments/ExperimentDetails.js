@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import AddEditExperiment from './AddEditExperiment';
 import WhitelistExperiment from './WhitelistExperiment';
 import {
@@ -23,8 +24,8 @@ import { formatDate } from 'razorx/helpers/utils';
 const ExperimentOwnersForm = React.lazy(() => import('./AddExperimentOwners'));
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
-export default class ExperimentDetails extends React.Component {
+
+class ExperimentDetails extends React.Component {
   optionalRemarks = null;
 
   state = {
@@ -709,3 +710,5 @@ ExperimentDetails.propTypes = {
   collection: PropTypes.object.isRequired,
   hideDetails: PropTypes.func.isRequired,
 };
+
+export default withRouter(ExperimentDetails);

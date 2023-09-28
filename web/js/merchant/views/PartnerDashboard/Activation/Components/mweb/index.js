@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { compose } from 'redux';
 import rTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';

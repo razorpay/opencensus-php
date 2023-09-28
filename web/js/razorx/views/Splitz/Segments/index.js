@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
 import { openModal } from 'razorx/components/Modal';
 import Collection from 'razorx/model/collection';
@@ -9,9 +9,8 @@ import AddEditSegment from './AddEditSegment';
 import SegmentList from './SegmentList';
 import SegmentDetails from './SegmentDetails';
 
-@withRouter
 @observer
-export default class Segments extends React.Component {
+class Segments extends React.Component {
   collection = new Collection({
     isSplitz: true,
     fetchFn: splitzFetch,
@@ -47,3 +46,5 @@ export default class Segments extends React.Component {
 Segments.propTypes = {
   match: PropTypes.object.isRequired,
 };
+
+export default withRouter(Segments);

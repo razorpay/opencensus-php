@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import {
@@ -145,4 +146,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default withRouter(compose(connect(mapStateToProps, mapDispatchToProps))(ApiKeysAndPlugins));
+export default compose(connect(mapStateToProps, mapDispatchToProps)(withRouter(ApiKeysAndPlugins)));

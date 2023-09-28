@@ -1,7 +1,8 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, noop } from 'common/utils/rzp-utils';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
@@ -38,7 +39,6 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -54,7 +54,7 @@ const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
     replyToConversation,
   },
 )
-export default class Conversations extends React.Component {
+class Conversations extends React.Component {
   state = {
     ticket: SAMPLE_TICKET,
     error: false,
@@ -738,3 +738,5 @@ export default class Conversations extends React.Component {
     );
   }
 }
+
+export default withRouter(Conversations);

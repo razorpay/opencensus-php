@@ -62,6 +62,7 @@ describe('InstantSettlements', () => {
             user: {
               ...state.session.user,
               isOndemandSettlementEnabled: true,
+              findTag: () => false,
             },
           },
         },

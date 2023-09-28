@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import useLocalStorage from 'merchant/utils/useLocalStorage';
 import SwitchField from 'common/ui/Forms/SwitchField';
 

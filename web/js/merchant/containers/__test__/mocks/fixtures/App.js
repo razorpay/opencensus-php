@@ -62,9 +62,7 @@ const renderApp = (props = {}, { initialState = {}, pathname = '/dashboard' }) =
   return render(<App {...props} />, {
     showModal: true,
     initialState,
-    historyOptions: {
-      initialEntries: [pathname],
-    },
+    initialEntries: [pathname],
   });
 };
 

@@ -1,8 +1,5 @@
-import React, { Component, Suspense } from 'react';
-import qs from 'query-string';
-import { connect } from 'react-redux';
-import { NavLink, Redirect, Route, Switch, withRouter, matchPath } from 'react-router-dom';
-
+/* eslint-disable import/order */
+/* eslint-disable react/no-unsafe */
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
 import { withSplitzService } from 'common/splitz';
@@ -17,29 +14,214 @@ import {
   isMobileResolution,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { openSlider } from 'merchant_common/reducers/slider';
+import qs from 'query-string';
+import React, { Component, Suspense } from 'react';
+import { connect } from 'react-redux';
+import { NavLink, Navigate, Route, Routes, matchPath } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
+import HandleIndex from './HandleIndex';
+import lazy from './LazyLoader';
+import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
 import {
   isTrustedBadgeAllowed,
   isPaymentMethodEnabled,
   isProfileViewAllowed,
   isConfigurationViewAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
-import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
-import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
-import Transactions from 'merchant/views/Transactions';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+// import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
-import { openSlider } from 'merchant_common/reducers/slider';
 
-import HandleIndex from './HandleIndex';
-import lazy from './LazyLoader';
+const B2bPaymentsList = lazy(() =>
+  import(
+    /* webpackChunkName: "B2bPaymentsList" */ 'merchant/views/Transactions/v1/B2bPayments/List'
+  ),
+);
+
+const BatchPaymentsList = lazy(() =>
+  import(
+    /* webpackChunkName: "BatchPaymentsList" */ 'merchant/views/Transactions/v1/BatchPayments/List'
+  ),
+);
+
+const BatchRefundsUpload = lazy(() =>
+  import(
+    /* webpackChunkName: "BatchRefundsUpload" */ 'merchant/views/Transactions/v1/BatchRefunds/BatchUpload'
+  ),
+);
+
+const BatchRefundsList = lazy(() =>
+  import(
+    /* webpackChunkName: "BatchRefundsList" */ 'merchant/views/Transactions/v1/BatchRefunds/List'
+  ),
+);
+
+const DisputesList = lazy(() =>
+  import(/* webpackChunkName: "DisputesList" */ 'merchant/views/Transactions/v1/Disputes/List'),
+);
+
+const OrdersList = lazy(() =>
+  import(/* webpackChunkName: "OrdersList" */ 'merchant/views/Transactions/v1/Orders/List'),
+);
+
+const PaymentsList = lazy(() =>
+  import(/* webpackChunkName: "PaymentsList" */ 'merchant/views/Transactions/v1/Payments/List'),
+);
+
+const RefundsList = lazy(() =>
+  import(/* webpackChunkName: "RefundsList" */ 'merchant/views/Transactions/v1/Refunds/List'),
+);
+
+const SuccessRate = lazy(() =>
+  import(/* webpackChunkName: "SuccessRate" */ 'merchant/views/Transactions/v1/SuccessRate'),
+);
+
+const UploadInvoice = lazy(() =>
+  import(/* webpackChunkName: "UploadInvoice" */ 'merchant/views/Transactions/v1/UploadInvoice'),
+);
+
+const Invoices = lazy(() =>
+  import(/* webpackChunkName: "Invoices" */ 'merchant/views/Invoices/Invoices/List'),
+);
+
+const Items = lazy(() =>
+  import(/* webpackChunkName: "Items" */ 'merchant/views/Invoices/Items/List'),
+);
+
+const PaymentButtonList = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentButtonList" */ 'merchant/views/PaymentButton/PaymentButton/List'
+  ),
+);
+
+const SubscriptionButtonList = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionButtonList" */ 'merchant/views/PaymentButton/SubscriptionButton/List'
+  ),
+);
+
+const SubscriptionsList = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionsList" */ 'merchant/views/Subscriptions/Subscriptions/List'
+  ),
+);
+
+const PlansList = lazy(() =>
+  import(/* webpackChunkName: "PlansList" */ 'merchant/views/Subscriptions/Plans/List'),
+);
+
+const SubscriptionSettings = lazy(() =>
+  import(/* webpackChunkName: "SubscriptionSettings" */ 'merchant/views/Subscriptions/Settings'),
+);
+
+const TokensList = lazy(() =>
+  import(/* webpackChunkName: "TokensList" */ 'merchant/views/Subscriptions/Tokens/List'),
+);
+
+const RegistrationLinksList = lazy(() =>
+  import(
+    /* webpackChunkName: "RegistrationLinksList" */ 'merchant/views/Subscriptions/RegistrationLinks/List'
+  ),
+);
+
+const HostedEmanadateBatches = lazy(() =>
+  import(
+    /* webpackChunkName: "HostedEmanadateBatches" */ 'merchant/views/Subscriptions/Batch/List'
+  ),
+);
+
+const RecurringPayments = lazy(() =>
+  import(
+    /* webpackChunkName: "RecurringPayments" */ 'merchant/views/Subscriptions/RecurringPayments/List'
+  ),
+);
+
+const VirtualAccountsList = lazy(() =>
+  import(
+    /* webpackChunkName: "VirtualAccountsList" */ 'merchant/views/SmartCollect/VirtualAccounts/List'
+  ),
+);
+
+const SmartCollectPaymentsList = lazy(() =>
+  import(
+    /* webpackChunkName: "SmartCollectPaymentsList" */ 'merchant/views/SmartCollect/Payments/List'
+  ),
+);
+
+const BatchExpiryUpdate = lazy(() =>
+  import(
+    /* webpackChunkName: "BatchExpiryUpdate" */ 'merchant/views/SmartCollect/BatchExpiryUpdate/List'
+  ),
+);
+
+const TrustedBadge = lazy(() =>
+  import(/* webpackChunkName: "TrustedBadge" */ 'merchant/views/Account/TrustedBadge'),
+);
+
+const Profile = lazy(() =>
+  import(/* webpackChunkName: "Profile" */ 'merchant/views/Account/Profile'),
+);
+
+const WebsiteAppDetails = lazy(() =>
+  import(/* webpackChunkName: "WebsiteAppDetails" */ 'merchant/views/Account/WebsiteAppDetails'),
+);
+
+const Balances = lazy(() =>
+  import(/* webpackChunkName: "Balances" */ 'merchant/views/Account/Balances'),
+);
+
+const Credits = lazy(() =>
+  import(/* webpackChunkName: "Credits" */ 'merchant/views/Account/Credits/List'),
+);
+
+const ManageTeam = lazy(() =>
+  import(/* webpackChunkName: "ManageTeam" */ 'merchant/views/Account/ManageTeam'),
+);
+
+const PricingPlans = lazy(() =>
+  import(
+    /* webpackChunkName: "PricingPlans" */ 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans'
+  ),
+);
+
+const Referrals = lazy(() =>
+  import(/* webpackChunkName: "Referrals" */ 'merchant/views/Account/Referrals/List'),
+);
+
+const Conversations = lazy(() =>
+  import(
+    /* webpackChunkName: "Conversations" */ 'merchant/views/TicketSupport/components/Conversations'
+  ),
+);
+
+const TicketsContainer = lazy(() =>
+  import(
+    /* webpackChunkName: "TicketsContainer" */ 'merchant/views/TicketSupport/components/TicketsContainer'
+  ),
+);
+
+const Tickets = lazy(() =>
+  import(/* webpackChunkName: "Tickets" */ 'merchant/views/TicketSupport/components/Tickets'),
+);
+
+const TransactionV2Landing = lazy(() =>
+  import(/* webpackChunkName: "TransactionV2Landing" */ 'merchant/views/Transactions/v2/Landing'),
+);
+
+const RouteOndemandSettlements = lazy(() =>
+  import(
+    /* webpackChunkName: "RouteOndemandSettlements" */ 'merchant/views/Settlements/RouteOndemandSettlements'
+  ),
+);
+
+const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -53,6 +235,9 @@ const AccountAndSettingsHome = lazy(() =>
 
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
+);
+const Transactions = lazy(() =>
+  import(/* webpackChunkName: "Transactions" */ 'merchant/views/Transactions/v1'),
 );
 const Settlements = lazy(() =>
   import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements'),
@@ -119,7 +304,7 @@ const RazorpayXWidget = lazy(() =>
   ),
 );
 
-const BBPS = lazy(() => import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'));
+const BbpsComponent = lazy(() => import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'));
 const PaymentButton = lazy(() =>
   import(/* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton'),
 );
@@ -260,29 +445,31 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
-const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
+// const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 const PaymentsDetailsV2 = lazy(() =>
   import(
     /* webpackChunkName: "PaymentsDetailsV2" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails'
   ),
 );
 
-// Can be removed with old navigation removal
-const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
-  return (
-    <tabbed-container>
-      <header id={headerId}>
-        <NavLink to={to}>{navLabel}</NavLink>
-      </header>
-      <content>
-        <Route path={path || to} component={component} />
-      </content>
-    </tabbed-container>
-  );
-};
+const PaymentsContainer = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentsContainer" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsContainer'
+  ),
+);
 
-// eslint-disable-next-line react/no-unsafe
-@withRouter
+const TransactionsV2EntitiesOverview = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentsContainer" */ 'merchant/views/Transactions/v2/EntitiesOverview'
+  ),
+);
+
+const TransactionV2RefundsContainer = lazy(() =>
+  import(
+    /* webpackChunkName: "RefundsContainer" */ 'merchant/views/Transactions/v2/Refunds/components/RefundsContainer'
+  ),
+);
+
 @connect(
   (state) => ({
     user: state.session.user,
@@ -297,14 +484,18 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   },
 )
 class Content extends Component {
-  setBaseLocation = (location) => {
+  checkIsTransactionsV2Enabled = () => {
     const { splitz, user } = this.props;
-    const blacklistedDetailsRoutes = ['/payments/:id(pay_.+)', '/refunds/:id(rfnd_.+)'];
+    return isTransactionsV2Enabled(splitz, user);
+  };
+
+  setBaseLocation = (location) => {
+    const blacklistedDetailsRoutes = ['/payments/:id', '/refunds/:id'];
     let matchDetailsRoute;
     if (
-      isTransactionsV2Enabled(splitz, user) &&
+      this.checkIsTransactionsV2Enabled() &&
       blacklistedDetailsRoutes.some((route) =>
-        matchPath(location.pathname, { path: route, exact: true }),
+        matchPath({ path: route, exact: true }, location.pathname),
       )
     ) {
       matchDetailsRoute = null;
@@ -407,599 +598,1358 @@ class Content extends Component {
   };
 
   getBaseView = () => {
-    const { fullPageView, user, mode, splitz } = this.props;
+    const { fullPageView, user, mode } = this.props;
 
     if (fullPageView) return fullPageView;
 
     const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
-
+    const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
     return (
       <Suspense fallback={<Loader />}>
-        <Switch location={this.baseLocation}>
-          <Route path="/dashboard" component={Home} />
-          <ShowWhenRoute
-            path="/account-settings"
-            component={AccountAndSettingsHome}
-            additionalCondition={(user) =>
-              user.isAccountAndSettingsRevampEnabled &&
-              user.isAllowedMultiple(
-                'webhooks applications configuration api_keys profile credits add_funds team referrals',
-              )
-            }
-          />
-          <ShowWhenRoute
-            path="/partners"
-            component={PartnerDashboard}
-            additionalCondition={(user) => user.isPartner()}
-          />
-          <ShowWhenRoute
-            path="/payments/:id(pay_.+)"
-            component={PaymentsDetailsV2}
-            additionalCondition={(user) =>
-              isTransactionsV2Enabled(splitz, user) && user.isAllowedView('payments')
-            }
-          />
-          <ShowWhenRoute
-            path="/payments"
-            component={Transactions}
-            additionalCondition={(user) => user.isAllowedView('payments')}
-          />
-          <ShowWhenRoute
-            path="/failed-payments"
-            component={Transactions}
-            additionalCondition={(user) => user.isAllowedView('payments')}
-          />
-          <ShowWhenRoute
-            path="/refunds/:id(rfnd_.+)"
-            component={PaymentsDetailsV2}
-            additionalCondition={(user) =>
-              isTransactionsV2Enabled(splitz, user) && user.isAllowedView('refunds')
-            }
-          />
-          <ShowWhenRoute
-            path="/refunds"
-            component={Transactions}
-            additionalCondition={(user) => user.isAllowedView('refunds')}
-          />
-          <ShowWhenRoute
-            path="/orders"
-            component={Transactions}
-            additionalCondition={(user) => user.isAllowedView('orders')}
-          />
-          <Route path="/disputes" component={Transactions} />
+        <Routes location={this.baseLocation}>
+          <Route path="*" element={<HandleIndex />} />
+          <Route path="dashboard/*" element={<Home />} />
 
-          <ShowWhenRoute
-            path="/success-rate"
-            component={Transactions}
-            isTagDependent={true}
-            additionalCondition={(currentUser) =>
-              mode === 'live' &&
-              currentUser.isSuccessRateEnabled &&
-              currentUser.isAllowedView('success_rate')
+          <Route
+            path="partners/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isPartner()}>
+                <PartnerDashboard />
+              </RouteGuard>
             }
           />
 
-          <ShowWhenRoute
-            path="/settlements/:id(setl_.+)/"
-            component={user.isSettlementV3RevampEnabled ? SettlementDetailsV3 : SettlementDetailsV2}
-            additionalCondition={(user) =>
-              user.isAllowedView('settlements') && user.hideForNIASupportRole
+          <Route
+            path="account-settings/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAccountAndSettingsRevampEnabled &&
+                  user.isAllowedMultiple(
+                    'webhooks applications configuration api_keys profile credits add_funds team referrals',
+                  )
+                }
+              >
+                <AccountAndSettingsHome />
+              </RouteGuard>
             }
           />
 
-          <ShowWhenRoute
-            path="/settlements"
-            component={Settlements}
-            additionalCondition={(user) =>
-              user.isAllowedView('settlements') && user.hideForNIASupportRole
+          <Route
+            path="failed-payments/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('payments')}>
+                <TransactionsV2EntitiesOverview />
+              </RouteGuard>
             }
-          />
-          <ShowWhenRoute
-            path="/routeinstantsettlements"
-            exact
-            component={Settlements}
-            additionalCondition={(user) =>
-              user.isAllowedView('early_settlement') &&
-              user.isOndemandRouteSettlementsEnabled &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
-            }
-          />
-          <ShowWhenRoute
-            path="/instantsettlement_details/:id"
-            component={InstantSettlementPayoutDetails}
-            additionalCondition={(user) => user.isAllowedView('early_settlement')}
-          />
-
-          <ShowWhenRoute
-            path="/instantsettlements"
-            exact
-            component={Settlements}
-            additionalCondition={(user) => user.isAllowedView('early_settlement')}
-          />
-
-          <ShowWhenRoute
-            path="/invoices"
-            exact
-            component={InvoicesContainer}
-            additionalCondition={(user) =>
-              user.isAllowedView('invoices') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
-            }
-          />
-          <ShowWhenRoute
-            path="/invoices/:id(inv_.+)"
-            component={InvoicesNew}
-            additionalCondition={(user) =>
-              user.isAllowedView('invoices') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
-            }
-          />
-          <ShowWhenRoute
-            path="/invoices/new"
-            component={InvoicesNew}
-            additionalCondition={(user) =>
-              user.isAllowedEdit('invoices') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
-            }
-          />
-          <ShowWhenRoute
-            path="/items"
-            component={InvoicesContainer}
-            additionalCondition={(user) => user.isAllowedView('invoices')}
-          />
-
-          <ShowWhenRoute
-            path="/paymentlinks"
-            component={PaymentLinks}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_links') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
-            }
-          />
-          <ShowWhenRoute
-            path="/payment-handle"
-            component={PaymentHandle}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_handle') &&
-              user.isPaymentHandleSplitzEnabled &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
-            }
-          />
-          <ShowWhenRoute
-            path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
-            component={PaymentPagesDetails}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_pages') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
-            }
-          />
-          <ShowWhenRoute
-            path={`${BATCH_PAYMENT_PAGES_BASE_URL}/:id(pl_.+)/:entity_name(payments)`}
-            component={PaymentPagesDetails}
-            additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}
-            isBatchPaymentPages
-          />
-          <ShowWhenRoute
-            path="/paymentpages/storefront/:id(st_.+)/:entity_name(payments)"
-            component={PaymentPagesDetails}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_pages') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
-              user.isPaymentPageStorefrontEnabled
-            }
-            isStorefrontPage
-          />
-          <ShowWhenRoute
-            path="/paymentpages/batchuploads/:id/:title"
-            component={BatchUploadContainer}
-            additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}
-          />
-          <ShowWhenRoute
-            path="/paymentpages"
-            component={PaymentPages}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_pages') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
-            }
-          />
-          <ShowWhenRoute
-            path="/paymenthandle"
-            component={PaymentHandle}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_handle') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
-            }
-          />
-
-          <ShowWhenRoute
-            path="/wallet"
-            exact={false}
-            component={Wallet}
-            additionalCondition={(user) =>
-              user.isIssuingDashboardEnabled ||
-              user.isIssuingBulkUploadEnabled ||
-              user.isIssuingFundsTabEnabled
-            }
-          />
-
-          <Route path="/super-checkout">
-            <Redirect to="/magic" />
+          >
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <PaymentsContainer />
+                </RouteGuard>
+              }
+            />
           </Route>
 
-          <ShowWhenRoute
-            path="/magic"
-            component={MagicCheckout}
-            additionalCondition={(user) => user.isMagicCheckoutEnabled}
-          />
-
-          <ShowWhenRoute
-            path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
-            component={PaymentButtonsDetails}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') &&
-              user.isPaymentButtonEnabledByRazorX &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
-            }
-          />
-
-          <ShowWhenRoute
-            path="/paymentbuttons"
-            component={PaymentButton}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') &&
-              user.isPaymentButtonEnabledByRazorX &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
-            }
-          />
-          <ShowWhenRoute
-            path="/subscription_buttons"
-            component={PaymentButton}
-            exact
-            additionalCondition={(user) =>
-              user.isAllowedView('subscription_buttons') && user.isSubscriptionButtonEnabled
-            }
-          />
-
-          <ShowWhenRoute
-            path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
-            exact
-            component={SubscriptionButtonDetails}
-            additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabled
-            }
-          />
-
-          <ShowWhenRoute
-            path="/subscriptions"
-            component={Subscriptions}
-            additionalCondition={(user) =>
-              user.isAllowedView('subscriptions') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
-            }
-          />
-          <ShowWhenRoute path="/affordability" component={Affordability} />
-          <ShowWhenRoute
-            path="/payment-metrics"
-            component={PaymentMetrics}
-            additionalCondition={(user) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP}
-          />
-          <ShowWhenRoute
-            path="/affordability"
-            component={Affordability}
-            additionalCondition={(user) => user.isShowAffordabilityWidget && user.isOrgRZP}
-          />
-
-          <ShowWhenRoute
-            path="/plans"
-            component={Subscriptions}
-            additionalCondition={(user) =>
-              user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
-            }
-          />
-
-          <ShowWhenRoute
-            path="/recurring_payments"
-            component={Subscriptions}
-            additionalCondition={(user) =>
-              user.isAllowedView('subscriptions') &&
-              user.isChargeAtWillEnabled &&
-              user.isRegistrationLinkTokenAndPaymentsEnabled
-            }
-          />
-
-          <ShowWhenRoute
-            path="/qr_codes"
-            component={QRCodes}
-            additionalCondition={(user) =>
-              user.isAllowedView('qr_codes') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes)
-            }
-          />
-
-          <ShowWhenRoute
-            path="/stores"
-            component={Stores}
-            additionalCondition={(_user) => _user.isAllowedView('stores') && _user.isStoresEnabled}
-          />
-
-          <ShowWhenRoute
-            path="/api-keys"
-            component={ApiKeysAndPlugins}
-            additionalCondition={(_user) =>
-              _user.isAllowedView('api_keys') &&
-              (_user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled) &&
-              _user.activated
-            }
-          />
-
-          <ShowWhenRoute
-            path="/tokens"
-            component={Subscriptions}
-            additionalCondition={(user) =>
-              user.isAllowedView('subscriptions') &&
-              user.isChargeAtWillEnabled &&
-              user.isRegistrationLinkTokenAndPaymentsEnabled
-            }
-          />
-          <ShowWhenRoute
-            path="/registration_links"
-            component={Subscriptions}
-            additionalCondition={(user) =>
-              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
-            }
-          />
-
-          {!this.props?.user?.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers) && (
+          <Route path="payments/*">
             <Route
-              path="/customers"
-              render={() => (
-                <TabbedContent
-                  headerId="invoicing-header"
-                  to="/customers"
-                  navLabel="Customers"
-                  component={Customers}
+              path="*"
+              element={
+                <RouteGuard additionalCondition={(user) => user.isAllowedView('payments')}>
+                  {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
+                </RouteGuard>
+              }
+            >
+              <Route
+                index
+                element={
+                  <RouteGuard>
+                    {isTransactionV2Enabled ? <PaymentsContainer /> : <PaymentsList />}
+                  </RouteGuard>
+                }
+              />
+
+              <Route path="batchuploads/*">
+                <Route
+                  index
+                  element={
+                    <RouteGuard>
+                      <BatchPaymentsList />
+                    </RouteGuard>
+                  }
                 />
-              )}
+                <Route
+                  path=":mode/*"
+                  element={
+                    <RouteGuard>
+                      <BatchPaymentsList />
+                    </RouteGuard>
+                  }
+                />
+              </Route>
+
+              <Route
+                path="invoices/*"
+                element={
+                  <RouteGuard additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}>
+                    <UploadInvoice />
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path="b2b-exports/*"
+                element={
+                  <RouteGuard additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}>
+                    <B2bPaymentsList />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+            <Route
+              path=":id"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    isTransactionV2Enabled && user.isAllowedView('payments')
+                  }
+                >
+                  <PaymentsDetailsV2 />
+                </RouteGuard>
+              }
             />
-          )}
+          </Route>
 
-          <ShowWhenRoute
-            path="/connected-banking/icici-linked-ca"
-            component={ConnectedBanking}
-            additionalCondition={(user) =>
-              user.isICICILinkedCAEnabled || getXCAStatus(user).showState === 'neostone-tracker'
+          <Route
+            path="refunds/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('refunds')}>
+                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+              </RouteGuard>
+            }
+          >
+            <Route
+              path="*"
+              element={
+                <RouteGuard
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
+                >
+                  {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    isTransactionV2Enabled && user.isAllowedView('refunds')
+                  }
+                >
+                  <PaymentsDetailsV2 />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="batchuploads/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
+                >
+                  <BatchRefundsList />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="batchupload/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
+                >
+                  <BatchRefundsUpload />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="orders/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('orders')}>
+                {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard additionalCondition={(usr) => usr.isAllowedView('orders')}>
+                  <OrdersList />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="disputes/*"
+            element={
+              <RouteGuard>
+                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(usr) =>
+                    usr.isAllowedView('refunds') &&
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
+                  }
+                >
+                  <DisputesList />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="success-rate/*"
+            element={
+              <RouteGuard
+                isTagDependent
+                additionalCondition={(currentUser) =>
+                  mode === 'live' &&
+                  currentUser.isSuccessRateEnabled &&
+                  currentUser.isAllowedView('success_rate')
+                }
+              >
+                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(currentUser) =>
+                    mode === 'live' &&
+                    currentUser.isSuccessRateEnabled &&
+                    currentUser.isAllowedView('success_rate')
+                  }
+                >
+                  <SuccessRate />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          {/* TODO: Start */}
+          <Route path="settlements/*">
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('settlements') && user.hideForNIASupportRole
+                  }
+                >
+                  <Settlements />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":id/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('settlements') && user.hideForNIASupportRole
+                  }
+                >
+                  {user.isSettlementV3RevampEnabled ? (
+                    <SettlementDetailsV3 />
+                  ) : (
+                    <SettlementDetailsV2 />
+                  )}
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="/routeinstantsettlements"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('early_settlement') &&
+                  user.isOndemandRouteSettlementsEnabled &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+                }
+              >
+                <Settlements>
+                  <RouteOndemandSettlements />
+                </Settlements>
+              </RouteGuard>
             }
           />
 
-          <ShowWhenRoute
-            path="/razorpayx"
-            component={RazorpayXWidget}
-            additionalCondition={(user) => user.isShowRazorpayXWidgetEnabled && user.isOrgRZP}
-          />
-
-          <ShowWhenRoute
-            path="/route"
-            component={Marketplace}
-            additionalCondition={(user) =>
-              user.isAllowedView('marketplace') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Marketplace)
+          <Route
+            path="/instantsettlements"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('early_settlement')}>
+                <Settlements />
+              </RouteGuard>
             }
           />
 
-          <ShowWhenRoute
-            path="/bbps"
-            component={BBPS}
-            additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
+          <Route
+            path="instantsettlement_details/:id/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('early_settlement')}>
+                <InstantSettlementPayoutDetails />
+              </RouteGuard>
+            }
           />
+          {/* TODO- End */}
+          <Route path="invoices/*">
+            <Route
+              index
+              element={
+                <RouteGuard additionalCondition={(user) => user.isAllowedView('invoices')}>
+                  <InvoicesContainer>
+                    <Invoices />
+                  </InvoicesContainer>
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="new"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedEdit('invoices') &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+                  }
+                >
+                  <InvoicesNew />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":id/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('invoices') &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+                  }
+                >
+                  <InvoicesNew />
+                </RouteGuard>
+              }
+            />
+          </Route>
 
-          <ShowWhenRoute
-            path={['/smartcollect', '/virtualaccounts']}
-            component={SmartCollect}
-            additionalCondition={(user) =>
-              user.isAllowedView('virtual_accounts') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
-            }
-          />
-
-          <ShowWhenRoute
-            path="/reports"
-            component={MerchantReports}
-            additionalCondition={(user) =>
-              (user.isAllowedView('reports') || user.isCareHealthOwner) &&
-              user.hideForNIASupportRole
-            }
-          />
-
-          <ShowWhenRoute
-            path="/pricing-plans"
-            additionalCondition={(user) => user?.isBundlePricingEnabled}
-            component={MyAccount}
-          />
-          <ShowWhenRoute
-            path="/trustedbadge"
-            component={MyAccount}
-            additionalCondition={isTrustedBadgeAllowed}
-          />
-          <ShowWhenRoute
-            path="/profile"
-            component={MyAccount}
-            additionalCondition={(user) => isProfileViewAllowed(user) || !user.userRole}
-          />
-
-          <ShowWhenRoute
-            path="/website-app-details"
-            component={MyAccount}
-            additionalCondition={(user) =>
-              true && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
-            }
-          />
-
-          <ShowWhenRoute
-            path="/addfunds"
-            component={MyAccount}
-            additionalCondition={(user) => user.isAllowedView('add_funds')}
-          />
-          <ShowWhenRoute
-            path="/credits"
-            component={MyAccount}
-            additionalCondition={(user) => user.isAllowedView('credits')}
-          />
-          <ShowWhenRoute
-            path="/ticket-support/tickets"
-            component={MyAccount}
-            myRole="owner admin"
-            additionalCondition={(user) =>
-              user.isFdTicketsEnabled &&
-              !user.isComdelApiEnabled &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory)
-            }
-          />
-          <ShowWhenRoute
-            path="/ticket-support/:instance/:id/:ticketType/conversation"
-            component={MyAccount}
-          />
-          <ShowWhenRoute
-            path="/referrals"
-            component={MyAccount}
-            featureEnabled="Referral"
-            additionalCondition={(user) => user.isAllowedView('referrals')}
-          />
-          <ShowWhenRoute
-            path="/team"
-            component={MyAccount}
-            additionalCondition={(user) => user.isAllowedTeamManagement}
-          />
-          <ShowWhenRoute
-            path="/developers/webhooks/:id"
-            exact
-            component={DevelopersWebhooks}
-            additionalCondition={(user) =>
-              user.isAllowedView('developers_console') && user.isDeveloperConsoleWebhooksTabEnabled
-            }
-          />
-          <ShowWhenRoute
-            path="/developers"
-            component={Developers}
-            additionalCondition={(user) =>
-              !isMobileResolution() &&
-              user.isAllowedView('developers_console') &&
-              (user.isDeveloperConsoleEnabled || user.isDeveloperConsoleWebhooksTabEnabled)
-            }
-          />
-          <ShowWhenRoute
-            path="/config"
-            component={Settings}
-            additionalCondition={(user) => user.isAllowedView('configuration')}
-          />
-          <ShowWhenRoute
-            path="/keys"
-            component={Settings}
-            additionalCondition={(user) => user.isAllowedView('api_keys')}
-          />
-          <ShowWhenRoute
-            path="/webhooks"
-            component={Settings}
-            additionalCondition={(user) => user.isAllowedView('webhooks')}
-          />
-          <ShowWhenRoute path="/reminders" component={Settings} />
-          <ShowWhenRoute
-            path="/applications"
-            component={Settings}
-            additionalCondition={(user) => user.isAllowedView('applications')}
-          />
-          <ShowWhenRoute
-            path={ROUTES_INFO.PAYMENT_METHODS}
-            component={PaymentMethods}
-            additionalCondition={(user) => isPaymentMethodEnabled(user, mode)}
-          />
-          <ShowWhenRoute
-            path="/offers"
-            component={Offers}
-            additionalCondition={(user) =>
-              user.isAllowedView('offers') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers)
-            }
-          />
-          <ShowWhenRoute
-            path="/checkout-rewards"
-            component={CheckoutRewards}
-            additionalCondition={(user) =>
-              user.isAllowedView('checkoutrewards') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
+          <Route
+            path="items/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('invoices')}>
+                <InvoicesContainer>
+                  <ItemsComponent />
+                </InvoicesContainer>
+              </RouteGuard>
             }
           />
 
-          <ShowWhenRoute path="/business-settings" component={BusinessSettings} />
+          <Route
+            path="paymentlinks/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('payment_links') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
+                }
+              >
+                <PaymentLinks />
+              </RouteGuard>
+            }
+          />
 
-          <ShowWhenRoute
-            path="/optimizer"
-            component={Navigator}
-            additionalCondition={(user) => user.isAllowedView('optimizer')}
-          />
-          <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
-          <ShowWhenRoute exact path="/capital/:product/apply" component={LoanDetails} />
-          <Redirect exact from="/capital/loans" to="/capital/loans/apply" />
-          <ShowWhenRoute
-            path="/capital/cash-advance/repayments-schedule"
-            component={RepaymentsSchedule}
-          />
-          <ShowWhenRoute
-            path="/capital/cash-advance/:section"
-            component={CashAdvance}
-            additionalCondition={canViewCashAdvanceProduct}
-            defaultPath="/capital/line-of-credit"
-          />
-          <ShowWhenRoute path="/capital/loans/:section" component={LoansCollections} />
-          <ShowWhenRoute path="/capital/non-fldg-loans" component={NonFldgLoans} />
-          <ShowWhenRoute
-            exact
-            path="/capital/:product(cash-advance|line-of-credit)"
-            component={FlashCreditLandingPage}
-            additionalCondition={(user) =>
-              canViewCashAdvanceProduct(user) || canViewLOCEMIProduct(user)
+          <Route
+            path="payment-handle/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('payment_handle') &&
+                  user.isPaymentHandleSplitzEnabled &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+                }
+              >
+                <PaymentHandle />
+              </RouteGuard>
             }
           />
-          <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
-          <ShowWhenRoute
-            path="/payroll"
-            component={PayrollWidget}
-            additionalCondition={getIsPayrollWidgetEnabled}
-          />
-          <Route path="/website-app-settings" component={WebsiteAndAppSettings} />
-          <ShowWhenRoute
-            path="/checkout-settings"
-            component={CheckoutSettings}
-            additionalCondition={(user) =>
-              isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user)
+
+          <Route
+            path="paymenthandle/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('payment_handle') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+                }
+              >
+                <PaymentHandle />
+              </RouteGuard>
             }
           />
-          <ShowWhenRoute
-            path="/notification-settings"
-            component={NotificationSettings}
-            additionalCondition={isConfigurationViewAllowed}
+
+          <Route path="paymentpages/*">
+            <Route
+              path="*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_pages') &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+                  }
+                >
+                  <PaymentPages />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path={`batchpaymentpages/:id/:entity_name/*`}
+              element={
+                <RouteGuard additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}>
+                  <PaymentPagesDetails isBatchPaymentPages />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="storefront/:id/:entity_name/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_pages') &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+                    user.isPaymentPageStorefrontEnabled
+                  }
+                >
+                  <PaymentPagesDetails isStorefrontPage />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path=":id/:entity_name/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_pages') &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+                  }
+                >
+                  <PaymentPagesDetails />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="batchuploads/:id/:title/*"
+              element={
+                <RouteGuard additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}>
+                  <BatchUploadContainer />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="wallet/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isIssuingDashboardEnabled ||
+                  user.isIssuingBulkUploadEnabled ||
+                  user.isIssuingFundsTabEnabled
+                }
+              >
+                <Wallet />
+              </RouteGuard>
+            }
           />
-          <ShowWhenRoute
-            path="/payments-and-refunds-settings"
-            component={PaymentsAndRefundsSettings}
+
+          <Route
+            path="magic/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isMagicCheckoutEnabled}>
+                <MagicCheckout />
+              </RouteGuard>
+            }
           />
-          <ShowWhenRoute
-            path="/pricing"
-            additionalCondition={(user) => user?.isBundlePricingEnabled}
-            component={Pricing}
+          <Route path="super-checkout/*" element={<Navigate to="/magic" replace />} />
+
+          <Route path="paymentbuttons/*">
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_buttons') &&
+                    user.isPaymentButtonEnabledByRazorX &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
+                  }
+                >
+                  <PaymentButton>
+                    <PaymentButtonList />
+                  </PaymentButton>
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path=":id/:entity_name/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_buttons') &&
+                    user.isPaymentButtonEnabledByRazorX &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
+                  }
+                >
+                  <PaymentButtonsDetails />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route path="subscription_buttons/*">
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('subscription_buttons') &&
+                    user.isSubscriptionButtonEnabled &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton)
+                  }
+                >
+                  <PaymentButton>
+                    <SubscriptionButtonList />
+                  </PaymentButton>
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":id/:entity_name"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabled
+                  }
+                >
+                  <SubscriptionButtonDetails />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="subscriptions/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('subscriptions') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
+                }
+              >
+                <Subscriptions />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard additionalCondition={(user) => !user.isChargeAtWillEnabled}>
+                  <SubscriptionsList />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="batchuploads/*"
+              element={
+                <RouteGuard additionalCondition={(user) => user.isChargeAtWillEnabled}>
+                  <HostedEmanadateBatches />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="settings/*"
+              element={
+                <RouteGuard additionalCondition={(user) => !user.isChargeAtWillEnabled}>
+                  <SubscriptionSettings />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="plans/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
+                }
+              >
+                <Subscriptions />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard additionalCondition={(user) => !user.isChargeAtWillEnabled}>
+                  <PlansList docUrl="https://razorpay.com/docs/subscriptions/" />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="recurring_payments/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('subscriptions') &&
+                  user.isChargeAtWillEnabled &&
+                  user.isRegistrationLinkTokenAndPaymentsEnabled
+                }
+              >
+                <Subscriptions />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
+                >
+                  <RecurringPayments />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="tokens/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('subscriptions') &&
+                  user.isChargeAtWillEnabled &&
+                  user.isRegistrationLinkTokenAndPaymentsEnabled
+                }
+              >
+                <Subscriptions />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
+                >
+                  <TokensList />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="registration_links/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+                }
+              >
+                <Subscriptions />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <RegistrationLinksList />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="payment-metrics/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP}
+              >
+                <PaymentMetrics />
+              </RouteGuard>
+            }
           />
-          <ShowWhenRoute
-            path="/bank-accounts-settlements"
-            component={BankAccountsAndSettlements}
-            additionalCondition={isProfileViewAllowed}
+
+          <Route
+            path="affordability/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => user.isShowAffordabilityWidget && user.isOrgRZP}
+              >
+                <Affordability />
+              </RouteGuard>
+            }
           />
-          <ShowWhenRoute
+
+          <Route
+            path="qr_codes/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('qr_codes') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes)
+                }
+              >
+                <QRCodes />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="stores/*"
+            element={
+              <RouteGuard
+                additionalCondition={(_user) =>
+                  _user.isAllowedView('stores') && _user.isStoresEnabled
+                }
+              >
+                <Stores />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="api-keys/*"
+            element={
+              <RouteGuard
+                additionalCondition={(_user) =>
+                  _user.isAllowedView('api_keys') &&
+                  (_user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled) &&
+                  _user.activated
+                }
+              >
+                <ApiKeysAndPlugins />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="customers/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  !user?.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers)
+                }
+              >
+                <tabbed-container>
+                  <header id="invoicing-header">
+                    <NavLink to="/customers">Customers</NavLink>
+                  </header>
+                  <content>
+                    <Routes>
+                      <Route
+                        index
+                        element={
+                          <RouteGuard>
+                            <Customers />
+                          </RouteGuard>
+                        }
+                      />
+                    </Routes>
+                  </content>
+                </tabbed-container>
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="connected-banking/icici-linked-ca/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isICICILinkedCAEnabled || getXCAStatus(user).showState === 'neostone-tracker'
+                }
+              >
+                <ConnectedBanking />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="razorpayx/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => user.isShowRazorpayXWidgetEnabled && user.isOrgRZP}
+              >
+                <RazorpayXWidget />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="route/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('marketplace') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Marketplace)
+                }
+              >
+                <Marketplace />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="bbps/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
+              >
+                <BbpsComponent />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="smartcollect/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('virtual_accounts') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
+                }
+              >
+                <SmartCollect />
+              </RouteGuard>
+            }
+          >
+            <Route
+              path="virtualaccounts/*"
+              element={
+                <RouteGuard>
+                  <VirtualAccountsList />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="payments/*"
+              element={
+                <RouteGuard>
+                  <SmartCollectPaymentsList />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="batchuploads/*"
+              element={
+                <RouteGuard>
+                  <BatchExpiryUpdate />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="virtualaccounts/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('virtual_accounts') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
+                }
+              >
+                <SmartCollect />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <VirtualAccountsList />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="pricing-plans/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user?.isBundlePricingEnabled}>
+                <MyAccount>
+                  <PricingPlans />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="trustedbadge/*"
+            element={
+              <RouteGuard additionalCondition={isTrustedBadgeAllowed}>
+                <MyAccount>
+                  <TrustedBadge />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="profile/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => isProfileViewAllowed(user) || !user.userRole}
+              >
+                <MyAccount>
+                  <Profile />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="website-app-details/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  true && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
+                }
+              >
+                <MyAccount>
+                  <WebsiteAppDetails />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="addfunds/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('add_funds') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances)
+                }
+              >
+                <MyAccount>
+                  <Balances />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="credits/*"
+            element={
+              <RouteGuard
+                featureEnabled="Referral"
+                additionalCondition={(user) =>
+                  user.isAllowedView('credits') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
+                }
+              >
+                <MyAccount>
+                  <Credits />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route path="ticket-support/*">
+            <Route
+              path="tickets/*"
+              element={
+                <RouteGuard
+                  myRole="owner admin"
+                  additionalCondition={(user) =>
+                    user.isFdTicketsEnabled &&
+                    !user.isComdelApiEnabled &&
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory) &&
+                    user?.isBundlePricingEnabled
+                  }
+                >
+                  <MyAccount>
+                    {user.isMobileSignupCareActive ? <TicketsContainer /> : <Tickets />}
+                  </MyAccount>
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path=":instance/:id/:ticketType/conversation/*"
+              element={
+                <RouteGuard>
+                  <MyAccount>
+                    <Conversations />
+                  </MyAccount>
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="referrals/*"
+            element={
+              <RouteGuard
+                featureEnabled="Referral"
+                additionalCondition={(user) => user.isAllowedView('referrals')}
+              >
+                <MyAccount>
+                  <Referrals />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="team/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedTeamManagement}>
+                <MyAccount>
+                  <ManageTeam />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
+
+          <Route path="developers/*">
+            <Route
+              path="*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    !isMobileResolution() &&
+                    user.isAllowedView('developers_console') &&
+                    (user.isDeveloperConsoleEnabled || user.isDeveloperConsoleWebhooksTabEnabled)
+                  }
+                >
+                  <Developers />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="webhooks/:id"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('developers_console') &&
+                    user.isDeveloperConsoleWebhooksTabEnabled
+                  }
+                >
+                  <DevelopersWebhooks />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          {/* TODO: @joel -> start */}
+          <Route
+            path="/config/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('configuration')}>
+                <Settings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/keys/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('api_keys')}>
+                <Settings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/webhooks/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('webhooks')}>
+                <Settings />
+              </RouteGuard>
+            }
+          />
+
+          <Route path="/reminders/*" component={<Settings />} />
+          <Route
+            path="/applications/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('applications')}>
+                <Settings />
+              </RouteGuard>
+            }
+          />
+
+          {/* TODO: @joel -> end */}
+
+          <Route
+            path="payment-methods/*"
+            element={
+              <RouteGuard additionalCondition={(user) => isPaymentMethodEnabled(user, mode)}>
+                <PaymentMethods />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="offers/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('offers') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers)
+                }
+              >
+                <Offers />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="checkout-rewards/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isAllowedView('checkoutrewards') &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
+                }
+              >
+                <CheckoutRewards />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="business-settings/*"
+            element={
+              <RouteGuard>
+                <BusinessSettings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="optimizer/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isAllowedView('optimizer')}>
+                <Navigator />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="paypal_onboard_redirect/*"
+            element={
+              <RouteGuard>
+                <PaypalOnboardRedirect />
+              </RouteGuard>
+            }
+          />
+
+          <Route path="capital/*">
+            <Route path=":product/*">
+              <Route
+                index
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      canViewCashAdvanceProduct(user) || canViewLOCEMIProduct(user)
+                    }
+                  >
+                    <FlashCreditLandingPage />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="apply"
+                element={
+                  <RouteGuard>
+                    <LoanDetails />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+            <Route>
+              <Route path="loans/*">
+                <Route index element={<Navigate to="/capital/loans/apply" replace />} />
+                <Route
+                  path=":section/*"
+                  element={
+                    <RouteGuard>
+                      <LoansCollections />
+                    </RouteGuard>
+                  }
+                />
+              </Route>
+            </Route>
+
+            <Route path="cash-advance/*">
+              <Route
+                path="repayments-schedule/*"
+                element={
+                  <RouteGuard>
+                    <RepaymentsSchedule />
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path=":section/*"
+                element={
+                  <RouteGuard
+                    defaultPath="/capital/line-of-credit"
+                    additionalCondition={canViewCashAdvanceProduct}
+                  >
+                    <CashAdvance />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+
+            <Route
+              path="non-fldg-loans/*"
+              element={
+                <RouteGuard>
+                  <NonFldgLoans />
+                </RouteGuard>
+              }
+            />
+
+            <Route
+              path="corporate-cards/*"
+              element={
+                <RouteGuard>
+                  <CorporateCards />
+                </RouteGuard>
+              }
+            />
+          </Route>
+
+          <Route
+            path="payroll/*"
+            element={
+              <RouteGuard additionalCondition={getIsPayrollWidgetEnabled}>
+                <PayrollWidget />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="website-app-settings/*"
+            element={
+              <RouteGuard>
+                <WebsiteAndAppSettings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="checkout-settings/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user)
+                }
+              >
+                <CheckoutSettings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="notification-settings/*"
+            element={
+              <RouteGuard additionalCondition={isConfigurationViewAllowed}>
+                <NotificationSettings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="payments-and-refunds-settings/*"
+            element={
+              <RouteGuard>
+                <PaymentsAndRefundsSettings />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="pricing/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user?.isBundlePricingEnabled}>
+                <Pricing />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="bank-accounts-settlements/*"
+            element={
+              <RouteGuard additionalCondition={isProfileViewAllowed}>
+                <BankAccountsAndSettlements />
+              </RouteGuard>
+            }
+          />
+
+          {/* 
+          <Route
             path="/pos/:page?"
-            component={POS}
-            additionalCondition={() => isPosExperimentEnabled(splitz)}
+            element={
+              <RouteGuard additionalCondition={() => isPosExperimentEnabled(splitz)}>
+                <POS />
+              </RouteGuard>
+            }
+          /> */}
+
+          <Route
+            path="reports/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  (user.isAllowedView('reports') || user.isCareHealthOwner) &&
+                  user.hideForNIASupportRole
+                }
+              >
+                <MerchantReports />
+              </RouteGuard>
+            }
           />
-          <Route exact path="/" component={HandleIndex} />
-          <Route path="*" component={HandleIndex} />
-        </Switch>
+        </Routes>
       </Suspense>
     );
   };
@@ -1114,4 +2064,4 @@ class Content extends Component {
   }
 }
 
-export default withSplitzService(Content);
+export default withSplitzService(withRouter(Content));

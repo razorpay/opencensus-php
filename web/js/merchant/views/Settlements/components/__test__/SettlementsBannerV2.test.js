@@ -3,9 +3,6 @@ import '@testing-library/jest-dom/extend-expect';
 import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
 import { render, screen, waitFor } from 'test-utils';
 import userEvent from '@testing-library/user-event';
-import { Router } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 import { createMemoryHistory } from 'history';
 import * as modals from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
@@ -57,22 +54,20 @@ const state = {
 describe('SettlementsBannerV2', () => {
   const modalsSpy = jest.spyOn(modals, 'closeModal');
 
-  const history = createMemoryHistory();
+  let history = createMemoryHistory();
   history.push = jest.fn();
   window.open = jest.fn();
 
-  const App = ({ initialState = state, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(initialState)}>
-        <Router history={history}>
-          <SettlementsBannerV2 {...rest} />
-        </Router>
-      </Provider>
-    );
-  };
+  const renderApp = ({ initialState = state, ...props } = {}) =>
+    render(<SettlementsBannerV2 {...props} />, {
+      initialState,
+      history,
+    });
 
   beforeEach(() => {
     modalsSpy.mockClear();
+    history = createMemoryHistory();
+    history.push = jest.fn();
   });
 
   test('should render banner when in live mode and user KYC is under review', () => {
@@ -87,7 +82,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(screen.getByText('Your KYC details are currently under review')).toBeInTheDocument();
     expect(
@@ -109,7 +104,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(
       screen.getByText('We need a few more details to complete KYC verification'),
@@ -123,7 +118,11 @@ describe('SettlementsBannerV2', () => {
     userEvent.click(screen.getByText(/Submit details now/i));
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
-      expect(history.push).toHaveBeenCalledWith('/activation');
+      expect(history.push).toHaveBeenCalledWith(
+        { hash: '', pathname: '/activation', search: '' },
+        undefined,
+        {},
+      );
     });
   });
 
@@ -143,7 +142,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(
       screen.getByText('We need a few more details to complete KYC verification'),
@@ -172,7 +171,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(
       screen.getByText('Complete your KYC to receive collected payments in your bank account'),
@@ -185,7 +184,11 @@ describe('SettlementsBannerV2', () => {
     userEvent.click(screen.getByText(/Complete KYC/i));
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
-      expect(history.push).toHaveBeenCalledWith('/activation');
+      expect(history.push).toHaveBeenCalledWith(
+        { hash: '', pathname: '/activation', search: '' },
+        undefined,
+        {},
+      );
     });
   });
 
@@ -203,7 +206,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.queryByLabelText('settlement-banner')).not.toBeInTheDocument();
   });
 
@@ -220,7 +223,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(
       screen.getByText('Contact support to resume settlements for your account'),
@@ -245,7 +248,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText('Contact support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
@@ -273,7 +276,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText('Contact support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
@@ -298,7 +301,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    const { rerender } = render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Update your bank account details to resume settlements'),
     ).toBeInTheDocument();
@@ -310,8 +313,8 @@ describe('SettlementsBannerV2', () => {
     expect(screen.getByText('Update Bank Account Details')).toBeInTheDocument();
 
     initialState.profile.bankAccountChangeStatus = true;
-    rerender(<App initialState={initialState} />);
-    expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+    renderApp({ initialState });
+    expect(screen.getAllByLabelText('settlement-banner')[1]).toBeInTheDocument();
     expect(
       screen.getByText('Your bank account update request is under review'),
     ).toBeInTheDocument();
@@ -342,19 +345,27 @@ describe('SettlementsBannerV2', () => {
         bankAccountChangeStatus: false,
       },
     };
-    const { rerender } = render(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText(/Update Bank Account Details/));
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
-      expect(history.push).toHaveBeenCalledWith('/profile/update_bank_account');
+      expect(history.push).toHaveBeenCalledWith(
+        { hash: '', pathname: '/profile/update_bank_account', search: '' },
+        undefined,
+        {},
+      );
     });
 
     initialState.session.user.isAccountAndSettingsRevampEnabled = true;
-    rerender(<App initialState={initialState} />);
-    userEvent.click(screen.getByText(/Update Bank Account Details/));
+    renderApp({ initialState });
+    userEvent.click(screen.getAllByText(/Update Bank Account Details/)[1]);
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(2);
-      expect(history.push).toHaveBeenCalledWith('/bank-accounts-settlements/bank-account-details');
+      expect(history.push).toHaveBeenCalledWith(
+        { hash: '', pathname: '/bank-accounts-settlements/bank-account-details', search: '' },
+        undefined,
+        {},
+      );
     });
   });
 
@@ -376,7 +387,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Contact support to resume settlements for your account'),
     ).toBeInTheDocument();
@@ -412,7 +423,7 @@ describe('SettlementsBannerV2', () => {
         ],
       },
     };
-    const { rerender } = render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('Your failed settlement is being retried')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -428,7 +439,7 @@ describe('SettlementsBannerV2', () => {
       },
     ];
 
-    rerender(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Contact support to receive failed settlement of ₹99.99'),
     ).toBeInTheDocument();
@@ -464,7 +475,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Collect more payments to continue receiving settlements'),
     ).toBeInTheDocument();
@@ -493,7 +504,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('Upcoming settlement might get skipped')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -511,7 +522,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(screen.getByText('SettlementMessage')).toBeInTheDocument();
   });
@@ -544,7 +555,7 @@ describe('SettlementsBannerV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.queryByLabelText('settlement-banner')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 
@@ -15,6 +14,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
@@ -144,7 +144,8 @@ const OffersForYou = ({
         user.isProjectKeystoneCorporateCardsEnabled ||
         user.isProjectKeystoneCashAdvanceEnabled ||
         user.isProjectNitroEnabled ||
-        user.isICICILinkedCAFlowEnabled('offers-for-you')
+        (Boolean(user?.isICICILinkedCAFlowEnabled) &&
+          user.isICICILinkedCAFlowEnabled('offers-for-you'))
       ) {
         openModals({
           component: (
@@ -191,22 +192,20 @@ const OffersForYou = ({
   );
 };
 
-export default withRouter(
-  compose(
-    rTracking(() => window.rzpQ.component('OffersForYou')),
-    connect(
-      (state) => {
-        return {
-          user: state.session.user,
-          ...state.growthService.exclusive_offers,
-        };
-      },
-      {
-        openModals: openModal,
-        closeModals: closeModal,
-        setActivePageName: fnSetActivePageName,
-        setBaseLocation: fnSetBaseLocation,
-      },
-    ),
-  )(OffersForYou),
-);
+export default compose(
+  rTracking(() => window.rzpQ.component('OffersForYou')),
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        ...state.growthService.exclusive_offers,
+      };
+    },
+    {
+      openModals: openModal,
+      closeModals: closeModal,
+      setActivePageName: fnSetActivePageName,
+      setBaseLocation: fnSetBaseLocation,
+    },
+  ),
+)(withRouter(OffersForYou));

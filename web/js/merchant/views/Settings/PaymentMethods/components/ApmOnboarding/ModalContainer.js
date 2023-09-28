@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import { useFormikContext } from 'formik';
@@ -328,4 +328,4 @@ const mapDispatchToProps = (dispatch) => {
   return bindActionCreators({ closeModal, openModal, showNotification, setFormData }, dispatch);
 };
 
-export default compose(withRouter, connect(mapStateToProps, mapDispatchToProps))(ModalContainer);
+export default compose(connect(mapStateToProps, mapDispatchToProps))(withRouter(ModalContainer));

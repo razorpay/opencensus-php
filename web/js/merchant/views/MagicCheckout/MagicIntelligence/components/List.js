@@ -5,23 +5,24 @@ import {
   HEADING_SUBTEXT,
 } from 'merchant/views/MagicCheckout/MagicIntelligence/constants';
 
-export const EmptyComponent = (onUploadClick, txt, hasNoData) => () => (
-  <div className="empty-table-message">
-    {hasNoData.current ? (
-      <p>No result found!</p>
-    ) : (
-      <>
-        <p>{`No ${txt} Set!`}</p>
-        {onUploadClick && (
-          <button className="btn btn-primary btn-shine" onClick={onUploadClick}>
-            <i className="i i-plus" />
-            <span>{`Add New ${txt}`}</span>
-          </button>
-        )}
-      </>
-    )}
-  </div>
-);
+export const EmptyComponent = (onUploadClick, txt, hasNoData) => () =>
+  (
+    <div className="empty-table-message">
+      {hasNoData.current ? (
+        <p>No result found!</p>
+      ) : (
+        <>
+          <p>{`No ${txt} Set!`}</p>
+          {onUploadClick && (
+            <button className="btn btn-primary btn-shine" onClick={onUploadClick}>
+              <i className="i i-plus" />
+              <span>{`Add New ${txt}`}</span>
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
 
 const IntelligenceContainer = (props) => {
   const {

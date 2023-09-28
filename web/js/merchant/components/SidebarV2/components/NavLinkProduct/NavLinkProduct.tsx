@@ -16,7 +16,7 @@ import Divider from 'merchant/components/SidebarV2/components/Divider';
 import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
 
 const NavLinkProduct = ({
@@ -144,4 +144,4 @@ const NavLinkProduct = ({
   ) : null;
 };
 
-export default withRouter(NavLinkProduct);
+export default withRouter<any>(NavLinkProduct);

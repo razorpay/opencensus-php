@@ -1,12 +1,9 @@
-import { Router } from 'react-router-dom';
-import { render, screen, userEvent, waitFor } from 'test-utils';
-import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
-import { createMemoryHistory } from 'history';
+import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
 import NestedVerticalTabs, {
   TabItem,
 } from 'merchant/views/MagicCheckout/Settings/containers/NestedVerticalTab';
-import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
+import { render as renderMain, screen, userEvent, waitFor } from 'test-utils';
 
 const initState = {
   magic_settings: {
@@ -38,25 +35,15 @@ jest.mock('common/splitz', () => ({
   withSplitzService: jest.fn(),
 }));
 
-const App = ({ state = {}, ...props }) => {
-  return (
-    <Provider store={storeWithInitialState({ ...initState, ...state })}>
-      <NestedVerticalTabs {...props} />
-    </Provider>
-  );
-};
-
-const AppWithRouter = ({ state = {}, ...props }) => {
-  return (
-    <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-      <App state={state} {...props} />
-    </Router>
-  );
+const render = (ui, config = { state: {} }) => {
+  return renderMain(ui, {
+    reduxStore: storeWithInitialState({ ...initState, ...config.state }),
+  });
 };
 
 describe('Nested vertical tabs component', () => {
   test('Nested vertical tab should render fine', async () => {
-    render(<AppWithRouter />);
+    render(<NestedVerticalTabs />);
 
     await waitFor(() => {
       TABS[initState.magic_settings.platform].forEach((item) => {
@@ -66,7 +53,7 @@ describe('Nested vertical tabs component', () => {
   });
 
   test('should navigate to destined route', async () => {
-    const { history } = render(<App />);
+    const { history } = render(<NestedVerticalTabs />);
 
     const MagicIntelligenceTab = screen.getByText('RTO Settings');
 
@@ -82,7 +69,7 @@ describe('Nested vertical tabs component', () => {
         cod_order_control: false,
       },
     };
-    render(<AppWithRouter state={customState} />);
+    render(<NestedVerticalTabs />, { state: customState });
 
     await waitFor(() => expect(screen.queryByText('COD Review Workflow')).not.toBeInTheDocument());
   });
@@ -117,7 +104,9 @@ describe('Nested vertical tabs component', () => {
         },
       },
     };
-    render(<AppWithRouter state={customState} />);
+    render(<NestedVerticalTabs />, {
+      state: customState,
+    });
     await waitFor(() => expect(screen.queryByText('Store Settings')).not.toBeInTheDocument());
   });
 });

@@ -1,9 +1,11 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
-import RepaySuccess from './RepaySuccess';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import { trackRepaymentClose } from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';
+import { REPAYMENT_VIEWS } from 'merchant/views/Capital/CashAdvance/constants';
+
 import RepayFailure from './RepayFailure';
-import { REPAYMENT_VIEWS } from '../constants';
-import { trackRepaymentClose } from '../TrackEvents/trackEvents';
+import RepaySuccess from './RepaySuccess';
 
 const Result = ({ setView, view, resultAmounts, location: { pathname } }) => {
   const handleCrossClick = () => {

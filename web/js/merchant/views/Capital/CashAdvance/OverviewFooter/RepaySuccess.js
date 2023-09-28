@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
-import { REPAYMENT_VIEWS, REPAYMENT_USER_METHODS_TYPE } from '../constants';
-import { trackRepaymentSuccess } from '../TrackEvents/trackEvents';
+import { trackRepaymentSuccess } from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';
+import {
+  REPAYMENT_VIEWS,
+  REPAYMENT_USER_METHODS_TYPE,
+} from 'merchant/views/Capital/CashAdvance/constants';
 
 const RepaySuccess = ({ setView, resultAmounts, location: { pathname = '' } }) => {
   const handleDoneClick = () => {

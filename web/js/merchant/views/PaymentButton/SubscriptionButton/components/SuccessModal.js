@@ -1,10 +1,10 @@
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import GetCodeModal from './GetCodeModal';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
+import React from 'react';
 
-@withRouter
-export default class SuccessModal extends React.Component {
+class SuccessModal extends React.Component {
   onClickButtonSettings = () => {
     this.props.history.push(`/subscription_buttons/${this.props.paymentButton.id}/payments`);
 
@@ -69,3 +69,5 @@ export default class SuccessModal extends React.Component {
     );
   }
 }
+
+export default withRouter(SuccessModal);

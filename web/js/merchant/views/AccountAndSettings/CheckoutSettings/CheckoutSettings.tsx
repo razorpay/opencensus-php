@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react';
-import { Route, NavLink, Redirect } from 'react-router-dom';
+import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import {
   StyledConfiguration,
   StyledDivider,
@@ -26,6 +26,7 @@ import {
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const TrustedBadge = lazy(
   () => import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
@@ -37,13 +38,17 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
       case ROUTES_INFO.BRANDING:
       case ROUTES_INFO.FLASH_CHECKOUT:
       case ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE:
-        return <Redirect to="/config" />;
+        return <Navigate to="/config" replace />;
       case ROUTES_INFO.TRUSTED_BADGE:
-        return <Redirect to="/trustedbadge" />;
+        return <Navigate to="/trustedbadge" replace />;
       default:
-        return <Redirect to="/dashboard" />;
+        return <Navigate to="/dashboard" replace />;
     }
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/checkout-settings/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -80,26 +85,43 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
             <StyledDivider>
               <StyledTabContentContainer className="content">
                 <ShowWhen additionalCondition={isConfigurationViewAllowed}>
-                  <Route
-                    path={ROUTES_INFO.BRANDING}
-                    render={(props) => <StyledConfiguration {...props} showBranding />}
-                  />
-                  <Route
-                    path={ROUTES_INFO.FLASH_CHECKOUT}
-                    render={(props) => <StyledConfiguration {...props} showFlashCheckout />}
-                  />
-                  <Route
-                    path={ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE}
-                    render={(props) => (
-                      <StyledConfiguration {...props} showSkipMandatorySummaryPage />
-                    )}
-                  />
+                  <Routes>
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.BRANDING)}
+                      element={
+                        <RouteGuard>
+                          <StyledConfiguration showBranding />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.FLASH_CHECKOUT)}
+                      element={
+                        <RouteGuard>
+                          <StyledConfiguration showFlashCheckout />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE)}
+                      element={
+                        <RouteGuard>
+                          <StyledConfiguration showSkipMandatorySummaryPage />
+                        </RouteGuard>
+                      }
+                    />
+                  </Routes>
                 </ShowWhen>
-                <ShowWhenRoute
-                  path={ROUTES_INFO.TRUSTED_BADGE}
-                  component={TrustedBadge}
-                  additionalCondition={isTrustedBadgeAllowed}
-                />
+                <Routes>
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.TRUSTED_BADGE)}
+                    element={
+                      <RouteGuard additionalCondition={isTrustedBadgeAllowed}>
+                        <TrustedBadge />
+                      </RouteGuard>
+                    }
+                  />
+                </Routes>
               </StyledTabContentContainer>
             </StyledDivider>
           </Suspense>
@@ -109,6 +131,8 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
   );
 };
 
-export default connect((state) => ({
-  user: state.session.user,
-}))(CheckoutSettings);
+export default withRouter(
+  connect((state) => ({
+    user: state.session.user,
+  }))(CheckoutSettings),
+);

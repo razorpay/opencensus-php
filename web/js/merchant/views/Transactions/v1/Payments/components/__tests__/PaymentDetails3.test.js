@@ -6,7 +6,6 @@ import {
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
-import ShowWhen from 'merchant/components/ShowWhen';
 import store from 'merchant/store';
 
 const stateSpy = jest.spyOn(store, 'getState');
@@ -16,8 +15,19 @@ describe('PaymentDetails', () => {
     stateSpy.mockClear();
   });
   test('should call onCreateTransfer when clicked on Create Transfer', () => {
-    ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
-    render(<App />);
+    render(<App />, {
+      initialState: {
+        session: {
+          org: {
+            features: [],
+          },
+          user: {
+            findTag: () => false,
+            isFeatureEnabled: () => true,
+          },
+        },
+      },
+    });
     fireEvent.click(screen.getByText('Create Transfer'));
     expect(analyticsTrack).toHaveBeenCalledWith({
       actionName: 'clicked',

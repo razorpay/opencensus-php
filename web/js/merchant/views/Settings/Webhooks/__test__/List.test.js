@@ -18,7 +18,7 @@ describe('Webhooks - List.js', () => {
     const history = createMemoryHistory();
     return (
       <Provider store={storeWithInitialState(state)}>
-        <Router history={history}>
+        <Router navigator={history} location={history.location}>
           <>
             <ModalDialog />
             <WebhooksContainer {...rest} />

@@ -2,7 +2,7 @@ import React, { ComponentType, useState } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import { useQuery } from 'react-query';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Spinner } from '@razorpay/blade/components';
 import { History, Location } from 'history';
 import { showNotification } from 'merchant_common/reducers/notifications';

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Loader from 'common/ui/Loader';
 
 const RazorpayXIFrame = ({ url, history }) => {

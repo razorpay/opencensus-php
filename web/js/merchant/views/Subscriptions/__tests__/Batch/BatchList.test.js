@@ -76,7 +76,15 @@ describe('Render batch if user has isRegistrationLinkSupervisorRole', () => {
         }}
       />,
       {
-        initialState: { session: { user: { isRegistrationLinkSupervisorRole: true } } },
+        initialState: {
+          session: {
+            user: {
+              isRegistrationLinkSupervisorRole: true,
+              isOrgAllowedFunctionality: () => true,
+              findTag: () => false,
+            },
+          },
+        },
       },
     );
     await waitForLoadingToFinish();

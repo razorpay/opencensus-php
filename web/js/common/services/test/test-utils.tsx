@@ -2,9 +2,7 @@
 import React, { ReactElement } from 'react';
 import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { Router, Route } from 'react-router-dom';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { createMemoryHistory } from 'history';
+import { Router, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { server } from '../../../../mocks/node';
 import { errorHandlers } from '../../../../mocks/errorHandlers';
@@ -16,23 +14,42 @@ import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import { createMemoryHistory } from 'history';
 
-const createWrapper = ({ context, reduxStore, history, showModal, path }) => {
+const createWrapper = ({
+  context,
+  reduxStore,
+  showModal,
+  path,
+  renderViaRouteGuard = true,
+  history,
+}) => {
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
   }> = ({ children }) => {
+    const renderChildren = () => {
+      if (renderViaRouteGuard) {
+        return <RouteGuard>{children}</RouteGuard>;
+      } else {
+        return children;
+      }
+    };
+
     return (
       <Wrapper context={context}>
         <Provider store={reduxStore}>
           <ConfirmModalProvider>
-            <Router history={history}>
+            <Router navigator={history} location={history.location}>
               <>
                 {showModal && <ModalDialog />}
                 <Notifications />
-                <Route
-                  path={path}
-                  component={() => <div data-testid={COMPONENT_WRAPPER_TESTID}>{children}</div>}
-                />
+                <Routes>
+                  <Route
+                    path={`${path as string}/*`}
+                    element={<div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>}
+                  />
+                </Routes>
               </>
             </Router>
           </ConfirmModalProvider>
@@ -51,15 +68,26 @@ const customRender = (
     // Remove after updating snapshots
     showModal,
     reduxStore = storeWithInitialState(initialState),
-    historyOptions = { initialEntries: ['/'] },
-    history = createMemoryHistory(historyOptions),
+    initialEntries = ['/'],
     context = mockContext,
+    renderViaRouteGuard,
+    history = createMemoryHistory({ initialEntries }),
     ...restOptions
   }: any = {},
 ) => {
-  const AllTheProviders = createWrapper({ context, reduxStore, history, showModal, path });
+  const AllTheProviders = createWrapper({
+    context,
+    reduxStore,
+    showModal,
+    path,
+    renderViaRouteGuard,
+    history,
+  });
   const renderObj = render(ui, { wrapper: AllTheProviders, ...restOptions });
-  return { ...renderObj, history };
+  return {
+    ...renderObj,
+    history,
+  };
 };
 
 const customRenderHook = (
@@ -70,13 +98,21 @@ const customRenderHook = (
     // Remove after updating snapshots
     showModal,
     reduxStore = storeWithInitialState(initialState),
-    historyOptions = { initialEntries: ['/'] },
-    history = createMemoryHistory(historyOptions),
+    initialEntries = ['/'],
     context = mockContext,
+    renderViaRouteGuard,
+    history = createMemoryHistory({ initialEntries }),
     ...restOptions
   },
 ) => {
-  const AllTheProviders = createWrapper({ context, reduxStore, history, showModal, path });
+  const AllTheProviders = createWrapper({
+    context,
+    reduxStore,
+    showModal,
+    path,
+    renderViaRouteGuard,
+    history,
+  });
   return renderHook(hook, { wrapper: AllTheProviders, ...restOptions });
 };
 

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ShowWhen from 'merchant/components/ShowWhen';
 import {
   setActivePageName as fnsetActivePageName,

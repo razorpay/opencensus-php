@@ -40,6 +40,8 @@ describe('PaymentsList', () => {
           user: {
             isFAEnabled: true,
             getMaxFAMtv: 200,
+            findTag: () => false,
+            isOrgAllowedFunctionality: () => true,
           },
         },
       },

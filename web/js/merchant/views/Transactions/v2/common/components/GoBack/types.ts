@@ -1,4 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 type LocationState =
   | undefined

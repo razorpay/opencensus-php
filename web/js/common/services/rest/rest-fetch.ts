@@ -58,7 +58,7 @@ export async function fetch<T extends any>(
       const errorResult = typeof result === 'string' ? { error: result } : result;
       throw new ClientError({ ...errorResult, status: response.status });
     }
-  } catch (e) {
+  } catch (e: any) {
     if (e.response.status === 401) {
       document.body.dispatchEvent(
         new CustomEvent('NOT_AUTHENTICATED', {

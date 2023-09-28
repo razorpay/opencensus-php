@@ -1,14 +1,12 @@
 import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import { withRouter } from 'common/deprecated/withRouter';
 import CommissionTransactionalDetails, {
   CommissionEarningBreakUp,
 } from 'merchant/views/PartnerDashboard/Commissions/Transactional/Details';
 import { COMMISSION_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
-@withRouter
-export default class EarningTransactionalDetails extends Component {
+class EarningTransactionalDetails extends Component {
   render() {
     return <CommissionTransactionalDetails renderDetails={renderDetails} {...this.props} />;
   }
@@ -32,3 +30,5 @@ function renderDetails(entity) {
     />
   );
 }
+
+export default withRouter(EarningTransactionalDetails);

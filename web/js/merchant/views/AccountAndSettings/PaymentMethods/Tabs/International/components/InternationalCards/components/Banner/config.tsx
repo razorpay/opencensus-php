@@ -14,7 +14,7 @@ import {
 } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { BannerProps } from './Banner';
 
 type Data = Required<Omit<BannerProps, 'ppliProductState' | 'pgProductState'>> & {

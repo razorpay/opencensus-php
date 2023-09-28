@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import LazyLoad from 'react-lazyload';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -26,7 +27,6 @@ import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import BusinessImage from 'assets/business.svg';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -40,7 +40,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
   { logout, closeModal, openModal, updateSession },
 )
 @RTracking(() => window.rzpQ.component('ProfileDropdown'))
-export default class ProfileDropdown extends Component {
+class ProfileDropdown extends Component {
   state = {
     showRazorpayxToolTip: false,
   };
@@ -464,3 +464,5 @@ export default class ProfileDropdown extends Component {
     );
   }
 }
+
+export default withRouter(ProfileDropdown);

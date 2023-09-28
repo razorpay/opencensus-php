@@ -1,7 +1,8 @@
 import { Button, Link } from '@razorpay/blade/components';
 import { DisabledInternationalCardsReasons } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import React from 'react';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
   StyledDisabledHeading,
   StyledDisabledInternationalCardsSection,

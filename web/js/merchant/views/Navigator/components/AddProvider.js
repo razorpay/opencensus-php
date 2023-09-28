@@ -1,7 +1,8 @@
 import React from 'react';
-import qs from 'query-string';
 import { connect } from 'react-redux';
-import { withRouter, Link, Redirect } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import qs from 'query-string';
 import { CSSTransition } from 'react-transition-group';
 import { compose, bindActionCreators } from 'redux';
 
@@ -631,7 +632,7 @@ class AddProvider extends React.Component {
     } = this.state;
     const { user } = this.props;
 
-    if (redirect) return <Redirect to={redirect} />;
+    if (redirect) return <Navigate to={redirect} replace />;
 
     const _params = qs.parse(this.props?.location?.search);
     const onCloseLink = _params?.from ?? '/optimizer/rules';

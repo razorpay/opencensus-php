@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, NavLink, Link } from 'react-router-dom';
+import { Route, Routes, NavLink, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -16,6 +16,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchStore } from 'merchant/reducers/storefront';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import track from './Onboarding/track';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import { withRouter } from 'common/deprecated/withRouter';
 
 @connect(
   (state) => ({
@@ -29,7 +31,7 @@ import track from './Onboarding/track';
   },
 )
 @RTracking(() => window.rzpQ.component('StoresContainer'))
-export default class StoresContainer extends React.Component {
+class StoresContainer extends React.Component {
   state = {
     isSettingsOpen: false,
   };
@@ -134,10 +136,24 @@ export default class StoresContainer extends React.Component {
             <TestModeBanner />
 
             <content>
-              <Switch>
-                <Route path="/stores/products" exact component={ProductsList} />
-                <Route path="/stores/orders" exact component={OrdersList} />
-              </Switch>
+              <Routes>
+                <Route
+                  path="products/*"
+                  element={
+                    <RouteGuard>
+                      <ProductsList />
+                    </RouteGuard>
+                  }
+                />
+                <Route
+                  path="orders/*"
+                  element={
+                    <RouteGuard>
+                      <OrdersList />
+                    </RouteGuard>
+                  }
+                />
+              </Routes>
             </content>
           </tabbed-container>
         </>
@@ -147,3 +163,5 @@ export default class StoresContainer extends React.Component {
     return <div className="StorefrontContainer">{content}</div>;
   }
 }
+
+export default withRouter(StoresContainer);

@@ -1,5 +1,5 @@
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import { getURLQueryParams } from 'common/utils/rzp-utils';
@@ -24,7 +24,7 @@ const FORMS = {
   'no-cost-emi': NoCostEMI,
   subscription: Subscription,
 };
-@withRouter
+
 @connect((state) => state.session, {
   showNotification,
   openModal,
@@ -34,7 +34,7 @@ const FORMS = {
 })
 @RTracking(() => window.rzpQ.component('CreateOfferWizard'))
 // eslint-disable-next-line no-undef
-export default class CreateOfferWizard extends React.Component {
+class CreateOfferWizard extends React.Component {
   constructor(props) {
     super();
 
@@ -194,3 +194,5 @@ export default class CreateOfferWizard extends React.Component {
     );
   }
 }
+
+export default withRouter(CreateOfferWizard);

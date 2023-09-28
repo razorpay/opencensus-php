@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { PowerSelect } from 'react-power-select';
 import {
   stringifyNull,
@@ -21,8 +21,7 @@ import Field, {
 } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-@withRouter
-export default class AddEditExperiment extends React.Component {
+class AddEditExperiment extends React.Component {
   state = this.initState();
 
   mentions = null;
@@ -909,3 +908,5 @@ AddEditExperiment.propTypes = {
   onEdit: PropTypes.func,
   isEdit: PropTypes.bool,
 };
+
+export default withRouter(AddEditExperiment);

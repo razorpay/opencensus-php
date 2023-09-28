@@ -1,9 +1,8 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import lazy from 'merchant/routes/LazyLoader';
+import ShowWhen from 'merchant/components/ShowWhen';
 import LandingPageAnalyticsOverview from 'merchant/views/Transactions/v2/Analytics/LandingAnalytics';
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
 import {
@@ -14,36 +13,6 @@ import {
 import { trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { Page } from 'merchant/views/Transactions/v2/common/types';
 
-const PaymentsContainer = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "PaymentsContainer" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsContainer'
-    ),
-);
-
-const BatchPaymentsList = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "BatchPaymentsList" */ 'merchant/views/Transactions/v1/BatchPayments/List'
-    ),
-);
-
-const OrdersList = lazy(
-  () => import(/* webpackChunkName: "OrdersList" */ 'merchant/views/Transactions/v1/Orders/List'),
-);
-
-const UploadInvoice = lazy(
-  () =>
-    import(/* webpackChunkName: "UploadInvoice" */ 'merchant/views/Transactions/v1/UploadInvoice'),
-);
-
-const B2bPaymentsList = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "B2bPaymentsList" */ 'merchant/views/Transactions/v1/B2bPayments/List'
-    ),
-);
-
 const { ORDERS } = Page;
 const {
   PAYMENTS: PAYMENTS_ROUTE,
@@ -53,16 +22,12 @@ const {
   INVOICES,
 } = TransactionsEntityRoute;
 
-const Landing = (): JSX.Element => {
+export const LandingContainer = ({ children }) => {
   return (
     <div className="tabbed-container">
       <LandingPageAnalyticsOverview />
-      <StyledTabHeader id="transactions-header">
-        <StyledTabItem
-          to={PAYMENTS_ROUTE}
-          onClick={trackTransactionsTabClick(PAYMENTS_ROUTE)}
-          exact
-        >
+      <StyledTabHeader id="transactions-header" className="scrollable-tab-header">
+        <StyledTabItem to={PAYMENTS_ROUTE} onClick={trackTransactionsTabClick(PAYMENTS_ROUTE)} end>
           Payments
         </StyledTabItem>
 
@@ -99,30 +64,17 @@ const Landing = (): JSX.Element => {
         </ShowWhen>
       </StyledTabHeader>
       <StyledContent className="content transactions-content">
-        <ErrorBoundary resetOnProps>
-          <Switch>
-            <ShowWhenRoute path={`${BATCH_PAYMENTS}/:mode`} component={BatchPaymentsList} />
-            <ShowWhenRoute path={BATCH_PAYMENTS} component={BatchPaymentsList} />
-            <ShowWhenRoute
-              path={INVOICES}
-              component={UploadInvoice}
-              additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
-            />
-            <ShowWhenRoute
-              path={UPLOAD_INVOICES}
-              component={B2bPaymentsList}
-              additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
-            />
-            <Route path={PAYMENTS_ROUTE} component={PaymentsContainer} />
-            <ShowWhenRoute
-              path={ORDERS_ROUTE}
-              component={OrdersList}
-              additionalCondition={(usr) => usr.isAllowedView(ORDERS)}
-            />
-          </Switch>
-        </ErrorBoundary>
+        <ErrorBoundary resetOnProps>{children}</ErrorBoundary>
       </StyledContent>
     </div>
+  );
+};
+
+const Landing = (): JSX.Element => {
+  return (
+    <LandingContainer>
+      <Outlet />
+    </LandingContainer>
   );
 };
 

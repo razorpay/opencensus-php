@@ -1,2 +1,2 @@
 export { default as ActivationModal } from './ActivationFormModals';
-export { ModalTypeT } from './ModalContent';
+export type { ModalTypeT } from './ModalContent';

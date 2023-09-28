@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';

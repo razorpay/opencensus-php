@@ -3,16 +3,16 @@ import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
-import { MemoryRouter, Route, Switch } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import AccountDetail from 'merchant/views/Wallet/AccountDetail';
+import { render as rootRender } from '@testing-library/react';
 
-import { render, screen, waitFor } from '@testing-library/react';
-import { waitForLoadingToFinish } from 'test-utils';
+import { waitForLoadingToFinish, render, screen, waitFor } from 'test-utils';
 
 describe('Wallet: AccountDetail component', () => {
   it('should render account details and limits graph', async () => {
-    render(
+    rootRender(
       <BladeProvider themeTokens={paymentTheme}>
         <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZs']}>
           <AccountDetail />
@@ -33,13 +33,10 @@ describe('Wallet: AccountDetail component', () => {
   });
 
   it('should not render limits graph when rendering container account', async () => {
-    render(
-      <BladeProvider themeTokens={paymentTheme}>
-        <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZt']}>
-          <Route path="/wallet/accounts/:id" component={AccountDetail} />
-        </MemoryRouter>
-      </BladeProvider>,
-    );
+    render(<AccountDetail />, {
+      initialEntries: ['/wallet/accounts/iacc_I9eCvXfHx7nzZt'],
+      path: '/wallet/accounts/:id',
+    });
 
     await waitForLoadingToFinish();
 
@@ -53,15 +50,15 @@ describe('Wallet: AccountDetail component', () => {
   });
 
   it('should render error message when api fails', async () => {
-    render(
+    rootRender(
       <ReactQueryCacheProvider
         queryCache={new QueryCache({ defaultConfig: { queries: { retry: false } } })}
       >
         <BladeProvider themeTokens={paymentTheme}>
           <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZz']}>
-            <Switch>
-              <Route path="/wallet/accounts/:id" component={AccountDetail} />
-            </Switch>
+            <Routes>
+              <Route path="/wallet/accounts/:id" element={<AccountDetail />} />
+            </Routes>
           </MemoryRouter>
         </BladeProvider>
       </ReactQueryCacheProvider>,

@@ -4,7 +4,8 @@ import {
   StyledUpdateBusinessDetailsContainer,
   StyledUpdateBusinessDetailsContent,
 } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/Styled';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { closeModal as closeModalFn } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';

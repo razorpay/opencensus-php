@@ -10,7 +10,7 @@ import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/uti
 import { fetchSubmerchants } from 'merchant/reducers/collection';
 import moment from 'moment';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
 import Image from 'common/ui/Image';

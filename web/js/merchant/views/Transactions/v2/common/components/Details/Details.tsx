@@ -1,25 +1,25 @@
 import React from 'react';
 import { ChevronRightIcon, Link } from '@razorpay/blade/components';
 import qs from 'query-string';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { paymentMethodOptionsMap } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/constants';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
 
-import { DetailsProps, HandleDetailsClickParams } from './types';
+import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
 
 export const handleDetailsClick = ({
-  history,
+  navigate,
   itemId,
   baseUrl,
   initiatePage,
   prevPath,
   isButton,
-}: HandleDetailsClickParams): void => {
-  const { hash } = window.location;
-  const { method } = qs.parse(location.search);
+}: HandleDetailsClickParams & Pick<RouterParams, 'navigate'>): void => {
+  const { hash, search } = window.location;
+  const { method } = qs.parse(search);
   const paymentMethodSelected =
     (typeof method === 'string' && paymentMethodOptionsMap[method]) || paymentMethodOptionsMap.all;
   let url = `${baseUrl}/${itemId}?init_page=${initiatePage}`;
@@ -34,16 +34,11 @@ export const handleDetailsClick = ({
       section: initiatePage,
     },
   });
-  history.push(url, { prevPath });
+  navigate(url, { state: { prevPath } });
 };
 
-const Details = ({
-  history,
-  itemId,
-  baseUrl,
-  initiatePage,
-  prevPath,
-}: DetailsProps): JSX.Element => {
+const Details = ({ itemId, baseUrl, initiatePage, prevPath }: DetailsProps): JSX.Element => {
+  const navigate = useNavigate();
   const isMobile = useMobile([...mobileBreakoints, 'l']);
   const linkText = isMobile ? '' : 'Details';
   return (
@@ -51,7 +46,14 @@ const Details = ({
       variant="button"
       onClick={(e) => {
         e.stopPropagation();
-        handleDetailsClick({ history, itemId, baseUrl, initiatePage, prevPath, isButton: true });
+        handleDetailsClick({
+          navigate,
+          itemId,
+          baseUrl,
+          initiatePage,
+          prevPath,
+          isButton: true,
+        });
       }}
       icon={ChevronRightIcon}
       iconPosition="right"
@@ -61,4 +63,4 @@ const Details = ({
   );
 };
 
-export default withRouter(Details);
+export default Details;

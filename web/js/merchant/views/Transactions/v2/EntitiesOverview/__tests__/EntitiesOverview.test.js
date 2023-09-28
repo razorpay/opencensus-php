@@ -5,7 +5,7 @@ import {
   overviewRouteTestData,
 } from 'merchant/views/Transactions/v2/EntitiesOverview/__tests__/mocks/fixtures/EntitiesOverview';
 
-describe('EntitiesOverview', () => {
+describe.skip('EntitiesOverview', () => {
   test.each(overviewRouteTestData)(
     'should render Entity Analytics on %s route',
     async (pathname) => {

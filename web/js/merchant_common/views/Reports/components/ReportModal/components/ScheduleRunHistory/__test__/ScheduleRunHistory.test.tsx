@@ -21,6 +21,9 @@ describe('Schedule Run History Modal', () => {
           },
         }}
       />,
+      {
+        renderViaRouteGuard: false,
+      },
     );
   };
   it('should render component without any error', async () => {

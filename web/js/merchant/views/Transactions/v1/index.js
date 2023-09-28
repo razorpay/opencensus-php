@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-
+import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -17,7 +17,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { fetchOpen as fnFetchOpenDisputes } from 'merchant/reducers/disputes/details';
@@ -25,16 +25,7 @@ import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reduc
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import B2bPaymentsList from 'merchant/views/Transactions/v1/B2bPayments/List';
-import BatchPaymentsList from 'merchant/views/Transactions/v1/BatchPayments/List';
-import BatchRefundsUpload from 'merchant/views/Transactions/v1/BatchRefunds/BatchUpload';
-import BatchRefundsList from 'merchant/views/Transactions/v1/BatchRefunds/List';
-import DisputesList from 'merchant/views/Transactions/v1/Disputes/List';
-import OrdersList from 'merchant/views/Transactions/v1/Orders/List';
-import PaymentsList from 'merchant/views/Transactions/v1/Payments/List';
-import RefundsList from 'merchant/views/Transactions/v1/Refunds/List';
-import SuccessRate from 'merchant/views/Transactions/v1/SuccessRate';
-import UploadInvoice from 'merchant/views/Transactions/v1/UploadInvoice';
+
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import { trackSuccessRateEvents, visitSuccessRate } from './SuccessRate/trackEvents';
@@ -185,7 +176,7 @@ class TransactionsContainer extends Component {
             >
               <NavLink
                 to="/refunds"
-                exact
+                end
                 onClick={() => {
                   analyticsTrack({
                     objectName: 'transactions tab',
@@ -421,64 +412,7 @@ class TransactionsContainer extends Component {
 
           <content>
             <ErrorBoundary resetOnProps>
-              <Switch>
-                <ShowWhenRoute
-                  path="/refunds/batchupload"
-                  component={BatchRefundsUpload}
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                />
-                <ShowWhenRoute
-                  path="/refunds/batchuploads"
-                  component={BatchRefundsList}
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                />
-                <ShowWhenRoute
-                  path="/refunds"
-                  component={RefundsList}
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                />
-                <ShowWhenRoute
-                  path="/orders"
-                  component={OrdersList}
-                  additionalCondition={(usr) => usr.isAllowedView('orders')}
-                />
-                <ShowWhenRoute path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
-                <ShowWhenRoute path="/payments/batchuploads" component={BatchPaymentsList} />
-                <ShowWhenRoute
-                  path="/payments/invoices"
-                  component={UploadInvoice}
-                  additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
-                />
-                <ShowWhenRoute
-                  path="/payments/b2b-exports"
-                  component={B2bPaymentsList}
-                  additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
-                />
-                <Route path="/payments" component={PaymentsList} />
-                <Route
-                  path="/disputes"
-                  component={DisputesList}
-                  additionalCondition={(usr) =>
-                    usr.isAllowedView('refunds') &&
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
-                  }
-                />
-                <ShowWhenRoute
-                  path="/success-rate"
-                  component={SuccessRate}
-                  additionalCondition={(currentUser) =>
-                    mode === 'live' &&
-                    currentUser.isSuccessRateEnabled &&
-                    currentUser.isAllowedView('success_rate')
-                  }
-                />
-              </Switch>
+              <Outlet />
             </ErrorBoundary>
           </content>
 

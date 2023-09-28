@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
 import moment from 'moment';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Dropdown from 'common/components/Dropdown';
 import { Option } from 'common/components/Dropdown/types';

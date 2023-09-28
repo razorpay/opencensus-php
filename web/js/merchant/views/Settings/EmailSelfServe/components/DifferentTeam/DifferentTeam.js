@@ -1,7 +1,7 @@
 import React from 'react';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { showNotification } from 'merchant_common/reducers/notifications';

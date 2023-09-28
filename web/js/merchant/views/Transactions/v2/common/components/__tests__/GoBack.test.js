@@ -7,9 +7,9 @@ jest.setTimeout(35000);
 
 describe('GoBack', () => {
   const onClickCb = jest.fn();
-  const renderApp = ({ historyOptions, onClickCb } = {}) =>
+  const renderApp = ({ initialEntries, onClickCb } = {}) =>
     render(<App onClickCb={onClickCb} />, {
-      historyOptions,
+      initialEntries,
     });
 
   test('should have "Go Back" as Text', () => {
@@ -29,18 +29,25 @@ describe('GoBack', () => {
     history.push = jest.fn();
     const GoBackCTA = screen.getByText('Go Back');
     await userEvent.click(GoBackCTA);
-    expect(history.push).toHaveBeenCalledWith('/payments');
+    expect(history.push).toHaveBeenCalledWith(
+      { hash: '', pathname: '/payments', search: '' },
+      undefined,
+      {},
+    );
   });
 
   test('should go to back to previous route when it is clicked with prevPath', async () => {
     const prevPath = '/previous';
-    const historyOptions = {
-      initialEntries: [{ pathname: '/current', state: { prevPath } }],
-    };
-    const { history } = renderApp({ historyOptions });
+    const { history } = renderApp({
+      initialEntries: [{ pathname: '/', state: { prevPath } }],
+    });
     history.push = jest.fn();
     const GoBackCTA = screen.getByText('Go Back');
     await userEvent.click(GoBackCTA);
-    expect(history.push).toHaveBeenCalledWith(prevPath);
+    expect(history.push).toHaveBeenCalledWith(
+      { hash: '', pathname: '/previous', search: '' },
+      undefined,
+      {},
+    );
   });
 });

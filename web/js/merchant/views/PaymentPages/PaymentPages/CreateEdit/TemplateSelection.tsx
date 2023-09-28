@@ -27,7 +27,8 @@ import {
   ArrowRightIcon,
   CloseIcon,
 } from '@razorpay/blade/components';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 // import 'react-responsive-carousel/lib/styles/carousel.min.css'; // requires a loader
 
 interface IProps extends RouteComponentProps {

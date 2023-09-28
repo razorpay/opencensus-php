@@ -57,7 +57,10 @@ const FooterLine = ({ user }) => {
         )}
         &#169; {`${user.isOrgRZP ? '2017' : '2018'}-${currentYear}`} Copyright Razorpay
         <ShowWhen
-          additionalCondition={(userObj) => userObj.isOrgAllowedFunctionality('external_links')}
+          additionalCondition={(userObj) =>
+            userObj?.isOrgAllowedFunctionality &&
+            userObj.isOrgAllowedFunctionality('external_links')
+          }
         >
           {' '}
           ·{' '}

@@ -24,7 +24,9 @@ const validatePopularSearches = () => {
 };
 
 const renderApp = ({ props }: { props?: Record<string, any> }) =>
-  render(<ProductListing {...defaultProps} {...props} />);
+  render(<ProductListing {...defaultProps} {...props} />, {
+    renderViaRouteGuard: false,
+  });
 
 describe('ProductListing', () => {
   test('should render popular products listing', () => {

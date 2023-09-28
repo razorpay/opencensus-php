@@ -1,29 +1,26 @@
 import React from 'react';
-import { Route, Switch, Redirect, withRouter, NavLink } from 'react-router-dom';
+import { Route, Routes, Navigate, NavLink } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import AsyncButton from 'razorx/components/ui/AsyncButton';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import ModalContainer, { notifyError } from 'razorx/components/Modal';
 import MainNavLink from 'razorx/components/MainNavLink';
-
+import ModalContainer, { notifyError } from 'razorx/components/Modal';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
+import adminFetch from 'razorx/helpers/admin-fetch';
 import { org } from 'razorx/user';
-
 import Experiments from 'razorx/views/Experiments';
 import Features from 'razorx/views/Features';
-import WorkflowRequestsList from 'razorx/views/WorkflowRequests/List';
-import WorkflowRequestsEntity from 'razorx/views/WorkflowRequests/Entity';
 import MerchantEvaluation from 'razorx/views/MerchantEvaluation';
-import adminFetch from 'razorx/helpers/admin-fetch';
-
-import SplitzProjects from 'razorx/views/Splitz/Projects';
 import SplitzExclusionGroups from 'razorx/views/Splitz/ExclusionGroups';
-import SplitzExperiments from 'razorx/views/Splitz/Experiments';
 import SplitzExperimentTester from 'razorx/views/Splitz/ExperimentTester';
+import SplitzExperiments from 'razorx/views/Splitz/Experiments';
+import SplitzProjects from 'razorx/views/Splitz/Projects';
 import SplitzSegments from 'razorx/views/Splitz/Segments';
+import WorkflowRequestsEntity from 'razorx/views/WorkflowRequests/Entity';
+import WorkflowRequestsList from 'razorx/views/WorkflowRequests/List';
 
-@withRouter
-export default class RazorXApp extends React.Component {
+class RazorXApp extends React.Component {
   UNSAFE_componentWillMount() {
     loadCodeEditor();
   }
@@ -48,32 +45,26 @@ export default class RazorXApp extends React.Component {
             <TransitionGroup id="main-routes">
               <CSSTransition key={paths[1] || paths[0]} classNames="slide" timeout={420}>
                 <div>
-                  <Switch location={this.props.location}>
+                  <Routes location={this.props.location}>
                     {/* Splitz Routes */}
-                    <Route path="/splitz/projects/:id?" component={SplitzProjects} exact />
-                    <Route path="/splitz/groups/:id?" component={SplitzExclusionGroups} exact />
-                    <Route path="/splitz/experiments/:id?" component={SplitzExperiments} exact />
-                    <Route path="/splitz/segments/:id?" component={SplitzSegments} exact />
-                    <Route
-                      path="/splitz/experiment-tester"
-                      component={SplitzExperimentTester}
-                      exact
-                    />
+                    <Route path="splitz/*">
+                      <Route path="projects/:id?/*" element={<SplitzProjects />} />
+                      <Route path="groups/:id?/*" element={<SplitzExclusionGroups />} />
+                      <Route path="experiments/:id?/*" element={<SplitzExperiments />} />
+                      <Route path="segments/:id?/*" element={<SplitzSegments />} />
+                      <Route path="experiment-tester/*" element={<SplitzExperimentTester />} />
+                    </Route>
 
                     {/* RazorX Routes */}
-                    <Route path="/experiments/:id?" component={Experiments} exact />
-                    <Route path="/features_flags/:id?" component={Features} exact />
-                    <Route path="/requests" component={WorkflowRequestsList} exact />
-                    <Route
-                      path="/requests/:id(w_action_.+)"
-                      component={WorkflowRequestsEntity}
-                      exact
-                    />
-                    <Route path="/merchant-evaluation" component={MerchantEvaluation} />
+                    <Route path="/experiments/:id?" element={<Experiments />} />
+                    <Route path="/features_flags/:id?" element={<Features />} />
+                    <Route path="/requests" element={<WorkflowRequestsList />} />
+                    <Route path="/requests/:id" element={<WorkflowRequestsEntity />} />
+                    <Route path="/merchant-evaluation" element={<MerchantEvaluation />} />
 
-                    <Redirect from="/splitz" to="/splitz/experiments" />
-                    <Redirect from="/" to="/experiments" />
-                  </Switch>
+                    <Route path="/splitz" element={<Navigate to="/splitz/experiments" replace />} />
+                    <Route path="*" element={<Navigate to="/experiments" replace />} />
+                  </Routes>
                 </div>
               </CSSTransition>
             </TransitionGroup>
@@ -205,3 +196,5 @@ function loadCodeEditor() {
 
   document.head.appendChild(script);
 }
+
+export default withRouter(RazorXApp);

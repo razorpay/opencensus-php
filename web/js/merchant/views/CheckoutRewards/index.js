@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
@@ -5,7 +6,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 
 import Rewards from 'merchant/views/CheckoutRewards/Rewards';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Routes, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -23,7 +24,8 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import { withRouter } from 'common/deprecated/withRouter';
 
 @connect(
   (state) => {
@@ -38,7 +40,7 @@ import DashboardBanner from '../../../common/ui/DashboardBanner';
   },
 )
 @RTracking(() => window.rzpQ.component('CheckoutRewardsIndex'))
-export default class CheckoutRewardsIndex extends Component {
+class CheckoutRewardsIndex extends Component {
   componentDidMount() {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('CheckoutRewards_rendered'),
@@ -107,7 +109,7 @@ export default class CheckoutRewardsIndex extends Component {
         </div>
         <tabbed-container>
           <header id="link-header">
-            <NavLink exact to="/checkout-rewards">
+            <NavLink end to="/checkout-rewards">
               Checkout Rewards
             </NavLink>
           </header>
@@ -115,39 +117,44 @@ export default class CheckoutRewardsIndex extends Component {
           <TestModeBanner />
 
           <ErrorBoundary resetOnProps>
-            <Switch>
-              <Route path="/checkout-rewards">
-                <content>
-                  <div className="content-wrapper">
-                    <HeaderAction>
-                      <div className="btn-toolbar pull-right">
-                        <a
-                          href="https://razorpay.com/checkout-rewards-merchant-terms/"
-                          target="_blank"
-                          className="btn btn-link"
-                          rel="noreferrer noopener"
-                        >
-                          Merchant Terms
-                        </a>
+            <Routes>
+              <Route
+                index
+                element={
+                  <content>
+                    <div className="content-wrapper">
+                      <HeaderAction>
+                        <div className="btn-toolbar pull-right">
+                          <a
+                            href="https://razorpay.com/checkout-rewards-merchant-terms/"
+                            target="_blank"
+                            className="btn btn-link"
+                            rel="noreferrer noopener"
+                          >
+                            Merchant Terms
+                          </a>
 
-                        <ShowWhen additionalCondition={(currentUser) => !currentUser.isOrgAxis}>
-                          <TakeATourButton feature={RZPFeatures.REWARDS} />
-                        </ShowWhen>
-                        <DocsLink
-                          url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
-                          onClick={this.documentationClicked}
-                        />
-                      </div>
-                    </HeaderAction>
-                    <Alert type={status.type} message={status.message} />
-                    <Rewards {...this.props} />
-                  </div>
-                </content>
-              </Route>
-            </Switch>
+                          <ShowWhen additionalCondition={(currentUser) => !currentUser.isOrgAxis}>
+                            <TakeATourButton feature={RZPFeatures.REWARDS} />
+                          </ShowWhen>
+                          <DocsLink
+                            url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
+                            onClick={this.documentationClicked}
+                          />
+                        </div>
+                      </HeaderAction>
+                      <Alert type={status.type} message={status.message} />
+                      <Rewards {...this.props} />
+                    </div>
+                  </content>
+                }
+              />
+            </Routes>
           </ErrorBoundary>
         </tabbed-container>
       </div>
     );
   }
 }
+
+export default withRouter(CheckoutRewardsIndex);

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import InternationalCards from './InternationalCards';
 import PaypalOnboardingButton from './PaypalOnboarding';
 import { DocLink } from 'merchant/components/DocsLink';

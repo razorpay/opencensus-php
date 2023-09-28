@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, Suspense } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
 import { SpiltzServiceProviderProps, VariantConfigArgs } from 'common/splitz/types';
 import { splitzConfig } from 'common/splitz/configs';

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import rTracking from 'react-tracking';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';

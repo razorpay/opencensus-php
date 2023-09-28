@@ -1,6 +1,6 @@
 import WidgetSetup from './Setup';
 import EnableWidgetButton from './EnableWidget';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useState, useEffect, Fragment } from 'react';
 import { platformTitleMapping, platformIdMapping } from './data';
 import { compose } from 'redux';
@@ -198,7 +198,7 @@ export const PlatformSetup = (props) => {
   useEffect(() => {
     track.setupPage(platform === 'others' ? 'native' : platform);
   }, []);
-
+  console.log('---->');
   return (
     <WidgetSetup
       enabled={affordability.enabled}

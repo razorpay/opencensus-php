@@ -21,7 +21,7 @@ describe('PayoutDetails', () => {
     render(<PayoutDetails {...props} />, {
       path: '/instantsettlement_details/:id',
       initialState,
-      historyOptions: { initialEntries: [initialEntry] },
+      initialEntries: [initialEntry],
     });
 
   beforeEach(() => {

@@ -24,6 +24,21 @@ describe('Tests for the Pricing Plans page', () => {
     expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(1);
   });
 
+  test('Should show default error message if the subscriptions API fails', async () => {
+    server.use(fetchEnrollmentStatusHandler({ exists: 'true', delay: 0 }));
+    // api level status is somethings always sent back in res if data is there
+    server.use(
+      fetchSubscriptionsDataHandler({ delay: 0, gsLevelStatus: 400, apiLevelStatus: 200 }),
+    );
+
+    const initialState = getState();
+    renderApp(initialState);
+
+    const errorMessageEl = await waitFor(() => screen.findByText(defaultErrorMessage));
+
+    expect(errorMessageEl).toBeInTheDocument();
+  });
+
   test('Should show the loader when exists API is being called', async () => {
     server.use(fetchEnrollmentStatusHandler());
     const initialState = getState();
@@ -45,6 +60,17 @@ describe('Tests for the Pricing Plans page', () => {
     await waitFor(() => {
       expect(screen.getByText(message)).toBeInTheDocument();
     });
+  });
+
+  test('Should show default error message if status cannot be determined', async () => {
+    server.use(fetchEnrollmentStatusHandler({ exists: 'true', delay: 0 }));
+    server.use(fetchSubscriptionsDataHandler({ delay: 0, subscriptionStatus: 'anything' }));
+    const initialState = getState();
+    renderApp(initialState);
+
+    const errorMessageEl = await waitFor(() => screen.findByText(defaultErrorMessage));
+
+    expect(errorMessageEl).toBeInTheDocument();
   });
 
   test('Should call the subscriptions API when exists API returns true', async () => {
@@ -71,28 +97,5 @@ describe('Tests for the Pricing Plans page', () => {
 
     expect(loaderContainerEl).toBeInTheDocument();
     expect(progressBarEl).toBeInTheDocument();
-  });
-
-  test('Should show default error message if the subscriptions API fails', async () => {
-    server.use(fetchEnrollmentStatusHandler({ exists: 'true', delay: 0 }));
-    server.use(fetchSubscriptionsDataHandler({ delay: 0, gsLevelStatus: 400 }));
-
-    const initialState = getState();
-    renderApp(initialState);
-
-    const errorMessageEl = await waitFor(() => screen.findByText(defaultErrorMessage));
-
-    expect(errorMessageEl).toBeInTheDocument();
-  });
-
-  test('Should show default error message if status cannot be determined', async () => {
-    server.use(fetchEnrollmentStatusHandler({ exists: 'true', delay: 0 }));
-    server.use(fetchSubscriptionsDataHandler({ delay: 0, subscriptionStatus: 'anything' }));
-    const initialState = getState();
-    renderApp(initialState);
-
-    const errorMessageEl = await waitFor(() => screen.findByText(defaultErrorMessage));
-
-    expect(errorMessageEl).toBeInTheDocument();
   });
 });

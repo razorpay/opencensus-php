@@ -34,7 +34,7 @@ export const matchRoutes = (routes: RouteMatchConfig[], historyPathName: string)
         return (route as RegExp).test(historyPathName);
       case typeof route === 'string':
       case Boolean((route as RouteObject)?.path):
-        return Boolean(matchPath(historyPathName, route as RouteObject));
+        return Boolean(matchPath(route as RouteObject, historyPathName));
       default:
         return false;
     }

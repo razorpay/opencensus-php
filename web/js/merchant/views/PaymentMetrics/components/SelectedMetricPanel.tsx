@@ -3,7 +3,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { METHOD_LEVEL_CR, GRAPHS_DATA } from 'merchant/views/PaymentMetrics/constants';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import PaymentMetricsFilter from './PaymentMetricsFilter';
 import {
   SelectedMetricsContainer,

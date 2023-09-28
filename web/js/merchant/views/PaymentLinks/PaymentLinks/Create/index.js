@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 import PropTypes from 'prop-types';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -160,7 +160,6 @@ function WizardFields(field) {
   return component;
 }
 
-@withRouter
 @connect(
   (state) => {
     const namespace = state.session.user.isPaymentlinksV2Enabled
@@ -207,7 +206,7 @@ function WizardFields(field) {
   },
 )
 @RTracking(() => window.rzpQ.component('CreateNewContainer'))
-export default class CreateNewContainer extends React.Component {
+class CreateNewContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -914,3 +913,5 @@ class CreateWizard extends React.Component {
     );
   }
 }
+
+export default withRouter(CreateNewContainer);

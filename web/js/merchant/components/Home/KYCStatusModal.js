@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { kycModalContent } from './KycStatusModalContent';
 import rTracking from 'react-tracking';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';

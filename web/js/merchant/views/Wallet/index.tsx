@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Route, Switch, Redirect } from 'react-router-dom';
+import { NavLink, Route, Routes, Navigate } from 'react-router-dom';
 
 import Funds from 'merchant/views/Wallet/Funds';
 import Accounts from 'merchant/views/Wallet/Accounts';
@@ -12,7 +12,7 @@ import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import BatchActions from 'merchant/views/Wallet/BatchActions';
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import BatchOptions from 'merchant/views/Wallet/BatchActions/BatchOptions';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { walletPaths } from './constants';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
@@ -37,7 +37,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
             <NavLink to={walletPaths.accounts}>Accounts</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>
-            <NavLink to={walletPaths.transactions} exact>
+            <NavLink to={walletPaths.transactions} end>
               Transactions
             </NavLink>
           </ShowWhen>
@@ -72,17 +72,66 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
           </ShowWhen>
         </header>
         <div className="content">
-          <Switch>
-            <Route path={walletPaths.accountDetail} component={Accounts} />
-            <Route path={walletPaths.accounts} component={Accounts} />
-            <Route path={walletPaths.batchActions} component={BatchActions} />
-            <Route path={walletPaths.transactions} component={Transactions} />
-            <Route path={walletPaths.funds} component={Funds} />
-            <Route path={walletPaths.payments} component={Payments} />
-            <Route path={walletPaths.loads} component={Loads} />
+          <Routes>
+            <Route
+              path={`${walletPaths.accountDetail.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Accounts />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.accounts.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Accounts />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.batchActions.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <BatchActions />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.transactions.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Transactions />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.funds.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Funds />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.payments.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Payments />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path={`${walletPaths.loads.replace('/wallet/', '')}/*`}
+              element={
+                <RouteGuard>
+                  <Loads />
+                </RouteGuard>
+              }
+            />
 
-            <Redirect exact from={walletPaths.wallet} to={walletPaths.funds} />
-          </Switch>
+            <Route index element={<Navigate to={walletPaths.funds} replace />} />
+          </Routes>
         </div>
       </div>
     </SessionContext.Provider>

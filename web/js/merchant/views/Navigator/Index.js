@@ -1,18 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 
-import store from 'merchant/store';
-import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
-import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
-import lazy from 'merchant/routes/LazyLoader';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { ShowWhenRoute as showWhenRouteWithDefaultPath } from 'merchant_common/components/ShowWhen';
-
+import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
+import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import lazy from 'merchant/routes/LazyLoader';
+import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { shouldShowRules, shouldShowOnBoarding } from 'merchant/views/Navigator/components/util';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 const AddProvider = lazy(() =>
   import(/* webpackChunkName: 'AddProvider' */ 'merchant/views/Navigator/components/AddProvider'),
@@ -42,7 +39,7 @@ const OnBoarding = lazy(() =>
     fetchTerminalProviders,
   },
 )
-export default class Navigator extends React.Component {
+class Navigator extends React.Component {
   componentDidMount() {
     const { fetchRules, fetchTerminalProviders } = this.props;
     fetchRules();
@@ -52,36 +49,71 @@ export default class Navigator extends React.Component {
 
   render() {
     const { user } = this.props;
-    const ShowWhenRouteWithRulesDefaultPath = showWhenRouteWithDefaultPath(
-      store,
-      '/optimizer/onboarding',
-    );
+
     const redirectionURL = shouldShowRules(user) ? '/optimizer/rules' : '/optimizer/onboarding';
 
     return (
       <div className="routing-navigator">
         <ErrorBoundary resetOnProps>
           <SuspenseWithLoader type="center">
-            <Switch>
-              <Route path="/optimizer/add-provider" component={AddProvider} />
-              <Route path="/optimizer/update-provider/:id" component={AddProvider} />
-              <Route path="/optimizer/create-rule" component={CreateRule} />
-              <ShowWhenRouteWithRulesDefaultPath
-                path="/optimizer/rules"
-                component={RuleList}
-                additionalCondition={shouldShowRules}
+            <Routes>
+              <Route
+                path="add-provider/*"
+                element={
+                  <RouteGuard>
+                    <AddProvider />
+                  </RouteGuard>
+                }
               />
-              <Route path="/optimizer/update-rule/:id" component={CreateRule} />
-              <ShowWhenRoute
-                path="/optimizer/onboarding"
-                component={OnBoarding}
-                additionalCondition={(user) => shouldShowOnBoarding(user) || shouldShowRules(user)}
+              <Route
+                path="update-provider/:id/*"
+                element={
+                  <RouteGuard>
+                    <AddProvider />
+                  </RouteGuard>
+                }
               />
-              <Redirect to={redirectionURL} />
-            </Switch>
+
+              <Route
+                path="create-rule/*"
+                element={
+                  <RouteGuard>
+                    <CreateRule />
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path="rules/*"
+                element={
+                  <RouteGuard defaultPath="onboarding/*" additionalCondition={shouldShowRules}>
+                    <RuleList />
+                  </RouteGuard>
+                }
+              />
+
+              <Route path="update-rule/:id/*" element={<CreateRule />} />
+
+              <Route
+                path="onboarding/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      shouldShowOnBoarding(user) || shouldShowRules(user)
+                    }
+                  >
+                    <OnBoarding />
+                  </RouteGuard>
+                }
+              />
+
+              <Route element={<Navigate to={redirectionURL} replace />} />
+            </Routes>
           </SuspenseWithLoader>
         </ErrorBoundary>
       </div>
     );
   }
 }
+
+export default withRouter(Navigator);

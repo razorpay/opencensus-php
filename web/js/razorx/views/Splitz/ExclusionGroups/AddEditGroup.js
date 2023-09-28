@@ -1,14 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ModalContent } from 'common/new-ui/Modal';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, { TextAreaField, SearchableSelectField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-@withRouter
-export default class AddEditGroup extends React.Component {
+class AddEditGroup extends React.Component {
   state = {
     isSaving: false,
     isFetchingProjects: true,
@@ -148,3 +147,5 @@ AddEditGroup.propTypes = {
   collection: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
 };
+
+export default withRouter(AddEditGroup);

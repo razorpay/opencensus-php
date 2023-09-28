@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { toggleMobileMenu } from 'merchantLA/reducers/app';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
-
-@withRouter
 @connect(
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
   }),
   { toggleMobileMenu },
 )
-export default class Sidebar extends Component {
+class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.hideSidebar = this.hideSidebar.bind(this);
@@ -47,39 +46,27 @@ export default class Sidebar extends Component {
             </Link>
           </section>
           <nav>
-            {do {
-              if (!isMerchant) {
-                null;
-              } else {
-                <div class="nav">
-                  {/*
-                  <MainNavLink
-                    label="Home"
-                    icon="i i-chart text-info"
-                    to="/dashboard"
-                    exact
-                  />
-*/}
-                  <MainNavLink
-                    label="Transfers"
-                    icon="i i-transfers text-primary"
-                    to={routes.transfers}
-                  />
-                  <MainNavLink label="Reversals" icon="i i-undo text-warm" to={routes.reversals} />
-                  <MainNavLink
-                    label="Settlements"
-                    icon="i i-done-all text-success"
-                    to="/settlements"
-                  />
-                  <MainNavLink label="Reports" icon="i i-books text-danger" to="/reports" />
-                  <MainNavLink
-                    label="Account Settings"
-                    icon="i i-account text-primary"
-                    to={routes.account}
-                  />
-                </div>;
-              }
-            }}
+            {!isMerchant ? null : (
+              <div class="nav">
+                <MainNavLink
+                  label="Transfers"
+                  icon="i i-transfers text-primary"
+                  to={routes.transfers}
+                />
+                <MainNavLink label="Reversals" icon="i i-undo text-warm" to={routes.reversals} />
+                <MainNavLink
+                  label="Settlements"
+                  icon="i i-done-all text-success"
+                  to="/settlements"
+                />
+                <MainNavLink label="Reports" icon="i i-books text-danger" to="/reports" />
+                <MainNavLink
+                  label="Account Settings"
+                  icon="i i-account text-primary"
+                  to={routes.account}
+                />
+              </div>
+            )}
           </nav>
         </div>
         {showMobileMenu && <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />}
@@ -87,3 +74,5 @@ export default class Sidebar extends Component {
     );
   }
 }
+
+export default withRouter(Sidebar);

@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
@@ -58,7 +58,7 @@ export const CONTACT_PLACEHOLDER = {
 };
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect(
   (state) => ({
     user: state.session.user,
@@ -79,7 +79,7 @@ export const CONTACT_PLACEHOLDER = {
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
-export default class PaymentLinkCreateV2 extends React.Component {
+class PaymentLinkCreateV2 extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -504,3 +504,5 @@ export default class PaymentLinkCreateV2 extends React.Component {
     );
   }
 }
+
+export default withRouter(PaymentLinkCreateV2);

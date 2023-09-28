@@ -2,7 +2,7 @@ import Breadcrumb from 'common/components/Breadcrumb';
 import Loader from 'common/components/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import {
@@ -25,8 +25,9 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Redirect, Route, Switch } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { BusinessSettingsProps } from './typings';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const AccountDetails = lazy(
   () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
@@ -82,10 +83,14 @@ const TeamInvitations = lazy(
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {
   if (!user.isAccountAndSettingsRevampEnabled) {
     const path = location.pathname;
-    if (path === ROUTES_INFO.MANAGE_TEAM_DETAILS) return <Redirect to="/team" />;
+    if (path === ROUTES_INFO.MANAGE_TEAM_DETAILS) return <Navigate to="/team" replace />;
     // apart from manage teams, all sections are taken out of profile page
-    else return <Redirect to="/profile" />;
+    else return <Navigate to="/profile" replace />;
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/business-settings/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -122,14 +127,14 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <ShowWhen additionalCondition={(user) => isSupportTicketEnabled(user)}>
             <NavLink
               to="/business-settings/ticket-support/tickets"
-              isActive={() => {
-                const businessConversationRegEXP =
-                  '^/business-settings/ticket-support/([^/]+)/([^/]+)/([^/]+)/conversation$';
-                return !!(
-                  location.pathname === '/business-settings/ticket-support/tickets' ||
-                  location.pathname.match(businessConversationRegEXP)
-                );
-              }}
+              // isActive={() => {
+              //   const businessConversationRegEXP =
+              //     '^/business-settings/ticket-support/([^/]+)/([^/]+)/([^/]+)/conversation$';
+              //   return !!(
+              //     location.pathname === '/business-settings/ticket-support/tickets' ||
+              //     location.pathname.match(businessConversationRegEXP)
+              //   );
+              // }}
             >
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
             </NavLink>
@@ -140,81 +145,95 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <main>
-                <Switch>
+                <Routes>
                   <Route
-                    path={ROUTES_INFO.ACCOUNT_DETAILS}
-                    component={user.isContactDetailsRevamp ? AccountDetailsV2 : AccountDetails}
-                  />
-                  <Route
-                    path={ROUTES_INFO.ACTIVATION_DETAILS}
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <ActivationDetails {...props} />
-                      </StyledTabContentContainer>
-                    )}
+                    path={getRefRoute(ROUTES_INFO.ACCOUNT_DETAILS)}
+                    element={
+                      user.isContactDetailsRevamp ? <AccountDetailsV2 /> : <AccountDetails />
+                    }
                   />
                   <Route
-                    path={ROUTES_INFO.BUSINESS_DETAILS}
-                    component={(props) => (
+                    element={
                       <StyledTabContentContainer className="content">
-                        <BusinessDetails {...props} />
+                        <Outlet />
                       </StyledTabContentContainer>
-                    )}
-                  />
-                  <Route
-                    path={ROUTES_INFO.GST_DETAILS}
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <GSTDetails {...props} />
-                      </StyledTabContentContainer>
-                    )}
-                  />
-                  <Route
-                    path={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        {user.isContactDetailsRevamp ? (
-                          <CustomerSupportDetailsV2 {...props} />
-                        ) : (
-                          <CustomerSupportDetails {...props} />
-                        )}
-                      </StyledTabContentContainer>
-                    )}
-                  />
-                  <Route
-                    path={ROUTES_INFO.MANAGE_TEAM_DETAILS}
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <TeamDetails {...props} />
-                      </StyledTabContentContainer>
-                    )}
-                  />
-                  <Route
-                    path="/business-settings/ticket-support/tickets"
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <SupportTickets {...props} />
-                      </StyledTabContentContainer>
-                    )}
-                  />
-                  <Route
-                    path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <Conversations {...props} />
-                      </StyledTabContentContainer>
-                    )}
-                  />
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.TEAM_INVITATIONS}
-                    component={(props) => (
-                      <StyledTabContentContainer className="content">
-                        <TeamInvitations {...props} />
-                      </StyledTabContentContainer>
-                    )}
-                    additionalCondition={(user) => shouldShowTeamInvitations(user)}
-                  />
-                </Switch>
+                    }
+                  >
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.ACTIVATION_DETAILS)}
+                      element={
+                        <RouteGuard>
+                          <ActivationDetails />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.BUSINESS_DETAILS)}
+                      element={
+                        <RouteGuard>
+                          <BusinessDetails />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.GST_DETAILS)}
+                      element={
+                        <RouteGuard>
+                          <GSTDetails />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS)}
+                      element={
+                        <RouteGuard>
+                          {user.isContactDetailsRevamp ? (
+                            <CustomerSupportDetailsV2 />
+                          ) : (
+                            <CustomerSupportDetails />
+                          )}
+                        </RouteGuard>
+                      }
+                    />
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.MANAGE_TEAM_DETAILS)}
+                      element={
+                        <RouteGuard>
+                          <TeamDetails />
+                        </RouteGuard>
+                      }
+                    />
+
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.TEAM_INVITATIONS)}
+                      element={
+                        <RouteGuard additionalCondition={(user) => shouldShowTeamInvitations(user)}>
+                          <TeamInvitations />
+                        </RouteGuard>
+                      }
+                    />
+
+                    <Route path="ticket-support/*">
+                      <Route
+                        path="tickets/*"
+                        element={
+                          <RouteGuard>
+                            <SupportTickets />
+                          </RouteGuard>
+                        }
+                      />
+                      <Route
+                        path=":instance/:id/:ticketType/conversation/*"
+                        element={
+                          <RouteGuard>
+                            <Conversations />
+                          </RouteGuard>
+                        }
+                      />
+                    </Route>
+                  </Route>
+                </Routes>
               </main>
             </StyledDivider>
           </Suspense>
@@ -228,4 +247,4 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
 });
 
-export default connect(mapStateToProps, null)(BusinessSettings);
+export default withRouter(connect(mapStateToProps, null)(BusinessSettings));

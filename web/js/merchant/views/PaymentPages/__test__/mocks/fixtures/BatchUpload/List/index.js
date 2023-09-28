@@ -26,15 +26,16 @@ const renderApp = (initialState = {}, props = {}, showModal = false) => {
       ...globalState,
       session: {
         ...globalState.session,
-        user: initialState?.session?.user ?? globalState?.session?.user,
+        user: {
+          ...(initialState?.session?.user ?? globalState?.session?.user),
+          isOrgAllowedFunctionality: () => true,
+        },
         org: initialState?.session?.org ?? globalState?.session?.org,
       },
       wysiwyg: globalState.wysiwyg,
     },
     renderOptions: {
-      historyOptions: {
-        initialEntries: ['/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501'],
-      },
+      initialEntries: ['/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501'],
       path: '/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501',
     },
   });

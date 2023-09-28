@@ -50,6 +50,7 @@ const state = {
       isOrgAllowedFunctionality,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
+      findTag: () => false,
       merchant: {
         country_code: 'IN',
       },

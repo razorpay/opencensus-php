@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import React from 'react';
 
 @connect((state) => {
   return state;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { compose } from 'redux';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';

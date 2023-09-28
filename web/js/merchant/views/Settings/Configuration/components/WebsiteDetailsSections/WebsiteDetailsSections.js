@@ -1,6 +1,6 @@
 import { ExternalLinkIcon, Link, Text } from '@razorpay/blade/components';
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Content, ListItem, Order } from './Styled';
 
 const WebsiteDetailsSections = ({ history, closeModal, websiteInfo: { websitesData = [] } }) => {

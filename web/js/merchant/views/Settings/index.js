@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { Route, NavLink, withRouter, Redirect } from 'react-router-dom';
+import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/views/Settings/Reminders';
@@ -22,6 +23,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPaymentMethodEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { matchByRoute } from 'common/utils/matchByRoute';
 
 const { ACCOUNT_AND_SETTINGS, API_KEYS, WEBHOOKS, REMINDERS } = ROUTES_INFO;
 
@@ -81,15 +83,15 @@ class Settings extends Component {
 
     if (user.isAccountAndSettingsRevampEnabled) {
       if (pathname === '/webhooks') {
-        return <Redirect to={WEBHOOKS} />;
+        return <Navigate to={WEBHOOKS} replace />;
       }
       if (pathname === '/keys') {
-        return <Redirect to={API_KEYS} />;
+        return <Navigate to={API_KEYS} replace />;
       }
       if (pathname === '/reminders') {
-        return <Redirect to={REMINDERS} />;
+        return <Navigate to={REMINDERS} replace />;
       }
-      return <Redirect to={ACCOUNT_AND_SETTINGS} />;
+      return <Navigate to={ACCOUNT_AND_SETTINGS} replace />;
     }
 
     return (
@@ -182,53 +184,83 @@ class Settings extends Component {
           <TestModeBanner />
           <ErrorBoundary resetOnProps>
             <content>
-              <Route
-                path="/config"
-                render={(props) => (
-                  <Configuration
-                    {...props}
-                    isOldFlow
-                    showBranding
-                    showMissedOrderPaymentLink
-                    showFlashCheckout
-                    showPaymentSettings
-                    showDefaultRefundSpeed
-                    showFirc
-                    showFeeBearer
-                    showInternationalPayments
-                    showEmailNotifications
-                    showSmsNotifications
-                    showWhatsappNotifications
-                    showSkipMandatorySummaryPage
-                    showAnnouncements
+              <Routes>
+                <Route
+                  path={matchByRoute(pathname, '/config')}
+                  element={
+                    <RouteGuard>
+                      <Configuration
+                        isOldFlow
+                        showBranding
+                        showMissedOrderPaymentLink
+                        showFlashCheckout
+                        showPaymentSettings
+                        showDefaultRefundSpeed
+                        showFirc
+                        showFeeBearer
+                        showInternationalPayments
+                        showEmailNotifications
+                        showSmsNotifications
+                        showWhatsappNotifications
+                        showSkipMandatorySummaryPage
+                        showAnnouncements
+                      />
+                    </RouteGuard>
+                  }
+                />
+                <Route
+                  path={matchByRoute(pathname, '/webhooks')}
+                  element={
+                    <RouteGuard>
+                      <Webhooks />
+                    </RouteGuard>
+                  }
+                />
+                <Route
+                  path={matchByRoute(pathname, '/keys')}
+                  element={
+                    <RouteGuard>
+                      <ApiKeys
+                        onWebsiteAdd={this.onWebsiteAdd}
+                        isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                      />
+                    </RouteGuard>
+                  }
+                />
+
+                <Route
+                  path={matchByRoute(pathname, '/reminders')}
+                  element={
+                    <RouteGuard
+                      additionalCondition={(user) =>
+                        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
+                      }
+                    >
+                      <Reminders />
+                    </RouteGuard>
+                  }
+                />
+
+                {this.state.isConnectedAppsFound ? (
+                  <Route
+                    path={matchByRoute(pathname, '/applications')}
+                    element={
+                      <RouteGuard>
+                        <Applications />
+                      </RouteGuard>
+                    }
                   />
-                )}
-              />
-              <Route path="/webhooks" component={Webhooks} />
-              <Route
-                path="/keys"
-                component={(props) => (
-                  <ApiKeys
-                    {...props}
-                    onWebsiteAdd={this.onWebsiteAdd}
-                    isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
-                  />
-                )}
-              />
+                ) : null}
 
-              <ShowWhenRoute
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
-                }
-                path="/reminders"
-                component={Reminders}
-              />
-
-              {this.state.isConnectedAppsFound ? (
-                <Route exact path="/applications" component={Applications} />
-              ) : null}
-
-              <Route path={ROUTES_INFO.PAYMENT_METHODS} component={PaymentMethods} />
+                <Route
+                  path={matchByRoute(pathname, ROUTES_INFO.PAYMENT_METHODS)}
+                  element={
+                    <RouteGuard>
+                      <PaymentMethods />
+                    </RouteGuard>
+                  }
+                />
+              </Routes>
             </content>
           </ErrorBoundary>
         </tabbed-container>

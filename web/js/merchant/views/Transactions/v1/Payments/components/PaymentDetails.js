@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -317,8 +318,8 @@ function PaymentDetails(props) {
                       Capture Payment
                     </button>
                     <ShowWhen
-                      additionalCondition={(user) =>
-                        !isOrgFeatureExist('block_payment_refund') &&
+                      additionalCondition={(user, session) =>
+                        !(session?.org?.features?.indexOf('block_payment_refund') > -1) &&
                         !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
                       }
                     >

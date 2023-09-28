@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { rupeesToPaise } from 'common/utils/rzp-utils';
@@ -136,7 +136,7 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
 ];
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect((state) => ({ user: state.session.user, org: state.session.org }), {
   openModal,
   closeModal,
@@ -146,7 +146,7 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
   createRegistrationLink,
 })
 @RTracking(() => window.rzpQ.component('CreateNewRegistrationLinkContainer'))
-export default class NewRegistrationLink extends React.Component {
+class NewRegistrationLink extends React.Component {
   constructor(props) {
     super(props);
 
@@ -943,3 +943,5 @@ function getTabs(showTokenDetails) {
 
   return tabs;
 }
+
+export default withRouter(NewRegistrationLink);

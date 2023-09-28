@@ -2,7 +2,7 @@ import React from 'react';
 import { compose } from 'redux';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
 
 const modalImageType = {
@@ -40,6 +40,6 @@ function CatalystCampaign({
   );
 }
 
-export default withRouter<any, any>(
+export default withRouter<any>(
   compose(connect(null, { closeModal: fnCloseModal })(CatalystCampaign)),
 );

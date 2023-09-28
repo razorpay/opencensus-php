@@ -89,6 +89,7 @@ const renderApp = (
     {
       showModal: true,
       initialState: { session },
+      renderViaRouteGuard: false,
     },
   );
 };

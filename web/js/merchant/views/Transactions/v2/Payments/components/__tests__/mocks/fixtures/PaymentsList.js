@@ -36,4 +36,7 @@ jest.mock(
       ),
 );
 
-export const renderApp = () => render(<PaymentsList />);
+export const renderApp = () =>
+  render(<PaymentsList />, {
+    renderViaRouteGuard: false,
+  });

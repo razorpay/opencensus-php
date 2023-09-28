@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -57,7 +57,6 @@ const CustomCustomerOption = ({ option }) => {
   );
 };
 
-@withRouter
 @connect(
   (state) => {
     const customers = state.customers.items;
@@ -82,7 +81,7 @@ const CustomCustomerOption = ({ option }) => {
   },
 )
 @RTracking(() => window.rzpQ.component('CreateVirtualAccount'))
-export default class CreateVirtualAccount extends React.Component {
+class CreateVirtualAccount extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -502,14 +501,8 @@ export default class CreateVirtualAccount extends React.Component {
 
     const IS_MODAL_VIEW = !!onClose;
 
-    const {
-      _internals,
-      showAdditionalOptions,
-      isLoading,
-      isUpdating,
-      descriptors,
-      allowedPayers,
-    } = this.state;
+    const { _internals, showAdditionalOptions, isLoading, isUpdating, descriptors, allowedPayers } =
+      this.state;
 
     const disableSubmit =
       isLoading || (!_internals.hasVPA && !_internals.hasBankAccount) || isUpdating;
@@ -903,3 +896,5 @@ function validateCustomBankAccountNumber(descriptorLimit_BankAccount) {
     return '';
   };
 }
+
+export default withRouter(CreateVirtualAccount);

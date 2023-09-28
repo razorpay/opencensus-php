@@ -9,6 +9,19 @@ import {
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentRefund';
 
 describe('PaymentRefund', () => {
+  const renderApp = (ui) => {
+    render(ui, {
+      initialState: {
+        session: {
+          user: {
+            isPaymentsExtraRefundDetailsEnabled: true,
+            isRefundAllowed: true,
+            isOrgAllowedFunctionality: () => true,
+          },
+        },
+      },
+    });
+  };
   describe('When payment status is refunded', () => {
     const payment = {
       status: 'refunded',
@@ -18,7 +31,7 @@ describe('PaymentRefund', () => {
       },
     };
     test('should render auto refunded payment details', () => {
-      render(<App payment={{ ...payment, refund_status: null }} />);
+      renderApp(<App payment={{ ...payment, refund_status: null }} />);
       expect(screen.getByText('Auto Refunded')).toBeInTheDocument();
       expect(
         screen.getByText(
@@ -28,13 +41,13 @@ describe('PaymentRefund', () => {
     });
 
     test('should render fully refunded payment details', () => {
-      render(<App payment={payment} />);
+      renderApp(<App payment={payment} />);
       expect(screen.getByText('Refund Reason')).toBeInTheDocument();
       expect(screen.getByText('Refund Reference Number')).toBeInTheDocument();
     });
 
     test('should render fully refunded payment details when there is a temporary debit', () => {
-      render(
+      renderApp(
         <App
           payment={{
             ...payment,
@@ -50,7 +63,7 @@ describe('PaymentRefund', () => {
     });
 
     test('should render fully refunded payment details when error reason is avs_failure', () => {
-      render(
+      renderApp(
         <App
           payment={{
             ...payment,
@@ -65,7 +78,7 @@ describe('PaymentRefund', () => {
     });
 
     test('should render toggleable refund list', () => {
-      render(
+      renderApp(
         <App
           refunds={{
             items: [refund],

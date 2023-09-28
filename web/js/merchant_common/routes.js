@@ -1,24 +1,29 @@
-import { matchPath } from 'react-router-dom';
-import { showWhenUtil } from './components/ShowWhen';
-
+/* eslint-disable */
+import { matchPath } from 'react-router';
+import { showWhenUtil } from './components/RouteGuard';
+import { validateRoute } from 'common/utils/validateRoute';
+// import {withRouter} from "common/deprecated/withRouter"
 export function matchDetail(store, entityDetailsMap) {
-  return pathname => matcher(store)(entityDetailsMap, pathname);
+  return (pathname) => matcher(store)(entityDetailsMap, pathname);
 }
 
 export function matchModal(store, entityModalsMap) {
-  return pathname => matcher(store)(entityModalsMap, pathname);
+  return (pathname) => matcher(store)(entityModalsMap, pathname);
 }
 
 export function matchFullPageView(store, fullPageViewMap) {
-  return pathname => matcher(store)(fullPageViewMap, pathname);
+  return (pathname) => matcher(store)(fullPageViewMap, pathname);
 }
 
-function matcher(store) {
-  return function(routeMap, pathname) {
-    for (let route in routeMap) {
-      var match = matchPath(pathname, route);
+// export const renderWithRouteProps = () => withRouter(() => {
 
-      var { component, ...rest } = routeMap[route];
+// })
+
+function matcher(store) {
+  return (routeMap, pathname) => {
+    for (let route in routeMap) {
+      const match = matchPath(validateRoute(route, pathname), pathname);
+      const { component, ...rest } = routeMap[route];
 
       if (match && showWhenUtil(store)(rest)) {
         return {

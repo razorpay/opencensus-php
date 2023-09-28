@@ -1,10 +1,6 @@
 import PlatformSettings from 'merchant/views/MagicCheckout/Settings/containers/PlatformSettings';
-import { Router } from 'react-router-dom';
 import { render, screen, waitFor } from 'test-utils';
-import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
-import { createMemoryHistory } from 'history';
-
 const initState = {
   magic_settings: {
     domain_url: 'https://test.myshopify.com',
@@ -26,20 +22,10 @@ const initState = {
   },
 };
 
-const App = ({ state = {}, ...props }) => {
-  return (
-    <Provider store={storeWithInitialState({ ...initState, ...state })}>
-      <PlatformSettings {...props} />
-    </Provider>
-  );
-};
-
 const renderAppWithRouter = ({ state, ...props } = {}) => {
-  render(
-    <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-      <App state={state} {...props} />
-    </Router>,
-  );
+  render(<PlatformSettings {...props} />, {
+    reduxStore: storeWithInitialState({ ...initState, ...state }),
+  });
 };
 
 describe('Platform settings component', () => {

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import qs from 'query-string';
 import { get, isFunction } from 'lodash';
 

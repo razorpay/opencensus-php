@@ -2,7 +2,8 @@ import React from 'react';
 import { Badge, Box, InfoIcon } from '@razorpay/blade/components';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
@@ -148,7 +149,6 @@ const checkIfFirstCashAdvanceLogin = () => {
   return JSON.parse(val);
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -173,7 +173,7 @@ const checkIfFirstCashAdvanceLogin = () => {
     fetchCreditSummary,
   },
 )
-export default class AmountWithdraw extends React.Component {
+class AmountWithdraw extends React.Component {
   constructor(props) {
     super(props);
     this.initialState = {
@@ -1300,7 +1300,7 @@ export default class AmountWithdraw extends React.Component {
     const setPreferenceLink = showSettings && !showFirstTimeRepaymentPreference && (
       <NavLink
         className="change-preference-link"
-        exact
+        end
         to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
       >
         Change Preference
@@ -1959,7 +1959,7 @@ export default class AmountWithdraw extends React.Component {
               </strong>
               <NavLink
                 className="change-preference-link"
-                exact
+                end
                 to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
               >
                 Change Preference
@@ -2261,3 +2261,5 @@ export default class AmountWithdraw extends React.Component {
     );
   }
 }
+
+export default withRouter(AmountWithdraw);

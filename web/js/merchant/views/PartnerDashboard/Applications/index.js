@@ -1,9 +1,10 @@
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Routes, NavLink } from 'react-router-dom';
 
 import Applications from 'merchant/views/Settings/Applications';
 import WriteApplicationEntity from 'merchant/views/Settings/Applications/new';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import lazy from 'merchant/routes/LazyLoader';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 // lazy loaded components
 const AppConfiguration = lazy(() =>
@@ -19,19 +20,47 @@ export default function PartnerApplications(props) {
     <tabbed-container>
       {showHeader ? (
         <header>
-          <NavLink exact to="/partners/applications">
+          <NavLink end to="/partners/applications">
             Applications
           </NavLink>
         </header>
       ) : null}
       <content>
         <ErrorBoundary team={Teams?.PARTNERSHIP} resetOnProps>
-          <Switch>
-            <Route path="/partners/applications/new" component={WriteApplicationEntity} />
-            <Route path="/partners/applications/:id" component={WriteApplicationEntity} />
-            <Route path="/partners/applications/configuration/:id" component={AppConfiguration} />
-            <Route path="/partners/applications" component={Applications} />
-          </Switch>
+          <Routes>
+            <Route
+              path="new/*"
+              element={
+                <RouteGuard>
+                  <WriteApplicationEntity />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":id/*"
+              element={
+                <RouteGuard>
+                  <WriteApplicationEntity />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="configuration/:id/*"
+              element={
+                <RouteGuard>
+                  <AppConfiguration />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <RouteGuard>
+                  <Applications />
+                </RouteGuard>
+              }
+            />
+          </Routes>
         </ErrorBoundary>
       </content>
     </tabbed-container>

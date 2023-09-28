@@ -1,7 +1,8 @@
 /* eslint-disable */
 
 import { createRef } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Form from 'common/new-ui/Form';
 import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
@@ -132,7 +133,6 @@ let FORM_TABS, // Maintains naming of the tabs
 const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_website'];
 
-@withRouter
 @connect(
   (state) => ({
     session: state.session,
@@ -153,7 +153,7 @@ const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_webs
   },
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
-export default class ActivationWizard extends React.Component {
+class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
     dirty: {},
@@ -3408,3 +3408,5 @@ export function CustomField(props) {
 function matcher({ option, searchTerm = '', searchIndices }) {
   return true;
 }
+
+export default withRouter(ActivationWizard);

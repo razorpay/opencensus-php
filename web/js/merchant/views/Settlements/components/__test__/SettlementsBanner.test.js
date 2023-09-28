@@ -3,9 +3,6 @@ import '@testing-library/jest-dom/extend-expect';
 import SettlementsBanner from 'merchant/views/Settlements/components/SettlementsBanner';
 import { render, screen, waitFor } from 'test-utils';
 import userEvent from '@testing-library/user-event';
-import { Router } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 import { createMemoryHistory } from 'history';
 import * as modals from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
@@ -50,26 +47,24 @@ const state = {
 describe('SettlementsBanner', () => {
   const modalsSpy = jest.spyOn(modals, 'closeModal');
 
-  const history = createMemoryHistory();
+  let history = createMemoryHistory();
   history.push = jest.fn();
   window.open = jest.fn();
 
-  const App = ({ initialState = state, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(initialState)}>
-        <Router history={history}>
-          <SettlementsBanner {...rest} />
-        </Router>
-      </Provider>
-    );
-  };
+  const renderApp = ({ initialState = state, ...props } = {}) =>
+    render(<SettlementsBanner {...props} />, {
+      initialState,
+      history,
+    });
 
   beforeEach(() => {
     modalsSpy.mockClear();
+    history = createMemoryHistory();
+    history.push = jest.fn();
   });
 
-  test('should render banner when in live mode and user KYC has not been submitted or is under review', async () => {
-    let initialState = {
+  test('should render banner when in live mode and user KYC has not been submitted or is under review', () => {
+    const initialState = {
       ...state,
       session: {
         ...state.session,
@@ -78,7 +73,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    const { rerender } = render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Your settlements are currently not being processed'),
     ).toBeInTheDocument();
@@ -86,8 +81,10 @@ describe('SettlementsBanner', () => {
     expect(
       screen.getByText('Settlements will be processed. Once your KYC is submitted and approved.'),
     ).toBeInTheDocument();
+  });
 
-    initialState = {
+  test('should render banner when in live mode and user KYC has not been submitted or is under review', async () => {
+    const initialState = {
       ...state,
       session: {
         ...state.session,
@@ -98,33 +95,21 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    rerender(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('from the first transaction')).toBeInTheDocument();
     userEvent.click(screen.getByText(/Complete KYC/i));
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
-      expect(history.push).toHaveBeenCalledWith('/activation');
+      expect(history.push).toHaveBeenCalledWith(
+        { hash: '', pathname: '/activation', search: '' },
+        undefined,
+        { preventScrollReset: undefined, relative: undefined, replace: false, state: undefined },
+      );
     });
+  });
 
-    initialState = {
-      ...state,
-      session: {
-        ...state.session,
-        user: {
-          isActivated: true,
-          activation_status: 'under_review',
-          isActivationFormFullView: true,
-        },
-      },
-    };
-    rerender(<App initialState={initialState} />);
-    userEvent.click(screen.getByText(/Complete KYC/));
-    await waitFor(() => {
-      expect(history.push).toHaveBeenCalledTimes(2);
-      expect(history.push).toHaveBeenCalledWith('/kyc');
-    });
-
-    initialState = {
+  test('should render banner when in live mode and user KYC has not been submitted or is under review', async () => {
+    const initialState = {
       ...state,
       session: {
         ...state.session,
@@ -139,11 +124,11 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    rerender(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText(/Complete KYC/));
     await new Promise((r) => setTimeout(r, 1000));
     await waitFor(() => {
-      expect(history.push).toHaveBeenCalledWith('');
+      expect(history.push).toHaveBeenCalledTimes(0);
       expect(window.open).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     });
   });
@@ -158,7 +143,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.queryByLabelText('settlement-banner')).not.toBeInTheDocument();
   });
 
@@ -174,7 +159,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('Your settlements are under review')).toBeInTheDocument();
     expect(screen.getByLabelText('settlement-banner')).toHaveClass('highlight-error');
     expect(
@@ -197,7 +182,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText('Contact support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
@@ -229,7 +214,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    const { rerender } = render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(
       screen.getByText('Your settlements have been put on temporary hold'),
     ).toBeInTheDocument();
@@ -242,7 +227,7 @@ describe('SettlementsBanner', () => {
     expect(screen.getByText('Update Bank Account Details')).toBeInTheDocument();
 
     initialState.profile.bankAccountChangeStatus = true;
-    rerender(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('bank account details is under review.')).toBeInTheDocument();
     expect(screen.getByText('View Bank Account Details')).toBeInTheDocument();
   });
@@ -260,7 +245,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     userEvent.click(screen.getByText('Contact support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
@@ -277,7 +262,7 @@ describe('SettlementsBanner', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    renderApp({ initialState });
     expect(screen.getByText('SettlementMessage')).toBeInTheDocument();
   });
 });

@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { connect } from 'react-redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import {
   APPLICATION_STATES,
   CAPITAL_PRODUCT_CODES,
   HOTJAR_TRIGGERS,
   TOOLTIP_DESCRIPTIONS,
-} from '../constants';
-import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import CreditOffer from '../../components/CreditOffer';
-import Button from 'common/new-ui/Button';
-import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import Amount from 'common/ui/Amount';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { withRouter } from 'react-router-dom';
+} from 'merchant/views/Capital/Loans/constants';
+import CreditOffer from 'merchant/views/Capital/components/CreditOffer';
+import { FormLoader } from 'merchant/views/Capital/components/FormSectionLoadingSkeleton';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 const trackMouseOver = () => {
@@ -29,7 +30,6 @@ const TABS = {
   REPAYMENT_DETAILS: 'REPAYMENT_DETAILS',
 };
 
-@withRouter
 @connect(
   (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
@@ -251,4 +251,4 @@ class CashAdvanceApproved extends Component {
   }
 }
 
-export default CashAdvanceApproved;
+export default withRouter(CashAdvanceApproved);

@@ -31,22 +31,10 @@ const PGInvitesNavLinks = ({ prefix }: PGInvitesNavLinksProps): JSX.Element => {
   return (
     <StyledPGInvitesNavLinks>
       <FtuxTooltip />
-      <NavLink
-        exact
-        activeClassName="active"
-        onClick={trackAcceptedInvitesClick}
-        className="navlink"
-        to={`${prefix}`}
-      >
+      <NavLink end onClick={trackAcceptedInvitesClick} className="navlink" to={`${prefix}`}>
         Accepted Invites
       </NavLink>
-      <NavLink
-        exact
-        activeClassName="active"
-        onClick={trackAllInvitesClick}
-        className="navlink"
-        to={`${prefix}/all`}
-      >
+      <NavLink end onClick={trackAllInvitesClick} className="navlink" to={`${prefix}/all`}>
         All Invites
       </NavLink>
     </StyledPGInvitesNavLinks>

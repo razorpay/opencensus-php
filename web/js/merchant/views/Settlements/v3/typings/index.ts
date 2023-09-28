@@ -1,6 +1,6 @@
 import { ShowNotificationType, User } from 'common/typings';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 interface MatchParams {
   id: string;
 }

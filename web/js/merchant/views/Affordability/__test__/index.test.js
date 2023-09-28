@@ -10,7 +10,6 @@ import {
 import Affordability from 'merchant/views/Affordability';
 import { render, screen } from 'test-utils';
 import { App } from 'merchant/views/Affordability/__test__/mocks/onboarding';
-import { MemoryRouter } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 
 let history;
@@ -54,16 +53,13 @@ describe('Affordability', () => {
   });
 
   test('should load widget onboarding screen', async () => {
-    render(
-      <MemoryRouter initialEntries={['/affordability/widget/']}>
-        <App {...defaultProps} history={history} closeOnboarding={() => {}} />
-      </MemoryRouter>,
-      {
-        initialState: {
-          session: { user: { isAffordabilityWidgetEnabled: true } },
-        },
+    render(<App {...defaultProps} closeOnboarding={() => {}} />, {
+      history,
+      initialEntries: ['/affordability/widget/'],
+      initialState: {
+        session: { user: { isAffordabilityWidgetEnabled: true } },
       },
-    );
+    });
     await expect(screen.getByText('Affordability Widget')).toBeInTheDocument();
   });
 });

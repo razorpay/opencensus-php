@@ -12,6 +12,9 @@ const state = {
   session: {
     user: {
       isDirectTransferEnabled: true,
+      isOrgAllowedFunctionality: () => true,
+      findTag: () => false,
+      isAllowedEdit: () => true,
     },
   },
 };

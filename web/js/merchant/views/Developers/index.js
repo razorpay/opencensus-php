@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
-import { Route, NavLink } from 'react-router-dom';
+import { Route, NavLink, Routes } from 'react-router-dom';
 import Api from 'merchant/views/Developers/Api/index';
 import Webhooks from 'merchant/views/Developers/Webhooks/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { trackDeveloperConsoleOpened } from './events';
 
-const Developers = () => {
+const Developers = ({ location: { pathname } }) => {
   useEffect(() => {
     trackDeveloperConsoleOpened();
   }, []);
+  console.log(pathname);
   return (
     <tabbed-container>
       <header>
@@ -20,12 +21,24 @@ const Developers = () => {
         </ShowWhen>
       </header>
       <content style={{ background: 'none' }}>
-        <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleEnabled}>
-          <Route path="/developers/apis" component={Api} />
-        </ShowWhen>
-        <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleWebhooksTabEnabled}>
-          <Route path="/developers/webhooks" component={Webhooks} />
-        </ShowWhen>
+        <Routes>
+          <Route
+            path="apis/*"
+            element={
+              <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleEnabled}>
+                <Api />
+              </ShowWhen>
+            }
+          />
+          <Route
+            path="webhooks/*"
+            element={
+              <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleWebhooksTabEnabled}>
+                <Webhooks />
+              </ShowWhen>
+            }
+          />
+        </Routes>
       </content>
     </tabbed-container>
   );

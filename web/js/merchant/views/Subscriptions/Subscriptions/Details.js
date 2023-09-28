@@ -3,23 +3,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import CreateAddOnModal from 'merchant/views/Subscriptions/Subscriptions/components/AddOnsModal';
-import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/components/Details';
-import InvoiceDetail from 'merchant/views/Subscriptions/Subscriptions/components/InvoiceDetail';
-import CreditNoteDetails from 'merchant/views/Subscriptions/Subscriptions/components/CreditNoteDetails';
-
+import { withRouter } from 'common/deprecated/withRouter';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import Plan from 'merchant/models/Plan';
-
-import { fetchPlan } from 'merchant/reducers/plans';
 import { deleteAddOn, fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { fetchInvoice, fetchCreditNote } from 'merchant/reducers/invoices/details';
+import { fetchOffer } from 'merchant/reducers/offers/offerDetails';
+import { fetchPlan } from 'merchant/reducers/plans';
 import {
   fetchInvoices,
   paymentManualAttempt,
@@ -30,12 +23,18 @@ import {
   pauseAndResumeSubscription,
   removeOffersOnSubscription,
 } from 'merchant/reducers/subscriptions';
-import { fetchOffer } from 'merchant/reducers/offers/offerDetails';
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
-import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import CreateAddOnModal from 'merchant/views/Subscriptions/Subscriptions/components/AddOnsModal';
+import CreditNoteDetails from 'merchant/views/Subscriptions/Subscriptions/components/CreditNoteDetails';
+import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/components/Details';
+import InvoiceDetail from 'merchant/views/Subscriptions/Subscriptions/components/InvoiceDetail';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
+
 import CancellationModal from './components/CancellationModal';
 import TestPaymentModal from './components/TestPaymentModal';
-import analytics from '../analytics';
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
  * --------------------------------------------------------------------
@@ -54,7 +53,6 @@ const scheduledChangesInitValue = {
   isLoading: false,
 };
 
-@withRouter
 @connect(
   (state) => ({
     ...state.session,
@@ -79,7 +77,7 @@ const scheduledChangesInitValue = {
   },
 )
 @RTracking(() => window.rzpQ.component('SubscriptionDetailsContainer'))
-export default class SubscriptionDetailsContainer extends React.Component {
+class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -964,3 +962,5 @@ function makeErrorStatus(message) {
 
   return {};
 }
+
+export default withRouter(SubscriptionDetailsContainer);

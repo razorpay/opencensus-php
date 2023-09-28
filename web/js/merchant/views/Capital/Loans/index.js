@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
@@ -85,14 +85,12 @@ export const PROS = [
 ];
 
 const parseApplicationMetaData = (loanApplicationDetails) => {
-  const {
-    meta: { product, loading, data: { application: { status = '' } = {} } } = {},
-  } = loanApplicationDetails;
+  const { meta: { product, loading, data: { application: { status = '' } = {} } } = {} } =
+    loanApplicationDetails;
 
   return { loading, product, status };
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -112,7 +110,7 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
     resetCapitalLendingData,
   },
 )
-export default class LoanApplicationOverview extends React.Component {
+class LoanApplicationOverview extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -637,3 +635,5 @@ export default class LoanApplicationOverview extends React.Component {
       );
   }
 }
+
+export default withRouter(LoanApplicationOverview);

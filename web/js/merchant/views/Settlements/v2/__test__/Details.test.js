@@ -101,7 +101,7 @@ const renderApp = ({ props, initialState = {} } = {}) => {
   return render(<Details {...defaultProps} {...props} />, {
     initialState: { ...defaultInitialState, ...initialState },
     path: '/settlements/:id',
-    historyOptions: { initialEntries: [`/settlements/${settlementId}`] },
+    initialEntries: [`/settlements/${settlementId}`],
   });
 };
 

@@ -4,6 +4,11 @@ import QRCodes from 'merchant/views/QRCodes';
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 
+global.rzpQ = {
+  qrCode: () => ({ interaction: jest.fn() }),
+  component: jest.fn(),
+};
+
 describe('QR Codes', () => {
   test('should render the alert correctly when fee_bearer is customer', () => {
     const reduxStateWithCustomerFeeBearer = getInitialReduxState({

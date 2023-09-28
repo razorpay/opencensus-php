@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
@@ -21,6 +22,7 @@ import {
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { withRouter } from 'common/deprecated/withRouter';
 
 @connect(
   (state) => ({
@@ -40,7 +42,7 @@ import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/self
 @reduxForm({
   form: 'newItem',
 })
-export default class ItemsListContainer extends ListContainer {
+class ItemsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Invoices',
@@ -208,3 +210,5 @@ export default class ItemsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(ItemsListContainer);

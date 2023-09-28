@@ -1,26 +1,17 @@
 // utils
 import { render, screen, userEvent } from 'test-utils';
-import { BrowserRouter } from 'react-router-dom';
 
 // testable
 import SubmitForm from 'merchant/views/Settings/Configuration/Questionnaire/SubmitForm';
 
 describe('Test <SubmitForm /> component', () => {
   test('should render without breaking', () => {
-    render(
-      <BrowserRouter>
-        <SubmitForm />
-      </BrowserRouter>,
-    );
+    render(<SubmitForm />);
     expect(screen.getByText('Submit Form')).toBeInTheDocument();
   });
 
   test('should toggle checkbox', async () => {
-    render(
-      <BrowserRouter>
-        <SubmitForm />
-      </BrowserRouter>,
-    );
+    render(<SubmitForm />);
 
     const checkbox = screen.getByRole('checkbox');
     await userEvent.click(checkbox);

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
 
-export default class ListContainer extends Component {
+class ListContainer extends Component {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
@@ -238,3 +238,5 @@ export default class ListContainer extends Component {
     });
   }
 }
+
+export default ListContainer;

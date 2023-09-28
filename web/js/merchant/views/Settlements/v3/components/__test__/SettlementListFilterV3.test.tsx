@@ -137,7 +137,7 @@ describe('SettlementListFilterV3', () => {
   });
 
   test('should set 30 days preset when status is in query params and from/to are missing', async () => {
-    renderApp({}, { historyOptions: { initialEntries: ['/?status=all'] } });
+    renderApp({}, { initialEntries: ['/?status=all'] });
     await validatePreset(presetsForCalendar[2]);
   });
 

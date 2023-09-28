@@ -15,7 +15,7 @@ import { showKYCStatusModal, showTnC } from 'merchant/reducers/home';
 import { rxCaSelectedFlag, caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 
 import RTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
@@ -36,7 +36,6 @@ const POLLING_COUNTER_LIMIT = 5;
  * @props {submerchantId} for Submerchant KYC from Partner dashboard - submerchantContainer.js
  * */
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
-@withRouter
 @connect(
   (state) => ({
     session: state.session,
@@ -52,7 +51,7 @@ const POLLING_COUNTER_LIMIT = 5;
     ...EventsActions,
   },
 )
-export default class ActivationContainer extends React.Component {
+class ActivationContainer extends React.Component {
   constructor(props) {
     super(props);
 
@@ -1045,3 +1044,5 @@ const excludedFieldsInForm = [
   'activation_progress',
   'allowed_next_activation_statuses',
 ];
+
+export default withRouter(ActivationContainer);

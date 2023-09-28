@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
@@ -26,8 +26,6 @@ import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers'
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 
 initSentry('MerchantLA');
-
-@withRouter
 @connect(
   (state) => ({
     ...state.session,
@@ -42,7 +40,7 @@ initSentry('MerchantLA');
     closeModal,
   },
 )
-export default class App extends Component {
+class App extends Component {
   pendingRequests = [];
 
   constructor(props) {
@@ -317,3 +315,5 @@ export default class App extends Component {
     );
   }
 }
+
+export default withRouter(App);

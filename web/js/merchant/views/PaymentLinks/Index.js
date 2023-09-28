@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -9,7 +9,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 
 import {
   handleProductQuickGuide,
@@ -191,18 +191,31 @@ class PaymentLinksContainer extends React.Component {
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
 
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <ShowWhenRoute
-              path="/paymentlinks/batchuploads"
-              component={BatchUploadList}
-              additionalCondition={(user) =>
-                user.isAllowedView('payment_links_batch_uploads') &&
-                user.isPLBatchUploadEnabled &&
-                (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
+          <Routes>
+            <Route
+              path="batchuploads/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_links_batch_uploads') &&
+                    user.isPLBatchUploadEnabled &&
+                    (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
+                  }
+                >
+                  <BatchUploadList />
+                </RouteGuard>
               }
             />
-            <Route path="/paymentlinks" component={PaymentLinksList} />
-          </Switch>
+
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <PaymentLinksList />
+                </RouteGuard>
+              }
+            />
+          </Routes>
         </ErrorBoundary>
 
         {this.state.showPopup &&

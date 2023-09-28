@@ -10,8 +10,9 @@ import {
   StyledDivider,
   StyledSettlementRow,
 } from 'merchant/views/Settlements/v3/screens/ListView/styled';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { fetchBreakupDetails, isBreakupNew } from 'merchant/reducers/settlements/details';
 import Shimmer from 'common/components/Shimmer';
 import { getBreakUpDetails } from 'merchant/views/Settlements/v3/components/Breakup/config';
@@ -277,4 +278,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default withRouter<Props, any>(connect(null, mapDispatchToProps)(SettlementListItem));
+export default withRouter<Props>(connect(null, mapDispatchToProps)(SettlementListItem));

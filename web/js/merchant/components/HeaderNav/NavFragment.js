@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
-
+import { withRouter } from 'common/deprecated/withRouter';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import * as storage from 'common/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducers/growthService';
-
 import { FtuxModal } from './FtuxModal';
 import SwitchMerchant from './SwitchMerchant';
 import ModesDropdown from './SwitchMode';
@@ -130,7 +128,8 @@ class NavFragment extends Component {
               user.isProjectMoonshineEnabled ||
               user.isProjectKeystoneCorporateCardsEnabled ||
               user.isProjectKeystoneCashAdvanceEnabled ||
-              user.isICICILinkedCAFlowEnabled('offers-for-you') ||
+              (Boolean(user?.isICICILinkedCAFlowEnabled) &&
+                user.isICICILinkedCAFlowEnabled('offers-for-you')) ||
               user.isUCCapitalCardsOnlyCampaignEnabled ||
               user.isUCCapitalLOCOnlyCampaignEnabled ||
               shouldShowGSExclusiveOffers
@@ -176,7 +175,6 @@ class NavFragment extends Component {
 }
 
 export default compose(
-  withRouter,
   connect(
     (state) => {
       return {
@@ -187,4 +185,4 @@ export default compose(
       fetchExclusiveOffer: fetchExclusiveOfferProp,
     },
   ),
-)(NavFragment);
+)(withRouter(NavFragment));

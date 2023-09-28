@@ -7,7 +7,7 @@ export default function PartnerNavLinks() {
         label="Home"
         icon="i i-chart text-info"
         to="/partners"
-        exact
+        end
         type="partner"
         additionalCondition={(user) => user.isPartnershipFUX}
         isNew={true}
@@ -18,7 +18,7 @@ export default function PartnerNavLinks() {
         icon="i i-account-balance text-success"
         to="/partners/submerchants"
         additionalCondition={(user) => user.isAllowedView('submerchants')}
-        exact
+        end
       />
 
       <MainNavLink
@@ -28,7 +28,7 @@ export default function PartnerNavLinks() {
         additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingPartnerConfigs
         }
-        exact
+        end
       />
 
       <MainNavLink
@@ -38,7 +38,7 @@ export default function PartnerNavLinks() {
         additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingSubventionConfigs
         }
-        exact
+        end
       />
 
       <MainNavLink
@@ -48,7 +48,7 @@ export default function PartnerNavLinks() {
         additionalCondition={(user) =>
           user.isAllowedView('partner_settings') && user.isPartner('aggregator', 'fully_managed')
         }
-        exact
+        end
       />
 
       <MainNavLink
@@ -58,7 +58,7 @@ export default function PartnerNavLinks() {
         additionalCondition={(user) =>
           user.isAllowedView('partner_applications') && user.isPartner('pure_platform')
         }
-        exact
+        end
       />
 
       <MainNavLink

@@ -1,28 +1,22 @@
+/* eslint-disable */
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { MultiSlider__Component } from './MultiSliderStyle';
 import { classList } from 'common/utils/rzp-utils';
 import PropTypes from 'prop-types';
 
-@withRouter
 @connect((state) => state.multiSlider, { emptySliderStack })
-export default class MultiSliderComponent extends Component {
+class MultiSliderComponent extends Component {
   componentWillUnmount = () => {
     const { onClose } = this.props;
     if (onClose && typeof onClose === 'function') onClose();
   };
 
   render() {
-    const {
-      children,
-      emptySliderStack,
-      width,
-      transitionDuration,
-      position,
-      classString,
-    } = this.props;
+    const { children, emptySliderStack, width, transitionDuration, position, classString } =
+      this.props;
 
     return (
       <MultiSlider__Component
@@ -57,3 +51,5 @@ MultiSliderComponent.propTypes = {
   onClose: PropTypes.func,
   classString: PropTypes.string,
 };
+
+export default withRouter(MultiSliderComponent);

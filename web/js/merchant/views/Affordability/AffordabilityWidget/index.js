@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -30,7 +31,7 @@ import FeatureTiles from './Onboarding/FeatureTile';
 import PlanDetails from './PlanDetails';
 import track from './Onboarding/track';
 import { compose } from 'redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Settings from 'merchant/views/Affordability/components/settings';
 import ProductWrapper from 'common/ui/ProductWrapper';
 

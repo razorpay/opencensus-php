@@ -30,7 +30,10 @@ const defaultProps = {
   },
 };
 
-const renderApp = () => render(<SettlementDetails {...defaultProps} />);
+const renderApp = () =>
+  render(<SettlementDetails {...defaultProps} />, {
+    renderViaRouteGuard: false,
+  });
 
 describe('SettlementDetails', () => {
   const showNotification = jest.spyOn(NotificationsActions, 'showNotification');

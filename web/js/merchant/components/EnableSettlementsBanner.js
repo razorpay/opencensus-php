@@ -1,13 +1,14 @@
+/* eslint-disable */
 import React from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Banner from 'common/ui/Banner';
 import RTracking from 'react-tracking';
 
-const EnableSettlementsBanner = props => (
+const EnableSettlementsBanner = (props) => (
   <div className="enable-settlements-banner">
     <Banner>
-      Your settlements are on hold. You will need to fill the KYC Form to
-      receive your payments in your bank account
+      Your settlements are on hold. You will need to fill the KYC Form to receive your payments in
+      your bank account
       <span className="big-dot-separator" />
       <Link
         to="/activation"
@@ -15,7 +16,7 @@ const EnableSettlementsBanner = props => (
           props.tracking.trackEvent(
             window.rzpQ.onbr().initiated('kyc.form_fill', {
               clickSource: props.source ? props.source : '',
-            })
+            }),
           );
         }}
       >

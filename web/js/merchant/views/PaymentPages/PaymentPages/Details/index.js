@@ -3,7 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
@@ -37,7 +37,6 @@ import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Detai
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
-@withRouter
 @connect((state) => ({ user: state.session.user }), {
   updatePPInReduxList,
   showNotification,
@@ -45,7 +44,7 @@ import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/M
   openModal,
 })
 @RTracking(() => window.rzpQ.component('PaymentPagesDetails'))
-export default class extends React.Component {
+class Details extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -524,3 +523,5 @@ export default class extends React.Component {
     );
   }
 }
+
+export default withRouter(Details);

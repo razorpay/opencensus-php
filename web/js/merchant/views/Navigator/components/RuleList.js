@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import moment from 'moment';
 import DataTable from 'common/ui/Table/DataTable';
 import { getValue, getRuleStatus, removeMid, uniqueArray, findProviderName } from './util';
@@ -83,7 +83,7 @@ export default class RuleList extends React.Component {
       title: <span>Documentation</span>,
     };
 
-    if (redirect) return <Redirect to={redirect} />;
+    if (redirect) return <Navigate to={redirect} replace />;
 
     return (
       <div className="routing-container">

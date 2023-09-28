@@ -10,7 +10,8 @@ import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Link from 'common/components/Link';
 import { FullPageLoader } from 'common/components/Loader';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
   isL1Submitted,
   isVerificationValid,

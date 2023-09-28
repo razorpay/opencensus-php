@@ -1,5 +1,5 @@
 import PlatformSettings from './containers/PlatformSettings';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const MagicSettings = (props) => {
   const { location } = props;

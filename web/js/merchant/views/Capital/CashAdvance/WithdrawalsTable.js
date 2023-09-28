@@ -3,7 +3,8 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
 import { STATUS_LABELS, StatusPillClasses } from './constants';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
   const disbursedAtDate = withdrawal.disbursed_at || withdrawal.processed_at;

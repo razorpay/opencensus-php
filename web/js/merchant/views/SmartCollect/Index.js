@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -11,16 +11,13 @@ import {
 
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
-import PaymentsList from './Payments/List';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import VirtualAccountsList from './VirtualAccounts/List';
 import BlockOnBoarding, {
   BlockCustomerFeeBearerOnboarding,
 } from 'merchant/components/BlockOnBoarding';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import BatchExpiryUpdate from './BatchExpiryUpdate/List';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
 import { updateVirtualAccountBulkEditStatus } from 'merchant/reducers/virtualaccounts';
@@ -128,14 +125,7 @@ export default class SmartCollectContainer extends React.Component {
         )}
 
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <Route
-              path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
-              component={VirtualAccountsList}
-            />
-            <Route path="/smartcollect/payments" component={PaymentsList} />
-            <Route path="/smartcollect/batchuploads" component={BatchExpiryUpdate} />
-          </Switch>
+          <Outlet />
         </ErrorBoundary>
       </div>
     );

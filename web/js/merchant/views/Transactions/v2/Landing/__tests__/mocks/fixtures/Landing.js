@@ -3,7 +3,7 @@ import { render } from 'test-utils';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import store from 'merchant/store';
-import Landing from 'merchant/views/Transactions/v2/Landing';
+import TransactionRoute from 'merchant/views/Transactions/__tests__/mocks/TransactionRoute';
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
 import 'jest-location-mock';
 
@@ -39,16 +39,11 @@ getStateSpy.mockImplementation(() => {
 export const renderApp = ({ pathname } = {}) => {
   return render(
     <SuspenseWithLoader>
-      <Landing />
+      <TransactionRoute />
     </SuspenseWithLoader>,
     {
-      historyOptions: {
-        initialEntries: [
-          {
-            pathname,
-          },
-        ],
-      },
+      initialEntries: [pathname ?? '/payments'],
+      renderViaRouteGuard: false,
     },
   );
 };

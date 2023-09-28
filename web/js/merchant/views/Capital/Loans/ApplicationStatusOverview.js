@@ -1,9 +1,10 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta, registerNewLoanApplication } from 'merchant/reducers/capital';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
 import {
   ERROR_STATES,
@@ -12,7 +13,7 @@ import {
   APPLICATION_STATES,
   APPLICATION_DISABLED_STATES,
 } from './constants';
-import { isCashAdvanceProduct } from '../utils';
+import { isCashAdvanceProduct } from 'merchant/views/Capital/utils';
 
 const parseApplicationMetaData = (loanApplicationDetails) => {
   const {
@@ -27,7 +28,6 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
   return { loading, product, status, text };
 };
 
-@withRouter
 @connect(
   (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
@@ -82,7 +82,8 @@ class ApplicationStatusOverview extends Component {
 
   getStepTobeShown = (classList, step) => {
     const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
-    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+    const APPLICATION_STATE_DESCRIPTIONS =
+      this.getUserFlowConfiguration().getApplicationStateDescriptions();
     const { loading, status } = parseApplicationMetaData(this.props.loanApplicationDetails);
     const applicationStatus = loading ? APPLICATION_STATES.PROMOTER_INFO_PENDING : status;
     if (classList.includes('active')) {
@@ -104,9 +105,8 @@ class ApplicationStatusOverview extends Component {
   }
 
   handleFinalCTAAction = () => {
-    const {
-      destination,
-    } = this.props.loanApplicationDetails.meta.configuration.ui.product.applicationFinalCTA;
+    const { destination } =
+      this.props.loanApplicationDetails.meta.configuration.ui.product.applicationFinalCTA;
     this.props.history.push(destination);
   };
 
@@ -154,7 +154,8 @@ class ApplicationStatusOverview extends Component {
     if (isCurrentStateGroup) {
       this.stepFound = true;
     }
-    const STATE_GROUP_COMPLETION_DESCRIPTION = this.getUserFlowConfiguration().getCompletedStateGroupDescriptions();
+    const STATE_GROUP_COMPLETION_DESCRIPTION =
+      this.getUserFlowConfiguration().getCompletedStateGroupDescriptions();
 
     const descriptiveStep = classList.includes('completed')
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
@@ -298,4 +299,4 @@ class ApplicationStatusOverview extends Component {
   }
 }
 
-export default ApplicationStatusOverview;
+export default withRouter(ApplicationStatusOverview);

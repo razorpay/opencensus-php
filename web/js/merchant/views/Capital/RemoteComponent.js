@@ -5,7 +5,7 @@ import * as ReactRedux from 'react-redux';
 import * as ReactRouter from 'react-router';
 import * as ReactRouterDOM from 'react-router-dom';
 import * as ReactDOM from 'react-dom';
-
+import { withRouter } from 'common/deprecated/withRouter';
 import { loadScript } from './utils/loadRemoteScript';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -86,6 +86,4 @@ const mapDispatchToProps = {
   showNotification,
 };
 
-export default ReactRouterDOM.withRouter(
-  ReactRedux.connect(mapStateToProps, mapDispatchToProps)(RemoteComponent),
-);
+export default withRouter(ReactRedux.connect(mapStateToProps, mapDispatchToProps)(RemoteComponent));

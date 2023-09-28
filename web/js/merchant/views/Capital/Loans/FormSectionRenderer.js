@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import BusinessInfoEntity from './Forms/BusinessInfoEntity';
-import Banner from '../components/Banner';
 import { connect } from 'react-redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   changeActiveState,
   fetchApplicantDetails,
@@ -22,18 +21,28 @@ import {
   getScheduleDetails,
   getApplications,
 } from 'merchant/reducers/capital';
-import PromoterDetailsEntity from './Forms/PromoterDetails/PromoterDetailsEntity';
-import MobileVerification from './Forms/MobileVerification';
-import CreditScoreBreakdown from './Forms/CreditScoreBreakdown';
-import LoanStatusBanner from './LoanStatusBanner';
+import { trackLandingOnCashAdvanceV1 } from 'merchant/views/Capital/CashAdvanceV2/TrackEvents';
+import FormSectionLoadingSkeleton from 'merchant/views/Capital/components/FormSectionLoadingSkeleton';
+import {
+  isCashAdvanceProduct,
+  isPreceedingState,
+  getStepIndex,
+} from 'merchant/views/Capital/utils';
+import getApplicationProgressPercentage from 'merchant/views/Capital/utils/ProgressPercentageCalculator';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import PreVerification from './Forms/PreVerification/PreVerification';
+
+import BusinessInfoEntity from './Forms/BusinessInfoEntity';
 import CreditOfferEntity from './Forms/CreditOfferEntity';
+import CreditScoreBreakdown from './Forms/CreditScoreBreakdown';
+import MobileVerification from './Forms/MobileVerification';
+import PromoterDetailsEntity from './Forms/PromoterDetails/PromoterDetailsEntity';
+import Banner from 'merchant/views/Capital/components/Banner';
+
+import LoanStatusBanner from './LoanStatusBanner';
+import PreVerification from './Forms/PreVerification/PreVerification';
 import ContractEntity from './Forms/ContractEntity';
 import NachEntity from './Forms/NachEntity';
 import LoanApproved from './Forms/LoanApproved';
-import FormSectionLoadingSkeleton from '../components/FormSectionLoadingSkeleton';
-import { isCashAdvanceProduct, isPreceedingState, getStepIndex } from '../utils';
 import {
   APPLICATION_STATES,
   APPLICATION_STATE_MESSAGE_MAP,
@@ -44,8 +53,6 @@ import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
 import CashAdvanceApproved from './Forms/CashAdvanceApproved';
 import OfflineDocumentCollection from './Forms/OfflineDocumentCollection';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import { trackLandingOnCashAdvanceV1 } from '../CashAdvanceV2/TrackEvents';
 
 const stateFormMap = {
   BUSINESS_INFO_PENDING: BusinessInfoEntity,
@@ -257,12 +264,8 @@ class FormSectionRenderer extends Component {
     }
 
     if (state === APPLICATION_STATES.CREDIT_PULL_PENDING) {
-      const {
-        meta,
-        business_details,
-        promoter_details,
-        bureau_report_details,
-      } = this.props.loanApplicationDetails;
+      const { meta, business_details, promoter_details, bureau_report_details } =
+        this.props.loanApplicationDetails;
       if (!business_details.data || !business_details.data.applicant_ids) {
         await this.props.fetchBusinessDetails({
           business_id: meta.data.application.owner_id,
@@ -611,11 +614,8 @@ class FormSectionRenderer extends Component {
         TobeRenderedFormComponent = () => <FormSectionLoadingSkeleton />;
         break;
       case APPLICATION_STATES.CREDIT_PULL_PENDING: {
-        const {
-          business_details,
-          promoter_details,
-          bureau_report_details,
-        } = this.props.loanApplicationDetails;
+        const { business_details, promoter_details, bureau_report_details } =
+          this.props.loanApplicationDetails;
         if (promoter_details.loading || business_details.loading || bureau_report_details.loading) {
           return <FormSectionLoadingSkeleton />;
         } else if (bureau_report_details?.data.bureau_report) {
@@ -683,7 +683,8 @@ class FormSectionRenderer extends Component {
   };
 
   trackNavigationEvent = (from, to, product) => {
-    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+    const APPLICATION_STATE_DESCRIPTIONS =
+      this.getUserFlowConfiguration().getApplicationStateDescriptions();
     const stepIndex = getStepIndex(
       from,
       this.getUserFlowConfiguration().getApplicationStateGroups(),

@@ -1,9 +1,8 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentReceipt from 'merchant/views/Transactions/v1/Payments/components/PaymentReceipt';
-import { createMemoryHistory } from 'history';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { Router } from 'react-router-dom';
+
 // Mock `window.location` with Jest spies and extend expect
 import 'jest-location-mock';
 
@@ -18,14 +17,8 @@ export const defaultProps = {
   },
 };
 
-export const AppWithRouter = ({ hash = '#paymentpages', ...rest }) => {
-  const history = createMemoryHistory();
-  history.push({ pathname: '/', hash });
-  return (
-    <Router history={history}>
-      <PaymentReceipt {...defaultProps} {...rest} />
-    </Router>
-  );
+export const App = (props) => {
+  return <PaymentReceipt {...defaultProps} {...props} />;
 };
 
 beforeAll(() => {

@@ -36,9 +36,9 @@ const mockRazorXExp = {
 //     defaultViewport: 'galaxys5',
 //   },
 // });
-addDecorator((story) => (
+addDecorator((Story) => (
   <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-    <Route path="/" component={() => story()} />
+    <Route path="/" element={<Story />} />
   </Router>
 ));
 addDecorator((StoryFn) => (

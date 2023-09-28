@@ -2,25 +2,25 @@ import { render, delay } from 'test-utils';
 
 import TextHighlighter from 'common/ui/TextHighlighter';
 
-const renderApp = ({ props, historyOptions }) => {
-  return render(<TextHighlighter {...props}>Text Highlight</TextHighlighter>, { historyOptions });
+const renderApp = ({ props, initialEntries }) => {
+  return render(<TextHighlighter {...props}>Text Highlight</TextHighlighter>, { initialEntries });
 };
 
 describe('TextHighlighter', () => {
   test('children should not have background color applied', () => {
     const props = { hashedWith: 'randomHash' };
-    const historyOptions = { initialEntries: [{ pathname: '/', hash: '#test' }] };
+    const initialEntries = [{ pathname: '/', hash: '#test' }];
 
-    const { container } = renderApp({ props, historyOptions });
+    const { container } = renderApp({ props, initialEntries });
 
     expect(container).toMatchSnapshot();
   });
 
   test('children should have background color applied and removed after 5 sec', async () => {
     const props = { hashedWith: 'test' };
-    const historyOptions = { initialEntries: [{ pathname: '/', hash: '#test' }] };
+    const initialEntries = [{ pathname: '/', hash: '#test' }];
 
-    const { container } = renderApp({ props, historyOptions });
+    const { container } = renderApp({ props, initialEntries });
 
     expect(container).toMatchSnapshot();
 

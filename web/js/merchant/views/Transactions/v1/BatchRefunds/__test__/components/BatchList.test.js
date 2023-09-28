@@ -13,6 +13,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { batchDownload } from 'merchant/reducers/batches';
 
+jest.mock('merchant/views/Transactions/v1/BatchRefunds/HeaderActions', () => ({ children }) => (
+  <div>{children}</div>
+));
 jest.mock('merchant/views/Transactions/v1/BatchRefunds/components/BatchListFilter', () => () => (
   <div>BatchListFilter Component</div>
 ));
@@ -37,7 +40,9 @@ const App = ({ ...props }) => {
         session: {
           mode: 'live',
           org: { id: '123' },
-          user: {},
+          user: {
+            isOrgAllowedFunctionality: () => true,
+          },
         },
       })}
     >
@@ -64,7 +69,9 @@ describe('BatchRefunds - BatchList Component', () => {
   });
 
   test('should render BatchList component', () => {
-    render(<App />);
+    render(<App />, {
+      renderViaRouteGuard: false,
+    });
     expect(screen.getByTestId('batchrefunds-batchlist')).toBeInTheDocument();
     // asserting presence of BatchListFilter
     expect(screen.getByText(/BatchListFilter Component/i)).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -84,7 +84,6 @@ const emptyComponent = (org) => {
   );
 };
 
-@withRouter
 @connect(
   (state) => ({
     ...state.paymentbuttons,
@@ -93,7 +92,7 @@ const emptyComponent = (org) => {
   { fetchAll, openModal, closeModal, handleProductQuickGuide },
 )
 @RTracking(() => window.rzpQ.component('PaymentButtonsList'))
-export default class PaymentButtonsList extends ListContainer {
+class PaymentButtonsList extends ListContainer {
   state = {
     isPaymentButtonOpen: false,
   };
@@ -229,3 +228,5 @@ export default class PaymentButtonsList extends ListContainer {
     );
   }
 }
+
+export default withRouter(PaymentButtonsList);

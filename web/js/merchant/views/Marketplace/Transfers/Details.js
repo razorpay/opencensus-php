@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
 import ReversalModal from './ReversalModal';
@@ -24,7 +24,6 @@ const TransferDetails = lazy(() =>
   ),
 );
 
-@withRouter
 @connect((state) => state.transfer, {
   fetchTransfer,
   fetchReversals,
@@ -34,7 +33,7 @@ const TransferDetails = lazy(() =>
   updateTransfer,
   ...ModalActions,
 })
-export default class TransferDetailsContainer extends Component {
+class TransferDetailsContainer extends Component {
   state = {};
 
   fetchData(transferId) {
@@ -163,3 +162,5 @@ export default class TransferDetailsContainer extends Component {
     );
   }
 }
+
+export default withRouter(TransferDetailsContainer);

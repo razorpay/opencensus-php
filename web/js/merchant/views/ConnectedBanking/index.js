@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import OfferPage from './components/OfferPage';
 import { OFFER_DETAILS } from './data';
 import RazorpayXIFrame from './RazorpayXIFrame';

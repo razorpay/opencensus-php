@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { compose, bindActionCreators } from 'redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import {
   HeaderBodyDivider,

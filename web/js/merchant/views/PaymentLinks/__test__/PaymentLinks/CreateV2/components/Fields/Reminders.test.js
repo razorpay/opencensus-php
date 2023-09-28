@@ -1,6 +1,4 @@
 import React from 'react';
-import { Router } from 'react-router-dom';
-import { createMemoryHistory } from 'history';
 import { render, screen, userEvent } from 'test-utils';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 import Reminders from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/Reminders';
@@ -15,11 +13,7 @@ describe('Reminders - Unit Test', () => {
   });
 
   const renderApp = (props = {}) => {
-    return render(
-      <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-        <Reminders {...props} />
-      </Router>,
-    );
+    return render(<Reminders {...props} />);
   };
 
   test('should render disabled state when reminders are not enabled', () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import Spinner from 'common/ui/Spinner';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import adminFetch from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
@@ -11,8 +11,7 @@ import AddEditSegment from './AddEditSegment';
 import { SEGMENT_DELETE, SEGMENT_EVALUATE_IN_BLOOM } from './constants';
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
-export default class SegmentDetails extends React.Component {
+class SegmentDetails extends React.Component {
   evaluatorIds = null;
 
   state = {
@@ -306,3 +305,5 @@ export default class SegmentDetails extends React.Component {
 SegmentDetails.propTypes = {
   segmentId: PropTypes.string.isRequired,
 };
+
+export default withRouter(SegmentDetails);

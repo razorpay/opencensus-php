@@ -1,7 +1,9 @@
+/* eslint-disable */
 import React from 'react';
 import { connect } from 'react-redux';
 import { change } from 'redux-form';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { RZPFeatures } from 'merchant/helpers/data';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -42,8 +44,7 @@ const link = {
     },
   },
 )
-@withRouter
-export default class SubscriptionsListContainer extends ListContainer {
+class SubscriptionsListContainer extends ListContainer {
   filterEle = React.createRef();
 
   componentDidMount() {
@@ -169,3 +170,5 @@ function EmptyComponent() {
     />
   );
 }
+
+export default withRouter(SubscriptionsListContainer);

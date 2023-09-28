@@ -1,28 +1,12 @@
-import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
-import { createMemoryHistory } from 'history';
-import { storeWithInitialState } from 'merchant/store';
 import * as Ajax from 'merchant/utils/ajax';
 import EzetapDetailsForm from 'merchant/views/Transactions/v1/Payments/components/CollectEzetapKeys';
 import React from 'react';
-import { Provider } from 'react-redux';
-import { Router } from 'react-router-dom';
 import { fireEvent, render, screen, waitFor } from 'test-utils';
 
 const openRefundModalMock = jest.fn();
 
 const renderApp = () => {
-  const history = createMemoryHistory();
-
-  return render(
-    <Provider store={storeWithInitialState({})}>
-      <BladeProvider themeTokens={paymentTheme}>
-        <Router history={history}>
-          <EzetapDetailsForm openRefundModal={openRefundModalMock} />
-        </Router>
-      </BladeProvider>
-    </Provider>,
-  );
+  return render(<EzetapDetailsForm openRefundModal={openRefundModalMock} />);
 };
 
 describe('EzetapDetailsForm', () => {

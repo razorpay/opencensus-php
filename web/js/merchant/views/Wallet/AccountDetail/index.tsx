@@ -1,8 +1,9 @@
 import moment from 'moment';
 import { useQuery } from 'react-query';
 import React, { useContext } from 'react';
-import { NavLink, withRouter } from 'react-router-dom';
-
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps, WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import Spinner from 'common/ui/Spinner';
 import Definition from 'common/ui/Definition';
 import { Alert, Badge } from '@razorpay/blade/components';
@@ -18,13 +19,7 @@ import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/Accounts/constants';
 import type { Account } from 'merchant/views/Wallet/types';
 import { walletPaths } from 'merchant/views/Wallet/constants';
 
-interface AccountDetailProps {
-  match: {
-    params: {
-      id: string;
-    };
-  };
-}
+type AccountDetailProps = RouteComponentProps & WithRouterProps;
 
 export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
   const { mode } = useContext(SessionContext);
@@ -127,4 +122,4 @@ export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
   );
 };
 
-export default withRouter(AccountDetail);
+export default withRouter<AccountDetailProps>(AccountDetail);

@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import {
-  render,
+  render as mainRender,
   screen,
   waitFor,
   fireEvent,
@@ -9,19 +9,26 @@ import {
   COMPONENT_WRAPPER_TESTID,
 } from 'test-utils';
 import {
-  AppWithRouter,
+  App,
   defaultProps,
   showNotificationSpy,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentReceipt';
+import { createMemoryHistory } from 'history';
+
+const render = (ui, hash = '#paymentpages') => {
+  const history = createMemoryHistory();
+  history.push({ pathname: '/', hash });
+  return mainRender(ui, { history });
+};
 
 describe('PaymentReceipt', () => {
   test('should not render payment receipt details when showReceiptActions is false', () => {
-    render(<AppWithRouter hash="" />);
+    render(<App />, '');
     checkIfComponentIsEmpty();
   });
 
   test('should render payment receipt details when showReceiptActions is true', async () => {
-    render(<AppWithRouter />);
+    render(<App />);
     await waitFor(() => {
       expect(screen.getByText('Reference ID: IN1234567890')).toBeInTheDocument();
     });
@@ -29,7 +36,7 @@ describe('PaymentReceipt', () => {
 
   describe('Send button', () => {
     test('should send receipt when send button is clicked', async () => {
-      render(<AppWithRouter />);
+      render(<App />);
       await waitFor(() => {
         expect(screen.getByTestId(COMPONENT_WRAPPER_TESTID)).not.toBeEmptyDOMElement();
       });
@@ -47,7 +54,7 @@ describe('PaymentReceipt', () => {
 
     test('should show send receipt errors when send button is clicked and some server error occurs', async () => {
       render(
-        <AppWithRouter
+        <App
           payment={{
             id: '1234',
           }}
@@ -70,7 +77,7 @@ describe('PaymentReceipt', () => {
 
     test('should send custom receipt when send button is clicked', async () => {
       render(
-        <AppWithRouter
+        <App
           payment={{
             id: '123',
           }}
@@ -104,7 +111,7 @@ describe('PaymentReceipt', () => {
   });
   describe('Download button', () => {
     test('should download receipt when download button is clicked', async () => {
-      render(<AppWithRouter />);
+      render(<App />);
       await waitFor(() => {
         expect(screen.getByText('Download')).toBeInTheDocument();
       });
@@ -117,7 +124,7 @@ describe('PaymentReceipt', () => {
 
     test('should download custom receipt when download button is clicked', async () => {
       render(
-        <AppWithRouter
+        <App
           payment={{
             id: '123',
           }}
@@ -140,7 +147,7 @@ describe('PaymentReceipt', () => {
 
     test('should show download custom receipt errors when send download is clicked and some server error occurs', async () => {
       render(
-        <AppWithRouter
+        <App
           payment={{
             id: '123',
           }}
@@ -165,7 +172,7 @@ describe('PaymentReceipt', () => {
   describe('Cancel button', () => {
     test('should not show custom receipt input field when cancel button is clicked', async () => {
       render(
-        <AppWithRouter
+        <App
           payment={{
             id: '123',
           }}

@@ -1,21 +1,18 @@
-import { Component } from 'react';
+import React from 'react';
 import user from 'razorx/user';
-import { Route, Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
-export default props => {
+export default (props) => {
   return showWhenUtil(props) ? props.children : null;
 };
 
 export function showWhenUtil(props) {
-  var permission = props.permission;
-  var permissions = user.permissions;
-  var isContentVisible = false;
+  const permission = props.permission;
+  const permissions = user.permissions;
+  let isContentVisible = false;
 
-  if (
-    !permissions ||
-    !permission ||
-    permissions.find(perm => permission === perm)
-  ) {
+  if (!permissions || !permission || permissions.find((perm) => permission === perm)) {
     isContentVisible = true;
   }
 
@@ -26,22 +23,22 @@ export function showWhenUtil(props) {
   return isContentVisible;
 }
 
-export function ShowWhenRoute({ component: Component, ...rest }) {
-  return (
-    <Route
-      {...rest}
-      render={props =>
-        showWhenUtil(rest) ? (
-          <Component {...rest} />
-        ) : (
-          <Redirect
-            to={{
-              pathname: '/admin',
-              state: { from: rest.location, was404: true },
-            }}
-          />
-        )
-      }
-    />
-  );
-}
+export const RouteGuard = withRouter(
+  ({
+    defaultPath = '/admin',
+    customLoader,
+    children,
+    location,
+    params,
+    navigate,
+    history,
+    ...rest
+  }) => {
+    const showWhenUtilResult = showWhenUtil(rest);
+    if (showWhenUtilResult) {
+      return React.cloneElement(children, { location, params, navigate, history });
+    } else {
+      return <Navigate to={defaultPath} state={{ from: location, was404: true }} replace />;
+    }
+  },
+);

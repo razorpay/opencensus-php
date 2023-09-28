@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
-import { withRouter } from 'react-router';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 

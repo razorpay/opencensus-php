@@ -1,7 +1,7 @@
 import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import React, { useEffect, useState } from 'react';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';

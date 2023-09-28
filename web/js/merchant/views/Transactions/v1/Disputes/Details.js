@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';

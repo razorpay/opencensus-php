@@ -2,7 +2,7 @@ import type {
   TrackingObjectType,
   PlansType,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 interface PaymentCheckoutMweb {
   plans: PlansType;

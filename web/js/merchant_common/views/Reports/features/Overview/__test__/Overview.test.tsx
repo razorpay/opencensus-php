@@ -4,7 +4,7 @@ import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMoc
 import { render, screen, userEvent, waitFor } from 'test-utils';
 import { OverView } from 'merchant_common/views/Reports/features/Overview';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { getOverViewStateWith } from './fixtures';
 import { sortCardsByReportType } from 'merchant_common/views/Reports/utils/commonUtils';
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';

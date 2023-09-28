@@ -29,21 +29,17 @@ jest.mock('merchant/views/Account/Profile/components/FIRC/FIRCSection', () => ({
 }));
 
 export const renderApp = ({ user, pathname } = {}) => {
-  return render(
-    <BankAccountsAndSettlements
-      location={{ pathname: pathname ?? ROUTES_INFO.BANK_ACCOUNT_DETAILS }}
-    />,
-    {
-      initialState: {
-        session: {
-          user: {
-            isAccountAndSettingsRevampEnabled: true,
-            ...user,
-          },
+  return render(<BankAccountsAndSettlements />, {
+    initialEntries: [pathname ?? ROUTES_INFO.BANK_ACCOUNT_DETAILS],
+    initialState: {
+      session: {
+        user: {
+          isAccountAndSettingsRevampEnabled: true,
+          ...user,
         },
       },
     },
-  );
+  });
 };
 
 beforeEach(() => {

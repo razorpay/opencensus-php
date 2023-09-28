@@ -121,7 +121,7 @@ export const splitzConfig: SplitzInitConfig = {
     },
     {
       matchByDashboard: ['partner'],
-      routesToMatch: ['/'],
+      routesToMatch: [/partners.*/i],
       abExperiments: [
         {
           uniqueHashKey: 'Partnerships_oauth_phantom',

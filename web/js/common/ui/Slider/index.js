@@ -1,12 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { getItem } from 'common/utils/localStorage';
 import Modal from 'react-modal';
 import * as SliderActions from 'merchant_common/reducers/slider';
 import { classList } from 'common/utils/rzp-utils';
 
-@withRouter
 @connect(
   (state) => ({
     ...state.slider,
@@ -14,7 +13,7 @@ import { classList } from 'common/utils/rzp-utils';
   }),
   SliderActions,
 )
-export default class ModalSlider extends Component {
+class ModalSlider extends Component {
   // Closes the slider
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
@@ -108,3 +107,5 @@ export default class ModalSlider extends Component {
 ModalSlider.defaultProps = {
   onClose: () => {},
 };
+
+export default withRouter(ModalSlider);

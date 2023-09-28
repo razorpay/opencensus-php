@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -40,7 +40,6 @@ export const HERO_IMAGE_MAP = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: i18nHeroMain,
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -54,7 +53,7 @@ export const HERO_IMAGE_MAP = {
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
-export default class PaymentPagesOnBoarding extends React.Component {
+class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
@@ -180,3 +179,5 @@ export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
 
   return false;
 }
+
+export default withRouter(PaymentPagesOnBoarding);

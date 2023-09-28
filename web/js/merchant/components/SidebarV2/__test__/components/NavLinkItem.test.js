@@ -52,7 +52,7 @@ describe('NavLinkItem', () => {
     test('should be called along with link title as section name', async () => {
       renderApp({
         renderOptions: {
-          historyOptions: { initialEntries: ['/profile'] },
+          initialEntries: ['/profile'],
           path: '/profile',
         },
       });
@@ -78,7 +78,7 @@ describe('NavLinkItem', () => {
       renderApp({
         props: paymentLinksInfo,
         renderOptions: {
-          historyOptions: { initialEntries: ['/profile'] },
+          initialEntries: ['/profile'],
           path: '/profile',
         },
       });

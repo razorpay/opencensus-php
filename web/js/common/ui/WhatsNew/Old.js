@@ -1,6 +1,6 @@
 import { Component, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 import { getItem, setItem } from 'common/utils/localStorage';
 import {
@@ -47,7 +47,7 @@ import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
-@withRouter
+
 @connect(
   (state) => {
     return {
@@ -908,4 +908,4 @@ const NotificationCard = ({
   );
 };
 
-export default WhatsNewOld;
+export default withRouter(WhatsNewOld);

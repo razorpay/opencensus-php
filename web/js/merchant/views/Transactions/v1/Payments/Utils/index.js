@@ -39,9 +39,9 @@ export const makeIdLink =
           pathname: url,
           search,
           hash,
-          state: {
-            prevPath: window.location.pathname.split('/app')[1],
-          },
+        }}
+        state={{
+          prevPath: window.location.pathname.split('/app')[1],
         }}
         onClick={onLinkClick}
       >

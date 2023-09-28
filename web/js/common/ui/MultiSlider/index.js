@@ -1,6 +1,6 @@
 import { Component, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { MultiSliderOverlay, multiSliderAttributes } from './MultiSliderStyle';
@@ -8,7 +8,6 @@ import MultiSliderComponent from './MultiSlider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 
-@withRouter
 @connect((state) => state.multiSlider, { emptySliderStack })
 class MultiSlider extends Component {
   disableScrolling = () => {
@@ -104,10 +103,12 @@ const MultiSliderFallback = connect(null, { showNotification: showNotificationPr
   },
 );
 
+const MultiSliderMain = withRouter(MultiSlider);
+
 const MultiSliderWrapper = () => {
   return (
     <ErrorBoundary resetOnProps FallbackComponent={MultiSliderFallback}>
-      <MultiSlider />
+      <MultiSliderMain />
     </ErrorBoundary>
   );
 };

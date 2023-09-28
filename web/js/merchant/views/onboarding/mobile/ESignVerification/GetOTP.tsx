@@ -26,8 +26,12 @@ const generateCaptcha = async () => {
   return fetchData;
 };
 
+type goToNextScreenProps = {
+  nextScreen: string;
+};
+
 interface GetOTPPropsT {
-  goToNextScreen: ({ nextScreen: string }) => void;
+  goToNextScreen: (args: goToNextScreenProps) => void;
   setAadharNumber: (data: string) => void;
   setRequestId: (data: string) => void;
   setOTP: (data: string) => void;
@@ -295,6 +299,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                               />
                               <img
                                 src={ResendIcon}
+                                alt="captcha"
                                 className="captcha-screen__resend"
                                 onClick={() => fetchCaptcha()}
                               />

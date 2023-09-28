@@ -1,11 +1,8 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
-
-import PaymentButtonList from 'merchant/views/PaymentButton/PaymentButton/List';
-import SubscriptionButtonList from 'merchant/views/PaymentButton/SubscriptionButton/List';
 
 import {
   handleProductQuickGuide,
@@ -23,7 +20,7 @@ import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { withRouter } from 'common/deprecated/withRouter';
 
 @connect(
   (state) => {
@@ -40,7 +37,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
     updateFeatures,
   },
 )
-export default class PaymentButtonsContainer extends React.Component {
+class PaymentButtonsContainer extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.paymentbuttons.loading !== this.props.paymentbuttons.loading) {
       this.initPaymentButtonsOnboarding(nextProps);
@@ -102,7 +99,7 @@ export default class PaymentButtonsContainer extends React.Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, children } = this.props;
     const { showOnboarding, isQuickGuideOpen } = this.props.paymentButtonsProductOnBoarding;
 
     if (showOnboarding && !user.isOrgAxis) {
@@ -126,15 +123,10 @@ export default class PaymentButtonsContainer extends React.Component {
           />
         )}
 
-        <ErrorBoundary resetOnProps>
-          <Switch>
-            <Route path="/paymentbuttons" component={PaymentButtonList} />
-            {!user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton) && (
-              <Route path="/subscription_buttons" component={SubscriptionButtonList} />
-            )}
-          </Switch>
-        </ErrorBoundary>
+        <ErrorBoundary resetOnProps>{children}</ErrorBoundary>
       </>
     );
   }
 }
+
+export default withRouter(PaymentButtonsContainer);

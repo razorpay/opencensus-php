@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import {
-  batchDownload,
-  fetchPaymentLinkBatchesDetails,
-} from 'merchant/reducers/batches';
+import { batchDownload } from 'merchant/reducers/batches';
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
-@withRouter
 @connect(
-  state => {
+  (state) => {
     const batchDetails = state.batchDetails;
     return {
       isLoading: batchDetails.loading,
@@ -26,17 +22,17 @@ import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
     batchDownload,
     ...ModalActions,
     ...NotificationsActions,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('BatchDetails'))
-export default class BatchDetailsContainer extends Component {
-  handleDownload = id => {
+class BatchDetailsContainer extends Component {
+  handleDownload = (id) => {
     this.props.tracking.trackEvent(
       window.rzpQ.chargeAtWill().interaction(`download.details.initiate`),
     );
     this.props
       .batchDownload(id)
-      .then(response => {
+      .then((response) => {
         window.location = response.data.url;
       })
       .catch(({ errors }) => {
@@ -47,7 +43,7 @@ export default class BatchDetailsContainer extends Component {
       });
   };
 
-  fetchData = id => {
+  fetchData = (id) => {
     if (!id) return;
     this.props.fetchBatchDetails({ id });
   };
@@ -74,3 +70,5 @@ export default class BatchDetailsContainer extends Component {
     return <BatchDetails onDownload={this.handleDownload} {...this.props} />;
   }
 }
+
+export default withRouter(BatchDetailsContainer);

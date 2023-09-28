@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
-
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { withRouter } from 'common/deprecated/withRouter';
 import NoSearchResult from 'merchant/views/Transactions/v2/common/components/NoSearchResult';
 import { TransactionsPagesMap } from 'merchant/views/Transactions/v2/common/constants';
 import { trackNoSearchResult } from 'merchant/views/Transactions/v2/common/tracking';

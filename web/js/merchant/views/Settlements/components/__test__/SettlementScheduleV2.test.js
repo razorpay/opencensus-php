@@ -11,6 +11,7 @@ const state = {
   session: {
     user: {
       isMarketplaceEnabled: true,
+      findTag: () => false,
     },
     org: {},
   },

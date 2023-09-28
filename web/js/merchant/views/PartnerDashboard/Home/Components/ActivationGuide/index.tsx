@@ -12,7 +12,7 @@ import {
   IntegratingAPIStep,
   CommissionStep,
 } from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide/ActivationStepVariants';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { History } from 'history';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';

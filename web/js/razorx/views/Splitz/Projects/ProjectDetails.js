@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import AddEditProject from './AddEditProject';
 import { openModal } from 'razorx/components/Modal';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 
-@withRouter
-export default class ProjectDetails extends React.Component {
+class ProjectDetails extends React.Component {
   state = {
     isFetchingProject: false,
     isFetchingExperiments: false,
@@ -208,3 +208,5 @@ ProjectDetails.propTypes = {
   projectId: PropTypes.string.isRequired,
   collection: PropTypes.object.isRequired,
 };
+
+export default withRouter(ProjectDetails);

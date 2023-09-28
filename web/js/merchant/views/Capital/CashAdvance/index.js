@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { openModal } from 'merchant_common/reducers/modals';
 import Onboarding from './onboarding';
@@ -15,7 +15,7 @@ import {
   canViewCashAdvanceProduct,
   isCashAdvanceProductActive,
 } from 'merchant/views/Capital/utils';
-
+import { withRouter } from 'common/deprecated/withRouter';
 @connect(
   (state) => ({
     user: state.session.user,
@@ -140,7 +140,7 @@ class WithdrawalsRoot extends Component {
       if (wcError) {
         return 'Error while loading WC.';
       }
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />; // nosemgrep : https://semgrep.dev/s/w48P
+      return <Navigate to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} replace />; // nosemgrep : https://semgrep.dev/s/w48P
     }
     if (isCashAdvanceEligible && hasLOCStage2Feature) {
       // Edge Case: update the URL to capital/cash-advance incase cash advance merchant directly visited line-of-credit. rare scenario so not handling it to avoid complexity
@@ -157,10 +157,10 @@ class WithdrawalsRoot extends Component {
       );
     }
     if (isCashAdvanceEligible) {
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />; // nosemgrep : https://semgrep.dev/s/w48P
+      return <Navigate to={`${CASH_ADVANCE_BASE_URL}apply`} replace />; // nosemgrep : https://semgrep.dev/s/w48P
     }
-    return <Redirect to={`${LINE_OF_CREDIT_BASE_URL}apply`} />;
+    return <Navigate to={`${LINE_OF_CREDIT_BASE_URL}apply`} replace />;
   }
 }
 
-export default WithdrawalsRoot;
+export default withRouter(WithdrawalsRoot);

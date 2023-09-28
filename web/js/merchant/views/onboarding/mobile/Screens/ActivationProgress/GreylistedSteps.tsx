@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import shallow from 'zustand/shallow';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from 'merchant/views/onboarding/mobile/OnboardingStepCard';
 import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';

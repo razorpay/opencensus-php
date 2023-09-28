@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -152,7 +152,6 @@ export const status = {
   value: (item) => <PaymentPagesStatusLabel status={item.status} />,
 };
 
-@withRouter
 @connect(
   (state) => ({
     ...state.subscription_buttons,
@@ -161,7 +160,7 @@ export const status = {
   { fetchAll, openModal, closeModal, handleProductQuickGuide },
 )
 @RTracking(() => window.rzpQ.component('SubscriptionButtonsList'))
-export default class SubscriptionButtonsList extends ListContainer {
+class SubscriptionButtonsList extends ListContainer {
   state = {
     isSubscriptionButtonOpen: false,
   };
@@ -317,3 +316,5 @@ function EmptyComponent() {
     </div>
   );
 }
+
+export default withRouter(SubscriptionButtonsList);

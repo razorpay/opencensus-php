@@ -1,9 +1,6 @@
-import { Router } from 'react-router-dom';
-import { render, screen, userEvent } from 'test-utils';
-import { Provider } from 'react-redux';
+import { render as renderMain, screen, userEvent } from 'test-utils';
 import { storeWithInitialState } from 'merchant/store';
 import CODAutomationBanner from 'merchant/views/MagicCheckout/CODOrdersTab/common/CODAutomationBanner';
-import { createMemoryHistory } from 'history';
 import {
   AUTOMATION_BANNER_SUBHEADING,
   AUTOMATION_TAB_LINK,
@@ -17,20 +14,10 @@ const initState = {
   },
 };
 
-const App = ({ state = {}, ...props }) => {
-  return (
-    <Provider store={storeWithInitialState({ ...initState, ...state })}>
-      <CODAutomationBanner {...props} />
-    </Provider>
-  );
-};
-
-const AppWithRouter = ({ state = {}, ...props }) => {
-  return (
-    <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-      <App state={state} {...props} />
-    </Router>
-  );
+const render = (ui, extraConfig = { state: {} }) => {
+  return renderMain(ui, {
+    reduxStore: storeWithInitialState({ ...initState, ...extraConfig.state }),
+  });
 };
 
 describe('Automation banner component', () => {
@@ -42,14 +29,14 @@ describe('Automation banner component', () => {
   });
 
   test('rendering automation banner', () => {
-    render(<AppWithRouter />);
+    render(<CODAutomationBanner />);
     expect(
       screen.getByText(new RegExp(`${AUTOMATION_BANNER_SUBHEADING}`, 'i')),
     ).toBeInTheDocument();
   });
 
   test('automation cta should be present', () => {
-    render(<AppWithRouter />);
+    render(<CODAutomationBanner />);
     expect(
       screen.getByRole('button', {
         name: 'Automate now',
@@ -58,12 +45,12 @@ describe('Automation banner component', () => {
   });
 
   test('should have a navigation route', () => {
-    const { container } = render(<AppWithRouter />);
+    const { container } = render(<CODAutomationBanner />);
     expect(container.querySelector('a').getAttribute('href')).toBe(AUTOMATION_TAB_LINK);
   });
 
   test('should set the location path when click on automate CTA', async () => {
-    const { history, container } = render(<App />);
+    const { history, container } = render(<CODAutomationBanner />);
 
     expect(container.querySelector('a').getAttribute('href')).toBe(AUTOMATION_TAB_LINK);
 
@@ -86,7 +73,9 @@ describe('Automation banner component', () => {
       },
     };
 
-    render(<AppWithRouter state={customState} />);
+    render(<CODAutomationBanner />, {
+      state: customState,
+    });
     expect(screen.queryByText(AUTOMATION_BANNER_SUBHEADING)).toBeNull();
   });
 });

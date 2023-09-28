@@ -9,7 +9,7 @@ import {
   Box,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { withRouter, RouterProps } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { compose, bindActionCreators } from 'redux';
 
 import CongratulationsDesktop from 'assets/pricing-bundle/congratulations-desktop.png';
@@ -31,7 +31,7 @@ import type {
   PaymentType,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
-interface CongratulatoryModalContentType extends RouterProps {
+interface CongratulatoryModalContentType {
   closeModal: () => void;
   user: {
     isAllowedMultiple: (value: string) => boolean;
@@ -64,13 +64,14 @@ export const CongratulatoryModalContent = ({
   closeModal,
   setCongratulatoryModal,
   user,
-  history,
   type,
   togglePlan,
   selectedPaymentMode,
   selectedPlan,
   trackInstrumentation,
 }: CongratulatoryModalContentType): JSX.Element => {
+  const navigate = useNavigate();
+
   const handleToastLink = () => {
     trackInstrumentation('', {
       event_method: 'initiated',
@@ -90,8 +91,8 @@ export const CongratulatoryModalContent = ({
       ) &&
       user.isAccountAndSettingsRevampEnabled
     )
-      history.push(ROUTES_INFO.PRICING_PLANS);
-    else history.push(ROUTES_INFO.PRICING_PLANS_RELATIVE);
+      navigate(ROUTES_INFO.PRICING_PLANS);
+    else navigate(ROUTES_INFO.PRICING_PLANS_RELATIVE);
     closeModal();
   };
   return (
@@ -133,7 +134,6 @@ export const CongratulatoryModalContent = ({
 const CongratulatoryModal = ({
   closeModal,
   user,
-  history,
   isCongModalOpen,
   setCongratulatoryModal,
   type,
@@ -176,7 +176,6 @@ const CongratulatoryModal = ({
         <CongratulatoryModalContent
           closeModal={closeModal}
           setCongratulatoryModal={setCongratulatoryModal}
-          history={history}
           user={user}
           type={type}
           togglePlan={togglePlan}
@@ -189,7 +188,6 @@ const CongratulatoryModal = ({
   );
 };
 export default compose<CongratulatoryModalContentType | any>(
-  withRouter,
   connect(
     (state) => ({
       user: state.session.user,

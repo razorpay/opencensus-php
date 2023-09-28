@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -15,9 +15,8 @@ import { chargeToken } from 'merchant/reducers/token';
 import { AmountTooltip } from 'common/ui/Amount';
 import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 
-@withRouter
 @connect((state) => ({ user: state.session.user }), { chargeToken, showNotification })
-export default class ChargeToken extends Component {
+class ChargeToken extends Component {
   state = {};
 
   chargeToken = () => {
@@ -126,3 +125,5 @@ export default class ChargeToken extends Component {
     );
   }
 }
+
+export default withRouter(ChargeToken);

@@ -1,19 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 import moment from 'moment';
-import { withRouter } from 'react-router-dom';
-import RepaymentFilters from './RepaymentFilters';
-import RepaymentList from './RepaymentList';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import fileDownload from 'common/utils/file-download';
 import { arrayObjToCsv, getURLQueryParams } from 'common/utils/rzp-utils';
-import { DEFAULT_COUNT, getBreakupByBalanceType, STATUS_LABELS } from '../../constants';
-import OverviewStatus from '../Overview/OverviewStatus';
-import LoanCollectionSummary from '../Overview/LoanCollectionSummary';
-import { usePromise } from 'merchant/views/Capital/components/Await';
+import { REPAYMENT_STATUES } from 'merchant/views/Capital/CashAdvance/constants';
+import LoanCollectionSummary from 'merchant/views/Capital/Loans/LoansCollections/Overview/LoanCollectionSummary';
+import OverviewStatus from 'merchant/views/Capital/Loans/LoansCollections/Overview/OverviewStatus';
 import {
   fetchRepayments,
   getCollectionMethod,
 } from 'merchant/views/Capital/Loans/LoansCollections/util';
-import { REPAYMENT_STATUES } from '../../../CashAdvance/constants';
+import {
+  DEFAULT_COUNT,
+  getBreakupByBalanceType,
+  STATUS_LABELS,
+} from 'merchant/views/Capital/Loans/constants';
+import { usePromise } from 'merchant/views/Capital/components/Await';
+
+import RepaymentFilters from './RepaymentFilters';
+import RepaymentList from './RepaymentList';
 
 const exportAsCSV = (repayments) => {
   const reportData = repayments.map(

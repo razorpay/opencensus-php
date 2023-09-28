@@ -1,7 +1,6 @@
 import SuccessModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/SuccessModal';
 import { render, screen, act, waitFor } from 'common/services/test/test-utils';
 import userEvent from '@testing-library/user-event';
-import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 
 describe('Success Modal', () => {
@@ -20,11 +19,7 @@ describe('Success Modal', () => {
   const history = createMemoryHistory();
   history.push = jest.fn();
 
-  const App = (props) => (
-    <Router history={history}>
-      <SuccessModal {...defaultProps} {...props} />
-    </Router>
-  );
+  const App = (props) => <SuccessModal {...defaultProps} {...props} />;
 
   test('should render Success Modal content', async () => {
     await act(async () => {
@@ -52,7 +47,9 @@ describe('Success Modal', () => {
   });
 
   test('should call onSubmit on clicking success button', async () => {
-    render(<App />);
+    render(<App />, {
+      history,
+    });
 
     await waitFor(async () => {
       const successButton = screen.getByText(defaultProps.successButtonText);

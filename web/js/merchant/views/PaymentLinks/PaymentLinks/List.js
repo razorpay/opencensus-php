@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
-import { withRouter, NavLink, Link } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 import { Field } from 'redux-form';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -107,13 +108,13 @@ const getExtraFields = (user, tracking, onDatesChange) => {
 
   return fields;
 };
-@withRouter
+
 @connect((state) => ({ ...state.paymentlinks, ...state.session }), {
   fetchPaymentLinks,
   fetchReminders,
 })
 @RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
-export default class PaymentLinksContainer extends ListContainer {
+class PaymentLinksContainer extends ListContainer {
   constructor(props) {
     super(props);
 
@@ -396,3 +397,5 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(PaymentLinksContainer);

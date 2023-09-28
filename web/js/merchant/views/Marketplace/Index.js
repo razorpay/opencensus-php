@@ -1,11 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Switch } from 'react-router-dom';
-
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import {
   handleProductQuickGuide,
@@ -131,7 +129,6 @@ class MarketplaceContainer extends React.Component {
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
     const isRoutesDisabled = !isMarketplaceEnabled;
-
     // in case of customer fee bearer if route is disabled for the user, he should not be able to access onboarding to turn on the ROUTE
     if (isCustomerFeeBearer && isRoutesDisabled) {
       return (
@@ -176,14 +173,57 @@ class MarketplaceContainer extends React.Component {
         )}
 
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <Wrapper path="/route/payments" component={ClonedPaymentsList} />
-            <Wrapper path="/route/transfers" component={TransfersList} />
-            <Wrapper path="/route/platformfee" component={PlatformFeeList} />
-            <Wrapper path="/route/reversals" component={ReversalsList} />
-            <Wrapper path="/route/accounts" component={AccountsList} />
-            <Wrapper path="/route/batchuploads" component={BatchesList} />
-          </Switch>
+          <Routes>
+            <Route path="*" element={<Navigate to="payments" replace />} />
+            <Route
+              path="payments/*"
+              element={
+                <Wrapper>
+                  <ClonedPaymentsList />
+                </Wrapper>
+              }
+            />
+            <Route
+              path="transfers/*"
+              element={
+                <Wrapper>
+                  <TransfersList />
+                </Wrapper>
+              }
+            />
+            <Route
+              path="platformfee/*"
+              element={
+                <Wrapper>
+                  <PlatformFeeList />
+                </Wrapper>
+              }
+            />
+            <Route
+              path="reversals/*"
+              element={
+                <Wrapper>
+                  <ReversalsList />
+                </Wrapper>
+              }
+            />
+            <Route
+              path="accounts/*"
+              element={
+                <Wrapper>
+                  <AccountsList />
+                </Wrapper>
+              }
+            />
+            <Route
+              path="batchuploads/*"
+              element={
+                <Wrapper>
+                  <BatchesList />
+                </Wrapper>
+              }
+            />
+          </Routes>
         </ErrorBoundary>
       </div>
     );

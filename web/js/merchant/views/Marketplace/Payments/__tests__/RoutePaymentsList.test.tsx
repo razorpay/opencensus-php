@@ -1,15 +1,9 @@
 import React from 'react';
-import { render, waitFor } from 'common/services/test/test-utils';
+import { render, waitFor } from 'test-utils';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import * as analytics from 'common/utils/analytics';
-
-const state = {
-  session: {
-    user: {
-      id: 'testUserId',
-    },
-  },
-};
+import { state } from 'merchant/views/Marketplace/PlatformFee/__tests__/PlatformFeeList.test';
+import 'react-dates/initialize';
 
 const location = {
   search: '',
@@ -22,6 +16,7 @@ describe('PaymentsList', () => {
   const renderApp = (isPlatformFeeTabEnabled = false) => {
     render(<PaymentsList isPlatformFeeTabEnabled={isPlatformFeeTabEnabled} location={location} />, {
       initialState: state,
+      renderViaRouteGuard: false,
     });
   };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import AsyncButton from 'react-async-button';

@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { openModal } from 'razorx/components/Modal';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 
-@withRouter
-export default class GroupDetails extends React.Component {
+class GroupDetails extends React.Component {
   state = {
     isFetchingGroup: false,
     isFetchingProject: false,
@@ -191,3 +191,5 @@ export default class GroupDetails extends React.Component {
 GroupDetails.propTypes = {
   groupId: PropTypes.string.isRequired,
 };
+
+export default withRouter(GroupDetails);

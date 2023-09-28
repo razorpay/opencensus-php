@@ -12,8 +12,9 @@ import {
   Tooltip,
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import noop from 'lodash/noop';
-import { withRouter } from 'react-router-dom';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
@@ -34,21 +35,25 @@ import CardIcon from './CardIcon';
 
 const BottomOverviewCard = ({
   currency,
-  history,
   data,
   footerValues,
-  location,
   durationOption,
 }: BottomOverviewCardProps): JSX.Element | null => {
   const [isHover, setIsHover] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { name, loading: isLoading, value, isAmount, failed: isFailed } = data;
   const goToEntityPage = () => {
     track({
       objectName: `${name} Tab`,
       properties: { overviewDate: durationOption.title, section: 'Overview' },
     });
+    navigate(cardLink[name], {
+      state: {
+        prevPath: location.pathname,
+      },
+    });
     sessionStorage.setItem('overviewDuration', JSON.stringify(durationOption));
-    history.push(cardLink[name], { prevPath: location.pathname });
   };
   if (isLoading) {
     return <CardShimmer />;
@@ -136,4 +141,4 @@ const BottomOverviewCard = ({
   );
 };
 
-export default withRouter(BottomOverviewCard);
+export default BottomOverviewCard;

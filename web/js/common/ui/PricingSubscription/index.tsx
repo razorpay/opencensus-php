@@ -6,7 +6,7 @@ import { fetchPricingSubscription as fetchPricingSubscriptionProps } from 'merch
 import { getCookie } from 'common/utils/cookies';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { LS_LABELS } from 'common/ui/PricingSubscription/constants';
 const LazyPricingBundleMweb = lazy(
   () =>

@@ -6,13 +6,8 @@ import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/condi
 jest.mock('react-router-dom', () => ({
   __esModule: true,
   ...jest.requireActual('react-router-dom'),
-  Route: ({ path, component: Component, render, ...props }) =>
-    render ? (
-      render({ ...props, path })
-    ) : (
-      <div data-testid={path}>{Component && <Component />}</div>
-    ),
-  Switch: ({ children }) => <div>{children}</div>,
+  Route: ({ path, element }) => <div data-testid={path}>{element}</div>,
+  Routes: ({ children }) => children,
 }));
 
 jest.mock('common/components/Breadcrumb', () => ({

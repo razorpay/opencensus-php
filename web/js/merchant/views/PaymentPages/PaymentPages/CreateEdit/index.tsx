@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Wysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
 import StoreFront from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront';
 import TemplateSelection from './TemplateSelection';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 export const PAYMENT_PAGES_TYPES = {

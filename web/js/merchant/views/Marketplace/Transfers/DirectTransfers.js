@@ -1,31 +1,30 @@
-import { connect } from 'react-redux';
+/* eslint-disable react/no-unsafe */
+/* eslint-disable react/jsx-no-duplicate-props */
+/* eslint-disable consistent-return */
+import React from 'react';
 import moment from 'moment';
-import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import { classList } from 'common/utils/rzp-utils';
-import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
-import { prefixEntityValue } from 'merchant_common/helpers/data';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
-import { isAmount } from 'common/utils/validators';
-
-import Amount from 'common/ui/Amount';
-import Form from 'common/new-ui/Form';
-import Spinner from 'common/ui/Spinner';
-import Input, { Label, Description } from 'common/new-ui/Input';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Form from 'common/new-ui/Form';
+import Input, { Label, Description } from 'common/new-ui/Input';
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
+import Spinner from 'common/ui/Spinner';
+import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
+import { rupeesToPaise, classList } from 'common/utils/rzp-utils';
+import { isAmount } from 'common/utils/validators';
 import AccountSelector from 'merchant/components/AccountSelector';
-
 import { luminateRow } from 'merchant/reducers/app';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { createDirectTransfer } from 'merchant/reducers/payments/details';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@withRouter
 @connect(
   (state) => ({
     accounts: state.accounts,
@@ -38,7 +37,7 @@ import { createDirectTransfer } from 'merchant/reducers/payments/details';
   },
 )
 @RTracking(() => window.rzpQ.component('DirectTransfers'))
-export default class DirectTransfers extends React.Component {
+class DirectTransfers extends React.Component {
   state = {
     disableSubmit: false,
     isFormLocked: false,
@@ -257,7 +256,6 @@ export default class DirectTransfers extends React.Component {
               value: '2',
             },
           ]}
-          disabled={state.isFormLocked}
         />
 
         <Input.PairList
@@ -372,3 +370,5 @@ function getIsDayBlocked(date) {
 
   return date < nextWorkingDate || isHoliday(date);
 }
+
+export default withRouter(DirectTransfers);

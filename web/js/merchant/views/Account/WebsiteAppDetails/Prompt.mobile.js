@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateBannerAndModalVisibility } from 'merchant/reducers/websitecompliance';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 function PromptMobile({
   websiteComplianceModalVisibility,

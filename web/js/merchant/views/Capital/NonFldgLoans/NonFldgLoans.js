@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import UpRightLogo from '../../../../../css/assets/capital/arrow-up-right.svg';
 import { NON_FLDG_LOANS_DATA } from './constants';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { trackFirstScreenRender, trackClickHandler } from './trackEvents';
 import { Container } from './styles';
 
@@ -50,7 +50,7 @@ const NonFldgLoans = ({ user }) => {
     if (user.isNonFldgLoansEnabled) trackFirstScreenRender();
   }, []);
 
-  if (!user.isNonFldgLoansEnabled) return <Redirect to="/" />;
+  if (!user.isNonFldgLoansEnabled) return <Navigate to="/" replace />;
 
   return (
     <OnBoardingWrapper class="Loans">

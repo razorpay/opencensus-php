@@ -6,7 +6,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { StyledFilterDiv } from 'merchant/views/Settlements/v3/components/SettlementListFilter/styled';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import qs from 'query-string';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -23,7 +23,13 @@ const FORM_NAME = 'settlementsListFilter';
 const allTimePresetName = dateRangePresets[0][0];
 const getEmptyDate = () => ({ from: '', to: '' });
 
-const SettlementListFilterV3 = ({ terminalProviders, user, status, location, ...props }) => {
+const SettlementListFilterV3 = ({
+  terminalProviders,
+  user,
+  status,
+  location,
+  ...props
+}): JSX.Element => {
   const [selectedPreset, setSelectedPreset] = useState({
     name: allTimePresetName,
     value: dateRangePresets[0][1],
@@ -175,4 +181,4 @@ const mapStateToProps = (store) => {
   };
 };
 
-export default withRouter(connect(mapStateToProps, null)(SettlementListFilterV3));
+export default withRouter<any>(connect(mapStateToProps, null)(SettlementListFilterV3));

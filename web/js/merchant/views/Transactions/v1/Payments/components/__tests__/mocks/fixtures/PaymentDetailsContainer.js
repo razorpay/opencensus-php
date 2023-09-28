@@ -5,9 +5,6 @@ import store from 'merchant/store';
 import 'jest-location-mock';
 import * as settlementUtils from 'merchant/views/Settlements/v2/util';
 import * as reducers from 'merchant/reducers/collection';
-import ShowWhen from 'merchant/components/ShowWhen';
-
-jest.mock('merchant/components/ShowWhen');
 
 jest.spyOn(reducers, 'updateItemInPayments');
 
@@ -118,7 +115,3 @@ export const renderApp = ({ props = {} } = {}) => {
     },
   });
 };
-
-beforeEach(() => {
-  ShowWhen.mockImplementation(jest.requireActual('merchant/components/ShowWhen').default);
-});

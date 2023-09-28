@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';

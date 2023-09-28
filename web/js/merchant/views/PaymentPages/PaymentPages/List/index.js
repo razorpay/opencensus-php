@@ -7,7 +7,7 @@ import RTracking from 'react-tracking';
 import track from './track';
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -41,7 +41,7 @@ import {
   CREATE_BATCH_PP_DOC_URL,
   BATCH_PAYMENT_PAGES_BASE_URL,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
-@withRouter
+
 @connect(
   (state) => ({
     ...state.invoices,
@@ -58,7 +58,7 @@ import {
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
-export default class PaymentPagesContainer extends ListContainer {
+class PaymentPagesContainer extends ListContainer {
   constructor(props) {
     super(props);
     const { user } = props;
@@ -434,3 +434,5 @@ const EmptyComponent = ({ isStorefrontPage }) => (
     }
   />
 );
+
+export default withRouter(PaymentPagesContainer);

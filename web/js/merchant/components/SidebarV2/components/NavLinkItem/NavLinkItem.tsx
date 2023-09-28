@@ -1,6 +1,6 @@
 import React from 'react';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Badge, Text } from '@razorpay/blade/components';
-import { withRouter } from 'react-router';
 
 import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -9,6 +9,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
 import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
+import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 import { BadgeContainer, Icon, LinkButtonItem, LinkItem, Typo } from './styled';
 
@@ -48,7 +49,7 @@ const NavLinkItem = ({
   product_id,
   section,
   location,
-}: NavLinkItemInterface): JSX.Element | null => {
+}: NavLinkItemInterface & WithRouterProps): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
   const onNavLinkItemClick = () => {
     analyticsTrack({

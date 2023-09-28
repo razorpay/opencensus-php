@@ -5,7 +5,7 @@ import RefundsListFilter from 'merchant/views/Transactions/v1/Refunds/components
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
 import { refundId, paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { openModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';

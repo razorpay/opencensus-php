@@ -1,24 +1,20 @@
-import { withRouter } from 'react-router-dom';
-import {
-  openModal,
-  closeModal,
-  notify,
-  notifySuccess,
-  notifyError,
-} from 'razorx/components/Modal';
-import Form from 'razorx/components/ui/Form';
-import Field, { TextAreaField } from 'razorx/components/ui/Field';
+import React from 'react';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import EnumList from 'common/new-ui/Input/EnumList';
 import { ModalContent } from 'common/new-ui/Modal';
 import JSONEdit from 'razorx/components/JSONEdit';
-import EnumList from 'common/new-ui/Input/EnumList';
+import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
+import Field, { TextAreaField } from 'razorx/components/ui/Field';
+import Form from 'razorx/components/ui/Form';
 import { rexPost, rexPut } from 'razorx/helpers/fetch';
+
 import validatorJSON, { initJSONObj } from './validators';
 
-@withRouter
-export default class extends React.Component {
+class FeatureModal extends React.Component {
   state = { variants: this.props.data ? this.props.data.variants : [''] };
 
-  onSubmit = form => {
+  onSubmit = (form) => {
     const isInvalid = this.isInvalid();
 
     if (!!isInvalid) {
@@ -34,16 +30,16 @@ export default class extends React.Component {
     const isEdit = !!(this.props.data && this.props.data.id);
     const reqPayload = {
       ...data,
-      variants: this.state.variants.map(v => v.trim()),
+      variants: this.state.variants.map((v) => v.trim()),
     };
 
     if (reqPayload.notify && typeof reqPayload.notify === 'string') {
-      reqPayload.notify = reqPayload.notify.split(',').map(n => n.trim());
+      reqPayload.notify = reqPayload.notify.split(',').map((n) => n.trim());
     }
 
-    let requestFn = rexPost,
-      url = 'feature_flags',
-      successMsg = 'Feature is successfully created';
+    let requestFn = rexPost;
+    let url = 'feature_flags';
+    let successMsg = 'Feature is successfully created';
 
     if (isEdit) {
       requestFn = rexPut;
@@ -51,13 +47,13 @@ export default class extends React.Component {
       successMsg = `Feature ${this.props.data.id} is successfully updated`;
     }
 
-    requestFn({ url, data: reqPayload }).then(resp => {
+    requestFn({ url, data: reqPayload }).then((resp) => {
       if (resp) {
         notifySuccess(successMsg);
         closeModal();
 
         if (!isEdit) {
-          this.props.history.push('/features_flags/' + resp.id);
+          this.props.history.push(`/features_flags/${resp.id}`);
         } else {
           this.props.onEdit(resp);
         }
@@ -65,6 +61,7 @@ export default class extends React.Component {
     });
   };
 
+  // eslint-disable-next-line consistent-return
   isInvalid() {
     if (this.props.JSONView) {
       // Check if JSON is valid and all required params are there
@@ -75,7 +72,7 @@ export default class extends React.Component {
       }
 
       const trimmedVariants = this.state.variants.filter(
-        (v, i) => this.state.variants.indexOf(v) === i
+        (v, i) => this.state.variants.indexOf(v) === i,
       );
 
       if (trimmedVariants.length !== this.state.variants.length) {
@@ -88,7 +85,7 @@ export default class extends React.Component {
     let prepareObj = {};
 
     if (this.props.data) {
-      Object.keys(initJSONObj).forEach(k => {
+      Object.keys(initJSONObj).forEach((k) => {
         prepareObj[k] = this.props.data[k];
       });
     } else {
@@ -147,9 +144,7 @@ export default class extends React.Component {
               <Field
                 label="Slack Notify"
                 placeholder="Comma separated list without @"
-                defaultValue={
-                  isEdit && data.notify ? data.notify.join(', ') : ''
-                }
+                defaultValue={isEdit && data.notify ? data.notify.join(', ') : ''}
                 type="text"
                 name="notify"
               />
@@ -178,3 +173,5 @@ export default class extends React.Component {
     );
   }
 }
+
+export default withRouter(FeatureModal);

@@ -2,7 +2,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import rTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';

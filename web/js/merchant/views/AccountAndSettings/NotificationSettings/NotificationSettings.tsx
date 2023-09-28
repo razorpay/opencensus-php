@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Route, NavLink, Redirect } from 'react-router-dom';
+import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -21,7 +21,7 @@ import {
   accountAndSettingsLink,
   ROUTE_MAP,
 } from 'merchant/views/AccountAndSettings/constants/constants';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
 
@@ -31,11 +31,15 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
       case ROUTES_INFO.EMAIL_NOTIFICATIONS:
       case ROUTES_INFO.SMS_NOTIFICATIONS:
       case ROUTES_INFO.WHATSAPP_NOTIFICATIONS:
-        return <Redirect to="/config" />;
+        return <Navigate to="/config" replace />;
       default:
-        return <Redirect to="/dashboard" />;
+        return <Navigate to="/dashboard" replace />;
     }
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/notification-settings/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -68,18 +72,32 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <Route
-                  path={ROUTES_INFO.EMAIL_NOTIFICATIONS}
-                  render={(props) => <StyledConfiguration {...props} showEmailNotifications />}
-                />
-                <Route
-                  path={ROUTES_INFO.SMS_NOTIFICATIONS}
-                  render={(props) => <StyledConfiguration {...props} showSmsNotifications />}
-                />
-                <Route
-                  path={ROUTES_INFO.WHATSAPP_NOTIFICATIONS}
-                  render={(props) => <StyledConfiguration {...props} showWhatsappNotifications />}
-                />
+                <Routes>
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.EMAIL_NOTIFICATIONS)}
+                    element={
+                      <RouteGuard>
+                        <StyledConfiguration showEmailNotifications />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.SMS_NOTIFICATIONS)}
+                    element={
+                      <RouteGuard>
+                        <StyledConfiguration showSmsNotifications />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.WHATSAPP_NOTIFICATIONS)}
+                    element={
+                      <RouteGuard>
+                        <StyledConfiguration showWhatsappNotifications />
+                      </RouteGuard>
+                    }
+                  />
+                </Routes>
               </StyledTabContentContainer>
             </StyledDivider>
           </Suspense>

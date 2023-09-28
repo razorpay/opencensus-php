@@ -67,6 +67,8 @@ export const defaultStore = {
     user: {
       isFAEnabled: true,
       getMaxFAMtv: 2000,
+      isOrgAllowedFunctionality: () => true,
+      findTag: () => false,
     },
     user_segment_data: {
       average_monthly_transactions: 1000,

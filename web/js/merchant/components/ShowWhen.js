@@ -1,9 +1,11 @@
 import store from 'merchant/store';
-import ShowWhen, {
-  showWhenUtil as showWhenUtilx,
-  ShowWhenRoute as ShowWhenRoutex,
-} from '../../merchant_common/components/ShowWhen';
+import {
+  ShowWhen,
+  showWhenUtil as showWhenUtilWrapper,
+  RouteGuard,
+} from 'merchant_common/components/RouteGuard';
 
-export const showWhenUtil = showWhenUtilx(store);
-export const ShowWhenRoute = ShowWhenRoutex(store, '/dashboard');
-export default ShowWhen(store);
+export const showWhenUtil = showWhenUtilWrapper(store);
+
+export { RouteGuard };
+export default ShowWhen;

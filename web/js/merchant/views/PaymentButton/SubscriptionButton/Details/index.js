@@ -1,5 +1,6 @@
+/* eslint-disable */
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import { keysToSentence } from 'common/utils/rzp-utils';
@@ -23,7 +24,6 @@ import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/M
 import Details from './Details';
 import track from './track';
 
-@withRouter
 @connect(null, {
   showNotification,
   closeModal,
@@ -31,7 +31,7 @@ import track from './track';
   updateSubscriptionButtonInReduxList,
 })
 @RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
-export default class PaymentButtonDetails extends React.Component {
+class PaymentButtonDetails extends React.Component {
   state = {
     subscriptionButtonEntity: {},
     subscriptionButtonPayments: [],
@@ -379,3 +379,5 @@ export default class PaymentButtonDetails extends React.Component {
     );
   }
 }
+
+export default withRouter(PaymentButtonDetails);

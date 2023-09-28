@@ -2,7 +2,8 @@ import { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import AsyncButton from 'react-async-button';
 import RTracking from 'react-tracking';
 import moment from 'moment';
@@ -111,7 +112,7 @@ function validate(values) {
 const selector = formValueSelector('newInvoice');
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect(
   (state) => {
     const customers = state.customers;
@@ -159,7 +160,7 @@ const selector = formValueSelector('newInvoice');
   },
 })
 @RTracking(() => window.rzpQ.component('InvoicesNewContainer'))
-export default class InvoicesNewContainer extends Component {
+class InvoicesNewContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -328,8 +329,8 @@ export default class InvoicesNewContainer extends Component {
     let promises = [];
     let invoiceDataFromFetch;
     props = props || this.props;
-
-    const invoiceId = props.match.params.id;
+    console.log(props);
+    const invoiceId = props.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
     this.isIntentDuplicate = false;
     const isCreateFlowUXOptimizationEnabled =
@@ -423,8 +424,8 @@ export default class InvoicesNewContainer extends Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const invoiceId = this.props.match.params.id;
-    const nextInvoiceId = nextProps.match.params.id;
+    const invoiceId = this.props.params.id;
+    const nextInvoiceId = nextProps.params.id;
 
     if (invoiceId !== nextInvoiceId) {
       this.props.closeModal();
@@ -1416,7 +1417,7 @@ export default class InvoicesNewContainer extends Component {
     this.props.closeModal();
 
     let action;
-    if (!this.props.match.params.id) {
+    if (!this.props.params.id) {
       action = 'Close Form - New Invoice';
     } else {
       action = 'Close Details - Invoice';
@@ -1439,7 +1440,7 @@ export default class InvoicesNewContainer extends Component {
     this.getMerchantInfo();
 
     let action;
-    if (!this.props.match.params.id) {
+    if (!this.props.params.id) {
       action = 'Open Form - New Invoice';
     } else {
       action = 'Open Details - Invoice';
@@ -2427,3 +2428,5 @@ export default class InvoicesNewContainer extends Component {
     );
   }
 }
+
+export default withRouter(InvoicesNewContainer);

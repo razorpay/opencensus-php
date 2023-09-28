@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { BladeProvider, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import { analyticsTrack } from 'common/utils/analytics';

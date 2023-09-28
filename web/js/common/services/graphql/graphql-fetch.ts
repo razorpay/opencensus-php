@@ -90,7 +90,7 @@ export async function fetchGraphQL<T extends any, V extends object>(
         { query: printedQuery, variables },
       );
     }
-  } catch (e) {
+  } catch (e: any) {
     if (e instanceof ClientError) {
       throw e;
     } else if (isAxiosResponse(e)) {

@@ -172,10 +172,11 @@ describe('Create Schedule Modal', () => {
             mode: 'live',
           },
         },
+        renderViaRouteGuard: false,
       },
     );
 
-    await userEvent.click(screen.getByLabelText('Edit Schedule'));
+    await userEvent.click(screen.getByText('Edit Schedule'));
     await expect(scheduleSpy).toHaveReturned();
   });
 });

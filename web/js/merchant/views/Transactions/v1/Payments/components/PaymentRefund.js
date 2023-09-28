@@ -15,7 +15,6 @@ import {
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 import { REFUND_STATUSES } from 'merchant/views/Transactions/v1/Payments/constants';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Refunds/Utils';
@@ -226,8 +225,8 @@ const PaymentRefund = ({
           </div>
         </ShowWhen>
         <ShowWhen
-          additionalCondition={(user) =>
-            !isOrgFeatureExist('block_payment_refund') &&
+          additionalCondition={(user, session) =>
+            !(session?.org?.features?.indexOf('block_payment_refund') > -1) &&
             user.isRefundAllowed &&
             (user.isOrgAllowedFunctionality('card_refunds') ||
               ['card', 'emi'].indexOf(payment.method) === -1)

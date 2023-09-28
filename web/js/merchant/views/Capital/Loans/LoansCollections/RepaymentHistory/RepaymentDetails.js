@@ -1,16 +1,16 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import Spinner from 'common/ui/Spinner';
-import Amount from 'common/ui/Amount';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { usePromise } from '../../../components/Await';
 
-import { computePrincipalAndInterest } from '../../../CashAdvance/utils';
-import { STATUS_LABELS, StatusPillClasses } from '../../constants';
-import api from '../api';
-import { getCollectionMethod } from '../util';
+import { withRouter } from 'common/deprecated/withRouter';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { computePrincipalAndInterest } from 'merchant/views/Capital/CashAdvance/utils';
+import api from 'merchant/views/Capital/Loans/LoansCollections/api';
+import { getCollectionMethod } from 'merchant/views/Capital/Loans/LoansCollections/util';
+import { STATUS_LABELS, StatusPillClasses } from 'merchant/views/Capital/Loans/constants';
+import { usePromise } from 'merchant/views/Capital/components/Await';
 
 const RepaymentDetails = ({ id }) => {
   const { value: repayment, loading, error } = usePromise(api.getRepaymentDetails({ id }));
@@ -55,9 +55,8 @@ const RepaymentDetails = ({ id }) => {
 
   const getRepaymentBreakup = () => {
     const { amount = 0, breakups = [] } = repayment.data;
-    const { BALANCE_TYPE_PRINCIPAL = 0, BALANCE_TYPE_INTEREST = 0 } = computePrincipalAndInterest(
-      breakups,
-    );
+    const { BALANCE_TYPE_PRINCIPAL = 0, BALANCE_TYPE_INTEREST = 0 } =
+      computePrincipalAndInterest(breakups);
 
     const data = [
       {

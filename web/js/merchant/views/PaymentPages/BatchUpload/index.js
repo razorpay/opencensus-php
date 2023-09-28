@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Switch, Link } from 'react-router-dom';
+import { Routes, Link, Route } from 'react-router-dom';
 import BatchListContainer from 'merchant/views/PaymentPages/BatchUpload/List';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 const BatchDetailsContainer = (props) => {
   const { user, match } = props;
@@ -28,14 +28,16 @@ const BatchDetailsContainer = (props) => {
 
       <content>
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <ShowWhenRoute
-              path="/paymentpages/batchuploads/:id/:title"
-              component={BatchListContainer}
-              additionalCondition={() => user?.isPaymentPageFileUploadEnabled}
-              id={id}
+          <Routes>
+            <Route
+              path="*"
+              element={
+                <RouteGuard additionalCondition={() => user?.isPaymentPageFileUploadEnabled}>
+                  <BatchListContainer id={id} />
+                </RouteGuard>
+              }
             />
-          </Switch>
+          </Routes>
         </ErrorBoundary>
       </content>
     </tabbed-container>

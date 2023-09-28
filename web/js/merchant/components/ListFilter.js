@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import { reduxForm } from 'redux-form';
 
@@ -15,6 +14,7 @@ import {
   decodeSensitiveFields,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { withRouter } from 'common/deprecated/withRouter';
 
 // Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
 export const isTransactionsV2Enabled = (splitz, user) => {
@@ -238,9 +238,8 @@ ListFilter.defaultProps = {
 
 export default compose(
   withSplitzService,
-  withRouter,
   connect((state) => ({
     user: state.session.user,
   })),
   reduxForm({}),
-)(ListFilter);
+)(withRouter(ListFilter));

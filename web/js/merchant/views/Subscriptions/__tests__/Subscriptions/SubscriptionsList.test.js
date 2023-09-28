@@ -39,6 +39,8 @@ describe('Subscriptions List', () => {
       session: {
         user: {
           isSubscriptionExpiryEnabled: true,
+          isOrgAllowedFunctionality: () => true,
+          findTag: () => false,
         },
       },
     };
@@ -143,6 +145,8 @@ describe('Subscriptions Fetch with isSubscriptionExpiryEnabled enabled', () => {
       session: {
         user: {
           isSubscriptionExpiryEnabled: true,
+          isOrgAllowedFunctionality: () => true,
+          findTag: () => false,
         },
       },
     };

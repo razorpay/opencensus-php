@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import { adminGet } from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
+import ExperimentsEntity from 'razorx/views/Experiments/Entity';
 
 import Comments from './Comments';
 import RequestActions from './RequestActions';
-import ExperimentsEntity from 'razorx/views/Experiments/Entity';
 
 /**
  * Request State map
@@ -24,7 +26,7 @@ const entityMap = {
 };
 
 @observer
-export default class RequestEntity extends Component {
+class RequestEntity extends Component {
   //mobx observables
   comments = observable.array();
   checkers = observable.array();
@@ -154,3 +156,5 @@ export default class RequestEntity extends Component {
     );
   }
 }
+
+export default withRouter(RequestEntity);

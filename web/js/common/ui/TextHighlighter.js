@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 function TextHighlighter({ children, hashedWith, location }) {
   const [highLight, setHighlight] = useState(false);

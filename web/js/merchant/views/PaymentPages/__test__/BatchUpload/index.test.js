@@ -31,11 +31,10 @@ const renderApp = (initialState = {}, props = {}) => {
       wysiwyg: globalState.wysiwyg,
     },
     renderOptions: {
-      historyOptions: {
-        initialEntries: ['/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501'],
-      },
+      initialEntries: ['/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501'],
       path: '/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501',
     },
+    renderViaRouteGuard: false,
   });
 };
 

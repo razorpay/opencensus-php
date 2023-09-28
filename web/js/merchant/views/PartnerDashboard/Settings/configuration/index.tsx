@@ -70,11 +70,11 @@ const Configuration = (): JSX.Element => {
   return (
     <div className="tabbed-container">
       <header>
-        <NavLink exact to="/partners/settings">
+        <NavLink end to="/partners/settings">
           Settings
         </NavLink>
         <ShowWhen additionalCondition={(user) => user.isPartnershipForPhantomEnabled}>
-          <NavLink exact to="/partners/config">
+          <NavLink end to="/partners/config">
             Configuration
           </NavLink>
         </ShowWhen>

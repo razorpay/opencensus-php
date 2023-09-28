@@ -1,4 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
 export type NewRoutes =

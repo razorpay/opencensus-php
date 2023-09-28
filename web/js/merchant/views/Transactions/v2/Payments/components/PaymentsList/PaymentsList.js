@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
@@ -20,6 +20,7 @@ class PaymentsList extends ListContainer {
       loading,
       history,
       location: { pathname },
+      navigate,
     } = this.props;
     return (
       <>
@@ -30,7 +31,7 @@ class PaymentsList extends ListContainer {
           paginate={onPaginate(this.paginate)}
           onRowClick={(id) =>
             handleDetailsClick({
-              history,
+              navigate,
               itemId: id,
               baseUrl: TransactionsEntityRoute.PAYMENTS,
               initiatePage: TransactionsPagesMap[pathname],

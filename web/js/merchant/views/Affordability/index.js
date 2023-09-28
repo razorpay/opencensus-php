@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import DashboardBanner from 'common/ui/DashboardBanner';
-
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import AffordabilityWidget from './AffordabilityWidget';
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -23,17 +24,11 @@ import WidgetEnabledBanner from './components/banners/WidgetEnabledBanner';
 import WidgetDisabledBanner from './components/banners/WidgetDisabledBanner';
 import SpecialOfferBanner from './components/banners/SpecialOfferBanner';
 import { compose } from 'redux';
-import { Redirect } from 'react-router';
 import OfferBanner from './components/banners/OfferBanner';
 
 const Affordability = (props) => {
-  const {
-    affordabilityWidget,
-    affordabilityWidgetProductOnBoarding,
-    user,
-    openModal,
-    closeModal,
-  } = props;
+  const { affordabilityWidget, affordabilityWidgetProductOnBoarding, user, openModal, closeModal } =
+    props;
   const { affordability, loading } = affordabilityWidget;
   const { isTour, showOnboarding } = affordabilityWidgetProductOnBoarding;
   const { trial_period_in_days, enabled, pricing } = affordability;
@@ -104,14 +99,17 @@ const Affordability = (props) => {
         )}
       </div>
       <ErrorBoundary team={Teams.AFFORDABILITY} resetOnProps>
-        <Switch>
+        <Routes>
+          <Route index element={<Navigate to="/affordability/widget" replace />} />
           <Route
-            exact
-            path="/affordability/"
-            render={() => <Redirect to="/affordability/widget" />}
+            path="widget/*"
+            element={
+              <RouteGuard>
+                <AffordabilityWidget />
+              </RouteGuard>
+            }
           />
-          <Route path="/affordability/widget" component={AffordabilityWidget} />
-        </Switch>
+        </Routes>
       </ErrorBoundary>
     </>
   );

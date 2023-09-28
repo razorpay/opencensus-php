@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { withRouter } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import { NOOP } from 'merchant/views/Capital/Loans/constants';
-import LegalSignIcon from '../../../../../../icons/merchant/legal.svg';
-import Gromor from '../../../../../../icons/merchant/gromor.svg';
-import Amount from 'common/ui/Amount';
-import Button from 'common/new-ui/Button';
+import React from 'react';
 import moment from 'moment';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
+import { NOOP } from 'merchant/views/Capital/Loans/constants';
 import GromorRedirectConfirmation from 'merchant/views/Capital/components/Modals/GromorRedirectConfirmation';
-import { openModal } from 'merchant_common/reducers/modals';
 import { getDateSuffix } from 'merchant/views/Capital/utils';
+import { openModal } from 'merchant_common/reducers/modals';
+
+import Gromor from '../../../../../../icons/merchant/gromor.svg';
+import LegalSignIcon from '../../../../../../icons/merchant/legal.svg';
 
 const GromorAgreementModal = ({
   openModal,
@@ -23,12 +24,11 @@ const GromorAgreementModal = ({
   due_at,
 }) => {
   const timeStamp = new Date(due_at);
-  var monthName = moment(timeStamp).format('MMMM');
-  var date = timeStamp.getDate();
+  const monthName = moment(timeStamp).format('MMMM');
+  const date = timeStamp.getDate();
 
-  const {
-    configuration: { interest = 0, credit_limit = 0, end_day_limit = 0 } = {},
-  } = withdrawalConfigurationDetails;
+  const { configuration: { interest = 0, credit_limit = 0, end_day_limit = 0 } = {} } =
+    withdrawalConfigurationDetails;
 
   const RedirectToLeegality = () => {
     openModal({
@@ -65,14 +65,14 @@ const GromorAgreementModal = ({
         <div className="credit-limit-container flex">
           <p className="credit text">Credit Limit</p>
           <strong>
-            <Amount value={credit_limit} currency="INR" parentQuerySelector={`.Modal--medium`} />
+            <Amount value={credit_limit} currency="INR" parentQuerySelector=".Modal--medium" />
           </strong>
         </div>
         <div className="flex details-wrapper">
           <div className="rate-of-interest border-right">
             <div className="details-heading">Rate of Interest</div>
             <p className="detail">
-              <span>{parseInt(interest) / 100}</span>% per day
+              <span>{parseInt(interest, 10) / 100}</span>% per day
             </p>
           </div>
           <div className="tenure border-right">

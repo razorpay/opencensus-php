@@ -1,5 +1,5 @@
+/* eslint-disable */
 import { Component, Fragment } from 'react';
-import { withRouter } from 'react-router-dom';
 import * as dragula from 'react-dragula';
 import ModalHeader from 'common/ui/ModalHeader';
 import PreconditionPopover from './PreconditionPopover';

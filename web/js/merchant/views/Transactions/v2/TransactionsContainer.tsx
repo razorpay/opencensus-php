@@ -1,21 +1,9 @@
 import React, { useEffect } from 'react';
-import { Route, Switch, withRouter } from 'react-router-dom';
-
+import { Route, Routes } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import EntitiesOverview from './EntitiesOverview';
 import Landing from './Landing';
-import { TransactionsEntityRoute } from './common/constants';
 import { track } from './common/tracking';
-
-const {
-  PAYMENTS,
-  ORDERS,
-  FAILED_PAYMENTS,
-  DISPUTES,
-  SUCCESS_RATE,
-  REFUNDS,
-  BATCH_REFUNDS,
-  BATCH_REFUNDS_UPLOAD,
-} = TransactionsEntityRoute;
 
 const TransactionsContainer = (): JSX.Element => {
   useEffect(() => {
@@ -35,20 +23,16 @@ const TransactionsContainer = (): JSX.Element => {
 
   return (
     <div>
-      <Switch>
-        <Route path={[PAYMENTS, ORDERS]} component={Landing} />
-        <Route
-          path={[
-            FAILED_PAYMENTS,
-            DISPUTES,
-            SUCCESS_RATE,
-            REFUNDS,
-            BATCH_REFUNDS,
-            BATCH_REFUNDS_UPLOAD,
-          ]}
-          component={EntitiesOverview}
-        />
-      </Switch>
+      <Routes>
+        <Route path="/payments" element={Landing} />
+        <Route path="/orders" element={Landing} />
+        <Route path="/failed-payments" element={EntitiesOverview} />
+        <Route path="/disputes" element={EntitiesOverview} />
+        <Route path="/refunds" element={EntitiesOverview} />
+        <Route path="/success-rate" element={EntitiesOverview} />
+        <Route path="/refunds/batchuploads" element={EntitiesOverview} />
+        <Route path="/refunds/batchupload" element={EntitiesOverview} />
+      </Routes>
     </div>
   );
 };

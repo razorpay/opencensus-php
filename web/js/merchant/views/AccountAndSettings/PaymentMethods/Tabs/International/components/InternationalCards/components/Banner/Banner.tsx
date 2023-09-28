@@ -8,7 +8,8 @@ import {
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { getBannerProps, trackBannerDisplayed } from './config';
 
 export interface BannerProps {
@@ -57,8 +58,6 @@ const Banner = ({
   );
 };
 
-export default withRouter<BannerProps & RouteComponentProps, React.FC>(
-  connect(null, {
-    openModal: fnOpenModal,
-  })(Banner),
-);
+export default connect(null, {
+  openModal: fnOpenModal,
+})(withRouter<any>(Banner));

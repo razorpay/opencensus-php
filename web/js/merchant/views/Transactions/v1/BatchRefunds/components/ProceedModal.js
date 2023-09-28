@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { bindActionCreators, compose } from 'redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';

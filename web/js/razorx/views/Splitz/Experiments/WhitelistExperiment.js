@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ModalContent } from 'common/new-ui/Modal';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
@@ -15,8 +15,8 @@ const dropDownProperties = [EntityIds, SegmentIds].map((item) => (
     {item}
   </option>
 ));
-@withRouter
-export default class WhitelistExperiment extends React.Component {
+
+class WhitelistExperiment extends React.Component {
   state = {
     isSaving: false,
     variants: this.props.variants,
@@ -241,3 +241,5 @@ WhitelistExperiment.propTypes = {
   variants: PropTypes.array,
   onEdit: PropTypes.func,
 };
+
+export default withRouter(WhitelistExperiment);

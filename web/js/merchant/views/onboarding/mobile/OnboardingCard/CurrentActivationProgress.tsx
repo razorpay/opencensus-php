@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { withRouter, RouteComponentProps, Link as Redirect } from 'react-router-dom';
+import { Link as Redirect } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
   isUnregisteredBusiness,
   checkIfDedupe,

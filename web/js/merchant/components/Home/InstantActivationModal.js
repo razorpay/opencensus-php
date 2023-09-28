@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import confetti from 'canvas-confetti';
 import { compose } from 'redux';
 import rTracking from 'react-tracking';

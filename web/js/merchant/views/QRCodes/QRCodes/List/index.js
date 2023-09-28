@@ -1,7 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { withRouter, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import DataTable from 'common/ui/Table/DataTable';
@@ -72,7 +73,6 @@ export const status = {
   value: (item) => <QRCodeStatusLabel status={item.status} />,
 };
 
-@withRouter
 @connect(
   (state) => ({
     ...state.qr_codes,
@@ -85,7 +85,7 @@ export const status = {
   },
 )
 @RTracking(() => window.rzpQ.component('QRCodesListContainer'))
-export default class QRCodesListContainer extends ListContainer {
+class QRCodesListContainer extends ListContainer {
   componentDidMount() {
     track.init({
       track: this.props.tracking.trackEvent,
@@ -192,3 +192,5 @@ export default class QRCodesListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(QRCodesListContainer);

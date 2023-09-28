@@ -10,7 +10,7 @@ import UltraCampaignBanner from 'merchant/components/Announcements/UltraCampaign
 import UltraP2CashAdvanceBanner from 'merchant/components/Announcements/UltraP2CashAdvanceBanner';
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
@@ -28,15 +28,15 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import { Link, NavLink, Route, Switch } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import { Link, NavLink, Route, Routes, Outlet } from 'react-router-dom';
 import SettlementsHeader from './components/SettlementsHeader';
 import SettlementsHeaderV2 from './components/SettlementsHeaderV2';
 import InstantSettlements from './InstantSettlements/InstantSettlements';
-import RouteOndemandSettlements from './RouteOndemandSettlements';
 import SettlementsListContainer from './Settlements/List';
 import { trackOnDemandTabClick } from './trackEvents';
 import { hideEmptyState, isEmptyStateVisible } from './v3/utils/common';
+import { matchByRoute } from 'common/utils/matchByRoute';
 
 const Settlements = ({
   user,
@@ -47,6 +47,7 @@ const Settlements = ({
   fetchSettlementConfig,
   fetchBankAccountChangeStatus,
   openModal,
+  children,
 }) => {
   const [settlementExists, setSettlementExists] = useState(true);
   const [showEmptyState, setShowEmptyState] = useState(false);
@@ -262,7 +263,7 @@ const Settlements = ({
             Settlements
           </NavLink>
           {user.isOndemandSettlementEnabled && (
-            <NavLink onClick={onInstantSettlementsClick} to="/instantsettlements" exact>
+            <NavLink onClick={onInstantSettlementsClick} to="/instantsettlements" end>
               <i className="i i-early-settlement settle-icon mr-5" />
               Ondemand Settlements
             </NavLink>
@@ -286,29 +287,34 @@ const Settlements = ({
         </header>
         <content>
           <ErrorBoundary resetOnProps>
-            <Switch>
-              <Route path="/routeinstantsettlements" component={RouteOndemandSettlements} />
+            <Outlet />
+            {children}
+            <Routes>
               <Route
-                path="/instantsettlements"
-                render={() => (
-                  <InstantSettlements
-                    settlementExists={settlementExists}
-                    esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
-                    checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-                  />
-                )}
+                path={matchByRoute(location.pathname, '/instantsettlements')}
+                element={
+                  <RouteGuard>
+                    <InstantSettlements
+                      settlementExists={settlementExists}
+                      esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+                      checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                    />
+                  </RouteGuard>
+                }
               />
               <Route
-                path="/settlements"
-                render={() => (
-                  <SettlementsListContainer
-                    settlementExists={settlementExists}
-                    esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
-                    checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-                  />
-                )}
+                path={matchByRoute(location.pathname, '/settlements')}
+                element={
+                  <RouteGuard>
+                    <SettlementsListContainer
+                      settlementExists={settlementExists}
+                      esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+                      checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                    />
+                  </RouteGuard>
+                }
               />
-            </Switch>
+            </Routes>
           </ErrorBoundary>
         </content>
       </tabbed-container>

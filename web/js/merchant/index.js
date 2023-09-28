@@ -18,6 +18,7 @@ import '../../dashboard.font';
 import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
+import { redirectToAppRoute } from 'common/utils/redirectToAppRoute';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -28,6 +29,8 @@ import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvid
 if (module.hot) {
   module.hot.accept();
 }
+
+redirectToAppRoute('/app');
 
 capturePrometheusMetric({
   name: Metrics.PAGE_VIEW,

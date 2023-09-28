@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import Banner from 'common/ui/Banner';
 import { TypeAhead } from 'react-power-select';
@@ -48,7 +48,6 @@ const CustomCustomerOption = ({ option }) => {
   );
 };
 
-@withRouter
 @connect(
   (state) => {
     const customers = state.customers.items;
@@ -71,7 +70,7 @@ const CustomCustomerOption = ({ option }) => {
     ...ModalActions,
   },
 )
-export default class CreateVirtualAccount extends Component {
+class CreateVirtualAccount extends Component {
   state = {
     notes: {},
     close_by: null,
@@ -482,3 +481,5 @@ export default class CreateVirtualAccount extends Component {
     );
   }
 }
+
+export default withRouter(CreateVirtualAccount);

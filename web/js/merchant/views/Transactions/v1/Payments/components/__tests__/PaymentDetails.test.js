@@ -6,7 +6,6 @@ import {
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { useQuery } from 'react-query';
 
 jest.mock('react-query', () => ({
@@ -135,6 +134,19 @@ describe('PaymentDetails', () => {
           payment={{ ...defaultProps.payment, receiver_type: 'pos' }}
           openRefundModal={openRefundModal}
         />,
+        {
+          initialState: {
+            session: {
+              org: {
+                features: [],
+              },
+              user: {
+                findTag: () => false,
+                isFeatureEnabled: () => true,
+              },
+            },
+          },
+        },
       );
       const RefundButton = screen.getByText('Refund Payment');
       fireEvent.click(RefundButton);
@@ -154,6 +166,19 @@ describe('PaymentDetails', () => {
           payment={{ ...defaultProps.payment, receiver_type: 'pos' }}
           collectEzetapKeys={collectEzetapKeys}
         />,
+        {
+          initialState: {
+            session: {
+              org: {
+                features: [],
+              },
+              user: {
+                findTag: () => false,
+                isFeatureEnabled: () => true,
+              },
+            },
+          },
+        },
       );
       const RefundButton = screen.getByText('Refund Payment');
       fireEvent.click(RefundButton);
@@ -258,7 +283,6 @@ describe('PaymentDetails', () => {
   });
   describe.skip('Platform fee', () => {
     test('should render platform fee details instead of transfer if transaction type is platform and isRoutePartnershipEnabled is enabled', async () => {
-      ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
       render(
         <App
           user={{

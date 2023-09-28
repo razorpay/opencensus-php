@@ -39,6 +39,16 @@ describe('Autofill billing label', () => {
     expect(screen.getByText('Business Name')).toBeInTheDocument();
   });
 
+  test('should render Address details field for all the merchants', async () => {
+    render(<App />, {});
+    await waitForLoadingToFinish();
+    expect(screen.getByText('Address Details')).toBeInTheDocument();
+    expect(screen.getByText('Enter Address')).toBeInTheDocument();
+    expect(screen.getByText('Pincode')).toBeInTheDocument();
+    expect(screen.getByText('City')).toBeInTheDocument();
+    expect(screen.getByText('Select State')).toBeInTheDocument();
+  });
+
   test('should autofill billing label with promoter pan name for unreg merchant', async () => {
     ActivationDB.update({
       business_type: '11',
@@ -50,16 +60,6 @@ describe('Autofill billing label', () => {
     fireEvent.blur(personalPanName);
     expect(screen.getByText("Business Owner's PAN")).toBeInTheDocument();
   });
-});
-
-test('should render Address details field for all the merchants', async () => {
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText('Address Details')).toBeInTheDocument();
-  expect(screen.getByText('Enter Address')).toBeInTheDocument();
-  expect(screen.getByText('Pincode')).toBeInTheDocument();
-  expect(screen.getByText('City')).toBeInTheDocument();
-  expect(screen.getByText('Select State')).toBeInTheDocument();
 });
 
 test('should render correct PAN details fields for unregsitered merchant', async () => {
@@ -127,7 +127,6 @@ test('should render CIN field for Private or Public merchants', async () => {
     business_type: '4',
   });
   render(<App />, {});
-  await waitForLoadingToFinish();
   await waitFor(() => {
     expect(screen.getByText('Company Identification Number (CIN)')).toBeInTheDocument();
     expect(screen.queryByText('LLP Identification Number (LLPIN)')).not.toBeInTheDocument();

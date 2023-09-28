@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
@@ -70,4 +71,4 @@ const GenerateTncPage: React.FC<RouteComponentProps> = ({ history }) => {
   );
 };
 
-export default withRouter(GenerateTncPage);
+export default withRouter<any>(GenerateTncPage);

@@ -2,8 +2,6 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import SettlementTimeline from 'merchant/views/Settlements/components/SettlementTimeline';
 import { fireEvent, render, screen, waitFor } from 'test-utils';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 import * as details from 'merchant/reducers/settlements/details';
 import { TIMELINE_EVENTS } from 'merchant/views/Settlements/components/utils';
 import * as modals from 'merchant_common/reducers/modals';
@@ -45,12 +43,8 @@ describe('SettlementTimeline', () => {
     },
   };
 
-  const App = ({ initialState, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(initialState)}>
-        <SettlementTimeline {...defaultProps} {...rest} />
-      </Provider>
-    );
+  const renderApp = ({ state, ...rest }) => {
+    return render(<SettlementTimeline {...defaultProps} {...rest} />, { initialState: state });
   };
 
   beforeEach(() => {
@@ -61,7 +55,7 @@ describe('SettlementTimeline', () => {
 
   test('should call fetch holiday on mount', async () => {
     const events = ['TRANSACTION_INFO'];
-    render(<App initialState={state} events={events} />);
+    renderApp({ state, events });
     await waitFor(() => {
       expect(fetchHolidaySpy).toHaveBeenCalledTimes(1);
     });
@@ -69,7 +63,8 @@ describe('SettlementTimeline', () => {
   describe('TimeLine Events', () => {
     test('should render payment captured and refund processed', () => {
       const events = [TIMELINE_EVENTS.PAYMENT_CAPTURED, TIMELINE_EVENTS.REFUND_PROCESSED];
-      render(<App initialState={state} events={events} />);
+      renderApp({ state, events });
+
       const paymentText = screen.getByText(events[0]?.split('_').join(' ').toLowerCase());
       expect(paymentText).toBeInTheDocument();
 
@@ -78,11 +73,12 @@ describe('SettlementTimeline', () => {
     });
     test('should render schedule info', () => {
       const events = [TIMELINE_EVENTS.SCHEDULE_INFO];
-      const { rerender } = render(<App initialState={state} events={events} />);
+      renderApp({ state, events });
+
       const scheduleInfo = screen.getByText('Settlement schedule');
       expect(scheduleInfo).toBeInTheDocument();
 
-      rerender(<App initialState={state} events={events} entityType="payment" />);
+      renderApp({ state, events, entityType: 'payment' });
       const methodInfo = screen.getByText(defaultProps.settlementDetails.method);
       expect(methodInfo).toBeInTheDocument();
     });
@@ -97,7 +93,8 @@ describe('SettlementTimeline', () => {
           ],
         },
       };
-      const { rerender } = render(<App initialState={state} events={events} {...props} />);
+      renderApp({ state, events, ...props });
+
       const paymentText = screen.getByText('Bank Holidays');
       expect(paymentText).toBeInTheDocument();
       props.settlementDetails.holidays.forEach((each) => {
@@ -116,18 +113,21 @@ describe('SettlementTimeline', () => {
           holidays: [{ date: '1 Apr 2022', description: 'Its holiday' }],
         },
       };
-      rerender(<App initialState={state} events={events} {...props} />);
       const holidayDescription = screen.getByText(
         `(${props.settlementDetails.holidays[0].description})`,
       );
       expect(holidayDescription).toBeInTheDocument();
     });
-    test('should render settlement info', async () => {
+    test('should render settlement info', () => {
       const events = [TIMELINE_EVENTS.SETTLEMENT_INFO];
-      const { rerender } = render(<App initialState={state} events={events} />);
+      renderApp({ state, events });
+
       const settlementDateText = screen.getByText('Settlement Date');
       expect(settlementDateText).toBeInTheDocument();
+    });
 
+    test('should render settlement info', async () => {
+      const events = [TIMELINE_EVENTS.SETTLEMENT_INFO];
       const props = {
         settlementDetails: {
           ...defaultProps.settlementDetails,
@@ -136,7 +136,8 @@ describe('SettlementTimeline', () => {
         showCustomSettlDetails: true,
         adminAsMerchant: true,
       };
-      rerender(<App initialState={state} events={events} {...props} />);
+
+      renderApp({ state, events, ...props });
       const entityText = screen.getByText(defaultProps.entityType);
       expect(entityText).toBeInTheDocument();
       const UTRText = screen.getByText(defaultProps.data.transaction.settlement.utr);
@@ -149,10 +150,22 @@ describe('SettlementTimeline', () => {
       await waitFor(() => {
         expect(trackEventSpy).toHaveBeenCalledTimes(0);
       });
+    });
 
-      // clicked with page
-      props.page = 'Home Page';
-      rerender(<App initialState={state} events={events} {...props} />);
+    test('should render settlement info', async () => {
+      const events = [TIMELINE_EVENTS.SETTLEMENT_INFO];
+
+      const props = {
+        settlementDetails: {
+          ...defaultProps.settlementDetails,
+          is_settled: true,
+        },
+        showCustomSettlDetails: true,
+        adminAsMerchant: true,
+        page: 'Home Page',
+      };
+
+      renderApp({ state, events, ...props });
       const trackEvent = screen.getByLabelText('settlement link');
       fireEvent.click(trackEvent);
       await waitFor(() => {

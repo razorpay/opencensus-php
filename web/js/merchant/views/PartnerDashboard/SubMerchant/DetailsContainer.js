@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -16,7 +16,6 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { fetchProducts } from 'merchant/reducers/capital';
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -34,7 +33,7 @@ import { fetchProducts } from 'merchant/reducers/capital';
   },
 )
 @RTracking(() => window.rzpQ.component('SubmerchantDetailsContainer '))
-export default class SubmerchantDetailsContainer extends Component {
+class SubmerchantDetailsContainer extends Component {
   state = {};
 
   constructor(props) {
@@ -185,3 +184,5 @@ export default class SubmerchantDetailsContainer extends Component {
     );
   }
 }
+
+export default withRouter(SubmerchantDetailsContainer);

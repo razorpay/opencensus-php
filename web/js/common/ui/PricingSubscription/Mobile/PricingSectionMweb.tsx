@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import rTracking from 'react-tracking';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   Text,
   Button,

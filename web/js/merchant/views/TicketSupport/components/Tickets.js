@@ -8,8 +8,8 @@ import Spinner from 'common/ui/Spinner';
 import TicketBrief from './TicketBrief';
 import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
-import { withRouter } from 'react-router';
-@withRouter
+import { withRouter } from 'common/deprecated/withRouter';
+
 @connect(
   (state) => {
     return {
@@ -23,7 +23,7 @@ import { withRouter } from 'react-router';
     fetchSupportTickets,
   },
 )
-export default class Tickets extends React.Component {
+class Tickets extends React.Component {
   componentDidMount() {
     this.goNext(1, true);
   }
@@ -242,3 +242,5 @@ export default class Tickets extends React.Component {
     );
   }
 }
+
+export default withRouter(Tickets);

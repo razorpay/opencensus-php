@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
@@ -12,14 +12,18 @@ import {
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { onPaginate, onSearch } from 'merchant/views/Transactions/v2/common/utils';
+import { useNavigate } from 'react-router-dom';
+
+// TODO: @Shivam KS @Joel refactor it correctly
+const RefundsListWrapper = (props) => {
+  const navigate = useNavigate();
+  return <RefundsList navigate={navigate} {...props} />;
+};
 
 class RefundsList extends ListContainer {
   render() {
-    const {
-      loading,
-      history,
-      location: { pathname },
-    } = this.props;
+    const { loading, history, navigate } = this.props;
+    const { pathname } = location;
     const { count, skip } = this.state;
     return (
       <>
@@ -30,7 +34,7 @@ class RefundsList extends ListContainer {
           paginate={onPaginate(this.paginate)}
           onRowClick={(id) =>
             handleDetailsClick({
-              history,
+              navigate,
               itemId: id,
               baseUrl: TransactionsEntityRoute.REFUNDS,
               initiatePage: TransactionsPagesMap[pathname],
@@ -50,5 +54,5 @@ export default withRouter(
       ...state.refunds,
     }),
     { fetchAll },
-  )(RefundsList),
+  )(RefundsListWrapper),
 );

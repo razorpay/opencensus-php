@@ -4,7 +4,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import QueryString from 'query-string';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
@@ -19,7 +19,6 @@ import { formatBusinessTypeOptions } from 'merchant/components/Activation/Activa
 
 const SOURCE_RAZORPAY_X = 'x';
 
-@withRouter
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(
   (state) => ({
@@ -29,7 +28,7 @@ const SOURCE_RAZORPAY_X = 'x';
   }),
   { showNotification, ...EventsActions },
 )
-export default class ActivationContainer extends Component {
+class ActivationContainer extends Component {
   constructor(props) {
     super(props);
 
@@ -425,3 +424,5 @@ export default class ActivationContainer extends Component {
     );
   }
 }
+
+export default withRouter(ActivationContainer);

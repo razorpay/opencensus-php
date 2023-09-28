@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ListContainer from 'merchant/containers/ListContainer';
 import RouteSettlementListFilter from './components/RouteSettlementListFilter';
 import RouteSettlementsList from './components/RouteSettlementsList';
@@ -17,7 +18,7 @@ class RouteOndemandSettlements extends ListContainer {
   render() {
     const { user, loading, items = [], error } = this.props;
 
-    if (!user.isOndemandSettlementEnabled) return <Redirect to="/settlements" />;
+    if (!user.isOndemandSettlementEnabled) return <Navigate to="/settlements" replace />;
 
     return (
       <content>

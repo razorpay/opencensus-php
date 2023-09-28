@@ -2,7 +2,7 @@ import Breadcrumb from 'common/components/Breadcrumb';
 import { CenterLoader } from 'common/components/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import {
@@ -23,7 +23,7 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Redirect, Switch } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
 const BankAccountDetails = lazy(
@@ -61,13 +61,13 @@ const getTabsContent = ({ type, withStyled = true, user }) => {
     firc: FIRCSection,
   };
   const Component = tabs[type];
-  return withStyled
-    ? (props) => (
-        <StyledTabContentContainer className="profile-container content">
-          <Component {...props} />
-        </StyledTabContentContainer>
-      )
-    : Component;
+  return withStyled ? (
+    <StyledTabContentContainer className="profile-container content">
+      <Component />
+    </StyledTabContentContainer>
+  ) : (
+    <Component />
+  );
 };
 
 const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Element | null => {
@@ -76,11 +76,15 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
       case BANK_ACCOUNT_DETAILS:
       case SETTLEMENT_DETAILS:
       case FIRS:
-        return <Redirect to="/profile" />;
+        return <Navigate to="/profile" replace />;
       default:
-        return <Redirect to="/dashboard" />;
+        return <Navigate to="/dashboard" replace />;
     }
   }
+
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/bank-accounts-settlements/', '')}/*`;
+  };
 
   return (
     <StyledTabContainer>
@@ -112,23 +116,34 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<CenterLoader />}>
             <StyledDivider>
-              <Switch>
-                <ShowWhenRoute
-                  additionalCondition={isBankAccountDetailsAllowed}
-                  path={BANK_ACCOUNT_DETAILS}
-                  component={getTabsContent({ type: 'bank_account', withStyled: false, user })}
+              <Routes>
+                <Route
+                  path={getRefRoute(BANK_ACCOUNT_DETAILS)}
+                  element={
+                    <RouteGuard additionalCondition={isBankAccountDetailsAllowed}>
+                      {getTabsContent({ type: 'bank_account', withStyled: false, user })}
+                    </RouteGuard>
+                  }
                 />
-                <ShowWhenRoute
-                  additionalCondition={isSettlementsAllowed}
-                  path={SETTLEMENT_DETAILS}
-                  component={getTabsContent({ type: 'settlement', user })}
+
+                <Route
+                  path={getRefRoute(SETTLEMENT_DETAILS)}
+                  element={
+                    <RouteGuard additionalCondition={isSettlementsAllowed}>
+                      {getTabsContent({ type: 'settlement', user })}
+                    </RouteGuard>
+                  }
                 />
-                <ShowWhenRoute
-                  additionalCondition={shouldShowFIRCSection}
-                  path={FIRS}
-                  component={getTabsContent({ type: 'firc', user })}
+
+                <Route
+                  path={getRefRoute(FIRS)}
+                  element={
+                    <RouteGuard additionalCondition={shouldShowFIRCSection}>
+                      {getTabsContent({ type: 'firc', user })}
+                    </RouteGuard>
+                  }
                 />
-              </Switch>
+              </Routes>
             </StyledDivider>
           </Suspense>
         </ErrorBoundary>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import {
   openModal as fnOpenModal,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, userEvent } from 'common/services/test/test-utils';
+import { render, screen, waitFor, userEvent } from 'test-utils';
 import { AllInvitesFilter } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/AllInvitesFilter';
 import { createMemoryHistory } from 'history';
 
@@ -25,6 +25,9 @@ describe('All Invites Filter', () => {
         onSearch={onSearch}
         history={history}
       />,
+      {
+        renderViaRouteGuard: false,
+      },
     );
   };
 

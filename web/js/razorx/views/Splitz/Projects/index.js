@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
 import { openModal } from 'razorx/components/Modal';
 import Collection from 'razorx/model/collection';
@@ -10,9 +10,8 @@ import ProjectList from './ProjectList';
 import ProjectDetails from './ProjectDetails';
 import { PROJECT_LIST } from './constants';
 
-@withRouter
 @observer
-export default class Projects extends React.Component {
+class Projects extends React.Component {
   collection = new Collection({
     isSplitz: true,
     fetchFn: splitzFetch,
@@ -63,3 +62,5 @@ export default class Projects extends React.Component {
 Projects.propTypes = {
   match: PropTypes.object.isRequired,
 };
+
+export default withRouter(Projects);

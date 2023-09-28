@@ -15,7 +15,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
 import Pager from 'common/ui/Pager';
 import WithdrawalsRoot from './index';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { getProductType } from 'merchant/views/Capital/utils';
 
 @connect(
@@ -223,7 +223,7 @@ class Withdrawals extends Component {
   render() {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
-    if (!this.props.user.isWithdrawFeatureEnabled) return <Redirect to="/" />;
+    if (!this.props.user.isWithdrawFeatureEnabled) return <Navigate to="/" replace />;
     return (
       <div class="FlashWithdrawals--Container">
         <AmountWithdraw repayDues={this.repay} />

@@ -1,12 +1,11 @@
 import React, { Suspense } from 'react';
-import { NavLink, Switch } from 'react-router-dom';
+import { NavLink, Route, Routes } from 'react-router-dom';
 import Breadcrumb from 'common/components/Breadcrumb';
 import {
   accountAndSettingsLink,
   ROUTE_MAP,
 } from 'merchant/views/AccountAndSettings/constants/constants';
 import { StyledDivider } from 'merchant/views/AccountAndSettings/styled';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import Loader from 'common/components/Loader';
@@ -23,6 +22,10 @@ const PricingPlans = lazy(
 );
 
 const Pricing = ({ location }): JSX.Element => {
+  const getRefRoute = (routePath: string) => {
+    return `${routePath.replace('/pricing/', '')}/*`;
+  };
+
   return (
     <ErrorBoundary resetOnProps>
       <div className="tabbed-container">
@@ -46,9 +49,9 @@ const Pricing = ({ location }): JSX.Element => {
         <Suspense fallback={<Loader />}>
           <StyledDivider>
             <main>
-              <Switch>
-                <ShowWhenRoute path={ROUTES_INFO.PRICING_PLANS} component={PricingPlans} />
-              </Switch>
+              <Routes>
+                <Route path={getRefRoute(ROUTES_INFO.PRICING_PLANS)} element={<PricingPlans />} />
+              </Routes>
             </main>
           </StyledDivider>
         </Suspense>

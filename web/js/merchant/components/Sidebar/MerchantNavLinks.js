@@ -70,7 +70,7 @@ function MerchantNavLinks(props) {
         label="Home"
         icon="i i-chart text-info"
         to="/dashboard"
-        exact
+        end
         type="general"
         additionalCondition={(currentUser) => currentUser.isAllowedView('home')}
       />

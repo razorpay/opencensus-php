@@ -1,5 +1,6 @@
 import React from 'react';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { openModal, notifyError } from 'razorx/components/Modal';
 import { titleCase } from 'common/utils/rzp-utils';
 import { formatDate } from 'razorx/helpers/utils';
@@ -9,8 +10,7 @@ import FeaturesModal from './Modal';
 import { AppStore } from 'razorx/store';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 
-@withRouter
-export default class extends React.Component {
+class Entity extends React.Component {
   state = {};
   componentDidMount() {
     this.fetch(this.props.id);
@@ -354,3 +354,5 @@ const Details = ({
     </div>
   );
 };
+
+export default withRouter(Entity);

@@ -11,9 +11,9 @@ type Match = {
 };
 
 type POS = {
-  location: typeof Location;
-  history: typeof History;
-  match: Match;
+  location?: typeof Location;
+  history?: typeof History;
+  match?: Match;
 };
 
 const POS = (props: POS): JSX.Element => {
@@ -21,7 +21,7 @@ const POS = (props: POS): JSX.Element => {
 
   useEffect(() => {
     //redirect to catalog if no page mentioned
-    const { params } = match;
+    const { params } = match ?? {};
     if (!params?.page) {
       history.replace({
         pathname: '/pos/catalog',
@@ -31,7 +31,8 @@ const POS = (props: POS): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  return <Route path="/pos/catalog" component={Catalog} exact />;
+  // TODO: verify this changes @cseas
+  return <Route path="/pos/catalog" element={Catalog} />;
 };
 
 export default POS;

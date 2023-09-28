@@ -1,6 +1,6 @@
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import { Option } from 'common/components/Dropdown/types';
 import { SpiltzContextState } from 'common/splitz/types';
@@ -99,7 +99,7 @@ export const getDefaultDateAndOption = ({
   defaultDate: Duration;
   defaultDuration: DurationOption;
 } => {
-  const { from, to } = qs.parse(location.search);
+  const { from, to } = qs.parse(window.location.search);
   const { last7Days, custom } = customDurationOptionsMap;
   let defaultDuration: { title: string; value: DurationOption['value'] } = {
     title: last7Days,
@@ -140,7 +140,7 @@ export const getDefaultSearchByValueAndOption = ({
   defaultSearchByValue: string;
 } => {
   const { ID, EMAIL, CONTACT, ORDER_ID, PAYMENT_ID } = SearchQueryParam;
-  const search = decodeSensitiveFields(qs.parse(location.search)) as Record<
+  const search = decodeSensitiveFields(qs.parse(window.location.search)) as Record<
     SearchQueryParamType,
     string | null
   >;
@@ -189,7 +189,7 @@ export const onSearch =
 export const onPaginate =
   (paginate: Paginate) =>
   (params: Record<string, unknown>): void => {
-    const searchParams = qs.parse(location.search);
+    const searchParams = qs.parse(window.location.search);
     paginate({ ...searchParams, ...params });
   };
 

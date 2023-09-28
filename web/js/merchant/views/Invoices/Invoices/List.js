@@ -1,5 +1,7 @@
+/* eslint-disable */
+
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
@@ -30,7 +32,6 @@ import { track, trackSearchFilterForInternational } from 'merchant/views/Invoice
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -41,7 +42,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
   },
   { ...InvoiceActions, handleProductQuickGuide },
 )
-export default class InvoicesListContainer extends ListContainer {
+class InvoicesListContainer extends ListContainer {
   UNSAFE_componentWillMount() {
     // eslint-disable-next-line babel/new-cap
     super.UNSAFE_componentWillMount();
@@ -259,3 +260,5 @@ export default class InvoicesListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(InvoicesListContainer);

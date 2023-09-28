@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -50,7 +50,6 @@ const docTitles = {
   EDIT: 'Edit Payment Button',
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -71,7 +70,7 @@ const docTitles = {
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentButtonCreate'))
-export default class PaymentButtonCreate extends React.Component {
+class PaymentButtonCreate extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -807,3 +806,5 @@ function setWindowTitle(title) {
 
   document.title = 'Razorpay Dashboard';
 }
+
+export default withRouter(PaymentButtonCreate);

@@ -17,7 +17,7 @@ import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from '
 import { TIMELINE_EVENTS } from './utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Spinner from 'common/ui/Spinner';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 class SettlementInfo extends Component {
   componentDidMount() {

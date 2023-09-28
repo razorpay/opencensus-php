@@ -1,6 +1,6 @@
 import { render } from 'test-utils';
 
-import TransactionsContainer from 'merchant/views/Transactions/v2/TransactionsContainer';
+import TransactionsContainer from 'merchant/views/Transactions/__tests__/mocks/TransactionRoute';
 import 'jest-location-mock';
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
 
@@ -36,12 +36,6 @@ window.scrollTo = jest.fn();
 
 export const renderApp = ({ pathname } = {}) => {
   return render(<TransactionsContainer />, {
-    historyOptions: {
-      initialEntries: [
-        {
-          pathname,
-        },
-      ],
-    },
+    initialEntries: [pathname ?? '/payments'],
   });
 };

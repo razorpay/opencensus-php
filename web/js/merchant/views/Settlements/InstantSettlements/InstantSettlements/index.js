@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchOndemandRestrictions } from 'merchant/reducers/home';
 import { fetchHolidayList } from 'merchant/reducers/settlements/details';
@@ -213,7 +214,7 @@ class InstantSettlements extends ListContainer {
       renderSettlementView = PlaceholderLoader;
     }
 
-    if (!user.isOndemandSettlementEnabled) return <Redirect to="/settlements" />;
+    if (!user.isOndemandSettlementEnabled) return <Navigate to="/settlements" replace />;
 
     return (
       <content>

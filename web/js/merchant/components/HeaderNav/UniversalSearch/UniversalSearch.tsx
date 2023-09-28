@@ -14,7 +14,8 @@ import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'me
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps, WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import { bindActionCreators } from 'redux';
 import ProductListing from './components/ProductListing';
 import SearchBar from './components/SearchBar';
@@ -32,7 +33,7 @@ import {
 import { entitySearch } from './utils/EntitySearch';
 import { getProductSearchResults } from './utils/productSearch';
 
-type UniversalSearchProps = RouteComponentProps & UniversalSearchPropInterface;
+type UniversalSearchProps = RouteComponentProps & UniversalSearchPropInterface & WithRouterProps;
 
 const UniversalSearch = ({
   isMobile,
@@ -268,6 +269,6 @@ const mapStateToProps = (state) => ({
   enrollmentStatus: state?.bundlePricing?.enrollmentStatus || {},
 });
 
-export default withRouter<UniversalSearchProps, any>(
+export default withRouter<UniversalSearchProps>(
   connect(mapStateToProps, mapDispatchToProps)(UniversalSearch),
 );

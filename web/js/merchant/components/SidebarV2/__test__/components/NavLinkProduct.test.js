@@ -30,7 +30,7 @@ const App = (props) => <NavLinkProduct {...defaultProps} {...props} />;
 describe('NavLinkProduct', () => {
   const renderApp = ({ props } = {}) =>
     render(<App {...props} />, {
-      historyOptions: { initialEntries: ['/profile'] },
+      initialEntries: ['/profile'],
       path: '/profile',
     });
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');

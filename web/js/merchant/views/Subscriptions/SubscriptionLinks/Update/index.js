@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Form from 'common/new-ui/Form';
 import Spinner from 'common/ui/Spinner';
@@ -46,7 +46,7 @@ const tabsMeta = {
 const tabs = Object.keys(tabsMeta);
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect(
   (state) => ({
     plans: state.plans,
@@ -65,7 +65,7 @@ const tabs = Object.keys(tabsMeta);
     fetchSettings,
   },
 )
-export default class UpdateSubscriptionLink extends React.Component {
+class UpdateSubscriptionLink extends React.Component {
   constructor(props) {
     super(props);
 
@@ -578,3 +578,5 @@ export default class UpdateSubscriptionLink extends React.Component {
     return <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>;
   }
 }
+
+export default withRouter(UpdateSubscriptionLink);

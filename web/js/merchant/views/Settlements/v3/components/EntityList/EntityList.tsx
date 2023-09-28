@@ -27,7 +27,8 @@ import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/co
 import { showNotification } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -500,4 +501,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default withRouter<Props, any>(connect(mapStateToProps, { showNotification })(EntityList));
+export default withRouter<Props>(connect(mapStateToProps, { showNotification })(EntityList));

@@ -20,7 +20,10 @@ describe('ApplicationContainer', () => {
   // application endpoint
   test('should render the applications list for oauth merchants', async () => {
     server.use(getApplications(oauthApplications));
-    render(<ApplicationContainer location={location} />, { initialState });
+    render(<ApplicationContainer location={location} />, {
+      initialState,
+      renderViaRouteGuard: false,
+    });
     await waitFor(() => {
       expect(screen.queryByText('Fetching connected apps...')).not.toBeInTheDocument();
     });
@@ -32,7 +35,10 @@ describe('ApplicationContainer', () => {
       pathname: '/partners/applications',
     };
     server.use(getPartnerApplications(partnerApplications));
-    render(<ApplicationContainer location={partnerApplicationLocation} />, { initialState });
+    render(<ApplicationContainer location={partnerApplicationLocation} />, {
+      initialState,
+      renderViaRouteGuard: false,
+    });
     await waitFor(() => {
       expect(screen.queryByTestId('skeleton-loader')).not.toBeInTheDocument();
     });
@@ -55,7 +61,10 @@ describe('ApplicationContainer', () => {
   });
   test('should display a message when no connected apps are found', async () => {
     server.use(getApplications([]));
-    render(<ApplicationContainer location={location} />, { initialState });
+    render(<ApplicationContainer location={location} />, {
+      initialState,
+      renderViaRouteGuard: false,
+    });
     await waitFor(() => {
       expect(screen.queryByText('Fetching connected apps...')).not.toBeInTheDocument();
     });
@@ -65,7 +74,10 @@ describe('ApplicationContainer', () => {
   test('should render the all the tokens', async () => {
     initialState.session.user.isRevokeApplicationEnabled = false;
     server.use(getTokens(tokens));
-    render(<ApplicationContainer location={location} />, { initialState });
+    render(<ApplicationContainer location={location} />, {
+      initialState,
+      renderViaRouteGuard: false,
+    });
     await waitFor(() => {
       expect(screen.queryByText('Fetching connected apps...')).not.toBeInTheDocument();
     });

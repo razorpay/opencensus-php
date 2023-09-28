@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from '@razorpay/blade/components';
 
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
 import { trackAcceptedInvitesCta } from './utils/analytics';

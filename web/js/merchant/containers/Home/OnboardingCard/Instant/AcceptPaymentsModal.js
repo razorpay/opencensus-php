@@ -1,22 +1,23 @@
+/* eslint-disable */
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import TransactionsModal from 'merchant/components/Home/TransactionsHelperModal';
-import { trackTransactionsHelper, trackProductsModal } from './ga';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 
-let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
+import { trackTransactionsHelper, trackProductsModal } from './ga';
 
-@withRouter
+const showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
+
 @connect(
-  state => ({
+  (state) => ({
     showProducts: state.home.instantActivations.showProductsModal,
   }),
-  { showProductsModal, hideProductsModal }
+  { showProductsModal, hideProductsModal },
 )
-export default class AcceptPayments extends Component {
+class AcceptPayments extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -30,9 +31,7 @@ export default class AcceptPayments extends Component {
     this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
     this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
 
-    const hideProductsModal = (this.hideProductsModal = this.hideProductsModal.bind(
-      this
-    ));
+    const hideProductsModal = (this.hideProductsModal = this.hideProductsModal.bind(this));
 
     if (showProductsModalOnLoad) {
       this.hideProductsModal = () => {
@@ -71,7 +70,7 @@ export default class AcceptPayments extends Component {
       {
         showProducts: false,
       },
-      typeof onHide === 'function' ? onHide : void 0
+      typeof onHide === 'function' ? onHide : void 0,
     );
   }
 
@@ -80,9 +79,8 @@ export default class AcceptPayments extends Component {
     this.props.onClose();
     this.hideProductsModal(
       () => (
-        this.onCloseProductsModal && this.onCloseProductsModal(),
-        (this.onCloseProductsModal = null)
-      )
+        this.onCloseProductsModal && this.onCloseProductsModal(), (this.onCloseProductsModal = null)
+      ),
     );
   }
 
@@ -127,3 +125,5 @@ export default class AcceptPayments extends Component {
     );
   }
 }
+
+export default withRouter(AcceptPayments);

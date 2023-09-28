@@ -24,7 +24,7 @@ import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 import AppSwitcher from './AppSwitcher';

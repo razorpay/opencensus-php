@@ -5,7 +5,7 @@ import { compose } from 'redux';
 import { kycModalContent } from './KycStatusModalContent';
 import rTracking from 'react-tracking';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const KYCStatusModal = ({
   onClose,

@@ -1,14 +1,15 @@
 import { Component, Suspense } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Announcement from 'merchant/components/Announcements/Instant';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import lazy from 'merchant/routes/LazyLoader';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -30,7 +31,6 @@ const AllInvitesTable = lazy(() =>
   import(/* webpackChunkName: "AllInvitesTable" */ './components/AllInvitesTable'),
 );
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -80,7 +80,7 @@ class SubMerchantsList extends Component {
   }
 
   getProductType = () => {
-    const basePath = this.props?.match?.path;
+    const basePath = '/partners/submerchants';
     switch (this.props?.location?.pathname) {
       case `${basePath}`:
       case `${basePath}/all`:
@@ -296,51 +296,51 @@ class SubMerchantsList extends Component {
         >
           <content>
             <div className="sub-merchants-list">
-              <Switch>
+              <Routes>
                 <Route
-                  path={`${this.props.match.path}/x`}
-                  render={(props) => (
-                    <XSubMerchantList
-                      {...props}
-                      product={PRODUCT_TYPE.X}
-                      referralData={this.state.referralData}
-                    />
-                  )}
-                  exact
-                />
-                )
-                {isPartnershipForCapitalEnabled ? (
-                  <Route
-                    path={`${this.props.match.path}/capital`}
-                    render={(props) => (
-                      <CapitalSubMerchantList
-                        {...props}
-                        product={PRODUCT_TYPE.CAPITAL}
+                  path="x"
+                  element={
+                    <RouteGuard>
+                      <XSubMerchantList
+                        product={PRODUCT_TYPE.X}
                         referralData={this.state.referralData}
                       />
-                    )}
-                    exact
+                    </RouteGuard>
+                  }
+                />
+
+                {isPartnershipForCapitalEnabled ? (
+                  <Route
+                    path="capital"
+                    element={
+                      <RouteGuard>
+                        <CapitalSubMerchantList
+                          product={PRODUCT_TYPE.CAPITAL}
+                          referralData={this.state.referralData}
+                        />
+                      </RouteGuard>
+                    }
                   />
                 ) : (
                   ''
                 )}
                 <Route
-                  path={`${this.props.match.path}/`}
-                  render={(props) => (
-                    <PrimarySubMerchantList
-                      {...props}
-                      product={PRODUCT_TYPE.PG}
-                      referralData={this.state.referralData}
-                    />
-                  )}
-                  exact
+                  path="*"
+                  element={
+                    <RouteGuard>
+                      <PrimarySubMerchantList
+                        product={PRODUCT_TYPE.PG}
+                        referralData={this.state.referralData}
+                      />
+                    </RouteGuard>
+                  }
                 />
                 {this.props.user.isPartnershipsInviteFlowEnabled && (
                   <Route
-                    path={`${this.props.match.path}/all`}
-                    render={(props) => (
+                    path="all"
+                    element={
                       <>
-                        <PGInvitesNavLinks prefix={this.props.match.path} />
+                        <PGInvitesNavLinks prefix="/partners/submerchants" />
                         <div className="content-wrapper">
                           <Suspense
                             fallback={
@@ -354,15 +354,16 @@ class SubMerchantsList extends Component {
                               </Box>
                             }
                           >
-                            <AllInvitesTable {...props} />
+                            <RouteGuard>
+                              <AllInvitesTable />
+                            </RouteGuard>
                           </Suspense>
                         </div>
                       </>
-                    )}
-                    exact
+                    }
                   />
                 )}
-              </Switch>
+              </Routes>
             </div>
           </content>
         </ProductWrapper>
@@ -378,4 +379,4 @@ class SubMerchantsList extends Component {
     );
   }
 }
-export default withPartnerDashboardExperiments(SubMerchantsList);
+export default withPartnerDashboardExperiments(withRouter(SubMerchantsList));

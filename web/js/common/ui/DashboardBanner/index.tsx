@@ -7,7 +7,7 @@ import { DashboardBannerProps } from './TypesDeclare/DashboardBannerTypes';
 import { getCTAArray } from './util';
 import { routeToRouteNameMap } from 'merchant/models/GrowthService/data';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 const DashboardBanner = ({
   fetchBanners,

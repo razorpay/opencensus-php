@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './Filter';
 import { amount, customer, createdAtShort, status } from 'common/ui/item/pair';
@@ -39,7 +40,6 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@withRouter
 @connect(
   (state) => ({
     ...state.payments,
@@ -47,7 +47,7 @@ const PaymentsTable = (props) => {
   }),
   { fetchAll },
 )
-export default class PaymentsList extends ListContainer {
+class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
     // API needs to be changed, for now replacing store_ with pl_ to use PP API
@@ -83,3 +83,5 @@ export default class PaymentsList extends ListContainer {
     );
   }
 }
+
+export default withRouter(PaymentsList);

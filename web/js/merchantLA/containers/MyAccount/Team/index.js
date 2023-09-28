@@ -1,7 +1,7 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import { fetchTeamDetails } from 'merchantLA/reducers/team';
 import { DocLink } from 'merchant/components/DocsLink';
@@ -11,7 +11,7 @@ import Invitation from './Invitation';
 import User from './User';
 
 @connect(
-  state => {
+  (state) => {
     return {
       invitations: state.team.invitations,
       users: state.team.users,
@@ -21,7 +21,7 @@ import User from './User';
   {
     fetchTeamDetails,
     ...NotificationsActions,
-  }
+  },
 )
 export default class TeamContainer extends Component {
   UNSAFE_componentWillMount() {
@@ -33,9 +33,7 @@ export default class TeamContainer extends Component {
   render() {
     let invitations = this.props.invitations;
     let users = this.props.users;
-    let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.email
-    );
+    let otherUsers = users.filter((user) => user.email !== this.props.merchant.email);
 
     return this.props.merchant.userRole === 'linked_account_owner' ? (
       <div>
@@ -61,12 +59,8 @@ export default class TeamContainer extends Component {
               </div>
               <table class="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
-                  {otherUsers.map(user => (
-                    <User
-                      key={user.id}
-                      user={user}
-                      form={`editUser_${user.id}`}
-                    />
+                  {otherUsers.map((user) => (
+                    <User key={user.id} user={user} form={`editUser_${user.id}`} />
                   ))}
                 </tbody>
               </table>
@@ -82,7 +76,7 @@ export default class TeamContainer extends Component {
               </div>
               <table class="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
-                  {invitations.map(invite => (
+                  {invitations.map((invite) => (
                     <Invitation
                       key={invite.id}
                       invite={invite}
@@ -96,7 +90,7 @@ export default class TeamContainer extends Component {
         </div>
       </div>
     ) : (
-      <Redirect to="/profile" />
+      <Navigate to="/profile" replace />
     );
   }
 }

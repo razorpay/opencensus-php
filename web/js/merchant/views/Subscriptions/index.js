@@ -1,6 +1,7 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import { Switch, NavLink, Route } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 
 import { classList } from 'common/utils/rzp-utils';
 
@@ -8,7 +9,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import { fetchPlans } from 'merchant/reducers/plans';
 import { fetchSubscriptions, getCheckoutInfo } from 'merchant/reducers/subscriptions';
@@ -17,21 +18,13 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 
-import PlansList from 'merchant/views/Subscriptions/Plans/List';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import SubscriptionsList from 'merchant/views/Subscriptions/Subscriptions/List';
-
-import TokensList from 'merchant/views/Subscriptions/Tokens/List';
-import RegistrationLinksList from 'merchant/views/Subscriptions/RegistrationLinks/List';
-import HostedEmanadateBatches from 'merchant/views/Subscriptions/Batch/List';
-import RecurringPayments from 'merchant/views/Subscriptions/RecurringPayments/List';
 import OnBoarding, {
   getIsAllowedResetSubscriptionBoarding,
 } from 'merchant/views/Subscriptions/OnBoarding';
 import QuickGuide, {
   getSubscriptionQuickGuideIsClosed,
 } from 'merchant/views/Subscriptions/QuickGuide';
-import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { PaperNachBanner, UpdatePaymentMethodBanner } from './components/banners/';
 import { PAPER_NACH_CARD_BANNER_URL, UPDATE_PAYMENT_METHOD_URL } from './constants';
@@ -95,6 +88,8 @@ class SubscriptionsController extends React.Component {
     if (this.props.user.isChargeAtWillEnabled) return;
 
     const { subscriptions, plans, location } = this.props;
+
+    console.log(location.pathname);
 
     const isPlanRoute = location.pathname.includes('plan');
 
@@ -166,7 +161,7 @@ class SubscriptionsController extends React.Component {
           <header id="subscriptions-header" className="scrollable-tab-header">
             <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
               <NavLink
-                exact
+                end
                 to="/subscriptions"
                 onClick={() => analytics.track('subscription.subscriptions.click')}
               >
@@ -218,7 +213,7 @@ class SubscriptionsController extends React.Component {
               </NavLink>
               <ShowWhen additionalCondition={(user) => user.isRegistrationLinkBatchUploadEnabled}>
                 <NavLink
-                  exact
+                  end
                   to="/subscriptions/batchuploads"
                   onClick={() => analytics.track('subscription.batchuploads.click')}
                 >
@@ -232,54 +227,13 @@ class SubscriptionsController extends React.Component {
 
           <content>
             <ErrorBoundary resetOnProps>
-              <Switch>
-                <ShowWhenRoute
-                  path="/subscriptions/batchuploads"
-                  component={HostedEmanadateBatches}
-                  additionalCondition={(user) => user.isChargeAtWillEnabled}
-                />
-
-                <ShowWhenRoute
-                  path="/subscriptions/settings"
-                  component={SubscriptionSettings}
-                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
-                />
-
-                <ShowWhenRoute
-                  path="/subscriptions"
-                  component={SubscriptionsList}
-                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
-                />
-                <ShowWhenRoute
-                  path="/plans"
-                  component={ClonedPlanList}
-                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
-                />
-
-                <Route path="/registration_links" component={RegistrationLinksList} />
-
-                <Route
-                  path="/recurring_payments"
-                  component={RecurringPayments}
-                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
-                />
-
-                <Route
-                  path="/tokens"
-                  component={TokensList}
-                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
-                />
-              </Switch>
+              <Outlet />
             </ErrorBoundary>
           </content>
         </tabbed-container>
       </div>
     );
   }
-}
-
-function ClonedPlanList(props) {
-  return <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />;
 }
 
 export default SubscriptionsController;

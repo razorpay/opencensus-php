@@ -1,35 +1,46 @@
-import { Switch, NavLink, Redirect, Route } from 'react-router-dom';
+import { Routes, NavLink, Navigate, Route } from 'react-router-dom';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';
 
-export default function SubventionContainer() {
+function SubventionContainer() {
   return (
     <tabbed-container>
       <header>
-        <NavLink exact to="/partners/subventions/daily">
+        <NavLink end to="/partners/subventions/daily">
           Daily Subvention
         </NavLink>
-        <NavLink exact to="/partners/subventions/transactional">
+        <NavLink end to="/partners/subventions/transactional">
           Subvention Per Transaction
         </NavLink>
       </header>
       <content>
-        <Switch>
-          <Redirect
-            to="/partners/subventions/daily"
-            from="partners/subventions"
-            exact
-          />
-
-          <Route path="/partners/subventions/daily" component={Daily} />
+        <Routes>
+          <Route path="*" element={<Navigate to="/partners/subventions/daily" replace />} />
 
           <Route
-            path="/partners/subventions/transactional"
-            component={Transactional}
+            path="daily/*"
+            element={
+              <RouteGuard>
+                <Daily />
+              </RouteGuard>
+            }
           />
-        </Switch>
+
+          <Route
+            path="transactional/*"
+            element={
+              <RouteGuard>
+                <Transactional />
+              </RouteGuard>
+            }
+          />
+        </Routes>
       </content>
     </tabbed-container>
   );
 }
+
+export default withRouter(SubventionContainer);

@@ -1,20 +1,21 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
+import { luminateRow } from 'merchant/reducers/app';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { saveQRCode, saveUPIQRCode } from 'merchant/reducers/qrCodes/list';
+import QRCodePreviewModal from 'merchant/views/QRCodes/QRCodes/components/QRPreviewModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { saveQRCode, saveUPIQRCode } from 'merchant/reducers/qrCodes/list';
-import { luminateRow } from 'merchant/reducers/app';
-import QRCodePreviewModal from '../components/QRPreviewModal';
+
 import Form from './Form';
 import track from './track';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -31,7 +32,7 @@ import { fetchFeatureStatus } from 'merchant/reducers/config';
   },
 )
 @RTracking(() => window.rzpQ.component('CreateQRCode'))
-export default class CreateQRCode extends React.Component {
+class CreateQRCode extends React.Component {
   state = {
     isUpiqr: false,
   };
@@ -182,3 +183,5 @@ export default class CreateQRCode extends React.Component {
     );
   }
 }
+
+export default withRouter(CreateQRCode);

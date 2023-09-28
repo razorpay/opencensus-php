@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
-import Amount from 'common/ui/Amount';
-import { REPAYMENT_VIEWS } from '../constants';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
 import {
   trackRepaymentClose,
   trackRepaymentFailure,
   trackRepaymentRetry,
-} from '../TrackEvents/trackEvents';
+} from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';
+import { REPAYMENT_VIEWS } from 'merchant/views/Capital/CashAdvance/constants';
 
 const RepayFailure = ({ setView, resultAmounts, location: { pathname } }) => {
   const handleCloseClick = () => {

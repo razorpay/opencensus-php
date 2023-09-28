@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Switch, Redirect } from 'react-router-dom';
+import { Routes, Navigate, Route } from 'react-router-dom';
 
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 
 import { fetchCommissionBalances } from 'merchant/reducers/commission';
 
@@ -54,7 +54,6 @@ class EarningsContainer extends Component {
     const { commissionBalance } = this.state;
     const { user } = this.props;
     const currency = user.merchant.currency;
-
     return (
       <div className="earnings-page">
         <ProductWrapper
@@ -76,22 +75,34 @@ class EarningsContainer extends Component {
           }
         >
           <content>
-            <Switch>
-              <Redirect to="/partners/earnings/daily" from="/partners/earnings" exact />
-              <ShowWhenRoute
-                path="/partners/earnings/transactional"
-                component={EarningsTransactionalList}
-                additionalCondition={(user) => !user.isPartner('reseller')}
-                exact
+            <Routes>
+              <Route path="*" element={<Navigate to="/partners/earnings/daily" replace />} />
+              <Route
+                path="transactional/*"
+                element={
+                  <RouteGuard additionalCondition={(user) => !user.isPartner('reseller')}>
+                    <EarningsTransactionalList />
+                  </RouteGuard>
+                }
               />
-              <ShowWhenRoute path="/partners/earnings/daily" component={EarningsDailyList} exact />
-              <ShowWhenRoute
-                path="/partners/earnings/invoices"
-                component={CommissionInvoicesList}
-                additionalCondition={(user) => user.isCommissionInvoicesEnabled}
-                exact
+              <Route
+                path="invoices/*"
+                element={
+                  <RouteGuard additionalCondition={(user) => user.isCommissionInvoicesEnabled}>
+                    <CommissionInvoicesList />
+                  </RouteGuard>
+                }
               />
-            </Switch>
+
+              <Route
+                path="daily/*"
+                element={
+                  <RouteGuard>
+                    <EarningsDailyList />
+                  </RouteGuard>
+                }
+              />
+            </Routes>
           </content>
         </ProductWrapper>
       </div>

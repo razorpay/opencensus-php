@@ -6,7 +6,8 @@ import { deepClone } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import Precondition from './Precondition';
 import ProviderRules from './ProviderRules';
-import { withRouter, Link, Redirect } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import DeactivateRule from './DeactivateRule';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -44,7 +45,6 @@ import { PreconditionModel } from 'merchant/views/Navigator/models/PreconditionM
 import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -68,7 +68,7 @@ import FullPageCoverHeader from './FullPageCoverHeader';
     changeRuleMode,
   },
 )
-export default class CreateRule extends React.Component {
+class CreateRule extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -618,7 +618,7 @@ export default class CreateRule extends React.Component {
     const isValidProvider = this.isSelectedValidProvider(MAPPED_PROVIDERS);
 
     if (redirect) {
-      return <Redirect to={redirect} />;
+      return <Navigate to={redirect} replace />;
     }
 
     return (
@@ -1343,3 +1343,5 @@ export default class CreateRule extends React.Component {
     );
   }
 }
+
+export default withRouter(CreateRule);

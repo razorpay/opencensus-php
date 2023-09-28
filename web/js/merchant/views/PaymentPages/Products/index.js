@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import ProductWrapper from 'common/ui/ProductWrapper';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -40,7 +40,6 @@ import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/Paymen
 
 import CategoryIcon from 'assets/payment_pages/categories.svg';
 
-@withRouter
 @connect(
   (state) => ({
     ...state.paymentPagesProducts,
@@ -61,7 +60,7 @@ import CategoryIcon from 'assets/payment_pages/categories.svg';
   },
 )
 @RTracking(() => window.rzpQ.component('Products'))
-export default class Products extends ListContainer {
+class Products extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
@@ -328,3 +327,5 @@ const EmptyComponent = () => (
     }
   />
 );
+
+export default withRouter(Products);

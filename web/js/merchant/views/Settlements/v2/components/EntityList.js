@@ -112,13 +112,12 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
               }
               return true;
             }}
-            to={{
-              pathname:
-                source === 'payment' || source === 'refund'
-                  ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
-                  : `/${source}s/${rowItem[key]}`,
-              state: { openedFrom: 'settlement-details', settlement_id: rowItem[key] },
-            }}
+            to={
+              source === 'payment' || source === 'refund'
+                ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
+                : `/${source}s/${rowItem[key]}`
+            }
+            state={{ openedFrom: 'settlement-details', settlement_id: rowItem[key] }}
           >
             {rowItem.id}
           </Link>

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import rTracking, { useTracking } from 'react-tracking';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { Button } from '@razorpay/blade/components';

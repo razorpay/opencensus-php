@@ -3,10 +3,6 @@ import '@testing-library/jest-dom/extend-expect';
 import './mocks/fixtures';
 import RouteOndemandSettlements from 'merchant/views/Settlements/RouteOndemandSettlements';
 import { render, screen, waitFor, server } from 'test-utils';
-import { Router } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
-import { createMemoryHistory } from 'history';
 import * as handlers from './mocks/handlers';
 
 const state = {
@@ -21,20 +17,8 @@ const state = {
 };
 
 describe('RouteOndemandSettlements', () => {
-  const history = createMemoryHistory();
-
-  const App = ({ initialState = state, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(initialState)}>
-        <Router history={history}>
-          <RouteOndemandSettlements {...rest} />
-        </Router>
-      </Provider>
-    );
-  };
-
   test('should redirect when on-demand settlement is not enabled', async () => {
-    render(<App />);
+    const { history } = render(<RouteOndemandSettlements />);
     await waitFor(() => {
       expect(history.location.pathname).toEqual('/settlements');
     });
@@ -64,7 +48,7 @@ describe('RouteOndemandSettlements', () => {
     };
 
     test('should render settlement list filter when on-demand settlement is enabled', () => {
-      render(<App initialState={initialState} />);
+      render(<RouteOndemandSettlements />, { initialState });
       const form = screen.getByRole('form');
       expect(form).toBeInTheDocument();
       expect(form).toHaveAttribute('name', 'instantRouteSettlementListFilter');
@@ -81,7 +65,7 @@ describe('RouteOndemandSettlements', () => {
     test('should render route settlement list when on-demand Settlement is enabled', () => {
       server.use(handlers.settlementSuccesshandler({ initialState }));
 
-      render(<App initialState={initialState} />);
+      render(<RouteOndemandSettlements />, { initialState });
       expect(screen.getByRole('table')).toBeInTheDocument();
       expect(screen.getAllByRole('table')).toHaveLength(1);
 
@@ -92,7 +76,7 @@ describe('RouteOndemandSettlements', () => {
     });
 
     test('should render pager view when on-demand settlement is enabled', () => {
-      render(<App initialState={initialState} />);
+      render(<RouteOndemandSettlements />, { initialState });
       expect(screen.getByText('Pager Details')).toBeInTheDocument();
       expect(screen.getByText(`Showing 1 - 0`)).toBeInTheDocument();
     });
@@ -108,7 +92,7 @@ describe('RouteOndemandSettlements', () => {
         },
       };
 
-      render(<App initialState={settlementState} />);
+      render(<RouteOndemandSettlements />, { initialState });
       await waitFor(() => {
         expect(
           screen.getByText(settlementState.routeOndemandSettlements.error),

@@ -3,7 +3,7 @@ import React from 'react';
 import RTracking from 'react-tracking';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Button from 'common/new-ui/Button';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import {

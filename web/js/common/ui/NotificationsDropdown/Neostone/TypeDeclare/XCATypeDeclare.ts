@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, CSSProperties } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 interface XCAStatus {
   showState: APIResponseType;

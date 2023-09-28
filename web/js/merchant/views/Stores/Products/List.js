@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import DataTable from 'common/ui/Table/DataTable';
 import Pager from 'common/ui/Pager';
@@ -10,7 +10,7 @@ import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
 import { fetchProducts as fetchAll } from 'merchant/reducers/storefront';
 import { storeProductId } from 'common/ui/item/pair';
 
-import { paiseToRupees } from '../../../../common/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 const productImage = {
   title: 'Image',
@@ -47,11 +47,10 @@ const name = {
   value: (item) => item.name,
 };
 
-@withRouter
 @connect((state) => ({ ...state.storefront.products, ...state.session }), {
   fetchAll,
 })
-export default class ProductsListContainer extends ListContainer {
+class ProductsListContainer extends ListContainer {
   render() {
     return (
       <div class="content-wrapper StoreProducts--List">
@@ -82,3 +81,5 @@ export default class ProductsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(ProductsListContainer);

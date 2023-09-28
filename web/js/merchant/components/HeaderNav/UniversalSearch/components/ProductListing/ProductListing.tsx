@@ -9,7 +9,7 @@ import {
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { trackSearchResultClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
   Icon,
   ProductListingOverlay,

@@ -1,11 +1,18 @@
 import React, { Fragment } from 'react';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import Spinner from 'common/ui/Spinner';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
-import { CASH_ADVANCE_SECTIONS, REPAYMENT_VIEWS } from '../constants';
-import { trackRepayNow, trackViewRepayments } from '../TrackEvents/trackEvents';
+import Spinner from 'common/ui/Spinner';
+import {
+  trackRepayNow,
+  trackViewRepayments,
+} from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';
+import {
+  CASH_ADVANCE_SECTIONS,
+  REPAYMENT_VIEWS,
+} from 'merchant/views/Capital/CashAdvance/constants';
 
 const Loader = () => {
   return (

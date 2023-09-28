@@ -1,7 +1,8 @@
 import './styles/error-alert.styl';
 import React from 'react';
 import { connect } from 'react-redux';
-import { NavLink, withRouter, Redirect } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Alert as BladeAlert } from '@razorpay/blade/components';
 import {
   CASH_ADVANCE_BASE_URL,
@@ -45,7 +46,6 @@ const Loader = () => {
   );
 };
 
-@withRouter
 @connect(
   (state) => {
     const {
@@ -350,7 +350,9 @@ class CashAdvance extends React.Component {
       );
 
     if (isNonWithdrawalScreenAndEmptyData)
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`} />;
+      return (
+        <Navigate to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`} replace />
+      );
 
     const showLoader = isLoading || withdrawalsLoading || withdrawalConfigurationLoading;
 
@@ -388,26 +390,20 @@ class CashAdvance extends React.Component {
               <>
                 <header>
                   {withdrawalsData && (
-                    <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`}>
+                    <NavLink end to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`}>
                       Overview
                     </NavLink>
                   )}
-                  <NavLink
-                    exact
-                    to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`}
-                  >
+                  <NavLink end to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`}>
                     Withdrawals
                   </NavLink>
                   {withdrawalsData && (
-                    <NavLink
-                      exact
-                      to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.REPAYMENTS}`}
-                    >
+                    <NavLink end to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.REPAYMENTS}`}>
                       Repayments
                     </NavLink>
                   )}
                   {this.showSettings() && (
-                    <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}>
+                    <NavLink end to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}>
                       Settings
                     </NavLink>
                   )}
@@ -432,4 +428,4 @@ class CashAdvance extends React.Component {
 
 CashAdvance.propTypes = {};
 
-export default CashAdvance;
+export default withRouter(CashAdvance);

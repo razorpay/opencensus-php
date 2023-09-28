@@ -12,7 +12,8 @@ import {
   PhoneIcon,
   Text,
 } from '@razorpay/blade/components';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import { useMobile } from 'common/hooks/useMobile';
 import copyToClipboard from 'common/utils/copyToClipboard';

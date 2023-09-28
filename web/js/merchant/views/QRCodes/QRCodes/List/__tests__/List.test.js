@@ -4,12 +4,6 @@ import QRList from 'merchant/views/QRCodes/QRCodes/List';
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  default: ({ children }) => <div>{children}</div>,
-  showWhenUtil: ({ children }) => <div>{children}</div>,
-}));
-
 global.rzpQ = {
   qrCode: () => ({ interaction: jest.fn() }),
   component: jest.fn(),

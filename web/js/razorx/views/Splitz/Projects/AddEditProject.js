@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ModalContent } from 'common/new-ui/Modal';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
@@ -22,8 +22,7 @@ import {
   RAZORPAYX_BU_VALUE,
 } from './constants';
 
-@withRouter
-export default class AddEditProject extends React.Component {
+class AddEditProject extends React.Component {
   state = {
     isSaving: false,
     isFetchingProjects: true,
@@ -223,3 +222,5 @@ AddEditProject.propTypes = {
   onEdit: PropTypes.func,
   isEdit: PropTypes.bool,
 };
+
+export default withRouter(AddEditProject);

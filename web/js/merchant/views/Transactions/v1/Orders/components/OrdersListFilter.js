@@ -2,7 +2,7 @@ import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 import { handleChangeTrack } from 'merchant/views/Transactions/v1/AnalyticsTrack';
 import { trackStatusFilter } from 'merchant/views/Transactions/v2/common/tracking';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { humanize } from 'common/utils/rzp-utils';
 import { ALL_LABEL } from 'merchant/views/Transactions/v2/common/constants';
 

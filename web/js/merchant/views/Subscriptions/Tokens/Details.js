@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -39,7 +39,6 @@ import {
   trackClickViewNACHForm,
 } from './ga';
 
-@withRouter
 @connect((state) => ({ ...state.token, user: state.session.user }), {
   fetchToken,
   openModal,
@@ -49,7 +48,7 @@ import {
   showNotification,
 })
 @RTracking(() => window.rzpQ.component('TokenDetailsContainer'))
-export default class TokenDetailsContainer extends Component {
+class TokenDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -420,3 +419,5 @@ class ErrorMessage extends React.PureComponent {
     return null;
   }
 }
+
+export default withRouter(TokenDetailsContainer);

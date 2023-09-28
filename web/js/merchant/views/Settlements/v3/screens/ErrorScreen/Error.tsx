@@ -8,7 +8,7 @@ import {
 } from '@razorpay/blade/components';
 import { ERROR_TYPE, ErrorScreenPropsInterface } from 'merchant/views/Settlements/v3/typings';
 import React, { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { IconWrapper } from './styled';
 

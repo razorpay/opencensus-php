@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Heading, Link, Badge, OffersIcon } from '@razorpay/blade/components';
 import { CardComponent, CardHeader, ProductIcon, CardItems, SubSectionItem } from './styled';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
@@ -9,6 +9,7 @@ import {
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { Modules } from 'common/constant/enums';
+import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 const SectionCard = ({
   title,
@@ -17,7 +18,7 @@ const SectionCard = ({
   iconBackground,
   isMobile,
   history,
-}: SectionCardPropsInterface): JSX.Element => {
+}: SectionCardPropsInterface & WithRouterProps): JSX.Element => {
   const onNavLinkClick = ({ href, title: linkTitle, onLinkClick }: SubSection) => {
     history.push(href);
     analyticsTrackWithUserInfo({
@@ -60,4 +61,4 @@ const SectionCard = ({
   );
 };
 
-export default withRouter(SectionCard);
+export default withRouter<any>(SectionCard);

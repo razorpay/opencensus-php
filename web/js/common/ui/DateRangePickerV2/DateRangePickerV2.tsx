@@ -6,7 +6,8 @@ import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps, WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import qs from 'query-string';
 import { validateUnixTimestamp } from 'merchant/views/Settlements/v3/utils/common';
 
@@ -36,7 +37,8 @@ type Props = {
   horizontalMargin?: number;
   isOutsideRange?: boolean;
   icon?: JSX.Element;
-} & RouteComponentProps;
+} & RouteComponentProps &
+  WithRouterProps;
 
 const DateRangePickerV2 = ({
   onDatesChange,
@@ -170,4 +172,4 @@ const DateRangePickerV2 = ({
 };
 
 export { customRangeText };
-export default withRouter<Props, any>(DateRangePickerV2);
+export default withRouter<Props>(DateRangePickerV2);

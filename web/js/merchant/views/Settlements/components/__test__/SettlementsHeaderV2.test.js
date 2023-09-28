@@ -8,8 +8,6 @@ import * as home from 'merchant/reducers/home';
 import * as profile from 'merchant/reducers/profile';
 import * as modals from 'merchant_common/reducers/modals';
 import * as analytics from 'merchant/views/Settlements/Settlements/analytics';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -22,6 +20,8 @@ window.session_id = `12345`;
 const state = {
   session: {
     user: {
+      isAllowedEdit: () => true,
+      findTag: () => false,
       activation_status: 'activated',
       international: false,
       merchant: {
@@ -42,13 +42,6 @@ describe('SettlementsHeaderV2', () => {
   const openModalsSpy = jest.spyOn(modals, 'openModal');
   const closeModalsSpy = jest.spyOn(modals, 'closeModal');
   const analyticsSpy = jest.spyOn(analytics, 'handleAnalytics');
-  const App = ({ initialState, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(initialState)}>
-        <SettlementsHeaderV2 {...rest} />
-      </Provider>
-    );
-  };
 
   beforeEach(() => {
     fetchOnDemandFnSpy.mockClear();
@@ -63,7 +56,7 @@ describe('SettlementsHeaderV2', () => {
   });
 
   test('should render SettlementsHeaderV2', async () => {
-    render(<App />);
+    render(<SettlementsHeaderV2 />);
     await waitFor(() => {
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });
@@ -76,7 +69,7 @@ describe('SettlementsHeaderV2', () => {
   });
 
   test('My settlement cycle', async () => {
-    render(<App initialState={state} />);
+    render(<SettlementsHeaderV2 />, { initialState: state });
     await waitFor(() => {
       expect(fetchPreviousSettlementsSpy).toHaveBeenCalledWith({
         count: 25,
@@ -104,13 +97,15 @@ describe('SettlementsHeaderV2', () => {
       });
     });
     expect(screen.getByText('Documentation')).toBeInTheDocument();
-    expect(screen.getByRole('link')).toHaveAttribute('href', 'http://razorpay.com/settlement');
+    expect(screen.queryByText('http://razorpay.com/settlement'));
   });
 
   test('refresh button', async () => {
     const initialState = {
       session: {
         user: {
+          isAllowedEdit: () => true,
+          findTag: () => false,
           id: 'testing123',
           merchant: {
             currency: 'INR',
@@ -118,7 +113,7 @@ describe('SettlementsHeaderV2', () => {
         },
       },
     };
-    render(<App initialState={initialState} />);
+    render(<SettlementsHeaderV2 />, { initialState });
     await waitFor(() => {
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });

@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
 

@@ -63,9 +63,7 @@ describe('Batch Payment Page - Add Amount', () => {
         wysiwyg: globalState.wysiwyg,
       },
       renderOptions: {
-        historyOptions: {
-          initialEntries: ['/paymentpages/batchpaymentpages/new'],
-        },
+        initialEntries: ['/paymentpages/batchpaymentpages/new'],
         path: '/paymentpages/batchpaymentpages/new',
       },
     });

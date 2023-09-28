@@ -5,7 +5,6 @@ import { renderApp } from 'merchant/views/Transactions/v1/Payments/components/__
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { rest } from 'msw';
 import { updateItemInPayments } from 'merchant/reducers/collection';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 
 describe('PaymentDetailsContainer', () => {
@@ -250,13 +249,16 @@ describe('PaymentDetailsContainer', () => {
         const historyPushSpy = jest.spyOn(history, 'push');
         await waitForPaymentDetails();
         await userEvent.click(screen.getByRole('button', { name: 'Close Secondary View' }));
-        expect(historyPushSpy).toHaveBeenCalledWith('/');
+        expect(historyPushSpy).toHaveBeenCalledWith(
+          { hash: '', pathname: '/', search: '' },
+          undefined,
+          {},
+        );
       });
     });
 
     describe('When entityName is transfers', () => {
       test('should render create new payment transfer view', async () => {
-        ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
         renderApp({
           props: {
             entity_name: 'transfers',
@@ -267,7 +269,6 @@ describe('PaymentDetailsContainer', () => {
         await waitFor(() => expect(updateItemInPayments).toHaveBeenCalled());
       });
       test('should close create new payment transfer view when close button is clicked', async () => {
-        ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
         const { history } = renderApp({
           props: {
             entity_name: 'transfers',
@@ -276,7 +277,11 @@ describe('PaymentDetailsContainer', () => {
         const historyPushSpy = jest.spyOn(history, 'push');
         await waitForPaymentDetails();
         await userEvent.click(screen.getByRole('button', { name: 'Close Secondary View' }));
-        expect(historyPushSpy).toHaveBeenCalledWith('/');
+        expect(historyPushSpy).toHaveBeenCalledWith(
+          { hash: '', pathname: '/', search: '' },
+          undefined,
+          {},
+        );
       });
     });
   });

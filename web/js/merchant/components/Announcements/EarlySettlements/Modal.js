@@ -1,16 +1,17 @@
 /* eslint-disable no-undef */
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import Button from 'common/new-ui/Button';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { Field, reduxForm } from 'redux-form';
-import RadioButton from 'common/ui/Forms/RadioButton';
-import trackESAnnouncements from '../ga';
-import ajax from 'merchant/utils/ajax';
-import { setItem } from 'common/utils/localStorage';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { bindActionCreators, compose } from 'redux';
+import { Field, reduxForm } from 'redux-form';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import RadioButton from 'common/ui/Forms/RadioButton';
+import { setItem } from 'common/utils/localStorage';
+import trackESAnnouncements from 'merchant/components/Announcements/ga';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ajax from 'merchant/utils/ajax';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 const SuccessScreen = (closeScreen) => (
   <div class="modal-body rzp-early-stl-modal success-modal">

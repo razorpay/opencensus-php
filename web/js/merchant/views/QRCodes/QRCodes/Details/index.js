@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import QRCodeDetails from './Details';
@@ -19,7 +19,7 @@ const QR_CODE_DETAILS_HOTJAR = {
   trigger: 'QR_Details',
   tags: ['QR_Details'],
 };
-@withRouter
+
 @connect(
   (state) => {
     return {
@@ -37,7 +37,7 @@ const QR_CODE_DETAILS_HOTJAR = {
   },
 )
 @RTracking(() => window.rzpQ.component('QRCodeDetailsContainer'))
-export default class QRCodeDetailsContainer extends React.Component {
+class QRCodeDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -216,3 +216,5 @@ export default class QRCodeDetailsContainer extends React.Component {
     );
   }
 }
+
+export default withRouter(QRCodeDetailsContainer);

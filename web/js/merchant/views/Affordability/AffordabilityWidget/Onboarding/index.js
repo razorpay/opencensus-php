@@ -10,12 +10,13 @@ import OnboardingPlatforms from './Platforms';
 import PlatformSetup from './PlatformSetup';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { PlatformsTitle, PlatformsList } from './data';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { compose } from 'redux';
 import RTracking from 'react-tracking';
 import track from './track';
+import { withRouter } from 'common/deprecated/withRouter';
 
-const AffordabilityWidgetOnboarding = (props) => {
+const AffordabilityWidgetOnboarding = withRouter((props) => {
   const desc = (
     <p className="title-desc">
       Attract, convert, and retain more customers with early discovery of EMI, Pay Later and Offers
@@ -40,32 +41,36 @@ const AffordabilityWidgetOnboarding = (props) => {
     <tabbed-container>
       <OnBoardingWrapper class="AffordabilityWidget">
         <div className="Slider">
-          <Switch>
-            <Route exact path="/affordability/widget/">
-              <Landing
-                className=""
-                title="Affordability Widget"
-                imageUrl="https://cdn.razorpay.com/static/assets/affordability-widget/widget_banner.svg"
-                desc={desc}
-                callout={calloutElement}
-                ctaText="Continue"
-                next={handleNextClickHandler}
-                feature={RZPFeatures.AFFORDABILITY_WIDGET}
-                active="0"
-              />
-            </Route>
-            <Route exact path="/affordability/widget/setup/:platform">
-              <PlatformSetup {...props} />
-            </Route>
-            <Route exact path="/affordability/widget/platforms">
-              <OnboardingPlatforms {...props} title={PlatformsTitle} platforms={PlatformsList} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              index
+              element={
+                <Landing
+                  className=""
+                  title="Affordability Widget"
+                  imageUrl="https://cdn.razorpay.com/static/assets/affordability-widget/widget_banner.svg"
+                  desc={desc}
+                  callout={calloutElement}
+                  ctaText="Continue"
+                  next={handleNextClickHandler}
+                  feature={RZPFeatures.AFFORDABILITY_WIDGET}
+                  active="0"
+                />
+              }
+            />
+            <Route path="setup/:platform" element={<PlatformSetup {...props} />} />
+            <Route
+              path="platforms"
+              element={
+                <OnboardingPlatforms {...props} title={PlatformsTitle} platforms={PlatformsList} />
+              }
+            />
+          </Routes>
         </div>
       </OnBoardingWrapper>
     </tabbed-container>
   );
-};
+});
 
 export default compose(
   // eslint-disable-next-line babel/new-cap

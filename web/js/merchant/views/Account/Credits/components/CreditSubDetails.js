@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
 
 import Amount from 'common/ui/Amount';
@@ -10,7 +10,6 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { fetchCreditById } from 'merchant/reducers/credits';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -19,7 +18,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
   },
   { ...NotificationsActions },
 )
-export default class CreditSubDetails extends Component {
+class CreditSubDetails extends Component {
   state = {
     credit: null,
     isLoading: true,
@@ -95,3 +94,5 @@ export default class CreditSubDetails extends Component {
     );
   }
 }
+
+export default withRouter(CreditSubDetails);

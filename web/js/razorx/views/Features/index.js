@@ -1,19 +1,18 @@
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
-import { openModal, closeModal, notifyError } from 'razorx/components/Modal';
+import { openModal, notifyError } from 'razorx/components/Modal';
 import FeaturesModal from './Modal';
-import { SwitchField } from 'razorx/components/ui/Field';
 import List from './List';
 import Entity from './Entity';
+import React from 'react';
 
-@withRouter
 @observer
-export default class Features extends React.Component {
-  showFeatureModal = _ => {
+class Features extends React.Component {
+  showFeatureModal = (_) => {
     openModal(<FeaturesModal />);
   };
 
-  showJSONModal = _ => {
+  showJSONModal = (_) => {
     if (!window.CodeFlask) {
       notifyError('JSON Editor is missing. Reload page / check your Network!');
       return;
@@ -32,10 +31,7 @@ export default class Features extends React.Component {
               + Add New
             </button>
           </div>
-          <button
-            class="btn btn--transparent raw-btn"
-            onClick={this.showJSONModal}
-          >
+          <button class="btn btn--transparent raw-btn" onClick={this.showJSONModal}>
             RAW
           </button>
         </div>
@@ -47,3 +43,5 @@ export default class Features extends React.Component {
     );
   }
 }
+
+export default withRouter(Features);

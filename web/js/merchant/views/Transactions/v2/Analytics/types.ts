@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Environments, OpenModalType, Store } from 'common/typings';
 import { Duration } from 'merchant/views/Transactions/v2/common/types';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 import { Option } from 'common/components/Dropdown/types';
 

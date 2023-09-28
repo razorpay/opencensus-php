@@ -1,17 +1,22 @@
 import React, { useLayoutEffect, useRef } from 'react';
-import { withRouter } from 'react-router-dom';
 import moment from 'moment';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
-import LoanStatusFooter from '../LoanStatusFooter';
+import LoanStatusFooter from 'merchant/views/Capital/Loans/LoansCollections/Overview/OverviewStatus/LoanStatusFooter';
+import {
+  useLoanData,
+  ACTIONS,
+} from 'merchant/views/Capital/Loans/LoansCollections/Overview/OverviewStatus/PaymentContext';
+import {
+  COLLECTIONS_PAYMENT_TYPE,
+  OVERVIEW_STATUS_VIEWS,
+} from 'merchant/views/Capital/Loans/LoansCollections/constants';
+import { LOANS_BASE_URL, LOANS_SECTIONS } from 'merchant/views/Capital/Loans/constants';
 
-import { COLLECTIONS_PAYMENT_TYPE, OVERVIEW_STATUS_VIEWS } from '../../../constants';
-import { LOANS_BASE_URL, LOANS_SECTIONS } from '../../../../constants';
-import { useLoanData, ACTIONS } from '../PaymentContext';
-
-import { RenderMessage, isPaymentBeingProcessing, getBaseMessageConfig } from './utils';
 import { Container, Seperator } from './styles';
+import { RenderMessage, isPaymentBeingProcessing, getBaseMessageConfig } from './utils';
 
 function PaymentResult({ setView, history, onRefresh }) {
   const rootContainerRef = useRef();

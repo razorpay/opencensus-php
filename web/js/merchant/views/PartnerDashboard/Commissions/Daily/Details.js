@@ -1,20 +1,20 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
 import moment from 'moment';
+import { connect } from 'react-redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
 import FeeBreakup from 'common/ui/FeeBreakup';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-
+import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
 import { isPresent } from 'common/utils/rzp-utils';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
 @connect((state) => ({ ...state.commAggSingleDay, user: state?.session?.user }), {
   fetchSingleDayAggregate,
 })
-export default class CommissionsDailyEntity extends Component {
+class CommissionsDailyEntity extends Component {
   componentDidMount() {
     this.fetchData(Number(this.props.timestamp));
   }
@@ -117,3 +117,5 @@ export function EarningsBreakup(props) {
     </div>
   );
 }
+
+export default withRouter(CommissionsDailyEntity);

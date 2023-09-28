@@ -1,6 +1,7 @@
 import { screen, waitFor, userEvent } from 'test-utils';
 
 import { renderApp, handleDetailsClickSpy } from './mocks/fixtures/PaymentsList';
+import 'jest-location-mock';
 
 describe('PaymentsList', () => {
   test('should render Payments List Filter', async () => {

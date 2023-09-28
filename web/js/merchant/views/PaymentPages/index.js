@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -15,7 +15,7 @@ import ProductsCatalogList from 'merchant/views/PaymentPages/Products';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 
-import { BATCH_PAYMENT_PAGES_BASE_URL } from './PaymentPages/constants';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 @connect((state) => {
   return {
@@ -39,19 +39,36 @@ export default class PaymentPagesContainer extends Component {
         </div>
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <Route path="/paymentpages" exact component={PaymentPagesList} />
+          <Routes>
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <PaymentPagesList />
+                </RouteGuard>
+              }
+            />
             {user.isPaymentPageStorefrontEnabled && (
-              <Route path="/paymentpages/products" exact component={ProductsCatalogList} />
+              <Route
+                path="products"
+                element={
+                  <RouteGuard>
+                    <ProductsCatalogList />
+                  </RouteGuard>
+                }
+              />
             )}
             {user.isPaymentPageFileUploadEnabled && (
               <Route
-                path={BATCH_PAYMENT_PAGES_BASE_URL}
-                exact
-                render={(routeProps) => <PaymentPagesList {...routeProps} isBatchPaymentPages />}
+                path="batchpaymentpages"
+                element={
+                  <RouteGuard>
+                    <PaymentPagesList isBatchPaymentPages />
+                  </RouteGuard>
+                }
               />
             )}
-          </Switch>
+          </Routes>
         </ErrorBoundary>
       </>
     );

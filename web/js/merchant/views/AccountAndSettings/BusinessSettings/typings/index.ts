@@ -1,5 +1,5 @@
 import { CloseModalType, OpenModalType } from 'common/typings';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type User = Record<string, any>;

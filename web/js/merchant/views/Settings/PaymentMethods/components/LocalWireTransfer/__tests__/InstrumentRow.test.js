@@ -7,14 +7,6 @@ import {
 import { GREYED, ACTIVATED } from 'merchant/views/Settings/PaymentMethods/constants';
 import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
 
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  default: ({ children, featureEnabled, additionalCondition }) => {
-    if (featureEnabled === 'enable_global_account' && additionalCondition) return children;
-    return null;
-  },
-}));
-
 const DETAIL_FIELDS = ['Routing Code', 'Routing Type', 'Account Number', 'Beneficiary Name'];
 
 const renderComponent = (props = {}, initialState = {}) => {
@@ -119,19 +111,21 @@ describe('Tests for account balance component', () => {
   const data = getInstrumentData(ACTIVATED);
   const accounts = getAccounts();
 
-  test('Account balance should be visible when enable_global_account is present and va_Currency is USD', () => {
+  test('Account balance should be visible when enable_global_account is present and va_Currency is USD', async () => {
     renderComponent(
       { accounts, data, showInstrumentAction: true, isOpen: 'USD' },
       {
         session: {
           user: {
-            tags: ['enable_global_accounts'],
+            tags: ['enable_global_account'],
+            isAuthenticated: true,
           },
         },
       },
     );
 
-    expect(screen.getByTestId('account-balance-container')).toBeInTheDocument();
+    // This part lazy loaded, test has to wait for the component to load, hence using findByTestId.
+    expect(await screen.findByTestId('account-balance-container')).toBeInTheDocument();
   });
 
   test('Account balance should be hidden when enable_global_account is present and va_Currency is not USD', () => {

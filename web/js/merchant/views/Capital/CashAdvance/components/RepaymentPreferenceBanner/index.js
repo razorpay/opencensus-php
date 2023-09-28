@@ -40,7 +40,7 @@ const RepaymentPreferenceBanner = (props) => {
 
       <NavLink
         className="change-preference-link"
-        exact
+        end
         to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
       >
         Change Preference

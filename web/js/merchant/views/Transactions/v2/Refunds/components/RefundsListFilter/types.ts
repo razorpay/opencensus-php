@@ -1,4 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import { Option, Options } from 'common/components/Dropdown/types';
 

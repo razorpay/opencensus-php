@@ -27,14 +27,8 @@ jest.mock('merchant/views/Marketplace/Accounts/components/AccountsList', () => (
   ),
 }));
 
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  default: ({ children }) => <div>{children}</div>,
-  showWhenUtil: ({ children }) => <div>{children}</div>,
-}));
-
 const defaultReduxState = getInitialReduxState({
-  isAllowedEdit: true,
+  isAllowedEdit: () => true,
   isRouteLinkedAccountCreationDisabled: true,
   id: 'testUserId',
 });
@@ -43,7 +37,10 @@ describe('Reversal List', () => {
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
 
   const renderApp = (state = defaultReduxState) => {
-    render(<AccountsList location={location} />, { initialState: state });
+    render(<AccountsList location={location} />, {
+      initialState: state,
+      renderViaRouteGuard: false,
+    });
   };
 
   test('should render table once data is loaded', async () => {

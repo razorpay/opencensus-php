@@ -1,6 +1,6 @@
 import React from 'react';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ChevronLeftIcon, ExternalLinkIcon, Heading, Link, Box } from '@razorpay/blade/components';
-import { withRouter } from 'react-router-dom';
 
 import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
 
@@ -8,8 +8,11 @@ const Layout = ({
   children,
   history,
   settlementId,
-  location: { state: { prevPath } = {} },
+  location,
 }: LayoutPropsInterface): JSX.Element => {
+  const { state } = location ?? {};
+  const { prevPath = '' } = state ?? {};
+
   const handleGoBack = (): void => {
     if (prevPath) {
       history.goBack();

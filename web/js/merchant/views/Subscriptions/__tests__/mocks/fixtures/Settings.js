@@ -66,7 +66,11 @@ export const renderAppWithError = (props = {}) => {
   return render(<App {...props} />, {
     initialState: {
       session: {
-        user: { isEmandateOnSubscriptionEnabled: true },
+        user: {
+          isEmandateOnSubscriptionEnabled: true,
+          isOrgAllowedFunctionality: () => true,
+          findTag: () => false,
+        },
         org: {
           custom_code: 'rzp',
         },
@@ -80,7 +84,12 @@ export const renderApp = (props = {}) => {
   return render(<App {...props} />, {
     initialState: {
       session: {
-        user: { isEmandateOnSubscriptionEnabled: true, isOrgRZP: true },
+        user: {
+          isEmandateOnSubscriptionEnabled: true,
+          isOrgRZP: true,
+          isOrgAllowedFunctionality: () => true,
+          findTag: () => false,
+        },
         org: {
           custom_code: 'rzp',
         },
@@ -94,7 +103,11 @@ export const renderAppWithoutEmandate = (props = {}) => {
   return render(<App {...props} />, {
     initialState: {
       session: {
-        user: { isEmandateOnSubscriptionEnabled: false },
+        user: {
+          isEmandateOnSubscriptionEnabled: false,
+          isOrgAllowedFunctionality: () => true,
+          findTag: () => false,
+        },
         org: {
           custom_code: 'rzp',
         },

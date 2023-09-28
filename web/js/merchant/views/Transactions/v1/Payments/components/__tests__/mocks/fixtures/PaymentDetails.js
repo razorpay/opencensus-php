@@ -1,9 +1,6 @@
 import PaymentDetails from 'merchant/views/Transactions/v1/Payments/components/PaymentDetails';
 import { createMemoryHistory } from 'history';
 import { Router } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
-
-jest.mock('merchant/components/ShowWhen');
 
 jest.mock('merchant/views/Transactions/v1/Payments/components/PaymentPageDetails', () => () => (
   <div>PaymentPageDetails</div>
@@ -104,10 +101,6 @@ jest.mock(
     </>
   ),
 );
-
-beforeEach(() => {
-  ShowWhen.mockImplementation(jest.requireActual('merchant/components/ShowWhen').default);
-});
 
 beforeAll(() => {
   Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {

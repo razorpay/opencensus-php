@@ -31,7 +31,7 @@ export const fetchAccounts = async ({
       created_at: parseInt(String(item.created_at), 10),
     }));
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -65,7 +65,7 @@ export const fetchTransactions = async ({
       created_at: parseInt(String(item.created_at), 10),
     }));
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -98,7 +98,7 @@ export const fetchPayments = async ({
       created_at: parseInt(String(item.created_at), 10),
     }));
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -131,7 +131,7 @@ export const fetchLoads = async ({
       created_at: parseInt(String(item.created_at), 10),
     }));
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -158,7 +158,7 @@ export const fetchAccountById = async ({
       balance: parseInt(String(item.balance), 10),
     }));
     return account[0];
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -189,7 +189,7 @@ export const fetchAccountBalance = async ({
       yearly_load_limit_balance: parseInt(String(res.limits.yearly_load_limit_balance), 10),
     };
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,

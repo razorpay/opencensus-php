@@ -15,8 +15,11 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { Divider } from './Styled';
 
+type goToNextScreenProps = {
+  nextScreen: string;
+};
 interface VerifyOtpPropsT {
-  goToNextScreen: ({ nextScreen: string }) => void;
+  goToNextScreen: (args: goToNextScreenProps) => void;
   setAadharInputError: (data: string) => void;
   aadharNumber: string;
   inputCaptcha: string;

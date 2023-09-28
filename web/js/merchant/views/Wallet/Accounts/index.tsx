@@ -1,7 +1,8 @@
 import BaseModal from 'react-modal';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import React, { useContext, useEffect, useState } from 'react';
 
 import * as items from 'common/ui/item';

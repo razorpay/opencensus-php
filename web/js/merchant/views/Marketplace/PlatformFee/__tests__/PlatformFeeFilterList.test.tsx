@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, userEvent } from 'common/services/test/test-utils';
+import { render, screen, waitFor, userEvent } from 'test-utils';
 import { PlatformFeeListFilter } from 'merchant/views/Marketplace/PlatformFee/components/PlatformFeeListFilter';
 import { createMemoryHistory } from 'history';
 
@@ -24,6 +24,9 @@ describe('Platform Fee Filter', () => {
         onSearch={onSearch}
         history={history}
       />,
+      {
+        renderViaRouteGuard: false,
+      },
     );
   };
 

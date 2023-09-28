@@ -13,14 +13,10 @@ import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/condi
 jest.mock('react-router-dom', () => ({
   __esModule: true,
   ...jest.requireActual('react-router-dom'),
-  Route: ({ path, component: Component }) => {
-    return (
-      <div data-testid={path}>
-        <Component />
-      </div>
-    );
+  Route: ({ path, element }) => {
+    return <div data-testid={path}>{element}</div>;
   },
-  Switch: ({ children }) => <div>{children}</div>,
+  Routes: ({ children }) => children,
 }));
 
 jest.mock('common/ui/DashboardBanner', () => ({
@@ -45,20 +41,6 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isReminderEnabled: jest.fn(),
   isCreditsEnabled: jest.fn(),
   isBalancesEnabled: jest.fn(),
-}));
-
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  ...jest.requireActual('merchant/components/ShowWhen'),
-  ShowWhenRoute: ({ additionalCondition, path, component: Component }) => {
-    if (additionalCondition())
-      return (
-        <div data-testid={path}>
-          <Component />
-        </div>
-      );
-    return null;
-  },
 }));
 
 jest.mock('merchant/views/Account/Balances', () => ({
@@ -96,20 +78,18 @@ jest.mock('merchant/views/AccountAndSettings/styled', () => ({
 }));
 
 const renderApp = async ({ pathname, user } = {}) => {
-  const renderOutput = render(
-    <PaymentsAndRefunds location={{ pathname: pathname ?? ROUTES_INFO.BALANCES }} />,
-    {
-      initialState: {
-        session: {
-          user: {
-            isAccountAndSettingsRevampEnabled: true,
-            id: 'K16F51VyNzg75l',
-            ...user,
-          },
+  const renderOutput = render(<PaymentsAndRefunds />, {
+    initialEntries: [pathname ?? ROUTES_INFO.BALANCES],
+    initialState: {
+      session: {
+        user: {
+          isAccountAndSettingsRevampEnabled: true,
+          id: 'K16F51VyNzg75l',
+          ...user,
         },
       },
     },
-  );
+  });
   await delay();
   return renderOutput;
 };
@@ -169,7 +149,9 @@ describe('Payments And Refunds', () => {
       });
       [{ path: ROUTES_INFO.BALANCES, component: 'Balances component' }].forEach(
         ({ path, component }) => {
-          expect(screen.getByTestId(path)).toHaveTextContent(component);
+          expect(
+            screen.getByTestId(`${path.replace('/payments-and-refunds-settings/', '')}/*`),
+          ).toHaveTextContent(component);
         },
       );
     });

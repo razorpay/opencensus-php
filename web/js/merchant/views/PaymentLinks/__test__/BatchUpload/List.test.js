@@ -25,6 +25,7 @@ const DEFAULT_INITIAL_STATE = {
     user: {
       isPaymentlinksV2Enabled: true,
       isAllowedView: () => true,
+      isOrgAllowedFunctionality: () => true,
       merchant: {
         country_code: 'IN',
       },

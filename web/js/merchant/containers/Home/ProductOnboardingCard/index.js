@@ -3,7 +3,7 @@ import ImgTopBg from 'assets/onboarding/top_bg.png';
 import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import {
   openModal as fnOpenModal,

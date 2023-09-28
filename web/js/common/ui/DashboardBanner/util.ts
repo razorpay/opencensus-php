@@ -1,7 +1,7 @@
 import { BannerButton, CTA } from './TypesDeclare/DashboardBannerTypes';
 import { getClickHandler } from './handlers';
 import { externalURLTest } from './data';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 const getCTAArray = (
   buttons: Array<BannerButton>,

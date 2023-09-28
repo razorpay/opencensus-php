@@ -1,29 +1,31 @@
-import { withRouter } from 'react-router-dom';
 import React from 'react';
-import RTracking from 'react-tracking';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import Input from 'common/new-ui/Input';
-import Form from 'common/new-ui/Form';
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { addToProductsList, updateProductsList } from 'merchant/reducers/storefront';
-
-import { uploadProductImage, saveProduct, fetchProduct, patchProduct } from '../model';
-
-import { rupeesToPaise, paiseToRupees } from '../../../../common/utils/rzp-utils';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
+import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
+import { addToProductsList, updateProductsList } from 'merchant/reducers/storefront';
+import {
+  uploadProductImage,
+  saveProduct,
+  fetchProduct,
+  patchProduct,
+} from 'merchant/views/Stores/model';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import track from './track';
 
 const FILE_SIZE_LIMIT = 2; // 2 MB
 const FORM_NAME = 'ProductCreate-Form';
 const WRAPPER_CLASS = 'Stores--ProductCreate';
 
-@withRouter
 @connect(
   (state) => ({
     store: state.storefront,
@@ -35,7 +37,7 @@ const WRAPPER_CLASS = 'Stores--ProductCreate';
   },
 )
 @RTracking(() => window.rzpQ.component('StoresProductCreate'))
-export default class ProductCreate extends React.Component {
+class ProductCreate extends React.Component {
   state = {
     isLoading: false,
     formData: {},
@@ -481,3 +483,5 @@ export default class ProductCreate extends React.Component {
     );
   }
 }
+
+export default withRouter(ProductCreate);

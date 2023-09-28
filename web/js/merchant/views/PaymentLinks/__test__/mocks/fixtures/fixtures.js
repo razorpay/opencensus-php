@@ -1,35 +1,6 @@
 import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
 
-jest.mock('merchant/components/ShowWhen', () => ({
-  __esModule: true,
-  ...jest.requireActual('merchant/components/ShowWhen'),
-  ShowWhenRoute: ({
-    // additionalCondition,
-    path,
-    component: Component,
-  }) => {
-    // TODO: Use additionalCondition check
-    // if (additionalCondition())
-    return (
-      <div data-testid={path}>
-        <Component />
-      </div>
-    );
-    // return null;
-  },
-  default: ({
-    // additionalCondition,
-    children,
-  }) => {
-    // TODO: Use additionalCondition check
-    // if (additionalCondition()) {
-    return children;
-    // }
-    // return null;
-  },
-}));
-
 jest.mock('merchant/components/Announcements/SwitchToPaymentLinksV2', () => () => (
   <div>Switch to Payment Links V2</div>
 ));
@@ -76,12 +47,14 @@ const mockFn = jest.fn((value = true) => value);
 
 export const paymentLinkStoreConfiguration = {
   isAllowedEdit: jest.fn(() => 'activated'),
-  missedOrderPLBanner: jest.fn(() => true),
+  missedOrderPLBanner: true,
   isAllowedView: jest.fn(() => true),
   isPLBatchUploadEnabled: jest.fn(mockFn),
   isPaymentLinkBatchEnabledForSellerAppRole: jest.fn(() => true),
   isPaymentlinksV2Enabled: true,
+  isPLSwitchEnabled: true,
   findTag: jest.fn(() => false),
+  isOrgAllowedFunctionality: () => true,
 };
 
 export const defaultProps = {

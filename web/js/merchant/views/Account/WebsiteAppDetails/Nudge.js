@@ -13,7 +13,7 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 /* renders only on mobile devices/resolutions */
 function WebsiteAppDetailsNudge({

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { withRouter } from 'common/deprecated/withRouter';
 import PaymentDetailsOverview from './PaymentDetailsOverview';
 import {
   Box,
@@ -263,7 +264,6 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default compose<any>(
-  withRouter,
-  connect(mapStateToProps, mapDispatchToProps),
-)(PaymentsDetails);
+export default compose<any>(connect(mapStateToProps, mapDispatchToProps))(
+  withRouter(PaymentsDetails),
+);

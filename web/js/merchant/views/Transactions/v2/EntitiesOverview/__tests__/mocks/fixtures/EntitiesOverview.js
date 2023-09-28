@@ -74,13 +74,11 @@ export const renderApp = ({ pathname } = {}) => {
           mode: 'live',
         },
       },
-      historyOptions: {
-        initialEntries: [
-          {
-            pathname,
-          },
-        ],
-      },
+      initialEntries: [
+        {
+          pathname,
+        },
+      ],
     },
   );
 };

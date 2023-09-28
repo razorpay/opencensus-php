@@ -1,19 +1,23 @@
-import { withRouter } from 'react-router-dom';
+import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import {
-  setActivePageName as fnSetActivePageName,
-  setBaseLocation as fnSetBaseLocation,
-} from 'merchant/reducers/app';
-import { bankNamesMap, derivedCaApplicationStatus } from '../TrackerConstant';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   ICICIKYCStatus,
   PAN_VERIFICATION_STATUSES,
   panVerificationFailedStatuses,
-} from '../ICICITrackerStatus';
-import { getXBaseURL } from '../../common/utils';
-import React from 'react';
-import { XCACTATypes } from '../../TypeDeclare/XCATypeDeclare';
+} from 'common/ui/NotificationsDropdown/Neostone/Tracker/ICICITrackerStatus';
+import {
+  bankNamesMap,
+  derivedCaApplicationStatus,
+} from 'common/ui/NotificationsDropdown/Neostone/Tracker/TrackerConstant';
+import { XCACTATypes } from 'common/ui/NotificationsDropdown/Neostone/TypeDeclare/XCATypeDeclare';
+import { getXBaseURL } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
+import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from 'merchant/reducers/app';
 
 const getCTADetails = (proceededBank, bankStatusForCTA, iciciPan) => {
   let label = '',
@@ -108,11 +112,9 @@ const XcaCTA = ({
   return null;
 };
 
-export default withRouter<XCACTATypes, React.FC<XCACTATypes>>(
-  compose(
-    connect(null, {
-      setActivePageName: fnSetActivePageName,
-      setBaseLocation: fnSetBaseLocation,
-    }),
-  )(XcaCTA),
-);
+export default compose(
+  connect(null, {
+    setActivePageName: fnSetActivePageName,
+    setBaseLocation: fnSetBaseLocation,
+  }),
+)(withRouter<XCACTATypes>(XcaCTA));

@@ -54,6 +54,7 @@ describe('PartnerOnboarding', () => {
               role: 'owner',
               isUnregisteredBusiness: true,
               isOrgCurlec: false,
+              findTag: () => false,
               isOnboardAsResellers,
             },
           },

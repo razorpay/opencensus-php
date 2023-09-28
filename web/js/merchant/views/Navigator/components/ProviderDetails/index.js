@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import PropTypes from 'prop-types';
 
 import Spinner from 'common/ui/Spinner';
 import { titleCase, isBlank } from 'common/utils/rzp-utils';
@@ -31,7 +32,6 @@ const TPVDetails = ({ tpv }) => {
   return null;
 };
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -44,7 +44,7 @@ const TPVDetails = ({ tpv }) => {
     ...NotificationsActions,
   },
 )
-export default class ProviderDetails extends Component {
+class ProviderDetails extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -187,3 +187,5 @@ export default class ProviderDetails extends Component {
     return <NoProviderFound />;
   }
 }
+
+export default withRouter(ProviderDetails);

@@ -1,15 +1,16 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import { Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { BlockCustomerFeeBearerOnboarding } from 'merchant/components/BlockOnBoarding';
 import { bindActionCreators } from 'redux';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 import QRCodesList from './QRCodes/List';
 import PaymentsList from './Payments/List';
@@ -20,6 +21,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { Alert, Box } from '@razorpay/blade/components';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+
 class QRCodeContainer extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
@@ -110,18 +112,28 @@ class QRCodeContainer extends React.Component {
           </Box>
         )}
         <ErrorBoundary resetOnProps>
-          <Switch>
-            <ShowWhenRoute
-              path="/qr_codes/payments"
-              component={PaymentsList}
-              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+          <Routes>
+            <Route
+              path="payments/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+                >
+                  <PaymentsList />
+                </RouteGuard>
+              }
             />
-            <ShowWhenRoute
-              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
-              path="/qr_codes"
-              component={QRCodesList}
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+                >
+                  <QRCodesList />
+                </RouteGuard>
+              }
             />
-          </Switch>
+          </Routes>
         </ErrorBoundary>
       </>
     );

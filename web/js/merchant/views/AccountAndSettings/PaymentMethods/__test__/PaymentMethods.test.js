@@ -7,10 +7,11 @@ import * as instrumentRequests from 'merchant/reducers/instrumentRequests';
 import * as analytics from 'common/utils/analytics';
 import 'jest-location-mock';
 import { PaymentMethodsTabsRoutesConfig } from 'merchant/views/AccountAndSettings/PaymentMethods/constants';
+import { createMemoryHistory } from 'history';
 
 jest.mock('merchant/views/Settings/PaymentMethods', () => ({
   __esModule: true,
-  default: () => <>Payment Methods Component</>,
+  default: () => <div data-testid="/payment-methods">Payment Methods Component</div>,
 }));
 
 jest.mock('merchant/views/AccountAndSettings/PaymentMethods/Tabs/Cards', () => ({
@@ -65,20 +66,11 @@ const clearIntermediateInstrumentSpy = jest.spyOn(
 );
 const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
-const defaultProps = {
-  location: {
-    pathname: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
-  },
-  history: {
-    replace: jest.fn(),
-  },
-};
-
 const instrumentsList = instrumentRequests.initialState.pg.map((instrument) => instrument.name);
 
-const renderApp = (userObj = {}, props = {}) => {
+const renderApp = (userObj = {}, props = {}, other = {}) => {
   const { isIERevampEnabled = true, isSodexoInstrumentEnabled = true } = userObj;
-  return render(<PaymentMethods {...defaultProps} {...props} />, {
+  return render(<PaymentMethods {...props} />, {
     initialState: {
       session: {
         user: {
@@ -88,6 +80,8 @@ const renderApp = (userObj = {}, props = {}) => {
         org: {},
       },
     },
+    initialEntries: [ROUTES_INFO.INTERNATIONAL_PAYMENTS],
+    ...other,
   });
 };
 
@@ -96,7 +90,10 @@ describe('PaymentMethods', () => {
     const renderAppIERevampFalse = () =>
       renderApp(
         { isIERevampEnabled: false },
-        { location: { pathname: ROUTES_INFO.PAYMENT_METHODS } },
+        {},
+        {
+          initialEntries: [ROUTES_INFO.PAYMENT_METHODS],
+        },
       );
 
     test('should render loader and not payment method shimmer', () => {
@@ -165,7 +162,9 @@ describe('PaymentMethods', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('payment-method-tabs-shimmer')).not.toBeInTheDocument();
       });
-      expect(screen.getByTestId(path)).toHaveTextContent(content);
+      expect(screen.getByTestId(`${path.replace('/payment-methods/', '')}/*`)).toHaveTextContent(
+        content,
+      );
     });
 
     test('should not render payment methods link', () => {
@@ -225,24 +224,35 @@ describe('PaymentMethods', () => {
       test('should redirect to newer international link when older international link is opened', async () => {
         const pathname = `${ROUTES_INFO.PAYMENT_METHODS}?instrument=international`;
         window.location.assign(pathname);
-
-        renderApp(undefined, { ...defaultProps, location: { pathname } });
+        const history = createMemoryHistory({ initialEntries: [pathname] });
+        history.replace = jest.fn();
+        renderApp(undefined, undefined, { history });
 
         await waitFor(() => {
-          expect(defaultProps.history.replace).toHaveBeenLastCalledWith({
-            pathname: PaymentMethodsTabsRoutesConfig.international,
-          });
+          expect(history.replace).toHaveBeenLastCalledWith(
+            { hash: '', pathname: PaymentMethodsTabsRoutesConfig.international, search: '' },
+            undefined,
+            { replace: true, state: undefined },
+          );
         });
       });
 
       test('should redirect to first instrument when older cards link is opened without any instrument query param', async () => {
         const pathname = ROUTES_INFO.PAYMENT_METHODS;
-        renderApp(undefined, { ...defaultProps, location: { pathname } });
+        const history = createMemoryHistory({ initialEntries: [pathname] });
+        history.replace = jest.fn();
+        renderApp(undefined, undefined, { history });
 
         await waitFor(() => {
-          expect(defaultProps.history.replace).toHaveBeenLastCalledWith({
-            pathname: PaymentMethodsTabsRoutesConfig[instrumentRequests.initialState.pg[0].slug],
-          });
+          expect(history.replace).toHaveBeenLastCalledWith(
+            {
+              hash: '',
+              pathname: PaymentMethodsTabsRoutesConfig[instrumentRequests.initialState.pg[0].slug],
+              search: '',
+            },
+            undefined,
+            { replace: true, state: undefined },
+          );
         });
       });
     });

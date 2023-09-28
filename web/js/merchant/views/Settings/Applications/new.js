@@ -2,7 +2,8 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import { Link, withRouter, NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ArrowLeftIcon, Text } from '@razorpay/blade/components';
 import { autoPrefixUrls, titleCase } from 'common/utils/rzp-utils';
 import { withSplitzService } from 'common/splitz';
@@ -57,7 +58,6 @@ function readURL(input, self) {
   }
 }
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -313,10 +313,8 @@ class NewApplicationForm extends Component {
               <NavLink to={`/partners/applications/${params.id}`}>Integration Settings</NavLink>
               {isExpEnabledForConfigurator ? (
                 <NavLink
-                  to={{
-                    pathname: `/partners/applications/configuration/${params.id}`,
-                    state: { appName: details?.name },
-                  }}
+                  to={`/partners/applications/configuration/${params.id}`}
+                  state={{ appName: details?.name }}
                 >
                   Onboarding UI Configurator
                 </NavLink>
@@ -569,4 +567,4 @@ function WebhookDetail({ webhookLoading, webhook, mode = '', showWebhookModal })
   );
 }
 
-export default withSplitzService(NewApplicationForm);
+export default withSplitzService(withRouter(NewApplicationForm));

@@ -1,6 +1,6 @@
 import store from 'merchantLA/store';
 
-import { matchDetail as matchDetailx, matchModal as matchModalx } from '../merchant_common/routes';
+import { matchDetail as matchDetailx, matchModal as matchModalx } from 'merchant_common/routes';
 
 import SettlementDetails from 'merchantLA/containers/Settlements/Details';
 import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details';

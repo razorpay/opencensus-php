@@ -2,14 +2,16 @@ import React, { useEffect, useRef } from 'react';
 import scrollTo from 'common/utils/scrollTo';
 import qs from 'query-string';
 import get from 'lodash/get';
-import { RouteComponentProps, withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps, WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 type Props = {
   children: JSX.Element;
   queryKey: string;
   queryValue: string;
   elementRef?: React.RefObject<HTMLDivElement>;
-} & RouteComponentProps;
+} & RouteComponentProps &
+  WithRouterProps;
 
 const handleScrollIntoView = (offsetTop: number) => {
   // add delay to wait for whole dom to load then scroll to the target element

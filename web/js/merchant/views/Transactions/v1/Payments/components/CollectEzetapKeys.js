@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Button, TextInput } from '@razorpay/blade/components';
 import ModalHeader from 'common/ui/ModalHeader';
 import {

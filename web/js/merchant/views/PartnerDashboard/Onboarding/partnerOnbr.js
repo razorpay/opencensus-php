@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
@@ -19,7 +19,6 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
 @RTracking(() => window.rzpQ.component('partnerOnbr'))
-@withRouter
 @connect(
   (state) => ({
     session: state.session,
@@ -32,7 +31,7 @@ import { analyticsTrack } from 'common/utils/analytics';
     openModal,
   },
 )
-export default class BaseScreen extends React.Component {
+class BaseScreen extends React.Component {
   state = { role: 'reseller' };
   constructor(props) {
     super(props);
@@ -306,3 +305,5 @@ export default class BaseScreen extends React.Component {
     );
   }
 }
+
+export default withRouter(BaseScreen);

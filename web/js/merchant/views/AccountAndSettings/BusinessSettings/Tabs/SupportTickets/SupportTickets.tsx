@@ -1,5 +1,4 @@
 import React from 'react';
-// import { RouteComponentProps } from 'react-router-dom';
 import { connect } from 'react-redux';
 import TicketsContainer from 'merchant/views/TicketSupport/components/TicketsContainer';
 import Tickets from 'merchant/views/TicketSupport/components/Tickets';

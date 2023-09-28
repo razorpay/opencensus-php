@@ -4,10 +4,9 @@ import { render, screen, fireEvent } from 'test-utils';
 import {
   defaultProps,
   App,
-  AppWithRouter,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
-import { render as defaultTestRender } from '@testing-library/react';
+import { createMemoryHistory } from 'history';
 
 describe('PaymentDetails', () => {
   describe('Capture payment', () => {
@@ -36,7 +35,10 @@ describe('PaymentDetails', () => {
     });
 
     test('should call capturePayment & onActionSideBar when clicked on capture payment on home page screen', () => {
-      defaultTestRender(<AppWithRouter />);
+      const history = createMemoryHistory();
+      const state = { fromHomePage: true };
+      history.push('/', state);
+      render(<App />, { history });
       fireEvent.click(screen.getByText('Capture Payment'));
       expect(analyticsTrack).toHaveBeenCalledWith({
         actionName: 'clicked',

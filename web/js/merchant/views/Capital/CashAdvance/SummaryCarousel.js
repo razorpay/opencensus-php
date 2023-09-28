@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState, useEffect, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
 
 import Carousel from './Carousel';
@@ -311,7 +311,6 @@ function SummaryCarousel(props) {
   );
 }
 
-@withRouter
 @connect((state) => {
   return {
     user: state.session.user,
@@ -332,4 +331,4 @@ class CarouselContainer extends React.Component {
     return <SummaryCarousel {...this.props} view={CASH_ADVANCE_SECTIONS.WITHDRAWALS} />;
   }
 }
-export default CarouselContainer;
+export default withRouter(CarouselContainer);

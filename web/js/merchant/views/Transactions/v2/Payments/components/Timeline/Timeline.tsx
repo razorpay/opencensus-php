@@ -10,7 +10,8 @@ import {
   useTheme,
   ChevronRightIcon,
 } from '@razorpay/blade/components';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import { compose, bindActionCreators } from 'redux';
 import { connect } from 'react-redux';

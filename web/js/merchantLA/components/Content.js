@@ -1,30 +1,34 @@
 import React, { Component } from 'react';
-import { Switch, Route, withRouter, Redirect } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { matchDetail, matchModal } from 'merchantLA/routes';
 import Slider from 'common/ui/Slider';
 import { ModalMask } from 'common/new-ui/Modal';
-
-import { showWhenUtil } from 'merchantLA/components/ShowWhen';
+import ReversalsTable from 'merchantLA/containers/Marketplace/Reversals/ReversalsTable';
+import Credit from 'merchantLA/containers/Marketplace/Reversals/Credit';
+import BatchUploadList from 'merchantLA/containers/Marketplace/Reversals/BatchUpload/List';
 import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
 import Settlements from 'merchantLA/containers/Settlements/List';
 import MyAccount from 'merchantLA/containers/MyAccount';
+import Profile from 'merchantLA/containers/MyAccount/Profile';
+import TeamManagement from 'merchantLA/containers/MyAccount/Team';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { RouteGuard } from './ShowWhen';
 
 import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchantLA/reducers/app';
 import { openSlider } from 'merchant_common/reducers/slider';
 import LinkedAccountReports from 'merchant_common/views/Reports/views/LinkedAccountReports';
 
-@withRouter
 @connect(null, {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
   openSlider,
 })
-export default class Content extends Component {
+class Content extends Component {
   setBaseLocation = (location) => {
     const { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
     const matchDetailsRoute = matchDetail(location.pathname);
@@ -69,26 +73,108 @@ export default class Content extends Component {
   getBaseView = () => {
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
-        <Switch location={this.baseLocation}>
-          {/*<Route path="/dashboard" component={Home} />*/}
-          {/*<Redirect from="/" exact to="/dashboard" />*/}
+        <Routes location={this.baseLocation}>
+          <Route
+            path="transfers/*"
+            element={
+              <RouteGuard>
+                <Transfers />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="reversals/*"
+            element={
+              <RouteGuard>
+                <Reversals />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <ReversalsTable />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="batchreversals/*"
+              element={
+                <RouteGuard additionalCondition={(user) => user.isAllowedLARefunds}>
+                  <BatchUploadList />
+                </RouteGuard>
+              }
+            />
+          </Route>
 
-          <Redirect from="/" exact to="/transfers" />
+          <Route
+            path="credits/*"
+            element={
+              <RouteGuard>
+                <Reversals />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard
+                  additionalCondition={(user) => {
+                    const merchant = user.merchants[user.current] || {};
+                    const isBalanceSource = merchant.refund_source === 'balance';
+                    return !isBalanceSource;
+                  }}
+                >
+                  <Credit />
+                </RouteGuard>
+              }
+            />
+          </Route>
 
-          <Route path="/transfers" component={Transfers} />
-          <Route path="/reversals" component={Reversals} />
-          <Route path="/settlements" component={Settlements} />
+          <Route
+            path="settlements/*"
+            element={
+              <RouteGuard>
+                <Settlements />
+              </RouteGuard>
+            }
+          />
 
-          <Route path="/reports" component={LinkedAccountReports} />
+          <Route
+            path="reports/*"
+            element={
+              <RouteGuard>
+                <LinkedAccountReports />
+              </RouteGuard>
+            }
+          />
 
-          <Route path="/profile" component={MyAccount} />
+          <Route
+            path="profile/*"
+            element={
+              <RouteGuard>
+                <MyAccount>
+                  <Profile />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
 
-          <Route path="/credits" component={Reversals} />
+          <Route
+            path="team/*"
+            element={
+              <RouteGuard defaultPath="/dashboard" myRole="linked_account_owner">
+                <MyAccount>
+                  {' '}
+                  <TeamManagement />
+                </MyAccount>
+              </RouteGuard>
+            }
+          />
 
-          <ShowWhenRoute path="/team" component={MyAccount} myRole="linked_account_owner" />
-          <Redirect to="/transfers" />
-          {/*<Redirect to="/dashboard" />*/}
-        </Switch>
+          <Route path="*" element={<Navigate to="transfers" replace />} />
+        </Routes>
       </ErrorBoundary>
     );
   };
@@ -162,20 +248,4 @@ export default class Content extends Component {
   }
 }
 
-const ShowWhenRoute = ({ component: Component, ...rest }) => (
-  <Route
-    {...rest}
-    render={() =>
-      showWhenUtil(rest) ? (
-        <Component {...rest} />
-      ) : (
-        <Redirect
-          to={{
-            pathname: '/dashboard',
-            state: { from: rest.location },
-          }}
-        />
-      )
-    }
-  />
-);
+export default withRouter(Content);

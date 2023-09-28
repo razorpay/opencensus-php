@@ -2,9 +2,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import ShowWhen from 'merchant/components/ShowWhen';
+import Amount from 'common/ui/Amount';
+import PaymentDetails from 'merchant/views/Transactions/v1/Payments/components/PaymentDetails';
 import { compose, bindActionCreators } from 'redux';
-
 // eslint-disable-next-line import/no-cycle
 import {
   getKeysSeparatedByPipe,
@@ -13,10 +15,8 @@ import {
 } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
-import Amount from 'common/ui/Amount';
 import { updateItemInPayments } from 'merchant/reducers/collection';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import * as PaymentActions from 'merchant/reducers/payments/details';
@@ -26,7 +26,6 @@ import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/S
 // eslint-disable-next-line import/no-cycle
 import DisputeDetails from 'merchant/views/Transactions/v1/Disputes/Details';
 import CollectEzetapKeys from 'merchant/views/Transactions/v1/Payments/components/CollectEzetapKeys';
-import PaymentDetails from 'merchant/views/Transactions/v1/Payments/components/PaymentDetails';
 import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';

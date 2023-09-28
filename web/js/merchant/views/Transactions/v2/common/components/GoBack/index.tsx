@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, ChevronLeftIcon, Box } from '@razorpay/blade/components';
 import qs from 'query-string';
-import { withRouter } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { GoBackProps } from 'merchant/views/Transactions/v2/common/components/GoBack/types';
 import {
@@ -12,13 +12,13 @@ import { track } from 'merchant/views/Transactions/v2/common/tracking';
 
 const { PAYMENTS } = TransactionsEntityRoute;
 
-const GoBack = ({
-  onClickCb,
-  history,
-  location: { pathname, state: { prevPath } = {} },
-}: GoBackProps) => {
+const GoBack = ({ onClickCb }: GoBackProps) => {
+  const navigate = useNavigate();
+  const { pathname, state } = useLocation();
+  const { prevPath } = state ?? {};
+
   const goBack = (): void => {
-    const { init_page } = qs.parse(location.search);
+    const { init_page } = qs.parse(window.location.search);
     const section = TransactionsPagesMap[pathname] || init_page;
     track({
       objectName: 'Go Back Button',
@@ -32,9 +32,9 @@ const GoBack = ({
     if (onClickCb) {
       onClickCb();
     } else if (prevPath) {
-      history.push(prevPath);
+      navigate(prevPath);
     } else {
-      history.push(PAYMENTS);
+      navigate(PAYMENTS);
     }
   };
 
@@ -47,4 +47,4 @@ const GoBack = ({
   );
 };
 
-export default withRouter(GoBack);
+export default GoBack;

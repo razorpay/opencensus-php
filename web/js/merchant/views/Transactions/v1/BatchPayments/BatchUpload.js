@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ValidateModal from 'merchant/components/BatchNew/ValidateModal';
 import CreateModal from 'merchant/components/BatchNew/CreateModal';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/reducers/plans';
@@ -50,7 +50,7 @@ import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
 
 // eslint-disable-next-line react/no-unsafe
-@withRouter
+
 @connect(
   (state) => ({
     plans: state.plans,
@@ -69,7 +69,7 @@ const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
     fetchSubscriptionOffers,
   },
 )
-export default class NewSubscriptionLink extends React.Component {
+class NewSubscriptionLink extends React.Component {
   state = {
     currentTab: 0,
     validTabs: [false, false, false, false],
@@ -708,3 +708,5 @@ function isFormValid(formIndex, fields, internals, validateTotalCount = () => {}
       return false;
   }
 }
+
+export default withRouter(NewSubscriptionLink);

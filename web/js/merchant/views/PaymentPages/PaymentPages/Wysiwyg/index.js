@@ -2,9 +2,9 @@
 import React, { Suspense } from 'react';
 import { Spinner } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
+import { withRouter } from 'common/deprecated/withRouter';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
@@ -105,7 +105,6 @@ const ERROR = {
   INVALID_ENTITY: 2,
 };
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -134,7 +133,7 @@ const ERROR = {
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
-export default class PaymentPagesWysiwyg extends React.PureComponent {
+class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -1496,3 +1495,5 @@ function pruneGoalTracker(goal_tracker) {
   }
   return newGoalTracker;
 }
+
+export default withRouter(PaymentPagesWysiwyg);

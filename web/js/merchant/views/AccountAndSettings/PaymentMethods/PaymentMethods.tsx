@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
-import { Route, NavLink, RouteComponentProps } from 'react-router-dom';
+import { Route, NavLink, Routes } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -38,6 +39,7 @@ import {
 } from 'common/typings';
 import { bindActionCreators } from 'redux';
 import qs from 'query-string';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 const Cards = lazy(
   () =>
@@ -202,6 +204,10 @@ const PaymentMethodsV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, isIERevamp]);
 
+  const getRefRoute = (routePath: string) => {
+    return routePath.replace('/payment-methods/', '') + '/*';
+  };
+
   return (
     <StyledTabContainer>
       <div className="banner-container">
@@ -239,19 +245,86 @@ const PaymentMethodsV2 = ({
           <StyledDivider>
             {isIERevamp ? (
               <Suspense fallback={<SectionShimmer />}>
-                <Route path={ROUTES_INFO.CARDS} component={Cards} />
-                <Route path={ROUTES_INFO.UPI_QR} component={UpiQR} />
-                <Route path={ROUTES_INFO.NETBANKING} component={Netbanking} />
-                <Route path={ROUTES_INFO.EMI} component={Emi} />
-                <Route path={ROUTES_INFO.WALLET} component={Wallet} />
-                <Route path={ROUTES_INFO.PAY_LATER} component={Paylater} />
-                <Route path={ROUTES_INFO.INTERNATIONAL_PAYMENTS} component={International} />
-                <Route path={ROUTES_INFO.MEAL_CARD} component={MealCard} />
+                <Routes>
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.CARDS)}
+                    element={
+                      <RouteGuard>
+                        <Cards />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.UPI_QR)}
+                    element={
+                      <RouteGuard>
+                        <UpiQR />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.NETBANKING)}
+                    element={
+                      <RouteGuard>
+                        <Netbanking />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.EMI)}
+                    element={
+                      <RouteGuard>
+                        <Emi />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.WALLET)}
+                    element={
+                      <RouteGuard>
+                        <Wallet />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.PAY_LATER)}
+                    element={
+                      <RouteGuard>
+                        <Paylater />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.INTERNATIONAL_PAYMENTS)}
+                    element={
+                      <RouteGuard>
+                        <International />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.MEAL_CARD)}
+                    element={
+                      <RouteGuard>
+                        <MealCard />
+                      </RouteGuard>
+                    }
+                  />
+                </Routes>
               </Suspense>
             ) : (
               <Suspense fallback={<Loader />}>
                 <div className="content">
-                  <Route path={ROUTES_INFO.PAYMENT_METHODS} component={PaymentMethods} />
+                  <Routes>
+                    <Route
+                      index
+                      element={
+                        <RouteGuard>
+                          <PaymentMethods />
+                        </RouteGuard>
+                      }
+                    />
+                  </Routes>
                 </div>
               </Suspense>
             )}

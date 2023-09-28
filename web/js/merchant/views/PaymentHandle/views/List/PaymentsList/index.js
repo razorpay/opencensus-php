@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import track from 'merchant/views/PaymentHandle/track';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -20,9 +20,8 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@withRouter
 @connect((state) => state.payments, { fetchAll })
-export default class PaymentsList extends ListContainer {
+class PaymentsList extends ListContainer {
   fetchEntityList = (params) => {
     return this.props.fetchAll({
       ...params,
@@ -51,3 +50,5 @@ export default class PaymentsList extends ListContainer {
     );
   }
 }
+
+export default withRouter(PaymentsList);

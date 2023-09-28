@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { getConfigs } from './api/overview';
 import { getItem } from 'common/utils/localStorage';
 import { pickProps } from 'common/utils/rzp-utils';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   fetchReportsConfigsFailed,
   fetchReportsConfigsSuccess,
@@ -88,7 +88,6 @@ export const ReportsSection = connect(
     dashboardType,
   }: ReportSectionProps): JSX.Element => {
     const { isSchedulesEnabled } = useReportsSplitzExperiments();
-
     const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
 
     const handleAllConfigsFetch = async (validationCheck = true) => {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
@@ -62,7 +63,6 @@ const BASE_ROUTES = {
   pos: '/pos',
 };
 
-@withRouter
 @connect(
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
@@ -73,7 +73,7 @@ const BASE_ROUTES = {
   { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
 )
 @RTracking(() => window.rzpQ.component('Sidebar'))
-export default class Sidebar extends Component {
+class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.hideSidebar = this.hideSidebar.bind(this);
@@ -300,8 +300,9 @@ export default class Sidebar extends Component {
   }
 }
 
-@withRouter
-class PartnerSidebar extends Component {
+export default withRouter(Sidebar);
+
+class PartnerSidebarComponent extends Component {
   constructor(props) {
     super(props);
     const isPartnerRoute = this.isPartnerRoute(props);
@@ -374,3 +375,5 @@ class PartnerSidebar extends Component {
     );
   }
 }
+
+const PartnerSidebar = withRouter(PartnerSidebarComponent);

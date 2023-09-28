@@ -84,6 +84,17 @@ describe('PaymentRefund', () => {
             },
           }}
         />,
+        {
+          initialState: {
+            session: {
+              user: {
+                isPaymentsExtraRefundDetailsEnabled: true,
+                isRefundAllowed: true,
+                isOrgAllowedFunctionality: () => false,
+              },
+            },
+          },
+        },
       );
       expect(
         screen.getByText('Refunds are disabled as there is an open dispute on this payment'),
@@ -188,9 +199,22 @@ describe('PaymentRefund', () => {
     });
 
     describe('When refund is allowed', () => {
+      const renderApp = (ui) => {
+        render(ui, {
+          initialState: {
+            session: {
+              user: {
+                isPaymentsExtraRefundDetailsEnabled: true,
+                isRefundAllowed: true,
+                isOrgAllowedFunctionality: () => true,
+              },
+            },
+          },
+        });
+      };
       describe('Issue Refund button', () => {
         const checkIssueRefundButton = (props = {}) => {
-          render(
+          renderApp(
             <App
               payment={{
                 ...payment,
@@ -209,7 +233,7 @@ describe('PaymentRefund', () => {
         });
 
         test('should trigger refund modal if the transaction is offline and keys are present', () => {
-          render(
+          renderApp(
             <App
               payment={{
                 ...payment,
@@ -235,7 +259,7 @@ describe('PaymentRefund', () => {
             isLoading: false,
             error: {},
           });
-          render(
+          renderApp(
             <App
               payment={{
                 ...payment,

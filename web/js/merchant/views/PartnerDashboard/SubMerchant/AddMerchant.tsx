@@ -23,7 +23,7 @@ import InputField from './components/InputField';
 import { required, email, isEmail, isMobile, maxLength, name } from 'common/utils/validators';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { removeItem } from 'common/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
@@ -12,11 +12,10 @@ import Group, { GroupItem } from 'common/ui/Group';
 
 import { logout, showOrHideTour } from 'merchantLA/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
-import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
+import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import BusinessImage from 'assets/business.svg';
 import BusinessImageThumb from 'assets/business_thumbnail.svg';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -26,7 +25,7 @@ import BusinessImageThumb from 'assets/business_thumbnail.svg';
   },
   { logout, closeModal, openModal, showOrHideTour },
 )
-export default class ProfileDropdown extends Component {
+class ProfileDropdown extends Component {
   logout = () => {
     logoutGoogleAccount();
     if (this.props.analytics) this.props.analytics('Log Out');
@@ -187,3 +186,5 @@ export default class ProfileDropdown extends Component {
     );
   }
 }
+
+export default withRouter(ProfileDropdown);

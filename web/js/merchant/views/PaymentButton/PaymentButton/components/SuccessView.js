@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -96,12 +97,12 @@ const integrationsList = [
     icon: BloggerImage,
   },
 ];
-@withRouter
+
 @connect((state) => ({
   user: state.session.user,
   mode: state.session.mode,
 }))
-export default class SuccessModal extends React.Component {
+class SuccessModal extends React.Component {
   onClickCopy = () => {
     setIsPaymentButtonCodeUsed({
       mid: this.props.user.current,
@@ -310,3 +311,5 @@ export default class SuccessModal extends React.Component {
     );
   }
 }
+
+export default withRouter(SuccessModal);

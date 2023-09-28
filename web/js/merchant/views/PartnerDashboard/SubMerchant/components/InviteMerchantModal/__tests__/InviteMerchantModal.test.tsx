@@ -13,6 +13,7 @@ const defaultProps = {
 };
 const defaultUserExtra = {
   findTag: jest.fn(),
+  isOrgAllowedFunctionality: () => true,
 };
 const defaultOrgExtra = {
   business_name: 'Razorpay',

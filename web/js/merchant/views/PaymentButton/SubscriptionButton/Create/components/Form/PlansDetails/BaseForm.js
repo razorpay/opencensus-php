@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
@@ -16,8 +16,7 @@ import Button from 'common/new-ui/Button';
 
 import track from 'merchant/views/PaymentButton/SubscriptionButton/Create/track';
 
-@withRouter
-export default class BaseForm extends React.Component {
+class BaseForm extends React.Component {
   constructor(props) {
     super(props);
 
@@ -257,3 +256,5 @@ export default class BaseForm extends React.Component {
     );
   }
 }
+
+export default withRouter(BaseForm);

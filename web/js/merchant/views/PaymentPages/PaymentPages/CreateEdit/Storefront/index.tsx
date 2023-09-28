@@ -2,7 +2,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { withRouter, Link as ReactRouterLink } from 'react-router-dom';
+import { Link as ReactRouterLink } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   AddProductBox,
   DescriptionLeftWrapper,

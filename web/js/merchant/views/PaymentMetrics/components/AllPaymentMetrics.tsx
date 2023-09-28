@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ChartCardContainer, MetricsPanelContainer, TopBar } from './styled';
 import PaymentMetricsFilter from './PaymentMetricsFilter';
 import GraphInterval from './GraphInterval';

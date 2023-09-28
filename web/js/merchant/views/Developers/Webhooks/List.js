@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -23,6 +25,7 @@ import {
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { withRouter } from 'common/deprecated/withRouter';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -149,4 +152,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WebhooksContainer')),
-)(WebhooksContainer);
+)(withRouter(WebhooksContainer));

@@ -2,10 +2,7 @@ import React from 'react';
 import { render, waitFor, screen } from 'test-utils';
 import ApiKeysAndPlugins from 'merchant/views/ApiKeysAndPlugins/index';
 import merge from 'lodash/merge';
-import store, { storeWithInitialState } from 'merchant/store';
-import { Router } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { createMemoryHistory } from 'history';
+import store from 'merchant/store';
 import { PLATFORM_LINKS } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/__test__/mocks/fixtures';
 // Mock `window.location` with Jest spies and extend expect
 import 'jest-location-mock';
@@ -27,20 +24,11 @@ const getInitialState = ({ userDetails = {} } = {}) => {
   };
 };
 
-const history = createMemoryHistory({ initialEntries: ['/onboarding/api-keys'] });
-history.replace = jest.fn();
-
 const renderApp = ({ initialState = {}, ...props } = {}) =>
-  render(
-    <Provider store={storeWithInitialState(initialState)}>
-      <Router history={history}>
-        <ApiKeysAndPlugins {...props} />
-      </Router>
-    </Provider>,
-    {
-      initialState,
-    },
-  );
+  render(<ApiKeysAndPlugins {...props} />, {
+    initialState,
+    renderViaRouteGuard: false,
+  });
 
 describe('ApiKeys', () => {
   test('should render back in fullscreen view', async () => {
@@ -54,9 +42,7 @@ describe('ApiKeys', () => {
     });
     renderApp({ initialState, ...props });
 
-    await waitFor(() => {
-      expect(screen.getByText('Back')).toBeInTheDocument();
-    });
+    expect(await screen.findByText('Back')).toBeInTheDocument();
   });
 
   test('should not render toggle mode in normal view', async () => {

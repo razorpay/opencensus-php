@@ -1,14 +1,17 @@
-import { RouteComponentProps } from 'react-router-dom';
+import { Location, NavigateFunction } from 'react-router-dom';
 
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
 
+export interface RouterParams {
+  location: Location;
+  navigate: NavigateFunction;
+}
 export interface HandleDetailsClickParams {
   itemId: string;
   baseUrl: string;
   initiatePage: string;
   prevPath: TransactionsEntityRoute;
-  history: RouteComponentProps['history'];
   isButton?: boolean;
 }
 
-export interface DetailsProps extends RouteComponentProps, HandleDetailsClickParams {}
+export type DetailsProps = HandleDetailsClickParams;

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
 import { openModal } from 'razorx/components/Modal';
 import Collection from 'razorx/model/collection';
@@ -9,9 +9,8 @@ import AddEditExperiment from './AddEditExperiment';
 import ExperimentList from './ExperimentList';
 import ExperimentDetails from './ExperimentDetails';
 
-@withRouter
 @observer
-export default class Experiments extends React.Component {
+class Experiments extends React.Component {
   state = {
     shouldShowDetails: !!this.props.match.params.id,
   };
@@ -62,3 +61,5 @@ export default class Experiments extends React.Component {
 Experiments.propTypes = {
   match: PropTypes.object.isRequired,
 };
+
+export default withRouter(Experiments);

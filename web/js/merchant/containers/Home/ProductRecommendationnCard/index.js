@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import * as KeyActions from 'merchant/reducers/keys';
 import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import * as ModalActions from 'merchant_common/reducers/modals';

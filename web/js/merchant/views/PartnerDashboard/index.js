@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import store from 'merchant/store';
-import { Route, Switch } from 'react-router-dom';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { ShowWhenRoute as showWhenRoutex } from 'merchant_common/components/ShowWhen';
+import { Route, Routes } from 'react-router-dom';
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
 import Earnings from './Earnings';
@@ -14,7 +12,7 @@ import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
 import Configuration, { AppConfiguration } from './Settings/configuration';
-const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
+import { RouteGuard } from 'merchant/components/ShowWhen';
 
 export default function PartnerDashboard() {
   const user = store.getState().session.user;
@@ -34,63 +32,110 @@ export default function PartnerDashboard() {
   }, [isPartnershipFUX]);
   return (
     <ErrorBoundary team={Teams?.PARTNERSHIP} resetOnProps>
-      <Switch>
-        <PartnerShowWhenRoute
-          additionalCondition={(user) => user.isPartner() && user.isPartnershipFUX}
-          path="/partners"
-          component={Home}
-          exact
-        />
-        <ShowWhenRoute
-          additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
-          path="/partners/settings"
-          component={Settings}
-        />
-
-        <ShowWhenRoute
-          additionalCondition={(user) =>
-            user.isPartner('aggregator', 'fully_managed') && user.isPartnershipForPhantomEnabled
-          }
-          path="/partners/config"
-          component={Configuration}
-        />
-        <ShowWhenRoute
-          additionalCondition={(user) => user.isPartner('pure_platform')}
-          path="/partners/applications/configuration/:id"
-          component={AppConfiguration}
-        />
-
-        <ShowWhenRoute
-          additionalCondition={(user) => user.isPartner('pure_platform')}
-          path="/partners/applications"
-          component={Applications}
-        />
-
-        <ShowWhenRoute
-          path="/partners/earnings"
-          component={Earnings}
-          additionalCondition={(user) =>
-            user.isAllowedView('earnings') && user.isHavingPartnerConfigs
+      <Routes>
+        <Route
+          index
+          element={
+            <RouteGuard
+              defaultPath="/partners/submerchants"
+              additionalCondition={(user) => user.isPartner() && user.isPartnershipFUX}
+            >
+              <Home />
+            </RouteGuard>
           }
         />
 
-        <ShowWhenRoute
-          path="/partners/subventions"
-          component={Subvention}
-          additionalCondition={(user) =>
-            user.isAllowedView('earnings') && user.isHavingSubventionConfigs
+        <Route
+          path="settings/*"
+          element={
+            <RouteGuard
+              additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
+            >
+              <Settings />
+            </RouteGuard>
           }
         />
 
-        <ShowWhenRoute
-          path="/partners/reports"
-          component={PartnerReports}
-          // disabling for resellers not having partner configs
-          additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
+        <Route
+          path="config/*"
+          element={
+            <RouteGuard
+              additionalCondition={(user) =>
+                user.isPartner('aggregator', 'fully_managed') && user.isPartnershipForPhantomEnabled
+              }
+            >
+              <Configuration />
+            </RouteGuard>
+          }
         />
 
-        <Route path="/partners/submerchants" component={SubMerchantList} />
-      </Switch>
+        <Route path="applications/*">
+          <Route
+            path="applications/configuration/:id/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isPartner('pure_platform')}>
+                <AppConfiguration />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isPartner('pure_platform')}>
+                <Applications />
+              </RouteGuard>
+            }
+          />
+        </Route>
+
+        <Route
+          path="earnings/*"
+          element={
+            <RouteGuard
+              additionalCondition={(user) =>
+                user.isAllowedView('earnings') && user.isHavingPartnerConfigs
+              }
+            >
+              <Earnings />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="subventions/*"
+          element={
+            <RouteGuard
+              additionalCondition={(user) =>
+                user.isAllowedView('earnings') && user.isHavingSubventionConfigs
+              }
+            >
+              <Subvention />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="reports/*"
+          element={
+            <RouteGuard
+              additionalCondition={(user) =>
+                !user.isPartner('reseller') || user.isHavingPartnerConfigs
+              }
+            >
+              <PartnerReports />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="submerchants/*"
+          element={
+            <RouteGuard>
+              <SubMerchantList />
+            </RouteGuard>
+          }
+        />
+      </Routes>
     </ErrorBoundary>
   );
 }

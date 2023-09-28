@@ -1,6 +1,6 @@
 import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import Button from 'common/new-ui/Button';

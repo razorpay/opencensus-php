@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
-import { NavLink, Redirect, Switch } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import Spinner from 'common/ui/Spinner';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { withRouter } from 'common/deprecated/withRouter';
 
 let redirectPath;
 const RouteContainer = ({
@@ -58,17 +59,24 @@ const RouteContainer = ({
               {magicCheckoutRoutes.map(renderNav)}
             </header>
             <content>
-              <Switch>
-                {magicCheckoutRoutes.map((item) => (
-                  <ShowWhenRoute
-                    path={item.path}
-                    key={item.path}
-                    component={item.Component}
-                    additionalCondition={(_user) => !item.condition || item.condition(_user)}
-                  />
-                ))}
-                <Redirect to={redirectPath} />
-              </Switch>
+              <Routes>
+                {magicCheckoutRoutes.map((item) => {
+                  return (
+                    <Route
+                      key={item.path}
+                      path={`${item.path.replace('/magic/', '')}/*`}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(_user) => !item.condition || item.condition(_user)}
+                        >
+                          <item.Component />
+                        </RouteGuard>
+                      }
+                    />
+                  );
+                })}
+                <Route path="*" element={<Navigate to={redirectPath} replace />} />
+              </Routes>
             </content>
           </>
         )}
@@ -76,4 +84,4 @@ const RouteContainer = ({
     </SuspenseWithLoader>
   );
 };
-export default RouteContainer;
+export default withRouter(RouteContainer);

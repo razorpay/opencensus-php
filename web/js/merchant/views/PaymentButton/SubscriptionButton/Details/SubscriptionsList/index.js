@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -15,9 +15,8 @@ const SubscriptionsTable = (props) => {
   return <EntityTable title="Subscriptions" columns={paymentColumns} {...props} />;
 };
 
-@withRouter
 @connect((state) => state.subscriptions, { fetchAll })
-export default class SubscriptionsList extends ListContainer {
+class SubscriptionsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
     return this.props.fetchAll({
@@ -85,3 +84,5 @@ export default class SubscriptionsList extends ListContainer {
     );
   }
 }
+
+export default withRouter(SubscriptionsList);

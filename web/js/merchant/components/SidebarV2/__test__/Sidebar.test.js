@@ -46,7 +46,17 @@ describe('SidebarV2', () => {
 
   test('should call fetch items on mount', async () => {
     fetchNavItemsCacheSpy.mockReturnValue(null);
-    renderApp();
+    renderApp({
+      initialState: {
+        session: {
+          user: {
+            isAllowedView: () => true,
+            isAllowedMultiple: () => true,
+            findTag: () => false,
+          },
+        },
+      },
+    });
     await waitFor(() => {
       expect(fetchNavigationSpy).toHaveBeenCalledTimes(1);
     });
@@ -56,6 +66,15 @@ describe('SidebarV2', () => {
       const logoUrl = 'https://cdn.razorpay.com/logo_invert.svg';
       renderApp({
         logoUrl,
+        initialState: {
+          session: {
+            user: {
+              isAllowedView: () => true,
+              isAllowedMultiple: () => true,
+              findTag: () => false,
+            },
+          },
+        },
       });
       await waitFor(() => {
         expect(screen.getByRole('img')).toBeInTheDocument();
@@ -71,6 +90,8 @@ describe('SidebarV2', () => {
               ...state.session.user,
               isOnboardingV2Enabled: true,
               isAllowedView: () => true,
+              isAllowedMultiple: () => true,
+              findTag: () => false,
             },
           },
         },
@@ -90,6 +111,8 @@ describe('SidebarV2', () => {
               ...state.session.user,
               isOnboardingV2Enabled: true,
               isAllowedView: () => true,
+              isAllowedMultiple: () => true,
+              findTag: () => false,
             },
           },
           leftNav: {
@@ -121,6 +144,8 @@ describe('SidebarV2', () => {
               ...state.session.user,
               isActivationFormFullView: true,
               isAllowedView: () => true,
+              isAllowedMultiple: () => true,
+              findTag: () => false,
             },
           },
           leftNav: {
@@ -149,6 +174,8 @@ describe('SidebarV2', () => {
               ...state.session.user,
               isActivationFormFullView: false,
               isAllowedView: () => true,
+              isAllowedMultiple: () => true,
+              findTag: () => false,
             },
           },
           leftNav: {
@@ -176,7 +203,10 @@ describe('SidebarV2', () => {
             user: {
               ...state.session.user,
               isActivationFormFullView: false,
+              isAllowedMultiple: () => true,
               isAllowedView: () => true,
+              findTag: () => false,
+
               user: {
                 signup_campaign: EASY_ONBOARDING,
               },

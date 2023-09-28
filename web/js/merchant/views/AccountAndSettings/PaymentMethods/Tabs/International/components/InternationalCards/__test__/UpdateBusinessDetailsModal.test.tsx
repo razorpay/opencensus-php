@@ -6,7 +6,10 @@ import 'jest-location-mock';
 
 const closeModalSpy = jest.spyOn(modalActions, 'closeModal');
 
-const renderApp = () => render(<UpdateBusinessDetailsModal />);
+const renderApp = () =>
+  render(<UpdateBusinessDetailsModal />, {
+    renderViaRouteGuard: false,
+  });
 
 describe('UpdateBusinessDetailsModal', () => {
   test('should render UpdateBusinessDetailsModal content', () => {

@@ -6,6 +6,13 @@ import { createMemoryHistory } from 'history';
 
 let analyticsTrackSpy, history;
 
+const renderApp = (component, options) => {
+  return render(component, {
+    ...options,
+    renderViaRouteGuard: false,
+  });
+};
+
 describe('ProductOnboardingCard - PaymentButtonsCard', () => {
   beforeAll(() => {
     analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
@@ -17,11 +24,13 @@ describe('ProductOnboardingCard - PaymentButtonsCard', () => {
     jest.clearAllMocks();
   });
   test('should render component without errors', () => {
-    expect(() => render(<PaymentButtonsCard history={history} product="PG" />)).not.toThrowError();
+    expect(() =>
+      renderApp(<PaymentButtonsCard history={history} product="PG" />),
+    ).not.toThrowError();
   });
 
   test('should navigate and trigger event on CTA click', async () => {
-    const { getByRole } = render(<PaymentButtonsCard history={history} product="PH" />);
+    const { getByRole } = renderApp(<PaymentButtonsCard history={history} product="PH" />);
     const cta = getByRole('button');
 
     expect(cta).toBeEnabled();

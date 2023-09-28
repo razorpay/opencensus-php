@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import debounce from 'common/utils/debounce';
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import Alert from 'common/ui/Forms/Alert';

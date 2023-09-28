@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { formatDate } from 'razorx/helpers/utils';
 import { PageTable } from 'razorx/components/ui/Table';
 import Form from 'razorx/components/ui/Form';
@@ -10,8 +11,8 @@ import { splitzFetch } from 'razorx/helpers/fetch';
 import { notifyError } from 'razorx/components/Modal';
 
 // @observer
-@withRouter
-export default class ExperimentList extends React.Component {
+
+class ExperimentList extends React.Component {
   state = {
     isFetchingProjects: true,
     projects: [],
@@ -186,3 +187,5 @@ ExperimentList.propTypes = {
   collection: PropTypes.object.isRequired,
   showDetails: PropTypes.func.isRequired,
 };
+
+export default withRouter(ExperimentList);

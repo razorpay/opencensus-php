@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import qs from 'query-string';
 import { Component, createRef } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 

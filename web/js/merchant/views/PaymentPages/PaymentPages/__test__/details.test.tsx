@@ -44,9 +44,7 @@ const renderApp = (isStorefrontPage = true, isRazorx = true) =>
       },
     },
     renderOptions: {
-      historyOptions: {
-        initialEntries: ['/paymentpages/storefront/st_L8I1SdFL0YqcMN/payments#paymentpages'],
-      },
+      initialEntries: ['/paymentpages/storefront/st_L8I1SdFL0YqcMN/payments#paymentpages'],
       path: '/paymentpages/storefront/st_L8I1SdFL0YqcMN/payments#paymentpages',
     },
   });
@@ -329,9 +327,7 @@ describe('Batch Payment Pages -> Details page', () => {
         },
       },
       renderOptions: {
-        historyOptions: {
-          initialEntries: [getURL(plId)],
-        },
+        initialEntries: [getURL(plId)],
         path: getURL(plId),
       },
     });

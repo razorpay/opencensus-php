@@ -14,7 +14,8 @@ import {
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { bindActionCreators, compose } from 'redux';
 
 import Amount from 'common/ui/Amount';

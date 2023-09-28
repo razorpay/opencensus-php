@@ -1,12 +1,7 @@
 import List, {
   EmptyComponent as emptyComponent,
 } from 'merchant/views/MagicCheckout/MagicIntelligence/components/List';
-import { Provider } from 'react-redux';
-import { render } from '@testing-library/react';
-import { storeWithInitialState } from 'merchant/store';
-import { Router } from 'react-router-dom';
-import { createMemoryHistory } from 'history';
-import { fireEvent, screen } from 'test-utils';
+import { fireEvent, screen, render } from 'test-utils';
 
 const initProps = {
   fetchAll: null,
@@ -29,42 +24,32 @@ const initProps = {
   },
 };
 
-const AppWithRouter = ({ state = {}, ...props }) => {
-  return (
-    <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-      <Provider
-        store={storeWithInitialState({
-          ...state,
-        })}
-      >
-        <List {...initProps} {...props} />
-      </Provider>
-    </Router>
-  );
+const renderApp = (props) => {
+  return render(<List {...initProps} {...props} />);
 };
 
 describe('List filter component', () => {
   test('should show list filters inside the component', () => {
-    render(<AppWithRouter />);
+    renderApp();
     ['Type', 'Value', 'Count'].forEach((fieldLabel) => {
       expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
   });
 
   test('should have input field in the component', () => {
-    const { container } = render(<AppWithRouter />);
+    const { container } = renderApp();
     ['value', 'count'].forEach((fieldInput) => {
       expect(container.querySelector(`input[name="${fieldInput}"]`)).toBeInTheDocument();
     });
   });
 
   test('should have select field inside the component', () => {
-    const { container } = render(<AppWithRouter />);
+    const { container } = renderApp();
     expect(container.querySelector(`select[name="type"]`)).toBeInTheDocument();
   });
 
   test('should call submit function on search CTA', () => {
-    render(<AppWithRouter fetchAll={jest.fn()} />);
+    renderApp({ fetchAll: jest.fn() });
     const searchCTA = screen.getByRole('button', {
       name: 'Search',
     });
@@ -73,7 +58,7 @@ describe('List filter component', () => {
   });
 
   test('should call reset function on clear CTA', () => {
-    render(<AppWithRouter />);
+    renderApp();
     const clearCTA = screen.getByRole('button', {
       name: 'Clear',
     });
@@ -82,12 +67,12 @@ describe('List filter component', () => {
   });
 
   test('should not show value filter if type selected is all', () => {
-    render(<AppWithRouter attributeType="" />);
+    renderApp({ attributeType: '' });
     expect(screen.queryByText(/Value/i)).not.toBeInTheDocument();
   });
 
   test('should be able to search if type is all', () => {
-    render(<AppWithRouter attributeType="" fetchAll={jest.fn()} />);
+    renderApp({ attributeType: '', fetchAll: jest.fn() });
     const searchCTA = screen.getByRole('button', {
       name: 'Search',
     });
@@ -96,7 +81,7 @@ describe('List filter component', () => {
   });
 
   test('should show the selected type inside the input field', () => {
-    const { container } = render(<AppWithRouter />);
+    const { container } = renderApp();
     [
       {
         name: 'type',

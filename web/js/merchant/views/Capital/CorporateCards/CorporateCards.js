@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
 import analyticsService from '@razorpay/commander-services/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import LoanEntity from 'merchant/models/Capital/BaseOrigination';
-import CCGetStarted from 'assets/capital/cc-get-started.png';
+import { connect } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+
 import CCCreditLimit from 'assets/capital/cc-credit-limit.png';
 import CCDeposits from 'assets/capital/cc-deposits.png';
+import CCGetStarted from 'assets/capital/cc-get-started.png';
 import XLogo from 'assets/capital/x-logo.png';
-import Image from '../../../../common/ui/Image';
+import Image from 'common/ui/Image';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import LoanEntity from 'merchant/models/Capital/BaseOrigination';
 
 const LOS_CARDS_LINK = 'https://x.razorpay.com/cards/apply';
 const CARDS_DASHBOARD_LINK = 'https://x.razorpay.com/cards';
@@ -99,7 +100,7 @@ const CorporateCards = ({ user }) => {
   const handleRightCTAClick = () => {
     handleOnClick('Right');
   };
-  if (!user.isCardsLOSEnabled) return <Redirect to="/" />;
+  if (!user.isCardsLOSEnabled) return <Navigate to="/" replace />;
   return (
     <div className="corporate-cards-wrapper">
       <div className="corporate-cards__left">

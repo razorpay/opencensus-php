@@ -1,24 +1,26 @@
 import React, { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import rTracking from 'react-tracking';
-import {
-  closeModal as fnCloseModal,
-  openModal as fnOpenModal,
-} from 'merchant_common/reducers/modals';
-import XCAHeader from '../../../../common/ui/NotificationsDropdown/Neostone/common/XCAHeader';
-import RazorpayXNitroAnnouncement from '../../../../common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
-import Footer from './Footer';
-import OfferPageContent from './OfferPageContent';
-import { headerDivider } from '../data';
-import { sendDataToSalesForce } from '../../../../common/utils/common-api';
+import { compose } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import XCAHeader from 'common/ui/NotificationsDropdown/Neostone/common/XCAHeader';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import { sendDataToSalesForce } from 'common/utils/common-api';
 import {
   updateUtmParams,
   utmCampaignMap,
   utmMediumMap,
   utmSourceMap,
 } from 'merchant/helpers/x/updateUtmCookie';
+import { headerDivider } from 'merchant/views/ConnectedBanking/data';
+import {
+  closeModal as fnCloseModal,
+  openModal as fnOpenModal,
+} from 'merchant_common/reducers/modals';
+
+import Footer from './Footer';
+import OfferPageContent from './OfferPageContent';
 
 const OfferPage = ({
   offerDetails,
@@ -75,17 +77,15 @@ const OfferPage = ({
   );
 };
 
-export default withRouter(
-  compose(
-    rTracking(() => window.rzpQ.component('ConnectedBanking')),
-    connect(
-      (state) => ({
-        user: state.session.user,
-      }),
-      {
-        openModal: fnOpenModal,
-        closeModal: fnCloseModal,
-      },
-    ),
-  )(OfferPage),
-);
+export default compose(
+  rTracking(() => window.rzpQ.component('ConnectedBanking')),
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    {
+      openModal: fnOpenModal,
+      closeModal: fnCloseModal,
+    },
+  ),
+)(withRouter(OfferPage));

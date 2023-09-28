@@ -4,8 +4,13 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 
 type Obj = Record<string, unknown>;
 
+type AppPropType = {
+  size: string;
+  component: ReactNode;
+};
+
 type AppProps = {
-  openModal?: ({ size: string, component: ReactNode }) => Obj;
+  openModal?: ({ size, component }: AppPropType) => Obj;
   component: ReactNode;
 };
 

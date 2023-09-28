@@ -3,7 +3,7 @@ import {
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
 import { ICategories } from 'merchant/reducers/paymentPages/types';
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export type TripleState = -1 | 0 | 1;
 

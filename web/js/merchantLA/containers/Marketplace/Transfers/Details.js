@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details';
 import { fetchTransfer, fetchReversals } from 'merchantLA/reducers/marketplace/transfer';
 import * as ModalActions from 'merchant_common/reducers/modals';

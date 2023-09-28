@@ -2,7 +2,8 @@ import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link, Redirect } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -31,7 +32,6 @@ import {
 } from './util';
 import DeactivateRule from './DeactivateRule';
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -56,7 +56,7 @@ import DeactivateRule from './DeactivateRule';
     changeRuleMode,
   },
 )
-export default class RuleDetail extends Component {
+class RuleDetail extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -113,7 +113,7 @@ export default class RuleDetail extends Component {
 
   render() {
     if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
+      return <Navigate to={this.state.redirect} replace />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
     const { terminalProviders } = this.props;
     const MAPPED_PROVIDERS = createMappedProviders(terminalProviders);
@@ -450,3 +450,5 @@ export default class RuleDetail extends Component {
     });
   };
 }
+
+export default withRouter(RuleDetail);

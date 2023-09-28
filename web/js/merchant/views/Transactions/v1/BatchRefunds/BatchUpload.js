@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import BatchUpload from './components/BatchUpload';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { uploadRefundBatch as uploadBatch } from 'merchant/reducers/batches';

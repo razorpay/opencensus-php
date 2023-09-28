@@ -18,14 +18,9 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
 jest.mock('merchant/views/AccountAndSettings/styled', () => ({
   __esModule: true,
   ...jest.requireActual('merchant/views/AccountAndSettings/styled'),
-  StyledConfiguration: ({
-    showBranding,
-    showFlashCheckout,
-    showSkipMandatorySummaryPage,
-    path,
-  }) => {
+  StyledConfiguration: ({ showBranding, showFlashCheckout, showSkipMandatorySummaryPage }) => {
     return (
-      <div data-testid={`styled-${path}`}>
+      <div>
         {showBranding && <>Branding</>}
         {showFlashCheckout && <>Flash Checkout</>}
         {showSkipMandatorySummaryPage && <>Mandate Summary Page</>}
@@ -42,7 +37,7 @@ jest.mock('merchant/views/Account/TrustedBadge', () => {
 });
 
 const renderApp = ({ pathname, user } = {}) => {
-  return render(<CheckoutSettings location={{ pathname: pathname ?? ROUTES_INFO.BRANDING }} />, {
+  return render(<CheckoutSettings />, {
     initialState: {
       session: {
         user: {
@@ -52,6 +47,8 @@ const renderApp = ({ pathname, user } = {}) => {
         org: {},
       },
     },
+    renderViaRouteGuard: false,
+    initialEntries: [pathname ?? ROUTES_INFO.BRANDING],
   });
 };
 
@@ -93,7 +90,7 @@ describe('Checkout Settings', () => {
       ['Mandate Summary Page', ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE],
     ])('should render %s component for %s route', (componentText, route) => {
       renderApp();
-      const routeComponent = screen.getByTestId(`styled-${route}`);
+      const routeComponent = screen.getByTestId(`${route.replace('/checkout-settings/', '')}/*`);
       expect(routeComponent).toBeInTheDocument();
       expect(routeComponent).toHaveTextContent(componentText);
     });

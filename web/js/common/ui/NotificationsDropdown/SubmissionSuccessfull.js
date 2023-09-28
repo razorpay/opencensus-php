@@ -3,7 +3,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import './modalStyle.styl';
 import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
 

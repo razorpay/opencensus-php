@@ -1,25 +1,68 @@
-import { Component } from 'react';
+/* eslint-disable react/no-unsafe */
+/* eslint-disable no-bitwise */
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import debounce from 'common/utils/debounce';
-import LocalStorageService from 'common/utils/localStorage';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import { classList } from 'common/utils/rzp-utils';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { trackLoad, trackExpand, trackAnnouncement } from './ga';
-import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
-import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
+import { setItem, getItem } from 'common/utils/localStorage';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { showAcceptPaymentsModal } from 'merchant/reducers/home';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
 import RazorpayXNitroAnnouncement from './RazorpayXNitroAnnouncement';
+import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
+import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
+import { trackLoad, trackExpand, trackAnnouncement } from './ga';
+import moment from 'moment';
+
+const BUTTON_CLASSES = {
+  button: 'btn-primary',
+  'primary-inverted': 'btn-primary--invert',
+};
+
+const getButtonClass = (type) => {
+  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
+};
+
+const iconMap = {
+  transactions: 'i-repeat',
+  settlements: 'i-done-all',
+  paymentpages: 'i-payment-pages',
+  invoices: 'i-notes',
+  paymentlinks: 'i-link',
+  marketplace: 'i-store',
+  subscription: 'i-refresh',
+  smartcollect: 'i-account-balance',
+  reports: 'i-books',
+};
+
+const getQueryData = (param, user) => {
+  switch (param) {
+    case 'mid': {
+      const merchant = user.merchants[user.current];
+
+      return merchant.id;
+    }
+    case 'business_name': {
+      return user.business_name;
+    }
+    case 'email': {
+      return user.email;
+    }
+    default: {
+      return null;
+    }
+  }
+};
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
 
-@withRouter
 @connect(
   (state) => {
     return {
@@ -34,7 +77,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
   },
 )
 @RTracking(() => window.rzpQ.component('NotificationsDropdown'))
-export default class NotificationsDropdown extends Component {
+class NotificationsDropdown extends Component {
   state = {};
   id = this.props.user.current;
 
@@ -47,7 +90,7 @@ export default class NotificationsDropdown extends Component {
     }
 
     this.setState({
-      notifications: notifications,
+      notifications,
     });
 
     this.setLastReadTS();
@@ -81,9 +124,9 @@ export default class NotificationsDropdown extends Component {
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
     const { notifications } = this.state;
-    const ID = [],
-      readID = [],
-      unreadID = [];
+    const ID = [];
+    const readID = [];
+    const unreadID = [];
 
     let totalUnread = 0;
     for (let i = 0; i < notifications.length; i++) {
@@ -125,8 +168,8 @@ export default class NotificationsDropdown extends Component {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
-        url: url,
-        id: id,
+        url,
+        id,
       }),
     );
   };
@@ -142,9 +185,9 @@ export default class NotificationsDropdown extends Component {
       },
     });
     const tracking = this.props.tracking;
-    const ID = [],
-      readID = [],
-      unreadID = [];
+    const ID = [];
+    const readID = [];
+    const unreadID = [];
 
     this.state.notifications.forEach((notification) => {
       const notifID = notification.id;
@@ -169,7 +212,7 @@ export default class NotificationsDropdown extends Component {
     this.setState({ totalUnread: 0 });
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem('notifications-dropdown-' + this.id, String(newLastReadTS));
+    setItem(`notifications-dropdown-${this.id}`, String(newLastReadTS));
 
     const ele = document.getElementsByClassName('Dropdown--Notifications-content')[0];
 
@@ -193,7 +236,7 @@ export default class NotificationsDropdown extends Component {
 
   setLastReadTS() {
     this.setState({
-      lastReadTS: LocalStorageService.getItem('notifications-dropdown-' + this.id) || 0,
+      lastReadTS: getItem(`notifications-dropdown-${this.id}`) || 0,
     });
   }
 
@@ -276,7 +319,7 @@ export default class NotificationsDropdown extends Component {
   };
 
   render() {
-    let { user, showMobileNav } = this.props;
+    const { user, showMobileNav } = this.props;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
       'Payments-Mobile-App',
@@ -308,7 +351,7 @@ export default class NotificationsDropdown extends Component {
       'whats-new-may21-remar2-dashboard',
       'June21-QR-GTM',
     ];
-    let cardsList = this.state.notifications.map((card, idx) => (
+    const cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
@@ -330,29 +373,27 @@ export default class NotificationsDropdown extends Component {
           }`}
         >
           {showMobileNav ? (
-            <React.Fragment>
-              <i
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'top nav',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      itemName: 'Announcements',
-                      mobile: true,
-                      location: 'top navigation',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                class="i i-bell"
-              >
-                {hasUnread && <span class="red-bubble" />}
-              </i>
-            </React.Fragment>
+            <i
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'top nav',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    itemName: 'Announcements',
+                    mobile: true,
+                    location: 'top navigation',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+              class="i i-bell"
+            >
+              {hasUnread && <span class="red-bubble" />}
+            </i>
           ) : user.isAnnouncementIconEnabled ? (
             <React.Fragment>
-              <i class="i i-horn"></i>
+              <i class="i i-horn" />
               {hasUnread && <span class="new-bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           ) : (
@@ -427,11 +468,11 @@ function getAgoLabel(ts) {
   if (hours < 24) {
     tsLabel = 'Today';
   } else if (days < 30) {
-    tsLabel = Math.floor(days) + ' day' + (days > 2 ? 's' : '') + ' ago';
+    tsLabel = `${Math.floor(days)} day${days > 2 ? 's' : ''} ago`;
   } else if (days > 30 && days < 365) {
-    tsLabel = Math.floor(days / 30) + ' month' + (days > 60 ? 's' : '') + ' ago';
+    tsLabel = `${Math.floor(days / 30)} month${days > 60 ? 's' : ''} ago`;
   } else if (years > 1) {
-    tsLabel = Math.floor(years) + 'year ago';
+    tsLabel = `${Math.floor(years)}year ago`;
   }
 
   return tsLabel;
@@ -502,7 +543,7 @@ const NotificationCard = ({
               });
             }
 
-            let internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
+            const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
             const urlPath = isExternal ? URL : internalUrl;
 
             return (
@@ -519,7 +560,7 @@ const NotificationCard = ({
                       date: start_ts,
                       sequence: index,
                       actionName: btn.label,
-                      title: title,
+                      title,
                       location: 'top navigation',
                       ...getCommonAnalyticsProperties(window.rzp_user),
                     },
@@ -537,6 +578,7 @@ const NotificationCard = ({
                 }}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
+                rel="noreferrer"
               >
                 <b>
                   {btn.label} {isExternal && <i class="i i-external-link" />}
@@ -550,42 +592,4 @@ const NotificationCard = ({
   );
 };
 
-const BUTTON_CLASSES = {
-  button: 'btn-primary',
-  'primary-inverted': 'btn-primary--invert',
-};
-
-const getButtonClass = (type) => {
-  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
-};
-
-const iconMap = {
-  transactions: 'i-repeat',
-  settlements: 'i-done-all',
-  paymentpages: 'i-payment-pages',
-  invoices: 'i-notes',
-  paymentlinks: 'i-link',
-  marketplace: 'i-store',
-  subscription: 'i-refresh',
-  smartcollect: 'i-account-balance',
-  reports: 'i-books',
-};
-
-const getQueryData = (param, user) => {
-  switch (param) {
-    case 'mid': {
-      const merchant = user.merchants[user.current];
-
-      return merchant.id;
-    }
-    case 'business_name': {
-      return user.business_name;
-    }
-    case 'email': {
-      return user.email;
-    }
-    default: {
-      return null;
-    }
-  }
-};
+export default withRouter(NotificationsDropdown);

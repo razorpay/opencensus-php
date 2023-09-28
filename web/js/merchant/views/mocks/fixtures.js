@@ -6,6 +6,8 @@ export const defaultUser = {
   },
   findTag: (_x) => false,
   isAllowedView: (_x) => true,
+  isOrgAllowedFunctionality: () => true,
+  isAllowedEdit: () => true,
 };
 
 export const getInitialReduxState = (user = defaultUser) => ({

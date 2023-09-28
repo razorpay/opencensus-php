@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import moment from 'moment';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Field } from 'redux-form';
 
 import { useSplitzService } from 'common/splitz';

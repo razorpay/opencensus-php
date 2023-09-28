@@ -1,13 +1,16 @@
 import React from 'react';
-import { NavLink, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import { LOANS_SECTIONS, LOANS_BASE_URL } from 'merchant/views/Capital/Loans/constants';
+
 import Overview from './Overview';
 import RepaymentHistory from './RepaymentHistory';
-import { LOANS_SECTIONS, LOANS_BASE_URL } from '../constants';
-import { calculateLoanBreakup } from './util';
 import { PLAN_STATUS } from './constants';
-import Button from 'common/new-ui/Button';
+import { calculateLoanBreakup } from './util';
 // import NoPermission from './NoPermission';
-import { connect } from 'react-redux';
 
 const LoansCollectionsContainer = ({
   match: {
@@ -66,12 +69,12 @@ const LoansCollectionsContainer = ({
         <h1 className="cash-advance-title">Business Loan</h1>
         <header className="loans-nav-items">
           <div>
-            <NavLink onClick={onTabClick} exact to={`${LOANS_BASE_URL}${LOANS_SECTIONS.OVERVIEW}`}>
+            <NavLink onClick={onTabClick} end to={`${LOANS_BASE_URL}${LOANS_SECTIONS.OVERVIEW}`}>
               Overview
             </NavLink>
             <NavLink
               onClick={onTabClick}
-              exact
+              end
               to={`${LOANS_BASE_URL}${LOANS_SECTIONS.REPAYMENTS_HISTORY}`}
             >
               Repayments History
@@ -97,4 +100,4 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
 });
 
-export default withRouter(connect(mapStateToProps)(LoansCollectionsContainer));
+export default connect(mapStateToProps)(withRouter(LoansCollectionsContainer));

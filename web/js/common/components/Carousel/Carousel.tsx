@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import LazyLoad from 'react-lazyload';
 import { compose } from 'redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 import isEmpty from 'lodash/isEmpty';
 import rTracking from 'react-tracking';
 import Button from 'common/new-ui/Button';

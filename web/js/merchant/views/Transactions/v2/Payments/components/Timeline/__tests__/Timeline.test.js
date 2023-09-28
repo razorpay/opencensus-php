@@ -80,7 +80,7 @@ describe('Timeline component', () => {
       expect(screen.getByText('Amount yet to be manually captured')).toBeInTheDocument();
       const captureBtn = screen.getByRole('button', { description: 'Capture payment' });
       expect(captureBtn).toBeInTheDocument();
-      userEvent.click(captureBtn);
+      await userEvent.click(captureBtn);
 
       await waitFor(() => {
         expect(reFetchPageDetailsSpy).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('Timeline component', () => {
 
       const showTimelineCTA = screen.getByText('Show timeline');
       expect(showTimelineCTA).toBeInTheDocument();
-      userEvent.click(showTimelineCTA);
+      await userEvent.click(showTimelineCTA);
       await waitFor(() => {
         expect(screen.getByText('Collapse timeline')).toBeInTheDocument();
       });

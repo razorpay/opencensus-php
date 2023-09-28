@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import scrollTo from 'common/utils/scrollTo';
 
 /**

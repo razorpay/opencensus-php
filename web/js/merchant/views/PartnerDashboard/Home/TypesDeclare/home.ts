@@ -1,4 +1,4 @@
-import { RouteComponentProps } from 'react-router-dom';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 export interface FUXStatusT {
   api_integration: boolean;
   first_commission_payout: boolean;

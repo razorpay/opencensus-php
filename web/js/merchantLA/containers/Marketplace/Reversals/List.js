@@ -1,14 +1,12 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import HeaderAction from 'common/ui/HeaderAction';
-import ReversalsTable from './ReversalsTable';
-import Credit from './Credit';
-import BatchUploadList from './BatchUpload/List';
 import { fetchBalanceAction } from 'merchantLA/reducers/credits';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
@@ -43,11 +41,11 @@ export default class ReversalsListContainer extends Component {
       <div>
         <tabbed-container>
           <header id="marketplace-header">
-            <NavLink exact to="/reversals">
+            <NavLink end to="/reversals">
               Reversals
             </NavLink>
             <ShowWhen additionalCondition={(_) => showRefundToCustomer}>
-              <NavLink exact to="/reversals/batchreversals">
+              <NavLink end to="/reversals/batchreversals">
                 Batch
               </NavLink>
             </ShowWhen>
@@ -69,20 +67,7 @@ export default class ReversalsListContainer extends Component {
           <TestModeBanner />
           <content>
             <ErrorBoundary resetOnProps>
-              <Switch>
-                <Route exact path="/reversals" component={ReversalsTable} />
-                <ShowWhenRoute
-                  exact
-                  path="/reversals/batchreversals"
-                  component={BatchUploadList}
-                  additionalCondition={(_) => showRefundToCustomer}
-                />
-                <ShowWhenRoute
-                  path="/credits"
-                  component={Credit}
-                  additionalCondition={(_) => !isBalanceSource}
-                />
-              </Switch>
+              <Outlet />
             </ErrorBoundary>
           </content>
         </tabbed-container>

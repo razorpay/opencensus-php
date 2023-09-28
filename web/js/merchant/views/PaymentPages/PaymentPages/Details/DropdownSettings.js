@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import Button from 'common/new-ui/Button';

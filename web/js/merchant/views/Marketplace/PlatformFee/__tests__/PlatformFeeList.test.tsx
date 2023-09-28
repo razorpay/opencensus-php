@@ -26,10 +26,13 @@ const location = {
   search: '',
 };
 
-const state = {
+export const state = {
   session: {
     user: {
       id: 'testUserId',
+      isOrgAllowedFunctionality: () => true,
+      findTag: () => true,
+      isAllowedEdit: () => true,
     },
   },
 };
@@ -43,6 +46,7 @@ describe('Platform Fee List', () => {
   const renderApp = () => {
     render(<PlatformFee location={location} />, {
       initialState: state,
+      renderViaRouteGuard: false,
     });
   };
 

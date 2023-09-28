@@ -19,8 +19,10 @@ describe('Payment Button List View', () => {
         session: {
           user: {
             isAllowedEdit: () => true,
-            isOrgAxis: () => false,
+            isOrgAxis: false,
             isPaymentButtonEnabledByRazorX: true,
+            isOrgAllowedFunctionality: () => true,
+            findTag: () => false,
           },
           org: { custom_code: 'rzp' },
         },

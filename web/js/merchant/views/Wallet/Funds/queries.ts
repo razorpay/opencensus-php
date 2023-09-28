@@ -28,7 +28,7 @@ export const fetchFundTransactions = async ({
       debit: parseInt(String(item.debit), 10),
     }));
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
@@ -55,7 +55,7 @@ export const fetchFundsSummary = async ({
     // the following is temporary code to eventually convert both integers and strings to numbers.
     res.available_balance = parseInt(String(res.available_balance), 10);
     return res;
-  } catch (e) {
+  } catch (e: any) {
     errorService.captureError(e, {
       tags: {
         team: Teams.RAZORPAY_WALLET,
