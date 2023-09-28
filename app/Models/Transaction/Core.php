@@ -2116,8 +2116,21 @@ class Core extends Base\Core
                 TraceCode::FEES_BREAKUP_CREATION_FAILED,
                 [
                     'transaction_id' => $txn->getId(),
-                    'source_id'      => $txn->getEntityId()
+                    'source_id'      => $txn->getEntityId(),
+                    'fee_split'      => $feesSplit->toArrayPublic(),
                 ]);
+
+            $sourceEntity = $txn->source;
+
+            /**
+             * slack thread:
+             * https://razorpay.slack.com/archives/C022TEXUCMV/p1695886910939979?thread_ts=1695886852.092729&cid=C022TEXUCMV
+             */
+            if ((method_exists($sourceEntity, 'getEntityName')) and
+                ($sourceEntity->getEntityName() === Payout\Entity::PAYOUT))
+            {
+                throw $ex;
+            }
 
             throw new Exception\LogicException(
                 'Error while recording fee breakup',
