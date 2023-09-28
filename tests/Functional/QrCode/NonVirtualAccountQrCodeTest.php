@@ -4751,4 +4751,189 @@ class NonVirtualAccountQrCodeTest extends TestCase
         // To unset the env key variable
         putenv("IS_WORKER_POD");
     }
+
+    // Failed verify status response from Yesbank Status Check API
+    public function testStatusCheckApiVerifyFailedResponseYesbank()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@yesbank']);
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', []));
+
+        $yesbGatewayMock = \Mockery::mock(\RZP\Gateway\Upi\Yesbank\Mock\Gateway::class)->makePartial();
+
+        $gatewayMock = \Mockery::mock('RZP\Gateway\GatewayManager')->makePartial();
+        $gatewayMock->shouldReceive('gateway')->andReturnUsing(function($input) use ($yesbGatewayMock) {
+            if ($input === 'upi_yesbank')
+            {
+                return $yesbGatewayMock;
+            }
+        });
+
+        $this->app->instance('gateway', $gatewayMock);
+
+        $status = 'verify_failed';
+        $yesbGatewayMock->shouldReceive('getQrPaymentStatus')
+                        ->andReturnUsing(function($input) use ($status) {
+                            $content['data']['status'] = $status;
+                        });
+
+        $qrCode = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ]
+        );
+
+        $newCount = count($this->getDbEntities('qr_code', []));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $qrPaymentCount    = count($this->getDbEntities('qr_payment', []));
+        $paymentCount      = count($this->getDbEntities('payment', []));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', []));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [])));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [])));
+        $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [])));
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+
+    }
+    // Success verify status response from Yesbank Status Check API
+    public function testStatusCheckApiVerifySuccessResponseYesbank()
+    {
+        $this->app['config']->set('gateway.mock_upi_yesbank', true);
+
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@yesbank']);
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code'));
+
+        $qrCode = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ]
+        );
+        $newCount = count($this->getDbEntities('qr_code'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $requestData['content']['BankRRN']        = '326836533213';
+        $requestData['content']['merchantTranId'] = 'RZPY' . str_after($qrCodeId, 'qr_') . "qrv2";
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData);
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+    }
+
+    // Test to verify that exceptions are not propogated to response from mozart for status check api
+    public function testStatusCheckApiYesbankErrorResponsee()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@yesbank']);
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', []));
+
+        $yesbGatewayMock = \Mockery::mock(\RZP\Gateway\Upi\Yesbank\Mock\Gateway::class)->makePartial();
+
+        $gatewayMock = \Mockery::mock('RZP\Gateway\GatewayManager')->makePartial();
+        $gatewayMock->shouldReceive('gateway')->andReturnUsing(function($input) use ($yesbGatewayMock) {
+            if ($input === 'upi_yesbank')
+            {
+                return $yesbGatewayMock;
+            }
+        });
+
+        $this->app->instance('gateway', $gatewayMock);
+
+        $status = 'verify_failed';
+        $yesbGatewayMock->shouldReceive('getQrPaymentStatus')
+                        ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
+
+        $qrCode = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ]
+        );
+
+        $newCount = count($this->getDbEntities('qr_code', []));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        putenv("IS_WORKER_POD=true");
+
+        $this->ba->reminderAppAuth();
+
+        $qrPaymentCount    = count($this->getDbEntities('qr_payment', []));
+        $paymentCount      = count($this->getDbEntities('payment', []));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', []));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [])));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [])));
+        $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [])));
+
+        // To unset the env key variable
+        putenv("IS_WORKER_POD");
+
+    }
 }

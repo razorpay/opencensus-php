@@ -19,6 +19,7 @@ class Status
     const VERIFY_TIMEOUT             = 'TIMEOUT';
     const SUCCESS_STATUS             = 'payment_successful';
     const FAILURE_STATUS             = 'payment_failed';
+    const VERIFY_SUCCESSFUL          = 'verify_successful';
 
     const STATUS_CODES = [
         self::VERIFY_SUCCESS    => self::SUCCESS,

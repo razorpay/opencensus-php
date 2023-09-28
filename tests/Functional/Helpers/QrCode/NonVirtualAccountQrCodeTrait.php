@@ -461,4 +461,67 @@ trait NonVirtualAccountQrCodeTrait
         return $content;
     }
 
+    public function getMockedYesbankQrStatusCheckResponse($status, $qrCodeId, $rrn)
+    {
+        $content = [
+            'data' => [
+                'status'   => $status,
+                'meta'     => [
+                    'response' => [
+                        'plain' => [
+                            'Add10'             => 'NA',
+                            'Add2'              => 'NA',
+                            'Add3'              => 'testpayment',
+                            'Add4'              => 'SAVINGS',
+                            'Add5'              => 'NA',
+                            'Add6'              => 'NA',
+                            'Add7'              => 'NA',
+                            'Add8'              => 'NA',
+                            'Add9'              => 'NA',
+                            'Amount'            => '40.0',
+                            'ApprovalNumber'    => '933462',
+                            'CustRefNo'         => '326836533213',
+                            'MerchantRefNo'     => 'RZPY'. str_after($qrCodeId, 'qr_') .'qrv2',
+                            'NpciRefId'         => 'NA',
+                            'NpciTxnId'         => 'YBL144231ce5eb64a58998c6e6f14fa263a',
+                            'PayeeAadhaar'      => 'NA',
+                            'PayeeAcountNo'     => 'SCRUBBED_PII (10)',
+                            'PayeeIfsc'         => 'YESB0000022',
+                            'PayeeName'         => 'SCRUBBED_PII (40)',
+                            'PayeeVpa'          => 'rzpvqfalegriaholidaysandhospitalitylimited@yesbank',
+                            'PayerAccountName'  => 'SCRUBBED_PII (15)',
+                            'PayerAccountNo'    => 'SCRUBBED_PII (10)',
+                            'PayerIfsc'         => 'SBIN0012159',
+                            'PayerVpa'          => '7747931160@ybl',
+                            'ResponseCode'      => '00',
+                            'Status'            => 'SUCCESS',
+                            'StatusDescription' => 'Transaction success',
+                            'TimeOutTxnStatus'  => 'NA',
+                            'TxnAuthDate'       => '2023:09:25 20:12:13',
+                            'YblTxnId'          => '13508165557'
+                        ]
+                    ]
+                ],
+                'terminal' =>
+                    [
+                        'gateway' => 'upi_yesbank',
+                        'vpa'     => 'testvpa@yesb',
+                    ],
+                'upi'      =>
+                    [
+                        'merchant_reference' => 'RZPY' . str_after($qrCodeId, 'qr_') . 'qrv2',
+                        'gateway_payment_id' => '13508165557',
+                        'npci_reference_id'  => $rrn,
+                        'vpa'                => 'mitasha@oksbi',
+                    ],
+                'payment'  => [
+                    'amount_authorized' => '4000',
+                    'currency'          => 'INR',
+                ]
+            ]
+        ];
+
+        return $content;
+    }
+
 }

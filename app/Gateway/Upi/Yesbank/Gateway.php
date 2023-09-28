@@ -1280,6 +1280,91 @@ class Gateway extends Mindgate\Gateway
         return throw new Exception\RuntimeException('Invalid Response from Mozart');
     }
 
+    public function getQrPaymentStatus($input)
+    {
+        if ((new QrCode\NonVirtualAccountQrCode\Generator())->ifPrefixAdditionExperimentInTREnabled($input['merchant']['id']) === true)
+        {
+            $input[CoreEntity::QR_CODE][QrEntity::ID] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE][QrEntity::ID] . Constants::QR_CODE_V2_TR_SUFFIX;
+        }
+        else
+        {
+            $input[CoreEntity::QR_CODE][QrEntity::ID] .= Constants::QR_CODE_V2_TR_SUFFIX;
+        }
+
+        $request = [
+            CoreEntity::PAYMENT             => [
+                'gateway' => $this->gateway,
+                'id'      => $input[CoreEntity::QR_CODE][QrEntity::ID],
+                'amount'  => $input[CoreEntity::QR_CODE][QrEntity::AMOUNT]
+            ],
+            CoreEntity::TERMINAL            => $input[CoreEntity::TERMINAL],
+            Base\Constants::QR_STATUS_CHECK => true
+        ];
+
+        $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_REQUEST, [
+            'gateway input' => $request,
+            'gateway'       => $this->gateway
+        ]);
+
+        $result = $this->upiSendGatewayRequest($request,
+                                               TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                                               Action::VERIFY
+        );
+
+        if ((isset($result['data'][Fields::STATUS]) === true) and
+            (isset($result['data']['upi']) === true) and
+            (isset($result['data']['payment']) === true) and
+            (isset($result['data']['terminal']) === true))
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_RESPONSE, [
+                'status'             => $result['data'][Fields::STATUS],
+                'merchant reference' => $result['data']['upi'][Fields::MERCHANT_REFERENCE],
+                'payment'            => $result['data']['payment'],
+                'gateway'            => $this->gateway
+            ]);
+
+            if (($result['data'][Fields::STATUS] === Status::VERIFY_SUCCESSFUL))
+            {
+                $response = [
+                    'callbackData' => $this->parseMozartResp($result),
+                    'gateway'      => $this->gateway
+                ];
+
+                return $response;
+            }
+        }
+        else
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_INVALID_MOZART_RESPONSE, [
+                'response' => $result,
+                'gateway'  => $this->gateway
+            ]);
+        }
+
+        return null;
+    }
+
+    public function parseMozartResp($gatewayData)
+    {
+        $metaData = $gatewayData['data']['meta']['response']['plain'];
+
+        $callbackData                         = $gatewayData;
+        $callbackData['data'][Fields::STATUS] = Status::SUCCESS_STATUS;
+
+        $callbackData['data']['meta']['response']['content'] = $metaData;
+
+        $callbackData['data']['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE] = $metaData['TxnAuthDate'];
+        $callbackData['data']['meta']['response']['content'][Fields::PAYER_NOTE]            = $metaData['Add3'];
+        $callbackData['data']['meta']['response']['content']['Add3']                        = $metaData['Add4'];
+        $callbackData['data']['meta']['response']['content']['PayeeAadhar']                 = $metaData['PayeeAadhaar'];
+        $callbackData['data']['meta']['response']['content']['PayeeAcountNumber']           = $metaData['PayeeAcountNo'];
+        $callbackData['data']['meta']['response']['content']['PayerIfscCode']               = $metaData['PayeeAcountNo'];
+
+        $callbackData[Base\Constants::QR_STATUS_CHECK] = true;
+
+        return $callbackData;
+    }
+
     public function getQrPaymentMerchantReference($merchantReference)
     {
         $merchantReference = $this->removeGatewayPrefixIfPresent($merchantReference);

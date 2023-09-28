@@ -1843,6 +1843,14 @@ class Gateway extends Base\Gateway
                 return $url;
             }
         }
+        if ($gateway === Payment\Gateway::UPI_YESBANK)
+        {
+            if ((isset($input[Constants::QR_STATUS_CHECK]) and
+                 $input[Constants::QR_STATUS_CHECK] === true))
+            {
+                return $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
+            }
+        }
         if($gateway === Payment\Gateway::UPI_SBI)
         {
             if($prefix === 'upiPayments')

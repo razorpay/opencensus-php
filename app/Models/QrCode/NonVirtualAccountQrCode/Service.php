@@ -84,7 +84,8 @@ class Service extends QrCode\Service
         // Since this is inside NonVirtualAccountQrCode/Service, it is safe to assume that only qrV2 are checked here
         if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
             ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
-            ($gateway === \RZP\Models\Payment\Gateway::UPI_ICICI) and
+            (($gateway === \RZP\Models\Payment\Gateway::UPI_ICICI) or
+             ($gateway === \RZP\Models\Payment\Gateway::UPI_YESBANK)) and
             ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
         {
             $this->triggerQrStatusCheckPostCreate($qrCode);
