@@ -646,7 +646,7 @@ class CardPaymentService
                     ]);
                 return;
             }
-            
+
             $token = (new repository())->find($input['token']['id']);
 
             if (empty($token)){
@@ -776,7 +776,7 @@ class CardPaymentService
     {
         $path = self::ENTITY_PATH . $entityName . '/' . $id;
 
-        return $this->sendRequest('GET', $path, []);
+        return $this->sendRequest('GET', $path, [], true);
     }
 
     public function fetchEntityForEsSync($backfill)
@@ -833,7 +833,7 @@ class CardPaymentService
         return $this->sendRequest('POST', $path, $query);
     }
 
-    public function sendRequest(string $method, string $url, array $data = [])
+    public function sendRequest(string $method, string $url, array $data = [], bool $fetchEntity = false)
     {
         $request = [
             'url'     => $this->getBaseUrl() . $url,
@@ -858,7 +858,7 @@ class CardPaymentService
 
         $response = $this->sendRawRequest($request);
 
-        $response = $this->processResponse($response, $method);
+        $response = $this->processResponse($response, $method, $fetchEntity);
 
         $this->traceResponse($response, $data);
 
@@ -1183,7 +1183,7 @@ class CardPaymentService
         return $response;
     }
 
-    protected function processResponse($response, $method)
+    protected function processResponse($response, $method, $isFetchEntity)
     {
         $code = $response->status_code;
 
@@ -1191,12 +1191,12 @@ class CardPaymentService
         $responseBody['success'] = false;
         $responseBody['status_code'] = $code;
 
-        if ($this->action === Action::AUTHORIZE_FAILED)
+        if ($this->action === Action::AUTHORIZE_FAILED && $isFetchEntity === false)
         {
             return $this->processAuthorizedFailedResponse($responseBody);
         }
 
-        if ($this->action === Action::VERIFY)
+        if ($this->action === Action::VERIFY && $isFetchEntity === false)
         {
             return $this->processVerifyResponse($responseBody);
         }

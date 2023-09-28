@@ -5372,7 +5372,7 @@ class CardPaymentServiceTest extends TestCase
             });
 
         $cardService->shouldReceive('sendRequest')
-            ->with('GET', Mockery::type('string'), Mockery::type('array'))
+            ->with('GET', Mockery::type('string'), Mockery::type('array'), true)
             ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $responder)
             {
                 switch ($responder)
