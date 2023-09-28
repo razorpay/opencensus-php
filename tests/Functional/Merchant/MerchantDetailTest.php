@@ -1073,6 +1073,7 @@ class MerchantDetailTest extends OAuthTestCase
         // verify email has been sent
         Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($app) {
             $data = $mail->getData();
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
@@ -1150,6 +1151,7 @@ class MerchantDetailTest extends OAuthTestCase
         // verify email has been sent
         Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner) {
             $data = $mail->getData();
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner->getId(), $data['ncUrl']);
@@ -1219,6 +1221,7 @@ class MerchantDetailTest extends OAuthTestCase
         // verify email has been sent
         Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner) {
             $data = $mail->getData();
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/onboarding/needs-clarification', $data['ncUrl']);
@@ -1309,6 +1312,7 @@ class MerchantDetailTest extends OAuthTestCase
         // verify email has been sent
         Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($partner2) {
             $data = $mail->getData();
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner2->getId(), $data['ncUrl']);
