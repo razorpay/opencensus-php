@@ -6026,12 +6026,19 @@ class Core extends Base\Core
     }
 
     /**
+     * This method deletes the Partner Dashboard access of a Partner to all the sub-merchants accounts.
+     * User mapping of Partner User of all roles are detached from each sub-merchant's account.
+     *
      * @param Entity           $partner
      * @param PublicCollection $submerchants
      */
     protected function deletePartnerDashboardAccessOnSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
     {
-        $partnerUsers = $partner->users()->get();
+        // Fetches the primary owner user of the Partner.
+        // Currently, only the owner user is attached to any other sub-merchant or merchant's account.
+        // Hence, fetching just the owner user of Partner should suffice in order to get merchant_user
+        // mappings with sub-merchants account.
+        $partnerOwner = $partner->owners()->get()->first();
 
         //
         // if partner added himself as a submerchant which used to happen before but not anymore
@@ -6041,14 +6048,15 @@ class Core extends Base\Core
             return ($subMerchant->getId() === $partner->getId());
         })->pluck(Entity::ID)->toArray();
 
-        foreach ($partnerUsers as $partnerUser)
-        {
-            $merchantIdsAccessible = $partnerUser->merchants()->get()->pluck(Entity::ID)->toArray();
+        // Fetches all the merchants attached to the partner user
+        $merchantIdsAccessible = $partnerOwner->merchants()->get()->pluck(Entity::ID)->toArray();
 
-            $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
+        // gets the intersection of $merchantIdsAccessible and $submerchantIds,
+        // so that only Partner's sub-merchants accounts access is revoked.
+        $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
 
-            $this->repo->detach($partnerUser, User\Entity::MERCHANTS, $submerchantIdsAccessible);
-        }
+        // Detaches all the merchant_user mapping for partner owner user with sub-merchantIds.
+        $this->repo->detach($partnerOwner, User\Entity::MERCHANTS, $submerchantIdsAccessible);
     }
 
     /**

@@ -2205,4 +2205,18 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testRemoveDashboardAccessToPartnerSubMerchant' => [
+        'request'  => [
+            'url'     => '/partner/remove_submerchant_dashboard_access/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_ids'     => ['1X4hRFHFx4UiXt'],
+            ]
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

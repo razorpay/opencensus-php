@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use ReflectionFunction;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -4162,6 +4163,47 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->assertEquals($partnerConfig[2]['entity_type'], 'application');
     }
+
+    public function testRemoveDashboardAccessToPartnerSubMerchant()
+    {
+        $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+
+        $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID,);
+
+        $this->fixtures->merchant->edit(
+            '100submerchant',
+            [
+                'email' => 'random.subm@gmail.com',
+            ]
+        );
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PARTNER_ID,
+            [
+                'email' => 'random@gmail.com',
+            ]
+        );
+
+        $this->fixtures->user->createUserForMerchantONLiveAndTest('100submerchant', ['id'=> 'RazorpayUser12', 'email'=> 'random.subm@gmail.com'], Role::OWNER);
+
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => 'RazorpayUser12', 'merchant_id' => self::DEFAULT_PARTNER_ID, 'role' => Role::OWNER, 'product' => 'primary']);
+
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => 'RazorpayUserId', 'merchant_id' => '100submerchant', 'role' => Role::VIEW_ONLY, 'product' => 'banking']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $partnerUsers = $this->fixtures->user->getMerchantOwnerUsers(self::DEFAULT_PARTNER_ID,);
+        $submOwnerUser = $this->fixtures->user->getMerchantOwnerUsers('100submerchant');
+        $submNonPrimaryUsers = $this->fixtures->user->getMerchantUserMapping('100submerchant','RazorpayUserId','banking');
+
+        $this->assertCount(2,$partnerUsers);
+        $this->assertCount(1,$submOwnerUser);
+        $this->assertCount(0,$submNonPrimaryUsers);
+
+        $this->assertEquals($submOwnerUser[0]->user_id, 'RazorpayUser12');
+    }
+
 
     private function createPurePlatformPartnerWithDefaultConfig()
     {
