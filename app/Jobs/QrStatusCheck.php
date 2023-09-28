@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 
 use Razorpay\Trace\Logger as Trace;
@@ -56,6 +57,9 @@ class QrStatusCheck extends Job implements ShouldBeUnique
     public function handle()
     {
         parent::handle();
+
+        $app = App::getFacadeRoot();
+        $app['basicauth']->init();
 
         try
         {
