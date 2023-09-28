@@ -4,9 +4,12 @@ namespace RZP\Models\Merchant\Credits;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                        = 'id';
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';

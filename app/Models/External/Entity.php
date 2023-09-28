@@ -9,10 +9,12 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const BANK_ACCOUNT_STATEMENT_ID = 'banking_account_statement_id';
     const MERCHANT_ID               = 'merchant_id';

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\Acs\Wrapper\Constant;
+use RZP\Trace\TraceCode;
 
 class ImplicitJoinHelper
 {
@@ -29,18 +30,26 @@ class ImplicitJoinHelper
     {
         $relationData = null;
 
-        if ($classInstance->relationLoaded($relationName)) {
+        if ($classInstance->relationLoaded($relationName))
+        {
             $relationData = $classInstance->getRelation($relationName);
         }
 
-        if ($relationData !== null) {
+        if ($relationData !== null)
+        {
             return $relationData;
         }
 
         $repo = app('repo');
-
         $relationData = $repo->$repositoryInstance->$repositoryMethod($classInstance->$fetchMethod(), $entityName);
-        $classInstance->setRelation($relationName, $relationData);
+        if($relationName == "merchant")
+        {
+            $classInstance->merchant()->associate($relationData);
+        }
+        else
+        {
+            $classInstance->setRelation($relationName, $relationData);
+        }
 
         return $relationData;
     }

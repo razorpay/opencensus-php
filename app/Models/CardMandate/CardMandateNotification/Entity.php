@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\CardMandate\MandateHubs;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -19,7 +20,7 @@ use RZP\Models\CardMandate\MandateHubs;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     const CARD_MANDATE_ID  = 'card_mandate_id';
     const PAYMENT_ID       = 'payment_id';

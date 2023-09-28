@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity $merchant
@@ -17,6 +18,8 @@ use RZP\Models\CardMandate\MandateHubs\MandateHubs;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MANDATE_ID                 = 'mandate_id';
     const MANDATE_CARD_ID            = 'mandate_card_id';
     const MANDATE_CARD_NAME          = 'mandate_card_name';

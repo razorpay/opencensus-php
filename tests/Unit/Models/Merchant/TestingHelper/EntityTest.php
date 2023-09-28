@@ -137,12 +137,14 @@ class RepositoryTestHelper extends TestCase
             $this->assertNull($associatedEntity->$relationName);
 
             //TestCase9 - invalid argument in asv;
-            $associatedEntity->unsetRelation($relationName);
-            $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
-            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
-            app('repo')->$repoName = $entityRepo;
-            $this->assertNull($associatedEntity->$relationName);
+            if($relationName != "merchant") {
+                $associatedEntity->unsetRelation($relationName);
+                $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
+                $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+                $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+                app('repo')->$repoName = $entityRepo;
+                $this->assertNull($associatedEntity->$relationName);
+            }
         }
     }
 

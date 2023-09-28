@@ -23,6 +23,7 @@ use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Base\Traits\ArchivedEntity;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity $merchant
@@ -30,7 +31,7 @@ use RZP\Models\Base\Traits\ArchivedEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use ExternalOwner, ExternalEntity, ArchivedEntity;
+    use ExternalOwner, ExternalEntity, ArchivedEntity, AsvGetAttribute;
 
     const ID                                    = 'id';
     const MERCHANT_ID                           = 'merchant_id';
