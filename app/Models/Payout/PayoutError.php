@@ -89,7 +89,8 @@ class PayoutError extends Error
                 $this->trace->error(TraceCode::PAYOUT_STATUS_CODE_MAPPING_REQUIRED,
                     [
                         'payout_id'         => $this->payout->getId(),
-                        'bank_status_code'  => $statusCode
+                        'bank_status_code'  => $statusCode,
+                        'payout_status'     => $this->payout->getStatus(),
                     ]);
             }
         }
