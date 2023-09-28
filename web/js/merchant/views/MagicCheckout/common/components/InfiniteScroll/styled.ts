@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const TextContainer = styled.div(
   () => `
-  margin-top: 10px;
+  margin-top: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;

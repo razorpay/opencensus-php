@@ -30,11 +30,9 @@ const ConfirmationModal = (props) => {
       <div className="font-bold confirmation-modal-subtext">{subText}</div>
       <div className="confirmation-modal-desc">{desc}</div>
       <div className="confirmation-modal-ctas-container">
-        {abortLabel ? (
-          <Button type="button" className="confirmation-modal-secondary-cta" onClick={handleClick}>
-            {abortLabel}
-          </Button>
-        ) : null}
+        <Button type="button" className="confirmation-modal-secondary-cta" onClick={handleClick}>
+          {abortLabel}
+        </Button>
         <Button
           type="button"
           className="confirmation-modal-primary-cta"

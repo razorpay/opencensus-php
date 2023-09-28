@@ -4,7 +4,6 @@ import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containe
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
-import ShippingSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/ShippingSettingsTab';
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
 
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
@@ -43,15 +42,6 @@ export const TABS = {
       label: 'COD Settings',
       Component: CODSettingsTab,
       condition: (_user) => _user.isMagicCODEngineEnabled,
-    },
-    {
-      className: 'shipping-settings',
-      path: '/magic/settings/shipping-settings',
-      label: 'Shipping Settings',
-      Component: ShippingSettingsTab,
-      exact: false,
-      condition: (_user, abExperiments) =>
-        abExperiments?.magic_shopify_shipping_engine?.variables?.result === 'on',
     },
     {
       className: 'intelligence-settings',
@@ -201,12 +191,6 @@ export const SWITCH_TEXTS = {
       secondaryCtaLabel: 'No, don’t!',
       primaryCtaLabel: 'Yes, enable',
     },
-    shippingSettings: {
-      header: 'Enable Magic shipping?',
-      desc: 'Enabling Magic Shipping will surpass all shipping settings from any plugins or your E-commerce platform and prioritise our shipping configuration above all.  Are you sure want to enable magic shipping?',
-      secondaryCtaLabel: 'No, don’t!',
-      primaryCtaLabel: 'Yes, enable',
-    },
   },
   disable: {
     codIntelligence: {
@@ -227,12 +211,6 @@ export const SWITCH_TEXTS = {
       secondaryCtaLabel: 'No, don’t!',
       primaryCtaLabel: 'Yes, disable',
     },
-    shippingSettings: {
-      header: 'Disable Magic shipping?',
-      desc: 'Disabling Magic Shipping will revert back to the shipping settings from plugins or your E-commerce platform. You will no longer benefit from our exclusive feature. Are you sure you want to disable magic shipping?',
-      secondaryCtaLabel: 'No, don’t!',
-      primaryCtaLabel: 'Yes, disable',
-    },
   },
 };
 
@@ -246,6 +224,5 @@ showing COD to customers based on location, products, etc. as well as for settin
 COD fees. Please note that this will override any COD settings on your
 Shopify/WooC store.`;
 
-export const SHIPPING_SETTINGS_INFO = `Enabling Magic Shipping will surpass all shipping configurations from any plugins or your E-commerce platform and prioritise our configurations.`;
 export const UPDATE_WOOC_PLUGIN_MSG =
   'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';

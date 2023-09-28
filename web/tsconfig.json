@@ -76,7 +76,6 @@
     "js/merchant/components/styled",
     "js/merchant/components/Announcements/TerminalStatus",
     "js/merchant/views/MagicCheckout/**/*",
-    "js/merchant/reducers/magicCheckout/shippingEngine/*",
     "js/merchant/views/RazorpayXWidget",
     "js/merchant/views/PaymentMetrics",
     "js/common/splitz",

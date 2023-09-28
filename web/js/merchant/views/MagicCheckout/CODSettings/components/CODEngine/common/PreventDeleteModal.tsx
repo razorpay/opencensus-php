@@ -1,10 +1,11 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import styled from 'styled-components';
+import { connect } from 'react-redux';
 
 import ConfirmationModal from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
+
 import { closeModal } from 'merchant_common/reducers/modals';
+import styled from 'styled-components';
 
 const Header = styled.div`
   display: flex;

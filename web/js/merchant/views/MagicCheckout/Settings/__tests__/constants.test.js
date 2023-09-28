@@ -11,7 +11,6 @@ describe('testing constants', () => {
 
     const abExperiments = {
       magic_analytics_setting: { variables: { result: 'on' } },
-      magic_shopify_shipping_engine: { variables: { result: 'on' } },
     };
 
     Object.keys(TABS).forEach((platform) => {
