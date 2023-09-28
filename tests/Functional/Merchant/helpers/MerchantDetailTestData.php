@@ -3383,6 +3383,27 @@ return [
         ],
     ],
 
+    'testGetBvsValidationArtefactDetailsArtefactNotPresentInBVS' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchants/10000000000000/bvs/cin/details',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Record not found for provided merchantId and artefact"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
     'testFileUploadSyncInDetailAndDocumentTable' => [
         'request'  => [
             'method' => 'post',

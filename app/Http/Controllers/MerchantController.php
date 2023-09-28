@@ -1305,7 +1305,7 @@ class MerchantController extends Controller
 
     public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->getBvsValidationArtefactDetails(
+        $response = $this->service(E::MERCHANT_DETAIL)->getBvsValidationArtefactDetailsV2(
             $merchantId, $validationArtefact
         );
 

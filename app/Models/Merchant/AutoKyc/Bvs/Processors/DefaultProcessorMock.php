@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Processors;
 
+use RZP\Error\ErrorCode;
 use Rzp\Bvs\Validation\V1\Error;
 use RZP\Exception\LogicException;
 use RZP\Exception\IntegrationException;
@@ -161,6 +162,11 @@ class DefaultProcessorMock extends DefaultProcessor
 
     public function FetchDetails(string $validationId): Response
     {
+        if ($this->mockStatus === 'record_not_found')
+        {
+            throw new IntegrationException('Could not receive proper response from BVS service',ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
+
         $status = $this->mockStatus ?? 'success';
 
         $data = [
