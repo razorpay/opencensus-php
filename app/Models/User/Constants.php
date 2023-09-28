@@ -47,6 +47,8 @@ class Constants
     const BANNER_CLICKTIME = 'banner_clicktime';
 
     const MERCHANT = 'merchant';
+    const MERCHANT_ID = 'merchant_id';
+
 
     const METHOD                = 'method';
     const MEDIUM                = 'medium';

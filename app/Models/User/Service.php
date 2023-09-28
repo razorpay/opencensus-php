@@ -1740,10 +1740,11 @@ class Service extends Base\Service
             $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $deviceDetail->getSignupCampaign();
         }
         // In other instances when get function gets called we will always fetch user's owner signup's campaign
-        $merchant = $this->merchant;
+        $merchantId =  $input[Constants::MERCHANT_ID];
 
-        if (empty($merchant) === false)
+        if (empty($merchantId) === false)
         {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
             $user = $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
                              ->first();
 
@@ -1756,6 +1757,10 @@ class Service extends Base\Service
                 if (empty($deviceDetail) === false)
                 {
                     $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $deviceDetail->getSignupCampaign();
+                }
+                else
+                {
+                    $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = null;
                 }
             }
         }
