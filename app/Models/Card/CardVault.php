@@ -399,7 +399,7 @@ class CardVault extends Base\Core
                     {
                         $buNamespace = 'payments_alt_id';
                     }
-                    else if (empty($input['network']) === true || $input['network'] !== NetworkName::DICL)
+                    else if ($input['trivia'] === '1' )
                     {
                         $buNamespace = 'payments_token_pan';
                     }
