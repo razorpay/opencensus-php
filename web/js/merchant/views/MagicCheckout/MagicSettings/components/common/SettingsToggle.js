@@ -25,6 +25,7 @@ const SettingsToggle = ({ setting, onToggle }) =>
           checked={setting.value}
           defaultChecked={setting.value}
           type="prime"
+          name="settings-toggle"
         />
         {setting.value ? (
           <b className="text-primary toggle-status">Enabled</b>

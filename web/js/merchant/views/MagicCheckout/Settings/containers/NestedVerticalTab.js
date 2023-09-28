@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
 import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RouteGuard } from 'merchant/components/ShowWhen';
