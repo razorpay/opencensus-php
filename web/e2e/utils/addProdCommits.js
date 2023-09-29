@@ -8,7 +8,8 @@ const prodCommitIdFetchURLMap = {
   gimli: 'https://rzp.io/commit.txt',
   // TODO: Devstack kept in sync with prod
   reminders: 'https://reminders.dev.razorpay.in/commit.txt',
-  // terminals: 'https://terminals-live.dev.razorpay.in/status',
+  terminals: 'https://terminals-live.dev.razorpay.in/status',
+  scrooge: 'https://scrooge.razorpay.com/commit.txt',
   // dashboard: 'https://dashboard.razorpay.com/commit.txt',
   // 'master-onboarding': 'https://master-onboarding.dev.razorpay.in/commit.txt',
   // 'banking-account': 'https://banking-account.dev.razorpay.in/commit.txt',
@@ -22,7 +23,7 @@ const fetchProdCommitId = async (serviceName) => {
 
     if (serviceName === 'terminals') {
       // terminals returns with application/json type response
-      commitId = res.data.commit_id;
+      commitId = res.data.commit_id.split(',')[0];
     } else if (serviceName === 'payment-links') {
       commitId = res.data.commit;
     } else {

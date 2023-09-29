@@ -11,7 +11,8 @@ import {
 } from './utils';
 import { StorageStatePath, routes } from '../../utils/constants';
 
-test.describe.parallel('Payments transactions (Test Mode) @flow=transactions', () => {
+test.describe
+  .parallel('Payments transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
     storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });
@@ -47,7 +48,7 @@ test.describe.parallel('Payments transactions (Test Mode) @flow=transactions', (
       await expect(paymentsList.getByRole('option', { name: 'Payment ID' })).toBeVisible();
       const id = payments.paymentId.authorized.netbanking;
       await searchTransactionById({ page: paymentsList, id });
-      await expect(page.getByRole('cell', { name: `${id} Copied` })).toBeVisible();
+      await expect(page.getByRole('cell', { name: new RegExp(id) })).toBeVisible();
       await expect(page.getByRole('cell', { name: '-- Netbanking' })).toBeVisible();
       await expect(page.getByRole('cell', { name: '+918888888888' })).toBeVisible();
       await expect(page.getByTestId(`entity-item-row-${id}`).getByText('Authorized')).toBeVisible();
@@ -186,8 +187,7 @@ test.describe.parallel('Payments transactions (Test Mode) @flow=transactions', (
       await expect(page.getByText('Only captured payments can be refunded')).toBeVisible();
       await expect(page.getByText('Payment created')).toBeVisible();
       await expect(page.getByText('Payment failed')).toBeVisible();
-      const failureMessage =
-        'Payment was unsuccessful as it was cancelled by the customer. In case it has been debited, The amount will be credited to customer’s bank account within 5-7 working days';
+      const failureMessage = 'Payment was unsuccessful as it was cancelled by the customer.';
       await expect(
         page.getByTestId('payment-details-overview').getByText(failureMessage),
       ).toBeVisible();

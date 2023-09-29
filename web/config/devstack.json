@@ -2,5 +2,8 @@
   "api": "",
   "payment-links": "",
   "gimli": "",
-  "reminders": ""
+  "reminders": "",
+  "pg-router": "510fbadb1a759da5e30b5fa967116e825b421e13",
+  "terminals": "",
+  "scrooge": ""
 }

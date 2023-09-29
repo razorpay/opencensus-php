@@ -11,7 +11,8 @@ import {
 } from './utils';
 import { StorageStatePath } from '../../utils/constants';
 
-test.describe.parallel('Refunds transactions (Test Mode) @flow=transactions', () => {
+test.describe
+  .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
     storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
   });
@@ -22,7 +23,9 @@ test.describe.parallel('Refunds transactions (Test Mode) @flow=transactions', ()
       await page.getByLabel('view-Refunds-details').click();
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const refundsList = page.getByTestId('refunds-list');
-      await expect(refundsList.getByRole('button', { name: 'All', exact: true })).toBeVisible();
+      await expect(
+        refundsList.getByRole('button', { name: 'Last 7 days', exact: true }),
+      ).toBeVisible();
       await expect(refundsList.getByRole('button', { name: 'Status: All' })).toBeVisible();
       await expect(refundsList.getByRole('option', { name: 'Refund ID' })).toBeVisible();
       const id = refunds.refundId.fullRefund.processed;
