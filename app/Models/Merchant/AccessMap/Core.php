@@ -72,7 +72,7 @@ class Core extends Base\Core
             $merchantMapping->entity()->associate($entity);
         }
 
-        $applicationType = $this->getMerchantApplicationType($merchantMapping->entity->getId());
+        $applicationType = $this->getMerchantApplication($merchantMapping->entity->getId())->getApplicationType();
 
         $this->repo->transaction(function () use ($merchantMapping, $applicationType) {
             $this->repo->saveOrFail($merchantMapping);
@@ -82,7 +82,7 @@ class Core extends Base\Core
         return $merchantMapping;
     }
 
-    private function getMerchantApplicationType($applicationId)
+    private function getMerchantApplication($applicationId) : MerchantApplications\Entity
     {
         $merchantApplications = $this->repo
             ->merchant_application
@@ -94,7 +94,7 @@ class Core extends Base\Core
         }
 
 
-        return $merchantApplications->get(0)->getApplicationType();
+        return $merchantApplications->get(0);
     }
 
     /**
@@ -242,17 +242,46 @@ class Core extends Base\Core
 
         if (empty($mapping) === false)
         {
-            $applicationType = $this->getMerchantApplicationType($appId);
+            $merchantApp = $this->getMerchantApplication($appId);
+            $applicationType = $merchantApp->getApplicationType();
+            $partner = $this->repo->merchant->getMerchant($merchantApp->getMerchantId());
 
-            return $this->repo->transaction(function () use ($mapping, $applicationType)
+            return $this->repo->transaction(function () use ($mapping, $applicationType, $partner, $merchant)
                 {
                     $this->createOutboxJobForOperation('delete', $mapping, $applicationType);
                     $this->repo->merchant_access_map->deleteOrFail($mapping);
 
+                    $entityOwnerIds = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId())->toArray();
+                    if (in_array($partner->getId(), $entityOwnerIds) === false)
+                    {
+                        $this->deletePartnerDashboardAccessOnSubmerchant($partner, $merchant);
+                    }
+
                     return ['success' => true];
                 });
         }
+        return ['success' => false];
     }
+
+    protected function deletePartnerDashboardAccessOnSubmerchant(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        if ($partner->primaryOwner() === null)
+        {
+            return;
+        }
+        $doesPartnerHaveAccess = $this->merchantCore->isPartnerUserAddedToSubMUser(
+            $partner, $subMerchant, Product::PRIMARY, [Role::PARTNER]
+        );
+
+        if ($doesPartnerHaveAccess === true)
+        {
+            // Attaches partners's user to the submerchant account with owner role
+            $this->merchantCore->detachSubMerchantUser(
+                $partner->primaryOwner()->getId(), $subMerchant, Product::PRIMARY, Role::PARTNER
+            );
+        }
+    }
+
 
     public function triggerAccountAppAuthorizationRevokeWebhook(Merchant\Entity $merchant, String $appId)
     {
@@ -288,7 +317,7 @@ class Core extends Base\Core
         );
 
         if (empty($accessMaps) === false) {
-            $applicationType = $this->getMerchantApplicationType($appId);
+            $applicationType = $this->getMerchantApplication($appId)->getApplicationType();
             $this->repo->transaction(function () use ($accessMaps, $applicationType)
                 {
                     foreach ($accessMaps as $accessMap)

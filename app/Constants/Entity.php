@@ -1781,6 +1781,7 @@ class Entity
         self::SCHEDULE,
         self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
+        self::MERCHANT_USER,
         self::PARTNER_KYC_ACCESS_STATE,
         self::BVS_VALIDATION,
         self::MERCHANT_APPLICATION,

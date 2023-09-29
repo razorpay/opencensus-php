@@ -351,6 +351,97 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals(null, $testMapping);
     }
 
+    public function testOAuthAppDeleteMerchantMapWithDashboardAccess()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(true);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+        $this->fixtures->create('merchant_access_map', [
+                'id' => 'BWkmyutEXIuvvX', 'entity_id' => $application->getId(),
+                'merchant_id' => $subMerchant->getId(), 'entity_owner_id' => $partner->getId()
+        ]);
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $subMerchant->getId(),
+            'user_id'       => $partnerUser->getId(),
+            'role'          => 'partner',
+            'product'       => 'primary',
+        ]);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications/" . $application->getId(),
+            ],
+            'response' => [],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getMapping('live');
+        $testMapping = $this->getMapping('test');
+
+        $this->assertEquals(null, $liveMapping);
+        $this->assertEquals(null, $testMapping);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertEquals(null, $liveUserMapping);
+        $this->assertEquals(null, $testUserMapping);
+    }
+
+    public function testOAuthAppDeleteMerchantMapWithDashboardAccessAndMultipleApps()
+    {
+        $OAuthApp1 = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $OAuthApp2 = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(true);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+        $this->fixtures->create('merchant_access_map', [
+            'id' => 'BWkmyutEXIuvvX', 'entity_id' => $OAuthApp1->getId(),
+            'merchant_id' => $subMerchant->getId(), 'entity_owner_id' => $partner->getId()
+        ]);
+        $this->fixtures->create('merchant_access_map', [
+            'id' => 'BWkmyutEXIuvBH', 'entity_id' => $OAuthApp2->getId(),
+            'merchant_id' => $subMerchant->getId(), 'entity_owner_id' => $partner->getId()
+        ]);
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $subMerchant->getId(),
+            'user_id'       => $partnerUser->getId(),
+            'role'          => 'partner',
+            'product'       => 'primary',
+        ]);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications/" . $OAuthApp1->getId(),
+            ],
+            'response' => [],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getDbEntities('merchant_access_map', ['merchant_id' => $subMerchant->getId()], 'live');
+        $testMapping = $this->getDbEntities('merchant_access_map', ['merchant_id' => $subMerchant->getId()], 'test');
+
+        $this->assertCount(1, $liveMapping);
+        $this->assertCount(1, $testMapping);
+        $this->assertEquals($OAuthApp2->getId(), $liveMapping[0]['entity_id']);
+        $this->assertEquals($OAuthApp2->getId(), $testMapping[0]['entity_id']);
+        $this->assertEquals($partner->getId(), $liveMapping[0]['entity_owner_id']);
+        $this->assertEquals($partner->getId(), $testMapping[0]['entity_owner_id']);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertEquals('partner', $liveUserMapping['role']);
+        $this->assertEquals('partner', $testUserMapping['role']);
+        $this->assertEquals('primary', $liveUserMapping['product']);
+        $this->assertEquals('primary', $testUserMapping['product']);
+    }
+
     public function testOAuthAppDeleteWebhook()
     {
         $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);

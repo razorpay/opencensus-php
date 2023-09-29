@@ -158,6 +158,32 @@ return [
         ],
     ],
 
+    'testOAuthAppDeleteMerchantMapWithDashboardAccess' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications/10000000000App',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testOAuthAppDeleteMerchantMapWithDashboardAccessAndMultipleApps' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications/10000000000App',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testOAuthAppDeleteWebhook' => [
         'request'  => [
             'url'     => '/merchants/10000000000000/applications/10000000000App',

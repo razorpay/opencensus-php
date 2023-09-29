@@ -4629,7 +4629,7 @@ class Core extends Base\Core
         {
             $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
 
-                $this->detachSubMerchantOwner($partnerUserId, $submerchant);
+                $this->detachSubMerchantUser($partnerUserId, $submerchant);
 
                 if ($submerchant->primaryOwner() === null)
                 {
@@ -4815,12 +4815,13 @@ class Core extends Base\Core
      * @param string $partnerUserId
      * @param Entity $subMerchant
      */
-    public function detachSubMerchantOwner(string $partnerUserId, Entity $subMerchant)
+    public function detachSubMerchantUser(string $partnerUserId, Entity $subMerchant, string $product = null, string $role = null)
     {
         $userMerchantMappingInputData = [
             'action'      => 'detach',
-            'role'        => $subMerchant->getUserOwnerRole(),
+            'role'        => $role ?? $subMerchant->getUserOwnerRole(),
             'merchant_id' => $subMerchant->getId(),
+            'product'     => $product,
         ];
 
         (new User\Service)->updateUserMerchantMapping($partnerUserId, $userMerchantMappingInputData);
