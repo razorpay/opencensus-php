@@ -5,6 +5,7 @@ namespace App\Api;
 use App\Admin\RawApiRequest;
 use Auth;
 use Trace;
+use Request;
 use App\Base;
 use Carbon\Carbon;
 use App\Trace\TraceCode;
@@ -386,5 +387,35 @@ class Service extends Base\Service
     {
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
         return $merchantId . '/' . $startDate->addMonth()->format('m/y');
+    }
+    
+    public function handleMagicAnalyticsOAuthCallbackURL(array $input)
+    {
+        $request = new \App\Admin\ApiRequestAny([
+            'client_type' => 'merchant',
+        ]);
+
+        list($error, $data) = $request->send($input['path'] . '?' . http_build_query($input['query_params']), 'GET');
+
+        if (!empty($error))
+        {
+            Trace::info(TraceCode::MAGIC_ANALYTICS_OAUTH_CALLBACK_FAILED, [
+                'error' => $error,
+            ]);    
+        }
+        
+        $targetUrl = '';
+        
+        if(empty($data) === false && empty($data['target_url']) === false)
+        {
+            $targetUrl = $data['target_url'];
+        }
+        
+        if ($targetUrl === '')
+        {
+            $targetUrl = Request::root() . '/app/magic/settings/analytics-settings?platform=google-ads&callback_error=failed_to_authenticate';
+        }
+        
+        return $targetUrl;
     }
 }

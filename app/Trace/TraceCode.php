@@ -260,6 +260,8 @@ class TraceCode
     const OAUTH_MERCHANT_ACTIVATION_DETAILS         = 'OAUTH_MERCHANT_ACTIVATION_DETAILS';
 
     const USER_RENDER_DATA                          = 'USER_RENDER_DATA';
+    
+    const MAGIC_ANALYTICS_OAUTH_CALLBACK_FAILED               = 'MAGIC_ANALYTICS_OAUTH_CALLBACK_FAILED';
 
     const INVALIDATE_ORG_CACHE                      = 'INVALIDATE_ORG_CACHE';
 

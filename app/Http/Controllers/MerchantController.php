@@ -383,4 +383,21 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse([], $data);
     }
+
+    public function handleMagicAnalyticsOAuthCallbackURL(Request $request, string $provider)
+    {
+        $path = $request->path();
+
+        $queryParams = $request->query();
+
+        $input = [
+            'path' => $path,
+            'provider' => $provider,
+            'query_params' => $queryParams,
+        ];
+
+        $targetUrl = (new Api\Service)->handleMagicAnalyticsOAuthCallbackURL($input);
+        
+        return redirect($targetUrl, 303);
+    }
 }

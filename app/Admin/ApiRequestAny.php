@@ -997,6 +997,19 @@ class ApiRequestAny
         {
             $this->options['cookies']['gclid'] = $_COOKIE['gclid'];
         }
+        
+        // Forwarding magic_analytics_oauth_csrf cookies for Handling Magic OAuth
+        if (empty($_COOKIE['magic_analytics_oauth_csrf']) === false)
+        {
+            $cookie = $_COOKIE['magic_analytics_oauth_csrf'];
+
+            $cookie = str_replace('+', '%2B', $cookie);
+
+            if(isset($this->options['cookies']['magic_analytics_oauth_csrf']) === false)
+            {
+                $this->options['cookies']['magic_analytics_oauth_csrf'] = $cookie;
+            }
+        }
     }
 
     public function debugLogsEnable()

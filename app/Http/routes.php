@@ -155,6 +155,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
         Route::get('/merchant/tags', 'MerchantController@getMerchantTags')->name('merchant_tags');
         Route::get('/merchant/navigation', 'MerchantController@getMerchantNavigationList')->name('merchant_navigation');
+
+        // This is route is owned by 1cc team. It is required to handle Oauth providers callback
+        Route::get('/1cc/analytics_integration/oauth/callback/{provider}', 'MerchantController@handleMagicAnalyticsOAuthCallbackURL')->name('magic_analytics_oauth_callback');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified', 'tnc_popup']], function()
