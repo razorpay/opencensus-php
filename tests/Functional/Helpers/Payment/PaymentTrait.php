@@ -3959,6 +3959,7 @@ trait PaymentTrait
             "fincarebank",
             "indie",
             "yespay",
+            "slice",
 
         ];
 

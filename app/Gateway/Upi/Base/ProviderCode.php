@@ -193,6 +193,7 @@ class ProviderCode
     const FINCAREBANK        = 'fincarebank';
     const INDIE              = 'indie';
     const YESPAY             = 'yespay';
+    const slice              = 'slice';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -377,6 +378,7 @@ class ProviderCode
         self::FINCAREBANK        => IFSC::FINF,
         self::INDIE              => IFSC::INDB,
         self::YESPAY             => 'NPCI',
+        self::slice              => 'NPCI',
     ];
 
     /**
