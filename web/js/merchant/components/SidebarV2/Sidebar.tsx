@@ -19,6 +19,10 @@ import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
 
 import { trackEvents } from 'merchant/reducers/trackEvents';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import Divider from './components/Divider';
 import NavLinkItem from './components/NavLinkItem';
@@ -95,6 +99,8 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
         includeScreenResolution: true,
       });
       window.open(EASY_DASHBOARD_NC_LANDING_URL, '_self', 'noopener');
+    } else if (checkEligibilityForFeeBasedGating(user)) {
+      handleFeeBasedGatingNavigation({ ctaLocation: 'Sidebar' });
     } else if (isSignupWithEasyOnboarding) {
       analyticsTrack({
         objectName: 'redirect to easy-dashboard CTA',

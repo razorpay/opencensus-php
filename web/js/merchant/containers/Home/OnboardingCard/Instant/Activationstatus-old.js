@@ -8,6 +8,10 @@ import { trackGoToActivationFromError } from 'merchant/containers/Home/ga';
 import RTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import SupportButton from 'merchant/components/Home/SupportButton';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
 
 const initialState = {
   status: null,
@@ -56,10 +60,13 @@ export default class ActivationCard extends Component {
       merchant,
       canSkipPoiValidation,
       activationStatus,
+      user,
     } = nextProps;
     const { isBlacklistFlow } = instantActivation;
 
     let { status, content, title } = initialState;
+
+    const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
 
     const kycPending = () => {
       return (
@@ -155,6 +162,21 @@ export default class ActivationCard extends Component {
               openSection="account-activation"
             />{' '}
             to activate your account
+          </span>
+        );
+      } else if (isEligibleForFeeBasedGating) {
+        title = 'KYC Verification Pending';
+        status = possibleStatuses.active;
+        content = (
+          <span>
+            Get your business KYC verified to start collecting payments
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => handleFeeBasedGatingNavigation({ ctaLocation: 'Activation Card' })}
+            >
+              Get KYC Verified
+            </button>
           </span>
         );
       } else {

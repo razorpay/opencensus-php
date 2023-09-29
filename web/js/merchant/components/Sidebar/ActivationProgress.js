@@ -7,6 +7,7 @@ import rTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { useEffect } from 'react';
 import * as EventsActions from 'merchant/reducers/trackEvents';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 
 function ActivationProgress(props) {
   const { user, config, trackEvents, isNcEligibile } = props;
@@ -19,11 +20,15 @@ function ActivationProgress(props) {
   let actionCopy;
   let trackingIntent = null;
 
+  const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
+
   if (
     user.activation_status === 'under_review' ||
     user.activation_status === 'kyc_qualified_unactivated'
   ) {
     actionCopy = 'KYC Under Review';
+  } else if (isEligibleForFeeBasedGating) {
+    actionCopy = 'Get KYC Verified';
   } else if (user.activation_progress < 100) {
     // If user form is still unfilled
     actionCopy = 'Activate your account';

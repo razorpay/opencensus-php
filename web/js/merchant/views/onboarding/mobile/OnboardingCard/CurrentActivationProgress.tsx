@@ -25,6 +25,10 @@ import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/Onbo
 import VideoModal from 'merchant/components/VideoModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -56,6 +60,7 @@ const CurrentActivationProgress: React.FC<
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
   const isEasyNcEnabled = eligibilityData?.nc_revamp_enabled;
+  const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
 
   const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
   const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
@@ -339,6 +344,21 @@ const CurrentActivationProgress: React.FC<
             hasError
           />
           <Buttons.Primary onClick={() => goToNcFlow()} title="Clarify Details" />
+        </>
+      );
+    }
+
+    if (isEligibleForFeeBasedGating) {
+      const title = 'KYC Verification Pending';
+      const description = 'Get your business KYC verified to start collecting live payments.';
+      const titleColor = 'neutral.960';
+      return (
+        <>
+          <Info title={title} titleColor={titleColor} description={description} />
+          <Buttons.LinkButton
+            onClick={() => handleFeeBasedGatingNavigation({ ctaLocation: 'Activation Card' })}
+            title="Get KYC verified"
+          />
         </>
       );
     }

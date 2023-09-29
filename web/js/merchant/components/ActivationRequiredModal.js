@@ -5,6 +5,10 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { PARTNER_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
 
 export default ({ onCloseClick, user }) => {
   const activationName =
@@ -22,6 +26,8 @@ export default ({ onCloseClick, user }) => {
   const shouldRedirectToEasyFlow =
     user.partner_type === PARTNER_TYPE.AGGREGATOR ||
     user.partner_type === PARTNER_TYPE.PURE_PLATFORM;
+
+  const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
 
   let modalBody = (
     <div>
@@ -107,6 +113,29 @@ export default ({ onCloseClick, user }) => {
             More details
           </a>
           {modalAction}
+        </div>
+      );
+    } else if (isEligibleForFeeBasedGating) {
+      modalTitle = 'KYC Verification Required';
+      const feeBasedGatingModalAction = (
+        <div className="Modal__actions text-right">
+          <button
+            className="btn btn-primary btn-block"
+            onClick={() => {
+              handleFeeBasedGatingNavigation({ ctaLocation: 'Activation Required Modal' });
+              onCloseClick();
+            }}
+          >
+            Get KYC Verified
+          </button>
+        </div>
+      );
+      modalBody = (
+        <div>
+          You can only use Razorpay in test mode until your account is activated.
+          <br />
+          Please get your KYC verified to access live mode.
+          {feeBasedGatingModalAction}
         </div>
       );
     } else {

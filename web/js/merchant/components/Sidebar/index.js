@@ -10,6 +10,11 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
+
 import ActivationProgress from './ActivationProgress';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import MainNavLink from 'merchant_common/components/MainNavLink';
@@ -188,6 +193,8 @@ class Sidebar extends Component {
         },
       });
       window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
+    } else if (checkEligibilityForFeeBasedGating(user)) {
+      handleFeeBasedGatingNavigation({ ctaLocation: 'Sidebar' });
     } else if (user?.user?.signup_campaign === EASY_ONBOARDING) {
       this.props.trackEvents({
         objectName: 'redirect to easy-dashboard CTA',

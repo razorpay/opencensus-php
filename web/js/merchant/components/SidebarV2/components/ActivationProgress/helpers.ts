@@ -1,3 +1,5 @@
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+
 type ActionStatusProp = {
   user: Record<string, any>;
   activationState: string;
@@ -19,12 +21,15 @@ export const getActionStatus = ({
   activationState,
   isL1Submitted,
 }: ActionStatusProp): string => {
+  const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
   let status;
   if (
     user.activation_status === 'under_review' ||
     user.activation_status === 'kyc_qualified_unactivated'
   ) {
     status = 'KYC Under Review';
+  } else if (isEligibleForFeeBasedGating) {
+    status = 'Get KYC Verified';
   } else if (user.activation_progress < 100) {
     status = 'Activate your account';
     if (isL1Submitted) {
