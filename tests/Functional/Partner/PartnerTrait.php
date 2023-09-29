@@ -870,6 +870,26 @@ trait PartnerTrait
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
     }
 
+    public function createPartnerAndSubmerchantMapping(string $submerchantId = '10000000000000') : string
+    {
+        $partner = $this->fixtures->create('merchant');
+
+        $partnerId = $partner->getId();
+
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $submerchantId,
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return $partnerId;
+    }
+
     protected function allowAdminToAccessMerchant(string $merchantId)
     {
         $merchant = Merchant\Entity::find($merchantId);

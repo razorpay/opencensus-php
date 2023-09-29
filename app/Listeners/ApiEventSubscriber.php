@@ -745,12 +745,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeLost($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -759,12 +763,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeClosed($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -773,12 +781,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeActionRequired($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->setContextForEntity($payment->getMerchantId(), 'payment', $payment->getId());
 
         $this->dispatchEventToStork($payload);
     }

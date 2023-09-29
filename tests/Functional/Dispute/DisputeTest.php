@@ -16,6 +16,7 @@ use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
+use RZP\Services\SplitzService;
 use RZP\Models\Terminal\Category;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
@@ -29,6 +30,7 @@ use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -54,6 +56,7 @@ class DisputeTest extends TestCase
     use DisputeTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use PartnerTrait;
 
     protected $druidMock;
 
@@ -4968,6 +4971,154 @@ class DisputeTest extends TestCase
         $this->assertEquals('adjustment', $txn['type']);
     }
 
+    public function testDisputeCreatedWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $paymentId = $payment['id'];
+
+        $data = $this->updateCreateTestData($paymentId);
+
+        $eventTestData = $this->testData['testDisputeCreatedWebhookEventData'];
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $context = [
+            'id' => explode("_", $payment['id'])[1],
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $this->expectWebhookEventWithContext('payment.dispute.created', $context,
+            function (array $event) use ($eventTestData)
+            {
+                $this->assertArraySelectiveEquals($eventTestData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $eventTestData['payload']['dispute']['entity']['payment_id'] = $paymentId;
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testDisputeCreatedWebhook'];
+        $testData['request']['url'] = $data['request']['url'];
+        $testData['request']['content']['reason_id'] = $data['request']['content']['reason_id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeWonWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $data = $this->updateEditTestData();
+
+        $testData = $this->testData['testDisputeEditWon'];
+        $testData['request']['url'] = $data['request']['url'];
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $context = [
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $eventTestData = $this->testData['testDisputeWonEventData'];
+
+        $this->expectWebhookEventWithContext('payment.dispute.won', $context,
+            function (array $event) use ($eventTestData)
+            {
+                $this->assertArraySelectiveEquals($eventTestData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeLostWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $data = $this->updateEditTestData();
+
+        $testData = $this->testData['testDisputeEditDeductOnLost'];
+        $testData['request']['url'] = $data['request']['url'];
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $this->ba->adminProxyAuth();
+
+        $context = [
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $eventTestData = $this->testData['testDisputeLostEventData'];
+
+        $this->expectWebhookEventWithContext('payment.dispute.lost', $context,
+            function (array $event) use ($eventTestData)
+            {
+                $this->assertArraySelectiveEquals($eventTestData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeClosedWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $data = $this->updateEditTestData();
+
+        $testData = $this->testData['testDisputeEditClose'];
+        $testData['request']['url'] = $data['request']['url'];
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $eventTestData = $this->testData['testDisputeClosedEventData'];
+
+        $context = [
+            'entity_type' => 'payment',
+            'event_type' => 'partnership'
+        ];
+
+        $this->expectWebhookEventWithContext('payment.dispute.closed', $context,
+            function (array $event) use ($eventTestData)
+            {
+                $this->assertArraySelectiveEquals($eventTestData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function mockSalesforceRequest($expectedMerchantIds, $expectedResponse): void
     {
         $this->salesforceMock->shouldReceive('getSalesForceTeamNameForMerchantID')
@@ -5046,5 +5197,19 @@ class DisputeTest extends TestCase
                                  return $expectedResponse;
                              });
 
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        if (empty($this->splitzMock))
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }

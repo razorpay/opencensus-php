@@ -6,21 +6,27 @@ namespace Functional\Dispute;
 use DB;
 use Queue;
 use Config;
+use Mockery;
 use RZP\Models\Dispute;
 use RZP\Models\User\Role;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class DisputePresentmentTest extends TestCase
 {
     use DisputeTrait;
     use TestsWebhookEvents;
+    use PartnerTrait;
+
+    protected $splitzMock;
 
     public function setUp(): void
     {
@@ -1218,5 +1224,83 @@ class DisputePresentmentTest extends TestCase
         $this->assertArrayKeysExist($disputeEvidence, ['id', 'summary', 'amount', 'currency', 'rejection_reason', 'source', 'created_at', 'updated_at', 'submitted_at', 'admin', 'dispute_id']);
 
         $this->assertArrayKeysExist($disputeEvidenceDocument, ['id', 'dispute_id', 'type', 'custom_type', 'document_id', 'created_at', 'updated_at', 'admin', 'entity']);
+    }
+
+    public function testDisputeUnderReviewWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->setUpForUpdateDraftEvidenceTest();
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $expectedEvent = $this->testData['testContestDisputeEventData'];
+
+        $context = [
+            'entity_type' => 'payment',
+            'event_type'  => 'partnership'
+        ];
+
+        $this->expectWebhookEventWithContext('payment.dispute.under_review', $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->runRequestResponseFlow($this->testData['testContestDispute']);
+    }
+
+    public function testDisputeActionRequiredWebhookWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->setUpFixtures(['status' => 'under_review']);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $output[] = [
+            "variant"    => [
+                "name" => "enable",
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+
+        $expectedEvent = $this->testData['testDisputeReopenedFromUnderReviewWebhookEventData'];
+
+        $context = [
+            'entity_type' => 'payment',
+            'event_type'  => 'partnership'
+        ];
+
+        $this->expectWebhookEventWithContext('payment.dispute.action_required', $context,
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->runRequestResponseFlow($this->testData['testDisputeReopenedFromUnderReviewWebhook']);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        if (empty($this->splitzMock))
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }
