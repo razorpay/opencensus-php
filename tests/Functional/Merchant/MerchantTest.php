@@ -19764,6 +19764,25 @@ The same has been enabled for the account.
         $this->assertTrue($output);
     }
 
+    public function testProxyForActivationStatusBusinessBankingDisabled()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'business_banking'  => false
+        ]);
+
+        $dataToReplace = [
+            'request'   => [
+                'url'   => '/merchants/va_activation/' . $merchant->getId()
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest($dataToReplace);
+    }
+
     protected function mockStork()
     {
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])

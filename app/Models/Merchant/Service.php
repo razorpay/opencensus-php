@@ -8083,6 +8083,13 @@ class Service extends Base\Service
         {
             if($input['create_va'])
             {
+                if (!$merchant->isBusinessBankingEnabled())
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, null, null,
+                        PublicErrorDescription::BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_VA_ACTIVATION);
+                }
+
                 (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
 
                 (new Merchant\Activate)->activateBusinessBankingIfApplicable($merchant);

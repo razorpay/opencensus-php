@@ -15180,4 +15180,17 @@ return [
             ],
         ],
     ],
+    
+    'testProxyForActivationStatusBusinessBankingDisabled' => [
+        'request'   => [
+            'url'       => '/merchants/va_activation/{id}',
+            'method'    => 'POST',
+            'content'   => [
+                'create_va' => true
+            ]
+        ],
+        'response'  => [
+            'content'   => [],
+        ]
+    ]
 ];
