@@ -5267,8 +5267,8 @@ class Core extends Base\Core
     public function canSkipWorkflowToAccessSubmerchantKyc(Entity $partner, Entity $merchant): bool
     {
         // if merchant is not referred by partner, return false
-        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchant->getId(), $partner->getId());
-        if (empty($mapping) === true)
+        $mapping = (new AccessMap\Repository)->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
+        if (empty($mapping) === true || in_array($partner->getPartnerType(),[Constants::RESELLER, Constants::PURE_PLATFORM]) == false )
         {
             return false;
         }

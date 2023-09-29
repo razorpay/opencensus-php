@@ -99,7 +99,7 @@ class PassportAuthTest extends TestCase
         $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
 
         $this->fixtures->merchant->addFeatures(['marketplace', 'partner_sub_kyc_access']);
-        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000000000', 'merchant_id' => '100000Razorpay']);
+        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000000000', 'merchant_id' => '100000Razorpay', 'entity_owner_id' => '10000000000000']);
 
         $this->fixtures->create(
             'merchant_application',
@@ -111,6 +111,7 @@ class PassportAuthTest extends TestCase
         );
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '100000Razorpay', 'activation_form_milestone' => 'L2']);
+        $this->fixtures->edit('merchant','10000000000000', ['partner_type'=> 'reseller'] );
 
         $this->runRequestResponseFlow($testData);
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);

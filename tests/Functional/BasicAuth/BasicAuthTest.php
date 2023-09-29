@@ -1335,8 +1335,9 @@ class BasicAuthTest extends TestCase
         $this->fixtures->create(
             'merchant_access_map',
             [
-                'entity_id'   => '10000000000000',
-                'merchant_id' => '100000Razorpay'
+                'entity_id'       => '10000000000000',
+                'merchant_id'     => '100000Razorpay',
+                'entity_owner_id' => '10000000000000',
             ]
         );
 
@@ -1353,6 +1354,7 @@ class BasicAuthTest extends TestCase
             ['merchant_id'        => '100000Razorpay',
                 'activation_form_milestone'=>'L2']);
 
+        $this->fixtures->edit('merchant','10000000000000', ['partner_type'=> 'reseller'] );
         $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
     }
 
@@ -1366,7 +1368,8 @@ class BasicAuthTest extends TestCase
             'merchant_access_map',
             [
                 'entity_id'   => '10000000000000',
-                'merchant_id' => '100000Razorpay'
+                'merchant_id' => '100000Razorpay',
+                'entity_owner_id' => '10000000000000',
             ]
         );
 
@@ -1382,7 +1385,7 @@ class BasicAuthTest extends TestCase
         $this->fixtures->create('merchant_detail',
             ['merchant_id'        => '100000Razorpay',
                 'activation_form_milestone'=>'L2']);
-
+        $this->fixtures->edit('merchant','10000000000000', ['partner_type'=> 'reseller'] );
         $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
     }
 }
