@@ -3,11 +3,14 @@
 namespace RZP\Models\Tax;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
     /**
      * We keep tax rate as multiple of 10000 in case it is percentage type.
      * So to return the actual percent value we multiply the value by 0.000001.

@@ -8,10 +8,11 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\PayoutAmountRules;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\Entity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID          = 'id';
     const NAME        = 'name';

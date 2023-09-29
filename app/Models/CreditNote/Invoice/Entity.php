@@ -6,9 +6,13 @@ use App;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const CUSTOMER_ID   = 'customer_id';
@@ -87,7 +91,7 @@ class Entity extends Base\PublicEntity
     public function refund()
     {
         // return $this->belongsTo('RZP\Models\Payment\Refund\Entity');
-        // 
+        //
         // Since refund flow has changed, start fetching from Scrooge directly.
         $app = App::getFacadeRoot();
 

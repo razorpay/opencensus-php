@@ -6,10 +6,12 @@ namespace RZP\Models\CreditTransfer;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
 
     protected static $sign = 'ct';
 
