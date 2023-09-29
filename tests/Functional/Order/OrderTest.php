@@ -3318,4 +3318,40 @@ class OrderTest extends TestCase
         $orderMeta = $this->getDbLastEntity('order_meta');
         $this->assertNotNull($orderMeta);
     }
+    
+    // Support product type for Magic Checkout orders created internally.
+    public function testCreateOrderFor1CCWithProductType()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $orderData = [
+            Order\Entity::AMOUNT       => 10000,
+            Order\Entity::RECEIPT      => 'test_receipt',
+            Order\Entity::PRODUCT_TYPE => 'magic_checkout',
+            Order\Entity::PRODUCT_ID   => 'JZ6gh4XbeHoEW3',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 10000,
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS       => [
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 1',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 1000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 1,
+                ],
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 2',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 2000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 2,
+                ],
+            ],
+        ];
+        $this->createOrder($orderData);
+        $orderEntity = $this->getLastEntity('order', true);
+        $this->assertNotNull($orderEntity);
+        $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
+        $this->assertEquals($orderData[Order\Entity::RECEIPT], $orderEntity['receipt']);
+        $this->assertEquals(
+            $orderData[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL],
+            $orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL]);
+        $this->assertEquals($orderData[Order\Entity::PRODUCT_TYPE], $orderEntity['product_type']);
+        $this->assertEquals($orderData[Order\Entity::PRODUCT_ID], $orderEntity['product_id']);
+    }
+
 }

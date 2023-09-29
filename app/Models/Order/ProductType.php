@@ -16,7 +16,7 @@ class ProductType
     const VIRTUAL_ACCOUNT    = 'virtual_account';
     const PAYMENT_BUTTON     = 'payment_button';
     const PAYMENT_STORE      = 'payment_store';
-
+    const MAGIC_CHECKOUT     = 'magic_checkout';
 
     public static function isTypeValid(string $type): bool
     {

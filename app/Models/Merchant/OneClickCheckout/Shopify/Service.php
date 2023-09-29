@@ -26,6 +26,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order\OrderMeta;
+use RZP\Models\Order\ProductType as OrderProductType;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerAppClient;
@@ -415,18 +416,35 @@ class Service extends Base\Service
 
             $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied);
         }
-
-        $order = (new RzpOrders)->createOrder(
-            [
-                'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
-                'amount'           => $amount,
-                'currency'         => $checkout['totalPrice']['currencyCode'] ?? 'INR',
-                'payment_capture'  => 1,
-                'line_items_total' => $amount,
-                'notes'            => $orderNotes,
-                'line_items'       => $lineItemsData,
-            ]
-        );
+        // For now we generate a random UUID for product_id as it is a compulsory field with product_type.
+        // This id will be changed once decomp from order meta is completed.
+        $magicProductId = UniqueIdEntity::generateUniqueId();
+        $orderPayload = [
+            'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
+            'amount'           => $amount,
+            'currency'         => $checkout['totalPrice']['currencyCode'] ?? 'INR',
+            'payment_capture'  => 1,
+            'line_items_total' => $amount,
+            'notes'            => $orderNotes,
+            'line_items'       => $lineItemsData,
+        ];
+        // product_type field is set only via internal API calls. This function is
+        // not exposed to merchants and is in turn called by Magic Checkout svc.
+        $orderPayloadWithProductType = array_merge($orderPayload, [
+          'product_type' => OrderProductType::MAGIC_CHECKOUT,
+          'product_id'   => $magicProductId,
+        ]);
+        $order = null;
+        // Hacky way to ensure backward compatibility with PG Router in case any
+        // revert occurs in their system.
+        try
+        {
+            $order = (new RzpOrders)->createOrder($orderPayloadWithProductType);
+        }
+        catch (\Throwable $e)
+        {
+            $order = (new RzpOrders)->createOrder($orderPayload);
+        }
 
         $checkoutParams = [
             'order_id'              => $order->getPublicId(),
