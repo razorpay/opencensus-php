@@ -15,6 +15,9 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 {
     protected $request;
 
+    // Attributes that should not be logged
+    protected $BLACK_LISTED_HEADERS = ['X-Dashboard-User-Session-Id'];
+
     /**
      * @param mixed $serverData array or object w/ ArrayAccess that provides access to the $_SERVER data
      */
@@ -75,9 +78,11 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $headers = ApiRequest::getHeaders();
 
+        // Filter the $headers array to only include headers that start with "X-"
+        // and are not present in the $this->BLACK_LISTED_HEADERS array.
         $data = array_filter($headers, function($key)
         {
-            return (substr($key, 0, 2) === "X-");
+            return (substr($key, 0, 2) === "X-")  && !in_array($key, $this->BLACK_LISTED_HEADERS);
         }, ARRAY_FILTER_USE_KEY);
 
         $app = App::getFacadeRoot();
