@@ -55,7 +55,7 @@ export const accountConfigsFormatter = (
   merchantAnalyticsConfigs: MerchantAnalyticsConfigs,
   analyticsPlatform: AnalyticsPlatform,
 ): AccountConfig[] => {
-  const accountConfigs = merchantAnalyticsConfigs?.[analyticsPlatform]?.analytics_accounts || [];
+  const accountConfigs = merchantAnalyticsConfigs?.[analyticsPlatform]?.accounts || [];
 
   const formattedAccountConfig: AccountConfig[] = [
     {
@@ -82,7 +82,7 @@ export const accountConfigsFormatter = (
     };
 
     if (analyticsPlatform === ANALYTICS_PLATFORM.googleAds.key) {
-      const authId = config?.auth_platform_user_id;
+      const authId = config?.analytics_auth_account_id;
       newConfig = { ...newConfig, authId };
     }
 
@@ -111,7 +111,7 @@ export const addAnalyticsAccount = (
 };
 
 export const updateIntegrationMethod = (
-  e: React.ChangeEvent<HTMLInputElement>,
+  val: string,
   accountConfigs: AccountConfig[] = [{}],
 ): AccountConfig[] => {
   if (accountConfigs.length === 0) {
@@ -122,33 +122,7 @@ export const updateIntegrationMethod = (
   const lastElement = modifiedAccountConfigs[modifiedAccountConfigs.length - 1];
 
   if (typeof lastElement === 'object') {
-    lastElement.integrationMethod = e?.target?.value;
-  }
-
-  return modifiedAccountConfigs;
-};
-
-export const deleteAccountConfigUtil = (
-  id: string,
-  accountConfigs: AccountConfig[] = [{}],
-  analyticsPlatform: string,
-): AccountConfig[] => {
-  if (accountConfigs.length === 0) {
-    return accountConfigs;
-  }
-
-  const modifiedAccountConfigs: AccountConfig[] = accountConfigs?.filter(
-    (config: AccountConfig) => config?.id !== id,
-  );
-
-  if (modifiedAccountConfigs.length === 0) {
-    modifiedAccountConfigs.push({
-      customIntegrationOptions:
-        analyticsPlatform === ANALYTICS_PLATFORM.facebookAds.key
-          ? FACEBOOK_INTEGRATION_OPTIONS
-          : DEFAULT_INTEGRATION_OPTIONS,
-      integrationMethod: INTEGRATION_TYPE.frontend,
-    });
+    lastElement.integrationMethod = val;
   }
 
   return modifiedAccountConfigs;

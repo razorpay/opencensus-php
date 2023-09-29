@@ -19,20 +19,20 @@ export const GOOGLE_ANALYTICS_EVENT_CONFIGS = {
 
 export const FB_CONFIGS = {
   ga4: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   google_ads: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   fb: {
-    analytics_accounts: [
+    accounts: [
       {
         id: '1352542',
-        analytics_platform_user_id: '12345',
+        platform_user_id: '12345',
         integration_method: 'backend',
-        api_secret: window.btoa('its a secret'),
+        access_token: window.btoa('its a secret'),
       },
     ],
     events: {
@@ -45,39 +45,45 @@ export const FB_CONFIGS = {
 };
 
 export const DEFAULT_CONFIGS = {
+  google: {
+    accounts: [],
+  },
   ga4: {
-    analytics_accounts: [],
+    accounts: [],
     events: GOOGLE_ANALYTICS_EVENT_CONFIGS,
   },
   google_ads: {
-    analytics_accounts: [],
+    accounts: [],
     events: GOOGLE_ADS_EVENT_CONFIGS,
   },
   fb: {
-    analytics_accounts: [],
+    accounts: [],
     events: FACEBOOK_EVENT_CONFIGS,
   },
 };
 
 export const OAUTH_CONFIGS = {
-  outh_id: {
-    email: 'test@gmail.com',
-    picture: 'https://test-img.com',
-    google_ads_ids: ['test123', 'test456'],
-  },
+  accounts: [
+    {
+      email: 'test@gmail.com',
+      picture: 'https://test-img.com',
+      google_ads_ids: ['test123', 'test456'],
+      id: 'test_google_uuid',
+    },
+  ],
 };
 
 export const GOOGLE_ADS_CONFIGS = {
-  oauth_accounts: OAUTH_CONFIGS,
+  google: OAUTH_CONFIGS,
   ga4: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   google_ads: {
-    analytics_accounts: [
+    accounts: [
       {
         id: '1352540',
-        analytics_platform_user_id: '12456464',
+        platform_user_id: '12456464',
         integration_method: 'backend',
         google_ads_conversion_label: window.btoa('its a secret'),
         google_ads_conversion_id: 'test123',
@@ -88,40 +94,40 @@ export const GOOGLE_ADS_CONFIGS = {
     },
   },
   fb: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
 };
 
 export const GOOGLE_ADS_AUTH_CONFIG = {
-  oauth_accounts: OAUTH_CONFIGS,
+  google: OAUTH_CONFIGS,
   ga4: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   google_ads: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   fb: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
 };
 
 export const GOOGLE_ANALYTICS_CONFIGS = {
   ga4: {
-    analytics_accounts: [
+    accounts: [
       {
         id: '1352543',
-        analytics_platform_user_id: '12343',
-        api_secret: window.btoa('test secret'),
+        platform_user_id: '12343',
+        access_token: window.btoa('test secret'),
         integration_method: 'backend',
       },
       {
         id: '1358755',
-        analytics_platform_user_id: '12943',
-        api_secret: window.btoa('its a secret'),
+        platform_user_id: '12943',
+        access_token: window.btoa('its a secret'),
         integration_method: 'backend',
       },
     ],
@@ -134,11 +140,11 @@ export const GOOGLE_ANALYTICS_CONFIGS = {
     },
   },
   google_ads: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
   fb: {
-    analytics_accounts: [],
+    accounts: [],
     events: {},
   },
 };

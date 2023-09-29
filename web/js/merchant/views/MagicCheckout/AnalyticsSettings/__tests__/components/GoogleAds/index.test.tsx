@@ -68,7 +68,7 @@ describe('testing google ads component', () => {
     await userEvent.selectOptions(fieldElement, 'frontend');
 
     const selectedOption = screen.getByRole('option', {
-      name: 'Frontend',
+      name: 'GTag (Frontend)',
     }) as HTMLOptionElement;
 
     expect(selectedOption.selected).toBe(true);

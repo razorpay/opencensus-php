@@ -22,11 +22,13 @@ const LinkAccountForm = (props: LinkAccountFormPropsType): JSX.Element => {
     pointsHeader,
     onSavingAccountCreds,
     showNotification,
+    setIntegrationMethod,
   } = props;
 
   const { Component, header, desc } = stepTexts[step];
 
   const handleModalClose = () => {
+    setIntegrationMethod('');
     showNotification({
       type: 'neutral',
       message: NOTIFICATION_TEXTS.neutral,

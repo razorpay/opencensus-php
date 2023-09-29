@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ServiceabilitySettings from 'merchant/views/MagicCheckout/ShippingServices/Listing/containers/ServiceabilitySettings';
 import Tick from 'merchant/views/MagicCheckout/ShippingServices/assets/tick.svg';
 import DisableModal from 'merchant/views/MagicCheckout/ShippingServices/components/DisableModal';
@@ -11,7 +12,7 @@ const openShipRocketModal = (openModal, component, modalType) => {
   openModal({
     size: 'xlarge',
     className: modalType ? `Modal--${modalType}` : '',
-    component,
+    component: <SuspenseWithLoader>{component}</SuspenseWithLoader>,
   });
 };
 

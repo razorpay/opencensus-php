@@ -6,9 +6,9 @@ export const updateEventConfigs = (action, state) => {
   const platformConfigs = state.merchantAnalyticsConfigs?.[analyticsPlatform];
 
   const newUpdateConfig =
-    platformConfigs?.analytics_accounts?.length === 0
+    platformConfigs?.accounts?.length === 0
       ? Object.assign({}, platformConfigs, {
-          analytics_accounts: [{ integration_method: INTEGRATION_TYPE.frontend }],
+          accounts: [{ integration_method: INTEGRATION_TYPE.frontend }],
           events: Object.assign({}, platformConfigs?.events, response),
         })
       : Object.assign({}, platformConfigs, {
@@ -26,7 +26,7 @@ export const addAccount = (action, state) => {
   const { analyticsPlatform: platform } = action;
   const { merchantAnalyticsConfigs } = state;
 
-  const { analytics_accounts: analyticsAccounts } = merchantAnalyticsConfigs[platform];
+  const { accounts: analyticsAccounts } = merchantAnalyticsConfigs[platform];
 
   let updatedAccountConfigs;
   if (
@@ -35,18 +35,33 @@ export const addAccount = (action, state) => {
   ) {
     updatedAccountConfigs = Object.assign({}, merchantAnalyticsConfigs, {
       [platform]: Object.assign({}, merchantAnalyticsConfigs[platform], {
-        analytics_accounts: [action?.payload?.data],
+        accounts: [action?.payload?.data],
       }),
     });
   } else {
     updatedAccountConfigs = Object.assign({}, merchantAnalyticsConfigs, {
       [platform]: Object.assign({}, merchantAnalyticsConfigs[platform], {
-        analytics_accounts: merchantAnalyticsConfigs[platform]?.analytics_accounts.concat([
-          action?.payload?.data,
-        ]),
+        accounts: merchantAnalyticsConfigs[platform]?.accounts.concat([action?.payload?.data]),
       }),
     });
   }
 
   return updatedAccountConfigs;
+};
+
+export const deleteAccountConfig = (id, accountConfigs = [{}], analyticsPlatform) => {
+  if (accountConfigs.length === 0) {
+    return accountConfigs;
+  }
+
+  const modifiedAccountConfigs = accountConfigs?.filter((config) => config?.id !== id);
+
+  if (modifiedAccountConfigs.length === 0) {
+    modifiedAccountConfigs.push({
+      platform: analyticsPlatform,
+      integration_method: INTEGRATION_TYPE.frontend,
+    });
+  }
+
+  return modifiedAccountConfigs;
 };

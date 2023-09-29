@@ -27,6 +27,7 @@ const IntegrationModal = (props: ModalPropsType): JSX.Element => {
     pointsHeader,
     demoVideoLink,
     onSavingAccountCreds,
+    setIntegrationMethod,
   } = integrationModalProps;
 
   const [step, setStep] = useState<number>(0);
@@ -49,6 +50,7 @@ const IntegrationModal = (props: ModalPropsType): JSX.Element => {
           points={points}
           pointsHeader={pointsHeader}
           onSavingAccountCreds={onSavingAccountCreds}
+          setIntegrationMethod={setIntegrationMethod}
         />
       </FormContainer>
     </LinkAccountContainer>

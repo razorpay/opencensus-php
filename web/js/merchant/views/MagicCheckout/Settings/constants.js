@@ -127,14 +127,6 @@ export const TABS = {
       Component: ConfigDashboard,
       condition: (_user) => _user.isMagicPrepayCODEnabled,
     },
-    {
-      className: 'analytics-settings',
-      path: '/magic/settings/analytics-settings',
-      label: 'Analytics settings',
-      Component: AnalyticsSettings,
-      condition: (_, abExperiments) =>
-        abExperiments?.magic_analytics_setting?.variables?.result === 'on',
-    },
   ],
   [PLATFORMS.NATIVE]: [
     {

@@ -12,7 +12,6 @@ import DemoVideo from 'merchant/views/MagicCheckout/AnalyticsSettings/common/Dem
 import {
   accountConfigsFormatter,
   updateIntegrationMethod,
-  deleteAccountConfigUtil,
   addAnalyticsAccount,
   updateSaveEventsCtaState,
   updateAddAccountCtaState,
@@ -42,6 +41,7 @@ import {
   ANALYTICS_PLATFORM,
   INTEGRATION_TYPE,
   INTEGRATION_MODAL_TEXTS,
+  GA4_DEFAULT_EVENTS,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/constants';
 
 const ConfirmationModal = lazy(
@@ -57,14 +57,14 @@ const INSTRUCTION_POINTS = [
     <InfoLink href="https://analytics.google.com/" target="_blank" rel="noreferrer noopener">
       Admin
     </InfoLink>{' '}
-    - on the bottom right
+    - on the bottom left
   </span>,
   'Go to Data Streams - under admin Section',
   'Copy Measurement ID - under stream details',
   'Click Merchant protocol API - under events section',
-  'Click Create - on top Left',
-  'Enter Nickname- In side drawer',
-  'Click Create- on top left',
+  'Click Create - on top right',
+  'Enter Nickname- Inside the field',
+  'Click Create- on top right',
   'Copy Secret value - Under API secrets section',
 ];
 
@@ -86,7 +86,7 @@ const GoogleAnalytics = (props: GoogleAnalyticsPropsTypes): JSX.Element => {
 
   const { merchantAnalyticsConfigs: magicAnalyticsConfigs } = analyticsSettingsConfigs;
 
-  const { events, analytics_accounts: analyticsAccounts } =
+  const { events, accounts: analyticsAccounts } =
     magicAnalyticsConfigs?.[ANALYTICS_PLATFORM.googleAnalytics.key] || {};
 
   const [gaAccountConfigs, setGaAccountConfigs] = useState<Record<string, any>[]>([{}]);
@@ -96,17 +96,14 @@ const GoogleAnalytics = (props: GoogleAnalyticsPropsTypes): JSX.Element => {
   const [showPreviewMode, setShowPreviewMode] = useState<boolean>(false);
   const [isSaveEventsCtaDisabled, setIsSaveEventsCtaDisabled] = useState<boolean>(true);
 
-  const setIntegrationMethod = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setGaAccountConfigs(updateIntegrationMethod(e, gaAccountConfigs));
+  const setIntegrationMethod = (val: string): void => {
+    setGaAccountConfigs(updateIntegrationMethod(val, gaAccountConfigs));
     setShowPreviewMode(false);
   };
 
   const deleteAccountConfig = (id: string): void => {
-    deleteConfig(id)
+    deleteConfig(id, ANALYTICS_PLATFORM.googleAnalytics.key)
       .then(() => {
-        setGaAccountConfigs(
-          deleteAccountConfigUtil(id, gaAccountConfigs, ANALYTICS_PLATFORM.googleAnalytics.key),
-        );
         showNotification({
           type: 'success',
           message: NOTIFICATION_TEXTS.success.deleteAccount,
@@ -148,9 +145,9 @@ const GoogleAnalytics = (props: GoogleAnalyticsPropsTypes): JSX.Element => {
     const newConfig = gaAccountConfigs?.[gaAccountConfigs.length - 1];
 
     const params = {
-      analytics_platform: ANALYTICS_PLATFORM.googleAnalytics.key,
-      analytics_platform_user_id: creds?.measurementId || '',
-      api_secret: window?.btoa(creds?.apiSecret) || '',
+      platform: ANALYTICS_PLATFORM.googleAnalytics.key,
+      platform_user_id: creds?.measurementId || '',
+      access_token: window?.btoa(creds?.apiSecret) || '',
       integration_method: newConfig?.integrationMethod || INTEGRATION_TYPE.backend,
     };
 
@@ -209,6 +206,7 @@ const GoogleAnalytics = (props: GoogleAnalyticsPropsTypes): JSX.Element => {
     pointsHeader,
     demoVideoLink: videoLink,
     onSavingAccountCreds: handleSavingAccountCreds,
+    setIntegrationMethod,
   };
 
   useEffect(() => {
@@ -220,7 +218,12 @@ const GoogleAnalytics = (props: GoogleAnalyticsPropsTypes): JSX.Element => {
   useEffect(() => {
     const isAccountConfigsAvailable = !!analyticsAccounts?.length;
 
-    setGaEventConfigs(events);
+    if (Array.isArray(events) && events.length === 0) {
+      setGaEventConfigs(GA4_DEFAULT_EVENTS);
+    } else {
+      setGaEventConfigs(events);
+    }
+
     setShowPreviewMode(!!(events && Object.keys(events)?.length && isAccountConfigsAvailable));
   }, [events]);
 

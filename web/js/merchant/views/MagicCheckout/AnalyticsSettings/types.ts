@@ -11,6 +11,7 @@ export type IntegrationModalPropsType = {
   pointsHeader: string;
   demoVideoLink: string;
   onSavingAccountCreds: (creds: Record<string, string>) => void;
+  setIntegrationMethod: (arg: string) => void;
 };
 
 export type CredentialsFormPropsType = {
@@ -54,7 +55,7 @@ export type AnalyticsSettingsPropsType = {
 
 export type GoogleAnalyticsPropsTypes = {
   analyticsSettingsConfigs: Record<string, any>;
-  deleteConfig: (id: string) => any;
+  deleteConfig: (id: string, analyticsPlatform: string) => any;
   showNotification: ShowNotificationType;
   closeModal: () => void;
   addConfigs: (params: Record<string, string>) => any;
@@ -64,7 +65,7 @@ export type GoogleAnalyticsPropsTypes = {
 
 export type GoogleAdsPropsTypes = {
   analyticsSettingsConfigs: Record<string, any>;
-  deleteConfig: (id: string) => any;
+  deleteConfig: (id: string, analyticsPlatform: string) => any;
   showNotification: ShowNotificationType;
   addConfigs: (params: Record<string, string>) => any;
   closeModal: () => void;
@@ -74,7 +75,7 @@ export type GoogleAdsPropsTypes = {
 
 export type FacebookAdsPropsTypes = {
   analyticsSettingsConfigs: Record<string, any>;
-  deleteConfig: (id: string) => any;
+  deleteConfig: (id: string, analyticsPlatform: string) => any;
   showNotification: ShowNotificationType;
   addConfigs: (params: Record<string, string>) => any;
   closeModal: () => void;
@@ -103,6 +104,7 @@ export type LinkAccountFormPropsType = {
   pointsHeader: string;
   onSavingAccountCreds: () => void;
   showNotification: ShowNotificationType;
+  setIntegrationMethod: (arg: string) => void;
 };
 
 export type IntegrationPointsPropsType = {
@@ -124,7 +126,7 @@ export type InputContainerPropsType = {
   integrationModalProps: IntegrationModalPropsType;
   merchantAnalyticsConfigs: Record<string, any>;
   openModal: (arg0: ModalProp) => void;
-  setIntegrationMethod: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setIntegrationMethod: (val: string) => void;
   deleteAccountConfig: (id: string) => void;
   fetchOauthId: () => any;
   showNotification: ShowNotificationType;
@@ -143,7 +145,7 @@ export type ContainerContentPropsType = {
   customIntegrationOptions?: Array<Record<string, string>>;
   integrationModalProps: Record<string, any>;
   merchantAnalyticsConfigs: Record<string, any>;
-  setIntegrationMethod: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setIntegrationMethod: (val: string) => void;
   deleteAccountConfig: (id: string) => void;
   oAuthAccountConfigs?: Record<string, any>;
 };
@@ -173,4 +175,10 @@ export type AnalyticsEventsPropsType = {
   setShowPreviewMode: (arg: boolean) => void;
   saveEventConfigs: () => void;
   isSaveEventsCtaDisabled: boolean;
+};
+
+export type GoogleAccountPropsType = {
+  oAuthAccountConfigs: Record<string, any>;
+  showNotification: ShowNotificationType;
+  fetchOauthId: () => any;
 };

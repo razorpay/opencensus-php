@@ -3,6 +3,7 @@ import { ACTIONS } from 'merchant/reducers/magicCheckout/analyticsSettings/actio
 import {
   addAccount,
   updateEventConfigs,
+  deleteAccountConfig,
 } from 'merchant/reducers/magicCheckout/analyticsSettings/utils';
 
 const initialState = {
@@ -35,8 +36,19 @@ export const magicAnalyticsSettingsReducer = (state = initialState, action) => {
         hasError: action?.payload?.errors?.[0] || null,
       });
     case ACTIONS.DELETE_CONFIGS_PENDING:
-    case ACTIONS.DELETE_CONFIGS_SUCCESS:
-      return merge(state, { hasError: null });
+    case ACTIONS.DELETE_CONFIGS_SUCCESS: {
+      const { id, analyticsPlatform } = action;
+      const accountConfigs = state?.merchantAnalyticsConfigs?.[analyticsPlatform]?.accounts;
+      const updatedAccountConfigs = deleteAccountConfig(id, accountConfigs, analyticsPlatform);
+      const updatedConfigs = {
+        ...state.merchantAnalyticsConfigs,
+        [analyticsPlatform]: {
+          ...state?.merchantAnalyticsConfigs?.[analyticsPlatform],
+          accounts: updatedAccountConfigs,
+        },
+      };
+      return merge(state, { hasError: null, merchantAnalyticsConfigs: updatedConfigs });
+    }
     case ACTIONS.DELETE_CONFIGS_ERROR:
       return merge(state, { hasError: action?.payload?.errors[0] });
     case ACTIONS.UPDATE_EVENT_CONFIGS_PENDING:

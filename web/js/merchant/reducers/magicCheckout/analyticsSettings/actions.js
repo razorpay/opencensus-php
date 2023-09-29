@@ -35,18 +35,20 @@ export const fetchConfigs = () => {
   return {
     type: ACTIONS.FETCH_CONFIGS,
     payload: merchantFetch({
-      url: '1cc/analytics/configs',
+      url: '1cc/analytics_integration/configs',
     }),
   };
 };
 
-export const deleteAccountConfigs = (id) => {
+export const deleteAccountConfigs = (id, analyticsPlatform) => {
   return {
     type: ACTIONS.DELETE_CONFIGS,
     payload: merchantFetch({
-      url: `1cc/analytics/auth_configs/${id}`,
+      url: `1cc/analytics_integration/accounts/${id}`,
       method: 'delete',
     }),
+    id,
+    analyticsPlatform,
   };
 };
 
@@ -54,24 +56,24 @@ export const addAccountConfigs = (payload) => {
   return {
     type: ACTIONS.ADD_ACCOUNT,
     payload: merchantFetch({
-      url: '1cc/analytics/auth_configs',
+      url: '1cc/analytics_integration/accounts',
       method: 'post',
       data: payload,
     }),
-    analyticsPlatform: payload.analytics_platform,
+    analyticsPlatform: payload.platform,
   };
 };
 
 export const saveEventConfigs = (configs, analyticsPlatform) => {
   const payload = {
-    analytics_platform: analyticsPlatform,
+    platform: analyticsPlatform,
     events: configs,
   };
 
   return {
     type: ACTIONS.UPDATE_EVENT_CONFIGS,
     payload: merchantFetch({
-      url: '1cc/analytics/event_configs',
+      url: '1cc/analytics_integration/event_configs',
       method: 'post',
       data: payload,
     }),
@@ -83,12 +85,12 @@ export const fetchOauthId = () => {
   return {
     type: ACTIONS.OAUTH_API,
     payload: merchantFetch({
-      url: '1cc/oauth/redirect_url',
+      url: '1cc/analytics_integration/oauth/redirect_url',
       method: 'post',
       data: {
         oauth_provider: 'google',
-        target_uri: window.btoa(
-          'https://dashboard.dev.razorpay.in/app/magic/settings/analytics-settings?integration_platform=google_ads',
+        target_url: window.btoa(
+          'https://dashboard.dev.razorpay.in/app/magic/settings/analytics-settings?platform=google-ads',
         ),
       },
     }),

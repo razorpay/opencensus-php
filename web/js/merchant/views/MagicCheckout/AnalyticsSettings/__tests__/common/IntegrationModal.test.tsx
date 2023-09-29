@@ -24,6 +24,7 @@ const props: IntegrationModalPropsType = {
   pointsHeader: 'steps to follow',
   onSavingAccountCreds: jest.fn(),
   demoVideoLink: 'https://cdn.razorpay.com/static/assets/magic-checkout/shiprocket-demo-step-1.mp4',
+  setIntegrationMethod: jest.fn(),
 };
 
 describe('testing integration modal component', () => {

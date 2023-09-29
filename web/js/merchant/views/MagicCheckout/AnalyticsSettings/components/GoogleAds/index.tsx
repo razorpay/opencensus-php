@@ -22,7 +22,6 @@ import { GoogleAdsPropsTypes } from 'merchant/views/MagicCheckout/AnalyticsSetti
 import {
   accountConfigsFormatter,
   updateIntegrationMethod,
-  deleteAccountConfigUtil,
   addAnalyticsAccount,
   updateAddAccountCtaState,
   updateSaveEventsCtaState,
@@ -42,6 +41,7 @@ import {
   ANALYTICS_PLATFORM,
   INTEGRATION_TYPE,
   INTEGRATION_MODAL_TEXTS,
+  GOOGLE_ADS_DEFAULT_EVENTS,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/constants';
 
 const ConfirmationModal = lazy(
@@ -88,9 +88,9 @@ const GoogleAds = (props: GoogleAdsPropsTypes): JSX.Element => {
 
   const { merchantAnalyticsConfigs: magicAnalyticsConfigs } = analyticsSettingsConfigs;
 
-  const { oauth_accounts = {} } = magicAnalyticsConfigs;
+  const { accounts: oAuthAccounts = [] } = magicAnalyticsConfigs?.google || {};
 
-  const { events, analytics_accounts: analyticsAccounts } =
+  const { events, accounts: analyticsAccounts } =
     magicAnalyticsConfigs?.[ANALYTICS_PLATFORM.googleAds.key] || {};
 
   const [googleAdsAccountConfigs, setGoogleAdsAccountConfigs] = useState<Record<string, any>[]>([
@@ -123,25 +123,27 @@ const GoogleAds = (props: GoogleAdsPropsTypes): JSX.Element => {
 
   useEffect(() => {
     const isAccountConfigsAvailable = !!analyticsAccounts?.length;
-    const isOAuthIdAvailable = !!Object.keys(oauth_accounts).length;
+    const isOAuthIdAvailable = !!Object.keys(oAuthAccounts).length && oAuthAccounts[0]?.id;
 
-    setGoogleAdsEventConfigs(events);
+    if (Array.isArray(events) && events.length === 0) {
+      setGoogleAdsEventConfigs(GOOGLE_ADS_DEFAULT_EVENTS);
+    } else {
+      setGoogleAdsEventConfigs(events);
+    }
+
     setShowPreviewMode(
       !!(events && Object.keys(events)?.length && isAccountConfigsAvailable && isOAuthIdAvailable),
     );
   }, [events]);
 
-  const setIntegrationMethod = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setGoogleAdsAccountConfigs(updateIntegrationMethod(e, googleAdsAccountConfigs));
+  const setIntegrationMethod = (val: string): void => {
+    setGoogleAdsAccountConfigs(updateIntegrationMethod(val, googleAdsAccountConfigs));
     setShowPreviewMode(false);
   };
 
   const deleteAccountConfig = (id: string): void => {
-    deleteConfig(id)
+    deleteConfig(id, ANALYTICS_PLATFORM.googleAds.key)
       .then(() => {
-        setGoogleAdsAccountConfigs(
-          deleteAccountConfigUtil(id, googleAdsAccountConfigs, ANALYTICS_PLATFORM.googleAds.key),
-        );
         showNotification({
           type: 'success',
           message: NOTIFICATION_TEXTS.success.deleteAccount,
@@ -181,14 +183,12 @@ const GoogleAds = (props: GoogleAdsPropsTypes): JSX.Element => {
   const handleSavingAccountCreds = (creds: Record<string, string>): void => {
     const newConfig = googleAdsAccountConfigs?.[googleAdsAccountConfigs?.length - 1];
     const params = {
-      analytics_platform: ANALYTICS_PLATFORM.googleAds.key,
+      platform: ANALYTICS_PLATFORM.googleAds.key,
       google_ads_conversion_id: creds?.conversionId,
       google_ads_conversion_label: window.btoa(creds?.conversionLabel),
-      analytics_platform_user_id: creds?.adwordAccountNumber,
+      platform_user_id: creds?.adwordAccountNumber,
       integration_method: newConfig.integrationMethod ?? INTEGRATION_TYPE.backend,
-      auth_platform_user_id: !!Object.keys(oauth_accounts).length
-        ? Object.keys(oauth_accounts)[0]
-        : '',
+      analytics_auth_account_id: !!Object.keys(oAuthAccounts).length ? oAuthAccounts[0]?.id : '',
     };
     addConfigs(params)
       .then(() => {
@@ -245,6 +245,7 @@ const GoogleAds = (props: GoogleAdsPropsTypes): JSX.Element => {
     pointsHeader,
     demoVideoLink: videoLink,
     onSavingAccountCreds: handleSavingAccountCreds,
+    setIntegrationMethod,
   };
 
   return (
@@ -260,7 +261,7 @@ const GoogleAds = (props: GoogleAdsPropsTypes): JSX.Element => {
           headerIcon={headerIcon}
           integrationModalProps={integrationModalProps}
           merchantAnalyticsConfigs={googleAdsAccountConfigs}
-          oAuthAccountConfigs={oauth_accounts}
+          oAuthAccountConfigs={oAuthAccounts}
           setIntegrationMethod={setIntegrationMethod}
           deleteAccountConfig={openDeleteConfirmationModal}
         />

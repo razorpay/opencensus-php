@@ -67,6 +67,10 @@ export const ANALYTICS_PLATFORM = {
     key: 'fb',
     label: 'Facebook Ads',
   },
+  google: {
+    key: 'google',
+    label: 'Google account',
+  },
 };
 
 export const ANALYTICS_SETTINGS_ROUTES = [
@@ -117,19 +121,25 @@ export const INTEGRATION_TYPE = {
 
 export const DEFAULT_INTEGRATION_OPTIONS = [
   { label: 'Select Integration', name: '' },
-  { label: 'Frontend', name: INTEGRATION_TYPE.frontend },
-  { label: 'Backend', name: INTEGRATION_TYPE.backend },
+  { label: 'GTag (Frontend)', name: INTEGRATION_TYPE.frontend },
+  { label: 'Measurement Protocol (Backend)', name: INTEGRATION_TYPE.backend },
 ];
 
 export const FACEBOOK_INTEGRATION_OPTIONS = [
   { label: 'Select Integration', name: '' },
   { label: 'Facebook Pixel', name: INTEGRATION_TYPE.frontend },
   { label: 'Facebook Capi', name: INTEGRATION_TYPE.backend },
-  { label: 'Both facebook pixel & capi', name: INTEGRATION_TYPE.both },
+  { label: 'Both Facebook Pixel & Capi', name: INTEGRATION_TYPE.both },
 ];
 
-export const INTEGRATION_INFO_TEXT =
-  'We recommend to integrate with Backend to unlock powerful capabilities and improve your advertising performance.';
+export const INTEGRATION_INFO_TEXT = {
+  [ANALYTICS_PLATFORM.googleAnalytics.label]:
+    'We recommend to integrate with backend to unlock powerful capabilities and improve performance of your google analytics dashboard.',
+  [ANALYTICS_PLATFORM.googleAds.label]:
+    'We recommend to integrate with backend to unlock powerful capabilities and improve your advertising performance.',
+  [ANALYTICS_PLATFORM.facebookAds.label]:
+    'We recommend to integrate with both Facebook Pixel & Capi to unlock powerful capabilities and improve your advertising performance.',
+};
 
 export const GOOGLE_ANALYTICS_EVENTS = [
   {
@@ -150,7 +160,7 @@ export const GOOGLE_ANALYTICS_EVENTS = [
   {
     label: 'Purchase',
     value: 'purchase',
-    infoText: 'Triggered when order placed',
+    infoText: 'Triggered when order is placed',
   },
   {
     label: 'Custom Events',
@@ -173,7 +183,7 @@ export const FACEBOOK_ANALYTICS_EVENTS = [
   {
     label: 'Purchase',
     value: 'purchase',
-    infoText: 'Triggered when order placed',
+    infoText: 'Triggered when order is placed',
   },
   {
     label: 'Custom Events',
@@ -186,7 +196,7 @@ export const GOOGLE_ADS_ANALYTICS_EVENTS = [
   {
     label: 'Conversion event',
     value: 'purchase',
-    infoText: 'Triggered when order placed',
+    infoText: 'Triggered when order is placed',
   },
 ];
 
@@ -231,21 +241,21 @@ export const GOOGLE_ADS_INTEGRATION_STEPS = [
 
 export const ACCOUNT_LABELS_MAP = {
   [ANALYTICS_PLATFORM.googleAnalytics.key]: {
-    analytics_platform_user_id: 'Measurement ID',
-    api_secret: 'API secret token',
+    platform_user_id: 'Measurement ID',
+    access_token: 'API secret token',
   },
   [ANALYTICS_PLATFORM.facebookAds.key]: {
-    analytics_platform_user_id: 'Pixel ID',
-    api_secret: 'Access token',
+    platform_user_id: 'Pixel ID',
+    access_token: 'Access token',
   },
   [ANALYTICS_PLATFORM.googleAds.key]: {
     google_ads_conversion_id: 'Conversion ID',
     google_ads_conversion_label: 'Conversion label',
-    analytics_platform_user_id: 'Adword account number',
+    platform_user_id: 'Adword account number',
   },
 };
 
-export const ENCODED_KEYS = ['api_secret', 'google_ads_conversion_label'];
+export const ENCODED_KEYS = ['access_token', 'google_ads_conversion_label'];
 
 export const DELETE_CONFIRMATION_TEXTS = {
   [ANALYTICS_PLATFORM.googleAnalytics.key]: {
@@ -263,6 +273,12 @@ export const DELETE_CONFIRMATION_TEXTS = {
   [ANALYTICS_PLATFORM.facebookAds.key]: {
     header: 'Remove facebook ads account?',
     desc: "You'll be missing out on the accurate tracking, advanced insights and better ads performance. Are you sure you want to switch to frontend integration?",
+    affirmativeLabel: 'Remove account',
+    abortLabel: "No don't!",
+  },
+  [ANALYTICS_PLATFORM.google.key]: {
+    header: 'Remove Google account?',
+    desc: 'Removing google account will delete all Google ads analytics account as they are associated with it.',
     affirmativeLabel: 'Remove account',
     abortLabel: "No don't!",
   },
@@ -297,4 +313,23 @@ export const INTEGRATION_MODAL_TEXTS = {
     videoLink:
       'https://cdn.razorpay.com/static/assets/magic-checkout/facebook-integration-demo-video.mp4',
   },
+};
+
+export const FB_DEFAULT_EVENTS = {
+  checkout_initiated: false,
+  add_payment_info: false,
+  purchase: false,
+  custom_events: false,
+};
+
+export const GOOGLE_ADS_DEFAULT_EVENTS = {
+  purchase: false,
+};
+
+export const GA4_DEFAULT_EVENTS = {
+  checkout_initiated: false,
+  add_shipping_info: false,
+  add_payment_info: false,
+  purchase: false,
+  custom_events: false,
 };

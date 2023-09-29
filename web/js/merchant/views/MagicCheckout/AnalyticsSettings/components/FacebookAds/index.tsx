@@ -23,7 +23,6 @@ import {
 import {
   accountConfigsFormatter,
   updateIntegrationMethod,
-  deleteAccountConfigUtil,
   addAnalyticsAccount,
   updateSaveEventsCtaState,
   updateAddAccountCtaState,
@@ -44,6 +43,7 @@ import {
   ANALYTICS_PLATFORM,
   INTEGRATION_TYPE,
   INTEGRATION_MODAL_TEXTS,
+  FB_DEFAULT_EVENTS,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/constants';
 
 const ConfirmationModal = lazy(
@@ -90,7 +90,7 @@ const FacebookAds = (props: FacebookAdsPropsTypes): JSX.Element => {
   } = props;
 
   const { merchantAnalyticsConfigs: magicAnalyticsConfigs } = analyticsSettingsConfigs;
-  const { events, analytics_accounts: analyticsAccounts } =
+  const { events, accounts: analyticsAccounts } =
     magicAnalyticsConfigs?.[ANALYTICS_PLATFORM.facebookAds.key] || {};
 
   const [fbAccountConfigs, setFbAccountConfigs] = useState<Record<string, any>[]>([{}]);
@@ -121,21 +121,23 @@ const FacebookAds = (props: FacebookAdsPropsTypes): JSX.Element => {
   useEffect(() => {
     const isAccountConfigsAvailable = !!analyticsAccounts?.length;
 
-    setFbEventConfigs(events);
+    if (Array.isArray(events) && events.length === 0) {
+      setFbEventConfigs(FB_DEFAULT_EVENTS);
+    } else {
+      setFbEventConfigs(events);
+    }
+
     setShowPreviewMode(!!(events && Object.keys(events)?.length && isAccountConfigsAvailable));
   }, [events]);
 
-  const setIntegrationMethod = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setFbAccountConfigs(updateIntegrationMethod(e, fbAccountConfigs));
+  const setIntegrationMethod = (val: string): void => {
+    setFbAccountConfigs(updateIntegrationMethod(val, fbAccountConfigs));
     setShowPreviewMode(false);
   };
 
   const deleteAccountConfig = (id: string): void => {
-    deleteConfig(id)
+    deleteConfig(id, ANALYTICS_PLATFORM.facebookAds.key)
       .then(() => {
-        setFbAccountConfigs(
-          deleteAccountConfigUtil(id, fbAccountConfigs, ANALYTICS_PLATFORM.facebookAds.key),
-        );
         showNotification({
           type: 'success',
           message: NOTIFICATION_TEXTS.success.deleteAccount,
@@ -176,9 +178,9 @@ const FacebookAds = (props: FacebookAdsPropsTypes): JSX.Element => {
   const handleSavingAccountCreds = (creds: Record<string, string>): void => {
     const newConfig = fbAccountConfigs[fbAccountConfigs.length - 1];
     const params = {
-      analytics_platform: ANALYTICS_PLATFORM.facebookAds.key,
-      analytics_platform_user_id: creds?.pixelId,
-      api_secret: window?.btoa(creds?.accessToken),
+      platform: ANALYTICS_PLATFORM.facebookAds.key,
+      platform_user_id: creds?.pixelId,
+      access_token: window?.btoa(creds?.accessToken),
       integration_method: newConfig.integrationMethod ?? INTEGRATION_TYPE.backend,
     };
     addConfigs(params)
@@ -236,6 +238,7 @@ const FacebookAds = (props: FacebookAdsPropsTypes): JSX.Element => {
     pointsHeader,
     demoVideoLink: videoLink,
     onSavingAccountCreds: handleSavingAccountCreds,
+    setIntegrationMethod,
   };
   return (
     <>

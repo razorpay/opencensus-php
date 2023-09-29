@@ -38,7 +38,7 @@ export const TableBody = styled.div`
 
 export const StyledInput = styled(Input.Select)`
   margin: 0;
-  width: 56%;
+  width: 64%;
   height: 36px;
   color: #000;
 

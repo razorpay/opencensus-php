@@ -69,7 +69,7 @@ const InputContainer = (props: InputContainerPropsType): JSX.Element => {
   const handleIntegrationPlatformSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === integrationMethod) return;
 
-    setIntegrationMethod(e);
+    setIntegrationMethod(e.target.value);
 
     //case user chooses to integrate account with backend or both (backend + frontend) ask for creds
     if (e.target.value === INTEGRATION_TYPE.backend || e.target.value === INTEGRATION_TYPE.both) {
@@ -86,7 +86,10 @@ const InputContainer = (props: InputContainerPropsType): JSX.Element => {
   };
 
   useEffect(() => {
-    const hasAuthId = oAuthAccountConfigs && !!Object.keys(oAuthAccountConfigs).length;
+    const hasAuthId =
+      oAuthAccountConfigs &&
+      !!Object.keys(oAuthAccountConfigs).length &&
+      oAuthAccountConfigs[0]?.id;
 
     if (tableHeader === ANALYTICS_PLATFORM.googleAds.label && !hasAuthId) {
       setIsIntegrationMethodHidden(true);
@@ -98,18 +101,15 @@ const InputContainer = (props: InputContainerPropsType): JSX.Element => {
   const handleOauthLogin = () => {
     fetchOauthId()
       .then((response: Record<string, any>) => {
-        const {
-          headers: { magic_oauth_csrf, x_merchant_id },
-        } = response.data;
+        const { magic_analytics_oauth_csrf, redirect_url } = response.data;
 
         const now = new Date();
         const minutes = 60; // session will expire in 60 mins.
         now.setTime(now.getTime() + minutes * 60 * 1000);
 
-        setCookie('magic_oauth_csrf', magic_oauth_csrf, now, '/');
-        setCookie('x_merchant_id', x_merchant_id, now, '/');
+        setCookie('magic_analytics_oauth_csrf', magic_analytics_oauth_csrf, now, '/');
 
-        window.location.href = response.data.redirect_url;
+        window.location.href = redirect_url;
       })
       .catch(() => {
         showNotification({
@@ -156,7 +156,7 @@ const InputContainer = (props: InputContainerPropsType): JSX.Element => {
         )}
         {integrationMethod !== INTEGRATION_TYPE.backend ? (
           <InfoTextContainer>
-            <Text size="small">{INTEGRATION_INFO_TEXT}</Text>
+            <Text size="small">{INTEGRATION_INFO_TEXT[tableHeader]}</Text>
           </InfoTextContainer>
         ) : null}
       </TableBody>

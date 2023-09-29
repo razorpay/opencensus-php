@@ -3,10 +3,12 @@ import styled from 'styled-components';
 
 import InputContainer from 'merchant/views/MagicCheckout/AnalyticsSettings/common/InputContainer';
 import InfoPointsContainer from 'merchant/views/MagicCheckout/AnalyticsSettings/common/InfoPointsContainer';
+import GoogleAccount from 'merchant/views/MagicCheckout/AnalyticsSettings/common/GoogleAccount';
 
 import { ContainerContentPropsType } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
 
 import { ContentWrapper } from 'merchant/views/MagicCheckout/AnalyticsSettings/styledComponents/common';
+import { ANALYTICS_PLATFORM } from 'merchant/views/MagicCheckout/AnalyticsSettings/constants';
 
 const AnalyticsAccountWrapper = styled.div`
   display: flex;
@@ -29,6 +31,12 @@ const ContainerContent = (props: ContainerContentPropsType): JSX.Element => {
   return (
     <ContentWrapper>
       <AnalyticsAccountWrapper>
+        {tableHeader === ANALYTICS_PLATFORM.googleAds.label && oAuthAccountConfigs?.length ? (
+          <GoogleAccount
+            oAuthAccountConfigs={oAuthAccountConfigs}
+            merchantAnalyticsConfigs={merchantAnalyticsConfigs}
+          />
+        ) : null}
         {merchantAnalyticsConfigs?.map((accountConfig: Record<string, any>) => (
           <InputContainer
             tableHeader={tableHeader}
