@@ -145,18 +145,20 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
         loading={isLoading}
         hasMoreData={data?.has_more ?? true}
       />
-      <Modal
-        isOpen={isDetailView}
-        closeTimeoutMS={300}
-        className="ModalSlider__Content"
-        contentLabel="SliderModal"
-        ariaHideApp={false}
-      >
-        <button type="button" className="close close-primary" onClick={history.goBack}>
-          <i className="i i-close" />
-        </button>
-        <AccountDetail />
-      </Modal>
+      {isDetailView && (
+        <Modal
+          isOpen={isDetailView}
+          closeTimeoutMS={300}
+          className="ModalSlider__Content"
+          contentLabel="SliderModal"
+          ariaHideApp={false}
+        >
+          <button type="button" className="close close-primary" onClick={history.goBack}>
+            <i className="i i-close" />
+          </button>
+          <AccountDetail />
+        </Modal>
+      )}
     </div>
   ) : (
     <AccountDetail />
