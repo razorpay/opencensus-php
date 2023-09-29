@@ -1593,7 +1593,12 @@ class Core extends Base\Core
         {
             $existingComputedSettings = $entity->getComputedSettings()->toArray();
         }
-
+    
+        $this->trace->info(TraceCode::PAYMENT_LINK_UPDATE_PAYMENT_CAPTURE_DEBUG, [
+            'count'                            => $count,
+            'existing_captured_payments_count' => array_get($existingComputedSettings, Entity::CAPTURED_PAYMENTS_COUNT, 0)
+        ]);
+        
         $existingComputedSettings[Entity::CAPTURED_PAYMENTS_COUNT] = $count;
 
         $entity->getComputedSettingsAccessor()->upsert($existingComputedSettings)->save();
