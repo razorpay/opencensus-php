@@ -1367,6 +1367,13 @@ class UserRolesScope
             '1cc_process_prepay_cod_orders'                       => Role::ALL_ROLES,
             'wallet_dashboard_proxy'                             => Role::ALL_ROLES,
             '1cc_wooc_ingestion_plugins_post'                    => Role::ALL_ROLES,
+
+            '1cc_save_analytics_integration_event_configs'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_save_analytics_integration_accounts'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_fetch_analytics_integration_configs'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_delete_analytics_integration_accounts'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_analytics_integration_get_oauth_redirect_url'            => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_analytics_integration_handle_oauth_callback'             => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
         ];
 
         /*

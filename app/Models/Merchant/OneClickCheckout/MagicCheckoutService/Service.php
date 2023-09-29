@@ -35,7 +35,12 @@ class Service extends Base\Service
   public function handleMerchantDashboardReq(array $input): array
   {
       $path = $this->transformPath($input['path']);
-      return $this->app['magic_checkout_service_client']->sendRequest($path, $input['body'], $input['method']);
+      $headers = [];
+      if (empty($input['header']) === false)
+      {
+          $headers = $input['header'];
+      }
+      return $this->app['magic_checkout_service_client']->sendRequest($path, $input['body'], $input['method'], $headers);
   }
 
   // transformPath is used to map an endpoint in monolith to Magic Checkout svc.

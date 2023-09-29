@@ -4470,7 +4470,12 @@ class Route
         '1cc_fetch_dashboard_analytics'             => ['get',        '1cc/analytics',                                        'OneClickCheckoutController@handleMerchantDashboardReq'                ],
         '1cc_shopify_fetch_liquid_files'            => ['get',        '1cc/admin/merchants/{id}/shopify/theme/liquid_files',                  'OneClickCheckoutController@handleAdminDashboardThemeAutomationReq'                ],
         '1cc_shopify_update_liquid_files'           => ['put',        '1cc/admin/merchants/{id}/shopify/theme/liquid_files',                  'OneClickCheckoutController@handleAdminDashboardThemeAutomationReq'                ],
-
+        '1cc_save_analytics_integration_event_configs'          => ['post',       '1cc/analytics_integration/event_configs',                                   'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_save_analytics_integration_accounts'               => ['post',       '1cc/analytics_integration/accounts',                                        'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_fetch_analytics_integration_configs'               => ['get',        '1cc/analytics_integration/configs',                                         'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_delete_analytics_integration_accounts'             => ['delete',     '1cc/analytics_integration/accounts/{id}',                                   'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_analytics_integration_get_oauth_redirect_url'      => ['post',       '1cc/analytics_integration/oauth/redirect_url',                              'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_analytics_integration_handle_oauth_callback'       => ['get',        '1cc/analytics_integration/oauth/callback/{provider}',                       'OneClickCheckoutController@handleMerchantDashboardReq'           ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -7391,6 +7396,15 @@ class Route
         '1cc_coupon_engine_sync_platform_coupons',
         '1cc_coupon_engine_get_sync_platform_coupons_status',
         '1cc_search_product_collections',
+
+        // Merchant Analytics onboarding routes
+        '1cc_save_analytics_integration_event_configs',
+        '1cc_save_analytics_integration_accounts',
+        '1cc_fetch_analytics_integration_configs',
+        '1cc_delete_analytics_integration_accounts',
+        '1cc_analytics_integration_get_oauth_redirect_url',
+        '1cc_analytics_integration_handle_oauth_callback',
+
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -12773,6 +12787,14 @@ class Route
 
             'growth_get_public_asset_details',
 
+            '1cc_save_analytics_integration_event_configs',
+            '1cc_save_analytics_integration_accounts',
+            '1cc_fetch_analytics_integration_configs',
+            '1cc_delete_analytics_integration_accounts',
+            '1cc_analytics_integration_get_oauth_redirect_url',
+            '1cc_analytics_integration_handle_oauth_callback',
+
+
             //CAC
             'cac_privileges_fetch',
             'cac_role_fetch_all',
@@ -15253,6 +15275,13 @@ class Route
 
             '1cc_shopify_fetch_liquid_files',
             '1cc_shopify_update_liquid_files',
+
+            '1cc_save_analytics_integration_event_configs',
+            '1cc_save_analytics_integration_accounts',
+            '1cc_fetch_analytics_integration_configs',
+            '1cc_delete_analytics_integration_accounts',
+            '1cc_analytics_integration_get_oauth_redirect_url',
+            '1cc_analytics_integration_handle_oauth_callback',
 
             // Terminal downtimes
             'manual_downtime_fetch',

@@ -346,4 +346,114 @@ class Analytics extends Base\Core
     {
         return self::MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY . $rzpOrderId;
     }
+
+    public function sendPurchaseEventToMagicCheckoutService(bool $fromShopify, array $shopifyOrder, array $rzpOrder): void
+    {
+        $payload = $this->createPurchaseEventPayload($fromShopify, $shopifyOrder, $rzpOrder);
+
+        $path = 'v1/analytics/events/internal';
+
+        $this->app['magic_checkout_service_client']->sendRequest($path, $payload, 'POST');
+    }
+
+    protected function createPurchaseEventPayload(bool $fromShopify, array $shopifyOrder, array $rzpOrder): array
+    {
+        $eventData = $this->getEventData($shopifyOrder['order']);
+        $merchantId = $this->merchant->getId();
+        $customer = $this->getCustomerData($rzpOrder);
+        $orderData = $this->getOrderData($shopifyOrder['order'], $rzpOrder);
+
+        $shopifyCheckoutId = '';
+        if (isset($rzpOrder[Constants::NOTES]))
+        {
+            $shopifyCheckoutId = $rzpOrder[Constants::NOTES][Constants::STOREFRONT_ID] ?? '';
+        }
+
+        return [
+            Constants::EVENT_TRIGGER_METHOD => $fromShopify === true ? 'api' : 'sqs',
+            Constants::EVENT_TRIGGER_SOURCE => 'api',
+            Constants::CHECKOUT_ID          => $shopifyCheckoutId,
+            Constants::MERCHANT_ID          => $merchantId,
+            Constants::ORDER_ID             => $rzpOrder[Constants::ID],
+            Constants::EVENT                => $eventData,
+            Constants::CUSTOMER             => $customer,
+            Constants::ORDER                => $orderData,
+        ];
+    }
+
+    protected function getEventData(array $shopifyOrder): array
+    {
+        return [
+            Constants::EVENT_NAME           => Constants::PURCHASE,
+            Constants::EVENT_ID             => $shopifyOrder[Constants::NAME],
+            Constants::TIME                 => (int)round(microtime(true) * 1000),
+            Constants::EVENT_PAGE_TITLE     => Constants::PURCHASE,
+            Constants::EVENT_CATEGORY       => Constants::PURCHASE,
+        ];
+    }
+
+    protected function getOrderData(array $shopifyOrder, array $rzpOrder): array
+    {
+        $lineItems = $this->fetchLineItems($shopifyOrder);
+        $couponCode = '';
+        if(isset($rzpOrder[Constants::PROMOTIONS]) && sizeof($rzpOrder[Constants::PROMOTIONS]) > 0 && isset($rzpOrder[Constants::PROMOTIONS][0]['code']))
+        {
+            $couponCode = stringify($rzpOrder[Constants::PROMOTIONS][0]['code']);
+        }
+
+        return [
+            Constants::PLATFORM_ORDER_NAME => $shopifyOrder[Constants::SHOPIFY_ORDER_NAME],
+            Constants::PLATFORM_ORDER_ID   => $shopifyOrder[Constants::ID],
+            Constants::TOTAL_PRICE         => (int)((float)$shopifyOrder[Constants::TOTAL_PRICE] * 100),
+            Constants::TOTAL_TAX           => (int)((float)$shopifyOrder[Constants::TOTAL_TAX] * 100),
+            Constants::CURRENCY            => $shopifyOrder[Constants::CURRENCY],
+            Constants::COUPON_CODE         => $couponCode,
+            Constants::LINE_ITEMS          => $lineItems,
+        ];
+    }
+
+    protected function getCustomerData(array $rzpOrder): array
+    {
+        $customerInfo = [];
+        if (empty($rzpOrder['customer_details']) === true)
+        {
+            return $customerInfo;
+        }
+        $customerDetails = $rzpOrder['customer_details'];
+
+        $customerInfo[Constants::EMAIL] = $customerDetails[Constants::EMAIL] ?? '';
+        $customerInfo[Constants::PHONE] = $customerDetails[Constants::CONTACT] ?? '';
+        if (empty($customerDetails[Constants::SHIPPING_ADDRESS]) === false)
+        {
+            $customerInfo[Constants::CITY]    = $customerDetails[Constants::SHIPPING_ADDRESS][Constants::CITY] ?? '';
+            $customerInfo[Constants::ZIPCODE] = $customerDetails[Constants::SHIPPING_ADDRESS][Constants::ZIPCODE] ?? '';
+            $customerInfo[Constants::COUNTRY] = $customerDetails[Constants::SHIPPING_ADDRESS][Constants::COUNTRY] ?? '';
+        }
+        return $customerInfo;
+    }
+
+    protected function fetchLineItems(array $shopifyOrder): array
+    {
+        $lineItems = [];
+        if (empty($shopifyOrder['line_items']) === true)
+        {
+            return [];
+        }
+
+        foreach($shopifyOrder['line_items'] as $key => $item)
+        {
+            // price is stored as paise in rzp order
+            // product & variant IDs are string
+            $lineItems[] = [
+                Constants::VARIANT_ID   => $item[Constants::VARIANT_ID],
+                Constants::PRODUCT_ID   => $item[Constants::PRODUCT_ID],
+                Constants::SKU          => $item[Constants::SKU],
+                Constants::PRICE        => (int)((float)$item[Constants::PRICE] * 100),
+                Constants::PRODUCT_NAME => $item[Constants::TITLE],
+                Constants::VARIANT_NAME => $item[Constants::VARIANT_TITLE],
+                Constants::QUANTITY     => $item[Constants::QUANTITY],
+            ];
+        }
+        return $lineItems;
+    }
 }

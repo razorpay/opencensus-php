@@ -790,6 +790,22 @@ class Service extends Base\Service
             $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
         }
 
+        try
+        {
+            $analytics->sendPurchaseEventToMagicCheckoutService($fromShopifyApi, $shopifyOrder, $orderArray);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED,
+                []
+            );
+
+            $this->trace->count(TraceCode::MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED, ['error' => $e->getMessage()]);
+        }
+
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
         if (empty($shopifyOrder['order']['tax_lines']) === false)

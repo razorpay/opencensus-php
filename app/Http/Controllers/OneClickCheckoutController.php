@@ -374,6 +374,7 @@ class OneClickCheckoutController extends Controller
           'method' => Request::getMethod(),
           'body'   => Request::all(),
           'path'   => Request::path(),
+          'header' => $this->fetchMerchantDashboardHeaders(),
         ];
         $resp = (new MagicCheckoutService\Service)->handleMerchantDashboardReq($input);
         return ApiResponse::json($resp, 200);
@@ -389,5 +390,49 @@ class OneClickCheckoutController extends Controller
         ];
         $resp = (new MagicCheckoutService\Service)->handleAdminDashboardThemeAutomationReq($input);
         return ApiResponse::json($resp, 200);
+    }
+
+    /*
+     * Use this function to fetch any headers from merchant dashbaord
+     * and pass onto magic checkout service.
+     * */
+    protected function fetchMerchantDashboardHeaders(): array
+    {
+        $headers = Request::header();
+
+        $headersArr = $this->fetchCookiesFromHeaders($headers);
+
+        return $headersArr;
+    }
+
+    protected function fetchCookiesFromHeaders($headers): array
+    {
+        if (empty($headers['cookie']) === true || count($headers['cookie']) === 0)
+        {
+            return [];
+        }
+
+        $parsedCookies = array();
+
+        foreach ($headers['cookie'] as $cookie)
+        {
+            $items = explode('; ', $cookie);
+            foreach($items as $item)
+            {
+                // a delimiter of 2 has been added to parse the header key and value only.
+                // It might be the case the value also contains =, thus we need to avoid exploding that part of value
+                [$key, $val] = explode('=', $item, 2);
+                $parsedCookies[$key] = $val;
+            }
+        }
+
+        $cookies = [];
+
+        if (!empty($parsedCookies['magic_analytics_oauth_csrf']))
+        {
+            $cookies = ['magic_analytics_oauth_csrf' => $parsedCookies['magic_analytics_oauth_csrf']];
+        }
+
+        return $cookies;
     }
 }

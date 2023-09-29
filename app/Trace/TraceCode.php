@@ -10450,6 +10450,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_WRITE_REQUEST_ROUTER_RESULT                        = 'ASV_WRITE_REQUEST_ROUTER_RESULT';
     const ASV_IMPLICIT_JOIN_ROUTER_RESULT                        = 'ASV_IMPLICIT_JOIN_ROUTER_RESULT';
 
+    const MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED           = 'MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
