@@ -38,7 +38,7 @@ class MerchantWebsite
             MerchantWebsiteEntity::UPDATED_AT => $this->proto->getUpdatedAt(),
         ];
         $merchantWebsiteEntity = new MerchantWebsiteEntity();
-        $merchantWebsiteEntity->setRawAttributes($merchantWebsiteRawAttributes);
+        $merchantWebsiteEntity->setRawAttributes($merchantWebsiteRawAttributes, true);
         $merchantWebsiteEntity->exists = true;
         return $merchantWebsiteEntity;
     }

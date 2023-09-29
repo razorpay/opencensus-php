@@ -97,7 +97,7 @@ class Merchant
         ];
 
         $merchantEntity = new MerchantEntity();
-        $merchantEntity->setRawAttributes($merchantRawAttributes);
+        $merchantEntity->setRawAttributes($merchantRawAttributes, true);
         $merchantEntity->exists = true;
         return $merchantEntity;
     }

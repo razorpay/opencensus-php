@@ -41,7 +41,7 @@ class Address
         ];
 
         $addressEntity = new AddressEntity();
-        $addressEntity->setRawAttributes($addressRawAttributes);
+        $addressEntity->setRawAttributes($addressRawAttributes, true);
         $addressEntity->exists = true;
         return $addressEntity;
     }

@@ -36,7 +36,7 @@ class MerchantDocument
             MerchantDocumentEntity::DELETED_AT => $this->proto->getDeletedAtUnwrapped(),
         ];
         $merchantDocumentEntity = new MerchantDocumentEntity();
-        $merchantDocumentEntity->setRawAttributes($merchantDocumentRawAttributes);
+        $merchantDocumentEntity->setRawAttributes($merchantDocumentRawAttributes, true);
         $merchantDocumentEntity->exists = true;
         return $merchantDocumentEntity;
     }

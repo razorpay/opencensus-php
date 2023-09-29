@@ -45,7 +45,7 @@ class Stakeholder
         ];
 
         $stakeholderEntity = new StakeholderEntity();
-        $stakeholderEntity->setRawAttributes($stakeholderRawAttributes);
+        $stakeholderEntity->setRawAttributes($stakeholderRawAttributes, true);
         $stakeholderEntity->exists = true;
         return $stakeholderEntity;
     }

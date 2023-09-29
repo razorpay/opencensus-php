@@ -38,7 +38,7 @@ class BusinessDetail
         ];
 
         $merchantBusinessDetailEntity = new MerchantBusinessDetailEntity();
-        $merchantBusinessDetailEntity->setRawAttributes($merchantBusinessDetailRawAttributes);
+        $merchantBusinessDetailEntity->setRawAttributes($merchantBusinessDetailRawAttributes, true);
         $merchantBusinessDetailEntity->exists = true;
         return $merchantBusinessDetailEntity;
     }

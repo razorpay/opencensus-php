@@ -30,7 +30,7 @@ class MerchantEmail
         ];
 
         $merchantEmailEntity = new MerchantEmailEntity();
-        $merchantEmailEntity->setRawAttributes($merchantEmailRawAttributes);
+        $merchantEmailEntity->setRawAttributes($merchantEmailRawAttributes, true);
         $merchantEmailEntity->exists = true;
         return $merchantEmailEntity;
     }
