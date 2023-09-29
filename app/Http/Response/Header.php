@@ -25,7 +25,4 @@ class Header
     const X_EDGE_ROUTE_DETAILS          = 'X-Edge-Route-Details';
     // Used to pass the product for filtering out logs on developer-console
     const X_DC_PRODUCT_NAME             = 'X-DC-Product-Name';
-    const X_CONTENT_TYPE_OPTIONS        = 'X-Content-Type-Options';
-    const CONTENT_SECURITY_POLICY       = 'Content-Security-Policy';
-    const X_XSS_PROTECTION              = 'X-XSS-Protection header';
 }
