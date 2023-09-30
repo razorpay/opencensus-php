@@ -74,7 +74,9 @@ class NavFragment extends Component {
 
   componentDidMount() {
     const { fetchExclusiveOffer } = this.props;
-    fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
+    if (this.props.user?.current) {
+      fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
+    }
     if (this.props.user.isFtuxEnabled) {
       this.shouldShowFtuxModal();
     }

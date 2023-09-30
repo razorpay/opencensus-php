@@ -54,6 +54,9 @@ export default class GrowthService extends GenericEntity {
   };
 
   fetchAssetData = (channel_id, assetName, dynamicAssets, channelDetail) => {
+    if (!this.user?.current) {
+      return null;
+    }
     return this.makeGenericAjaxCall({
       data: {
         merchant_id: this.user?.current,
