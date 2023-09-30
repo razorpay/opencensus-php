@@ -521,11 +521,11 @@ class Service extends Base\Service
                 "success" => $successIds];
         }
 
-        if (isset($input['payments_arr']) === true and
+        if (isset($input['payments_balance_arr']) === true and
             isset($input['only_balance_update']) === true and
             $input['only_balance_update'] === true)
         {
-            $paymentsArrString = $input['payments_arr'];
+            $paymentsArrString = $input['payments_balance_arr'];
 
             $paymentsArr = explode(',', $paymentsArrString);
 

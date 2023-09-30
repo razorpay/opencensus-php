@@ -1058,7 +1058,7 @@ trait Capture
     }
 
 
-    protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
+    public function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
     {
         try
         {
