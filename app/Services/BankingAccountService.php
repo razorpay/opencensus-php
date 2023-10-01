@@ -41,24 +41,29 @@ class BankingAccountService
     const CHECK_SERVICEABILITY                      = 'check_serviceability';
     const DOWNLOAD_DOCKET_PDF_PATH                  = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
     const PARTNER_LMS_RBL_APPLICATIONS              = 'partner_lms/rbl/applications';
+    const CREATE_BUSINESS                           = 'business';
+    const CREATE_RBL_ONBOARDING_APPLICATION         = 'business/%s/apply';
+    const SEARCH_LEADS_PATH                         = 'admin/leads/search';
+    const BULK_ASSIGN_ACCOUNT_MANAGER               = 'admin/banking_accounts/bulk_assign_account_manager';
+    const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
+
+    // The below routes support merchant id (dummy value '_' if not present in context), 
+    // in place of business/:business_id
+    // The check for this is done at the resource verification layer
+    const COMPOSITE_APPLICATION                     = 'business/%s/composite-applications/%s';
+    const COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER = 'business/%s/composite-applications-by-reference-number/%s';
+    const GET_APPLICATION_COMMENTS                  = 'admin/business/%s/application/%s/comments';
+    const CREATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comment';
+    const UPDATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comments/%s';
+    const ACTIVATE_RBL_ACCOUNT                      = 'admin/business/%s/applications/%s/activate_account';
+    const GET_APPLICATION_STATUS_LOGS               = 'admin/business/%s/application/%s/application_status_logs?sort_order=desc';
     const PARTNER_LMS_RBL_ASSIGN_BANK_POC           = 'partner_lms/rbl/business/%s/application/%s/assign_poc';
     const PARTNER_LMS_RBL_ACTIVITY                  = 'partner_lms/rbl/business/%s/application/%s/activity';
     const PARTNER_LMS_RBL_GET_COMMENTS              = 'partner_lms/rbl/business/%s/application/%s/comments';
     const PARTNER_LMS_RBL_ADD_COMMENT               = 'partner_lms/rbl/business/%s/application/%s/comment';
     const PARTNER_LMS_RBL_COMPOSITE_APPLICATION     = 'partner_lms/rbl/business/%s/composite-applications/%s';
-    const CREATE_BUSINESS                           = 'business';
-    const CREATE_RBL_ONBOARDING_APPLICATION         = 'business/%s/apply';
-    const COMPOSITE_APPLICATION                     = 'business/%s/composite-applications/%s';
-    const SEARCH_LEADS_PATH                         = 'admin/leads/search';
-    const GET_APPLICATION_STATUS_LOGS               = 'admin/business/%s/application/%s/application_status_logs?sort_order=desc';
-    const GET_APPLICATION_COMMENTS                  = 'admin/business/%s/application/%s/comments';
-    const CREATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comment';
-    const UPDATE_APPLICATION_COMMENT                = 'admin/business/%s/application/%s/comments/%s';
-    const BULK_ASSIGN_ACCOUNT_MANAGER               = 'admin/banking_accounts/bulk_assign_account_manager';
-    const ACTIVATE_RBL_ACCOUNT                      = 'admin/business/%s/applications/%s/activate_account';
-    const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
-    const COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER = 'business/%s/composite-applications-by-reference-number/%s';
 
+    // These are new routes which are created to replace old routes used by payouts service and merchant dashboard
     const GET_BANKING_ACCOUNT_CREDENTIALS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER = 'merchant/%s/banking_account_by_account_number/%s/credentials';
     const COMPOSITE_APPLICATION_WITH_MERCHANT_ID_AND_ACCOUNT_NUMBER         = 'merchant/%s/composite-banking-accounts/%s';
     const GET_BANKING_ACCOUNT_DETAILS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER     = 'merchant/%s/banking_account_by_account_number/%s';
@@ -90,13 +95,15 @@ class BankingAccountService
     }
 
     /**
-     * Fetches account details from banking-account-service
+     * Fetches account details from banking-account-service for all balances of the given merchant
+     * and returns an array containing activated accounts
+     * and was used earlier, but now it's used only in the test
      *
      * @param string $merchantId
      *
      * @return array
      */
-    public function fetchAccountDetails(string $merchantId): array
+    public function fetchMultipleActivatedAccountDetails(string $merchantId): array
     {
         $repo = new BalanceRepo();
 
@@ -104,7 +111,6 @@ class BankingAccountService
          * NOTE: __multi_ca__ Optimization
          * Fetch all activated banking accounts from BAS using merchant ID
          */
-
         $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
         // filtering balances here to avoid RBL CAs present on API from being included in BAS call
@@ -124,22 +130,18 @@ class BankingAccountService
             return [];
         }
 
-        $this->isBusinessExists($merchantId);
-        $account = [];
+        $this->isBusinessExists($merchantId); // leaving this validation as at least 1 bas_business_id should exist
+        $accounts = [];
         foreach ($filteredBalances as $balance)
         {
-            /**
-             * TODO: __multi_ca__ Return multiple activated accounts
-             * and handle the callers for this function appropriately
-             */
             $account = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $balance->getAccountNumber(), $balance->getChannel());
             if ($account[Constants::STATUS] === "ACTIVE")
             {
-                return $account;
+                array_push($accounts, $account);
             }
         }
 
-        return $account;
+        return $accounts;
     }
 
     /**
@@ -727,19 +729,30 @@ class BankingAccountService
         }
     }
 
+    /**
+     * fetchActivatedDirectAccountsFromBas returns in-memory generated banking accounts residing in banking account service
+     * 
+     * Currently used only in Merchant/Entity.php for the lack of a better functions
+     * Other functions directly call `fetchMultipleActivatedAccountDetails` and handle generating the banking account entity and merging into other banking accounts
+     * 
+     * TODO: Clean this bit in all caller functions of `fetchActivatedDirectAccountsFromBas` and `fetchMultipleActivatedAccountDetails`
+     */
     public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();
 
-        // TODO: Handle multiple CAs
-        $bankingAccount = $this->fetchAccountDetails($merchantId);
+        $bankingAccounts = [];
 
-        if (empty($bankingAccount) === false)
+        $basBankingAccounts = $this->fetchMultipleActivatedAccountDetails($merchantId);
+
+        foreach ($basBankingAccounts as $basBankingAccount)
         {
-            $bankingAccount = (new Core())->generateInMemoryBankingAccount($merchantId, $bankingAccount);
+            $bankingAccount = (new Core())->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+
+            array_push($bankingAccounts, $bankingAccount);
         }
 
-        return $bankingAccount;
+        return $bankingAccounts;
     }
 
     public function fetchRblApplicationsForPartnerLms(array $input)
@@ -791,9 +804,9 @@ class BankingAccountService
         }
     }
 
-    public function getRblCompositeApplication(string $businessId, string $applicationId)
+    public function getRblCompositeApplication(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationId);
+        $path = sprintf(self::COMPOSITE_APPLICATION, $merchantId, $applicationId);
 
         try
         {
@@ -823,18 +836,9 @@ class BankingAccountService
      *
      * @throws \Throwable
      */
-    public function patchRBLApplicationComposite(string $applicationId, array $input, string $merchantId = null)
+    public function patchRBLApplicationComposite(string $applicationId, array $input, string $merchantId = '_')
     {
-        $businessId = '_';
-
-        if (empty($merchantId) == false)
-        {
-            // Business ID is guaranteed to exist,
-            // this will throw error if business ID does not exist in merchant details
-            $businessId = $this->getBusinessId($merchantId);
-        }
-
-        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationId);
+        $path = sprintf(self::COMPOSITE_APPLICATION, $merchantId, $applicationId);
 
         try
         {
@@ -864,10 +868,9 @@ class BankingAccountService
      *
      * @throws \Throwable
      */
-    public function patchRBLApplicationCompositeByReferenceNumber(string $referenceNumber, array $input)
+    public function patchRBLApplicationCompositeByReferenceNumber(string $referenceNumber, array $input, string $merchantId = '_')
     {
-
-        $path = sprintf(self::COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER, '_', $referenceNumber);
+        $path = sprintf(self::COMPOSITE_APPLICATION_BY_REFERENCE_NUMBER, $merchantId, $referenceNumber);
 
         try
         {
@@ -966,9 +969,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function getApplicationStatusLogs(string $businessId, string $applicationId, array $queryParams = [])
+    public function getApplicationStatusLogs(string $merchantId = '_', string $applicationId, array $queryParams = [])
     {
-        $path = sprintf(self::GET_APPLICATION_STATUS_LOGS, $businessId, $applicationId);
+        $path = sprintf(self::GET_APPLICATION_STATUS_LOGS, $merchantId, $applicationId);
 
         try
         {
@@ -992,9 +995,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function getApplicationComments(string $businessId, string $applicationId)
+    public function getApplicationComments(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::GET_APPLICATION_COMMENTS, $businessId, $applicationId);
+        $path = sprintf(self::GET_APPLICATION_COMMENTS, $merchantId, $applicationId);
 
         try
         {
@@ -1018,9 +1021,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function addApplicationComment(string $businessId, string $applicationId, array $input)
+    public function addApplicationComment(string $merchantId = '_', string $applicationId, array $input)
     {
-        $path = sprintf(self::CREATE_APPLICATION_COMMENT, $businessId, $applicationId);
+        $path = sprintf(self::CREATE_APPLICATION_COMMENT, $merchantId, $applicationId);
 
         try
         {
@@ -1045,9 +1048,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function updateApplicationComment(string $businessId, string $applicationId, string $commentId, array $input)
+    public function updateApplicationComment(string $merchantId = '_', string $applicationId, string $commentId, array $input)
     {
-        $path = sprintf(self::UPDATE_APPLICATION_COMMENT, $businessId, $applicationId, $commentId);
+        $path = sprintf(self::UPDATE_APPLICATION_COMMENT, $merchantId, $applicationId, $commentId);
 
         try
         {
@@ -1126,9 +1129,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function activateRblAccount(string $businessId, string $applicationId)
+    public function activateRblAccount(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::ACTIVATE_RBL_ACCOUNT, $businessId, $applicationId);
+        $path = sprintf(self::ACTIVATE_RBL_ACCOUNT, $merchantId, $applicationId);
 
         try
         {
@@ -1152,9 +1155,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function getApplicationForRblPartnerLms(string $businessId, string $applicationId)
+    public function getApplicationForRblPartnerLms(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::PARTNER_LMS_RBL_COMPOSITE_APPLICATION, $businessId, $applicationId);
+        $path = sprintf(self::PARTNER_LMS_RBL_COMPOSITE_APPLICATION, $merchantId, $applicationId);
 
         try
         {
@@ -1178,9 +1181,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function assignBankPocForRblPartnerLms(string $businessId, string $applicationId, array $input)
+    public function assignBankPocForRblPartnerLms(string $merchantId = '_', string $applicationId, array $input)
     {
-        $path = sprintf(self::PARTNER_LMS_RBL_ASSIGN_BANK_POC, $businessId, $applicationId);
+        $path = sprintf(self::PARTNER_LMS_RBL_ASSIGN_BANK_POC, $merchantId, $applicationId);
 
         try
         {
@@ -1205,9 +1208,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function getActivityForRblPartnerLms(string $businessId, string $applicationId)
+    public function getActivityForRblPartnerLms(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::PARTNER_LMS_RBL_ACTIVITY, $businessId, $applicationId);
+        $path = sprintf(self::PARTNER_LMS_RBL_ACTIVITY, $merchantId, $applicationId);
 
         try
         {
@@ -1231,9 +1234,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function getCommentsForRblPartnerLms(string $businessId, string $applicationId)
+    public function getCommentsForRblPartnerLms(string $merchantId = '_', string $applicationId)
     {
-        $path = sprintf(self::PARTNER_LMS_RBL_GET_COMMENTS, $businessId, $applicationId);
+        $path = sprintf(self::PARTNER_LMS_RBL_GET_COMMENTS, $merchantId, $applicationId);
 
         try
         {
@@ -1257,9 +1260,9 @@ class BankingAccountService
     /**
      * @throws \Throwable
      */
-    public function addCommentForRblPartnerLms(string $businessId, string $applicationId, array $input)
+    public function addCommentForRblPartnerLms(string $merchantId = '_', string $applicationId, array $input)
     {
-        $path = sprintf(self::PARTNER_LMS_RBL_ADD_COMMENT, $businessId, $applicationId);
+        $path = sprintf(self::PARTNER_LMS_RBL_ADD_COMMENT, $merchantId, $applicationId);
 
         try
         {

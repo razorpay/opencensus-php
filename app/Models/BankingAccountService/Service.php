@@ -368,10 +368,9 @@ class Service extends Base\Service
         //To avoid login issue for the merchant if external call to banking_account_service fails.
         try
         {
-            // TODO: Handle multiple CAs
-            $bas = $this->bankingAccountService->fetchAccountDetails($merchantId);
+            $bankingAccountsFromBas = $this->bankingAccountService->fetchMultipleActivatedAccountDetails($merchantId);
 
-            $bankingAccounts = $this->core()->attachBasBankingAccount($merchantId, $bas, $bankingAccounts);
+            $bankingAccounts = $this->core()->attachBasBankingAccount($merchantId, $bankingAccountsFromBas, $bankingAccounts);
         }
         catch (\Throwable $e)
         {
@@ -476,14 +475,16 @@ class Service extends Base\Service
         //To avoid login issue for the merchant if external call to banking_account_service fails.
         try
         {
-            // TODO: Handle multiple CAs
-            $bas = $this->bankingAccountService->fetchAccountDetails($merchantId);
+            $basBankingAccounts = $this->bankingAccountService->fetchMultipleActivatedAccountDetails($merchantId);
 
-            if (empty($bas) === false)
+            if (empty($basBankingAccounts) === false)
             {
-                $result = $this->core()->attachBankingAccountWithBalance($merchantId, $bas);
+                $bankingAccountsFromBas = $this->core()->attachBankingAccountWithBalance($merchantId, $basBankingAccounts);
 
-                $bankingAccounts[] = $result;
+                foreach ($bankingAccountsFromBas as $basBankingAccount) 
+                {
+                    $bankingAccounts[] = $basBankingAccount;
+                }
             }
         }
         catch (\Throwable $e)
@@ -1254,9 +1255,7 @@ class Service extends Base\Service
             'basInput' => $basInputTrace,
         ]);
 
-        $merchantId = $this->getRequestMerchantId();
-
-        $response = $this->bankingAccountService->patchRBLApplicationComposite($applicationId, $basInput, $merchantId);
+        $response = $this->bankingAccountService->patchRBLApplicationComposite($applicationId, $basInput, $this->getMerchantIdOrPlaceholder());
 
         // convert to API structure and return
         $data = $this->basDtoAdapter->fromBasResponseToApiResponse($response);
@@ -1287,7 +1286,7 @@ class Service extends Base\Service
             'basInput'  => $basInput,
         ]);
 
-        $response = $this->bankingAccountService->patchRBLApplicationCompositeByReferenceNumber($applicationIdOrReferenceNumber, $basInput);
+        $response = $this->bankingAccountService->patchRBLApplicationCompositeByReferenceNumber($applicationIdOrReferenceNumber, $basInput, $this->getMerchantIdOrPlaceholder());
 
         // convert to API structure and return
         $data = (new BasDtoAdapter())->fromBasResponseToApiResponse($response);
@@ -1423,9 +1422,7 @@ class Service extends Base\Service
     {
         $bankingAccountId = $this->removeBankingAccountIdPrefix($bankingAccountId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
-        return $this->bankingAccountService->getRblCompositeApplication($businessId, $bankingAccountId);
+        return $this->bankingAccountService->getRblCompositeApplication($this->getMerchantIdOrPlaceholder(), $bankingAccountId);
     }
 
     /**
@@ -1449,14 +1446,12 @@ class Service extends Base\Service
     {
         $bankingAccountId = $this->removeBankingAccountIdPrefix($bankingAccountId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
         // Default sort order is desc in BAS, changing to asc for RBL LMS
         $queryParams = [
             'sort_order' => 'asc',
         ];
 
-        $response = $this->bankingAccountService->getApplicationStatusLogs($businessId, $bankingAccountId, $queryParams);
+        $response = $this->bankingAccountService->getApplicationStatusLogs($this->getMerchantIdOrPlaceholder(), $bankingAccountId, $queryParams);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiStatusChangeLogsResponseBulk($response);
@@ -1472,9 +1467,7 @@ class Service extends Base\Service
     {
         $bankingAccountId = $this->removeBankingAccountIdPrefix($bankingAccountId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
-        $response = $this->bankingAccountService->getApplicationComments($businessId, $bankingAccountId);
+        $response = $this->bankingAccountService->getApplicationComments($this->getMerchantIdOrPlaceholder(), $bankingAccountId);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiCommentResponseBulk($response);
@@ -1491,11 +1484,9 @@ class Service extends Base\Service
     {
         $bankingAccountId = $this->removeBankingAccountIdPrefix($bankingAccountId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
         $basInput = $this->basDtoAdapter->toBasCommentCreateRequest($input);
 
-        $response = $this->bankingAccountService->addApplicationComment($businessId, $bankingAccountId, $basInput);
+        $response = $this->bankingAccountService->addApplicationComment($this->getMerchantIdOrPlaceholder(), $bankingAccountId, $basInput);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiCommentResponse($response);
@@ -1512,11 +1503,9 @@ class Service extends Base\Service
     {
         $bankingAccountId = $this->removeBankingAccountIdPrefix($bankingAccountId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
         $basInput = $this->basDtoAdapter->toBasCommentUpdateRequest($input);
 
-        $response = $this->bankingAccountService->updateApplicationComment($businessId, $bankingAccountId, $commentId, $basInput);
+        $response = $this->bankingAccountService->updateApplicationComment($this->getMerchantIdOrPlaceholder(), $bankingAccountId, $commentId, $basInput);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiCommentResponse($response);
@@ -1559,9 +1548,7 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
-        $response = $this->bankingAccountService->activateRblAccount($businessId, $applicationId);
+        $response = $this->bankingAccountService->activateRblAccount($this->getMerchantIdOrPlaceholder(), $applicationId);
 
         // convert to API structure and return
         return $this->basDtoAdapter->fromBasResponseToApiResponse($response);
@@ -1591,9 +1578,7 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
-        $basResponse = $this->bankingAccountService->getApplicationForRblPartnerLms($businessId, $applicationId);
+        $basResponse = $this->bankingAccountService->getApplicationForRblPartnerLms($this->getMerchantIdOrPlaceholder(), $applicationId);
 
         // convert to API structure and return
         $apiResponse = $this->basDtoAdapter->fromBasResponseToApiResponseForPartnerLms($basResponse);
@@ -1611,11 +1596,9 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
         $basInput = $this->basDtoAdapter->toBasAssignBankPocRequest($bankPocUserId);
 
-        $response = $this->bankingAccountService->assignBankPocForRblPartnerLms($businessId, $applicationId, $basInput);
+        $response = $this->bankingAccountService->assignBankPocForRblPartnerLms($this->getMerchantIdOrPlaceholder(), $applicationId, $basInput);
 
         // convert to API structure and return
         return $this->basDtoAdapter->fromBasResponseToApiResponse($response);
@@ -1631,9 +1614,7 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
-
-        $response = $this->bankingAccountService->getActivityForRblPartnerLms($businessId, $applicationId);
+        $response = $this->bankingAccountService->getActivityForRblPartnerLms($this->getMerchantIdOrPlaceholder(), $applicationId);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiPartnerLmsActivityResponse($response, $input);
@@ -1649,9 +1630,9 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
+        $merchantId = $this->getMerchantIdOrPlaceholder();
 
-        $response = $this->bankingAccountService->getCommentsForRblPartnerLms($businessId, $applicationId);
+        $response = $this->bankingAccountService->getCommentsForRblPartnerLms($this->getMerchantIdOrPlaceholder(), $applicationId);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiCommentResponseBulk($response);
@@ -1665,16 +1646,28 @@ class Service extends Base\Service
     {
         $applicationId = $this->removeBankingAccountIdPrefix($applicationId);
 
-        $businessId = $this->getBusinessIdForRblOnBas();
+        $merchantId = $this->getMerchantIdOrPlaceholder();
 
         $basInput = $this->basDtoAdapter->toBasPartnerLmsCommentCreateRequest($input);
 
         $this->appendBankPocUserDetails($basInput);
 
-        $response = $this->bankingAccountService->addCommentForRblPartnerLms($businessId, $applicationId, $basInput);
+        $response = $this->bankingAccountService->addCommentForRblPartnerLms($this->getMerchantIdOrPlaceholder(), $applicationId, $basInput);
 
         // convert to API structure and return
         return $this->basDtoAdapter->toApiCommentResponse($response);
+    }
+
+    public function getMerchantIdOrPlaceholder(): string
+    {
+        $merchantId = $this->getRequestMerchantId();
+
+        if (empty($merchantId) === true)
+        {
+            $merchantId = '_';
+        }
+
+        return $merchantId;
     }
 
     public function getBusinessIdForRblOnBas(): string

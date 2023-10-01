@@ -29,13 +29,12 @@ use RZP\Models\BankingAccountService\Constants;
 use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
+use RZP\Services\BankingAccountService as BasService;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -630,10 +629,11 @@ class BankingAccountServiceTest extends TestCase
         //overwriting the balance entity to match conditions required to call mocked bas method.
         $this->fixtures->edit('balance', '10000000000000',
                               [
-                                  'balance'      => 1000,
-                                  'type'         => 'banking',
-                                  'account_type' => 'direct',
-                                  'channel'      => 'icici',
+                                  'balance'         => 1000,
+                                  'type'            => 'banking',
+                                  'account_number'  => '401509080396',
+                                  'account_type'    => 'direct',
+                                  'channel'         => 'icici',
                               ]);
 
         $this->startTest();
@@ -1953,7 +1953,7 @@ class BankingAccountServiceTest extends TestCase
             'balance_id'            => $balance->getId(),
         ]);
 
-        $response = (new \RZP\Services\BankingAccountService($this->app))->fetchAccountDetails($merchant->getId());
+        $response = (new \RZP\Services\BankingAccountService($this->app))->fetchMultipleActivatedAccountDetails($merchant->getId());
 
         $this->assertEmpty($response);
     }
@@ -1962,14 +1962,14 @@ class BankingAccountServiceTest extends TestCase
     {
         $merchant = $this->fixtures->create('merchant');
 
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+        $this->fixtures->create('merchant_detail', [
             'activation_status' => 'activated',
             'merchant_id'       => $merchant->getId(),
             'business_type'     => '2',
             'bas_business_id'   => 'GvZfe7jTGCWNKO',
         ]);
 
-        $balance = $this->fixtures->create('balance',
+        $this->fixtures->create('balance',
         [
             'merchant_id'       => $merchant->getId(),
             'type'              => 'banking',
@@ -1979,6 +1979,7 @@ class BankingAccountServiceTest extends TestCase
             'channel'           => 'rbl',
         ]);
 
+        /** @var BasService $basMock */
         $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $basMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails')->andReturns([
@@ -1989,16 +1990,16 @@ class BankingAccountServiceTest extends TestCase
             'partner_bank'                => 'rbl'
         ]);
 
-        $this->app->instance('banking_account_service', $basMock);
+        $response = $basMock->fetchMultipleActivatedAccountDetails($merchant->getId());
 
-        $response = $basMock->fetchAccountDetails($merchant->getId());
-
-        $this->assertEquals([
-            'id'                          => 'GvZfe7jTGCWNTO',
-            'account_number'              => '2224440041626905',
-            'status'                      => 'ACTIVE',
-            'account_type'                => 'current',
-            'partner_bank'                => 'rbl'
+        $this->assertArraySelectiveEquals([
+            [
+                'id'                          => 'GvZfe7jTGCWNTO',
+                'account_number'              => '2224440041626905',
+                'status'                      => 'ACTIVE',
+                'account_type'                => 'current',
+                'partner_bank'                => 'rbl'
+            ]
         ], $response);
     }
 

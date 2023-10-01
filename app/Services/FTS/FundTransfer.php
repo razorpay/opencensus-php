@@ -359,9 +359,6 @@ class FundTransfer extends Base
 
         if ($balance !== null)
         {
-            /**
-             * NOTE: __multi_ca__ Check whether switch mechanism to be implemented here
-             */
             $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
             $onboardingTime = optional($bankingAcc)->getCreatedAt();
             $bankingAccID = optional($bankingAcc)->getId();

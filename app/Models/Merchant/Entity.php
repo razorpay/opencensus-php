@@ -57,6 +57,7 @@ use RZP\Models\Partner\Activation as PartnerActivation;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Models\Payment\Processor as PaymentProcessor;
+use RZP\Services\BankingAccountService;
 
 /**
  * @property Org\Entity               $org
@@ -2038,12 +2039,15 @@ class Entity extends Base\PublicEntity
                                ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED)
                                ->get();
 
-        // Some CAs (ICICI, Axis, Yes Bank, RBL Migration) exist at banking account service.
-        $basAccount = app('banking_account_service')->fetchActivatedDirectAccountsFromBas($this);
+        /** @var BankingAccountService $bankingAccountService */                               
+        $bankingAccountService = app('banking_account_service');
 
-        if(empty($basAccount) === false)
+        // Some CAs (ICICI, Axis, Yes Bank, RBL Migration) exist at banking account service.
+        $bankingAccounts = $bankingAccountService->fetchActivatedDirectAccountsFromBas($this);
+
+        foreach ($bankingAccounts as $bankingAccount)
         {
-            $activeAccounts->add($basAccount);
+            $activeAccounts->add($bankingAccount);
         }
 
         return $activeAccounts;

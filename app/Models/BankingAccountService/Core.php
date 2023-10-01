@@ -196,29 +196,39 @@ class Core extends Base\Core
      *
      * @return
      */
-    public function attachBasBankingAccount($merchantId, $basBankingAccount, $bankingAccounts)
+    public function attachBasBankingAccount($merchantId, array $basBankingAccounts, $bankingAccounts)
     {
-        if (empty($basBankingAccount) === true)
+        if (empty($basBankingAccounts) === true)
         {
             return $bankingAccounts;
         }
 
-        $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+        foreach ($basBankingAccounts as $basBankingAccount)
+        {
+            $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
 
-        $bankingAccounts->add($ba);
+            $bankingAccounts->add($ba);
+        }
 
         return $bankingAccounts;
     }
 
-    public function attachBankingAccountWithBalance($merchantId, $basBankingAccount)
+    public function attachBankingAccountWithBalance($merchantId, array $basBankingAccounts)
     {
-        $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+        $bankingAccounts = [];
 
-        $bankingAccountArray = $ba->toArrayPublic();
+        foreach ($basBankingAccounts as $basBankingAccount)
+        {
+            $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
 
-        $bankingAccountArray['banking_balance'] = optional($ba->balance)->toArrayPublic();
+            $bankingAccountArray = $ba->toArrayPublic();
 
-        return $bankingAccountArray;
+            $bankingAccountArray['banking_balance'] = optional($ba->balance)->toArrayPublic();
+
+            array_push($bankingAccounts, $bankingAccountArray);
+        }
+
+        return $bankingAccounts;
     }
 
     public function generateInMemoryBankingAccount($merchantId, $basBankingAccount)
@@ -432,17 +442,11 @@ class Core extends Base\Core
             /** @var BasService|BasServiceMock $bankingAccountService */
             $bankingAccountService = $this->app['banking_account_service'];
 
-            // TODO: Handle multiple CAs
-            $bankingAccount = $bankingAccountService->fetchAccountDetails($merchantId);
+            $bankingAccounts = $bankingAccountService->fetchMultipleActivatedAccountDetails($merchantId);
 
-            if (empty($bankingAccount) === false)
+            if (count($bankingAccounts) > 0)
             {
-                $status = $bankingAccount[Constants::STATUS];
-
-                if ($status === 'ACTIVE')
-                {
-                    $status = 'activated';
-                }
+                $status = 'activated';
             }
         }
         catch (\Throwable $e)

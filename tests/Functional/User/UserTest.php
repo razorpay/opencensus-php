@@ -80,6 +80,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
+use RZP\Tests\Functional\Helpers\BankingAccount\BankingAccountTrait;
 use function GuzzleHttp\json_decode;
 
 class UserTest extends TestCase
@@ -90,6 +91,7 @@ class UserTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
     use TestsStorkServiceRequests;
+    use BankingAccountTrait;
 
     protected $coreMock;
 
@@ -8604,6 +8606,22 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testMultiCaGetUserWithMultipleCaOnBas()
+    {
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->disableRazorXTreatmentCAC();
+
+        $this->setUpBalancesForBasBankingAccounts();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
     }
 
     public function testGetForUsersWithBankingAccountForCAHavingGatewayBalance()

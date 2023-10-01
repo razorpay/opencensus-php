@@ -335,7 +335,7 @@ return [
                                     'name' => 'test_contact'
                                 ]
                             ],
-                            'banking_account_id' => 'bacc_30000000000888',
+                            'banking_account_id' => 'bacc_LVFoXUXt8aLGAb',
                         ]
                     ]
                 ]

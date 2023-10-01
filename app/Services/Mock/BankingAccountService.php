@@ -9,11 +9,14 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway\Axis;
 use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\BankingAccount\Gateway\Yesbank;
-use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
+use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\BankingAccountService\Channel as BASChannel;
+use RZP\Models\BankingAccountService\Core as BASCore;
 
 class BankingAccountService
 {
@@ -22,29 +25,6 @@ class BankingAccountService
     public function __construct($app)
     {
         $this->app = $app;
-    }
-
-    public function fetchAccountDetails(string $merchantId)
-    {
-        return
-            [
-                'id'                          => 'GvZfe7jTGCWNTO',
-                'associated_account_managers' => null,
-                'owner_id'                    => 'GvZfe7jTGCWNTO',
-                'owner_type'                  => 'BUSINESS',
-                'account_number'              => '2224440041626905',
-                'status'                      => 'ACTIVE',
-                'account_type'                => '',
-                'partner_bank'                => '',
-                'balance_id'                  => '',
-                'account_currency'            => '',
-                'ifsc'                        => '',
-                'urn'                         => '',
-                'alias_id'                    => '',
-                'preference'                  => null,
-                'metadata'                    => null,
-                'fts_fund_account_id'         => 'GvZfe7jTGCWNTO',
-            ];
     }
 
     public function getBusinessDetails($merchantId)
@@ -192,7 +172,13 @@ class BankingAccountService
 
     public function fetchBankingAccountId(string $balanceId)
     {
-        return 'bacc_' . '30000000000888';
+        $balanceRepo = new BalanceRepo();
+
+        $balance = $balanceRepo->findOrFailById($balanceId);
+
+        $bankingAccount = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($balance->getMerchantId(), $balance->account_number, $balance->channel);
+
+        return 'bacc_' . $bankingAccount['id'];
     }
 
     public function sendRequestAndProcessResponse($path, $method, $content, $headers = [])
@@ -407,20 +393,20 @@ class BankingAccountService
                     ]
                 ]
             ];
-//            Adding negative case for future reference
-//            'data' => [
-//                'status' => 'Failure',
-//                'bookingDetails' => [
-//                    'bookingId'        => '',
-//                    'bookingStartTime' => '',
-//                    'bookingEndTime'   => '',
-//                    'assignedStaffName'=> '',
-//                    'merchantEmail'    => '',
-//                ],
-//                'ErrorDetail' => [
-//                    'errorReason'   => 'Invalid booking time'
-//                ]
-//            ]
+            // Adding negative case for future reference
+            // 'data' => [
+            //     'status' => 'Failure',
+            //     'bookingDetails' => [
+            //        'bookingId'        => '',
+            //        'bookingStartTime' => '',
+            //        'bookingEndTime'   => '',
+            //        'assignedStaffName'=> '',
+            //        'merchantEmail'    => '',
+            //     ],
+            //     'ErrorDetail' => [
+            //         'errorReason'   => 'Invalid booking time'
+            //     ]
+            // ]
         }
 
         else if($path == 'booking/slot/availableSlots' and $method == 'GET')
@@ -522,34 +508,114 @@ class BankingAccountService
 
     public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
-        $iciciBalance = $merchant->directBankingBalances()
-                                 ->where('channel', '=', BASChannel::getDirectTypeChannels())
-                                 ->first();
+        $merchantId = $merchant->getMerchantId();
 
-        $ba = null;
+        $bankingAccounts = [];
 
-        if(empty($iciciBalance) === false)
+        $basBankingAccounts = $this->fetchMultipleActivatedAccountDetails($merchantId);
+
+        foreach ($basBankingAccounts as $basBankingAccount)
         {
-            $ba = new Entity();
+            $bankingAccount = (new BASCore())->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
 
-            $input = [
-                'channel'        => 'icici',
-                'account_type'   => 'direct',
-                'account_number' => $iciciBalance->getAccountNumber(),
-            ];
-
-            $ba->build($input);
-
-            $ba->setId('30000000000888');
-
-            $ba->setBasCaStatus('activated');
-
-            $ba->merchant()->associate($merchant);
-
-            $ba->balance()->associate($iciciBalance);
+            array_push($bankingAccounts, $bankingAccount);
         }
 
-        return $ba;
+        return $bankingAccounts;
+    }
+
+    public function fetchMultipleActivatedAccountDetails(string $merchantId)
+    {
+        $balanceRepo = new BalanceRepo();
+
+        $balances = $balanceRepo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, BASChannel::getDirectTypeChannels(), AccountType::DIRECT);
+
+        $bankingAccounts = [];
+
+        foreach ($balances as $balance)
+        {
+            // $balance->bankingAccount would be empty for CAs stored in BAS
+            if (empty($balance->bankingAccount) === true)
+            {
+                $bankingAccounts[] = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($balance->getMerchantId(), $balance->account_number, $balance->channel);
+            }
+        }
+
+        return $bankingAccounts;
+    }
+
+    // defined as it is defined in service - this calls BAS service and returns response
+    protected function fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails(string $merchantId, string $accountNumber, string $channel): array
+    {
+        switch ($channel)
+        {
+            case 'rbl':
+                return $this->getRblBankingAccountResponse([
+                    'account_number'        => $accountNumber,
+                ]);
+
+            default:
+                return $this->getBankingAccountResponse([
+                    'account_number'        => $accountNumber,
+                    'partner_bank'          => $channel,
+                ]);
+        }
+    }
+
+    private function getBankingAccountResponse(array $attributes = []): array
+    {
+        return array_merge([
+            'id'                    => 'LVFoXUXt8aLGAb',
+            'business_id'           => 'LVFoXUXt8aLGRt',
+            'fts_fund_account_id'   => 'LVFoXUXt8aLGRt',
+            'beneficiary_name'      => 'Jane Doe',
+            // 'balance_id'            => 'LVFoXUXt8aLGRr', // will be set from merchant Id, account number and channel
+            'ifsc'                  => 'ICIC0000001',
+            'partner_bank'          => 'ICICI',
+            'account_number'        => '401509080396',
+            'account_currency'      => 'INR',
+            'status'                => 'ACTIVE',
+            'bank_status'           => 'ACCOUNT_OPENED',
+        ], $attributes);
+    }
+
+    private function getRblBankingAccountResponse(array $attributes): array
+    {
+        return array_merge([
+            // rbl account
+            'id'                        => 'LVFoXUXt8aLGAa',
+            'business_id'               => 'LVFoXUXt8aLGQt',
+            'fts_fund_account_id'       => 'LVFoXUXt8aLGQt',
+            'balance_id'                => 'LVFoXUXt8aLGQr',
+            'ifsc'                      => 'RATN0000281',
+            'account_number'            => '401509080395',
+            'account_currency'          => 'INR',
+            'status'                    => 'ACTIVE',
+            'partner_bank'              => 'RBL',
+            'account_type'              => 'direct',
+            'bank_status'               => 'ACCOUNT_OPENED',
+            'application_number'        => '11001',
+            'application_tracking_id'   => '11001',
+            'beneficiary_email'         => 'abc@example.com',
+            'beneficiary_mobile'        => '9898989898',
+            'beneficiary_city'          => 'Delhi',
+            'beneficiary_state'         => 'Delhi',
+            'beneficiary_country'       => 'India',
+            'beneficiary_address1'      => '',
+            'beneficiary_address2'      => '',
+            'beneficiary_address3'      => '',
+            'beneficiary_name'          => 'John Doe',
+            'beneficiary_pin'           => '110001',
+            'pincode'                   => '110001',
+            'sub_status'                => 'upi_creds_pending',
+            'auth_username'             => 'auth_username',
+            'auth_password'             => 'auth_password',
+            'corp_id'                   => 'RAZORPAY12345',
+            'metadata'                  => [
+                'account_open_date'         => 1678873350,
+                'bank_account_open_date'    => 1678873350,
+            ]
+        ], $attributes);
     }
 
     public function getBankingAccountApplicationResponse($count = 10)
@@ -1115,7 +1181,7 @@ class BankingAccountService
         return $response['data'][0];
     }
 
-    public function activateRblAccount(string $businessId, string $applicationId)
+    public function activateRblAccount(string $merchantId = '_', string $applicationId)
     {
         $response = $this->getBankingAccountApplicationResponse(1);
 
@@ -1158,7 +1224,7 @@ class BankingAccountService
         ];
     }
 
-    public function getRblCompositeApplication(string $id): array
+    public function getRblCompositeApplication(string $merchantId = '_', string $bankingAccountId): array
     {
         $response = $this->getBankingAccountApplicationResponse(1);
 
@@ -1170,7 +1236,7 @@ class BankingAccountService
         return '';
     }
 
-    public function patchRBLApplicationComposite(string $applicationIdOrReferenceNumber, array $input)
+    public function patchRBLApplicationComposite(string $applicationIdOrReferenceNumber, array $input, string $merchant = '_')
     {
         $dummyDetails = [
             'business' => [

@@ -65,6 +65,7 @@ use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
+use RZP\Tests\Functional\Helpers\BankingAccount\BankingAccountTrait;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
@@ -84,6 +85,7 @@ class BankingAccountTest extends TestCase
     use CreateLegalDocumentsTrait;
     use MocksSplitz;
     use FeeRecoveryTrait;
+    use BankingAccountTrait;
 
     const DefaultMerchantId = '10000000000000';
 
@@ -145,8 +147,6 @@ class BankingAccountTest extends TestCase
 
     protected function setupBankPartnerMerchant()
     {
-
-
         $this->fixtures->merchant->edit(self::DefaultPartnerMerchantId, ['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
 
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER, 'merchant_id' => self::DefaultPartnerMerchantId]);
@@ -6529,7 +6529,7 @@ class BankingAccountTest extends TestCase
 
         $ba1 = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
+            'account_type'          => 'nodal',
             'merchant_id'           => '10000000000000',
             'channel'               => 'yesbank',
             'status'                => 'created',
@@ -6550,15 +6550,7 @@ class BankingAccountTest extends TestCase
             'balance_id'     => $xBalance2->getId(),
         ]);
 
-        $this->fixtures->create('balance',
-                                [
-                                    'merchant_id'    => '10000000000000',
-                                    'type'           => 'banking',
-                                    'account_type'   => 'direct',
-                                    'account_number' => '567890362718193',
-                                    'balance'        => 20000,
-                                    'channel'        => 'icici',
-                                ]);
+        $this->addBalanceAndStatementDetailsForIciciCa();
 
         $this->ba->proxyAuth();
 
@@ -6595,7 +6587,7 @@ class BankingAccountTest extends TestCase
 
         $ba1 = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
+            'account_type'          => 'nodal',
             'merchant_id'           => '10000000000000',
             'channel'               => 'yesbank',
             'status'                => 'created',
@@ -6616,15 +6608,7 @@ class BankingAccountTest extends TestCase
             'balance_id'     => $xBalance2->getId(),
         ]);
 
-        $this->fixtures->create('balance',
-            [
-                'merchant_id'    => '10000000000000',
-                'type'           => 'banking',
-                'account_type'   => 'direct',
-                'account_number' => '567890362718193',
-                'balance'        => 20000,
-                'channel'        => 'icici',
-            ]);
+        $this->addBalanceAndStatementDetailsForIciciCa();
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
@@ -6661,7 +6645,7 @@ class BankingAccountTest extends TestCase
 
         $ba1 = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
+            'account_type'          => 'nodal',
             'merchant_id'           => '10000000000000',
             'channel'               => 'yesbank',
             'status'                => 'activated',
@@ -6682,15 +6666,7 @@ class BankingAccountTest extends TestCase
             'balance_id'     => $xBalance2->getId(),
         ]);
 
-        $this->fixtures->create('balance',
-            [
-                'merchant_id'    => '10000000000000',
-                'type'           => 'banking',
-                'account_type'   => 'direct',
-                'account_number' => '567890362718193',
-                'balance'        => 20000,
-                'channel'        => 'icici',
-            ]);
+        $this->addBalanceAndStatementDetailsForIciciCa();
 
         $this->ba->privateAuth();
 
@@ -6701,6 +6677,33 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->assertNull($bankingAccount);
+    }
+
+    private function addBalanceAndStatementDetailsForIciciCa()
+    {
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'account_type'   => 'direct',
+                'account_number' => '567890362718193',
+                'balance'        => 20000,
+                'channel'        => 'icici',
+            ]);
+
+        $this->fixtures->create('banking_account_statement_details',
+            [
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '567890362718193',
+                'channel'           => 'icici',
+                'account_type'      => 'direct',
+                'status'            => 'active',
+                'balance_id'        => $balance['id'],
+                'gateway_balance'   => 0,
+            ]);
+
+        return $balance;
     }
 
     public function testBankingAccountFetchOnAppleWatchOAuth()
@@ -13979,4 +13982,12 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testMultiCaFetchBankingAccountsProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->setUpBalancesForBasBankingAccounts();
+
+        $this->startTest();
+    }
 }

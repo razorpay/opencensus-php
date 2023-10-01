@@ -3136,7 +3136,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 3,
                 'items'  => [
                     [
                         'account_number'    => '2224440041626905',
@@ -3151,6 +3151,15 @@ return [
                         'status'            => 'created',
                         'balance'           => [
                             'balance'       => 100000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                    [
+                        'account_number'    => '567890362718193',
+                        'status'            => 'activated',
+                        'channel'           => 'icici',
+                        'balance'           => [
+                            'balance'       => 0,
                             'currency'      => 'INR',
                         ]
                     ],
@@ -3170,7 +3179,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 3,
                 'items'  => [
                     [
                         'account_number'    => '2224440041626905',
@@ -3185,6 +3194,15 @@ return [
                         'status'            => 'created',
                         'balance'           => [
                             'balance'       => 100000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                    [
+                        'account_number'    => '567890362718193',
+                        'status'            => 'activated',
+                        'channel'           => 'icici',
+                        'balance'           => [
+                            'balance'       => 0,
                             'currency'      => 'INR',
                         ]
                     ],
@@ -3204,10 +3222,14 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 2,
                 'items'  => [
                     [
                         'account_number'    => 'XXXXXXXXXXXX6905',
+                        'status'            => 'activated',
+                    ],
+                    [
+                        'account_number'    => 'XXXXXXXXXXX8193',
                         'status'            => 'activated',
                     ],
                 ],
@@ -6006,5 +6028,22 @@ return [
                 ],
             ],
         ]
-    ]
+    ],
+
+    'testMultiCaFetchBankingAccountsProxyAuth' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [],
+            ],
+        ],
+    ],
 ];

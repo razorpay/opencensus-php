@@ -5401,6 +5401,66 @@ return [
         ],
     ],
 
+    'testMultiCaGetUserWithMultipleCaOnBas' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'            => false,
+                        'ca_activation_status' => 'activated',
+                        'accounts'             => [
+                            [
+                                'channel'         => 'icici',
+                                'status'          => 'activated',
+                                'account_number'  => '401509080396',
+                                'account_type'    => 'current',
+                                'balance'         => [
+                                    'balance' => 0,
+                                ],
+                                'banking_balance' => [
+                                    'account_number' => '401509080396',
+                                    'balance'        => 0,
+                                    'type'           => 'banking',
+                                    'channel'        => 'icici',
+                                ]
+                            ],
+                            [
+                                'channel'         => 'rbl',
+                                'status'          => 'activated',
+                                'account_number'  => '401509080397',
+                                'account_type'    => 'current',
+                                'balance'         => [
+                                    'balance' => 0,
+                                ],
+                                'banking_balance' => [
+                                    'account_number' => '401509080397',
+                                    'balance'        => 0,
+                                    'type'           => 'banking',
+                                    'channel'        => 'rbl',
+                                ]
+                            ]
+                        ],
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
     'testGetForUsersWithBankingAccountForCAHavingGatewayBalance' => [
         'request'  => [
             'url'     => '/users/30000000000000',
