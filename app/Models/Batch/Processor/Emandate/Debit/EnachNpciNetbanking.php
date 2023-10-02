@@ -94,4 +94,9 @@ class EnachNpciNetbanking extends Base
     {
         return true;
     }
+    
+    protected function shouldBlockOrResetToken()
+    {
+        return true;
+    }
 }

@@ -101,4 +101,9 @@ class EnachRbl extends Base
 
         return $result;
     }
+    
+    protected function shouldBlockOrResetToken()
+    {
+        return true;
+    }
 }

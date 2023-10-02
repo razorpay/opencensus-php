@@ -1407,6 +1407,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DCS_CONFIG_FETCH_ERROR                       = 'EMANDATE_DCS_CONFIG_FETCH_ERROR';
     const EMANDATE_TOKEN_BLOCK_ERROR                            = 'EMANDATE_TOKEN_BLOCK_ERROR';
     const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
+    const EMANDATE_TOKEN_BLOCK_FLOW                             = 'EMANDATE_TOKEN_BLOCK_FLOW';
     const EMANDATE_FETCH_MERCHANT_CONFIG                        = 'EMANDATE_FETCH_MERCHANT_CONFIG';
     const EMANDATE_CONFIG_SET_DETAILS                           = 'EMANDATE_CONFIG_SET_DETAILS';
     const EMANDATE_PAYMENT_CREATED_MONTH                        = 'EMANDATE_PAYMENT_CREATED_MONTH';
@@ -1418,7 +1419,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
-
+    const EMANDATE_RAZORX_NR_VARIANT                            = 'EMANDATE_RAZORX_NR_VARIANT';
+    const EMANDATE_RAZORX_ACH_VARIANT                           = 'EMANDATE_RAZORX_ACH_VARIANT';
+    
     const EMANDATE_CONFIG_CREATE_REQUEST                        = 'EMANDATE_CONFIG_CREATE_REQUEST';
     const EMANDATE_CONFIG_CREATE_ERROR                          = 'EMANDATE_CONFIG_CREATE_ERROR';
 

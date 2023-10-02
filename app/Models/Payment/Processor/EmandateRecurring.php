@@ -303,20 +303,96 @@ trait EmandateRecurring
         return null;
     }
     
-    public function updateEmandateToken(Entity $payment, $nrErrorCode)
+    public function resetEmandateTokenDetails(Entity $payment)
     {
-        $this->trace->info(
-            TraceCode::EMANDATE_PAYMENT_UPDATE_TOKEN,
-            [
-                'payment_id'      => $payment->getId(),
-                'token_id'        => $payment->getTokenId(),
-                'nr_error_code'   => $nrErrorCode,
-                "merchant_id"     => $payment->getMerchantId()
+        $token = $payment->getGlobalOrLocalTokenEntity();
+    
+        $configs = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
+    
+        if($configs !== null or empty($configs) === false)
+        {
+            $this->trace->info(TraceCode::EMANDATE_TOKEN_CONFIG_RESET, [
+                "step" => "payment_processing"
             ]);
     
-        
+            $token->setNotes([]);
+    
+            $this->repo->saveOrFail($token);
+        }
+    }
+    
+    public function achReturnProcessingFlow(Entity $payment, $errorCode)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_TOKEN_BLOCK_FLOW,
+                [
+                    "payment_id"    => $payment->getId(),
+                    "token_id"      => $payment->getTokenId(),
+                    "error"         => $errorCode,
+                    "merchant_id"   => $payment->getMerchantId(),
+                    "step"          => EmandateConstants::ACH_RETURNS_FLOW
+                ]);
+
+            // if payment created and response received are different months we ignore them
+            if ($this->isCurrentMonth($payment) === false)
+            {
+                return [];
+            }
+    
+            $token = $payment->getGlobalOrLocalTokenEntity();
+            
+            $emandateConfigs = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
+    
+            $retriesAttempted = (int)$emandateConfigs[Token\Constants::RETRY_ATTEMPTS] ?? 0;
+            
+            $previousFlow = $emandateConfigs[Token\Constants::TOKEN_FLOW] ?? "";
+            
+            if ($previousFlow !== EmandateConstants::ACH_RETURNS_FLOW)
+            {
+                $retriesAttempted = 0;
+            }
+    
+            $updatedConfigs = [
+                EmandateConstants::COOLDOWN_PERIOD      => $this->calculateBlockPeriod(EmandateConstants::EMANDATE_DEBIT_COOLDOWN),
+                EmandateConstants::RETRY_ATTEMPTS       => $retriesAttempted + 1,
+                Token\Constants::LAST_UPDATED_MONTH     => $this->getCurrentMonthIST(),
+                Token\Constants::LAST_UPDATED_ON        => Carbon::now(Timezone::IST)->toDateTimeString(),
+                Token\Constants::GATEWAY_ERROR          => $errorCode,
+                Token\Constants::EMANDATE_TOKEN_STATUS  => Token\Constants::BLOCKED_TEMPORARILY,
+                Token\Constants::TOKEN_FLOW             => EmandateConstants::ACH_RETURNS_FLOW
+            ];
+    
+            (new Token\Core)->updateEmandateTokenDetails($token, $updatedConfigs);
+    
+            $this->repo->saveOrFail($token);
+    
+            $this->trace->info(TraceCode::EMANDATE_CONFIG_SET_DETAILS, [
+                "present_configs" => $updatedConfigs,
+                "previous_configs" => $emandateConfigs
+            ]);
+    
+            if ($updatedConfigs[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
+            {
+                    $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments.";
+            }
+            
+            return [];
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_NR_TOKEN_UPDATE_ERROR, [
+                "merchant_id" => $payment->getMerchantId(),
+                "payment_id"  => $payment->getId()
+            ]);
+        }
+    }
+    
+    public function isCurrentMonth($payment)
+    {
         $paymentCreatedMonth = $this->getCurrentMonthIST($payment->getCreatedAt());
-        
+    
         $currentMonth = $this->getCurrentMonthIST();
     
         // if payment created and response received are different months we ignore them
@@ -331,7 +407,28 @@ trait EmandateRecurring
                     'payment_id'            => $payment->getId(),
                     "merchant_id"           => $payment->getMerchantId()
                 ]);
+        
+            return false;
+        }
+        
+        return true;
+    }
     
+    public function nrProcessingFlow(Entity $payment, $nrErrorCode)
+    {
+        $this->trace->info(
+            TraceCode::EMANDATE_PAYMENT_UPDATE_TOKEN,
+            [
+                "payment_id"      => $payment->getId(),
+                "token_id"        => $payment->getTokenId(),
+                "nr_error_code"   => $nrErrorCode,
+                "merchant_id"     => $payment->getMerchantId(),
+                "step"            => EmandateConstants::NR_FLOW
+            ]);
+    
+        // if payment created and response received are different months we ignore them
+        if ($this->isCurrentMonth($payment) === false)
+        {
             return [];
         }
         
@@ -368,7 +465,7 @@ trait EmandateRecurring
             return [];
         }
     
-        (new Token\Core)->updateTokenForEmandateRecurringDetails($token, $emandateConfig);
+        (new Token\Core)->updateEmandateTokenDetails($token, $emandateConfig);
         
         $this->repo->saveOrFail($token);
         
@@ -401,6 +498,16 @@ trait EmandateRecurring
     
         $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
     
+        $previousFlow = $emandateConfig[Token\Constants::TOKEN_FLOW] ?? "";
+    
+        // if previously ach flow is present need to reset values
+        if ($previousFlow != EmandateConstants::NR_FLOW)
+        {
+            $retriesAttempted = 0;
+    
+            $emandateTokenStatus = null;
+        }
+    
         // Case 1: already token blocked or temp config is not enabled, no need to go to flow
         if($tempErrorEnableFlag === false or $emandateTokenStatus !== null)
         {
@@ -408,6 +515,7 @@ trait EmandateRecurring
         }
     
         //Incase if error is not temporary and config exists, we are removing emandate configs
+        // Need to do this if we got different error in between
         if($temporaryErrorCode === null)
         {
             if($emandateConfig !== null or empty($emandateConfig) === false)
@@ -448,7 +556,8 @@ trait EmandateRecurring
                     Token\Constants::RETRY_ATTEMPTS                 => 1,
                     Token\Constants::LAST_UPDATED_MONTH             => $currentMonth,
                     Token\Constants::LAST_UPDATED_ON                => $lastUpdatedDate,
-                    Token\Constants::GATEWAY_ERROR                  => $temporaryErrorCode
+                    Token\Constants::GATEWAY_ERROR                  => $temporaryErrorCode,
+                    Token\Constants::TOKEN_FLOW                     => EmandateConstants::NR_FLOW
                 ];
                 
             }
@@ -464,7 +573,8 @@ trait EmandateRecurring
                         Token\Constants::EMANDATE_TOKEN_STATUS      => Token\Constants::BLOCKED_TEMPORARILY,
                         Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
                         Token\Constants::LAST_UPDATED_ON            => $lastUpdatedDate,
-                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode
+                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode,
+                        Token\Constants::TOKEN_FLOW                 => EmandateConstants::NR_FLOW
                     ];
                 }
                 else
@@ -473,7 +583,8 @@ trait EmandateRecurring
                         Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
                         Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
                         Token\Constants::LAST_UPDATED_ON            => $lastUpdatedDate,
-                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode
+                        Token\Constants::GATEWAY_ERROR              => $temporaryErrorCode,
+                        Token\Constants::TOKEN_FLOW                 => EmandateConstants::NR_FLOW
                     ];
                 }
             }

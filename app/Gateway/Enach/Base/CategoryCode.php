@@ -66,6 +66,9 @@ class CategoryCode
         '9311' => self::T001,
         '4814' => self::U005,
         '4899' => self::U005,
+        "4900" => self::U001,
+        "5413" => self::B001,
+        "6529" => self::I001
     ];
 
     public static function getCategoryCodeFromMcc($mcc)
@@ -75,7 +78,7 @@ class CategoryCode
             return self::$mccToCategoryCodeMapping[$mcc];
         }
 
-        return self::A001;
+        return self::U099;
     }
 
     public static function getCategoryCodeFromMccForNach($mcc)

@@ -21,5 +21,13 @@ class Constants
         self::PERMANENT_ERRORS_ENABLE_FLAG
     ];
     
+    const EMANDATE_DEBIT_COOLDOWN = 3;
+    
+    const EMANDATE_DEBIT_ATTEMPTS = 3;
+    
+    const NR_FLOW = "nr_flow";
+    
+    const ACH_RETURNS_FLOW = "ach_returns_flow";
+    
     const MERCHANT_IDS = "merchant_ids";
 }

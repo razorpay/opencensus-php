@@ -908,7 +908,7 @@ class Core extends Base\Core
         return $tokens;
     }
 
-    public function updateTokenForEmandateRecurringDetails(Entity $token, array $configs = [])
+    public function updateEmandateTokenDetails(Entity $token, array $configs = [])
     {
         $emandateConfigs = [];
 

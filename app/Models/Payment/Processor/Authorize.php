@@ -7682,11 +7682,11 @@ trait Authorize
         (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
     }
 
-    public function updatePaymentTokenDetails(Payment\Entity $payment, array $nrErrorCode)
+    public function emandateNRProcessingFlow(Payment\Entity $payment, array $nrErrorCode)
     {
         try
         {
-            $this->updateEmandateToken($payment, $nrErrorCode);
+            return $this->nrProcessingFlow($payment, $nrErrorCode);
         }
         catch(\Throwable $ex)
         {
@@ -7695,6 +7695,8 @@ trait Authorize
                 "payment_id"  => $payment->getId()
             ]);
         }
+        
+        return [];
     }
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)

@@ -150,7 +150,9 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $processor = $processor->setPayment($payment);
-
+    
+        $processor->resetEmandateTokenDetails($payment);
+    
         $data = $processor->processAuth($payment);
 
         $this->reconcileEntity($payment);
@@ -165,14 +167,9 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $errorCode = $this->getApiErrorCode($content);
-
-        if($payment->isFailed() !== true)
-        {
-            $nrErrorCode = $this->getNRErrorCode($content);
     
-            $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
-        }
-
+        $this->processAchReturnsOrNRFlow($payment, $content);
+    
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
@@ -185,6 +182,57 @@ class Base extends BaseProcessor
         $processor = $processor->setPayment($payment);
 
         $processor->updatePaymentAuthFailed($e);
+    }
+    
+    protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content)
+    {
+        $merchant = $payment->merchant;
+        
+        $processor = new Processor($merchant);
+        
+        $errorCode = $this->getApiErrorCode($content);
+        
+        if($payment->isFailed() !== true)
+        {
+            
+            // razorx for ach debit returns flow
+            $achVariant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                RazorxTreatment::EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW,
+                $this->mode
+            );
+            
+            $this->trace->info(TraceCode::EMANDATE_RAZORX_ACH_VARIANT, [
+                "variant" => $achVariant,
+                "key"     => $merchant->getId(),
+                "step"    => "payment_processing"
+            ]);
+            
+            if(strtolower($achVariant) === 'on')
+            {
+                return $processor->achReturnProcessingFlow($payment, $errorCode);
+            }
+            
+            // razorx for nr flow
+            $nrVariant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                RazorxTreatment::EMANDATE_ENABLE_NR_DEBIT_FLOW,
+                $this->mode
+            );
+            
+            $this->trace->info(TraceCode::EMANDATE_RAZORX_NR_VARIANT, [
+                "variant" => $nrVariant,
+                "key" => $merchant->getId(),
+                "step"    => "payment_processing"
+            ]);
+            
+            if (strtolower($nrVariant) === 'on')
+            {
+                $nrErrorCode = $this->getNRErrorCode($content);
+                
+                return $processor->emandateNRProcessingFlow($payment, $nrErrorCode);
+            }
+        }
     }
 
     protected function getApiErrorCode(array $content): string

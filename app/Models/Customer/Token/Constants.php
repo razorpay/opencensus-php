@@ -26,13 +26,14 @@ class Constants
     const ISSUER = 'issuer';
     const TOKEN_HQ_CHARGE = 'token_hq_charge';
     
-    const EMANDATE_CONFIGS = 'emandate_configs';
-    const RETRY_ATTEMPTS   = 'retry_attempts';
-    const COOLDOWN_PERIOD  = 'cooldown_period';
-    const EMANDATE_TOKEN_STATUS = 'emandate_token_status';
-    const BLOCKED_TEMPORARILY = 'blocked_temporarily';
-    const BLOCKED_PERMANENTLY = 'blocked_permanently';
-    const GATEWAY_ERROR = "gateway_error";
-    const LAST_UPDATED_MONTH = "last_updated_month";
-    const LAST_UPDATED_ON = "last_updated_on";
+    const EMANDATE_CONFIGS          = 'emandate_configs';
+    const RETRY_ATTEMPTS            = 'retry_attempts';
+    const COOLDOWN_PERIOD           = 'cooldown_period';
+    const EMANDATE_TOKEN_STATUS     = 'emandate_token_status';
+    const BLOCKED_TEMPORARILY       = 'blocked_temporarily';
+    const BLOCKED_PERMANENTLY       = 'blocked_permanently';
+    const GATEWAY_ERROR             = "gateway_error";
+    const LAST_UPDATED_MONTH        = "last_updated_month";
+    const LAST_UPDATED_ON           = "last_updated_on";
+    const TOKEN_FLOW                = "token_flow";
 }
