@@ -220,6 +220,10 @@ class BulkUploadClient extends Job
                     {
                         $sourceType = Constants::ADDRESS_SOURCE_TYPE_WOOCOMMERCE;
                     }
+                    if ($address[RawAddress\Entity::BATCH_ID] === Constants::ADDRESS_SOURCE_TYPE_SOPC)
+                    {
+                        $sourceType = Constants::ADDRESS_SOURCE_TYPE_SOPC;
+                    }
                 }
                 $address[Constants::ADDRESS_TYPE]=Constants::ADDRESS_TYPE_RAW;
                 $address[Address\Entity::SOURCE_ID] = $address[RawAddress\Entity::ID];

@@ -10,4 +10,6 @@ class Constants {
     const ADDRESS_SOURCE_TYPE_BULK_UPLOAD = "bulk_upload";
     const ADDRESS_SOURCE_TYPE_SHOPIFY = "shopify";
     const ADDRESS_SOURCE_TYPE_WOOCOMMERCE = "woocommerce";
+    const ADDRESS_SOURCE_TYPE_SOPC = "sopc";
+
 }

@@ -16688,6 +16688,7 @@ class Route
             '1cc_get_shopify_configs',
             '1cc_get_woocommerce_configs',
             'internal_sign_payload',
+            'raw_address_create_bulk',
             '1cc_internal_otp_create',
             '1cc_internal_otp_verify',
             '1cc_internal_fetch_global_addresses',

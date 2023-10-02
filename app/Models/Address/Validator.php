@@ -66,7 +66,7 @@ class Validator extends Base\Validator
         Entity::LANDMARK => 'sometimes|string|between:2,255',
         Entity::PRIMARY  => 'sometimes|in:0,1',
         Entity::SOURCE_ID => 'sometimes',
-        Entity::SOURCE_TYPE => 'sometimes|in:bulk_upload,payment_pages,thirdwatch,shopify,woocommerce',
+        Entity::SOURCE_TYPE => 'sometimes|in:bulk_upload,payment_pages,thirdwatch,shopify,woocommerce,sopc',
     ];
 
     protected static $editForCustomerRules = [
