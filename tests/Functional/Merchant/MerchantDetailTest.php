@@ -62,6 +62,7 @@ use RZP\Mail\Merchant\RejectionReasonNotification;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteUpdate;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -467,6 +468,104 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testNCRevampEligibilityForPhantomOnboarding()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => DDConstants::PHANTOM_ONBOARDING,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testNCRevampEligibilityForEasyOnboarding()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => DDConstants::EASY_ONBOARDING,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest($this->testData["testNCRevampEligibilityForPhantomOnboarding"]);
+    }
+
+    public function testNCRevampEligibilityForOtherSignupCampaigns()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => DDConstants::UNBOUNCE,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddClarificationReasonsForPhantomOnboarding()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => DDConstants::PHANTOM_ONBOARDING,
+        ]);
+
+        $testData = $this->testData["testAddClarificationReasons"];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+    }
+
     public function testAddClarificationReasonsNullFields()
     {
         $this->enableRazorXTreatmentForRazorX();
@@ -539,6 +638,51 @@ class MerchantDetailTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->startTest();
+    }
+
+    public function testGetClarificationReasonsForPhantomOnboarding()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => DDConstants::PHANTOM_ONBOARDING,
+        ]);
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testAddClarificationReasonsNullFields'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest($this->testData['testGetClarificationReasons']);
     }
 
     public function testNCRevampEligibilityMidDoesNotExist()

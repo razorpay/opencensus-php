@@ -588,6 +588,34 @@ return [
         ],
     ],
 
+    'testNCRevampEligibilityForOtherSignupCampaigns' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/clarifications/eligibility',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "nc_revamp_enabled" => false
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testNCRevampEligibilityForPhantomOnboarding' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/clarifications/eligibility',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "nc_revamp_enabled" => true
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testNCRevampEligibilityMidDoesNotExist' => [
         'request'  => [
             'method'  => 'GET',

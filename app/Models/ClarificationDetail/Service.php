@@ -138,12 +138,27 @@ class Service extends Base\Service
         });
     }
 
+    /**
+     * Check if a merchant is eligible for NC revamp flow:
+     * - signup campaign is either easy onboarding or phantom onboarding
+     * - AND the merchant is enabled under the NC revamp experiment
+     * - AND has some NC clarification details or has NEEDS_CLARIFICATION in status change logs
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function isEligibleForRevampNC(string $merchantId): bool
     {
-
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        $eligibleSignupCampaign = (
+            ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true) ||
+            ($merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true)
+        );
+
+        if (!$eligibleSignupCampaign)
         {
             return false;
         }
