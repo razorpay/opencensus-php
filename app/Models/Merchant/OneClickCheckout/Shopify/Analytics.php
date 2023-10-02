@@ -385,7 +385,7 @@ class Analytics extends Base\Core
     {
         return [
             Constants::EVENT_NAME           => Constants::PURCHASE,
-            Constants::EVENT_ID             => $shopifyOrder[Constants::NAME],
+            Constants::EVENT_ID             => (string)$shopifyOrder[Constants::NAME],
             Constants::TIME                 => (int)round(microtime(true) * 1000),
             Constants::EVENT_PAGE_TITLE     => Constants::PURCHASE,
             Constants::EVENT_CATEGORY       => Constants::PURCHASE,
@@ -402,8 +402,8 @@ class Analytics extends Base\Core
         }
 
         return [
-            Constants::PLATFORM_ORDER_NAME => $shopifyOrder[Constants::SHOPIFY_ORDER_NAME],
-            Constants::PLATFORM_ORDER_ID   => $shopifyOrder[Constants::ID],
+            Constants::PLATFORM_ORDER_NAME => (string)$shopifyOrder[Constants::SHOPIFY_ORDER_NAME],
+            Constants::PLATFORM_ORDER_ID   => (string)$shopifyOrder[Constants::ID],
             Constants::TOTAL_PRICE         => (int)((float)$shopifyOrder[Constants::TOTAL_PRICE] * 100),
             Constants::TOTAL_TAX           => (int)((float)$shopifyOrder[Constants::TOTAL_TAX] * 100),
             Constants::CURRENCY            => $shopifyOrder[Constants::CURRENCY],
@@ -445,13 +445,13 @@ class Analytics extends Base\Core
             // price is stored as paise in rzp order
             // product & variant IDs are string
             $lineItems[] = [
-                Constants::VARIANT_ID   => $item[Constants::VARIANT_ID],
-                Constants::PRODUCT_ID   => $item[Constants::PRODUCT_ID],
-                Constants::SKU          => $item[Constants::SKU],
+                Constants::VARIANT_ID   => (string)$item[Constants::VARIANT_ID],
+                Constants::PRODUCT_ID   => (string)$item[Constants::PRODUCT_ID],
+                Constants::SKU          => (string)$item[Constants::SKU],
                 Constants::PRICE        => (int)((float)$item[Constants::PRICE] * 100),
                 Constants::PRODUCT_NAME => $item[Constants::TITLE],
                 Constants::VARIANT_NAME => $item[Constants::VARIANT_TITLE],
-                Constants::QUANTITY     => $item[Constants::QUANTITY],
+                Constants::QUANTITY     => (int)$item[Constants::QUANTITY],
             ];
         }
         return $lineItems;
