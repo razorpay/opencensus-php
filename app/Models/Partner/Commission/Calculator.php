@@ -1271,7 +1271,7 @@ class Calculator extends Base\Core
                 // if not found
                 // fetch signup source from partnership service
                 $store = new StoreCore();
-                $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
+                $data = $store->fetchValuesFromStore($submerchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
                 [ConfigKey::SUBM_SIGNUP_SOURCE], StoreConstants::INTERNAL);
 
                 $sourcePartnerId = $data[ConfigKey::SUBM_SIGNUP_SOURCE] ?? null;
@@ -1286,7 +1286,7 @@ class Calculator extends Base\Core
                             StoreConstants::NAMESPACE     => ConfigKey::ONBOARDING_NAMESPACE,
                             ConfigKey::SUBM_SIGNUP_SOURCE => $sourcePartnerId
                         ];
-                        $store->updateMerchantStore($this->merchant->getId(), $input, StoreConstants::INTERNAL);
+                        $store->updateMerchantStore($submerchant->getId(), $input, StoreConstants::INTERNAL);
                 }
             }
             catch (\Throwable $e)

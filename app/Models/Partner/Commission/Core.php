@@ -195,7 +195,7 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CALCULATION, ['success' => true]);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,

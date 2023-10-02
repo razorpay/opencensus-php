@@ -20,7 +20,20 @@ class CalculatorV2 extends Calculator
     {
         $this->app = App::getFacadeRoot();
 
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+
+        $this->env = $this->app['env'];
+
+        $this->trace = $this->app['trace'];
+
+        $this->config = $this->app['config'];
+
         $this->repo = $this->app['repo'];
+
+        $this->cache = $this->app['cache'];
 
         $this->setSource($sourceEntity);
 
