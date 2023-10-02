@@ -201,7 +201,8 @@ class Core extends Base\Core
 
             //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
             if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                ($payment->getCpsRoute() !== Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
+                ($payment->getCpsRoute() !== Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) and
+                ($payment->getCpsRoute() !== Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
             {
                 $this->createPaymentLedgerEntriesInReverseShadow($payment);
             }
@@ -225,7 +226,7 @@ class Core extends Base\Core
         }
         else if ($payment->getStatus() == "authorized")
         {
-            $txn =  $this->createTransactionForAuthorizedPayment($payment);
+            $txn =  $this->createTransactionForAuthorizedPayment($payment, $txnId);
         }
         else
         {
@@ -235,14 +236,15 @@ class Core extends Base\Core
         // Note: If pg_ledger_reverse_shadow flag is enabled for merchant and payment is a rearch card payment,
         // then we need not dispatch updated transaction to CPS as this is a sync call in payments-card microservice for reverse-shadow mode
         if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-            ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
+            (($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) or
+            ($payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)))
         {
             $this->trace->info(
-                TraceCode::TRANSACTION_NOT_DISPATCHED_FOR_REARCH_CARD_PAYMENT_IN_REVERSE_SHADOW,
+                TraceCode::TRANSACTION_NOT_DISPATCHED_FOR_REARCH_PAYMENT_IN_REVERSE_SHADOW,
                 [
                     'payment_id'     => $payment->getId(),
                     'transaction_id' => $txn->getId(),
-                    'merchant_id'        => $merchant->getId(),
+                    'merchant_id'    => $merchant->getId(),
                 ]
             );
         }
@@ -352,7 +354,7 @@ class Core extends Base\Core
         }
     }
 
-    private function createTransactionForAuthorizedPayment(Payment\Entity $payment)
+    private function createTransactionForAuthorizedPayment(Payment\Entity $payment, $txnId = null)
     {
         // avoid processing the request for a payment with status as authorized
         // in the payload but the transaction already being created earlier with the capture payload
@@ -363,7 +365,7 @@ class Core extends Base\Core
             return $transaction;
         }
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment, $txnId);
 
         $this->repo->saveOrFail($txn);
 
