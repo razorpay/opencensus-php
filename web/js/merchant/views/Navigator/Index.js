@@ -107,7 +107,7 @@ class Navigator extends React.Component {
                 }
               />
 
-              <Route element={<Navigate to={redirectionURL} replace />} />
+              <Route path="*" element={<Navigate to={redirectionURL} replace />} />
             </Routes>
           </SuspenseWithLoader>
         </ErrorBoundary>

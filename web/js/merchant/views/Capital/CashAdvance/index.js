@@ -38,7 +38,7 @@ class WithdrawalsRoot extends Component {
   productType = getProductType(this.props.user);
 
   gaEventDispatcher = (eventObject) => {
-    const { state: { eventCategory = null } = {} } = this.props.location;
+    const { eventCategory } = this.props.location.state ?? {};
     // eslint-disable-next-line dot-notation
     eventObject['eventCategory'] = eventCategory ? eventCategory : 'Dashboard CA - Apply';
     window.rzpAnalytics?.(eventObject);

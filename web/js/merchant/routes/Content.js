@@ -1781,7 +1781,28 @@ class Content extends Component {
           />
 
           <Route path="capital/*">
-            <Route path=":product/*">
+            <Route path=":product">
+              <Route
+                path="repayments-schedule/*"
+                additionalCondition={canViewCashAdvanceProduct}
+                element={
+                  <RouteGuard>
+                    <RepaymentsSchedule />
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path=":section/*"
+                element={
+                  <RouteGuard
+                    defaultPath="/capital/line-of-credit"
+                    additionalCondition={canViewCashAdvanceProduct}
+                  >
+                    <CashAdvance />
+                  </RouteGuard>
+                }
+              />
               <Route
                 index
                 element={
@@ -1815,29 +1836,6 @@ class Content extends Component {
                   }
                 />
               </Route>
-            </Route>
-
-            <Route path="cash-advance/*">
-              <Route
-                path="repayments-schedule/*"
-                element={
-                  <RouteGuard>
-                    <RepaymentsSchedule />
-                  </RouteGuard>
-                }
-              />
-
-              <Route
-                path=":section/*"
-                element={
-                  <RouteGuard
-                    defaultPath="/capital/line-of-credit"
-                    additionalCondition={canViewCashAdvanceProduct}
-                  >
-                    <CashAdvance />
-                  </RouteGuard>
-                }
-              />
             </Route>
 
             <Route
