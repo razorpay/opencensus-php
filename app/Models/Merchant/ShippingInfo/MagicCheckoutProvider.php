@@ -193,6 +193,10 @@ class MagicCheckoutProvider extends Base\Core
                 $address['cod'] = $isCodEligible;
                 $address['cod_fee'] = $codFee;
             }
+            if (empty($address['shipping_methods']))
+            {
+                return $address;
+            }
             foreach ($address['shipping_methods'] as &$method)
             {
                 if ($method['cod'] == true)
@@ -344,11 +348,11 @@ class MagicCheckoutProvider extends Base\Core
         {
             $addresses[$key]['cod'] = false;
             $addresses[$key]['cod_fee'] = null;
-            $shippingMethods = &$addresses['shipping_methods'];
+            $shippingMethods = $address['shipping_methods'];
             foreach ($shippingMethods as $methodKey => $method)
             {
-                $shippingMethods[$methodKey]['cod'] = false;
-                $shippingMethods[$methodKey]['cod_fee'] = null;
+                $addresses[$key]['shipping_methods'][$methodKey]['cod'] = false;
+                $addresses[$key]['shipping_methods'][$methodKey]['cod_fee'] = null;
             }
         }
         return $shippingOptions;

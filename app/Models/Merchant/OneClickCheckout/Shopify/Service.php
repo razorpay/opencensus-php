@@ -1310,7 +1310,7 @@ class Service extends Base\Service
             }
             return $shippingResponse;
         }
-        $isDigitalProduct = $this->isDigitalProductPresentInCheckout($response);
+        $isDigitalProduct = $this->isDigitalProductPresentInCheckout($checkout);
         return [
             'evaluate_rates'     => true,
             'tax_details'        => $taxDetails,
