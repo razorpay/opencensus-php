@@ -2200,6 +2200,13 @@ return [
             ],
         ],
 
+        PermissionCategory::RZP_KMS => [
+            Permission::ALLOW_KEY_ROTATION_INITIATION => [
+                'description'   => 'Manage access to kms actions on admin dashboard',
+                'assignable'    => true,
+            ]
+        ],
+
         PermissionCategory::FTS_DASHBOARD_ADMIN => [
             Permission::FTS_SOURCE_ACCOUNT_UPDATE => [
                 'description'   => 'Update FTS source account details. This may also update banking account details creds depending upon the source of the request',

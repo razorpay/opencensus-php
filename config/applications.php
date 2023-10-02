@@ -1843,6 +1843,13 @@ return [
         'ie_needs_clarification'        => env('INTERNATIONAL_PAYMENT_IE_NEEDS_CLARIFICATION_URL'),
     ],
 
+    'key_management_service' => [
+        'mock'      => env('KEY_MANAGEMENT_SERVICE_MOCK', false),
+        'username'  => env('KEY_MANAGEMENT_SERVICE_KEY', 'api_user'),
+        'secret'  =>   env('KEY_MANAGEMENT_SERVICE_SECRET'),
+        'url'       => env('KEY_MANAGEMENT_SERVICE_URL'),
+    ],
+
     'numeric_mapper_vpa_encryption_key' => env('NUMERIC_MAPPER_VPA_ENCRYPTION_KEY'),
 
     'edge' => [

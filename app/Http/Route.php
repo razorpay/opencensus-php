@@ -1183,6 +1183,9 @@ class Route
         'create_netbanking_configs'                => ['post',       'netbanking/merchant_configs',                    'NetbankingController@createNetBankingConfigs'                     ],
         'edit_netbanking_configs'                  => ['put',        'netbanking/merchant_configs',                    'NetbankingController@editNetbankingConfigs'                       ],
 
+        //Razorpay kms service
+        'rzp_kms_service'                              => ['post',        'rzp_kms/service/{path?}',                            'RzpKmsController@handleAnyPost'                      ],
+
         // Routes for DCS banking configs
         'fetch_all_banking_configs'                => ['get',        'all_banking_configs',                          'BankingConfigController@fetchAllBankingConfigs'                    ],
         'internal_get_banking_config'              => ['get',        'internal/banking_configs',                     'BankingConfigController@getBankingConfig'                          ],
@@ -8818,6 +8821,7 @@ class Route
         'create_netbanking_configs',
         'edit_netbanking_configs',
 
+        'rzp_kms_service',
         'fetch_all_banking_configs',
         'get_banking_config',
         'edit_banking_configs',
@@ -9315,6 +9319,8 @@ class Route
         'fetch_netbanking_configs'                 => Permission::CREATE_NETBANKING_REFUND,
         'create_netbanking_configs'                => Permission::CREATE_NETBANKING_REFUND,
         'edit_netbanking_configs'                  => Permission::CREATE_NETBANKING_REFUND,
+
+        'rzp_kms_service'                              =>  Permission::ALLOW_KEY_ROTATION_INITIATION,
 
         'fetch_merchant_da_payout_mode_config'     => Permission::MANAGE_PAYOUT_MODE_CONFIG,
         'create_merchant_da_payout_mode_config'    => Permission::MANAGE_PAYOUT_MODE_CONFIG,
@@ -14236,6 +14242,8 @@ class Route
             'fetch_netbanking_configs',
             'create_netbanking_configs',
             'edit_netbanking_configs',
+
+            'rzp_kms_service',
 
             'fetch_all_banking_configs',
             'get_banking_config',

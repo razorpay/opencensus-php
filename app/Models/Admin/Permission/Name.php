@@ -6,6 +6,7 @@ use RZP\Models\Merchant;
 
 class Name
 {
+    const ALLOW_KEY_ROTATION_INITIATION                       = 'allow_key_rotation_initiation';
     const VIEW_HOMEPAGE                       = 'view_homepage';
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
