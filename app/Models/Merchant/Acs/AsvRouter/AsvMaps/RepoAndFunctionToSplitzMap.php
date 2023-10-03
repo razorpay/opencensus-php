@@ -71,6 +71,13 @@ final class RepoAndFunctionToSplitzMap
         SplitzConstant::SPLITZ_BUSINESS_DETAIL_GET_BY_ID => true,
         SplitzConstant::SPLITZ_DOCUMENT_GET_BY_ID => true,
         SplitzConstant::SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID => true,
+        SplitzConstant::SPLITZ_EMAIL_GET_BY_MERCHANT_ID => true,
+        SplitzConstant::SPLITZ_EMAIL_GET_BY_TYPE_AND_MERCHANT_ID => true,
+        SplitzConstant::SPLITZ_EMAIL_GET_BY_ID => true,
+        SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID => true,
+        SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_MERCHANT_ID => true,
+        SplitzConstant::SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID => true,
+
     );
 
     public static function getExperimentName(string $repoClass, string $functionName): string

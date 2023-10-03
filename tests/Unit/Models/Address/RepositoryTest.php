@@ -152,10 +152,10 @@ class RepositoryTest extends TestCase
         $addressResponse = new AddressResponseByStakeholderId();
         $addressResponse->setAddress($addressProto1);
 
-        // Test Case 1: SaveRoute false - Splitz is on - Request should go to account service - Merchant Address is Found
+        // Test Case 1: ExclusionFlow false - Splitz should Never be called - Request should go to account service - Merchant Address is Found
 
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->never())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $addressMockClient = $this->getMockClient();
         $addressMockClient->expects($this->exactly(1))->method("getByStakeholderId")->with("K9UzmvitzJwyS9", $address->getDefaultRequestMetaData())->willReturn([$addressResponse, null]);
@@ -169,10 +169,10 @@ class RepositoryTest extends TestCase
         $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");
         self::assertEquals($addressEntity1->toArray(), $gotAddress->toArray());
 
-        // Test Case 2: SaveRoute true - Splitz is on - Request should not go to account service - Merchant Address is Found
+        // Test Case 2: ExclusionFlow true - Splitz should Never be called - Request should not go to account service - Merchant Address is Found
 
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->never())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $addressMockClient = $this->getMockClient();
         $addressMockClient->expects($this->exactly(0))->method("getByStakeholderId")->with("K9UzmvitzJwyS9", $address->getDefaultRequestMetaData())->willReturn([$addressResponse, null]);
@@ -186,9 +186,9 @@ class RepositoryTest extends TestCase
         $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");
         self::assertEquals($addressEntity1->toArray(), $gotAddress->toArray());
 
-        // Test Case 3:  SaveRoute true - Splitz is on - Request should go to account service - Merchant Address is Not Found
+        // Test Case 3:  ExclusionFlow false - Splitz should Never be called - Request should go to account service - Merchant Address is Not Found
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->any())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $addressMockClient = $this->getMockClient();
         $addressMockClient->expects($this->exactly(1))->method("getByStakeholderId")->with("K9UzmvitzJwyS9", $address->getDefaultRequestMetaData())->willReturn([new AddressResponseByStakeholderId(), null]);
@@ -202,66 +202,10 @@ class RepositoryTest extends TestCase
         $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");;
         self::assertEquals(null, $gotAddress);
 
-        // Test Case 4: SaveRoute false - Splitz is off - Request should not go to account service
-
-        $splitzOutput = $this->sampleSpltizOutput;
-        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $addressMockClient = $this->getMockClient();
-        $addressMockClient->expects($this->exactly(0))->method("getByStakeholderId")->with($this->any())->willReturn([$addressResponse, null]);
-        $address->getAsvSdkClient()->setAddress($addressMockClient);
-
-        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-
-        $repo = new Repository();
-        $repo->asvRouter = $asvRouterMock;
-        $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");
-        self::assertEquals($addressEntity1->toArray(), $gotAddress->toArray());
-
-        // Test Case 5: SaveRoute false - Splitz is off - Request  should not  go to account service - Merchant Address not Found
-
-        $splitzOutput = $this->sampleSpltizOutput;
-        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $addressMockClient = $this->getMockClient();
-        $addressMockClient->expects($this->exactly(0))->method("getByStakeholderId")->with($this->any())->willReturn([$addressResponse, null]);
-        $address->getAsvSdkClient()->setAddress($addressMockClient);
-
-        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-
-        $repo = new Repository();
-        $repo->asvRouter = $asvRouterMock;
-        $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholderNoAddress, "residential");;
-        self::assertEquals(null, $gotAddress);
-
-        // Test Case 6: SaveRoute false - Splitz call fails - Request should not go to account service.
+        // Test Case 4: ExclusionFlow false - Splitz should Never be called - Request Failed From account service - Should Be Routed to DB
 
         $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("some error occurred while calling splitz"));
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $addressMockClient = $this->getMockClient();
-        $addressMockClient->expects($this->exactly(0))->method("getByStakeholderId")->with($this->any())->willReturn([$addressResponse, null]);
-        $address->getAsvSdkClient()->setAddress($addressMockClient);
-
-        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-
-        $repo = new Repository();
-        $repo->asvRouter = $asvRouterMock;
-        $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");
-        self::assertEquals($addressEntity1->toArray(), $gotAddress->toArray());
-
-
-        // Test Case 7: SaveRoute false - Splitz is on - Request Failed From account service - Should Be Routed to DB
-
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $splitzMock->expects($this->any())->method('evaluateRequest');
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         $addressMockClient = $this->getMockClient();
         $addressMockClient->expects($this->exactly(1))->method("getByStakeholderId")->with("K9UzmvitzJwyS9", $address->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
