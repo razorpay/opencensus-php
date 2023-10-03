@@ -83,3 +83,10 @@ export const getDebitPatternDesc = (frequency) => {
   }
   return `Enter a value between ${range} corresponding to days of a week`;
 };
+
+export const disablePastAndPostThirtyYear = (date) => {
+  if (!date) return false;
+  const thirtyYearsFromNow = moment(moment().add(30, 'y'), 'X');
+  const today = moment();
+  return thirtyYearsFromNow.isBefore(date) || date.isBefore(today);
+};

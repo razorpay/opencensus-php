@@ -88,12 +88,10 @@ describe('RL - Token Details Form', () => {
     });
 
     expect(screen.getAllByText(/expiry of token/i)[0]).toBeInTheDocument();
+    expect(screen.getByTestId('mandateExpireAt-date-input')).toBeInTheDocument();
     expect(
-      screen.getByRole('checkbox', {
-        name: /until cancelled/i,
-      }),
+      screen.getAllByText(/Token expires in 30 years, unless otherwise specified./i)[0],
     ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
   });
 
   test('Should render all the nach token fields', () => {
@@ -117,12 +115,10 @@ describe('RL - Token Details Form', () => {
       expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
     expect(screen.getAllByText(/expiry of token/i)[0]).toBeInTheDocument();
+    expect(screen.getByTestId('mandateExpireAt-date-input')).toBeInTheDocument();
     expect(
-      screen.getByRole('checkbox', {
-        name: /until cancelled/i,
-      }),
+      screen.getAllByText(/Token expires in 30 years, unless otherwise specified./i)[0],
     ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
   });
 
   test('Should render card amount lesser than max allowed amount', () => {

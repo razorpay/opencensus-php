@@ -102,7 +102,7 @@ describe('Subscription Settings', () => {
     });
 
     const view = screen.getByText(/accept payments upto:/i);
-    expect(within(view).getByText(/10,00,000/i)).toBeInTheDocument();
+    expect(within(view).getByText(/1,00,00,000/i)).toBeInTheDocument();
   });
 
   test('Should not render Emandate settings if payment method is not enabled for merchant', () => {

@@ -9,7 +9,7 @@ export const topEmandateBankCodes = ['SBIN', 'HDFC', 'ICIC', 'UTIB', 'KKBK'];
 export const CARD_AFA_MAX_LIMIT = 15000; // Rs
 export const CARD_TOKEN_MAX_AMOUNT = 1000000; // Rs
 export const MY_CARD_MAX_AMOUNT = 30000; // RM
-export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
+export const MAX_TOKEN_AMOUNT = 1000000000; // in Paisa
 export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 
 export const GATEWAY_MAX_LIMIT = 20000000; // Paisa
@@ -17,7 +17,7 @@ export const GATEWAY_MAX_LIMIT = 20000000; // Paisa
 export const UPI_AFA_MAX_LIMIT = 1500000; // Paisa
 export const UPI_MAX_LIMIT_FOR_NON_BFSI = 10000000; // Paisa
 
-export const EMANDATE_MAX_LIMIT = 100000000; // Paisa
+export const EMANDATE_MAX_LIMIT = 1000000000; // Paisa
 
 export const DEFAULT_NACH_LIMIT = 10000000; // Rs
 export const DEFAULT_UPI_LIMIT = 200000; // Rs

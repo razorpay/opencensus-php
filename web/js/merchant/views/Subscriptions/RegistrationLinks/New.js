@@ -1,4 +1,6 @@
 import React from 'react';
+import moment from 'moment';
+
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
@@ -530,6 +532,8 @@ class NewRegistrationLink extends React.Component {
       }
 
       payload.subscription_registration.max_amount = maxAmount;
+      payload.subscription_registration.expire_at =
+        mandateExpireAt || moment(moment().add(30, 'y'), 'X').unix();
     }
 
     if (this.isUPIPayment) {
@@ -810,6 +814,7 @@ class NewRegistrationLink extends React.Component {
             isNACHPayment={this.isNACHPayment}
             isUPIPayment={this.isUPIPayment}
             isCardPayment={this.isCardPayment}
+            isEmandatePayment={this.isEmandatePayment}
             isFirstAmountHidden={this.props.user.isFirstAmountHidden}
             amount={formFields.amount}
             frequency={formFields.frequency}

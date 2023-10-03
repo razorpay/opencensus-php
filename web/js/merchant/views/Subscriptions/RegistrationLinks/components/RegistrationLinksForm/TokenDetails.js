@@ -20,7 +20,10 @@ import {
   CARD_TOKEN_MAX_AMOUNT,
 } from 'merchant/views/Subscriptions/constants';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-import { getDebitPatternDesc } from 'merchant/views/Subscriptions/utils';
+import {
+  getDebitPatternDesc,
+  disablePastAndPostThirtyYear,
+} from 'merchant/views/Subscriptions/utils';
 
 const CARD_PAYMENT_LABEL = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
@@ -60,6 +63,7 @@ export default function TokenDetailsForm({
   amount,
   frequency,
   isNACHPayment,
+  isEmandatePayment,
   isUPIPayment,
   isCardPayment,
   isFirstAmountHidden,
@@ -144,6 +148,59 @@ export default function TokenDetailsForm({
     }
   }
 
+  const getTokenExpiryForm = () => {
+    if (isEmandatePayment || isNACHPayment) {
+      return (
+        <Input.Group label="Expiry of Token " class="InputGroup--vTop">
+          <Input.ToCalendar
+            data-testid="mandateExpireAt-date-input"
+            disablePastDates
+            name="mandateExpireAt"
+            placeholder="Expiry (DD-MM-YYYY)"
+            placement="topLeft"
+            size="half_big"
+            addonAfter={<i class="i i-date-range" />}
+            description="Token expires in 30 years, unless otherwise specified."
+            onChange={handleDateChange('mandateExpireAt')}
+            data-name="token_expiry_date"
+            onBlur={onBlurElement}
+            defaultValue={
+              mandateExpireAt ? moment(mandateExpireAt, 'X') : moment(moment().add(30, 'y'), 'X')
+            }
+            disabledDate={disablePastAndPostThirtyYear}
+          />
+        </Input.Group>
+      );
+    }
+    return (
+      <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+        <Input.Check
+          fieldLabel="Until cancelled"
+          name="tokenHasNoExpiry"
+          defaultValue="1"
+          data-name="token_until_cancelled"
+          onBlur={onBlurElement}
+          checked={tokenHasNoExpiry}
+        />
+
+        <Input.ToCalendar
+          disablePastDates
+          name="mandateExpireAt"
+          placeholder="Expiry (DD-MM-YYYY)"
+          placement="topLeft"
+          size="half_big"
+          addonAfter={<i class="i i-date-range" />}
+          description="Expiry of Token"
+          onChange={handleDateChange('mandateExpireAt')}
+          disabled={!!Number(tokenHasNoExpiry)}
+          data-name="token_expiry_date"
+          onBlur={onBlurElement}
+          defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
+        />
+      </Input.Group>
+    );
+  };
+
   return (
     <>
       {(isCardFrequencyEnabled || isUPIPayment) && (
@@ -161,31 +218,7 @@ export default function TokenDetailsForm({
 
       {!isCardPayment && (
         <>
-          <Input.Group label="Expiry of Token" class="InputGroup--vTop">
-            <Input.Check
-              fieldLabel="Until cancelled"
-              name="tokenHasNoExpiry"
-              defaultValue="1"
-              data-name="token_until_cancelled"
-              onBlur={onBlurElement}
-              checked={tokenHasNoExpiry}
-            />
-
-            <Input.ToCalendar
-              disablePastDates
-              name="mandateExpireAt"
-              placeholder="Expiry (DD-MM-YYYY)"
-              placement="topLeft"
-              size="half_big"
-              addonAfter={<i class="i i-date-range" />}
-              description="Expiry of Token"
-              onChange={handleDateChange('mandateExpireAt')}
-              disabled={!!Number(tokenHasNoExpiry)}
-              data-name="token_expiry_date"
-              onBlur={onBlurElement}
-              defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
-            />
-          </Input.Group>
+          {getTokenExpiryForm()}
           {/* TODO: Q3 Input.Amount */}
           <Input
             type="number"
