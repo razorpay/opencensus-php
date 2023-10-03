@@ -111,7 +111,7 @@ class Service
         return trim($this->config['url']) . '/' . $route;
     }
 
-    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo)
+    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo, int $timeout=300)
     {
         $this->trace->info(
             TraceCode::BEAM_METHOD_CALL,
