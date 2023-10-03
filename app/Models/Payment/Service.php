@@ -1992,18 +1992,18 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)
                     ->authorizePush($input, $referenceId, $data, $terminal, $isCallback);
     }
-    
+
     public function getSplitzResponse(string $merchantId, string $experimentName)
     {
         try
         {
             $experimentId = $this->app['config']->get($experimentName);
-            
+
             $response = $this->app['splitzService']->evaluateRequest([
                 'id'            => $merchantId,
                 'experiment_id' => $experimentId,
             ]);
-            
+
             $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
                 'merchant_id'   => $merchantId,
                 'experiment_id' => $experimentId,
@@ -2017,24 +2017,24 @@ class Service extends Base\Service
                 'experiment_id' => $this->app['config']->get($experimentName) ?? null
             ]);
         }
-        
+
         return $response['response']['variant']['name'] ?? '';
     }
-    
+
     public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
     {
         $variant = $this->getSplitzResponse($merchantId, $experimentName);
-        
+
         return $variant === $checkVariant;
     }
 
     private function isExpEnableEsSearchOnCreatedAtAndThenOnScore(string $merchantId, array $input): bool
     {
         $expEnable = $this->isSplitzExperimentEnable($merchantId, Constant::ELASTIC_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_KEY, Constant::VARIANT_ENABLE);
-    
+
         return ($expEnable === true) && (isset($input[Entity::NOTES]) === true);
     }
-    
+
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();
@@ -2042,9 +2042,9 @@ class Service extends Base\Service
         $this->addInputTrace($input);
 
         $this->modifyInputForVATransaction($input);
-    
+
         $isExpEnable = $this->isExpEnableEsSearchOnCreatedAtAndThenOnScore($merchantId, $input);
-        
+
         $payments = $this->repo
                         ->payment
                         ->setExperimentForESearchOnCreatedAtFirst($isExpEnable)
@@ -5112,7 +5112,7 @@ class Service extends Base\Service
 
         $riskData = $input['risk'];
 
-        (new Fraud\Notify())->notifyOpsIfNeeded($merchant, $riskData[ShieldConstants::TRIGGERED_RULES]);
+        (new Fraud\Notify())->notifyOpsIfNeeded($id, $merchant, $riskData[ShieldConstants::TRIGGERED_RULES]);
 
         if ($riskData[Risk\Entity::FRAUD_TYPE] === Risk\Type::CONFIRMED)
         {
