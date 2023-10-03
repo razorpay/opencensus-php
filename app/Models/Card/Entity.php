@@ -1604,6 +1604,9 @@ class Entity extends Base\PublicEntity
             if($this->getNetwork() != Card\Network::getFullName(Network::DICL)) {
                 $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
             }
+
+        $data[Card\Entity::TOKENISED] = true;
+
         }
 
         if ($data[Card\Entity::TRIVIA] === '2')
