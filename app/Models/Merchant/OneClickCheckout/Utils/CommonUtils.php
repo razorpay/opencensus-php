@@ -203,6 +203,31 @@ class CommonUtils extends Base\Core
         return $expData;
     }
 
+    public function isAdminCheckoutRequiredExp(): bool
+    {
+        $isAdminCheckoutRequired = false;
+        $adminCheckoutExpInput = $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_shopify_taxes_admin_checkout_experiment_id',
+            ['merchant_id' => $this->merchant->getId()]
+        );
+
+        try {
+            $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment($adminCheckoutExpInput);
+            $isAdminCheckoutRequired = ($expResult['variant'] === 'test');
+        } catch (\Throwable $e) {
+            $this->trace->error(
+                TraceCode::MAGIC_SPLITZ_ERROR,
+                [
+                    'type'         => 'isAdminCheckoutRequiredExpError',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
+            $isAdminCheckoutRequired = false;
+        }
+        return $isAdminCheckoutRequired;
+    }
+
     public function isTaxesExpEnabled(): bool
     {
         $isTaxExpEnabled = false;
@@ -248,6 +273,4 @@ class CommonUtils extends Base\Core
 
         return $expResult['variant'] === 'magic';
     }
-
-
 }

@@ -33,7 +33,7 @@ class StateMap
     {
         switch ($address['country']) {
             case 'in':
-                $shopifyStateCode = $this->getShopifyStateCodeFromNameIN($address['state']);
+                $shopifyStateCode = $this->getShopifyStateCodeFromNameIN(strtoupper($address['state']));
                 break;
 
             case 'my':

@@ -177,7 +177,7 @@ class Checkout extends Base\Core
 
 
     // returns notes for Rzp order using Shopify storefront id and line items
-    public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = [], bool $isAutoDiscountApplied = false): array
+    public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = [], bool $isAutoDiscountApplied = false, $discountSource = 'Unknown'): array
     {
         $notes = [
             'storefront_id' => $checkout['id'],
@@ -219,6 +219,7 @@ class Checkout extends Base\Core
             {
                 $notes['Script_Discount_Amount'] = $discountFromScript;
                 $notes['Script_Discount_Title']  = $discountTitle;
+                $notes['discount_source']        = $discountSource;
             }
         }
 

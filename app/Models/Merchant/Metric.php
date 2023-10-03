@@ -161,6 +161,8 @@ final class Metric
     const SHOPIFY_GIFT_CARD_REFUND_SUCCESS_COUNT    = 'shopify_gift_card_refund_success_count';
     const SHOPIFY_GIFT_CARD_REFUND_ERROR_COUNT      = 'shopify_gift_card_refund_error_count';
 
+    const SHOPIFY_CALCULATE_DRAFT_ORDER_ERROR_COUNT = 'shopify_calculate_draft_order_error_count';
+
     const SHOPIFY_ADD_TAG_SUCCESS_COUNT             = 'shopify_add_tag_success_count';
     const SHOPIFY_ADD_TAG_ERROR_COUNT               = 'shopify_add_tag_status_error_count';
     const SHOPIFY_ADD_TAG_CALL_TIME                 = 'shopify_add_tag_call_time';
@@ -217,6 +219,7 @@ final class Metric
     const ABANDON_CHECKOUT_ERROR_COUNT                  = 'abandon_checkout_error_count';
 
     const SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT         = 'shopify_complete_checkout_error_count';
+    const SHOPIFY_TAX_EXPERIMENT_DISABLED               = 'shopify_tax_experiment_disabled';
 
     const SHOPIFY_ADD_CHECKOUT_URL_ERROR_COUNT          = 'shopify_add_checkout_url_error_count';
 

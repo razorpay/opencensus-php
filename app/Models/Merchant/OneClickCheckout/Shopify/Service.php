@@ -109,6 +109,7 @@ class Service extends Base\Service
         $cartLineItems = [];
 
         $isCartDiscountApplied = false;
+        $discountSource = 'Unknown';
 
         foreach ($lineItems as $key => $item)
         {
@@ -124,6 +125,8 @@ class Service extends Base\Service
                 {
                     $offerPrice = 0;
                 }
+
+                $discountSource = 'Automatic';
 
                 $isCartDiscountApplied = true;
             }
@@ -161,7 +164,8 @@ class Service extends Base\Service
 
         return [
             'cart_line_items' => $cartLineItems,
-            'is_cart_discount_applied' => $isCartDiscountApplied
+            'is_cart_discount_applied' => $isCartDiscountApplied,
+            'discount_source' => $discountSource
         ];
     }
 
@@ -409,12 +413,13 @@ class Service extends Base\Service
             $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
 
             $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+            $discountSource = $cartLineItemsData['discount_source'];
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
             $amount = $checkoutAmount;
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied, $discountSource);
         }
         // For now we generate a random UUID for product_id as it is a compulsory field with product_type.
         // This id will be changed once decomp from order meta is completed.
@@ -567,7 +572,9 @@ class Service extends Base\Service
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache, true);
+            $discountSource = 'Script';
+
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache, true, $discountSource);
         }
 
         return [
@@ -2207,6 +2214,7 @@ class Service extends Base\Service
         {
             $notes['Script_Discount_Amount'] = $discountFromScript;
             $notes['Script_Discount_Title']  = $discountTitle === '' ? 'SPECIAL OFFER' : $discountTitle;
+            $notes['discount_source']  = 'Plugin';
         }
         return $notes;
     }

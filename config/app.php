@@ -678,6 +678,8 @@ return array(
 
     '1cc_branded_btn_splitz_exp_id' => env('MAGIC_CHECKOUT_BRANDED_BUTTON_EXP_ID'),
 
+    'magic_shopify_taxes_admin_checkout_experiment_id'  => env('MAGIC_SHOPIFY_TAXES_ADMIN_CHECKOUT_EXP_ID'),
+
     'magic_enable_shopify_taxes_experiment_id'  => env('MAGIC_ENABLE_SHOPIFY_TAXES_EXP_ID'),
 
     'magic_qr_v2_experiment_id'  => env('MAGIC_QR_V2_EXP_ID'),

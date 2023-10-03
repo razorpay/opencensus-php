@@ -60,6 +60,8 @@ class Core extends Base\Core
 
     const CUSTOMER_ACCOUNTS                          = 'customer_accounts';
 
+    const CALCULATE_DRAFT_ORDER                      = 'v1/calculate_draftorder';
+
     const MAGIC_CHECKOUT_SERVICE_DRAFT_ORDER_PATH = 'v1/draftorder';
 
     protected $monitoring;
@@ -1614,6 +1616,21 @@ class Core extends Base\Core
 
         $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
 
+        if($isTaxExpEnabled === false && $body['taxes_included'] === false)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_TAX_EXPERIMENT_DISABLED,
+                [
+                    'type'            => '1cc_shopify_enabled_tax_disabled',
+                    'taxes_included'  => $body['taxes_included'],
+                    'checkout_id'     => $checkoutId,
+                    'order_id'        => $rzpOrder['id'],
+                ]
+            );
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_TAX_EXPERIMENT_DISABLED, ['taxes_included' => $body['taxes_included']]);
+        }
+
         if($body['taxes_included'] === true)
         {
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
@@ -1847,73 +1864,25 @@ class Core extends Base\Core
         // Based on experiment value and tax amount field value will add tax_lines to the order create payload
         if($isTaxExpEnabled === true && $taxLineRequired === true)
         {
-            //To fetch the tax line details from admin REST api
-            $adminCheckoutRes = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+            $adminCheckoutCallExp = (new CommonUtils())->isAdminCheckoutRequiredExp();
 
-            if(empty($adminCheckoutRes) === false && empty($adminCheckoutRes['tax_lines']) === false)
+            if($adminCheckoutCallExp === true)
             {
+                //To fetch the tax line details from admin REST api
+                $adminCheckoutRes = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
 
-                $body['tax_lines'] = $adminCheckoutRes['tax_lines'];
+                if(empty($adminCheckoutRes) === false && empty($adminCheckoutRes['tax_lines']) === false)
+                {
+                    $body['tax_lines'] = $adminCheckoutRes['tax_lines'];
+                }
             }
             else
             {
-                $taxablePrice = 0;
-                $allocatedAmount = 0;
+                $calculateDraftOrder = $this->calculateDraftOrder($rzpOrder, $orderMeta);
 
-                if(isset($orderMeta))
+                if(empty($calculateDraftOrder) === false && empty($calculateDraftOrder['tax_lines']) === false)
                 {
-                    $value = $orderMeta->getValue();
-
-                    $cartItems = $value['line_items'];
-
-                    foreach ($cartItems as $cartItem)
-                    {
-
-                        if($cartItem['taxable'] === true)
-                        {
-
-                            $items = $checkout['data']['node']['lineItems']['edges'];
-
-                            if(isset($items))
-                            {
-                                foreach ($items as $item)
-                                {
-                                    if(strpos($item['node']['variant']['id'], strval($cartItem['variant_id'])) !== false)
-                                    {
-                                        if(!empty($item['node']['discountAllocations']))
-                                        {
-
-                                            $allocatedAmount = $allocatedAmount + floatval($item['node']['discountAllocations'][0]['allocatedAmount']['amount']);
-                                        }
-                                    }
-                                }
-                            }
-                            $taxablePrice = $taxablePrice + (($cartItem['price']/100) * $cartItem['quantity']) - $allocatedAmount;
-                        }
-                    }
-
-                    if(isset($totalTax) && $totalTax > 0 && $taxablePrice > 0)
-                    {
-                        if($body['taxes_included'] === true)
-                        {
-                            $productPrice = $taxablePrice - $totalTax;
-                            $rate = (new Utils)->formatNumber($totalTax / $productPrice);
-                        }
-                        else
-                        {
-                            $rate = (new Utils)->formatNumber($totalTax / $taxablePrice);
-                        }
-
-                        $taxDetails = [];
-
-                        array_push($taxDetails, [
-                            'title' => 'GST',
-                            'rate'  => $rate,
-                            'price' => $totalTax,
-                        ]);
-
-                        $body['tax_lines'] = $taxDetails;
-                    }
+                    $body['tax_lines'] = $calculateDraftOrder['tax_lines'];
                 }
             }
 
@@ -2714,6 +2683,56 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::SHOPIFY_AUTOMATIC_ACCOUNT_CREATION_ERROR,[
                 'error'=> $e->getMessage()
             ]);
+            return [];
+        }
+    }
+
+    public function calculateDraftOrder($order, $orderMeta) : array
+    {
+        try {
+
+            $orderMeta = $orderMeta->getValue();
+
+            // Merchant Config will be passed in request body to magic checkout service which will use the
+            // merchant configs to call shopify
+            $merchantConfig = $this->getShopifyAuthByMerchant();
+
+            $merchantId = $this->merchant->getId();
+
+            $merchantConfig = array_merge(['merchant_id' => $merchantId], $merchantConfig);
+
+            $customerDetails = $orderMeta['customer_details'];
+            $shippingAddress = $customerDetails['shipping_address'];
+
+            $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($shippingAddress);
+
+            $orderMeta['customer_details']['shipping_address']['state_code'] = $stateCodeFromName;
+
+            $input = [
+                'rzp_order'       => $order,
+                'rzp_order_meta'  => $orderMeta,
+                'merchant_config' => $merchantConfig
+            ];
+
+            $path = self::CALCULATE_DRAFT_ORDER;
+
+            $response = $this->app['magic_checkout_service_client']->sendRequest($path, $input, Requests::POST);
+
+            $this->trace->info(TraceCode::SHOPIFY_CALCULATE_DRAFT_ORDER_TRIGGERED,[
+                'order_id'=>$input['rzp_order']['id'], 'response' => $response
+            ]);
+
+            return $response;
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::SHOPIFY_CALCULATE_DRAFT_ORDER_ERROR,[
+                'error'=> $e->getMessage()
+            ]);
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_CALCULATE_DRAFT_ORDER_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_CALCULATE_DRAFT_ORDER_ERROR]);
+
             return [];
         }
     }
