@@ -43,7 +43,6 @@ import {
 } from './ga';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import {
-  handleNegativeBalanceLimit,
   getCommonAnalyticsProperties,
   getFormattedAmountNew,
   checkHTML5APIvalidity,
@@ -330,17 +329,6 @@ class AnalyticsDesktop extends Component {
     );
   };
 
-  showGSTOptOutFlow = () => {
-    if (this.props.user.features) {
-      const show = this.props.user.features.filter((f) => f.feature === `suggested_address_opt_in`);
-      if (show.length > 0) return true;
-      else;
-      return false;
-    } else {
-      return false;
-    }
-  };
-
   onClickCovidEnableNow = async () => {
     try {
       await merchantFetch({
@@ -456,7 +444,6 @@ class AnalyticsDesktop extends Component {
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
-      merchantBalanceConfigs,
       lateAuthConfig,
       ondemand_restrictions,
       settleNowRestrictionMsg,
@@ -683,85 +670,6 @@ class AnalyticsDesktop extends Component {
                   to configure your capture setting.
                 </AnnouncementBanner>
               )}
-            {this.showGSTOptOutFlow() === true && (
-              <AnnouncementBanner
-                title="GST Address Mismatch"
-                theme="warning"
-                canBeClosed={false}
-                card_id="gst-address-mismatch-banner"
-              >
-                The business address you provided to Razorpay does not match with your address
-                details on your GST certificate. On Jan 25, 2021, we will update your address to the
-                same as your GST details.
-                <Link
-                  className="Button--secondary Button scheduled-btn-act btn-border mt-4 gst-mismatch-banner-link"
-                  to="/profile#gst"
-                >
-                  Review address
-                </Link>
-              </AnnouncementBanner>
-            )}
-            {current_balance.data.balance < 0 && (
-              <AnnouncementBanner
-                title="Add Funds"
-                theme="warning"
-                canBeClosed={true}
-                card_id="negative-balance-add-funds-banner"
-              >
-                Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
-                <Link
-                  onClick={() => {
-                    analyticsTrack({
-                      objectName: 'banner',
-                      actionName: 'clicked',
-                      screen: 'home page',
-                      properties: {
-                        hyperlinkClicked: 'Add Funds',
-                        title: 'Add Funds',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                  to="/addfunds"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  {' '}
-                  Add Funds
-                </Link>
-              </AnnouncementBanner>
-            )}
-            {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
-              <AnnouncementBanner
-                title="On Hold!"
-                theme="danger"
-                canBeClosed={true}
-                card_id="on-hold-add-funds-banner"
-              >
-                Your current balance had reached the maximum negative limit. Transactions will start
-                to fail now. Please add funds to avoid transaction failures.{' '}
-                <Link
-                  onClick={() => {
-                    analyticsTrack({
-                      objectName: 'banner',
-                      actionName: 'clicked',
-                      screen: 'home page',
-                      properties: {
-                        hyperlinkClicked: 'Add Funds',
-                        title: 'On Hold!',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                  to="/addfunds"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  {' '}
-                  Add Funds
-                </Link>
-              </AnnouncementBanner>
-            )}
             <DashboardBanner />
             <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
               <CatalystCampaignBannerPhase2

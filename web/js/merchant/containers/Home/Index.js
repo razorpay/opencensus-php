@@ -619,7 +619,6 @@ class HomeContainer extends Component {
     document.body.className += bodyClass;
     const { user } = this.props;
 
-    this.props.fetchCurrentBalance();
     this.fetchOldestTransactionDate();
     this.fetchTxnsGroupedByPlatform();
 

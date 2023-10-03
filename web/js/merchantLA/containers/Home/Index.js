@@ -374,7 +374,6 @@ export default class HomeContainer extends Component {
     // to style react-power-selct specific to this tab
     document.body.className += bodyClass;
 
-    this.props.fetchCurrentBalance();
     this.fetchOldestTransactionDate();
     this.fetchTxnsGroupedByPlatform();
   }

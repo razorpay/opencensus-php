@@ -73,6 +73,7 @@ import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dat
 import lazy from 'merchant/routes/LazyLoader';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import cloneDeep from 'lodash/cloneDeep';
+import { fetchCurrentBalance } from 'merchant/reducers/home';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -446,20 +447,12 @@ class App extends Component {
         removeSplashLoader();
         this.setState({ isLoading: false });
       });
-
-    // Above parellel apis are render blocking & below apis are non render blocking
-
-    // Giving less priority to below non render blocking APIs, because server doesn't support more than 8 parellel requests
-    setTimeout(() => {
-      // Pushing these API calls on next tick to prioritize above apis
-      this.props.fetchGST();
-
-      this.props.fetchConfig();
-      this.props.fetchRefundPricing();
-      this.props.fetchMerchantReferralDetail();
-      this.fetchSupportedCurrencies();
-      this.props.fetchTrustedBadgeStatus();
-    }, 0);
+    this.props.fetchConfig();
+    this.props.fetchCurrentBalance();
+    this.props.fetchTrustedBadgeStatus();
+    this.props.fetchMerchantReferralDetail();
+    this.props.fetchGST();
+    this.fetchSupportedCurrencies();
 
     const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {
@@ -925,7 +918,6 @@ class App extends Component {
   fetchOrg() {
     const org = window.rzp_org;
     if (org) {
-      delete window.rzp_org;
       this.props.updateSession({ org });
       return Promise.resolve({ data: org });
     } else {
@@ -1330,6 +1322,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchPayments,
       fetchTransactionAmount: fetchAmount,
       fetchEligibilityForNcRevamp,
+      fetchCurrentBalance,
     },
     dispatch,
   );

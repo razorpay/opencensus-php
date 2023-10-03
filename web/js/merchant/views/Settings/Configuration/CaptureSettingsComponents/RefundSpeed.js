@@ -270,7 +270,6 @@ function RefundSpeed(props) {
 const mapStateToProps = (state) => ({
   user: state.session.user,
   lateAuthConfig: state.config.lateAuthConfig,
-  refund_pricing: state.config.refund_pricing,
 });
 
 const mapDispatchToProps = (dispatch) => {

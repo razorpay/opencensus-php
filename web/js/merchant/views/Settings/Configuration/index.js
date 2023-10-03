@@ -103,6 +103,10 @@ class CongfigurationContainer extends Component {
     }
   }
 
+  componentDidMount() {
+    this.props.fetchRefundPricing();
+  }
+
   is_hash_loaded_once = false;
   saveConfig = ({ brand_color, transaction_report_email }, config) => {
     const data = {};
@@ -246,7 +250,7 @@ class CongfigurationContainer extends Component {
 
       this.scrolltoIR();
     }
-    if (this.props.location.hash === '#instantfee' && !this.props.refund_pricing.not_loaded) {
+    if (this.props.location.hash === '#instantfee' && !this.props.refund_pricing?.not_loaded) {
       this.props.openModal({
         component: <InstantRefundFee pricing={this.props.refund_pricing} />,
         size: 'small',
