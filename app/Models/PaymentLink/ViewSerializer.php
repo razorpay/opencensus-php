@@ -14,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class ViewSerializer extends Base\Core
 {
