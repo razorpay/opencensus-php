@@ -292,7 +292,8 @@ class Job extends Base\Core
         $this->trace->info(TraceCode::HEALTH_CHECKER_NOTIFY_RAS_INITIATED,
                            [
                                'merchant_id'            => $merchantId,
-                               Constants::CHECKER_TYPE  => $checkerType
+                               Constants::CHECKER_TYPE  => $checkerType,
+                               Constants::EVENT_TYPE    => $eventType,
                            ]
         );
 

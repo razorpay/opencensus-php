@@ -150,6 +150,7 @@ class Service extends Base\Service
         }
 
         $details = [
+            Constants::MERCHANT_ORG_ID                      => $merchant->org->getId(),
             Constants::MERCHANT_FOH_KEY                     => $merchant->isFundsOnHold(),
             Constants::MERCHANT_INTERNATIONAL_KEY           => $merchant->isInternational(),
             Constants::MERCHANT_LIVE_KEY                    => $merchant->isLive(),

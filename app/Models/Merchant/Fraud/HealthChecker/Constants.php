@@ -118,7 +118,7 @@ class Constants
         '(merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
         '(merchant_fact_txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND merchant_fact_txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
 
-    const TRANSACTION_DEDUPE_RISK_SCORE        = 90;
+    const TRANSACTION_DEDUPE_RISK_SCORE        = 67;
     const RISK_SCORE_MERCHANT_LIST_DRUID_QUERY =
         'SELECT merchants_id FROM druid.risk_scoring_fact ' .
         'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
