@@ -75,7 +75,7 @@ class Repository extends Base\Repository
     ];
 
     private bool $isExpEnableForESearchOnCreatedAtFirst = false;
-    
+
     public const SUCCESSFUL_PAYMENTS_COUNT_SQL = <<<'EOT'
 SELECT
   merchant_id,
@@ -96,22 +96,22 @@ EOT;
     public function setExperimentForESearchOnCreatedAtFirst(bool $expEnableValue): Repository
     {
         $this->isExpEnableForESearchOnCreatedAtFirst = $expEnableValue;
-        
+
         return $this;
     }
-    
+
     public function getExperimentForESearchOnCreatedAtFirst(): bool
     {
         return $this->isExpEnableForESearchOnCreatedAtFirst;
     }
-    
+
     public function setEsRepoIfExist()
     {
         $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
-        
+
         $this->esRepo = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst);
     }
-    
+
     protected function serializeForIndexing(PublicEntity $entity): array
     {
         $serialized = parent::serializeForIndexing($entity);
@@ -607,7 +607,7 @@ EOT;
             ->select($paymentData)
             ->get();
     }
-    
+
     /**
      *  refer: https://razorpay.slack.com/archives/CQ932EVNH/p1624709316068200
      */
@@ -664,7 +664,7 @@ EOT;
                 try
                 {
                     $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
-    
+
                     $paymentIds = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst)
                                     ->buildQueryAndSearch($params, $merchantId);
 
@@ -2267,6 +2267,23 @@ EOT;
         $query->where(Token\Entity::RECURRING_STATUS, '=', $params[Token\Entity::RECURRING_STATUS]);
 
         $query->select($this->getTableName() . '.*');
+    }
+
+    protected function addQueryParamFlow($query, $params)
+    {
+        if ($params[Payment\Entity::METHOD] !== Method::UPI)
+        {
+            return;
+        }
+
+        $paymentIdColumn               = $this->dbColumn(Payment\Entity::ID);
+        $upiMetadataNewTableName       = Table::getTableNameForEntity(Constants\Entity::UPI_METADATA);
+        $upiMetadataNewFlowColumn      = $this->repo->upi_metadata->dbColumn(UpiMetadata\Entity::FLOW);
+        $upiMetadataNewPaymentIdColumn = $this->repo->upi_metadata->dbColumn(UpiMetadata\Entity::PAYMENT_ID);
+
+        $query->join($upiMetadataNewTableName, $paymentIdColumn, '=', $upiMetadataNewPaymentIdColumn);
+
+        $query->where($upiMetadataNewFlowColumn, '=', $params[Entity::FLOW]);
     }
 
     protected function addWDAQueryParamRecurringStatus($wdaQueryBuilder, $params)

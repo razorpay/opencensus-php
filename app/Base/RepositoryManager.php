@@ -234,6 +234,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\QrPayment\Repository                                     $qr_payment
  * @property Models\Customer\CustomerConsent1cc\Repository                   $customer_consent_1cc
  * @property Models\Merchant\Referral\Repository                             $referrals
+ * @property Models\Payment\UpiMetadata\Repository                           $upi_metadata
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

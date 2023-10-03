@@ -13,6 +13,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Admin\Role\TenantRoles;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
@@ -2326,6 +2327,114 @@ class PaymentFetchTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedUpiMetadata, $paymentFetchResponse['upi_metadata']);
+    }
+
+    public function testPaymentFetchMultipleViaProxyAuthWithUpiInAppQueryParam()
+    {
+        $this->enableInAppPaymentMethodOnMerchant();
+
+        $paymentRequest = $this->getDefaultUpiBlockIntentPaymentArray();
+
+        //Non Turbo Payment should not be present in the response when upi_flow=in_app query param is supplied
+        $this->doAuthPaymentViaAjaxRoute($paymentRequest);
+
+        $paymentRequest['upi']['flow'] = 'in_app';
+        $payment1 = $this->doAuthPaymentViaAjaxRoute($paymentRequest);
+        $payment2 = $this->doAuthPaymentViaAjaxRoute($paymentRequest);
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/payments?method=upi&flow=in_app',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $paymentFetchResponse = $this->makeRequestAndGetContent($request);
+
+        $expectedPaymentItems = [
+            [
+                'id'           => $payment1['payment_id'],
+                'upi_metadata' => [
+                    'flow' => 'in_app',
+                ]
+            ],
+            [
+                'id'           => $payment2['payment_id'],
+                'upi_metadata' => [
+                    'flow' => 'in_app',
+                ]
+            ]
+        ];
+
+        $this->assertArrayHasKey('items', $paymentFetchResponse);
+        $this->assertEquals(2, $paymentFetchResponse['count']);
+
+        $sortedPaymentItems = array_values(array_sort($paymentFetchResponse['items'], function(array $payment)
+        {
+            return $payment['id'];
+        }));
+
+        foreach ($sortedPaymentItems as $idx => $pment)
+        {
+            $this->assertEquals($pment['id'], $expectedPaymentItems[$idx]['id']);
+            $this->assertEquals($pment['upi_metadata'], $expectedPaymentItems[$idx]['upi_metadata']);
+        }
+    }
+
+    public function testTurboPaymentFetchMultipleViaPrivateAuthErrorCase1()
+    {
+        $this->enableInAppPaymentMethodOnMerchant();
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/payments?method=upi&flow=in_app',
+            'content' => []
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        },
+            ExtraFieldsException::class,
+            "method, flow is/are not required and should not be sent"
+        );
+    }
+    public function testTurboPaymentFetchMultipleViaPrivateAuthErrorCase2()
+    {
+        $this->enableInAppPaymentMethodOnMerchant();
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/payments?flow=in_app',
+            'content' => []
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        },
+            ExtraFieldsException::class,
+            "flow is/are not required and should not be sent"
+        );
+    }
+
+    public function enableInAppPaymentMethodOnMerchant()
+    {
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
     }
 
     private function mockRazorxWith(string $featureUnderTest, string $value = 'on')

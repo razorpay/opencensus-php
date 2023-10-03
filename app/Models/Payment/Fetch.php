@@ -33,7 +33,7 @@ class Fetch extends BaseFetch
             Entity::REFUND_STATUS                => 'sometimes|in:null,partial,full',
             Entity::TWO_FACTOR_AUTH              => 'sometimes|string',
             Entity::BANK                         => 'sometimes',
-            Entity::METHOD                       => 'sometimes',
+            Entity::METHOD                       => 'sometimes|required_with:flow',
             Entity::GATEWAY                      => 'sometimes',
             Entity::MERCHANT_ID                  => 'sometimes|alpha_num|size:14',
             Entity::CARD_ID                      => 'sometimes|alpha_num|size:14',
@@ -57,13 +57,15 @@ class Fetch extends BaseFetch
             Entity::SETTLED_BY                   => 'sometimes',
             Entity::INTL_BANK_TRANSFER           => 'sometimes|in:0,1',
             EsRepository::QUERY                  => 'sometimes|string|min:1|max:100',
+            Entity::FLOW                         => 'sometimes|string|in:in_app,intent,collect'
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
             self::EXPAND_EACH =>
                 'filled|string|in:card,emi,emi_plan,disputes,transfer,token,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
-            Entity::METHOD   => 'sometimes|string',
-            Entity::ORDER_ID => 'sometimes|string|size:20',
+            Entity::METHOD    => 'sometimes|string|required_with:flow',
+            Entity::ORDER_ID  => 'sometimes|string|size:20',
+            Entity::FLOW      => 'sometimes|string|in:in_app,intent,collect'
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',
@@ -101,6 +103,7 @@ class Fetch extends BaseFetch
             Entity::SETTLED_BY,
             Merchant\Entity::COUNTRY_CODE,
             Entity::METHOD,
+            Entity::FLOW,
             Entity::ORDER_ID,
             EsRepository::QUERY,
         ],
