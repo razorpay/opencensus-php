@@ -27,10 +27,16 @@ class PaymentsCrossBorderClient
     const GET = 'GET';
     const POST = 'POST';
 
+    const GET_LRS_QUOTE = 'v1/lrs_quote';
+
+    const UPDATE_PAYMENT_STATUS = 'v1/payment_status/{order_id}';
+
     const PAYMENTS_CROSS_BORDER_URLS = [
         "GET_DOCUMENTS" => self::GET_DOCUMENTS,
         "CONFIGURE_DCS" => self::CONFIGURE_DCS,
         "GET_CONFIGURE_DCS" => self::GET_CONFIGURE_DCS,
+        "GET_LRS_QUOTE" => self::GET_LRS_QUOTE,
+        "UPDATE_PAYMENT_STATUS" => self::UPDATE_PAYMENT_STATUS,
     ];
 
     protected $client;
@@ -145,6 +151,38 @@ class PaymentsCrossBorderClient
             throw $e;
         }
     }
+
+    public function getLRSQuote($input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['GET_LRS_QUOTE'];
+
+        try {
+            return $this->makeRequest($url, self::GET, $input);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_LRS_QUOTE_FETCH_ERROR,[
+                'error' => $e,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    public function updatePaymentStatus($input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['UPDATE_PAYMENT_STATUS'];
+        $url = str_replace('{order_id}', $input['order_id'], $url);
+        unset($input['order_id']);
+        try {
+            return $this->makeRequest($url, 'POST', $input);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_PAYMENT_STATUS_UPDATE_ERROR,[
+                'error' => $e,
+            ]);
+
+            throw $e;
+        }
+    }
+
 
     public function postDCSConfiguration($input)
     {

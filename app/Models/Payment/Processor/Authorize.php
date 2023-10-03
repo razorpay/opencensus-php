@@ -102,6 +102,7 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
+use RZP\Models\Checkout\Order\Repository as CheckoutOrderRepository;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Jobs\SavedCardTokenisationJob;
@@ -168,6 +169,7 @@ trait Authorize
 
         $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
+        $this->setConvertCurrencyIfLrsEducationEnabled($payment);
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
         $this->processCurrencyConversions($payment, $input);
@@ -185,6 +187,8 @@ trait Authorize
         $this->runPaymentInputValidations($payment, $input);
 
         $this->preProcessDCCInputs($input, $payment);
+
+        $this->preProcessLRSInputs($input, $payment);
 
         $this->preProcessDCCForRecurringAutoOnDirect($input, $payment);
 
@@ -4514,6 +4518,49 @@ trait Authorize
         $this->setPayment($payment);
     }
 
+    protected function setConvertCurrencyIfLrsEducationEnabled(&$payment)
+    {
+        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        {
+            $payment->setConvertCurrency(true);
+        }
+
+    }
+    /**
+     * @throws Exception\BadRequestException
+     */
+    protected function preProcessLRSInputs(array $input, Payment\Entity $payment): void
+    {
+        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        {
+
+            $paymentMetaInput = [
+                'gateway_amount'            => $payment->getBaseAmount(),
+                'gateway_currency'          => "INR",
+                'forex_rate'                => $input['lrs_forex_rate'],
+                'payment_id'                => $payment->getId(),
+            ];
+
+
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+
+            if(empty($paymentMeta))
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($payment);
+            }
+            else
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateLRSInfo($paymentMeta, $paymentMetaInput);
+            }
+
+            $this->trace->info(TraceCode::PRE_PAYMENT_FOR_LRS_PROCESSED, $paymentMetaInput);
+        }
+    }
+
+
     /**
      * @throws Exception\BadRequestException
      */
@@ -4978,7 +5025,7 @@ trait Authorize
 
         // For card and App method payments, check all conditions
         // and for rest payment methods check only if currency != INR
-        if (($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
+        if (!$merchant->isLRSEducationFlowEnabled() && ($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
             ((($payment->getMethod() != Method::CARD) && ($payment->getMethod() != Method::APP)) ||
              ($merchant->isDCCEnabledInternationalMerchant() === false ||
               $payment->isInternational() === false)))
@@ -5036,7 +5083,7 @@ trait Authorize
             $currency !== $merchant->getCurrency() and
             $merchant->isFeeBearerCustomerOrDynamic())
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational()|| $merchant->isLRSEducationFlowEnabled())
             {
                 $amount = $amount - $payment->getFee();
             }
@@ -5053,8 +5100,16 @@ trait Authorize
             }
         }
 
+        if($merchant->isLRSEducationFlowEnabled() === true)
+        {
+            $input['is_lrs_merchant'] = true;
+            $input['order_id'] = $payment->getOrderId();
+        }
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
-
+        if($merchant->isLRSEducationFlowEnabled() === true)
+        {
+            unset($input['order_id']);
+        }
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use merchant / default
         // level percentage for lower values in base_amount for settlement.
@@ -5075,7 +5130,7 @@ trait Authorize
             $currency !== $merchant->getCurrency() and
             $merchant->isFeeBearerCustomerOrDynamic())
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational() || $merchant->isLRSEducationFlowEnabled())
             {
                 $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
                 $baseAmount = $baseAmount + $baseFee;

@@ -105,6 +105,18 @@ class Core extends Base\Core
         return $paymentMeta->getId();
     }
 
+    public function updateLRSInfo(PaymentMeta\Entity $paymentMeta, $input)
+    {
+        $paymentMeta->setGatewayAmount($input['gateway_amount']);
+        $paymentMeta->setGatewayCurrency($input['gateway_currency']);
+        $paymentMeta->setForexRate($input['forex_rate']);
+        $paymentMeta->setPaymentId($input['payment_id']);
+
+        $this->repo->saveOrFail($paymentMeta);
+
+        return $paymentMeta->getId();
+    }
+
     public function updateMccInfo(PaymentMeta\Entity $paymentMeta, $input)
     {
         $paymentMeta->setMccApplied($input['mcc_applied']);

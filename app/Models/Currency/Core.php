@@ -136,34 +136,51 @@ class Core extends Base\Core
     // Since base amount is used in the settlement process, hence need to calculate the payment amount in merchant currency itself
     public function getBaseAmount($amount, $currency, $merchantCurrency = "INR", &$input = null)
     {
-        if ($currency === $merchantCurrency)
-        {
+        if ($currency === $merchantCurrency) {
             return $amount;
         }
 
-        if(isset($input) && isset($input['mcc_request_id']))
-        {
-            $rates = $this->getRatesById($currency, $input);
+        if (isset($input) && isset($input['is_lrs_merchant'])) {
+                return $this->getLrsRates($input);
+        } else if (isset($input) && isset($input['mcc_request_id'])) {
+                $rates = $this->getRatesById($currency, $input);
+        } else {
+                $rates = $this->getOrUpdateRates($currency, $input);
         }
-        else
-        {
-            $rates = $this->getOrUpdateRates($currency, $input);
+
+            $denominationFactorMerchantCurrency = Currency::DENOMINATION_FACTOR[$merchantCurrency];
+
+            $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
+
+            $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+
+            $baseAmount = $amount * $rates[$merchantCurrency] * $denominationFactor;
+
+            $baseAmount = (int)ceil($baseAmount);
+
+            $input['mcc_applied'] = true;
+            $input['mcc_forex_rate'] = $rates[Currency::INR];
+
+            return $baseAmount;
+    }
+
+    public function getLrsRates(&$input)
+    {
+        $param = [
+            'order_id' => $input['order_id'],
+        ];
+        $lrs_quote = $this->getLrsQuote($param);
+        if (!empty($lrs_quote) && isset($lrs_quote['data'])) {
+            $input['mcc_applied'] = true;
+            $input['mcc_forex_rate'] = $lrs_quote['data']['exchange_rate'];
+            $input['lrs_forex_rate'] = $lrs_quote['data']['exchange_rate'];
+            return $lrs_quote['data']['converted_amount'];
         }
+    }
 
-        $denominationFactorMerchantCurrency = Currency::DENOMINATION_FACTOR[$merchantCurrency];
-
-        $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
-
-        $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
-
-        $baseAmount = $amount * $rates[$merchantCurrency] * $denominationFactor;
-
-        $baseAmount = (int) ceil($baseAmount);
-
-        $input['mcc_applied'] = true;
-        $input['mcc_forex_rate'] = $rates[Currency::INR];
-
-        return $baseAmount;
+    public function getLrsQuote($param)
+    {
+         return  $this->app['payments-cross-border']->getLRSQuote($param);
     }
 
     public function convertAmount($amount, $fromCurrency, $toCurrency)
@@ -229,6 +246,24 @@ class Core extends Base\Core
             return;
         }
 
+        $fee = (int) ceil(($fee / $rate) * $denominationFactor);
+        $tax = (int) ceil(($tax / $rate) * $denominationFactor);
+    }
+
+    public function reverseLRSEducationFee($input, &$fee, &$tax): void
+    {
+        $param = [
+            'order_id' => $input['order_id'],
+        ];
+        $lrs_quote = $this->getLrsQuote($param);
+        if (empty($lrs_quote))
+        {
+            return;
+        }
+        $rate = $lrs_quote['data']['exchange_rate'];
+        $denominationFactorInr = Currency::DENOMINATION_FACTOR[Currency::INR];
+        $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$input['currency']];
+        $denominationFactor = $denominationFactorInputCurr/$denominationFactorInr;
         $fee = (int) ceil(($fee / $rate) * $denominationFactor);
         $tax = (int) ceil(($tax / $rate) * $denominationFactor);
     }

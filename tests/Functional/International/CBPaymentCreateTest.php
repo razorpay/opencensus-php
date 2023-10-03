@@ -12,6 +12,7 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Services\RazorXClient;
+use RZP\Services\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -43,8 +44,9 @@ class CBPaymentCreateTest extends TestCase
         parent::setUp();
 
         $this->ba->publicAuth();
-        $this->fixtures->create('terminal:shared_sharp_terminal');
 
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
     public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimit()
@@ -853,6 +855,8 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
 
+        $this->setMockForPCBClient();
+
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['currency'] = 'USD';
         $order = $this->createOrder([
@@ -875,13 +879,107 @@ class CBPaymentCreateTest extends TestCase
         $this->assertSame('authorized', $lastPayment['status']);
     }
 
+    public function setMockForPCBClient()
+    {
+        $mockResponseGetLRSQuote =[
+            'data' => [
+                'converted_amount' => 40228,
+                'converted_currency' => 'INR',
+                'exchange_rate' => 80.12,
+                'fees' => [
+                    'gst' => 20108,
+                    'tcs' => 12108,
+                ],
+            ],
+        ];
+
+        $mockResponseUpdatePaymentStatus = [
+            'data' => [
+                'status' => 'success',
+            ],
+        ];
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['getLRSQuote','updatePaymentStatus'])->getMock();
+
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+        $pxbServiceMock->method("getLRSQuote")
+            ->willReturn($mockResponseGetLRSQuote);
+        $pxbServiceMock->method("updatePaymentStatus")
+            ->willReturn($mockResponseUpdatePaymentStatus);
+    }
+
+    public function testLRSEducationNbPaymentAuthorized()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_education_flow', 'tpv']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray();
+        $this->setMockForPCBClient();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['currency'] = 'USD';
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+            'bank_account' => [
+                'account_number' => '765432123456789',
+                'name' => 'test user',
+                'ifsc' => 'ICIC0006561',
+            ],
+        ]);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+    }
+
+    public function testLRSEducationNbPaymentAuthorizedConvertCurrencyDisabled()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_education_flow', 'tpv']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => false]);
+
+        $this->setMockForPCBClient();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['currency'] = 'USD';
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+            'bank_account' => [
+                'account_number' => '765432123456789',
+                'name' => 'test user',
+                'ifsc' => 'ICIC0006561',
+            ],
+        ]);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+
+    }
+
     public function testLRSEducationPaymentCaptureFailure()
     {
+        $this->setMockForPCBClient();
         $this->captureLRSPayment($this->makeLRSAuthPayment());
     }
 
     public function testLRSEducationPaymentInternalCapture()
     {
+        $this->setMockForPCBClient();
         $this->captureLRSPayment($this->makeLRSAuthPayment(), true);
 
         $payment = $this->getLastEntity('payment', true);
@@ -891,6 +989,7 @@ class CBPaymentCreateTest extends TestCase
 
     public function testLRSEducationRefund()
     {
+        $this->setMockForPCBClient();
         $this->makeLRSAuthPayment();
         $this->gateway = Gateway::UPI_MINDGATE;
 

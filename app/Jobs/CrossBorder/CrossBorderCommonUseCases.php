@@ -77,6 +77,8 @@ class CrossBorderCommonUseCases extends Job
     const CREATE_INVOICE_VERIFICATION_WORKFLOW = 'CREATE_INVOICE_VERIFICATION_WORKFLOW';
 
     const DISABLE_ON_DEMAND_SETTLEMENT = 'DISABLE_ON_DEMAND_SETTLEMENT';
+
+    const UPDATE_PAYMENT_STATUS = 'update_payment_status';
     /**
      * @var string
      */
@@ -125,6 +127,9 @@ class CrossBorderCommonUseCases extends Job
 
             switch($action)
             {
+                case self::UPDATE_PAYMENT_STATUS:
+                    $this->app['payments-cross-border']->updatePaymentStatus($this->payload['body']);
+                    break;
                 case self::GENERATE_DCC_E_INVOICE:
                     $this->generateEInvoice();
                     break;
