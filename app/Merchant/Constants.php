@@ -295,4 +295,6 @@ class Constants
     const HEADERS = [
         'Content-Type' => 'application/json'
     ];
+
+    const MERCHANT_DETAIL_ADMIN_PAGE = 'https://admin-dashboard.razorpay.com/admin/merchants/%s/detail';
 }

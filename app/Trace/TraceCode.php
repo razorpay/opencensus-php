@@ -267,6 +267,8 @@ class TraceCode
 
     const PROMISE_BUILT_TIME                        = 'PROMISE_BUILT_TIME';
 
+    const ERROR_FETCHING_MERCHANT_DETAILS           = 'ERROR_FETCHING_MERCHANT_DETAILS';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

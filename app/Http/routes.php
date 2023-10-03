@@ -227,6 +227,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/user/otp/verify', 'UserController@verifyUserViaOtp')->name('post_user_otp_verify');
         Route::post('/user/verify_contact', 'UserController@verifyContact')->name('post_user_verify_contact');
+
+        Route::get('/support_chat/jwt_token', 'MerchantController@getSupportChatJwtToken')->name('get_support_chat_token');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame', 'set_csp_header']], function()

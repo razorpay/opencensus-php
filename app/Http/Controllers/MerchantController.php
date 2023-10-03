@@ -116,6 +116,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
+    public function getSupportChatJwtToken()
+    {
+        list($error, $data) = (new Merchant\Service)->getSupportChatJwtToken();
+
+        return AppResponse::jsonResponse($error,$data);
+    }
+
     public function postSaveActivationStep($stepNumber)
     {
         $input = Input::all();

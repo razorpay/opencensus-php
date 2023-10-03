@@ -3,12 +3,14 @@
 namespace App\Merchant;
 
 use Auth;
+use Uuid;
 use Hash;
 use Queue;
 use Session;
 use Request;
 use Carbon\Carbon;
 use App\Http\ApiUrl;
+use Firebase\JWT\JWT;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors\ServerError;
@@ -131,6 +133,54 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function getSupportChatJwtToken()
+    {
+
+        $privateKey = $this->app['config']->get('app.chat_support_jwt_encryption_key');
+
+        $currentUser = Auth::guard('user')->user();
+
+        $currentMerchant = empty($currentUser) === true ? null: $currentUser->currentMerchant() ;
+
+        // in case merchant is not set in session
+        if (is_null($currentMerchant) == true)
+        {
+            throw new BadRequestError(
+                'Invalid merchant request.',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
+        }
+
+        list($error, $merchantDetails) = (new ApiRequestAny(['client_type' => 'merchant']))->processInput()->send('merchant/activation', 'GET');
+        if (empty($error) === false)
+        {
+            $this->trace->error(TraceCode::ERROR_FETCHING_MERCHANT_DETAILS, [
+                'error '=> $error,
+            ]);
+
+            return [$error, null];
+        }
+
+        $payload = [
+            'iat' => Carbon::now()->unix(),
+            'reference_id' => $currentMerchant->id,
+            'freshchat_uuid' => Uuid::generate(),
+            'email' => $currentUser->email,
+            'first_name' => $currentUser->name,
+            'phone_number' => $currentUser->contact_mobile,
+            'cf_role' => $currentMerchant->role,
+            'cf_mid' => $currentMerchant->id,
+            'cf_activation_status' => $merchantDetails['activation_status'],
+            'cf_dashboard_link' => sprintf(Constants::MERCHANT_DETAIL_ADMIN_PAGE, $currentMerchant->id,),
+            'cf_is_contexual' => true,
+        ];
+
+        $jwt = JWT::encode($payload, $privateKey, 'RS256');
+
+        return [null, ['jwt_token' => $jwt]];
+
     }
 
     public function fetchMerchantFromApi($merchantId)
