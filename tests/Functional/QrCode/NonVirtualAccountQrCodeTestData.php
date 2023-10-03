@@ -441,7 +441,7 @@ return [
         ],
     ],
 
-    'testStatusCheckApiYesbankErrorResponsee' => [
+    'testStatusCheckApiYesbankErrorResponse' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',
@@ -454,6 +454,135 @@ return [
         ],
     ],
 
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndExperimentOff' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'qr_payment_live',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'qr_payment_live',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'=> [
+                'bool'=> [
+                    'filter'=> [
+                        'bool'=> [
+                            'must'=> [
+                                [
+                                    'term'=> [
+                                        'qr_code_id'=> [
+                                            'value'=> 'MNt3GuG5hYPuKZ'
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'term'=> [
+                                        'merchant_id'=> [
+                                            'value'=> 'LiveAccountMer'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => 'MO5mMUDdF3sKdc',
+                ],
+            ],
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreation' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithQrPayments' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 100,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'method'            => 'upi',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'QRv2 Payment',
+                        'email'             => null,
+                        'contact'           => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ]
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testFetchPaymentsForQrCode' => [
         'entity' => 'collection',

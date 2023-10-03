@@ -658,4 +658,48 @@ class Service extends QrCode\Service
 
         return $response;
     }
+
+    public function triggerQrStatusCheckForPaymentFetch(string $id): void
+    {
+        $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_INIT_IN_PAYMENT_FETCH, ['id' => $id]);
+
+        Entity::silentlyStripSign($id);
+
+        /**
+         * @var $qrCode Entity
+         */
+        $qrCode = $this->repo->qr_code->find($id);
+
+        // If the QR code is not found, no point of dispatching it for status check
+        if ($qrCode === null)
+        {
+            $this->trace->info(TraceCode::QR_CODE_NOT_FOUND, ['id' => $id]);
+            return;
+        }
+
+        // If it has not yet been 3 minutes between QR Code create and now, don't dispatch for status check
+        if (abs((Carbon::now(Timezone::IST)->timestamp) - $qrCode->getCreatedAt()) <= 180)
+        {
+            $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_TIME_TOO_EARLY, ['id' => $id]);
+            return;
+        }
+
+        if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
+            ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
+            (($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_ICICI) or
+             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_YESBANK)) and
+            ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
+        {
+            // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs
+            if ($this->evaluateQrCodeEligibilityViaSplitzForStatusCheck($qrCode) === false)
+            {
+                return;
+            }
+
+            // After dispatch, when the worker picks the message up, the worker performs other validations too
+            // Since the dispatch step has a unique job check, we won't be dispatching multiple messages for the same
+            // QR code at once.
+            (new Core())->dispatchQrCodeToStatusCheckQueue($id);
+        }
+    }
 }

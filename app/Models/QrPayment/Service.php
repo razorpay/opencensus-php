@@ -2,23 +2,25 @@
 
 namespace RZP\Models\QrPayment;
 
+use Razorpay\Trace\Logger as Trace;
+use Illuminate\Support\Facades\Cache;
+
+use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Es;
-use RZP\Constants\HyperTrace;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
-use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2;
-use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrV2Status;
+use RZP\Constants\HyperTrace;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\QrPaymentRequest\Type;
-use RZP\Trace\Tracer;
-use RZP\Trace\TraceCode;
-use Illuminate\Support\Facades\Cache;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrV2Status;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as QrV2Service;
 
 class Service extends Base\Service
 {
@@ -36,7 +38,29 @@ class Service extends Base\Service
     {
         $input[Entity::QR_CODE_ID] = $id;
 
-        return $this->fetchMultiplePayments($input);
+        $payments = $this->fetchMultiplePayments($input);
+
+        try
+        {
+            if (count($payments['items']) === 0)
+            {
+                (new QrV2Service())->triggerQrStatusCheckForPaymentFetch($id);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::QR_STATUS_CHECK_EXCEPTION_IN_FETCH_PAYMENTS_FLOW,
+                [
+                    'input' => $input,
+                    'id'    => $id,
+                ]
+            );
+        }
+
+        return $payments;
     }
 
     public function fetchMultiplePayments($input)
