@@ -1,6 +1,7 @@
+// TODO : merge this type into common/typings/User
 export interface UserT extends Record<string, unknown> {
   // TS_TODO : Add missing fields are per need
-  isSubMerchantKycResellerEnabled: boolean;
+  isSubMerchantKycEnabled: boolean;
   isPartnershipNPS: boolean;
   isPartnershipFUX: boolean;
   isOnboardAsResellers: boolean;

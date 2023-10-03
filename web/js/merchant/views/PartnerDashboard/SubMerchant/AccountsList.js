@@ -247,8 +247,6 @@ class ProductSubMerchantsList extends ListContainer {
     // if this feature is enabled - allows partner to perform submerchant kyc without requesting them
     this.isSubMerchantKYCAccess = user.isFeatureEnabled('partner_sub_kyc_access');
     this.isCapitalProduct = product === PRODUCT_TYPE.CAPITAL;
-    this.isPGProductWithInviteFlow =
-      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
   }
 
   getActivationBulkData = (items) => {
@@ -308,7 +306,12 @@ class ProductSubMerchantsList extends ListContainer {
   }
 
   checkIfPGInvitesEmpty = () => {
-    if (this.isPGProductWithInviteFlow) {
+    const { user, product, experiments } = this.props;
+    const isPGProductWithInviteFlow =
+      (user.isPartnershipsInviteFlowEnabled || experiments.isPlatformPartnerInviteFlowEnabled) &&
+      product === PRODUCT_TYPE.PG;
+
+    if (isPGProductWithInviteFlow) {
       // Note: This is a partially nonblocking network call to determine the welcome screen condition
       fetchInvites(this.props.user.id, {
         product: PRODUCT_TYPE.PG,
@@ -426,21 +429,6 @@ class ProductSubMerchantsList extends ListContainer {
     value: (item) => <Link to={`/partners/submerchants/capital/${item.id}`}>{item.name}</Link>,
   });
 
-  actions = {
-    title: 'Actions',
-    value: (submerchant) => (
-      <ActionButtonKYC
-        activation_status={submerchant.details.activation_status}
-        kyc_access={submerchant.kyc_access}
-        submerchant={submerchant}
-        trackUserEvent={this.trackUserEvent}
-        isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
-        isPGProductWithInviteFlow={this.isPGProductWithInviteFlow}
-        showNotification={this.props.showNotification}
-      />
-    ),
-  };
-
   getActivationStatus_NEW = () => {
     return {
       title: (
@@ -477,8 +465,12 @@ class ProductSubMerchantsList extends ListContainer {
       },
       toCleverTap: true,
     });
-    const { experiments, openModal } = this.props;
-    if (experiments.isEasierAccessToSubmerchantKycEnabled) {
+    const { openModal, experiments, product } = this.props;
+    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
+      experiments;
+    const isPlatformPartnerWithPGInviteFlow =
+      isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
+    if (isPlatformPartnerWithPGInviteFlow || isEasierAccessToSubmerchantKycEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
       openModal({
@@ -657,32 +649,28 @@ class ProductSubMerchantsList extends ListContainer {
   render() {
     // prettier-ignore
     const { user, experiments, product, referralData, location, org } = this.props;
+    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
+      experiments;
     const { capitalLoading, capitalItems, isPGInvitesEmpty, isPGInvitesEmptyCheckLoading } =
       this.state;
-    let appIdColumn = [];
-    let switchMerchantColumn = [];
+
     const referralUrl = referralData ? referralData[product]?.url : '';
     const isNonEmptyList = Array.isArray(this.props.items) && this.props.items.length > 0;
     const isNonEmptyCapitalList = Array.isArray(capitalItems) && capitalItems?.length > 0;
     const isFilterSearchUsed = location.search !== '';
 
+    const isPlatformPartnerWithPGInviteFlow =
+      experiments.isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
     const isPGProductWithInviteFlow =
-      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
-
-    const isCombinedContactFilterEnabled =
-      isPGProductWithInviteFlow || (user.isOrgRZP && product === PRODUCT_TYPE.PG);
+      isPlatformPartnerWithPGInviteFlow ||
+      (user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG);
+    const isCombinedContactFilterEnabled = user.isOrgRZP && product === PRODUCT_TYPE.PG;
 
     const shouldShowWelcomeScreen =
       (!isPGProductWithInviteFlow || isPGInvitesEmpty) &&
       !isNonEmptyList &&
       !isFilterSearchUsed &&
       !user.isPartner('pure_platform');
-
-    if (user.isPartner('pure_platform')) {
-      appIdColumn = [appId];
-    } else if (user.isPartner('aggregator', 'fully_managed')) {
-      switchMerchantColumn = [this.switchMerchantActionBtn(this.handleSwitchMerchant)];
-    }
 
     if (user.isPartnerIntent()) {
       this.props.openModal({
@@ -705,16 +693,41 @@ class ProductSubMerchantsList extends ListContainer {
         </tabbed-container>
       );
     }
+    const actionsColumn = {
+      title: 'Actions',
+      value: (submerchant) => (
+        <ActionButtonKYC
+          activation_status={submerchant.details.activation_status}
+          kyc_access={submerchant.kyc_access}
+          submerchant={submerchant}
+          trackUserEvent={this.trackUserEvent}
+          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+          isPGProductWithInviteFlow={this.isPGProductWithInviteFlow}
+          showNotification={this.props.showNotification}
+        />
+      ),
+    };
+    let conditionalAppIdColumn = [];
+    let conditionalSwitchMerchantColumn = [];
+    if (user.isPartner('pure_platform')) {
+      conditionalAppIdColumn = [appId];
+    } else if (user.isPartner('aggregator', 'fully_managed')) {
+      conditionalSwitchMerchantColumn = [this.switchMerchantActionBtn(this.handleSwitchMerchant)];
+    }
+    const getPGInviteFlowColumnsForRZP = () => {
+      const conditionalActionsColumn =
+        user.isPartner('pure_platform') && !this.isSubMerchantKYCAccess ? [] : [actionsColumn];
 
-    const getResellerInviteFlowColumnsForRZP = () => [
-      this.name(user.isPartner('pure_platform')),
-      id,
-      mobileAndEmail,
-      ...appIdColumn,
-      activationStatus,
-      this.actions,
-      inviteAcceptedOn,
-    ];
+      return [
+        this.name(user.isPartner('pure_platform')),
+        id,
+        mobileAndEmail,
+        ...conditionalAppIdColumn,
+        activationStatus,
+        ...conditionalActionsColumn,
+        inviteAcceptedOn,
+      ];
+    };
 
     const getTableColumns_PG = () => {
       const emailOrContact = isCombinedContactFilterEnabled ? mobileAndEmail : email;
@@ -722,38 +735,40 @@ class ProductSubMerchantsList extends ListContainer {
         this.name(user.isPartner('pure_platform')),
         id,
         emailOrContact,
-        ...appIdColumn,
+        ...conditionalAppIdColumn,
         addedOn,
         activationStatus,
         settlementStatus,
-        ...switchMerchantColumn,
+        ...conditionalSwitchMerchantColumn,
       ];
-      if (this.props.isSubMerchantKycResellerEnabled && user.isPartner('reseller')) {
+
+      if (user.isSubMerchantKycEnabled && user.isPartner('reseller')) {
         const orgCode = org?.custom_code || 'rzp';
         const ORG_COLUMNS = {
           rzp: [
             this.name(user.isPartner('pure_platform')),
             id,
             emailOrContact,
-            ...appIdColumn,
+            ...conditionalAppIdColumn,
             this.getActivationStatus_NEW(),
-            this.actions,
+            actionsColumn,
             // settlementStatus,
             addedOn,
-            ...switchMerchantColumn,
+            ...conditionalSwitchMerchantColumn,
           ],
           curlec: [
             this.name(user.isPartner('pure_platform')),
             id,
             email,
-            ...appIdColumn,
+            ...conditionalAppIdColumn,
             this.getActivationStatus_NEW(),
             addedOn,
-            ...switchMerchantColumn,
+            ...conditionalSwitchMerchantColumn,
           ],
         };
         columns = ORG_COLUMNS[orgCode];
       }
+
       return columns;
     };
 
@@ -824,7 +839,7 @@ class ProductSubMerchantsList extends ListContainer {
                     </div>
                   )
                 }
-                columns={getResellerInviteFlowColumnsForRZP()}
+                columns={getPGInviteFlowColumnsForRZP()}
                 {...this.props}
               />
             ) : null}
@@ -857,7 +872,14 @@ class ProductSubMerchantsList extends ListContainer {
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}
-                columns={[this.xName(), id, email, ...appIdColumn, xCurrentAccountStatus, addedOn]}
+                columns={[
+                  this.xName(),
+                  id,
+                  email,
+                  ...conditionalAppIdColumn,
+                  xCurrentAccountStatus,
+                  addedOn,
+                ]}
                 {...this.props}
               />
             )}
@@ -886,7 +908,9 @@ class ProductSubMerchantsList extends ListContainer {
                     <ShowWhen
                       myRole="owner manager admin"
                       additionalCondition={(currentUser) =>
-                        currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+                        currentUser.isPartner() &&
+                        (isPlatformPartnerWithPGInviteFlow ||
+                          !currentUser.isPartner('pure_platform'))
                       }
                     >
                       <div>
@@ -952,10 +976,14 @@ class ProductSubMerchantsList extends ListContainer {
           </div>
         </div>
 
-        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+        {isEasierAccessToSubmerchantKycEnabled || isPlatformPartnerWithPGInviteFlow ? (
           <InviteMerchantModal
             initialProductType={product}
-            initialStep={INVITE_MERCHANT_STEPS.INVITE_TABS}
+            initialStep={
+              isPlatformPartnerInviteFlowEnabled
+                ? INVITE_MERCHANT_STEPS.CHOOSE_OAUTH_APP
+                : INVITE_MERCHANT_STEPS.INVITE_TABS
+            }
             isOpen={this.state.isInviteMerchantModalOpen}
             onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
           />
@@ -988,7 +1016,6 @@ export const PrimarySubMerchantList = compose(
       user: state.session.user,
       mode: state.session.mode,
       org: state.session.org,
-      isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
       ...state.submerchants,
     }),
     getDispatchToProps(PRODUCT_TYPE.PG),

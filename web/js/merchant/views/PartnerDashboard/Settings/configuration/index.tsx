@@ -38,7 +38,8 @@ export const AppConfiguration = ({
   },
 }: AppConfigProps): JSX.Element => {
   const { abExperiments } = useSplitzService();
-  const isExpEnabled = abExperiments.Partnerships_oauth_phantom?.variables?.result === 'on';
+  const isExpEnabled =
+    abExperiments.partnerships_oauth_phantom_configurator?.variables?.result === 'on';
 
   return (
     <div className="tabbed-container">

@@ -124,10 +124,26 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/partners.*/i],
       abExperiments: [
         {
-          uniqueHashKey: 'Partnerships_oauth_phantom',
+          uniqueHashKey: 'partnerships_oauth_phantom_configurator',
           experimentId: {
             beta: 'MT04AJ2UqjKHCV',
             production: 'MT0jjJjiPjwd9l',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'partnerships_oauth_phantom',
+          experimentId: {
+            beta: 'LoGdTEB7Wo0UuW',
+            production: 'LoGggyN9DVhO7A',
           },
           defaultVariant: {
             name: 'variables',

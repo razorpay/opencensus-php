@@ -19,7 +19,6 @@ import { fetchProducts } from 'merchant/reducers/capital';
 @connect(
   (state) => ({
     user: state.session.user,
-    isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
     capitalProducts: state.loanApplicationDetails.products,
     ...state.submerchant,
   }),
@@ -162,14 +161,14 @@ class SubmerchantDetailsContainer extends Component {
       loading,
       error,
       switchMerchant: _switchMerchant,
-      isSubMerchantKycResellerEnabled,
       capitalProducts,
     } = this.props;
     return (
       <Details
         getPannelData={this.getPannelData}
         isReseller={user.isPartner('reseller')}
-        isSubMerchantKycResellerEnabled={isSubMerchantKycResellerEnabled}
+        isSubMerchantKycEnabled={user.isSubMerchantKycEnabled}
+        isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
         trackUserEvent={this.trackUserEvent}
         isLoading={loading}
         submerchant={submerchant}
@@ -178,7 +177,6 @@ class SubmerchantDetailsContainer extends Component {
         onInviteMerchant={this.handleInviteClick}
         onResendInvite={this.handleResendInvite}
         product={this.state.product}
-        isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
         capitalProducts={capitalProducts}
       />
     );
