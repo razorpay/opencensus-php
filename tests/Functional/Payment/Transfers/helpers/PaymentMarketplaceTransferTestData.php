@@ -761,4 +761,30 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_SUSPENDED
         ],
     ],
+
+    'testTransferProcessedWebhookEventWithTransactionIsolation' => [
+        'entity'   => 'event',
+        'event'    => 'transfer.processed',
+        'contains' => [
+            'transfer',
+        ],
+        'payload'  => [
+            'transfer' => [
+                'entity' => [
+                    'entity'                  => 'transfer',
+                    'recipient'               => 'acc_10000000000001',
+                    'status'                  => 'processed',
+                    'currency'                => 'INR',
+                    'amount_reversed'         => 0,
+                    'notes'                   => [],
+                    'fees'                    => 0,
+                    'tax'                     => 0,
+                    'on_hold'                 => false,
+                    'on_hold_until'           => null,
+                    'recipient_settlement_id' => null,
+                    'linked_account_notes'    => [],
+                ],
+            ],
+        ],
+    ]
 ];

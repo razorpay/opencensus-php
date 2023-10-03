@@ -123,6 +123,7 @@ class Constants
     const TRANSACTION_ISOLATION_ORDER_EXPERIMENT = "app.transaction_isolation_for_order_experiment_id";
     const TRANSACTION_ISOLATION_REFUND_EXPERIMENT = "app.transaction_isolation_for_refund_experiment_id";
     const TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT = "app.transaction_isolation_for_payment_experiment_id";
+    const TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID = "app.transaction_isolation_for_transfer_experiment_id";
     const TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT = "app.transaction_isolation_for_dispute_experiment_id";
 
     public static array $transactionIsolationEventToExperimentMap = [
@@ -134,6 +135,8 @@ class Constants
         Event::PAYMENT_AUTHORIZED    => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_CAPTURED      => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_FAILED        => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
+        Event::TRANSFER_PROCESSED     => self::TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID,
+        Event::TRANSFER_FAILED        => self::TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID,
         Event::PAYMENT_DISPUTE_CREATED         => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,
         Event::PAYMENT_DISPUTE_LOST            => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,
         Event::PAYMENT_DISPUTE_WON             => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,

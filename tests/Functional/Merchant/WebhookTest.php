@@ -1630,24 +1630,4 @@ class WebhookTest extends TestCase
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
     }
-
-    protected function createPartnerAndSubmerchantMapping() : string
-    {
-        $partner = $this->fixtures->create('merchant');
-
-        $partnerId = $partner->getId();
-
-        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
-
-        // Assign submerchant to partner
-        $accessMapData = [
-            'entity_type'     => 'application',
-            'merchant_id'     => '10000000000000',
-            'entity_owner_id' => $partnerId,
-        ];
-
-        $this->fixtures->create('merchant_access_map', $accessMapData);
-
-        return $partnerId;
-    }
 }

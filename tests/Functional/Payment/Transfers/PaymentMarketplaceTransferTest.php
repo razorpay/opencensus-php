@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
@@ -1450,5 +1452,72 @@ class PaymentMarketplaceTransferTest extends TestCase
         {
             $this->transferPayment($this->payment['id'], $transfers);
         });
+    }
+
+    public function testTransferProcessedWebhookEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $this->fixtures->merchant->addFeatures('marketplace');
+
+        $testData = $this->testData['testCreateTransferFromBatch'];
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/transfers/batch';
+
+        $expectedEvent = $this->testData[__FUNCTION__];
+
+        $this->expectWebhookEventWithContext(
+            'transfer.processed',
+            ['entity_type' => 'transfer', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testTransferFailedWebhookEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $expectedEvent = $this->testData['testTransferFailedWebhook'];
+
+        $this->expectWebhookEventWithContext(
+            'transfer.failed',
+            ['entity_type' => 'transfer', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $this->transferPayment($this->payment['id'], $transfers);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 }

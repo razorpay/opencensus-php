@@ -822,12 +822,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getTransferPayload($transfer);
 
+        $this->setContextForEntity($transfer->getMerchantId(), Constants\Entity::TRANSFER, $transfer->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onTransferFailed(Transfer\Entity $transfer)
     {
         $payload = $this->getTransferPayload($transfer);
+
+        $this->setContextForEntity($transfer->getMerchantId(), Constants\Entity::TRANSFER, $transfer->getId());
 
         $this->dispatchEventToStork($payload);
     }
