@@ -306,6 +306,10 @@ class SplitzService extends Base\Service
 
         $startTime = millitime();
 
+        $preRequestParams = $this->getRequestParams([], self::EVALUATE_BULK_URL, Requests::POST);
+
+        $asyncPromiseInstance = new AsyncRequest($preRequestParams['url'] ,$preRequestParams['method']);
+
         foreach ($chunkExperimentArray as $batchExperimentArray)
         {
             $bulk_evaluate = ['bulk_evaluate' => $batchExperimentArray];
@@ -318,8 +322,6 @@ class SplitzService extends Base\Service
             ];
 
             $payload = array_merge($options, $requestParams['options']);
-
-            $asyncPromiseInstance = new AsyncRequest($requestParams['url'] ,$requestParams['method']);
 
             $asyncPromise = $asyncPromiseInstance->requestAsync($payload);
 
