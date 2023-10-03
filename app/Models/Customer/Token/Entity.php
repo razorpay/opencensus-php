@@ -1015,6 +1015,13 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::EXPIRED_AT] = $expiredAt;
         }
+
+        // default token expiry for emandate/nach is 30 years
+        if ((empty($expiredAt) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $this->attributes[self::EXPIRED_AT] = Carbon::now()->addYears(30)->timestamp;
+        }
     }
 
     protected function setAadhaarNumberAttribute($aadhaarNumber)

@@ -738,6 +738,17 @@ class Validator extends Base\Validator
                     'expire_at cannot be less than current time'
                 );
             }
+
+            if (($input[Entity::METHOD] === Method::EMANDATE))
+            {
+                $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+                if ($input[Entity::EXPIRE_AT] > $validationTime)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'expire_at cannot be more than 30 years for emandate & paper nach'
+                    );
+                }
+            }
         }
     }
 }

@@ -474,6 +474,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREQUENCY, $frequency);
     }
 
+    public function setExpireAt(string $expiry)
+    {
+        $this->setAttribute(self::EXPIRE_AT, $expiry);
+    }
+
     public function build(array $input = array())
     {
         $subscriptionRegistration = parent::build($input);

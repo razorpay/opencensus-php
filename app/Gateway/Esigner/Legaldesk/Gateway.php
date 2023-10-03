@@ -315,7 +315,7 @@ class Gateway extends Base\Gateway
             RequestFields::INSTRUCTED_AGENT_CODE      => $bank,
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
             RequestFields::AUTHENTICATION_MODE        => Constants::DEFAULT_AUTHENTICATION_MODE,
-            RequestFields::IS_UNTIL_CANCELLED         => 'true',
+            RequestFields::UNTILL_30_YEARS         => 'true',
         ];
 
         if ($input['token']->getExpiredAt() !== null)
@@ -323,7 +323,7 @@ class Gateway extends Base\Gateway
             $finalCollection = Carbon::now(Timezone::IST)->setTimestamp($input['token']->getExpiredAt());
 
             $content[RequestFields::FINAL_COLLECTION_DATE] = $finalCollection->format('Y-m-d');
-            unset($content[RequestFields::IS_UNTIL_CANCELLED]);
+            unset($content[RequestFields::UNTILL_30_YEARS]);
         }
 
         if ($input['payment']['auth_type'] === Payment\AuthType::AADHAAR_FP)

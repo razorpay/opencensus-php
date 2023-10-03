@@ -476,7 +476,7 @@ trait UpiRecurring
 
         $this->validateTokenMaxAmount($token, $payment);
 
-        $this->validateTokenExpiredAt($token);
+        $this->validateTokenExpiredAt($token, $payment);
     }
 
     protected function validateInitialRecurringForUpi(Payment\Entity $payment, array $input)

@@ -82,6 +82,13 @@ class Core extends Base\Core
             }
         }
 
+        if ((empty($input[Entity::EXPIRE_AT]) === true) and
+            ($input[Entity::METHOD] === Method::EMANDATE))
+        {
+            // default token expiry is 30 years for emandate/nach
+            $subscriptionRegistration->setExpireAt(Carbon::now()->addYears(30)->timestamp);
+        }
+
         $subscriptionRegistration->merchant()->associate($merchant);
 
         $subscriptionRegistration->customer()->associate($customer);

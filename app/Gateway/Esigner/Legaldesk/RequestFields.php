@@ -41,6 +41,7 @@ class RequestFields
     const CREDITOR_ACCOUNT_ID        = 'creditor_account_id';
     const AUTHENTICATION_MODE        = 'authentication_mode';
     const IS_UNTIL_CANCELLED         = 'is_until_cancel';
+    const UNTILL_30_YEARS            = 'untill_30_years';
 
     const EMANDATE_ID = 'emandate_id';
 }

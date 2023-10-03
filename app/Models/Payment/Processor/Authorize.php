@@ -2814,7 +2814,7 @@ trait Authorize
 
         if (is_null($token) === false)
         {
-            $this->validateTokenExpiredAt($token);
+            $this->validateTokenExpiredAt($token, $payment);
 
             $this->validateTokenRecurringStatus($token, $payment);
 
@@ -2887,7 +2887,7 @@ trait Authorize
 
         $this->validateTokenMaxAmount($token, $payment);
 
-        $this->validateTokenExpiredAt($token);
+        $this->validateTokenExpiredAt($token, $payment);
     }
 
     protected function validateRecurringForNach(Payment\Entity $payment,
@@ -2918,7 +2918,7 @@ trait Authorize
 
         $this->validateTokenMaxAmount($token, $payment);
 
-        $this->validateTokenExpiredAt($token);
+        $this->validateTokenExpiredAt($token, $payment);
     }
 
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
@@ -3164,7 +3164,7 @@ trait Authorize
         }
     }
 
-    protected function validateTokenExpiredAt(Token\Entity $token)
+    protected function validateTokenExpiredAt(Token\Entity $token, Payment\Entity $payment)
     {
         $currentTime = Carbon::now()->getTimestamp();
 
@@ -3179,6 +3179,19 @@ trait Authorize
                     Token\Entity::ID         => $token->getId(),
                     Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
                 ]);
+        }
+
+        if(($token->getMethod() === Method::EMANDATE) and
+            ($payment->isRecurringTypeInitial() === true) and
+            (($token !== null) and ($token->getExpiredAt() !=null)))
+        {
+            $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+            if ($token->getExpiredAt() > $validationTime)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'expire_at cannot be more than 30 years for emandate & paper nach'
+                );
+            }
         }
     }
 
@@ -6977,8 +6990,9 @@ trait Authorize
             $saveMethodInput[Token\Entity::AADHAAR_VID] =
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
+            // default expiry of emandate token is 30 years
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY];
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? Carbon::now()->addYears(30)->timestamp;
         }
 
         $token = (new Token\Core)->createForSubscription(

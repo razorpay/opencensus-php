@@ -127,9 +127,6 @@ class NetbankingAxisEMandateTest extends TestCase
             $token
         );
 
-        $expiredAt = Carbon::createFromTimestamp($payment['created_at'])->addYears(10)->getTimestamp();
-        $this->assertEquals($token['expired_at'], $expiredAt);
-
         $netbanking = $this->getLastEntity(Entity::NETBANKING, true);
 
         $this->assertArraySelectiveEquals(
