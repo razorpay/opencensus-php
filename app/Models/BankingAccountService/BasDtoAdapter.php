@@ -82,7 +82,7 @@ class BasDtoAdapter
         "activation_detail.sales_team"                                                     => "banking_account_application.sales_team",
         "activation_detail.sales_poc_phone_number"                                         => "account_managers.sales_poc.phone_number",
         "activation_detail.sales_poc_id"                                                   => "account_managers.sales_poc.rzp_admin_id",
-        "activation_detail.comment"                                                        => "banking_account_application.comment",
+        "activation_detail.comment"                                                        => "banking_account_application.metadata.comment",
         // for array comment input
         "activation_detail.comment.comment"                                                => "banking_account_application.comment_input.comment",
         "activation_detail.comment.source_team"                                            => "banking_account_application.comment_input.source_team",
@@ -229,6 +229,16 @@ class BasDtoAdapter
         'activation_detail.api_ir_closed_date',
         'activation_detail.comment.added_at',
         'account_activation_date',
+    ];
+
+    const INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_BAS = [
+        'activation_detail.additional_details.dwt_completed_timestamp',
+        'activation_detail.additional_details.dwt_scheduled_timestamp'
+    ];
+
+    const INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_API = [
+        'banking_account_activation_details.additional_details.dwt_completed_timestamp',
+        'banking_account_activation_details.additional_details.dwt_scheduled_timestamp'
     ];
 
     /**
@@ -515,6 +525,19 @@ class BasDtoAdapter
     }
 
     /**
+     * Convert integer to string
+     */
+    public function convertToString($value)
+    {
+        if (empty($value))
+        {
+            return $value;
+        }
+
+        return (string)$value;
+    }
+
+    /**
      * Convert timestamp from MS to seconds
      * Used to convert BAS response to API response
      */
@@ -588,6 +611,11 @@ class BasDtoAdapter
                 if (in_array($path, self::STRING_FIELD_TO_TRANSFORM_INTO_INT))
                 {
                     $value = $this->convertToInteger($value);
+                }
+
+                if (in_array($path, self::INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_BAS))
+                {
+                    $value = $this->convertToString($value);
                 }
 
                 if (in_array($targetPath, self::DATE_FIELDS_TO_TRANSFORM_INTO_MS))
@@ -732,6 +760,11 @@ class BasDtoAdapter
                 if (in_array($basPath, self::DATE_FIELDS_TO_TRANSFORM_INTO_SECONDS))
                 {
                     $value = $this->convertEpochMillisToSeconds($value);
+                }
+
+                if (in_array($apiPath, self::INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_API))
+                {
+                    $value = $this->convertToInteger($value);
                 }
 
                 assign_array_by_flattened_path($apiResponseDto, $apiPath, $value);

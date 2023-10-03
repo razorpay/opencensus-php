@@ -1375,4 +1375,11 @@ class BankingAccountService
     {
         return $this->patchRBLApplicationComposite($referenceNumber, $input);
     }
+
+    public function rblMigrationBas($request) : array
+    {
+        return [
+            'business_id'   => 'MgqKFy7ypqYtO5'
+        ];
+    }
 }

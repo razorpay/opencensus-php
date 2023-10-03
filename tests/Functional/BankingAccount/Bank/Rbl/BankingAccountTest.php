@@ -13937,6 +13937,246 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testRblMigrationBas()
+    {
+        // 1. basic setup
+        $this->testActivate();
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $activationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        // 2. update banking_account, banking_account_activation_detail using testdata
+        $inputData = $this->testData['testApiToBasDtoAdapter']['apiInput'];
+
+        unset($inputData['details']);
+
+        $activationDetailInput = $inputData['activation_detail'];
+
+        unset($inputData['activation_detail']);
+
+        $bankingAccount = $this->fixtures->edit('banking_account', $bankingAccount->getId(), array_merge($inputData, [
+            'balance_id'    => $balance->getId(),
+            'merchant_id'   => $bankingAccount->getMerchantId(),
+            'channel'       => 'rbl',
+            'status'        => 'activated',
+            'account_type'  => 'current'
+        ]));
+
+        $bankPocUser = $this->fixtures->create('user', [
+            'id'    => $activationDetailInput['bank_poc_user_id']
+        ]);
+
+        $activationDetailInput['additional_details'] = json_encode($activationDetailInput['additional_details']);
+
+        $activationDetailInput['rbl_activation_details'] = json_encode($activationDetailInput['rbl_activation_details']);
+
+        $activationDetailInput['bank_poc_user_id'] = $bankPocUser->getId();
+
+        unset($activationDetailInput['sales_poc_id']);
+
+        $activationDetail = $this->fixtures->edit('banking_account_activation_detail', $activationDetail->getId(), $activationDetailInput);
+
+        $balance = $this->fixtures->edit('balance', $balance->getId(), [
+            'account_number' => $bankingAccount->getAttribute('account_number')
+        ]);
+
+        // 3. add auditors
+        (new BankingAccount\Core)->addOpsMxPOCToBankingAccount($bankingAccount, Org::SUPER_ADMIN_SIGNED);
+
+        (new BankingAccount\Core)->addReviewerToBankingAccount($bankingAccount, Org::SUPER_ADMIN_SIGNED);
+
+        $this->ba->adminAuth();
+
+        $this->mockBankingAccountService();
+
+        $this->fixtures->on('live')->edit('merchant_detail', $bankingAccount->getMerchantId(), [
+            'contact_email'     => 'test@email.com',
+            'activation_status' => 'activated'
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $bankingAccount->getMerchantId(), [
+            'contact_email'     => 'test@email.com',
+            'activation_status' => 'activated'
+        ]);
+
+        // 4. set up assertion for transformation
+        $expectedBasInput = $this->testData['testApiToBasDtoAdapter']['expectedBasInput'];
+
+        $expectedBusiness = array_merge($expectedBasInput['business'], [
+            'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+            'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+            'merchant_id'           => $bankingAccount->getMerchantId()
+        ]);
+
+        $expectedPerson = array_merge($expectedBasInput['person'], [
+            'created_at'    => $bankingAccount->getAttribute('created_at') * 1000,
+            'updated_at'    => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+        ]);
+
+        $expectedBankingAccountApplication = array_merge($expectedBasInput['banking_account_application'], [
+            'id'                    => $bankingAccount->getId(),
+            'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+            'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+            'business_id'           => '',
+            'banking_account_id'    => $bankingAccount->getId(),
+            'application_type'      => 'RBL_ONBOARDING_APPLICATION',
+            'metadata'              => array_merge($expectedBasInput['banking_account_application']['metadata'], [
+                'is_allowed_on_partner_lms' => false
+            ]),
+            'application_status'    => 'activated'
+        ]);
+
+        $expectedBankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = false;
+
+        $expectedBankingAccount = array_merge($expectedBasInput['banking_account'], [
+            'id'                    => $bankingAccount->getId(),
+            'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+            'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+            'business_id'           => '', // will be computed at BAS
+            'status'                => 'ACTIVE',
+            'account_type'          => 'CA_DIRECT',
+            'partner_bank'          => 'RBL',
+            'balance_id'            => $balance->getId(),
+            'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
+            'credentials'           => [
+                'auth_username' => 'ldap_id',
+                'auth_password' => 'ldap_password',
+                'corp_id'       => 'corp_id',
+                'client_id'     => '123zz',
+                'client_secret' => '123zz'
+            ]
+        ]);
+
+        $expectedPartnerBankApplication = array_merge($expectedBasInput['partner_bank_application'], [
+            'created_at'    => $bankingAccount->getAttribute('created_at') * 1000,
+            'updated_at'    => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+        ]);
+
+        $expectedBankingAccountAccountManagers = [
+            [
+                'rzp_admin_id'      => Org::SUPER_ADMIN,
+                'relationship_type' => 'SALES_POC'
+            ],
+            [
+                'rzp_admin_id'      => Org::SUPER_ADMIN,
+                'relationship_type' => 'OPS_POC'
+            ],
+            [
+                'rzp_admin_id'      => Org::SUPER_ADMIN,
+                'relationship_type' => 'OPS_MX_POC'
+            ],
+            [
+                'rzp_admin_id'      => $bankPocUser->getId(),
+                'relationship_type' => 'RBL_BANK_POC'
+            ],
+        ];
+        
+        $apiComment = $bankingAccount->getActivationComments()->first();
+
+        $expectedComments = [
+            [
+                'created_at'                        => $apiComment->getAttribute('created_at') * 1000,
+                'updated_at'                        => $apiComment->getAttribute('updated_at') * 1000,
+                'type'                              => $apiComment->getAttribute('type'),
+                'added_at'                          => $apiComment->getAttribute('added_at'),
+                'banking_account_application_id'    => $bankingAccount->getId(),
+                'comment'                           => $apiComment->getAttribute('comment'),
+                'on_behalf_of'                      => 'sales',
+                'commented_by'                      => Org::SUPER_ADMIN,
+                'notes'                             => json_encode([
+                    'first_disposition'     => '',
+                    'second_disposition'    => '',
+                    'third_disposition'     => ''
+                ])
+            ]
+        ];
+
+        $bankingAccountStates = $bankingAccount->getActivationStatusChangeLog();
+
+        $expectedApplicationStatusLogs = [];
+
+        foreach ($bankingAccountStates as $bankingAccountState)
+        {
+            if (!empty($bankingAccountState->getAttribute('user_id')))
+            {
+                // status log was added by bank
+                $createdBy = $bankingAccountState->getAttribute('user_id');
+            }
+            else
+            {
+                $createdBy = $bankingAccountState->getAttribute('admin_id');
+            }
+
+            $assigneeTeam = $bankingAccountState->getAttribute('assignee_team');
+
+            $assigneeTeam = ($assigneeTeam === 'bank_ops') ? 'ops_and_bank' : $assigneeTeam;
+
+            $applicationStatusLog = [
+                'created_at'                        => $bankingAccountState->getAttribute('created_at') * 1000,
+                'application_status'                => $bankingAccountState->getAttribute('status'),
+                'bank_status'                       => $bankingAccountState->getAttribute('bank_status'),
+                'banking_account_application_id'    => $bankingAccount->getId(),
+                'created_by'                        => $createdBy,
+                'bank_sub_status'                   => '', // not applicable for RBL
+                'registration_status'               => '', // not applicable for RBL
+                'sub_status'                        => $bankingAccountState->getAttribute('sub_status'),
+                'assignee_team'                     => $assigneeTeam,
+            ];
+
+            $expectedApplicationStatusLogs[] = $applicationStatusLog;
+        }
+
+        unset($expectedBasInput['credentials']);
+
+        unset($expectedBasInput['account_managers']);
+
+        $expectedRequest = [
+            'business'          => $expectedBusiness,
+            'person'            => $expectedPerson,
+            'banking_account'   => $expectedBankingAccount,
+            'banking_account_application'   => $expectedBankingAccountApplication,
+            'partner_bank_application'      => $expectedPartnerBankApplication,
+            'application_status_logs'       => $expectedApplicationStatusLogs,
+            'banking_account_account_managers'  => $expectedBankingAccountAccountManagers,
+            'comments'          => $expectedComments
+        ];
+
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldReceive('rblMigrationBas')
+                ->once()
+                ->withArgs(function($request) use ($expectedRequest) {
+                    $this->assertEquals($expectedRequest, $request);
+                    return true;
+                })
+                ->andReturns([
+                    'business_id'   => 'MgqKFy7ypqYtO5'
+                ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        // 5. run test
+        $dataToReplace = [
+            'request'   => [
+                'content'   => [
+                    'banking_account_ids'   => [
+                        $bankingAccount->getId(),
+                    ]
+                ]
+            ],
+            'response'  => [
+                'content'   => [
+                    $bankingAccount->getId() => 'success'
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function mockBankingAccountProcessRblAccountOpeningWebhook($status = 'Success')
     {
         $basMock = $this->bankingAccountServiceMock;

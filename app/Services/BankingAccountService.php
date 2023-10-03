@@ -249,6 +249,15 @@ class BankingAccountService
         return $response['data']; 
     }
 
+    public function rblMigrationBas($request)
+    {
+        $path = 'admin/migrate_rbl_account';
+        
+        $response = $this->sendRequestAndProcessResponse($path, 'POST', $request);
+
+        return $response['data'];
+    }
+
     /**
      * @throws \Exception
      */

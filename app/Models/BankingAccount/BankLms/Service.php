@@ -532,4 +532,9 @@ class Service extends BankingAccount\Service
         });
     }
 
+    public function getPartnerMerchant()
+    {
+        return $this->partnerBankMerchant;
+    }
+
 }

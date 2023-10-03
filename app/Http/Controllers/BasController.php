@@ -265,5 +265,14 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function rblMigrationBas()
+    {
+        $input = Request::all();
+
+        $data = $this->service->rblMigrationBas($input);
+
+        return ApiResponse::json($data);
+    }
+
 }
 

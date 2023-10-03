@@ -5394,9 +5394,18 @@ return [
                         'Application with Duplicate Merchant Name',
                     ],
                     'docket_not_delivered_reason' => 'Wrong Setup Form',
-                    'dwt_response' => 'What type is this even??',
-
-                    'is_documents_walkthrough_complete' => 0,
+                    'dwt_response' => [
+                        "cc_od"                         => 0,
+                        "stamp_available"               => 1,
+                        "agree_to_20k_ICV"              => 0,
+                        "proof_of_entity_available"     => 0,
+                        "document_for_poa_available"    => 'asdawdawd',
+                        "proof_of_address_available"    => 1
+                    ],
+                    'ops_follow_up_date'  => '1695839400',
+                    'ops_revived_lead'    => true,
+                    'interested_product'  => 'escrow',
+                    'is_documents_walkthrough_complete' => true,
                     'sales_pitch_completed' => 1,
                     'entity_mismatch_status' => 'entity_name_mismatch',
                     'green_channel' => true,
@@ -5540,14 +5549,19 @@ return [
                 'average_monthly_balance' => 20000,
                 'expected_monthly_gmv' => 500000,
                 'metadata' => [
+                    'interested_product'  => 'escrow',
+                    'ops_revived_lead'  => true,
+                    'ops_follow_up_date'  => '1695839400',
                     'initial_cheque_value' => 20000,
                     'declaration_step' => 1,
+                    'comment' => 'mx available at lcoation',
+                    'account_login_date' => 1678386600,
                     'additional_details' => [
                         'calendly_slot_booking_completed' => 1,
                         'booking_id' => '12341',
                         'booking_date_and_time' => 1678873350,
-                        'dwt_completed_timestamp' => 1678873350,
-                        'dwt_scheduled_timestamp' => 1678873350,
+                        'dwt_completed_timestamp' => '1678873350',
+                        'dwt_scheduled_timestamp' => '1678873350',
                         // 'skip_mid_office_call' => true,
                         // 'appointment_source' => 'sales',
                         // 'sent_docket_automatically' => false,
@@ -5559,9 +5573,15 @@ return [
                         //     'Application with Duplicate Merchant Name',
                         // ],
                         'docket_not_delivered_reason' => 'Wrong Setup Form',
-                        'dwt_response' => 'What type is this even??',
-
-                        'is_documents_walkthrough_complete' => 0,
+                        'dwt_response' => [
+                            "cc_od"                         => 0,
+                            "stamp_available"               => 1,
+                            "agree_to_20k_ICV"              => 0,
+                            "proof_of_entity_available"     => 0,
+                            "document_for_poa_available"    => "asdawdawd",
+                            "proof_of_address_available"    => 1
+                        ],
+                        'is_documents_walkthrough_complete' => true,
                         'sales_pitch_completed' => 1,
                         'entity_mismatch_status' => 'entity_name_mismatch',
                         'green_channel' => true,
@@ -5695,7 +5715,8 @@ return [
                     'account_opening_ftnr_reasons' => 'AO Negative List/Compliance/Legal/CIBIL',
                     'sr_number' => null,
                     'account_opening_ir_number' => 'IR00022515189',
-                    'account_opening_tat_exception_reason' => 'compliance Issue'
+                    'account_opening_tat_exception_reason' => 'compliance Issue',
+                    'account_opening_tat_exception' => true,
                 ],
                 'api_onboarding_details' => [
                     'api_ir_closed_date' => null,
@@ -5728,7 +5749,7 @@ return [
                 ],
             ]
         ],
-    ],
+      ],
 
     'testGetRblApplicationFromMob' => [
         'request' => [
@@ -5961,9 +5982,9 @@ return [
             'method' => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
-                    'Header' => [ 
-                        'TranID' => '220128134659', 
-                        'Corp_ID' => 'RZPAY' 
+                    'Header' => [
+                        'TranID' => '220128134659',
+                        'Corp_ID' => 'RZPAY'
                     ],
                     'Body' => [
                         'Account No.' => '4099834512998',
@@ -6027,6 +6048,17 @@ return [
                 'items' => [
                 ],
             ],
+        ]
+    ],
+
+    'testRblMigrationBas' => [
+        'request'   => [
+            'url'       => '/rbl_migration_bas',
+            'method'    => 'POST',
+            'content'   => []
+        ],
+        'response'  => [
+            'content'   => []
         ]
     ],
 

@@ -3041,6 +3041,7 @@ class Route
         //all requests get forwarded to banking account service
         'banking_account_service_lms_routes_all'   => ['any',      'bas/lms/{path?}',                                    'BasController@forwardLMSRequest'                               ],
         'banking_account_service_lms_routes_ops'   => ['any',      'bas/lms_ops/{path?}',                                'BasController@forwardLMSRequest'                               ],
+        'banking_account_service_rbl_migration'    => ['post',     'rbl_migration_bas',                                  'BasController@rblMigrationBas'],
 
         'banking_account_service_routes'                        => ['any',      'merchant/banking_application/business/{path?}',         'BasController@forwardRequest'                  ],
         'banking_account_service_cron_routes'                   => ['any',      'bas/banking_application/cron/{path?}',                  'BasController@forwardCronRequest'              ],
@@ -4834,7 +4835,8 @@ class Route
         'merchant_consents_admin_fetch',
         'ufh_admin_upload_file',
         'ufh_get_file_signed_url_by_mid',
-        'proxy_for_activation_status'
+        'proxy_for_activation_status',
+        'banking_account_service_rbl_migration'
     ];
 
     /**
@@ -8218,6 +8220,7 @@ class Route
         'banking_account_activation_detail_update',
         'banking_account_service_lms_routes_all',
         'banking_account_service_lms_routes_ops',
+        'banking_account_service_rbl_migration',
 
         'governor_get_client_v1',
         'governor_create_namespace_v1',
@@ -9999,6 +10002,7 @@ class Route
         'banking_account_create_lms_mob'            => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_update_lms_mob'            => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_service_lms_routes_ops'    => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_service_rbl_migration'     => Permission::VIEW_ACTIVATION_FORM,
         'delete_payment_config'                     => Permission::DELETE_PAYMENT_CONFIG,
         'fetch_payment_config_admin'                => Permission::FETCH_PAYMENT_CONFIG_ADMIN,
         'create_payment_config_admin'               => Permission::CREATE_PAYMENT_CONFIG,
@@ -13130,6 +13134,7 @@ class Route
             'banking_account_create_dashboard_admin',
             'banking_account_service_lms_routes_all',
             'banking_account_service_lms_routes_ops',
+            'banking_account_service_rbl_migration',
             'banking_account_statement_generate',
             'banking_account_statement_process_admin',
             'banking_account_statement_source_update',

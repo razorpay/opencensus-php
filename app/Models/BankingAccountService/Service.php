@@ -1686,6 +1686,318 @@ class Service extends Base\Service
         return $businessId;
     }
 
+    public function rblMigrationBas(array $input) : array
+    {
+        $result = [];
+
+        $bankingAccountIds = $input['banking_account_ids'];
+
+        foreach ($bankingAccountIds as $bankingAccountId)
+        {
+            try
+            {
+                // 1. fetch necessary items from DB and prepare base $basInput
+                $bankingAccount = $this->repo->banking_account->find($bankingAccountId);
+
+                $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+                $additionalDetails = json_decode(optional($activationDetail)->getAdditionalDetails() ?? '{}', true);
+
+                $rblActivationDetails = json_decode(optional($activationDetail)->getRblActivationDetails() ?? '{}', true);
+
+                // add banking_account
+                $apiInput = $bankingAccount->toArray();
+
+                unset($apiInput['spocs']);
+
+                unset($apiInput['reviewers']);
+
+                // add banking_account_activation_detail
+                $apiInput['activation_detail'] = $activationDetail->toArray();
+
+                $bankPocUserId = $apiInput['activation_detail']['bank_poc_user_id'];
+
+                unset($apiInput['activation_detail']['sales_poc_phone_number']);
+
+                unset($apiInput['activation_detail']['ops_mx_poc_id']);
+
+                unset($apiInput['activation_detail']['bank_poc_user_id']);
+
+                $apiInput['activation_detail']['additional_details'] = $additionalDetails;
+
+                $apiInput['activation_detail']['rbl_activation_details'] = $rblActivationDetails;
+
+                // add banking_account_details
+                $apiInput['details'] = [];
+                foreach ($bankingAccount->bankingAccountDetails as $detail)
+                {
+                    $apiInput['details'][$detail->getAttribute('gateway_key')] = $detail->getAttribute('gateway_value');
+                }
+
+                $basInput = $this->basDtoAdapter->fromApiInputToBasInput($apiInput);
+
+                $credentials = $basInput['credentials'];
+
+                unset($basInput['credentials']);
+
+                // 2. generate business
+                $business = array_merge($basInput['business'], [
+                    'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+                    'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+                    'merchant_id'           => $bankingAccount->getMerchantId()
+                ]);
+
+                // 3. generate person
+                $person = array_merge($basInput['person'], [
+                    'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+                    'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+                ]);
+
+                // 3. generate banking_account_application for BAS
+                $bankingAccountApplication = array_merge($basInput['banking_account_application'], [
+                    'id'                    => $bankingAccountId,
+                    'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+                    'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+                    'business_id'           => '', // will be computed at BAS
+                    'banking_account_id'    => $bankingAccountId,
+                    'application_type'      => 'RBL_ONBOARDING_APPLICATION'
+                ]);
+
+                // compute partner LMS flag
+                try
+                {
+                    (new \RZP\Models\BankingAccount\BankLms\Validator())->validateMerchantIsAttachedToPartner(
+                        $bankingAccount->merchant, 
+                        (new \RZP\Models\BankingAccount\BankLms\Service())->getPartnerMerchant());
+
+                    if (isset($bankingAccountApplication['metadata']))
+                    {
+                        $bankingAccountApplication['metadata']['is_allowed_on_partner_lms'] = true;
+                    }
+                    else
+                    {
+                        $bankingAccountApplication['metadata'] = [
+                            'is_allowed_on_partner_lms' => true
+                        ];
+                    }
+                }
+                catch(\Exception $e)
+                {
+                    if (isset($bankingAccountApplication['metadata']))
+                    {
+                        $bankingAccountApplication['metadata']['is_allowed_on_partner_lms'] = false;
+                    }
+                    else
+                    {
+                        $bankingAccountApplication['metadata'] = [
+                            'is_allowed_on_partner_lms' => false
+                        ];
+                    }
+                }
+
+                // is_documents_walkthrough_complete is stored as 0/1 in API DB
+                if (isset($bankingAccountApplication['metadata']['additional_details']))
+                {
+                    if ($bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] === 1) 
+                    {
+                        $bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = true;
+                    }
+                    else
+                    {
+                        $bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = false;
+                    } 
+                }
+                
+                // 4. generate banking_account for BAS
+                $balance = $bankingAccount->balance;
+                $basBankingAccount = array_merge($basInput['banking_account'], [
+                    'id'                    => $bankingAccountId,
+                    'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+                    'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+                    'business_id'           => '', // will be computed at BAS
+                    'status'                => 'ACTIVE',
+                    'account_type'          => 'CA_DIRECT',
+                    'partner_bank'          => 'RBL',
+                    'balance_id'            => $balance->getId(),
+                    'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
+                    'credentials'           => $credentials
+                ]);
+
+                // 5. generate partner_bank_application for BAS
+                $partnerBankApplication = array_merge($basInput['partner_bank_application'], [
+                    'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
+                    'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
+                ]);
+
+                // 5. generate banking_account_account_managers
+                $bankingAccountAccountManagers = [];
+                // SALES_POC(spoc)
+                $spoc = $bankingAccount->spocs()->first();
+
+                if(!empty($spoc))
+                {
+                    $bankingAccountAccountManagers[] = [
+                        'rzp_admin_id'      => $spoc->getId(),
+                        'relationship_type' => 'SALES_POC',
+                    ];
+                }
+                
+                // OPS_POC(reviewer)
+                $reviewer = $bankingAccount->reviewers()->first();
+    
+                if(!empty($reviewer))
+                {
+                    $bankingAccountAccountManagers[] = [
+                        'rzp_admin_id'      => $reviewer->getId(),
+                        'relationship_type' => 'OPS_POC',
+                    ];
+                }
+
+                // OPS_MX_POC(ops_mx_poc)
+                $opxMxPoc = $bankingAccount->opsMxPocs->first();
+
+                if (!empty($opxMxPoc))
+                {
+                    $bankingAccountAccountManagers[] = [
+                        'rzp_admin_id'      => $opxMxPoc->getId(),
+                        'relationship_type' => 'OPS_MX_POC',
+                    ];
+                }
+
+                // RBL_BANK_POC(bank_poc)
+                if (!empty($bankPocUserId)) 
+                {
+                    $bankingAccountAccountManagers[] = [
+                        'rzp_admin_id'      => $bankPocUserId,
+                        'relationship_type' => 'RBL_BANK_POC',
+                    ];
+                }
+
+                // 6. generate comments
+                $apiComments = $bankingAccount->getActivationComments();
+
+                $basComments = [];
+
+                foreach ($apiComments as $apiComment)
+                {
+                    if (!empty($apiComment->getAttribute('user_id')))
+                    {
+                        // comment was added by bank
+                        $onBehalfOf = 'bank';
+
+                        $commentedBy = $apiComment->getAttribute('user_id');
+                    } 
+                    else
+                    {
+                        // comment was added by admin
+                        $onBehalfOf = $apiComment->getAttribute('source_team');
+
+                        $commentedBy = $apiComment->getAttribute('admin_id');
+                    }
+
+                    $basComment = [
+                        'created_at'                        => $apiComment->getAttribute('created_at') * 1000,
+                        'updated_at'                        => $apiComment->getAttribute('updated_at') * 1000,
+                        'type'                              => $apiComment->getAttribute('type'),
+                        'added_at'                          => $apiComment->getAttribute('added_at'),
+                        'banking_account_application_id'    => $bankingAccountId,
+                        'comment'                           => $apiComment->getAttribute('comment'),
+                        'on_behalf_of'                      => $onBehalfOf,
+                        'commented_by'                      => $commentedBy,
+                        'notes'                             => json_encode([
+                            'first_disposition'     => '',
+                            'second_disposition'    => '',
+                            'third_disposition'     => ''
+                        ])
+                    ];
+
+                    $basComments[] = $basComment;
+                }
+
+                // 7. generate application_status_logs
+                $bankingAccountStates = $bankingAccount->getActivationStatusChangeLog();
+
+                $applicationStatusLogs = [];
+
+                foreach ($bankingAccountStates as $bankingAccountState)
+                {
+                    if (!empty($bankingAccountState->getAttribute('user_id')))
+                    {
+                        // status log was added by bank
+                        $createdBy = $bankingAccountState->getAttribute('user_id');
+                    }
+                    else
+                    {
+                        $createdBy = $bankingAccountState->getAttribute('admin_id');
+                    }
+
+                    $assigneeTeam = $bankingAccountState->getAttribute('assignee_team');
+
+                    $assigneeTeam = ($assigneeTeam === 'bank_ops') ? 'ops_and_bank' : $assigneeTeam;
+
+                    $applicationStatusLog = [
+                        'created_at'                        => $bankingAccountState->getAttribute('created_at') * 1000,
+                        'application_status'                => $bankingAccountState->getAttribute('status'),
+                        'bank_status'                       => $bankingAccountState->getAttribute('bank_status'),
+                        'banking_account_application_id'    => $bankingAccountId,
+                        'created_by'                        => $createdBy,
+                        'bank_sub_status'                   => '', // not applicable for RBL
+                        'registration_status'               => '', // not applicable for RBL
+                        'sub_status'                        => $bankingAccountState->getAttribute('sub_status'),
+                        'assignee_team'                     => $assigneeTeam,
+                    ];
+
+                    $applicationStatusLogs[] = $applicationStatusLog;
+                }
+
+                $basRequest = [
+                    'business'                          => $business,
+                    'person'                            => $person,
+                    'banking_account'                   => $basBankingAccount,
+                    'banking_account_application'       => $bankingAccountApplication,
+                    'partner_bank_application'          => $partnerBankApplication,
+                    'application_status_logs'           => $applicationStatusLogs
+                ];
+
+                if (count($bankingAccountAccountManagers) > 0)
+                {
+                    $basRequest['banking_account_account_managers'] = $bankingAccountAccountManagers;
+                }
+
+                if (count($basComments) > 0)
+                {
+                    $basRequest['comments'] = $basComments;
+                }
+
+                $merchantId = $bankingAccount->getMerchantId();
+
+                $this->repo->transaction(function() use ($basRequest, $merchantId)
+                {
+                    $response = $this->bankingAccountService->rblMigrationBas($basRequest);
+
+                    $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+                    if (empty($merchantDetail->getBasBusinessId()))
+                    {
+                        // In a few places before making BAS call, validation is done on existence of bas_business_id
+                        $merchantDetail->setBasBusinessId($response['business_id']);
+
+                        $this->repo->merchant_detail->saveOrFail($merchantDetail);
+                    }
+
+                });
+                
+                $result[$bankingAccountId] = 'success';
+            }
+            catch(\Exception $e)
+            {
+                $result[$bankingAccountId] = $e->getMessage();
+            }
+        }
+
+        return $result;
+    }
+
     private function removeBankingAccountIdPrefix(string $bankingAccountId): string
     {
         if (str_starts_with($bankingAccountId, "bacc_"))
