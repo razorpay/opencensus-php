@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import {
   fetchTeam as fetchAll,
@@ -240,4 +241,4 @@ export default connect(mapStateToProps, {
   unlockMember: unlockMemberReducer,
   unverifyContact: unverifyContactReducer,
   ...NotificationActions,
-})(MembersListContainer);
+})(withRouter(MembersListContainer));

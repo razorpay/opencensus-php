@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsListFilter';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchReversals as fetchAll } from 'merchantLA/reducers/collection';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
@@ -18,14 +19,14 @@ import setGaTrack from './ga';
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.reversals,
     user: state.session.user,
   }),
-  { fetchAll }
+  { fetchAll },
 )
-export default class ReversalsTable extends ListContainer {
-  onSearchAnalytics = params => {
+class ReversalsTable extends ListContainer {
+  onSearchAnalytics = (params) => {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       const label = getKeysSeparatedByPipe(params);
@@ -71,3 +72,5 @@ export default class ReversalsTable extends ListContainer {
     );
   }
 }
+
+export default withRouter(ReversalsTable);

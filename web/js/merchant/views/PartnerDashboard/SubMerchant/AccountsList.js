@@ -32,6 +32,7 @@ import {
 } from 'merchant/components/StatusLabel';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchProducts } from 'merchant/reducers/capital';
 import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
@@ -1020,6 +1021,7 @@ export const PrimarySubMerchantList = compose(
     }),
     getDispatchToProps(PRODUCT_TYPE.PG),
   ),
+  withRouter,
 )(ProductSubMerchantsList);
 
 export const XSubMerchantList = compose(
@@ -1032,6 +1034,7 @@ export const XSubMerchantList = compose(
     }),
     getDispatchToProps(PRODUCT_TYPE.X),
   ),
+  withRouter,
 )(ProductSubMerchantsList);
 
 export const CapitalSubMerchantList = compose(
@@ -1045,4 +1048,5 @@ export const CapitalSubMerchantList = compose(
     }),
     getDispatchToProps(PRODUCT_TYPE.CAPITAL),
   ),
+  withRouter,
 )(ProductSubMerchantsList);

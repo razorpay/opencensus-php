@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
@@ -143,4 +144,4 @@ class CommissionsDailyList extends ListContainer {
     );
   }
 }
-export default withPartnerDashboardExperiments(CommissionsDailyList);
+export default withPartnerDashboardExperiments(withRouter(CommissionsDailyList));

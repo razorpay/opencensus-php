@@ -22,6 +22,7 @@ import {
   paymentReceiverType,
 } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 import {
   selfServerTrack,
@@ -56,7 +57,7 @@ const _paymentId = (initiatePage = 'Transactions.Payments') => {
   };
 };
 
-export default class PaymentsListContainer extends ListContainer {
+class PaymentsListContainer extends ListContainer {
   componentDidMount() {
     const { user, isRoute } = this.props;
     const { pathname } = this.props.location;
@@ -275,3 +276,5 @@ export default class PaymentsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(PaymentsListContainer);

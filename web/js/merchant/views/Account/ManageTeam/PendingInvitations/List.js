@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchInvitations as fetchAll } from 'merchant/reducers/collection';
 import Actions from './Actions';
 
@@ -54,4 +55,4 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
   fetchAll,
-})(InvitationsListContainer);
+})(withRouter(InvitationsListContainer));

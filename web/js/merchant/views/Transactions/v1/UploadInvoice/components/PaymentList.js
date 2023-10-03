@@ -4,6 +4,7 @@ import Button from 'common/new-ui/Button';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
 import lazy from 'merchant/routes/LazyLoader';
 import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
@@ -218,4 +219,4 @@ class PaymentsListContainer extends ListContainer {
   }
 }
 
-export default PaymentsListContainer;
+export default withRouter(PaymentsListContainer);

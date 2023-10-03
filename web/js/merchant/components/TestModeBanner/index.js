@@ -63,7 +63,11 @@ class TestModeBanner extends Component {
             </span>
           ) : null}
           {!user.isActivated && (
-            <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
+            <ShowWhen
+              additionalCondition={() =>
+                Boolean(user?.isAllowedEdit) && user.isAllowedEdit('activation')
+              }
+            >
               <span>
                 {' '}
                 <Link

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import WebhooksList from 'merchant/views/Settings/Webhooks/components/List';
 import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 import * as WebhookActions from 'merchant/reducers/webhooks';
@@ -153,4 +154,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WebhooksContainer')),
-)(WebhooksContainer);
+)(withRouter(WebhooksContainer));

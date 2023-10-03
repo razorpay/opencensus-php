@@ -2,20 +2,19 @@ import { connect } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import DataTable from 'common/ui/Table/DataTable';
+import { withRouter } from 'common/deprecated/withRouter';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
-import { amount, receipt, status, createdAt as createdAtProperty } from 'common/ui/item/pair';
-
-import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
-
+import DataTable from 'common/ui/Table/DataTable';
 import { getTime } from 'common/ui/item';
+import { amount, receipt, status, createdAt as createdAtProperty } from 'common/ui/item/pair';
 import CopyLink from 'merchant/components/CopyLink';
-
 import ListContainer from 'merchant/containers/ListContainer';
+import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 
 import RegistrationLinksListFilter from './components/ListFilter';
-import analytics from '../analytics';
-import { trackSearchEvent } from '../utils';
 
 const id = {
   title: 'Link ID',
@@ -42,7 +41,7 @@ const createdAt = {
 
 @connect((state) => state.registrationLinks, { fetchAll })
 @RTracking(() => window.rzpQ.component('RegistrationLinksList'))
-export default class RegistrationLinksListContainer extends ListContainer {
+class RegistrationLinksListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'registrationlink.search' });
   };
@@ -101,3 +100,5 @@ export default class RegistrationLinksListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(RegistrationLinksListContainer);

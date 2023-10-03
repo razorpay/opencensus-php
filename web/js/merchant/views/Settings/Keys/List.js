@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import * as KeyActions from 'merchant/reducers/keys';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -180,4 +181,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('KeysListContainer')),
-)(KeysListContainer);
+)(withRouter(KeysListContainer));

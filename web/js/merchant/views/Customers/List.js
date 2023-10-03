@@ -1,19 +1,22 @@
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'common/ui/HeaderAction';
-import Pager from 'common/ui/Pager';
-import Loader from 'common/ui/Loader';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
+import Loader from 'common/ui/Loader';
+import Pager from 'common/ui/Pager';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
-import CustomersList from 'merchant/views/Customers/components/CustomersList';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
+import { luminateRow } from 'merchant/reducers/app';
 import * as CustomerActions from 'merchant/reducers/customers';
+import lazy from 'merchant/routes/LazyLoader';
+import CustomersList from 'merchant/views/Customers/components/CustomersList';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
-import { luminateRow } from 'merchant/reducers/app';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import lazy from 'merchant/routes/LazyLoader';
 
 const CustomerCreation = lazy(() =>
   import(/* webpackChunkName: "CustomersNew" */ 'merchant/views/Customers/New'),
@@ -25,7 +28,7 @@ const CustomerCreation = lazy(() =>
   ...NotificationActions,
   luminateRow,
 })
-export default class CustomersListContainer extends ListContainer {
+class CustomersListContainer extends ListContainer {
   fetchEntityList(params) {
     selfServeTrackInitiate({
       selfServeAction: 'Customer Details Fetched',
@@ -144,3 +147,5 @@ export default class CustomersListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(CustomersListContainer);

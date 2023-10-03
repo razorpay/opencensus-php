@@ -11,6 +11,7 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import DocsLink from 'merchant/components/DocsLink';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { truncatedString } from 'common/utils/rzp-utils';
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
@@ -69,7 +70,7 @@ const paymentListRowItem = (item) => (
   },
 )
 @RTracking(() => window.rzpQ.component('QRPaymentsListContainer'))
-export default class QRPaymentsListContainer extends ListContainer {
+class QRPaymentsListContainer extends ListContainer {
   get paymentIdCol() {
     return {
       title: paymentId.title,
@@ -150,3 +151,5 @@ export default class QRPaymentsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(QRPaymentsListContainer);

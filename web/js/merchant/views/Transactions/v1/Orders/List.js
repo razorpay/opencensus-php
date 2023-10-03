@@ -8,6 +8,7 @@ import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui
 import { analyticsTrack } from 'common/utils/analytics';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchOrders as fetchAll } from 'merchant/reducers/collection';
 import {
   SHOPIFY_RECEIPT_PREFIX,
@@ -163,5 +164,5 @@ export default withSplitzService(
   connect(
     (state) => ({ ...state.orders, user: state.session.user }),
     (dispatch) => bindActionCreators({ fetchAll }, dispatch),
-  )(OrdersListContainer),
+  )(withRouter(OrdersListContainer)),
 );

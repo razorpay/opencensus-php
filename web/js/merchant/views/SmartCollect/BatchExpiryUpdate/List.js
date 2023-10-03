@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import BatchList from './components/BatchList';
 import {
   validateVABatch,
@@ -35,4 +36,4 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchAll, validateVABatch, createVABatch }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(BatchListContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(BatchListContainer));

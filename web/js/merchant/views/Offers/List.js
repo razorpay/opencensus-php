@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import EmptyList from 'merchant/components/EmptyList';
 import DataTable from 'common/ui/Table/DataTable';
 import { fetchOffers as fetchAll } from 'merchant/reducers/offers/offersList';
@@ -73,4 +74,4 @@ class OffersList extends ListContainer {
   }
 }
 
-export default connect((state) => ({ ...state.offers }), { fetchAll })(OffersList);
+export default connect((state) => ({ ...state.offers }), { fetchAll })(withRouter(OffersList));

@@ -1,5 +1,7 @@
-import ajax from 'merchantLA/utils/ajax';
 import { filterBy } from 'common/utils/rzp-utils';
+import { antiOrgsFeatures } from 'merchant/helpers/permissions';
+import { getOrg } from 'merchantLA/store';
+import ajax from 'merchantLA/utils/ajax';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -70,6 +72,18 @@ export default class User {
 
   get isShowParentPaymentIdEnabled() {
     return this.isFeatureEnabled('display_parent_payment_id');
+  }
+
+  isOrgAllowedFunctionality(featureName) {
+    const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
+
+    if (restrictedFeaturesForOrg) {
+      const isFeatureAllowed = restrictedFeaturesForOrg.indexOf(featureName) === -1;
+
+      return isFeatureAllowed;
+    }
+
+    return true; // By default it's allowed if not restricted
   }
 
   /* Check if the tag exists */

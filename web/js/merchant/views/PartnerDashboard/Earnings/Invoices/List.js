@@ -4,6 +4,7 @@ import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import ListFilter from 'merchant/components/ListFilter';
 import EmptyList from 'merchant/components/EmptyList';
 import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
@@ -175,4 +176,4 @@ function EmptyListComponent() {
   );
 }
 
-export default CommissionInvoicesList;
+export default withRouter(CommissionInvoicesList);

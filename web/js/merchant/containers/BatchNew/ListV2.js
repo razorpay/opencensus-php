@@ -13,6 +13,7 @@ import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { DocLink } from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { luminateRow } from 'merchant/reducers/app';
 import { batchDownload } from 'merchant/reducers/batches';
 import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
@@ -272,4 +273,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('BatchList')),
-)(BatchList);
+)(withRouter(BatchList));

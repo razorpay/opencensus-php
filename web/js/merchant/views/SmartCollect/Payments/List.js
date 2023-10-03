@@ -8,6 +8,7 @@ import ProductWrapper from 'common/ui/ProductWrapper';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
@@ -25,7 +26,7 @@ import { checkIfVirtualAccountRoute } from 'merchant/views/SmartCollect/utils';
   { fetchAll },
 )
 @RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
-export default class VAPaymentsListContainer extends ListContainer {
+class VAPaymentsListContainer extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
@@ -211,3 +212,5 @@ export default class VAPaymentsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(VAPaymentsListContainer);

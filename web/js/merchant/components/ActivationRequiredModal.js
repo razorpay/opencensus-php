@@ -32,7 +32,9 @@ export default ({ onCloseClick, user }) => {
   let modalBody = (
     <div>
       You can only use Razorpay in test mode until your account is activated. <br />
-      <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
+      <ShowWhen
+        additionalCondition={() => Boolean(user?.isAllowedEdit) && user.isAllowedEdit('activation')}
+      >
         {user.isOrgAxis
           ? 'Please reach out to the Axis Bank to get yourself activated'
           : `Please fill and submit the ${activationName} Form to access live mode.`}

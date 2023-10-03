@@ -30,6 +30,7 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import VirtualAccountsListFilter from 'merchant/views/SmartCollect/VirtualAccounts/components/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { getIsAllowedResetVAOnBoarding } from 'merchant/views/SmartCollect/OnBoarding';
 
@@ -72,7 +73,7 @@ const EmptyComponent = () => (
   },
 )
 @RTracking(() => window.rzpQ.component('VirtualAccountsListContainer'))
-export default class VirtualAccountsListContainer extends ListContainer {
+class VirtualAccountsListContainer extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
@@ -318,3 +319,5 @@ export default class VirtualAccountsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(VirtualAccountsListContainer);

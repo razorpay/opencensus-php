@@ -21,6 +21,7 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import {
@@ -186,5 +187,7 @@ const mapStateToProps = (state) => {
 };
 
 export default withSplitzService(
-  connect(mapStateToProps, (dispatch) => bindActionCreators({ fetchAll }, dispatch))(Dispute),
+  connect(mapStateToProps, (dispatch) => bindActionCreators({ fetchAll }, dispatch))(
+    withRouter(Dispute),
+  ),
 );

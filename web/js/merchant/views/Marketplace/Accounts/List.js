@@ -19,6 +19,7 @@ import AccountsList from 'merchant/views/Marketplace/Accounts/components/Account
 import AccountsListFilter from 'merchant/views/Marketplace/Accounts/components/AccountsListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
 import { isOrgFeatureExist } from 'merchant/models/User';
@@ -48,7 +49,7 @@ import {
     luminateRow,
   },
 )
-export default class AccountsListContainer extends ListContainer {
+class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -427,3 +428,5 @@ export function validateAllowRefundsMessages(account, checked) {
     data,
   };
 }
+
+export default withRouter(AccountsListContainer);

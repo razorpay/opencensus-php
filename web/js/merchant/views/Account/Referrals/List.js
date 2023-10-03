@@ -1,26 +1,30 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'common/ui/HeaderAction';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
-import ReferralsList from 'merchant/views/Account/Referrals/components/ReferralsList';
 import * as ReferralActions from 'merchant/reducers/referrals';
+import ReferralsList from 'merchant/views/Account/Referrals/components/ReferralsList';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
 import CreateLogin from './components/CreateLogin';
 import CreateMerchant from './components/CreateMerchant';
 
 @connect(
-  state => {
+  (state) => {
     return {
       referrals: state.referrals,
       session: state.session,
     };
   },
-  { ...ReferralActions, ...ModalActions, ...NotificationsActions }
+  { ...ReferralActions, ...ModalActions, ...NotificationsActions },
 )
-export default class ReferralsListContainer extends ListContainer {
+class ReferralsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchReferrals(params);
   }
@@ -30,7 +34,7 @@ export default class ReferralsListContainer extends ListContainer {
       component: (
         <CreateLogin
           referral={referral}
-          onSave={merchantId => {
+          onSave={(merchantId) => {
             return this.props.createLogin(merchantId);
           }}
         />
@@ -38,7 +42,7 @@ export default class ReferralsListContainer extends ListContainer {
     });
   };
 
-  switchMerchant = merchantId => {
+  switchMerchant = (merchantId) => {
     return this.props.switchMerchant(merchantId);
   };
 
@@ -47,7 +51,7 @@ export default class ReferralsListContainer extends ListContainer {
       size: 'small',
       component: (
         <CreateMerchant
-          onSave={params => {
+          onSave={(params) => {
             return this.props.createMerchant(params);
           }}
         />
@@ -56,18 +60,16 @@ export default class ReferralsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, referrals } = this.props.referrals;
-    let user = this.props.session.user;
-    let status = this.state.status;
+    const { loading, referrals } = this.props.referrals;
+    const user = this.props.session.user;
+    const status = this.state.status;
 
     const isEditAllowed = user.isAllowedEdit('referrals');
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen
-            additionalCondition={user => isEditAllowed && !user.isPartner()}
-          >
+          <ShowWhen additionalCondition={(user) => isEditAllowed && !user.isPartner()}>
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"
@@ -86,15 +88,13 @@ export default class ReferralsListContainer extends ListContainer {
           referrals={referrals}
           isLoading={loading}
           user={user}
-          showCreateLoginModal={
-            isEditAllowed ? this.showCreateLoginModal : undefined
-          }
-          showCreateMerchantModal={
-            isEditAllowed ? this.showCreateMerchantModal : undefined
-          }
+          showCreateLoginModal={isEditAllowed ? this.showCreateLoginModal : undefined}
+          showCreateMerchantModal={isEditAllowed ? this.showCreateMerchantModal : undefined}
           switchMerchant={this.switchMerchant}
         />
       </div>
     );
   }
 }
+
+export default withRouter(ReferralsListContainer);

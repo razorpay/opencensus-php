@@ -36,6 +36,7 @@ import {
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { RouteGuard } from 'merchant/components/ShowWhen';
+
 // import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
@@ -853,7 +854,6 @@ class Content extends Component {
             />
           </Route>
 
-          {/* TODO: Start */}
           <Route path="settlements/*">
             <Route
               index
@@ -919,7 +919,7 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-          {/* TODO- End */}
+
           <Route path="invoices/*">
             <Route
               index
@@ -1576,7 +1576,6 @@ class Content extends Component {
             path="credits/*"
             element={
               <RouteGuard
-                featureEnabled="Referral"
                 additionalCondition={(user) =>
                   user.isAllowedView('credits') &&
                   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
@@ -1676,7 +1675,6 @@ class Content extends Component {
             />
           </Route>
 
-          {/* TODO: @joel -> start */}
           <Route
             path="/config/*"
             element={
@@ -1704,7 +1702,7 @@ class Content extends Component {
             }
           />
 
-          <Route path="/reminders/*" component={<Settings />} />
+          <Route path="/reminders/*" element={<Settings />} />
           <Route
             path="/applications/*"
             element={
@@ -1713,8 +1711,6 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-
-          {/* TODO: @joel -> end */}
 
           <Route
             path="payment-methods/*"

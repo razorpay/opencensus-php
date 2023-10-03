@@ -1,10 +1,14 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import TransfersListFilter from 'merchantLA/components/Marketplace/TransfersListFilter';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Amount from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import DataTable from 'common/ui/Table/DataTable';
-import TestModeBanner from 'merchantLA/containers/TestModeBanner';
+import { classList, pluralize, getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
+import TransfersListFilter from 'merchantLA/components/Marketplace/TransfersListFilter';
+import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import { fetchTransfers as fetchAll } from 'merchantLA/reducers/collection';
 import {
   transferId,
@@ -13,14 +17,10 @@ import {
   createdAt,
   settlementStatus,
 } from 'merchantLA/utils/item/pair';
-import { classList } from 'common/utils/rzp-utils';
-import Amount from 'common/ui/Amount';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { pluralize, getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 const helperCues = {
   title: '',
-  value: item => {
+  value: (item) => {
     const hasReversals = item.amount_reversed > 0;
 
     let notesMsg = 'No Notes';
@@ -33,12 +33,7 @@ const helperCues = {
     return (
       <div style={{ color: 'green' }}>
         <span>
-          <i
-            class={classList(
-              'i i-undo cue',
-              hasReversals ? 'cue--active' : 'cue--inactive'
-            )}
-          />
+          <i class={classList('i i-undo cue', hasReversals ? 'cue--active' : 'cue--inactive')} />
           <Popover align="top">
             <PopoverBody>
               <div>
@@ -55,12 +50,7 @@ const helperCues = {
         </span>
 
         <span>
-          <i
-            class={classList(
-              'i i-notes cue',
-              notesLength ? 'cue--active' : 'cue--inactive'
-            )}
-          />
+          <i class={classList('i i-notes cue', notesLength ? 'cue--active' : 'cue--inactive')} />
           <Popover align="top">
             <PopoverBody>
               <div>{notesMsg}</div>
@@ -73,15 +63,14 @@ const helperCues = {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.transfers,
-    isShowParentPaymentIdEnabled:
-      state.session.user.isShowParentPaymentIdEnabled,
+    isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
   }),
-  { fetchAll }
+  { fetchAll },
 )
-export default class TransfersListContainer extends ListContainer {
-  onSearchAnalytics = params => {
+class TransfersListContainer extends ListContainer {
+  onSearchAnalytics = (params) => {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       const label = getKeysSeparatedByPipe(params);
@@ -107,14 +96,7 @@ export default class TransfersListContainer extends ListContainer {
 
   render() {
     const columns = this.props.isShowParentPaymentIdEnabled
-      ? [
-          transferId,
-          parentPaymentId,
-          amount,
-          createdAt,
-          settlementStatus,
-          helperCues,
-        ]
+      ? [transferId, parentPaymentId, amount, createdAt, settlementStatus, helperCues]
       : [transferId, amount, createdAt, settlementStatus, helperCues];
 
     return (
@@ -132,9 +114,7 @@ export default class TransfersListContainer extends ListContainer {
                 onSubmit={this.search}
                 onSearchAnalytics={this.onSearchAnalytics}
                 onClearAnalytics={this.onClearAnalytics}
-                isShowParentPaymentIdEnabled={
-                  this.props.isShowParentPaymentIdEnabled
-                }
+                isShowParentPaymentIdEnabled={this.props.isShowParentPaymentIdEnabled}
               />
 
               <DataTable
@@ -152,3 +132,5 @@ export default class TransfersListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(TransfersListContainer);

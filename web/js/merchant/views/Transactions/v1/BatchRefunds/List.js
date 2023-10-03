@@ -7,6 +7,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   validateRefundBatch,
   createRefundBatch,
@@ -72,4 +73,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchAll, validateRefundBatch, createRefundBatch }, dispatch);
 
-export default withSplitzService(connect(mapStateToProps, mapDispatchToProps)(BatchListContainer));
+export default withSplitzService(
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(BatchListContainer)),
+);

@@ -1,21 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import Pager from 'common/ui/Pager';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchantLA/components/Settlements/List';
 import SettlementsListFilter from 'merchantLA/components/Settlements/ListFilter';
-import SettlementBreakupModal from './BreakupModal';
-import HeaderAction from 'common/ui/HeaderAction';
-import { fetchSettlements as fetchAll } from 'merchantLA/reducers/collection';
-import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { fetchSettlements as fetchAll } from 'merchantLA/reducers/collection';
 import { fetchBalanceAction } from 'merchantLA/reducers/credits';
-import Amount from 'common/ui/Amount';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
+import * as ModalActions from 'merchant_common/reducers/modals';
+
+import SettlementBreakupModal from './BreakupModal';
 
 @connect(
   (state) => ({
@@ -30,7 +34,7 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
     ...ModalActions,
   },
 )
-export default class SettlementsListContainer extends ListContainer {
+class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     if (this.props.user.current && !this.props.balanceData.data.balance) {
       this.props.fetchBalanceAction();
@@ -110,7 +114,7 @@ export default class SettlementsListContainer extends ListContainer {
                 <PlaceholderLoader style={{ width: 150 }} />
               ) : (
                 <span class="settlement-balance-amount">
-                  Current Balance: <Amount value={balanceData.data.balance} currency={'INR'} />
+                  Current Balance: <Amount value={balanceData.data.balance} currency="INR" />
                 </span>
               )}
             </div>
@@ -151,3 +155,5 @@ export default class SettlementsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(SettlementsListContainer);

@@ -1,28 +1,25 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import { planId, planName, planAmount, planBillingCycle, createdAt } from 'common/ui/item/pair';
+import { withRouter } from 'common/deprecated/withRouter';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
-
-import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
-import { fetchPlans as fetchAll } from 'merchant/reducers/plans';
-import * as ModalActions from 'merchant_common/reducers/modals';
-
-import ShowWhen from 'merchant/components/ShowWhen';
+import { planId, planName, planAmount, planBillingCycle, createdAt } from 'common/ui/item/pair';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-
-import { getSubscriptionQuickGuideIsClosed } from 'merchant/views/Subscriptions/QuickGuide';
-
-import PlansListFilter from 'merchant/views/Subscriptions/Plans/components/ListFilter';
+import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchPlans as fetchAll } from 'merchant/reducers/plans';
+import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
+import PlansListFilter from 'merchant/views/Subscriptions/Plans/components/ListFilter';
+import { getSubscriptionQuickGuideIsClosed } from 'merchant/views/Subscriptions/QuickGuide';
 import analytics from 'merchant/views/Subscriptions/analytics';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 @connect(
   (state) => ({
@@ -36,7 +33,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
     fetchSubscriptions,
   },
 )
-export default class PlansListContainer extends ListContainer {
+class PlansListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
@@ -150,3 +147,5 @@ function EmptyComponent() {
     />
   );
 }
+
+export default withRouter(PlansListContainer);

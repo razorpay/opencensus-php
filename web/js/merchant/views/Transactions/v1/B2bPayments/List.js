@@ -6,6 +6,7 @@ import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { b2bActions } from 'merchant/reducers/b2bExports';
 import { fetchB2bPayments } from 'merchant/reducers/collection';
 import {
@@ -250,5 +251,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withSplitzService(
-  connect(mapStatesToProps, mapDispatchToProps)(PaymentsListContainer),
+  connect(mapStatesToProps, mapDispatchToProps)(withRouter(PaymentsListContainer)),
 );

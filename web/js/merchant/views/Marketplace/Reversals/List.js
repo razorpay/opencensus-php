@@ -11,6 +11,7 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ReversalsListFilter from 'merchant/views/Marketplace/Reversals/components/ReversalsListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
@@ -21,7 +22,7 @@ import { navItems } from 'merchant/views/Marketplace/NavItems';
   }),
   { fetchAll },
 )
-export default class ReversalsListContainer extends ListContainer {
+class ReversalsListContainer extends ListContainer {
   render() {
     const { isPlatformFeeTabEnabled } = this.props;
     return (
@@ -58,3 +59,5 @@ export default class ReversalsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(ReversalsListContainer);

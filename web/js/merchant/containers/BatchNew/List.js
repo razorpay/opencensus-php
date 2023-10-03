@@ -6,6 +6,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import { compose, bindActionCreators } from 'redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
 import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
@@ -276,4 +277,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('BatchList')),
-)(BatchList);
+)(withRouter(BatchList));

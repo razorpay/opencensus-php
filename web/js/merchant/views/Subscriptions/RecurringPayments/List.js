@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 import PaymentListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
 // eslint-disable-next-line no-restricted-imports
@@ -13,7 +14,7 @@ import { SelfServeActionPages } from 'common/constant/enums';
 
 @connect((state) => ({ ...state.payments, user: state.session.user }), { fetchAll })
 @RTracking(() => window.rzpQ.component('EmandatePayments'))
-export default class RecurringPaymentsListContainer extends ListContainer {
+class RecurringPaymentsListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'payment.search' });
   };
@@ -67,3 +68,5 @@ export default class RecurringPaymentsListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(RecurringPaymentsListContainer);

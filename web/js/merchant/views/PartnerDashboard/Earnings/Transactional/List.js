@@ -5,6 +5,7 @@ import DataTable from 'common/ui/Table/DataTable';
 import { earningId, createdAtShort } from 'common/ui/item/pair';
 import { capitalize } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import { fetchEarnings as fetchAll } from 'merchant/reducers/collection';
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Transactional/ListFilter';
 
@@ -33,7 +34,7 @@ const merchantName = {
 };
 
 @connect((state) => ({ ...state.commisions }), { fetchAll })
-export default class CommissionList extends ListContainer {
+class CommissionList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
@@ -56,3 +57,5 @@ export default class CommissionList extends ListContainer {
     );
   }
 }
+
+export default withRouter(CommissionList);

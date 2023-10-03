@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
+import { withRouter } from 'common/deprecated/withRouter';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { customRangeText } from 'common/ui/DateRangePicker';
 import {
@@ -147,7 +148,7 @@ const recentActivityTitle = 'Recent Activity';
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
-export default class HomeContainer extends Component {
+class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
@@ -1397,3 +1398,5 @@ export default class HomeContainer extends Component {
     );
   }
 }
+
+export default withRouter(HomeContainer);

@@ -1,21 +1,20 @@
 import { connect } from 'react-redux';
-
-import ListContainer from 'merchant/containers/ListContainer';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
+import { tokenId, createdAt } from 'common/ui/item/pair';
+import { titleCase } from 'common/utils/rzp-utils';
 import DocsLink from 'merchant/components/DocsLink';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
-
-import { titleCase } from 'common/utils/rzp-utils';
+import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTokens as fetchAll } from 'merchant/reducers/collection';
-
-import { tokenId, createdAt } from 'common/ui/item/pair';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 
 import TokensListFilter from './components/ListFilter';
-import analytics from '../analytics';
-import { trackSearchEvent } from '../utils';
 
 const method = {
   title: 'Method',
@@ -47,7 +46,7 @@ const status = {
   { fetchAll },
 )
 @RTracking(() => window.rzpQ.component('TokensList'))
-export default class TokensListContainer extends ListContainer {
+class TokensListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'token.search' });
   };
@@ -104,6 +103,8 @@ export default class TokensListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(TokensListContainer);
 
 export function getTokenStatus(token) {
   return token?.recurring_details?.status ?? '';

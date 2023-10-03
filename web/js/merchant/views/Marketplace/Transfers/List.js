@@ -12,6 +12,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import TransfersListFilter from 'merchant/views/Marketplace/Transfers/components/TransfersListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from 'common/deprecated/withRouter';
 import TransferSource from './components/TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import SettlementStatus from './components/SettlementStatus';
@@ -40,7 +41,7 @@ const settlementStatus = {
   }),
   { fetchAll },
 )
-export default class TransfersListContainer extends ListContainer {
+class TransfersListContainer extends ListContainer {
   render() {
     const { isPlatformFeeTabEnabled, user } = this.props;
     return (
@@ -92,3 +93,5 @@ export default class TransfersListContainer extends ListContainer {
     );
   }
 }
+
+export default withRouter(TransfersListContainer);
