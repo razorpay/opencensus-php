@@ -1378,6 +1378,8 @@ class Route
         'merchant_bmc_response_fetch_admin'        => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_save'               => ['post',     'pg/onboarding/save_merchant_bmc_response',       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
+        'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+
 
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
@@ -6394,6 +6396,7 @@ class Route
 
     public static $proxy = [
         'user_update_name',
+        'merchant_get_l2_dynamic_configs',
         'merchant_bmc_response_fetch',
         'merchant_bmc_response_save',
         'merchant_consents_save',
@@ -8883,6 +8886,7 @@ class Route
         'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
         'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
         'merchant_consents_save'                          => Permission::EDIT_MERCHANT,
+        'merchant_get_l2_dynamic_configs'                 => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_fetch'                     => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
@@ -11333,6 +11337,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_get_l2_dynamic_configs',
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',
             'merchant_consents_save',

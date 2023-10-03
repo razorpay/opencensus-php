@@ -36,6 +36,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_RM_UPDATE             = 'merchant_rm_details_update';
     const SEND_OTP                       = 'send_otp';
 
+    const MERCHANT_GET_L2_DYNAMIC_CONFIGS       = 'merchant_get_l2_dynamic_configs';
+
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
 
@@ -91,7 +93,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_ACTIVATION_SAVE,
         self::MERCHANT_SIGN_UP,
         self::GET_MERCHANT_BMC_RESPONSE,
-        self::SAVE_MERCHANT_BMC_RESPONSE
+        self::SAVE_MERCHANT_BMC_RESPONSE,
+        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
     ];
 
     const ADMIN_ROUTES = [
@@ -125,8 +128,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
+        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
 
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
+
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
     ];
 
@@ -143,6 +148,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DETAILS_PATCH        => 10,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => 10,
+        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS => 10,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [

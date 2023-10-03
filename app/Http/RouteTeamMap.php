@@ -378,6 +378,7 @@ class RouteTeamMap
         'merchant_bmc_response_fetch'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_bmc_response_fetch_admin'               => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_bmc_response_save'                      => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_get_l2_dynamic_configs'                 => [self::TEAM_PAYMENTS_GROWTH],
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],
