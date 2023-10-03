@@ -13,7 +13,9 @@ use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Consent\Processor\Processor;
 use RZP\Models\Merchant\AutoKyc\Response as Response;
+use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ConsentDocumentBaseResponse;
 
@@ -100,6 +102,11 @@ class LegalDocumentProcessor implements Processor
             "email"                => $this->merchant->getEmail(),
             "time_zone"            => Timezone::getTimeZoneAbbrevation($this->merchant->getTimeZone()),
         ];
+
+        if($isExpEnabled === true && (new AccessMapCore)->isSubMerchant($ownerDetails['owner_id']) === true)
+        {
+            (new DetailService())->addPartnerDetailsAsOwner($ownerDetails, $input);
+        }
 
         $body = [
             "client_details"        => ['platform' => $platform],

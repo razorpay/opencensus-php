@@ -62,7 +62,8 @@ class Validator extends Base\Validator
         Constants::BRAND_COLOR             => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Constants::TEXT_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Constants::LOGO_URL                => 'sometimes|max:2000',
-        Constants::POLICY_URL              => 'sometimes|url|max:255'
+        Constants::POLICY_URL              => 'required_with:' . Constants::POLICY_TEMPLATE_ID . '|url|max:255',
+        Constants::POLICY_TEMPLATE_ID      => 'required_with:' . Constants::POLICY_URL . '|string|size:14'
     ];
 
     protected static $createValidators = [
@@ -236,9 +237,9 @@ class Validator extends Base\Validator
     /**
      * @throws Exception\BadRequestException
      */
-    public function validatePolicyUrlInPartnerMetaData(Entity $config, Merchant\Entity $partner, ?array $partnerMetaData)
+    public function validatePolicyDetailsInPartnerMetaData(Entity $config, Merchant\Entity $partner, ?array $partnerMetaData)
     {
-        if (isset($partnerMetaData[Constants::POLICY_URL]) !== true)
+        if (isset($partnerMetaData[Constants::POLICY_URL]) !== true && isset($partnerMetaData[Constants::POLICY_TEMPLATE_ID]) !== true)
         {
             return;
         }

@@ -69,6 +69,8 @@ class CapturePartnershipConsents extends Job
         {
             $merchant  = $this->repoManager->merchant->findOrFailPublic($this->merchantId);
 
+            $this->app['basicauth']->setMerchant($merchant);
+
             $this->mutex->acquireAndRelease(
                 self::MUTEX_KEY_PREFIX.$this->milestone.$this->merchantId,
                 function() use($merchant){
@@ -116,6 +118,7 @@ class CapturePartnershipConsents extends Job
             $input[DEConstants::USER_ID] =  $merchant->primaryOwner($product)->getId();
         }
 
+        $consentCore   = new Consent\Core();
         $detailService = new Merchant\Detail\Service();
 
         //if legal documents are not present already, store them in database
@@ -128,7 +131,7 @@ class CapturePartnershipConsents extends Job
 
             $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
-            $isExpEnabled = $this->isPartnerConsentExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId());
+            $isExpEnabled = $consentCore->isPartnerConsentV2ExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId());
 
             $legalDocumentsInput = [];
 
@@ -139,9 +142,14 @@ class CapturePartnershipConsents extends Job
                 $notificationDetails                                    = $detailService->getNotificationDetailsForMerchant(null, $input[DEConstants::USER_ID]);
 
                 //Override the notification details as required for partner domain milestones
-                $notificationDetails = $this->overrideNotificationDetails($notificationDetails, $milestone);
+                $notificationDetails = $this->overrideNotificationDetails($notificationDetails, $milestone, $input);
                 $legalDocumentsInput[DEConstants::NOTIFICATION_DETAILS] = $notificationDetails;
                 $legalDocumentsInput[DEConstants::DOCUMENTS_DETAIL]     = $data;
+
+                if(in_array($milestone, ConsentConstant::PARTNERSHIP_MILESTONES_WITH_APP_POLICIES) === true)
+                {
+                    $detailService->addPartnerDetailsAsOwner($legalDocumentsInput, $input);
+                }
             }
             else
             {
@@ -156,6 +164,11 @@ class CapturePartnershipConsents extends Job
                 $legalDocumentsInput = [
                     DEConstants::DOCUMENTS_DETAIL => $documents_detail
                 ];
+            }
+
+            if(empty($input[DEConstants::IP_ADDRESS]) === false)
+            {
+                $legalDocumentsInput[DEConstants::IP_ADDRESS] = $input[DEConstants::IP_ADDRESS];
             }
 
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
@@ -180,7 +193,7 @@ class CapturePartnershipConsents extends Job
                     'request_id' => $responseData['id']
                 ];
 
-                (new Consent\Core())->updateConsentDetails($merchantConsentDetail, $updateInput);
+                $consentCore->updateConsentDetails($merchantConsentDetail, $updateInput);
             }
         }
         else
@@ -239,23 +252,8 @@ class CapturePartnershipConsents extends Job
         }
     }
 
-    public function isPartnerConsentExperimentEnabled($partnerId, $mileStone, $orgId): bool
-    {
-        $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $this->app['config']->get('app.partnership_consent_v2_experiment'),
-            'request_data'  => json_encode([
-                                               'mid'       => $partnerId,
-                                               'milestone' => $mileStone,
-                                               'org_id'    => $orgId,
-                                           ]),
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
     // The following function is used to update the notification details specific to partner domain.
-    private function overrideNotificationDetails(array $notificationDetails, string $milestone): array
+    private function overrideNotificationDetails(array $notificationDetails, string $milestone, array $input): array
     {
         if (array_key_exists($milestone, ConsentConstant::PARTNER_DOMAIN_CONSENT_DETAILS['email']))
         {
@@ -263,6 +261,11 @@ class CapturePartnershipConsents extends Job
             $notificationDetails['email_details']['template_name']      = $milestoneEmailTemplateData['template_name'];
             $notificationDetails['email_details']['template_namespace'] = $milestoneEmailTemplateData['template_namespace'];
             $notificationDetails['email_details']['subject']            = $milestoneEmailTemplateData['subject'];
+        }
+
+        if(empty($input[ConsentConstant::EMAIL_PARAMS]) === false)
+        {
+            $notificationDetails['email_details']['params'] = $input[ConsentConstant::EMAIL_PARAMS];
         }
 
         return $notificationDetails;

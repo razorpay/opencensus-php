@@ -60,7 +60,7 @@ class Service extends Base\Service
 
         if ($consent === true and $input['env'] === 'prod')
         {
-            (new Merchant\Core())->captureConsentsForOauth($merchantId, $input);
+            (new Merchant\Core())->captureConsentsForOauth($merchantId, $entityOwner, $input);
         }
 
         return $mapping->toArrayPublic();

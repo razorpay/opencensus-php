@@ -234,7 +234,7 @@ class Core extends Base\Core
 
         $config->edit($input, 'edit');
 
-        $validator->validatePolicyUrlInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
+        $validator->validatePolicyDetailsInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
 
         $validator->validateSettleToPartner($partner, $input, $submerchant);
 

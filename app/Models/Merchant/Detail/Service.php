@@ -4047,7 +4047,7 @@ class Service extends Base\Service
             $metadata = [
                 ConsentConstant::IP_ADDRESS     => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
                 ConsentConstant::USER_AGENT     => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
-                ConsentConstant::TEMPLATE_ID    => $this->app['config']->get('app'. '.' .ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]])
+                ConsentConstant::TEMPLATE_ID    => $this->app['config']->get('app'. '.' .ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]) ?? $documentDetailInput[ConsentConstant::TEMPLATE_ID]
             ];
 
             $merchantConsentInput = [
@@ -4278,13 +4278,13 @@ class Service extends Base\Service
 
     /**
      * @param $input
-     * @param $merchant
+     * @param Merchant\Entity $merchant
      * @param bool $isExpEnabled
      * @param array $mapConsentUrlToFileContent
      * @param bool $isConsentRetried
      * @return array
      */
-    public function getDocumentsDetails($input, $merchant, bool &$isExpEnabled = false, array &$mapConsentUrlToFileContent = [],
+    public function getDocumentsDetails($input, Merchant\Entity $merchant, bool &$isExpEnabled = false, array &$mapConsentUrlToFileContent = [],
                                         bool $isConsentRetried = false): array
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
@@ -4295,8 +4295,7 @@ class Service extends Base\Service
 
         foreach ($documentDetailsInput as $documentDetailInput)
         {
-            $templateID = ($isConsentRetried === true) ? $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
-                : $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
+            $templateID = $this->getTemplateId($isConsentRetried, $documentDetailInput);
 
             if (empty($templateID) === true)
             {
@@ -4324,15 +4323,14 @@ class Service extends Base\Service
             }
             else
             {
-                if ((new Merchant\Core)->isRegularMerchant($merchant) === true)
+                if ((new Merchant\Core)->isRegularMerchant($merchant) === true or (new Merchant\Core)->isMerchantAPartnerOrSubmerchant($merchant) === true)
                 {
                     $consentData = ConsentConstant::VALID_LEGAL_DOC[$consentType];
 
                     $consentType = $consentData[ConsentConstant::DOC_NAME] ?? $consentType;
                 }
 
-                $templateID = ($isConsentRetried === true) ? $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
-                    : $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
+                $templateID = $this->getTemplateId($isConsentRetried, $documentDetailInput);
 
                 $document_detail = [
                     "type"           =>  $consentType,
@@ -4344,6 +4342,38 @@ class Service extends Base\Service
         }
 
         return $documents_detail;
+    }
+
+    private function getTemplateId(bool $isConsentRetried, array $documentDetailInput)
+    {
+        if($isConsentRetried === true)
+        {
+            $templateID = $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID];
+        }
+        else
+        {
+            $templateID = $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]) ?? $documentDetailInput[ConsentConstant::TEMPLATE_ID];
+        }
+
+        return $templateID;
+    }
+
+    public function addPartnerDetailsAsOwner(& $ownerDetails, $input): void
+    {
+        $partnerFields = [
+            ConsentConstant::PARTNER_NAME,
+            ConsentConstant::PARTNER_ID,
+            ConsentConstant::APPLICATION_NAME,
+            ConsentConstant::APPLICATION_ID,
+        ];
+
+        foreach ($partnerFields as $field)
+        {
+            if (empty($input[$field]) === false)
+            {
+                $ownerDetails[$field] = $input[$field];
+            }
+        }
     }
 
     private function getDocumentDetailsContent($input, array &$mapConsentUrlToFileContent = []) : string

@@ -8929,6 +8929,19 @@ class Core extends Base\Core
         return !$isSubMerchant;
     }
 
+    /*
+     * If merchant is a partner or a sub-merchant, it returns true
+     */
+    public function isMerchantAPartnerOrSubmerchant(Entity $merchant): bool
+    {
+        if ($merchant->isPartner() === true or ((new AccessMapCore)->isSubMerchant($merchant->getMerchantId()) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function  checkAndPushMessageToMetroForNetworkOnboard($merchantId)
     {
         $networks = [];
@@ -10041,13 +10054,21 @@ class Core extends Base\Core
      * @param string $merchantId
      * @param array  $data
      */
-    public function captureConsentsForOauth(string $merchantId, array $data)
+    public function captureConsentsForOauth(string $merchantId, Merchant\Entity $partner, array $data)
     {
+        $application = (new OAuthApp\Repository)->findOrFailPublic($data[Entity::APPLICATION_ID]);
+
         $input = [
             DEConstants::CONSENT            => true,
             DEConstants::IP_ADDRESS         => $data['ip'],
             DEConstants::ENTITY_ID          => $data[Entity::APPLICATION_ID],
-            Consent\Entity::ENTITY_TYPE     => Entity::APPLICATION
+            Consent\Entity::ENTITY_TYPE     => Entity::APPLICATION,
+            ConsentConstant::PARTNER_ID       => $partner->getId(),
+            ConsentConstant::APPLICATION_NAME => $application->getName(),
+            ConsentConstant::EMAIL_PARAMS      => [
+                "application_name"     => $application->getName(),
+                "acceptance_timestamp" => Carbon::now()->getTimestamp(),
+            ]
         ];
 
         if(empty($data[ConsentConstant::SCOPE_POLICIES]) === false)
@@ -10059,6 +10080,40 @@ class Core extends Base\Core
                     DEConstants::URL  => $policyUrl,
                 ];
 
+                if($policy === ConsentConstant::CUSTOM_POLICY)
+                {
+                    $config = $this->repo->partner_config->getApplicationConfig($data[Entity::APPLICATION_ID]);
+
+                    $customPolicyUrl = (empty($config) ? null : $config->getPolicyUrl());
+
+                    $policyTemplateId = (empty($customPolicyUrl) ? null : $config->getPolicyTemplateId());
+
+                    if($customPolicyUrl === null or $customPolicyUrl !== $policyUrl or $policyTemplateId === null)
+                    {
+                        $this->trace->info(
+                            TraceCode::OAUTH_CONSENT_POLICY_DETAILS_NOT_FOUND,
+                            [
+                                "merchant_id"              => $merchantId,
+                                "application_id"           => $data[Entity::APPLICATION_ID],
+                                "application_policy_url"   => $customPolicyUrl,
+                                "policy_url_in_request"    => $policyUrl,
+                                "template_id"              => $policyTemplateId
+                            ]
+                        );
+
+                        throw new LogicException(
+                            'Expected Custom policy details not found while generating consent',
+                            null,
+                            [
+                                "merchant_id"    => $merchantId,
+                                "application_id" => $data[Entity::APPLICATION_ID],
+                                "policy_url"     => $policyUrl
+                            ]);
+                    }
+
+                    $documentDetail[ConsentConstant::TEMPLATE_ID] = $policyTemplateId;
+                }
+
                 $input[DEConstants::DOCUMENTS_DETAIL][] = $documentDetail;
             }
         }
@@ -10069,6 +10124,14 @@ class Core extends Base\Core
                 DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
             ];
         }
+
+        $this->trace->info(
+            TraceCode::OAUTH_CONSENT_GENERATE_INPUT,
+            [
+                "merchant_id"   => $merchantId,
+                "input"         => $input
+            ]
+        );
 
         CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, ConsentConstant::OAUTH);
     }

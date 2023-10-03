@@ -13,8 +13,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Services\Segment\EventCode as SegmentEvent;
-
-
+use RZP\Models\Merchant\Detail\Service as DetailService;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 
 use Platform\Bvs\Legaldocumentmanager\V1 as legalDocumentManagerV1;
 use Platform\Bvs\Legaldocumentmanager\V1\TwirpError as TwirpErrorV1;
@@ -343,7 +343,7 @@ class BvsLegalDocumentManagerClient extends BaseClient
 
     private function createOwnerDetailsV2($ownerDetails): ?consentDocumentManagerV2\OwnerDetails
     {
-        return new consentDocumentManagerV2\OwnerDetails([
+        $consentOwnerDetails = [
             'owner_id'              => $ownerDetails['owner_id'],
             'owner_name'            => $ownerDetails['owner_name'],
             'ip_address'            => $ownerDetails['ip_address'],
@@ -352,7 +352,14 @@ class BvsLegalDocumentManagerClient extends BaseClient
             'contact_number'        => $ownerDetails['contact_number'],
             'email'                 => $ownerDetails['email'],
             'time_zone'             => $ownerDetails['time_zone'],
-        ]);
+        ];
+
+        if((new AccessMapCore)->isSubMerchant($ownerDetails['owner_id']) === true)
+        {
+            (new DetailService())->addPartnerDetailsAsOwner($consentOwnerDetails, $ownerDetails);
+        }
+
+        return new consentDocumentManagerV2\OwnerDetails($consentOwnerDetails);
     }
 
     private function createEmailDetailsV2($emailDetails): consentDocumentManagerV2\EmailDetails

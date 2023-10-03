@@ -22,6 +22,13 @@ class Constants
     const PG          = 'pg';
     const RX          = 'rx';
 
+    const PARTNER_ID       = 'partner_id';
+    const PARTNER_NAME     = 'partner_name';
+    const APPLICATION_ID   = 'application_id';
+    const APPLICATION_NAME = 'application_name';
+
+    const EMAIL_PARAMS = 'email_params';
+
     const X_SUBMISSION  = 'X';
     const L2_SUBMISSION = 'L2';
 
@@ -35,6 +42,8 @@ class Constants
     const PLATFORM  = 'platform';
 
     const SCOPE_POLICIES = 'scope_policies';
+
+    const CUSTOM_POLICY = 'Custom Policy';
 
     const STORE_CONSENTS_RETRY_PERIOD_IN_SEC            = 86400;
     const STORE_CONSENTS_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'store_consents_attempt_count';
@@ -65,6 +74,10 @@ class Constants
         'Oauth_RazorpayX Policies_Terms & Conditions',
         'Oauth_Terms & Conditions',
         'Oauth_Custom Policy_Terms & Conditions'
+    ];
+
+    const PARTNERSHIP_MILESTONES_WITH_APP_POLICIES = [
+        MeConstants::OAUTH
     ];
 
     //TODO:: Change it back to 30 after data fix
@@ -121,10 +134,12 @@ class Constants
             self::PLATFORM  => self::PG
         ],
         'L2_terms'                                     => [
+            self::DOC_NAME  => 'Terms of Service',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
         'L2_privacy'                                   => [
+            self::DOC_NAME  => 'Privacy Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
@@ -157,6 +172,7 @@ class Constants
             self::PLATFORM  => self::PG
         ],
         'Oauth' . '_' . MeConstants::TERMS             => [
+            self::DOC_NAME  => 'App Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
@@ -173,14 +189,17 @@ class Constants
             self::PLATFORM  => self::PG
         ],
         'Oauth_App Policies' . '_' . MeConstants::TERMS             => [
+            self::DOC_NAME  => 'App Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
         'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS             => [
+            self::DOC_NAME  => 'RazorpayX App Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
         'Oauth_Custom Policy' . '_' . MeConstants::TERMS             => [
+            self::DOC_NAME  => 'Platform Partnerships Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
@@ -192,6 +211,8 @@ class Constants
         'https://razorpay.com/s/terms/partners/'                        => 'partnership_consent_terms_template_id',
         'https://razorpay.com/terms/razorpayx/partnership/'             => 'partnership_consent_oauth_template_id',
         'https://razorpay.com/s/terms/partners/aggregator-and-platform' => 'partnership_consent_switch_template_id',
+        "https://razorpay.com/s/terms/partners/payments-oauth/read-only"       => 'partnership_oauth_consent_read_only_template_id',
+        "https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/" => 'partnership_oauth_consent_read_write_template_id',
     ];
 
     const TEMPLATE_ID          = 'template_id';
@@ -232,6 +253,11 @@ class Constants
                 'template_name'      => 'email.partnerships_experience.consent_partner_activation',
                 'template_namespace' => 'partnerships-experience',
                 'subject'            => 'Razorpay Partner Program: Our Terms of Service and Privacy Policy'
+            ],
+            self::OAUTH               => [
+                'template_name'      => 'email.partnerships.consent.tnc_app_policy_oauth',
+                'template_namespace' => 'partnerships',
+                'subject'            => 'Razorpay: App Policy'
             ],
         ],
 

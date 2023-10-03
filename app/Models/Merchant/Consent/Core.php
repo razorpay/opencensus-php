@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base\ConnectionType;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\DB;
 use RZP\Exception\BadRequestException;
@@ -406,6 +407,21 @@ class Core extends Base\Core
         return [
             DEConstants::DOCUMENTS_DETAIL => $documents_detail
         ];
+    }
+
+    public function isPartnerConsentV2ExperimentEnabled($partnerId, $mileStone, $orgId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partnership_consent_v2_experiment'),
+            'request_data'  => json_encode([
+                'mid'       => $partnerId,
+                'milestone' => $mileStone,
+                'org_id'    => $orgId,
+            ]),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private function getPlatform(string $type)

@@ -35,6 +35,7 @@ class Constants
     CONST TEXT_COLOR            = 'text_color';
     const LOGO_URL              = 'logo_url';
     const POLICY_URL            = 'policy_url';
+    const POLICY_TEMPLATE_ID    = 'policy_template_id';
 
     const attributes = [
         self::MAX_PAYMENT_AMOUNT,
@@ -82,7 +83,8 @@ class Constants
         self::BRAND_COLOR,
         self::TEXT_COLOR,
         self::LOGO_URL,
-        self::POLICY_URL
+        self::POLICY_URL,
+        self::POLICY_TEMPLATE_ID
     ];
 
     const PARTNER_METADATA_DEFAULT_VALUES = [

@@ -237,6 +237,20 @@ class Entity extends PublicEntity
         return (empty($partnerMetaData) ? $this->getDefaultPartnerBrandName() : $partnerMetaData[Constants::BRAND_NAME]);
     }
 
+    public function getPolicyUrl(): ?string
+    {
+        $partnerMetaData = $this->getPartnerMetadata();
+
+        return $partnerMetaData[Constants::POLICY_URL] ?? null;
+    }
+
+    public function getPolicyTemplateId(): ?string
+    {
+        $partnerMetaData = $this->getPartnerMetadata();
+
+        return $partnerMetaData[Constants::POLICY_TEMPLATE_ID] ?? null;
+    }
+
     // --------------------- SETTERS ---------------------
     public function setEntityType($entityType)
     {

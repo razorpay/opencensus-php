@@ -94,6 +94,12 @@ class ConsentDocumentsBaseService extends Base\Service
 
             foreach ($tncAgreements as $type => $url)
             {
+                //We won't be storing consent for service agreement
+                if($url === 'https://razorpay.com/agreement/')
+                {
+                    continue;
+                }
+
                 $tncAgreementDetail = [
                     DEConstants::TYPE => $type,
                     DEConstants::URL  => $url
@@ -112,7 +118,9 @@ class ConsentDocumentsBaseService extends Base\Service
 
             $this->merchantDetailService->storeConsents($merchant->getId(), $consentDetails, $merchant->primaryOwner()->getId());
 
-            $consentDocumentDetails = $this->merchantDetailService->getDocumentsDetails($consentDetails, $merchant);
+            $isExpEnabled = $this->merchantConsentCore->isPartnerConsentV2ExperimentEnabled($partnerId, $activationFormMilestone, $merchant->getOrgId());
+
+            $consentDocumentDetails = $this->merchantDetailService->getDocumentsDetails($consentDetails, $merchant, $isExpEnabled);
 
             $legalDocumentsInput = [
                 DEConstants::DOCUMENTS_DETAIL                   => $consentDocumentDetails,
@@ -120,9 +128,16 @@ class ConsentDocumentsBaseService extends Base\Service
                 DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP     => $merchantTncAcceptance->getAcceptedAt()
             ];
 
+            if($isExpEnabled === true)
+            {
+                $notificationDetails = $this->merchantDetailService->getNotificationDetailsForMerchant($merchant->primaryOwner()->getId());
+
+                $legalDocumentsInput[DEConstants::NOTIFICATION_DETAILS] = $notificationDetails;
+            }
+
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($legalDocumentsInput);
+            $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::PG, $isExpEnabled);
 
             $responseData = $response->getResponseData();
 

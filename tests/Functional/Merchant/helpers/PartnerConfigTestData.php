@@ -728,12 +728,13 @@ return [
         ],
     ],
 
-    'testUpdatePartnerPolicyUrlByAdmin' => [
+    'testUpdatePartnerPolicyByAdmin' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -747,18 +748,67 @@ return [
                 'explicit_plan_id'      => '10ZeroPricingP',
                 'explicit_refund_fees'  => true,
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
     ],
 
-    'testUpdatePartnerPolicyUrlByAdminWithFeatureEnabledForOAuthApp' => [
+    'testUpdatePartnerPolicyUrlWhenTemplateIdNotPresent' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The policy template id field is required when policy url is present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePartnerPolicyTemplateIdWhenUrlNotPresent' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_template_id'    => '1hDYlICobzOCZt',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The policy url field is required when policy template id is present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePartnerPolicyTemplateIdByAdmin' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -772,18 +822,46 @@ return [
                 'explicit_plan_id'      => '10ZeroPricingP',
                 'explicit_refund_fees'  => true,
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
     ],
 
-    'testUpdatePolicyUrlByAdminForInvalidPartnerType' => [
+    'testUpdatePartnerPolicyByAdminWithFeatureEnabledForOAuthApp' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => true,
+                'partner_metadata'      =>  [
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdatePolicyByAdminForInvalidPartnerType' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -802,12 +880,13 @@ return [
         ],
     ],
 
-    'testUpdatePartnerPolicyUrlByAdminForInvalidEntityType' => [
+    'testUpdatePartnerPolicyByAdminForInvalidEntityType' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -826,12 +905,13 @@ return [
         ],
     ],
 
-    'testUpdatePartnerPolicyUrlByAdminWithFeatureNotEnabled' => [
+    'testUpdatePartnerPolicyByAdminWithFeatureNotEnabled' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
-                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_url'            => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -850,12 +930,13 @@ return [
         ],
     ],
 
-    'testUpdatePartnerPolicyUrlByNonAdminAuth' => [
+    'testUpdatePartnerPolicyByNonAdminAuth' => [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
                 'partner_metadata'      =>  [
                     'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt',
                 ]
             ],
         ],
@@ -1503,7 +1584,8 @@ return [
                     'brand_color'   => '0000FF',
                     'text_color'    => '000FFF',
                     'brand_name'    => 'google',
-                    'policy_url'    => 'https://www.xyz.com/terms'
+                    'policy_url'    => 'https://www.xyz.com/terms',
+                    'policy_template_id'    => '1hDYlICobzOCZt'
                 ],
             ],
         ],

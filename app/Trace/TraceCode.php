@@ -4136,6 +4136,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APP_MERCHANT_ACCESS_MAP_DELETE                        = 'APP_MERCHANT_ACCESS_MAP_DELETE';
     const OAUTH_TOKEN_WITH_PARTNER_ACCOUNT                      = 'OAUTH_TOKEN_WITH_PARTNER_ACCOUNT';
 
+    const OAUTH_CONSENT_POLICY_DETAILS_NOT_FOUND                = 'OAUTH_CONSENT_POLICY_DETAILS_NOT_FOUND';
+    const OAUTH_CONSENT_GENERATE_INPUT                          = 'OAUTH_CONSENT_GENERATE_INPUT';
     const PASSPORT_NOT_FOUND                                    = 'PASSPORT_NOT_FOUND';
     const EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH                    = 'EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH';
     const EDGE_PASSPORT_CONSUMER_ID_MISMATCH                    = 'EDGE_PASSPORT_CONSUMER_ID_MISMATCH';
