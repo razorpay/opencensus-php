@@ -151,8 +151,13 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     <BladeProvider themeTokens={Theme} colorScheme="light">
       <SidebarContainer>
         <SidebarSection>
-          <Link to="/dashboard">
-            <Logo src={logoURL || RZP_LOGO_URL} />
+          <Link to="/dashboard" aria-label="brand-logo home page link">
+            <Logo
+              src={logoURL || RZP_LOGO_URL}
+              role="img"
+              aria-label="brand-logo"
+              alt="brand-logo"
+            />
           </Link>
         </SidebarSection>
         <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_activation_form')}>

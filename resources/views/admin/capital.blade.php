@@ -6,7 +6,7 @@
     <meta name="google" value="notranslate" />
     <link rel="shortcut icon" href="/img/favicon.png">
     <meta name="description" content="Capital onboarding Revamp" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
     <link rel="preconnect" href="https://cdn.razorpay.com">
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');

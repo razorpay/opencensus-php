@@ -21,14 +21,9 @@ import React, { Component } from 'react';
  */
 export default class Definition extends Component {
   render() {
-    const {
-      allowEmptyTitle,
-      children,
-      placeholder,
-      customClass = '',
-    } = this.props;
+    const { allowEmptyTitle, children, placeholder, customClass = '' } = this.props;
 
-    let definition = Array.isArray(children) ? [...children] : [children];
+    const definition = Array.isArray(children) ? [...children] : [children];
 
     if (!allowEmptyTitle) {
       while (definition.length > 0 && !definition[0]) {
@@ -37,18 +32,16 @@ export default class Definition extends Component {
     }
 
     if (definition.length === 0) {
-      return typeof placeholder !== 'undefined' ? (
-        <span>{placeholder}</span>
-      ) : null;
+      return typeof placeholder !== 'undefined' ? <span>{placeholder}</span> : null;
     }
 
-    const heading = definition[0],
-      body = definition.slice(1);
+    const heading = definition[0];
+    const body = definition.slice(1);
 
     return (
       <dl class={`rzp-definition ${customClass}`}>
         {heading && <dt>{heading}</dt>}
-        {body.map((item, key) => <dd key={key}>{item}</dd>)}
+        {body.length > 0 ? body.map((item, key) => <dd key={key}>{item}</dd>) : <dd>&nbsp;</dd>}
       </dl>
     );
   }

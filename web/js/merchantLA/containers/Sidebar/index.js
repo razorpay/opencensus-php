@@ -41,8 +41,19 @@ class Sidebar extends Component {
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
           <section class="brand-logo">
-            <Link to="/dashboard" onClick={this.hideSidebar}>
-              <img src={logoURL || RZPLogoFullPNG} width="145" height="35" />
+            <Link
+              to="/dashboard"
+              onClick={this.hideSidebar}
+              aria-label="brand-logo link for home page"
+            >
+              <img
+                src={logoURL || RZPLogoFullPNG}
+                width="145"
+                height="35"
+                alt="brand-logo"
+                role="img"
+                aria-label="brand-logo"
+              />
             </Link>
           </section>
           <nav>

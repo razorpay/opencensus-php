@@ -190,11 +190,11 @@ describe('PaymentRefund', () => {
       );
 
       const expectedText =
-        "We currently do not support refunds for Paytm 'Instant (beta)' integration. You can process this refund from your Paytm Business Dashboard ";
+        "We currently do not support refunds for Paytm 'Instant (beta)' integration. You can process this refund from your Paytm Business Dashboard";
 
       const link = getByText(container, 'Paytm Business Dashboard');
 
-      expect(container.textContent).toEqual(expectedText);
+      expect(container.textContent.trim()).toEqual(expectedText);
       expect(link.getAttribute('href')).toBe('https://dashboard.paytm.com/');
     });
 

@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 
 export default ({
@@ -12,7 +13,12 @@ export default ({
   <div className="more-options-button">
     <Dropdown className="dropdown-toggle">
       <DropdownTrigger>
-        <button className="btn btn-default" onClick={handleClick}>
+        <button
+          className="btn btn-default"
+          onClick={handleClick}
+          role="button"
+          aria-label="download-csv-button"
+        >
           <i className="i i-download" />
         </button>
       </DropdownTrigger>
@@ -21,22 +27,14 @@ export default ({
           {children}
           {!!csvData && (
             <div className="option">
-              <a
-                href={csvData.url}
-                download={csvData.name}
-                onClick={handleCSVDownload}
-              >
+              <a href={csvData.url} download={csvData.name} onClick={handleCSVDownload}>
                 Export CSV
               </a>
             </div>
           )}
           {!!pngData && (
             <div className="option">
-              <a
-                onClick={handleImageDownload}
-                download={pngData.name}
-                href={pngData.url}
-              >
+              <a onClick={handleImageDownload} download={pngData.name} href={pngData.url}>
                 Download Image
               </a>
             </div>

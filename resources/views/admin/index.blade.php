@@ -9,7 +9,7 @@
   <link rel="shortcut icon" href="/img/favicon.png">
   <title>Razorpay - Admin Panel</title>
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
   <script>
     var org = {!! json_encode($org) !!},
       user = {!! json_encode($user) !!},

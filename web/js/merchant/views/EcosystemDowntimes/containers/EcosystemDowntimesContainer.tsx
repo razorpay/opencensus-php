@@ -64,6 +64,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
             aria-label="status-detail-icon"
             onClick={handleToggleSlider}
             ref={ecosystemHealthIcon}
+            role="img"
           />
         </div>
       </div>
