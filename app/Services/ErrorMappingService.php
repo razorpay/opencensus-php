@@ -22,6 +22,7 @@ class ErrorMappingService
         "pg/pg-router"                                          => "pg_router",
         "x/payout_links"                                        => "x_payout_links",
         "pg/emi"                                                => "emi",
+        "pg/upi_autopay"                                        => "upi_autopay",
         ];
 
     public const FETCHED_ERROR_CODES_PATH = 'error_codes/error_codes/%s/internal_error_codes.json';
@@ -73,6 +74,17 @@ class ErrorMappingService
         if (isset($errorMappingArray[$code]) === true)
         {
             return array(json_decode($errorMappingArray[$code], true), $method);
+        }
+
+        if ((isset($method)) and ($method === 'upi_autopay') and isset($errorMappingArray[$code]) === false)
+        {
+            $upiNamespaceFilePath = sprintf(self::KEY_VALUE_ERROR_CODES_PATH,"upi");
+            $errorMappingArrayFromUpi =  json_decode(file_get_contents(storage_path($upiNamespaceFilePath)), true);
+
+            if (isset($errorMappingArrayFromUpi[$code]) === true)
+            {
+                return array(json_decode($errorMappingArrayFromUpi[$code], true), $method);
+            }
         }
 
         $commonNamespaceFilePath = sprintf(self::KEY_VALUE_ERROR_CODES_PATH,"common");

@@ -1293,7 +1293,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if ($internalErrorCode !== null)
         {
-            $this->setDetailedError($internalErrorCode, $this->getMethod());
+            $method = $this->getMethod();
+
+            if(($this->isUpiRecurring()) and ($this->getGateway() === 'upi_icici'))
+            {
+                $method = 'upi_autopay';
+            }
+
+            $this->setDetailedError($internalErrorCode, $method);
         }
     }
 
@@ -4262,6 +4269,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $method = $this->getMethod();
+
+        if(($this->isUpiRecurring() === true) and ($this->getGateway() === 'upi_icici'))
+        {
+            $method = 'upi_autopay';
+        }
 
         list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode, $method);
 

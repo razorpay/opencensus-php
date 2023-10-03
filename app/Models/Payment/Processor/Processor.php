@@ -6311,8 +6311,14 @@ class Processor
         }
 
         $payment = $this->payment;
+        $method = $payment->getMethod();
 
-        $error->setDetailedError($internalCode, $payment->getMethod());
+        if(($payment->isUpiRecurring()) and ($payment->getGateway() === 'upi_icici'))
+        {
+            $method = 'upi_autopay';
+        }
+
+        $error->setDetailedError($internalCode, $method);
 
         $step = $error->getStep();
 

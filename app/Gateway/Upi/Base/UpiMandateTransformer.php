@@ -92,7 +92,8 @@ class UpiMandateTransformer extends UpiTransformer
                 $internalErrorCode = $this->exception->getError()->getInternalErrorCode();
 
                 // If the mandate is rejected by user, update mandate status as rejected.
-                if ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REJECTED)
+                if (($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REJECTED) or
+                    ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER))
                 {
                     $this->item->setStatus(Status::REJECTED);
                 }
