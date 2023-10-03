@@ -169,7 +169,16 @@ class Coupons extends Base\Core
             return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_API_CHECKOUT_USER_ERROR);
         }
 
-        $promotions = $checkout['discountApplications']['edges'][0]['node'];
+        $promotions = [];
+
+        // This is required to handle the combination discount feature
+        foreach ($checkout['discountApplications']['edges'] as $key => $edge) {
+            
+            if(isset($edge['node']['code']) === true)
+            {
+                $promotions = $edge['node'];
+            }
+        }
 
         // User entered valid code but cart item validation failed.
         if ($promotions['applicable'] !== true)
