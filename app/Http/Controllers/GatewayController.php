@@ -489,6 +489,24 @@ class GatewayController extends Controller
 
                     }
 
+                    if ($payment->isUpiRecurring() === true)
+                    {
+                        $action = $gateway->getActionFromServerCallback($input);
+
+                        if (($action === Action::AUTHORIZE) and ($this->shouldSkipUpiRecurringICICIDebitCallback($payment, $mode, $input) === true))
+                        {
+                            $this->trace->info(TraceCode::SKIP_UPI_RECURRING_ICICI_CALLBACK_PROCESSING,
+                                [
+                                    'payment_id' => $payment->getId(),
+                                    'merchant_id' => $payment->getMerchantId(),
+                                ]);
+
+                            return [
+                                'success' => true,
+                            ];
+                        }
+                    }
+
                     // For card recurring regular gateways, there is no static callback support. So most of
                     // the card recurring post-processing is handled in dynamic callback url flow only.
                     // For payu, this is not the case, we get webhooks also for card recurring.
@@ -2123,6 +2141,44 @@ class GatewayController extends Controller
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private function shouldSkipUpiRecurringICICIDebitCallback(Payment\Entity $payment, string $mode, array $input)
+    {
+        /*
+         * Temporary Solution to Handle UPI Recurring BT cases to maintain payment in created state and reduce force authorized cases.
+         * Long term fix is to have PENDING state which is being worked upon
+         * */
+
+        if ((isset($payment) === false) or
+            (isset($mode) === false) or
+            (isset($input) === false))
+        {
+            return false;
+        }
+
+        // if gateway is not upi_icici, return
+        if ($payment['gateway'] !== Gateway::UPI_ICICI)
+        {
+            return false;
+        }
+
+        // if success is false, only then the error block is populated
+        if ((isset($input['success']) === true) and
+            ($input['success'] === true))
+        {
+            return false;
+        }
+
+        // only in case of upi_icici and BT call
+        if ((isset($input["error"]) === true) and
+            (isset($input["error"]["gateway_error_code"]) === true) and
+            ($input["error"]["gateway_error_code"] === "BT"))
+        {
+            return true;
         }
 
         return false;

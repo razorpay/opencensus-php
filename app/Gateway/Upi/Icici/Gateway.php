@@ -1461,6 +1461,18 @@ class Gateway extends Base\Gateway
         return $response[Fields::MERCHANT_TRAN_ID];
     }
 
+    public function getActionFromServerCallback(array $response): string
+    {
+        $details = $this->getRecurringDetailsFromServerCallback($response);
+
+        if (empty($details[Entity::ACTION]) === false)
+        {
+            return $details[Entity::ACTION];
+        }
+
+        return "";
+    }
+
     /**
      * Takes in S2S request as a body string
      * and returns the parsed response as an array
