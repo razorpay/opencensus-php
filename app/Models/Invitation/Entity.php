@@ -8,10 +8,11 @@ use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const USER_ID      = 'user_id';
     const EMAIL        = 'email';

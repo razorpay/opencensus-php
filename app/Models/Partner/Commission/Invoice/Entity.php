@@ -8,10 +8,12 @@ use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
     use HardDeletes;
 
     const ID                  = 'id';

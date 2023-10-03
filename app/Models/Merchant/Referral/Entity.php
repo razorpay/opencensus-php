@@ -4,9 +4,12 @@ namespace RZP\Models\Merchant\Referral;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const  ID                 = 'id';
     const  MERCHANT_ID        = 'merchant_id';
     const  REF_CODE           = 'ref_code';

@@ -5,11 +5,12 @@ namespace RZP\Models\Merchant\Email;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 class Entity extends Base\PublicEntity
 {
-    use HardDeletes;
+    use HardDeletes, AsvGetAttribute;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const TYPE     = 'type';
