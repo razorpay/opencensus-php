@@ -157,6 +157,18 @@ class Job implements ShouldQueue
            $this->init();
         });
 
+        if ($this->repoManager->getTransactionLevel() > 0)
+        {
+            $this->trace->error(TraceCode::QUEUE_JOB_INVALID_TRANSACTION_LEVEL, [
+                'job_name'          => $this->getJobName(),
+                'transaction_level' => $this->repoManager->getTransactionLevel()
+            ]);
+
+            $this->trace->count(Metric::QUEUE_JOB_TRANSACTION_LEVEL_COUNT, [
+                'job_name' => $this->getJobName(),
+            ]);
+        }
+
         if ($this->isMetricsEnabled())
         {
             $this->trace->gauge(Metric::QUEUE_JOB_ATTEMPT_COUNT, $this->attempts(), [

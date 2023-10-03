@@ -2796,6 +2796,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
     const QUEUE_JOB_TIMEOUT                                     = 'QUEUE_JOB_TIMEOUT';
+    const QUEUE_JOB_INVALID_TRANSACTION_LEVEL                   = 'QUEUE_JOB_INVALID_TRANSACTION_LEVEL';
 
     const BANKING_QUEUE_WORKER_TIMEOUT_HANDLING                 = 'BANKING_QUEUE_WORKER_TIMEOUT_HANDLING';
 
