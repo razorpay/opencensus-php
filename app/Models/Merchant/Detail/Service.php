@@ -3664,20 +3664,6 @@ class Service extends Base\Service
         return $this->core()->getBvsValidationArtefactDetails($merchantId,$validationArtefact,$validationId);
     }
 
-    public function getBvsValidationArtefactDetailsV2(string $merchantId, string $validationArtefact, $validationId = null)
-    {
-        try {
-            $this->core()->getBvsValidationArtefactDetails($merchantId,$validationArtefact,$validationId);
-        }
-        catch (IntegrationException $exception)
-        {
-            if($exception->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Record not found for provided merchantId and artefact");
-            }
-        }
-    }
-
     /**
      * This function is used for edit contact details of an merchant and login mobile number of owner user
      *

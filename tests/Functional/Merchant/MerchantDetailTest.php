@@ -43,7 +43,6 @@ use RZP\Exception\ServerErrorException;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -690,29 +689,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('merchant_detail:valid_fields',[
             'merchant_id'=>"10000000000000",
         ]);
-
-        $this->setAdminForInternalAuth();
-
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
-        $this->startTest();
-    }
-
-    public function testGetBvsValidationArtefactDetailsArtefactNotPresentInBVS()
-    {
-        $this->fixtures->create('merchant_detail:valid_fields',[
-            'merchant_id'=>"10000000000000",
-        ]);
-
-        Config::set('services.bvs.mock', true);
-        Config::set('services.bvs.response', 'record_not_found');
-
-        $bvsValidation = $this->fixtures->create('bvs_validation',
-            [
-                'owner_id'      => '10000000000000',
-                'artefact_type' => Constant::CIN,
-                'owner_type'    => Constant::MERCHANT
-            ]);
 
         $this->setAdminForInternalAuth();
 
