@@ -28,11 +28,11 @@ import {
   getErrorMessage,
   getICICIApplicationData,
   getICICIPanStatus,
-} from '../common/utils';
+} from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { APIResponseType } from '../TypeDeclare/XCATypeDeclare';
+import { APIResponseType } from 'common/ui/NotificationsDropdown/Neostone/TypeDeclare/XCATypeDeclare';
 import {
   ACTIVE_STATUS_MSGS,
   BLOCKED_STATUSES,
@@ -172,7 +172,14 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
         .then((resp) => {
           const { status_code = '', data: { items = [] } = {} } = resp;
           if (status_code == 200) {
-            const id = items[0]?.id;
+            const rblBankingAccount = items.find((item) => item.channel === 'rbl');
+            const id = rblBankingAccount?.id;
+
+            if (!id) {
+              setShowState('error');
+              return;
+            }
+
             merchantFetch({
               url: `banking_accounts/${id}`,
               mode: 'live',
