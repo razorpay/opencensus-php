@@ -489,7 +489,7 @@ class GatewayController extends Controller
 
                     }
 
-                    if ($payment->isUpiRecurring() === true)
+                    if (($payment->isUpiRecurring() === true) and ($payment['gateway'] === Gateway::UPI_ICICI))
                     {
                         $action = $gateway->getActionFromServerCallback($input);
 
@@ -2156,12 +2156,6 @@ class GatewayController extends Controller
         if ((isset($payment) === false) or
             (isset($mode) === false) or
             (isset($input) === false))
-        {
-            return false;
-        }
-
-        // if gateway is not upi_icici, return
-        if ($payment['gateway'] !== Gateway::UPI_ICICI)
         {
             return false;
         }
