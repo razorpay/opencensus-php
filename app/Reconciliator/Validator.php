@@ -275,7 +275,7 @@ class Validator extends Base\Core
         'wallet'                                           => 'sometimes|array',
         'card'                                             => 'required|array',
         'card.auth_code'                                   => 'required|string',
-        'card.rrn'                                         => 'required|string',
+        'card.rrn'                                         => 'sometimes|string',
         'card.arn'                                         => 'required|string',
         'card.gateway_fee'                                 => 'required|string',
         'card.gateway_service_tax'                         => 'required|string',
