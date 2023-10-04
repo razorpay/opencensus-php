@@ -9,6 +9,7 @@ use RZP\Base\Repository;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
@@ -2125,6 +2126,19 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertCount(1, $merchantConsents);
     }
 
+    public function testCreateLegalDocsForMerchantConsentOnSubmitActivationWithConsentV2ExpEnabled()
+    {
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
+
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(false, false, false, true);
+
+        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
+
+        $this->assertCount(1, $merchantConsents);
+    }
+
     public function testConfigRequirementsAndCreateLegalDocsForMerchantConsentOnSubmitActivationWithIpExpEnabled()
     {
         $bvsMock = $this->mockCreateLegalDocument();
@@ -2160,7 +2174,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, true, false);
     }
 
-    protected function createLegalDocsForMerchantConsentOnSubmitActivation(bool $isSubmerchantNoDocEnabled, bool $isConsentAlreadyPresent, bool $isPassingIpExpEnabled)
+    protected function createLegalDocsForMerchantConsentOnSubmitActivation(bool $isSubmerchantNoDocEnabled, bool $isConsentAlreadyPresent, bool $isPassingIpExpEnabled, bool $isConsentV2ExpEnabled = false)
     {
         Mail::fake();
 
@@ -2175,6 +2189,15 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         else
         {
             $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
+        }
+
+        if($isConsentV2ExpEnabled === true)
+        {
+            $this->mockSplitzExperiment('MCpQRgpts6NUoQ', 'DefaultPartner', 'enable');
+        }
+        else
+        {
+            $this->mockSplitzExperiment('MCpQRgpts6NUoQ', 'DefaultPartner','disable');
         }
 
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];

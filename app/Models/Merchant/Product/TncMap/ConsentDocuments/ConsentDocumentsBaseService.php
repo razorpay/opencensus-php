@@ -130,7 +130,7 @@ class ConsentDocumentsBaseService extends Base\Service
 
             if($isExpEnabled === true)
             {
-                $notificationDetails = $this->merchantDetailService->getNotificationDetailsForMerchant($merchant->primaryOwner()->getId());
+                $notificationDetails = $this->merchantDetailService->getNotificationDetailsForMerchant($merchantTncAcceptance->getAcceptedAt(), $merchant->primaryOwner()->getId());
 
                 $legalDocumentsInput[DEConstants::NOTIFICATION_DETAILS] = $notificationDetails;
             }
