@@ -2622,6 +2622,12 @@ class Service extends Base\Service
             'start_time'            => $startTime
         ]);
 
+        $currentMerchantId = Session::get('current_merchant_id');
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $currentMerchantId = app('request.ctx')->getMerchantId();
+        }
 
         if (empty($adminUser) === false)
         {
@@ -2638,8 +2644,18 @@ class Service extends Base\Service
                 'client_type'           => 'user',
                 AppConstants::HTTP_CLIENT => $this->httpClient
             ]);
+            // if merchant id is present in current session pass it as query param
+            // to fetch user call. This is used for fetching signup campign based on user
+            $path = "users/$userId";
+            if(empty($currentMerchantId) == false)
+            {
+                $queryParams = [
+                    'merchant_id'   => $currentMerchantId,
+                ];
+                $path = $path.'?'.http_build_query($queryParams);
+            }
 
-            list($error, $data) = $request->send("users/$userId", "GET");
+            list($error, $data) = $request->send($path, "GET");
         }
 
         $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
@@ -2654,13 +2670,6 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
-
-            $currentMerchantId = Session::get('current_merchant_id');
-
-            if (app('request.ctx')->isOauthRequest() === true)
-            {
-                $currentMerchantId = app('request.ctx')->getMerchantId();
-            }
 
             // In case of admin doing login as merchant and if merchants-email is associated with > 1000 merchants,
             // There is a chance that current merchant stored in session would not be available in /user/{id} API (limit is 1000)
