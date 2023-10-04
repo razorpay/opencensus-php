@@ -2320,7 +2320,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
-        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+        $order = (new Order\Repository)->findOrFailPublic($this[self::ORDER_ID]);
 
         $this->order()->associate($order);
 
