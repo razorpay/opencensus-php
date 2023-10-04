@@ -22,7 +22,7 @@ export function merchantFetch(params) {
     };
   }
 
-  if (window.RZP.appName === 'businessbanking') {
+  if (window.RZP?.appName === 'businessbanking') {
     params.headers = {
       ...params.headers,
       'X-Origin-Product': window.RZP.appHost,
