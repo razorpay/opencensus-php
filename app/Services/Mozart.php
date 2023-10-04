@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Request;
 use RZP\Http\Request\Requests;
 use RZP\Models\Gateway\Downtime\Core;
 use RZP\Models\Payment;
@@ -280,6 +281,10 @@ class Mozart
         }
 
         $headers = $request['headers'] ?? [];
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         $method = $request['method'] ?? Requests::POST;
 
