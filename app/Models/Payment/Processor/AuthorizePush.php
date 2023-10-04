@@ -108,6 +108,18 @@ trait AuthorizePush
             return;
         }
 
+        //this is used to skip to verify call for manual workflow.
+        if((empty($callbackData['meta']['manual_recon']) === false) and
+            ($callbackData['meta']['manual_recon'] === true)){
+
+            $this->trace->info(TraceCode::UPI_SKIP_VERIFY_FOR_MANUAL_RECON,
+                [
+                    'merchant_reference' =>  $callbackData['upi']['merchant_reference']
+                ]);
+
+            return;
+        }
+
         $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
     }
 

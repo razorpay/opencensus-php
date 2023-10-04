@@ -1908,7 +1908,9 @@ class Gateway extends Base\Gateway
             ($input['meta']['version'] === 'api_v2'))
         {
              $this->isDuplicateUnexpectedPaymentV2($input);
+
              $this->upiIsValidUnexpectedPaymentV2($input);
+
              return;
         }
         // It checks if pre process happened through common gateway trait contracts

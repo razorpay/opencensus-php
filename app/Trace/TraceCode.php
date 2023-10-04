@@ -1421,7 +1421,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
     const EMANDATE_RAZORX_NR_VARIANT                            = 'EMANDATE_RAZORX_NR_VARIANT';
     const EMANDATE_RAZORX_ACH_VARIANT                           = 'EMANDATE_RAZORX_ACH_VARIANT';
-    
+
     const EMANDATE_CONFIG_CREATE_REQUEST                        = 'EMANDATE_CONFIG_CREATE_REQUEST';
     const EMANDATE_CONFIG_CREATE_ERROR                          = 'EMANDATE_CONFIG_CREATE_ERROR';
 
@@ -4205,6 +4205,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AXIS_RUPAY_CAPTURE_FILE_CONFIRMATION_MAIL_FAILED      = 'AXIS_RUPAY_CAPTURE_FILE_CONFIRMATION_MAIL_FAILED';
 
     const UPI_AXIS_SKIP_VERIFY_FOR_MULTIPLE_ORDER_IDS           = 'UPI_AXIS_SKIP_VERIFY_FOR_MULTIPLE_ORDER_IDS';
+    const UPI_SKIP_VERIFY_FOR_MANUAL_RECON                      = 'UPI_SKIP_VERIFY_FOR_MANUAL_RECON';
 
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
     const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';

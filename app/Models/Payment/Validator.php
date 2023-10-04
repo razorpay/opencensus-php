@@ -466,6 +466,7 @@ class Validator extends Base\Validator
         'meta.art_reason'               => 'sometimes|string',
         'meta.art_request_id'           => 'sometimes',
         'meta.version'                  => 'required',
+        'meta.manual_recon'             => 'sometimes|boolean'
     ];
 
     protected static $authorizeFailedUpiPaymentRules = [

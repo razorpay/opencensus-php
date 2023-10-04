@@ -540,6 +540,25 @@ class UpiHdfcReconTest extends TestCase
         $this->assertTrue($response['success']);
     }
 
+    public function testUnexpectedPaymentCreationForManualRecon()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $content = $this->buildUnexpectedPaymentRequestForManualRecon();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
     public function testAmountMismatchPaymentCreation()
     {
         $this->setMockGatewayTrue();
@@ -1012,6 +1031,31 @@ class UpiHdfcReconTest extends TestCase
         $content['terminal']['gateway_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
         $content['payment']['vpa'] = 'unexpectedpayment@hdfcbank';
         $content['meta']['reason'] = 'amount_mismatch';
+
+        return $content;
+    }
+
+    /**
+     * @return array
+     */
+    protected function buildUnexpectedPaymentRequestForManualRecon()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        // Unsetting fields which will not be present in UpiIcici MIS
+        unset($content['upi']['account_number']);
+        unset($content['upi']['ifsc']);
+        unset($content['upi']['npci_txn_id']);
+        unset($content['upi']['gateway_data']);
+        $content['upi']['vpa']='unexpectedpayment@hdfcbank';
+        $content['terminal']['gateway'] = 'upi_mindgate';
+        $content['terminal']['gateway_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
+        $content['payment']['vpa'] = 'unexpectedpayment@hdfcbank';
+        $content['meta']['reason'] = 'amount_mismatch';
+        $content['meta']['manual_recon'] = true;
 
         return $content;
     }
