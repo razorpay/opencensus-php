@@ -16,4 +16,7 @@ class Url
     const OTP_GENERATE  = '/otpgenerate';
     const OTP_SUBMIT    = '/debitwallet';
     const CREATE_USER   = '/createwalletuser';
+
+    const MOCK_OTP_GENERATE = "/wallet/mobikwik/otp_init";
+    const MOCK_OTP_SUBMIT   = "/wallet/mobikwik/otp_submit";
 }

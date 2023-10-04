@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
@@ -735,7 +736,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        $secret = $this->getSecret();
+        $secret = $this->getLiveSecret();
 
         return strtolower(hash_hmac('sha256', $str, $secret, false));
     }
@@ -964,5 +965,15 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    protected function getUrl($type = null): string
+    {
+        if ((env('MOBIKWIK_MOCK_GATEWAY') === true) and ($this->env !== Environment::PRODUCTION))
+        {
+            return $this->externalMockDomain . $this->getRelativeUrl(strtoupper('MOCK_' . $this->action));
+        }
+
+        return parent::getUrl($type);
     }
 }
