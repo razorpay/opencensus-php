@@ -28,7 +28,6 @@ import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Compon
 import PageHeading from './Components/PageHeading';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
-import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 
 const PurePlatformSwitchGuideLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
@@ -154,7 +153,6 @@ const Home = ({
       <ShowWhen
         myRole="owner manager admin"
         additionalCondition={(currentUser) =>
-          // TODO v2: enable referral guide for platform partners
           currentUser.isPartner() && !currentUser.isPartner('pure_platform')
         }
       >
@@ -189,7 +187,6 @@ const Home = ({
         <InviteMerchantModal
           isOpen={isInviteMerchantModalOpen}
           onAddSuccess={onAddMerchantSuccess}
-          initialStep={INVITE_MERCHANT_STEPS.SELECT_PRODUCT}
           initialProductType={inviteMerchantModalProductType}
           onDismiss={() => setIsInviteMerchantModalOpen(false)}
         />

@@ -86,10 +86,3 @@ export interface RTrackingT<P = Record<string, unknown>> {
    */
   trackEvent(data: Partial<P>): void;
 }
-
-export interface OAuthAppDetailsType {
-  application_id: string;
-  client_id: string;
-  redirect_uri: string;
-  name: string;
-}

@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { compose } from 'redux';
 import { connect } from 'react-redux';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
@@ -17,8 +16,6 @@ import {
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
 import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
-import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
-
 import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
 import DetailsAction from './DetailsAction';
 import { numberDifferentiation } from 'merchant/views/PartnerDashboard/SubMerchant/utils/index';
@@ -36,14 +33,13 @@ const Details = (props) => {
     error,
     onResendInvite,
     product,
-    isSubMerchantKycEnabled,
+    isSubMerchantKycResellerEnabled,
     isReseller,
     getPannelData,
     trackUserEvent,
     isSubMerchantKYCAccess,
     capitalProducts,
     showNotification,
-    experiments,
   } = props;
 
   const isPGProduct = product === PRODUCT_TYPE.PG;
@@ -58,12 +54,7 @@ const Details = (props) => {
     'kyc_qualified_unactivated',
     'rejected',
   ].includes(activation_status);
-
-  const isPlatformPartnerWithPGInviteFlow =
-    experiments.isPlatformPartnerInviteFlowEnabled && isPGProduct;
-
-  const isShowLargeWrapper =
-    (isReseller || isPlatformPartnerWithPGInviteFlow) && isSubMerchantKycEnabled && !smallWrapper;
+  const isShowLargeWrapper = isReseller && isSubMerchantKycResellerEnabled && !smallWrapper;
   const [capitalDetails, setCapitalDetails] = useState();
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isCapitalLoading, setIsCapitalLoading] = useState(false);
@@ -139,9 +130,7 @@ const Details = (props) => {
         <div class="panel panel-default SliderPanel SubmerchantDetail__Panel">
           <div class="panel-heading">
             <div class="submerchant-name">
-              {(isReseller || isPlatformPartnerWithPGInviteFlow) &&
-              isPGProduct &&
-              isSubMerchantKycEnabled
+              {isReseller && isPGProduct && isSubMerchantKycResellerEnabled
                 ? 'REQUEST KYC APPROVAL '
                 : submerchant.name || 'Default Name'}
             </div>
@@ -181,8 +170,7 @@ const Details = (props) => {
                 <ShowWhen additionalCondition={() => isPGProduct}>
                   {/* Status of Activation */}
                   <EntityDetailRow label="Activation Status">
-                    {(isReseller || isPlatformPartnerWithPGInviteFlow) &&
-                    isSubMerchantKycEnabled ? (
+                    {isReseller && isSubMerchantKycResellerEnabled ? (
                       // New Label from experiment
                       <SubMerchantKycStatusLabel
                         activation_status={submerchant.details.activation_status}
@@ -199,8 +187,7 @@ const Details = (props) => {
 
                   {/* Status of Settlement */}
                   <EntityDetailRow label="Settlement Status">
-                    {(isReseller || isPlatformPartnerWithPGInviteFlow) &&
-                    isSubMerchantKycEnabled ? (
+                    {isReseller && isSubMerchantKycResellerEnabled ? (
                       <SubmerchantSettlementLabelNew
                         status={
                           submerchant.details &&
@@ -268,18 +255,16 @@ const Details = (props) => {
                   </div>
                 </ShowWhen>
 
-                {(isReseller || isPlatformPartnerWithPGInviteFlow) &&
-                  isPGProduct &&
-                  isSubMerchantKycEnabled && (
-                    <DetailsAction
-                      activation_status={submerchant.details.activation_status}
-                      kyc_access={submerchant.kyc_access}
-                      submerchant={submerchant}
-                      getPannelData={getPannelData}
-                      trackUserEvent={trackUserEvent}
-                      isSubMerchantKYCAccess={isSubMerchantKYCAccess}
-                    />
-                  )}
+                {isReseller && isPGProduct && isSubMerchantKycResellerEnabled && (
+                  <DetailsAction
+                    activation_status={submerchant.details.activation_status}
+                    kyc_access={submerchant.kyc_access}
+                    submerchant={submerchant}
+                    getPannelData={getPannelData}
+                    trackUserEvent={trackUserEvent}
+                    isSubMerchantKYCAccess={isSubMerchantKYCAccess}
+                  />
+                )}
                 <ShowWhen additionalCondition={() => isCapitalProduct}>
                   {capitalDetails && showMoreDetails && (
                     <>
@@ -360,7 +345,4 @@ const Details = (props) => {
   );
 };
 
-export default compose(
-  withPartnerDashboardExperiments,
-  connect(null, { showNotification }),
-)(Details);
+export default connect(null, { showNotification })(Details);

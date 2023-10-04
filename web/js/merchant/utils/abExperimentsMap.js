@@ -29,6 +29,15 @@ export default {
     // prod experiment ids
     'LEhcQ6vsmvThCM',
   ],
+  submerchant_kyc_reseller: [
+    // beta experiment ids
+    'I8KTdSuwTZ8dYt',
+    'JP4GAIs0SkxmC0', // ramp
+
+    // prod experiment ids
+    'I8PCawTxVfMpC5',
+    'JP4J3uqyOJLK7D', // ramp
+  ],
   whats_new_lazy_experiment: [
     // beta experiment ids
     'HPhSWihQaCQ2wJ',

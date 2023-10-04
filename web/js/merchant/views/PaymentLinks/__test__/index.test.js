@@ -33,11 +33,7 @@ describe('Payment Link', () => {
       showModal: true,
       initialState: {
         session: {
-          user: {
-            ...paymentLinkStoreConfiguration,
-            ...state,
-            isAllowedMultiple: jest.fn(() => true),
-          },
+          user: { ...paymentLinkStoreConfiguration, ...state },
         },
       },
       initialEntries: ['/paymentlinks'],
@@ -71,11 +67,7 @@ describe('Payment Link', () => {
     render(<PaymentLink />, {
       initialState: {
         session: {
-          user: {
-            ...paymentLinkStoreConfiguration,
-            isOrgAxis: false,
-            isAllowedMultiple: jest.fn(() => true),
-          },
+          user: { ...paymentLinkStoreConfiguration, isOrgAxis: false },
         },
         onboarding,
       },
@@ -91,7 +83,6 @@ describe('Payment Link', () => {
             ...paymentLinkStoreConfiguration,
             isOrgAxis: true,
             findTag: jest.fn(() => false),
-            isAllowedMultiple: jest.fn(() => true),
           },
           org: {
             custom_code: 'rzp',

@@ -39,13 +39,7 @@ const SuccessScreen = ({
   const { data: referralData, isLoading } = useReferralLinks({ showNotification });
   if (isLoading)
     return (
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        marginTop="spacing.5"
-        minHeight="spacing.10"
-      >
+      <Box display="flex" alignItems="center" justifyContent="center" marginTop="spacing.5">
         <Spinner alignSelf="center" accessibilityLabel="public-links-spinner" />
       </Box>
     );

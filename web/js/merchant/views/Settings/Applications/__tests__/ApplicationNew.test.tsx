@@ -9,11 +9,7 @@ jest.mock('common/splitz', () => ({
     (
       <Component
         {...props}
-        splitz={{
-          abExperiments: {
-            partnerships_oauth_phantom_configurator: { variables: { result: 'on' } },
-          },
-        }}
+        splitz={{ abExperiments: { Partnerships_oauth_phantom: { variables: { result: 'on' } } } }}
       />
     ),
 }));

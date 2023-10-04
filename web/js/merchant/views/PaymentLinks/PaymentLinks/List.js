@@ -31,11 +31,7 @@ import { trackSearchFilterForInternational } from './ga';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import { isReminderEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
-const {
-  accountsettings: { additionalCondition: isAccountsAndSettingsEnabled },
-} = PRODUCTS_DATA;
+
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
   <EmptyListWithTableRow
@@ -282,22 +278,16 @@ class PaymentLinksContainer extends ListContainer {
         tabsData={tabsData}
         extra={
           <>
-            <ShowWhen
-              additionalCondition={(user) =>
-                isReminderEnabled(user) && isAccountsAndSettingsEnabled(user)
-              }
-            >
-              <span class="btn btn-link">
-                <span class="badge bg-success m-r hidden-xs">new</span>
+            <span class="btn btn-link">
+              <span class="badge bg-success m-r hidden-xs">new</span>
 
-                <Link
-                  to="/payments-and-refunds-settings/reminders"
-                  onClick={this.trackReminderSetting}
-                >
-                  Reminder Settings
-                </Link>
-              </span>
-            </ShowWhen>
+              <Link
+                to="/payments-and-refunds-settings/reminders"
+                onClick={this.trackReminderSetting}
+              >
+                Reminder Settings
+              </Link>
+            </span>
             <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PL} />
             </ShowWhen>

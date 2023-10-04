@@ -17,7 +17,6 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import ClientAssistOptions from './ClientAssistOptions';
 import SocialShareGroup from './SocialShareGroup';
-import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 type ShareReferralLinkType = {
   closeModal: () => void;
@@ -35,10 +34,8 @@ const ShareReferralLink = ({
   const inviteFlow = 'SHARE_REFERRAL_LINK';
 
   const [productType, setProductType] = useState(product);
-  // TODO v2: make a copy of ShareReferralLink component to separately handle urls for isPlatformPartnerInviteFlowEnabled
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
-  const { isPlatformPartnerInviteFlowEnabled } = usePartnerDashboardExperiments();
 
   useEffect(() => {
     analyticsTrack({
@@ -109,7 +106,7 @@ const ShareReferralLink = ({
                     <Radio value={PRODUCT_TYPE.PG}>{''}</Radio>
                   </Box>
                   {productType === PRODUCT_TYPE.PG ? (
-                    !isPlatformPartnerInviteFlowEnabled && easyAccessUrl ? (
+                    easyAccessUrl ? (
                       <ClientAssistOptions
                         inviteFlow={inviteFlow}
                         productType={productType}
@@ -127,8 +124,7 @@ const ShareReferralLink = ({
                   ) : null}
                 </Box>
               </div>
-              {!isPlatformPartnerInviteFlowEnabled &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) ? (
+              {!user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.X)}>
                   <Box
                     display="flex"
@@ -170,7 +166,7 @@ const ShareReferralLink = ({
                   </Box>
                 </div>
               ) : null}
-              {!isPlatformPartnerInviteFlowEnabled && user.isPartnershipForCapitalEnabled ? (
+              {user.isPartnershipForCapitalEnabled ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}>
                   <Box
                     display="flex"

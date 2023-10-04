@@ -587,7 +587,7 @@ const entityModalsMap = {
   },
   '/partners/submerchants/:submerchantId(acc_.+)/activation': {
     component: SubmerchantActivationContainer,
-    additionalCondition: (user) => user.isSubMerchantKycEnabled,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
   },
 };
 
@@ -725,11 +725,11 @@ const fullPageViewsMap = {
   },
   '/partners/submerchants/onboarding/:submerchantId(acc_.+)/steps': {
     component: ActivationSteps,
-    additionalCondition: (user) => user.isSubMerchantKycEnabled,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
   },
   '/partners/submerchants/onboarding/:submerchantId(acc_.+)/form': {
     component: ActivationForm,
-    additionalCondition: (user) => user.isSubMerchantKycEnabled,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
   },
   '/app-support': {
     component: AppSupport,
