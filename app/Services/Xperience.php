@@ -159,15 +159,17 @@ class Xperience
 
         $urlAppend = '?';
 
-        if (empty($queryString) === true and
-            empty($body) === false and
-            $method === Request::METHOD_GET)
+        if (empty($queryString) and !empty($body) and $method === Request::METHOD_GET) // Dashboard requests
         {
-            $queryParams = http_build_query($body);
+            $queryStringFromBody = http_build_query($body);
 
-            $url .= $urlAppend . $queryParams;
+            $url .= $urlAppend . $queryStringFromBody;
 
             $content = [];
+        }
+        elseif (!empty($queryString)) // Non-dashboard requests
+        {
+            $url .= $urlAppend . $queryString;
         }
     }
 
@@ -258,52 +260,48 @@ class Xperience
             $this->trace->error(
                 TraceCode::XPERIENCE_SERVICE_SERVER_ERROR,
                 [
-                    'error' => $parsedResponse['error'] ?? json_encode($response->body, true),
+                    'response' => $response->body,
                 ]);
 
             throw new ServerErrorException(
                 'Internal Server Error occurred',
-                ErrorCode::SERVER_ERROR);
+                ErrorCode::SERVER_ERROR,
+                [
+                    'errorDetail' => $response->body,
+                    'status_code' => $response->status_code,
+                ]);
         }
         else
         {
+            $this->trace->error(
+                TraceCode::XPERIENCE_SERVICE_CLIENT_ERROR,
+                [
+                    'response' => $response->body,
+                ]);
+
             if ($response->status_code >= 400)
             {
-                if (empty($parsedResponse['error']) === false)
-                {
-                    $error = $parsedResponse['error'];
-                }
-                else
-                {
-                    $error = json_encode($response->body, true);
-                }
-                $this->trace->error(
-                    TraceCode::XPERIENCE_SERVICE_CLIENT_ERROR,
-                    [
-                        'error' => $error,
-                    ]);
-
                 if ($response->status_code == 400)
                 {
-                    if (isset($error['description']))
+                    if (isset($parsedResponse['message']) and !empty($parsedResponse['message']))
                     {
-                        $description = $error['description'];
+                        $description = $parsedResponse['message'];
 
                         throw new BadRequestException(
                             ErrorCode::BAD_REQUEST_ERROR, null,
                             [
-                                'errorDetail' => $response->body
+                                'errorDetail' => $response->body,
+                                'status_code' => $response->status_code,
                             ], $description);
                     }
                 }
-                else
-                {
-                    throw new BadRequestException(
-                        ErrorCode::SERVER_ERROR, null,
-                        [
-                            'errorDetail' => $response->body
-                        ], $error);
-                }
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null,
+                    [
+                        'errorDetail' => $response->body,
+                        'status_code' => $response->status_code,
+                    ], 'Something went wrong. Please try again.');
             }
         }
 
