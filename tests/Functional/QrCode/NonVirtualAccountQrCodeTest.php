@@ -2,8 +2,10 @@
 
 namespace Functional\QrCode;
 
-use Queue;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Services\SplitzService;
+use Queue;
 
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
@@ -26,6 +28,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -41,6 +44,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
     use TestsWebhookEvents;
+    use PartnerTrait;
 
     private $vpaTerminal;
 
@@ -3897,6 +3901,86 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
         $this->assertEquals(null, $qrPayment);
         $this->assertEquals(null, $payment);
+    }
+
+    public function testQrCodeCreatedAndClosedWebhookEventsWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $expectedEventData = $this->testData[__FUNCTION__];
+
+        $this->expectWebhookEventWithContext(
+            'qr_code.created',
+            ['entity_type' => 'qr_code', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEventData)
+            {
+                $this->assertArraySelectiveEquals($expectedEventData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $qrCode = $this->createQrCode(['type'  => 'upi_qr', 'usage' => 'multiple_use']);
+
+        $expectedEventData['event'] = 'qr_code.closed';
+        $expectedEventData['payload']['qr_code']['entity']['status'] = 'closed';
+
+        $this->expectWebhookEventWithContext(
+            'qr_code.closed',
+            ['entity_type' => 'qr_code', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEventData)
+            {
+                $this->assertArraySelectiveEquals($expectedEventData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->closeQrCode($qrCode['id']);
+    }
+
+    public function testQrCodeCreditedEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $expectedEventData = $this->testData[__FUNCTION__];
+
+        $this->expectWebhookEventWithContext(
+            'qr_code.credited',
+            ['entity_type' => 'qr_code', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEventData)
+            {
+                $this->assertArraySelectiveEquals($expectedEventData, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->makeUpiIciciPayment($request);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 
     public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false)

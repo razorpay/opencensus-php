@@ -847,12 +847,18 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getVirtualAccountPaymentPayload($payment);
 
+        $virtualAccountId = explode("_", $payload[Constants\Entity::VIRTUAL_ACCOUNT]['entity']['id'])[1];
+
+        $this->setContextForEntity($payment->getMerchantId(), Constants\Entity::VIRTUAL_ACCOUNT, $virtualAccountId);
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onVirtualAccountCreated(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
+
+        $this->setContextForEntity($virtualAccount->getMerchantId(), Constants\Entity::VIRTUAL_ACCOUNT, $virtualAccount->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -861,12 +867,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
 
+        $this->setContextForEntity($virtualAccount->getMerchantId(), Constants\Entity::VIRTUAL_ACCOUNT, $virtualAccount->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onQrCodeClosed(QrCode\Entity $qrCode)
     {
         $payload = $this->getQrCodePayload($qrCode);
+
+        $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
     }
@@ -875,12 +885,18 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getQrCodePayload($qrCode);
 
+        $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onQrCodeCredited(Payment\Entity $payment)
     {
         $payload = $this->getQrCodePaymentPayload($payment);
+
+        $qrCode = $payment->getReceiver();
+
+        $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
     }

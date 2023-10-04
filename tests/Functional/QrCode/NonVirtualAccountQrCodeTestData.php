@@ -985,4 +985,55 @@ return [
         ],
     ],
 
+    'testQrCodeCreatedAndClosedWebhookEventsWithTransactionIsolation' => [
+        "entity" => "event",
+        "account_id" => "acc_10000000000000",
+        "event" => "qr_code.created",
+        "contains" => ["qr_code"],
+        "payload" => [
+            "qr_code" => [
+                "entity" => [
+                    "entity" => "qr_code",
+                    "name" => "Test QR Code",
+                    "usage" => "multiple_use",
+                    "type" => "upi_qr",
+                    'status' => 'active',
+                    'fixed_amount' => false,
+                    'payments_amount_received' => 0,
+                    'payments_count_received' => 0,
+                    'customer_id' => null,
+                    'close_by' => null,
+                    'tax_invoice' => [],
+                ]
+            ]
+        ],
+    ],
+
+    'testQrCodeCreditedEventWithTransactionIsolation' => [
+        "entity" => "event",
+        "account_id" => "acc_10000000000000",
+        "event" => "qr_code.credited",
+        "contains" => ["payment", "qr_code"],
+        "payload" => [
+            "payment" => [
+                "entity" => [
+                    "entity" => "payment",
+                    "amount" => 4000,
+                    "currency"=> "INR",
+                    "status" => "captured",
+                    'upi' => [
+                        "vpa" => "random@icici"
+                    ]
+                ]
+            ],
+            "qr_code" => [
+                "entity" => [
+                    "entity" => "qr_code",
+                    "name" => "Test QR Code",
+                    "usage" => "multiple_use",
+                    "type" => "bharat_qr"
+                ]
+            ]
+        ],
+    ],
 ];

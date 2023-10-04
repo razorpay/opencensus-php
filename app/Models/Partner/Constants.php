@@ -122,6 +122,8 @@ class Constants
 
     const TRANSACTION_ISOLATION_ORDER_EXPERIMENT = "app.transaction_isolation_for_order_experiment_id";
     const TRANSACTION_ISOLATION_REFUND_EXPERIMENT = "app.transaction_isolation_for_refund_experiment_id";
+    const TRANSACTION_ISOLATION_VIRTUAL_ACCOUNT_EXPERIMENT_ID = "app.transaction_isolation_for_virtual_account_experiment_id";
+    const TRANSACTION_ISOLATION_QR_CODE_EXPERIMENT_ID = "app.transaction_isolation_for_qr_code_experiment_id";
     const TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT = "app.transaction_isolation_for_payment_experiment_id";
     const TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID = "app.transaction_isolation_for_transfer_experiment_id";
     const TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT = "app.transaction_isolation_for_dispute_experiment_id";
@@ -135,6 +137,12 @@ class Constants
         Event::PAYMENT_AUTHORIZED    => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_CAPTURED      => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_FAILED        => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
+        Event::VIRTUAL_ACCOUNT_CREATED  => self::TRANSACTION_ISOLATION_VIRTUAL_ACCOUNT_EXPERIMENT_ID,
+        Event::VIRTUAL_ACCOUNT_CREDITED => self::TRANSACTION_ISOLATION_VIRTUAL_ACCOUNT_EXPERIMENT_ID,
+        Event::VIRTUAL_ACCOUNT_CLOSED   => self::TRANSACTION_ISOLATION_VIRTUAL_ACCOUNT_EXPERIMENT_ID,
+        Event::QR_CODE_CREATED        => self::TRANSACTION_ISOLATION_QR_CODE_EXPERIMENT_ID,
+        Event::QR_CODE_CREDITED       => self::TRANSACTION_ISOLATION_QR_CODE_EXPERIMENT_ID,
+        Event::QR_CODE_CLOSED         => self::TRANSACTION_ISOLATION_QR_CODE_EXPERIMENT_ID,
         Event::TRANSFER_PROCESSED     => self::TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID,
         Event::TRANSFER_FAILED        => self::TRANSACTION_ISOLATION_TRANSFER_EXPERIMENT_ID,
         Event::PAYMENT_DISPUTE_CREATED         => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,
