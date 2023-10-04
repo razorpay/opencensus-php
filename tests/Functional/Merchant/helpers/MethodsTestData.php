@@ -1543,6 +1543,7 @@ return [
                         ]
                     ],
                 ],
+                'force_offer' => true,
             ],
         ],
     ],

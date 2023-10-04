@@ -329,13 +329,13 @@ class Checkout
     {
         $methodsCore = new Methods\Core();
 
-        $data = $methodsCore->getFormattedMethods($merchant);
+        $data[Entity::METHODS] = $methodsCore->getFormattedMethods($merchant);
 
-        $data = $methodsCore->addUpiType($merchant, $data);
+        $data[Entity::METHODS] = $methodsCore->addUpiType($merchant, $data[Entity::METHODS]);
 
         $this->checkAndAddCustomProviders($data);
 
-        $data = $methodsCore->enableOrDisableMethodsBasedOnTerminals($merchant, $data, $this->app['rzp.mode']);
+        $data[Entity::METHODS] = $methodsCore->enableOrDisableMethodsBasedOnTerminals($merchant, $data[Entity::METHODS], $this->app['rzp.mode']);
 
         $expectedAsDictionaries = [
             'app',
@@ -361,12 +361,12 @@ class Checkout
             // Type-casting these to objects to ensure that empty values go as
             // `{}` instead of `[]` as these are declared as maps in checkout-service
             // proto files.
-            if (array_key_exists($key, $data)) {
-                $data[$key] = (object) ($data[$key] ?? []);
+            if (array_key_exists($key, $data[Entity::METHODS])) {
+                $data[Entity::METHODS][$key] = (object) ($data[Entity::METHODS][$key] ?? []);
             }
         }
 
-        return $data;
+        return $data[Entity::METHODS];
     }
 
     public function getEmiAndOffersDataForCheckout(Entity $merchant, array $input): array
@@ -398,6 +398,14 @@ class Checkout
             'emi_plans' => $emiData['emi_plans'],
             'emi_options' => $emiData['emi_options'],
         ];
+
+        if ($order !== null &&
+            $order->hasOffers() &&
+            $order->offers->count() === 1 &&
+            $order->isOfferForced()
+        ) {
+            $data['force_offer'] = true;
+        }
 
         $expectedAsDictionaries = [
             'emi_options',
@@ -451,12 +459,6 @@ class Checkout
 
     public function getAppMetaForCheckout(Entity $merchant, array $input): array
     {
-        if (!$merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT)) {
-            return [
-                'app_meta' => (object) []
-            ];
-        }
-
         // create order entity using forcefill
         if (isset($input['order']))
         {
@@ -471,6 +473,15 @@ class Checkout
                 $this->app['rzp.mode']
             );
 
+        if (!$merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT)) {
+            return [
+                'app_meta' => [
+                    'cred' => $cred_meta
+                ]
+            ];
+        }
+
+        $data['customer'] = [];
         $data['customer']['contact'] = $this->getContactForAppMeta($input, $merchant, $data);
 
         if (empty($data['customer']['contact']) ||
