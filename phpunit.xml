@@ -34,7 +34,6 @@
             <directory>./tests/Functional/Options/</directory>
             <directory>./tests/Functional/CardMandate/</directory>
             <directory>./tests/Functional/PaperMandate/</directory>
-            <directory>./tests/Functional/UserRole/</directory>
             <directory>./tests/Functional/Adjustment/</directory>
             <directory>./tests/Functional/Governor/</directory>
             <directory>./tests/Functional/Card/</directory>
@@ -68,7 +67,6 @@
             <directory>./tests/Functional/Roles/</directory>
             <directory>./tests/Functional/Coupon/</directory>
             <directory>./tests/Functional/Assertion/</directory>
-            <directory>./tests/Functional/QrCode/</directory>
             <directory>./tests/Functional/Growth/</directory>
             <directory>./tests/Functional/LocationService/</directory>
             <directory>./tests/Functional/FreshdeskTicket/</directory>
@@ -87,7 +85,6 @@
             <directory>./tests/Functional/Reward/</directory>
             <directory>./tests/Functional/Fixtures/</directory>
             <directory>./tests/Functional/Report/</directory>
-            <directory>./tests/Functional/VirtualVpaPrefix/</directory>
             <directory>./tests/Functional/TerminalTestRun/</directory>
             <directory>./tests/Functional/Beam/</directory>
         </testsuite>
@@ -99,7 +96,6 @@
             <directory>./tests/Functional/CircuitBreaker/</directory>
             <directory>./tests/Functional/CreditNote/</directory>
             <directory>./tests/Functional/Helpers/</directory>
-            <directory>./tests/Functional/BankTransfer/</directory>
             <directory>./tests/Functional/Offline/</directory>
             <directory>./tests/Functional/Store/</directory>
             <directory>./tests/Functional/Splitz/</directory>
@@ -138,7 +134,6 @@
             <file>./tests/Functional/Merchant/MailmodoTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAnalyticsTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAttributeTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantCreateTest.php</file>
             <file>./tests/Functional/Merchant/MerchantDocumentTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEmailTest.php</file>
@@ -164,24 +159,20 @@
             <file>./tests/Functional/Merchant/ScrubBankingSensitiveDetailsTest.php</file>
             <file>./tests/Functional/Merchant/SelfServeCreditVATest.php</file>
             <file>./tests/Functional/Merchant/SelfServeCreditsTest.php</file>
-            <file>./tests/Functional/Merchant/StakeholderTest.php</file>
             <file>./tests/Functional/Merchant/SubBalanceTest.php</file>
             <file>./tests/Functional/Merchant/TerminalMigrationTest.php</file>
             <file>./tests/Functional/Merchant/TerminalOnboardingTest.php</file>
             <file>./tests/Functional/Merchant/TerminalTest.php</file>
             <file>./tests/Functional/Merchant/WebhookTest.php</file>
-            <file>./tests/Functional/Merchant/WebhookV2Test.php</file>
             <file>./tests/Functional/Merchant/WebsiteCheckerTest.php</file>
         </testsuite>
         <testsuite name="Features-3 Test Suite">
-            <directory>./tests/Functional/BankingAccountStatement/</directory>
             <directory>./tests/Functional/Setting/</directory>
             <directory>./tests/Functional/AppFramework/</directory>
             <directory>./tests/Functional/Pricing/</directory>
             <file>./tests/Unit/Services/MutexTest.php</file>
         </testsuite>
         <testsuite name="Features-3-1 Test Suite">
-            <directory>./tests/Functional/Payout/</directory>
             <file>./tests/Unit/PayoutDetails/CoreTest.php</file>
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
@@ -203,8 +194,6 @@
         </testsuite>
         <testsuite name="Features-4-1 Test Suite">
             <directory>./tests/Functional/Dispute/</directory>
-            <directory>./tests/Functional/VirtualAccount/</directory>
-            <directory>./tests/Functional/QrCode/</directory>
             <directory>./tests/Functional/Workflow/</directory>
             <directory>./tests/Functional/Refund/</directory>
         </testsuite>
@@ -254,8 +243,6 @@
         </testsuite>
         <testsuite name="Feature-6 Test Suite">
             <directory>./tests/Functional/TaxPayments/</directory>
-            <directory>./tests/Functional/Contact/</directory>
-            <directory>./tests/Functional/FundAccounts/</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
             <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
@@ -275,9 +262,6 @@
             <directory>./tests/Functional/Merchant/Slabs/</directory>
             <directory>./tests/Functional/Merchant/Store/</directory>
             <directory>./tests/Functional/Jobs/Kafka/</directory>
-        </testsuite>
-        <testsuite name="Feature-7-2 Test Suite">
-            <directory>./tests/Functional/Merchant/Products</directory>
         </testsuite>
         <testsuite name="Payment Test Suite">
             <directory>./tests/Functional/Payment/</directory>
@@ -352,12 +336,7 @@
             <directory>./tests/Functional/Gateway/Atom/</directory>
         </testsuite>
         <testsuite name="Gateway-2 Test Suite">
-            <directory>./tests/Functional/Gateway/Mpi/</directory>
-            <directory>./tests/Functional/Gateway/File/</directory>
-            <directory>./tests/Functional/Gateway/Paytm/</directory>
-            <directory>./tests/Functional/Gateway/Reconciliation/</directory>
             <exclude>./tests/Functional/Gateway/Reconciliation/NbplusAppMethodEmerchantpayReconciliationTest.php</exclude>
-            <directory>./tests/Functional/Gateway/Sharp/</directory>
             <directory>./tests/Functional/Gateway/Upi/</directory>
         </testsuite>
         <testsuite name="Gateway-3 Test Suite">
@@ -465,7 +444,6 @@
         <testsuite name="Enterprise Apps Test Suite">
             <directory>./tests/Functional/Transfer/</directory>
             <directory>./tests/Functional/VirtualAccount/</directory>
-            <directory>./tests/Functional/VirtualAccount</directory>
             <directory>./tests/Functional/VirtualVpaPrefix</directory>
             <directory>./tests/Functional/UpiTransfer</directory>
             <directory>./tests/Functional/QrCode</directory>
@@ -492,9 +470,6 @@
         <testsuite name="UT_Anonymous-1_Test_Suite">
             <directory>./tests/Functional/Gateway/Enach/</directory>
             <directory>./tests/Functional/Gateway/Esigner/</directory>
-        </testsuite>
-        <testsuite name="UT_Anonymous-2_Test_Suite">
-            <directory>./tests/Functional/Gateway/File/</directory>
         </testsuite>
         <testsuite name="UT_Anonymous-3_Test_Suite">
             <directory>./tests/Functional/Gateway/Upi/</directory>
