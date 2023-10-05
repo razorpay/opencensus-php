@@ -3789,6 +3789,7 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout,
         DcsConstants::AffordabilityWidgetSet,
         self::BULK_PAYOUT_WORKFLOW,
+        self::ENABLE_SMART_ROUTING,
     ];
 
     /*

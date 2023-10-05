@@ -156,6 +156,10 @@ class Base
         self::TRANSFER_RETRY,
     ];
 
+    const TRACING_ENABLED_FTS_ROUTES = [
+        self::FTS_SMART_ROUTING,
+    ];
+
     /**
      * FTS Base constructor.
      *
@@ -210,18 +214,25 @@ class Base
         }
         else
         {
-//            $this->trace->info(TraceCode::FTS_REQUEST, [
-//                'url'       => $this->baseUrl . $endpoint,
-//                'method'    => $method,
-//                'headers'   => $this->headers,
-//                'content'   => (new Redaction())->redactData($data)
-//            ]);
+            if (in_array($endpoint, self::TRACING_ENABLED_FTS_ROUTES, true) === true)
+            {
+                $this->trace->info(TraceCode::FTS_REQUEST, [
+                    'url'     => $this->baseUrl . $endpoint,
+                    'method'  => $method,
+                    'headers' => $this->headers,
+                    'content' => (new Redaction())->redactData($data)
+                ]);
+            }
+
             $response = $this->sendFtsRequest($request);
         }
 
-//        $this->trace->info(TraceCode::FTS_RESPONSE, [
-//            'response' => (new Redaction())->redactData(json_decode($response->body, true))
-//        ]);
+        if (in_array($endpoint, self::TRACING_ENABLED_FTS_ROUTES) === true)
+        {
+            $this->trace->info(TraceCode::FTS_RESPONSE, [
+                'response' => (new Redaction())->redactData(json_decode($response->body, true))
+            ]);
+        }
 
         if ($response->status_code === 409)
         {
