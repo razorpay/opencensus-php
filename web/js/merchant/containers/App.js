@@ -73,7 +73,6 @@ import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dat
 import lazy from 'merchant/routes/LazyLoader';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import cloneDeep from 'lodash/cloneDeep';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -448,7 +447,6 @@ class App extends Component {
         this.setState({ isLoading: false });
       });
     this.props.fetchConfig();
-    this.props.fetchCurrentBalance();
     this.props.fetchTrustedBadgeStatus();
     this.props.fetchMerchantReferralDetail();
     this.props.fetchGST();
@@ -1322,7 +1320,6 @@ const mapDispatchToProps = (dispatch) =>
       fetchPayments,
       fetchTransactionAmount: fetchAmount,
       fetchEligibilityForNcRevamp,
-      fetchCurrentBalance,
     },
     dispatch,
   );

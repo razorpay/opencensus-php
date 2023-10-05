@@ -24,7 +24,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { initSentry } from 'common/utils/observability';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
 
 initSentry('MerchantLA');
 @connect(
@@ -39,7 +38,6 @@ initSentry('MerchantLA');
     resizeWindow,
     openModal,
     closeModal,
-    fetchCurrentBalance,
   },
 )
 class App extends Component {
@@ -154,8 +152,6 @@ class App extends Component {
           this.props.fetchCampaigns();
         });
     });
-
-    this.props.fetchCurrentBalance();
   }
 
   componentDidMount() {

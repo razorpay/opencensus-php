@@ -720,6 +720,7 @@ class HomeContainer extends Component {
   };
 
   componentDidMount() {
+    this.props.fetchCurrentBalance();
     this.props.fetchSettlementAmount();
     this.fetchRestrictionsIfAny();
     this.props.fetchBalanceConfig();
