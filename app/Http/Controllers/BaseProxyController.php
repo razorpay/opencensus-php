@@ -145,7 +145,8 @@ abstract class BaseProxyController extends Controller
             'Accept'           => 'application/json',
             'Authorization'    => $this->getAuthorizationHeader(),
             'X-Client-ID'      => $this->serviceConfig['client_id'] ?? '',
-            'X-Request-ID'     => Request::getTaskId()
+            'X-Request-ID'     => Request::getTaskId(),
+            'X-IP-Address'     => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip()
         ];
     }
 

@@ -22,45 +22,51 @@ class VerificationDetailsTransformer extends Base\Transformer
     protected $rules = [
         'merchant_id'             => [
             [
-                "column" => 'merchant_id'
+                'column' => 'merchant_id'
             ]
         ],
         'verification_status'     => [
             [
-                "column"    => 'aadhaar_esign_status',
+                'column' => 'aadhaar_verification_with_pan_status',
                 'condition' => [
-                    'artefact_type'     => 'aadhaar_esign',
-                    'verification_unit' => 'auth'
+                    'artefact_type'     => 'aadhaar',
+                    'verification_unit' => 'probe_provider'
                 ],
-                "function"  => 'mapVerificationStatus'
-            ],
-            [
-                "column"    => 'aadhaar_verification_with_pan_status',
-                'condition' => [
-                    'artefact_type'     => 'aadhaar_esign',
-                    'verification_unit' => 'ocr'
-                ],
-                "function"  => 'mapVerificationStatus'
+                'function' => 'mapVerificationStatus'
             ]
+        ],
+        'metadata.aadhaar_esign_status' => [
+            [
+                'column' => 'aadhaar_esign_status',
+                'condition' => [
+                    'artefact_type' => 'aadhaar',
+                    'verification_unit' => 'probe_provider'
+                ],
+                'function' => 'mapVerificationStatus'
+            ],
         ],
         'metadata.aadhaar_pin'    => [
             [
-                "column" => 'aadhaar_pin'
+                'column' => 'aadhaar_pin'
             ]
         ],
         'metadata.aadhaar_linked' => [
             [
-                "column" => 'aadhaar_linked'
+                'column' => 'aadhaar_linked'
             ]
         ],
         'metadata.bvs_probe_id'   => [
             [
-                "column" => 'bvs_probe_id'
+                'column' => 'bvs_probe_id',
+                'condition' => [
+                    'artefact_type' => 'aadhaar',
+                    'verification_unit' => 'probe_provider'
+                ],
             ]
         ],
         'metadata'                => [
             [
-                "column" => 'verification_metadata'
+                'column' => 'verification_metadata'
             ]
         ]
     ];

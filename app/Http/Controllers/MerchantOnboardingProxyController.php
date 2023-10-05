@@ -5,14 +5,17 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use RZP\Exception;
+use GuzzleHttp\Client;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use GuzzleHttp\Psr7\Response;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use GuzzleHttp\Exception\GuzzleException;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
@@ -28,6 +31,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_MERCHANT_BMC_RESPONSE      = 'get_merchant_bmc_response';
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
     const MERCHANT_UPDATE_BY_ADMIN       = 'merchant_update_by_admin';
+    const MERCHANT_CONSENTS_SAVE         = 'merchant_consents_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
@@ -40,6 +44,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
+
+    const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   = 'generate_merchant_identity_verification_url';
+    const PROCESS_MERCHANT_IDENTITY_VERIFICATION        = 'process_merchant_identity_verification';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
@@ -133,6 +140,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
 
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
+
+        self::MERCHANT_CONSENTS_SAVE           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
+        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
     ];
 
     // timeout in seconds
@@ -148,6 +159,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DETAILS_PATCH        => 10,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => 10,
+        self::MERCHANT_CONSENTS_SAVE        => 10,
+        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   => 10,
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION        => 10,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS => 10,
     ];
 
@@ -157,6 +171,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_UPDATE_BY_ADMIN,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION,
+        self::MERCHANT_CONSENTS_SAVE,
+        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
     ];
 
     public function __construct()
@@ -401,4 +418,42 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $response;
     }
 
+    public function errorHandler($response) {
+        if(isset($response['code']) === false)
+        {
+            // success condition, do nothing
+            return;
+        }
+
+        $status_code = $response['code'];
+
+        $this->trace->info(TraceCode::PGOS_ERROR_HANDLER, [
+            'status_code' => $status_code,
+        ]);
+
+        // Check if the response status code indicates an error (4xx or 5xx)
+        $error_message = $response['msg'];
+        if (isset($response['meta']) && isset($response['meta']['description'])) {
+            $error_message = $response['meta']['description'];
+        }
+
+
+        switch ($status_code)
+        {
+            case "invalid_argument":
+                throw new Exception\BadRequestValidationFailureException($error_message);
+                return;
+            case "bad_request":
+            case "invalid_data":
+                throw new Exception\BadRequestException($error_message);
+                return;
+            case "internal":
+            default:
+                throw new ServerErrorException(
+                    $error_message,
+                    ErrorCode::SERVER_ERROR,
+                    );
+                return;
+        }
+    }
 }

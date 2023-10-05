@@ -12203,9 +12203,20 @@ class Service extends Base\Service
 
     public function saveMerchantConsents($input)
     {
-        (new Consent\Core())->saveMerchantConsents($input);
 
-        return ['success' => true];
+        $merchant = $this->merchant;
+        $input['merchant_id'] = $merchant->getId();
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_consents_save', $input, $merchant, true);
+
+        $this->trace->info(TraceCode::PGOS_CREATE_MERCHANT_CONSENTS_RESPONSE, [
+            'response'     => $response,
+        ]);
+
+        // check errors and rethrow them
+        $this->pgosProxyController->errorHandler($response);
+
+        return $response;
     }
 
     /**

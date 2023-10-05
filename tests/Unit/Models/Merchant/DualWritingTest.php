@@ -288,17 +288,17 @@ class DualWritingTest extends TestCase
             "data"                => [
                 "id"                  => "LDXmdN7bVNs9Qo",
                 "metadata"            => [
-                    "platform"       => "bvs",
-                    "bvs_probe_id"   => "LDWTUJHJBsTMXS",
-                    "aadhaar_linked" => "1"
+                    "platform"              => "bvs",
+                    "bvs_probe_id"          => "LDWTUJHJBsTMXS",
+                    "aadhaar_esign_status"  => "verified",
                 ],
                 "created_at"          => 1675770614,
                 "updated_at"          => 1675770614,
                 "merchant_id"         => "LDWO4rOnPQTjan",
-                "artefact_type"       => "aadhaar_esign",
+                "artefact_type"       => "aadhaar",
                 "verification_id"     => "LDWTUJHJBsTMXS",
-                "verification_unit"   => "auth",
-                "verification_status" => "verified"
+                "verification_unit"   => "probe_provider",
+                "verification_status" => "captured"
             ],
             "old"                 => []
         ];
@@ -307,27 +307,27 @@ class DualWritingTest extends TestCase
 
         $stakeholder1 = $this->getDbLastEntity('stakeholder', 'live');
 
-        $this->assertArraySubset(["merchant_id"          => "LDWO4rOnPQTjan",
-                                  "aadhaar_esign_status" => "verified",
-                                  "bvs_probe_id"         => "LDWTUJHJBsTMXS",
-                                  "aadhaar_linked"       => "1"],
+        $this->assertArraySubset(["merchant_id"                             => "LDWO4rOnPQTjan",
+                                  "aadhaar_esign_status"                    => "verified",
+                                  "aadhaar_verification_with_pan_status"    => "initiated",
+                                  "bvs_probe_id"                            => "LDWTUJHJBsTMXS"],
                                  $stakeholder1->toArray());
 
         $verificationDetail1 = $this->getDbLastEntity('merchant_verification_detail', 'live');
 
         $this->assertArraySubset(["merchant_id"         => "LDWO4rOnPQTjan",
-                                  "artefact_type"       => "aadhaar_esign",
-                                  "status"              => "verified",
-                                  "artefact_identifier" => "number"],
+                                  "artefact_type"       => "aadhaar",
+                                  "status"              => "initiated",
+                                  "artefact_identifier" => "probe_provider"],
                                  $verificationDetail1->toArray());
 
         $bvsValidation1 = $this->getDbLastEntity('bvs_validation', 'live');
 
         $this->assertArraySubset([
                                      "validation_id"       => "LDWTUJHJBsTMXS",
-                                     "artefact_type"       => "aadhaar_esign",
+                                     "artefact_type"       => "aadhaar",
                                      "platform"            => "pg",
-                                     "validation_status"   => "success",
+                                     "validation_status"   => "captured",
                                      "validation_unit"     => "identifier",
                                      "owner_id"            => "LDWO4rOnPQTjan",
                                      "owner_type"          => "merchant",

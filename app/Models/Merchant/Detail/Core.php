@@ -9084,11 +9084,14 @@ class Core extends Base\Core
             "input"       => $input,
         ]);
 
-        $verificationService = DetailFactory::getIdentityVerificationInstance($input[DetailConstants::VERIFICATION_TYPE]);
+        $input["merchant_id"] = $merchant->getId();
 
-        unset($input[DetailConstants::VERIFICATION_TYPE]);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('generate_merchant_identity_verification_url', $input, $merchant, true);
 
-        return $verificationService->merchantIdentityVerification($merchant, $merchantDetails,  $input);
+        // check errors and rethrow them
+        $this->pgosProxyController->errorHandler($response);
+
+        return $response;
     }
 
     /**
@@ -9110,9 +9113,14 @@ class Core extends Base\Core
             "input"       => $input
         ]);
 
-        $verificationService = DetailFactory::getIdentityVerificationInstance($input[DetailConstants::VERIFICATION_TYPE]);
+        $input["merchant_id"] = $merchant->getId();
 
-        return $verificationService->processIdentityVerificationDetails($merchant, $merchantDetails);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('process_merchant_identity_verification', $input, $merchant, true);
+
+        // check errors and rethrow them
+        $this->pgosProxyController->errorHandler($response);
+
+        return $response;
     }
 
     /*

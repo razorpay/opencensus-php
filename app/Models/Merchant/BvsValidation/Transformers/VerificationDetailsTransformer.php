@@ -71,7 +71,8 @@ class VerificationDetailsTransformer extends Base\Transformer
 
     public const VERIFICATION_UNIT_VALIDATION_UNIT_MAPPING = [
         "auth" => "identifier",
-        "ocr"  => "proof"
+        "ocr"  => "proof",
+        "probe_provider"  => "identifier"
     ];
 
     public const ARTEFACT_TYPE_MAPPING = [
