@@ -1189,7 +1189,7 @@ class PayoutSmartRoutingTest extends TestCase
 
     /**
      * Active Accounts Config: Lite: 1, direct: 1
-     * Smart Routing Verdict: SUCCESS. (For Dashboard Payouts)
+     * Smart Routing Verdict: SKIPPED. (For Dashboard Payouts)
      */
     public function testSmartRouting_CreatePayoutWithRoutingForDashboardPayouts()
     {
@@ -1206,7 +1206,7 @@ class PayoutSmartRoutingTest extends TestCase
             PayoutEntity::BALANCE_ID    => null
         ];
 
-        $this->mockFtsSmartRouting($this->ftsMock, $ftsSmartRoutingSuccess, 1, $ftsRoutingMockedResponse);
+        $this->mockFtsSmartRouting($this->ftsMock, $ftsSmartRoutingSuccess, 0, $ftsRoutingMockedResponse);
 
         $ftsTransferSuccess = false;
 
@@ -1228,11 +1228,11 @@ class PayoutSmartRoutingTest extends TestCase
         $payout = $this->getDbEntity('payout', ['id' => PayoutEntity::verifyIdAndStripSign($response['id'])]);
 
         $this->assertEquals(PayoutStatus::INITIATED, $payout->getStatus());
-        $this->assertEquals(array_first($liteBalances)->getId(), $payout->getBalanceId());
+        $this->assertEquals(array_first($directBalances)->getId(), $payout->getBalanceId());
 
         $this->assertFalse($boolFailureMetricCaptured);
         $this->assertTrue($ftsTransferSuccess);
-        $this->assertTrue($ftsSmartRoutingSuccess);
+        $this->assertFalse($ftsSmartRoutingSuccess);
     }
 
     /**

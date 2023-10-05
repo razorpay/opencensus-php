@@ -1550,7 +1550,7 @@ class Service extends Base\Service
         $payoutInput = array_except($input, ['otp', 'token']);
 
         // Only allowed for Rx payouts, mandates account number
-        $balance = $this->processAccountNumber($payoutInput, true);
+        $balance = $this->processAccountNumber($payoutInput);
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP, $input);

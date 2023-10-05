@@ -10351,8 +10351,7 @@ class Core extends Base\Core
 
         $currentRoute = $app['api.route']->getCurrentRouteName();
 
-        $isAuthAllowed = (($basicAuth->isProxyAuth() === true) or
-                          ($basicAuth->isPrivateAuth() === true));
+        $isAuthAllowed = ($basicAuth->isStrictPrivateAuth() === true);
 
         $isScheduledPayout = (isset($input[Entity::SCHEDULED_AT]) === true);
 

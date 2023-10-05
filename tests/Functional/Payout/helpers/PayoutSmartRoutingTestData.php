@@ -199,8 +199,8 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'mode'            => 'IMPS',
-                'tax'             => 162,
-                'fees'            => 1062,
+                'tax'             => 0,
+                'fees'            => 0,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
