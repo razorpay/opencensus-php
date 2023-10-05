@@ -3518,6 +3518,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_DEACTIVATE_BULK_EXCEPTION                       = 'OFFER_DEACTIVATE_BULK_EXCEPTION';
     const BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK       = 'BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK';
     const FETCH_OFFER_FOR_1CC_ORDER_FAILED                      = 'FETCH_OFFER_FOR_1CC_ORDER_FAILED';
+    const OFFER_CREATION_FAILED                                 = 'OFFER_CREATION_FAILED';
 
     // Offers On Subcription
     const OFFER_ON_SUBSCRIPTION                                 = 'OFFER_ON_SUBSCRIPTION';

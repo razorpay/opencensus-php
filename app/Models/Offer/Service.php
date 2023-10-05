@@ -48,7 +48,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::OFFER_CREATE_BULK, $input);
 
-        $offer = $input['offer'];
+        $input_offer = $input['offer'];
 
         $merchantIds = $input['merchant_ids'];
 
@@ -60,15 +60,25 @@ class Service extends Base\Service
             try
             {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                $offers_array = $this->core->withMerchant($merchant)->create($input_offer);
 
-                $this->core->withMerchant($merchant)->create($offer);
-
-                $success += 1;
+                foreach ($offers_array as $offer)
+                {
+                    if (isset($offer->id))
+                    {
+                        $success += 1;
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::OFFER_CREATION_FAILED, [
+                            'OfferCreationResponse'=> $offer]);
+                        $failures[] = $merchantId;
+                    }
+                }
             }
             catch(\Exception $e)
             {
                 $this->trace->traceException($e);
-
                 $failures[] = $merchantId;
             }
         }
