@@ -407,9 +407,17 @@ class Constants
     ];
 
     const ASYNC_GATEWAYS = [
-        self::SBIN,
-        self::IBK,
-        self::PNB,
+        Type::COMBINED => [
+            self::SBIN,
+            self::IBK,
+            self::PNB,
+            self::NSDL,
+            self::IOB,
+            self::UBI,
+            self::YESB,
+            self::BOB,
+            self::IDFC
+        ]
     ];
 
     // Upload Refund file for SBI related changes
