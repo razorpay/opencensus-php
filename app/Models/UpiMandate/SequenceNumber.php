@@ -205,7 +205,7 @@ class SequenceNumber
             return Carbon::now();
         }
 
-        return Carbon::createFromTimestamp($date);
+        return Carbon::createFromTimestamp($date, Timezone::IST);
     }
 
     /**
