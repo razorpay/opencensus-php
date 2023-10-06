@@ -11,6 +11,8 @@ class Constants
 
     const PAYOUT_ENTRIES_PER_PAGE = 25;
 
+    const PAYEE_ACCOUNT_MINIMUM_LENGTH = 12;
+
     const COMMISSION_TRANSFER_REASON = "Commission Fee for the payout on mid";
 
     const HOUSE_ACCOUNT_TRANSFER_REASON = "Sub Account Transfer to House";

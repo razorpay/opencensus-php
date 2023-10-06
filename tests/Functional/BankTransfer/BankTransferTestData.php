@@ -333,6 +333,44 @@ return [
         ],
     ],
 
+    'testRblBankTransferWithShortPayeeAccountRazorXTreatmentEnabled' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'IMPS',
+                        'beneficiaryAccountNumber'  => '22233300433',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'senderName'                => 'BharatPe',
+                        'senderAccountNumber'       => '123412341234',
+                        'senderIFSC'                => 'SBIN0000002',
+                        'senderAccountType'         => 'Current Account',
+                        'amount'                    => '100.50',
+                        'senderInformation'         => '',
+                        'UTRNumber'                 => '12345ABCDE01',
+                        'creditDate'                => '14-02-2020 201500',
+                        'creditAccountNumber'       => '409000694314',
+                        'corporateCode'             => 'RAZORPAY',
+                        'clientCodeMaster'          => '',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure.',
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testBankTransferRblRefund' => [
         'request' => [
             'url'     => '/ecollect/validate/rbl/test',

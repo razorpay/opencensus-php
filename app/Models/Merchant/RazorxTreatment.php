@@ -923,4 +923,8 @@ final class RazorxTreatment
      * Razorx flag to allow default ifsc picking feature for merchant's fund account create and payout create/processing
      */
     const ALLOW_DEFAULT_IFSC_CODE = 'allow_default_ifsc_code';
+    /*
+     * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
+     */
+    const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
 }

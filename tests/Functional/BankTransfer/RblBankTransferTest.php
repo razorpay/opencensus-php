@@ -160,6 +160,23 @@ class RblBankTransferTest extends TestCase
             });
     }
 
+    protected function enableRazorXTreatmentForPayeeAccountLengthValidation()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::PAYEE_ACCOUNT_LENGTH_VALIDATION))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+    }
+
     public function testFetchPaymentsPostRblMigration()
     {
         $accountNumber = $this->getIciciVaBankAccount();
@@ -437,8 +454,24 @@ class RblBankTransferTest extends TestCase
     public function testRblBankTransferWithShortPayeeAccount()
     {
         $testData = $this->testData['testBankTransferRbl'];
-        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '222333004335048';
+        $this->getRblVaBankAccount();
 
+        // beneficiaryAccountNumber length < 12
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '22233300433';
+
+        // Expected: Bank Transfer Created
+        $this->startTest($testData);
+    }
+
+    public function testRblBankTransferWithShortPayeeAccountRazorXTreatmentEnabled() {
+
+        // Enable RazorX treatment to assert payee_account length >= 12
+        $this->enableRazorXTreatmentForPayeeAccountLengthValidation();
+        $this->getRblVaBankAccount();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        // Expected: Bank Transfer Failed
         $this->startTest($testData);
     }
 

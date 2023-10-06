@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Base\ConnectionType;
 use RZP\Constants\HyperTrace;
+use RZP\Models\BankTransfer\Constants;
 use RZP\Models\Batch;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
@@ -435,6 +436,18 @@ class BankTransferController extends Controller
         $utr = $data['UTRNumber'];
 
         $messageType = strtolower($data['messageType']);
+
+        $variantFlag = $this->app['razorx']->getTreatment('bt_rbl',
+            RazorxTreatment::PAYEE_ACCOUNT_LENGTH_VALIDATION,
+            $this->app['rzp.mode']);
+
+        if ($variantFlag === 'on' and strlen($data['beneficiaryAccountNumber']) < Constants::PAYEE_ACCOUNT_MINIMUM_LENGTH) {
+            throw new BadRequestValidationFailureException(
+                'beneficiaryAccountNumber length less than expected minimum (12)',
+                null,
+                $data
+            );
+        }
 
         switch ($messageType)
         {
