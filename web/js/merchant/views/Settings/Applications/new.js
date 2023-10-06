@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import { Link, NavLink } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import { ArrowLeftIcon, Text } from '@razorpay/blade/components';
-import { autoPrefixUrls, titleCase } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, titleCase, isProductionEnv } from 'common/utils/rzp-utils';
 import { withSplitzService } from 'common/splitz';
 
 import { required, lenientUrl, flexibleDevUrl } from 'common/utils/validators';
@@ -154,8 +154,14 @@ class NewApplicationForm extends Component {
       prefixPos !== -1
         ? `https://${window.location.hostname.substr(0, prefixPos + 1)}`
         : 'https://';
-    const hostname = `${prefix}auth.razorpay.com`;
-    const popupUrl = `${hostname}/authorize?response_type=code&client_id=${this.state.details.client_details.dev.id}&redirect_uri=http://localhost&scope=read_only&state=current_state`;
+    const isProdEnv = isProductionEnv();
+    const hostname = isProdEnv ? `${prefix}auth.razorpay.com` : `${prefix}auth.dev.razorpay.in`;
+    const clientId = this.state.details.client_details[isProdEnv ? 'prod' : 'dev'].id;
+    const redirectUrl =
+      this.state.details.client_details[isProdEnv ? 'prod' : 'dev'].redirect_url[0] ?? 'localhost';
+    const popupUrl = `${hostname}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUrl,
+    )}&scope=read_only&state=current_state`;
     window.open(popupUrl, 'PopupPreview');
   };
 

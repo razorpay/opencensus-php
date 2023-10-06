@@ -156,13 +156,13 @@ describe('flexibleDevUrl', () => {
       true,
     );
     expect(flexibleDevUrl('https://www.example.com?param1=value1&param2=value2')).toBe(true);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource#fragment')).toBe(true);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource/#fragment')).toBe(true);
   });
 
   it('does not match invalid URLs', () => {
     expect(flexibleDevUrl('http://www.example.com:8080/path with spaces')).toBe(false);
     expect(flexibleDevUrl('ftp://www.example.com')).toBe(false);
-    expect(flexibleDevUrl('http://www.example.com/path/to/resource#fragment')).toBe(false);
-    expect(flexibleDevUrl('http://www.example.com/path/to/resource/#fragment')).toBe(false);
     expect(flexibleDevUrl('http://www.example.com/path/to/resource/with spaces?query=string')).toBe(
       false,
     );
