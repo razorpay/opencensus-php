@@ -223,6 +223,8 @@ class Gateway
 
     protected $externalMockDomain;
 
+    protected $enableExternalMockGateway;
+
     protected $paymentId;
 
     protected $wasGatewayHit = false;
@@ -271,6 +273,8 @@ class Gateway
         $this->cache = $this->app['cache'];
 
         $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
+
+        $this->enableExternalMockGateway = env('ENABLE_EXTERNAL_MOCK_GATEWAY', false);
     }
 
     public function call($action, $input)
@@ -1414,6 +1418,11 @@ class Gateway
 
         if (($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt' or $this->env === 'availability' or $this->env === 'perf' or $this->env === 'perf2') and
             (isset($this->externalMockDomain) === true))
+        {
+            return $this->getExternalMockUrl($type);
+        }
+
+        if ($this->enableExternalMockGateway == true && (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);
         }
