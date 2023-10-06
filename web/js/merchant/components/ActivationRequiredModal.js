@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -20,6 +21,20 @@ export default ({ onCloseClick, user }) => {
   } else {
     modalTitle = `${activationName} Required`;
   }
+
+  useEffect(() => {
+    if (user.isOrgCurlec) {
+      analyticsTrack({
+        objectName: 'Test Mode Toggle Curlec',
+        actionName: 'clicked',
+        screen: 'home page',
+        properties: {
+          new: 'test',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }, []);
 
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
@@ -55,16 +70,6 @@ export default ({ onCloseClick, user }) => {
     </div>
   );
   if (user.isOrgCurlec) {
-    analyticsTrack({
-      objectName: 'Easy Onboading',
-      actionName: 'Curlec',
-      screen: 'home page',
-      properties: {
-        new: 'test',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-
     modalBody = (
       <div>
         Thank you for expressing your interest. We will reach out to you within 24 hours to activate
