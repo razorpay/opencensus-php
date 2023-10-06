@@ -36,7 +36,7 @@ const useReferralLinks = ({
       onError: (_err) => {
         showNotification?.({
           type: 'error',
-          message: 'There was an error',
+          message: 'There was an error fetching the invite links',
         });
       },
     },

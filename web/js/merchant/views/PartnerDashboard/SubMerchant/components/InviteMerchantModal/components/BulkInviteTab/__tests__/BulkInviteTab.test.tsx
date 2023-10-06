@@ -1,66 +1,28 @@
-import React, { useState } from 'react';
-import { rest } from 'msw';
+import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { fileUploadResponse } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
 import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { render, screen, userEvent, server, waitFor } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
+import {
+  useCreateBatchSuccessHandler,
+  useCreateBatchErrorHandler,
+  useValidateBatchSuccessHandler,
+  useValidateBatchErrorHandler,
+} from './mocks/once-handlers';
+import { MockBatchValidate } from './mocks/fixtures';
 
 const getHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'getHasSelectedKycAccess');
 const setHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'setHasSelectedKycAccess');
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const trackInviteFlowValidationErrorSpy = jest.spyOn(analytics, 'trackInviteFlowValidationError');
-const DummyBatchValidate = ({
-  validateBatch,
-  onValidation,
-  onValidationFail,
-  clickToUploadAnalytics = () => {},
-  sampleUrl,
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [validationError, setValidationError] = useState('');
-  return (
-    <div>
-      <input
-        type="file"
-        data-testid="upload-input"
-        onChange={() => {
-          setIsLoading(true);
-          validateBatch()
-            .then((response) => {
-              setIsLoading(false);
-              onValidation(response.data, 'uploadFile');
-              return response.data;
-            })
-            .catch((error) => {
-              setIsLoading(false);
-              const errorMsg = error.errors[0] ?? '';
-              setValidationError(errorMsg);
-              if (onValidationFail) onValidationFail(errorMsg);
-              return error;
-            });
-          clickToUploadAnalytics();
-        }}
-      />
-      <div>
-        {/* from instructions */}
-        <a href={sampleUrl}>
-          <strong>sample file</strong>
-        </a>
-        {/* Mimic validation errors */}
-        <div>{isLoading ? 'Dummy Loading' : validationError}</div>
-      </div>
-    </div>
-  );
-};
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
   __esModule: true,
-  default: DummyBatchValidate,
+  default: (props) => <MockBatchValidate {...props} />,
 }));
 
 const isPartner = jest.fn();
@@ -102,69 +64,6 @@ describe('BulkInviteTab', () => {
     await waitFor(() => {
       expect(screen.queryByText('Dummy Loading')).not.toBeInTheDocument();
     });
-  };
-
-  const useValidateBatchSuccessHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches/validate', (req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status_code: 200,
-            success: true,
-            data: fileUploadResponse,
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
-  const useValidateBatchErrorHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches/validate', (req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status_code: 400,
-            success: false,
-            errors: ['bulk validation error', 'Status Code: 400'],
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
-
-  const useCreateBatchSuccessHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches', (req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status_code: 200,
-            success: true,
-            data: { status: 'success' },
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
-  };
-
-  const useCreateBatchErrorHandler = () => {
-    server.use(
-      rest.post('*/merchant/api/test/batches', (req, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
-            status_code: 400,
-            success: true,
-            data: ['error'],
-          }),
-          ctx.delay(50),
-        );
-      }),
-    );
   };
 
   test('should fire analytics on file validation error', async () => {

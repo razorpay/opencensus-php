@@ -112,8 +112,16 @@ class SubMerchantsList extends Component {
     trackAddNewMerchantEvents('Click - Navbar');
     const { closeModal, openModal, org, experiments } = this.props;
     const { referralData } = this.state;
-    const addMerchantType = this.getProductType();
-    if (addMerchantType === PRODUCT_TYPE.PG && experiments.isEasierAccessToSubmerchantKycEnabled) {
+    const product = this.getProductType();
+    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
+      experiments;
+
+    const isPlatformPartnerWithPGInviteFlow =
+      isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
+    if (
+      isPlatformPartnerWithPGInviteFlow ||
+      (product === PRODUCT_TYPE.PG && isEasierAccessToSubmerchantKycEnabled)
+    ) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
       openModal({
@@ -122,7 +130,7 @@ class SubMerchantsList extends Component {
           <AddMerchant
             closeModal={closeModal}
             referralData={referralData}
-            addType={addMerchantType}
+            addType={product}
             org={org}
           />
         ),
@@ -162,8 +170,6 @@ class SubMerchantsList extends Component {
           user={this.props.user}
           closeModal={this.props.closeModal}
           referralData={this.state.referralData}
-          tracking={this.props.tracking}
-          partnerID={this.props.user.id}
           product={product}
         />
       ),
@@ -247,6 +253,12 @@ class SubMerchantsList extends Component {
 
   render() {
     const { user, experiments } = this.props;
+    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
+      experiments;
+    const product = this.getProductType();
+    const isPlatformPartnerWithPGInviteFlow =
+      isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
+
     const { isPartnershipForCapitalEnabled } = user;
     const { tabsData } = this.state;
     if (user.isPartnerIntent()) {
@@ -267,10 +279,12 @@ class SubMerchantsList extends Component {
           extra={
             <>
               <ShowWhen
-                additionalCondition={(currentUser) =>
-                  currentUser.isPartner() &&
-                  currentUser.isPartner('reseller', 'aggregator') &&
-                  !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                additionalCondition={
+                  (currentUser) =>
+                    currentUser.isPartner() &&
+                    currentUser.isPartner('reseller', 'aggregator') &&
+                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                  // TODO v2: enable Share Referral Link for isPlatformPartnerWithPGInviteFlow
                 }
               >
                 <button
@@ -284,7 +298,8 @@ class SubMerchantsList extends Component {
               <ShowWhen
                 myRole="owner manager admin"
                 additionalCondition={(currentUser) =>
-                  currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+                  currentUser.isPartner() &&
+                  (isPlatformPartnerWithPGInviteFlow || !currentUser.isPartner('pure_platform'))
                 }
               >
                 <button className="btn btn-primary" onClick={this.handleAddMerchant} type="button">
@@ -335,7 +350,8 @@ class SubMerchantsList extends Component {
                     </RouteGuard>
                   }
                 />
-                {this.props.user.isPartnershipsInviteFlowEnabled && (
+                {this.props.user.isPartnershipsInviteFlowEnabled ||
+                isPlatformPartnerWithPGInviteFlow ? (
                   <Route
                     path="all"
                     element={
@@ -362,15 +378,19 @@ class SubMerchantsList extends Component {
                       </>
                     }
                   />
-                )}
+                ) : null}
               </Routes>
             </div>
           </content>
         </ProductWrapper>
-        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+        {isEasierAccessToSubmerchantKycEnabled || isPlatformPartnerWithPGInviteFlow ? (
           <InviteMerchantModal
-            initialProductType={this.getProductType()}
-            initialStep={INVITE_MERCHANT_STEPS.INVITE_TABS}
+            initialProductType={product}
+            initialStep={
+              isPlatformPartnerInviteFlowEnabled
+                ? INVITE_MERCHANT_STEPS.CHOOSE_OAUTH_APP
+                : INVITE_MERCHANT_STEPS.INVITE_TABS
+            }
             isOpen={this.state.isInviteMerchantModalOpen}
             onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
           />

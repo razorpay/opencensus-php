@@ -9,21 +9,33 @@ const isEasierAccessToSubmerchantKycEnabled = ({ variant, user }) => {
   return user.isPartnershipsInviteFlowEnabled && isExperimentEnabled(variant);
 };
 
+const isPlatformPartnerInviteFlowEnabled = ({ variant, user }) => {
+  return user.isPartner('pure_platform') && user.isOrgRZP && isExperimentEnabled(variant);
+};
+
 /**
  * A custom hook for consuming partner dashboard's specific experiments
  *
  */
-const usePartnerDashboardExperiments = (): Record<string, boolean> => {
+const usePartnerDashboardExperiments = (): {
+  isEasierAccessToSubmerchantKycEnabled: boolean;
+  isPlatformPartnerInviteFlowEnabled: boolean;
+} => {
   const user = getUser();
   const {
     abExperiments: {
       // List of partner dashboard specific experiment labels here:
       partnerships_easier_access_to_submerchant_kyc,
+      partnerships_oauth_phantom,
     } = {},
   } = useSplitzService();
   return {
     isEasierAccessToSubmerchantKycEnabled: isEasierAccessToSubmerchantKycEnabled({
       variant: partnerships_easier_access_to_submerchant_kyc,
+      user,
+    }),
+    isPlatformPartnerInviteFlowEnabled: isPlatformPartnerInviteFlowEnabled({
+      variant: partnerships_oauth_phantom,
       user,
     }),
   };

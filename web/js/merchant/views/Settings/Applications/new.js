@@ -298,7 +298,7 @@ class NewApplicationForm extends Component {
     const { edit, details } = this.state;
     const isPartner = pathname.includes('/partners');
     const isExpEnabledForConfigurator =
-      abExperiments.Partnerships_oauth_phantom?.variables.result === 'on';
+      abExperiments.partnerships_oauth_phantom_configurator?.variables.result === 'on';
 
     return (
       <div class="content-box new-application-form">

@@ -1,22 +1,20 @@
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
-import moment from 'moment';
-
-import ListContainer from 'merchant/containers/ListContainer';
-import { fetchAggregate } from 'merchant/reducers/commission';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
-
 import { without } from 'common/utils/rzp-utils';
-
-import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchAggregate } from 'merchant/reducers/commission';
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Daily/ListFilter';
 import EmptyDailyList from 'merchant/views/PartnerDashboard/Commissions/components/EmptyDailyList';
+import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
+import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 const activeMerchants = {
   title: 'No. of Active Accounts',
@@ -137,6 +135,7 @@ class CommissionsDailyList extends ListContainer {
         />
         {experiments.isEasierAccessToSubmerchantKycEnabled ? (
           <InviteMerchantModal
+            initialStep={INVITE_MERCHANT_STEPS.SELECT_PRODUCT}
             isOpen={this.state.isInviteMerchantModalOpen}
             onDismiss={() => this.setState({ isInviteMerchantModalOpen: false })}
           />

@@ -12,6 +12,7 @@ const RolesList = {
   AGENT: 'agent',
   REGISTRATION_LINK_AGENT: 'auth_link_agent',
   REGISTRATION_LINK_SUPERVISOR: 'auth_link_supervisor',
+  PARTNER: 'partner',
 };
 
 Object.freeze(RolesList);

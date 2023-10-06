@@ -29,6 +29,13 @@ jest.mock(
     default: () => <>SingleAddMerchant</>,
   }),
 );
+jest.mock(
+  'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleOAuthInvite',
+  () => ({
+    __esModule: true,
+    default: () => <>SingleOAuthInvite</>,
+  }),
+);
 
 jest.mock(
   'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab',
@@ -47,16 +54,35 @@ jest.mock(
 );
 
 jest.mock(
+  'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkOAuthInvite',
+  () => ({
+    __esModule: true,
+    default: () => <>BulkOAuthInvite</>,
+  }),
+);
+
+jest.mock(
   'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/PublicLinksTab',
   () => ({
     __esModule: true,
     default: () => <>PublicLinksTab</>,
   }),
 );
-
+jest.mock(
+  'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/PublicLinksTab/PublicOAuthLinks',
+  () => ({
+    __esModule: true,
+    default: () => <>PublicOAuthLinks</>,
+  }),
+);
+const defaultPartnerDashboardExperiments = {
+  isEasierAccessToSubmerchantKycEnabled: true,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments };
 jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
   __esModule: true,
-  default: () => ({ isEasierAccessToSubmerchantKycEnabled: true }),
+  default: () => mockPartnerDashboardExperiments,
 }));
 
 const defaultUserExtra = {
@@ -77,9 +103,10 @@ describe('InviteMerchantTabs', () => {
   };
   afterEach(() => {
     jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
 
-  test('should show correct tab content on switching tabs', async () => {
+  test('should show correct tabs content for Reseller PG Invite Flow', async () => {
     renderApp();
     expect(screen.getByText('SingleInviteTab')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Bulk Upload'));
@@ -87,17 +114,36 @@ describe('InviteMerchantTabs', () => {
     await userEvent.click(screen.getByText('Public Link'));
     expect(screen.getByText('PublicLinksTab')).toBeInTheDocument();
   });
+
+  test('should show correct tabs content for OAuth PG Invite Flow', async () => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      isPlatformPartnerInviteFlowEnabled: true,
+    };
+    renderApp();
+    expect(screen.getByText('SingleOAuthInvite')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Bulk Upload'));
+    expect(screen.getByText('BulkOAuthInvite')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Public Link'));
+    expect(screen.getByText('PublicOAuthLinks')).toBeInTheDocument();
+  });
+
   test('should hide tab headers when shouldShowHeaderAndTabs = false ', () => {
     renderApp({ shouldShowHeaderAndTabs: false });
     expect(screen.queryByText('Using Email')).not.toBeVisible();
     expect(screen.queryByText('Public Link')).not.toBeVisible();
     expect(screen.getByText('SingleInviteTab')).toBeInTheDocument();
   });
-  test('should hide Single Invite tab for Capital', () => {
+
+  test('should show correct tabs content and hide Single Invite tab for Capital', async () => {
     renderApp({ productType: PRODUCT_TYPE.CAPITAL });
     expect(screen.queryByText('Using Email')).not.toBeInTheDocument();
-    expect(screen.getByText('Bulk Upload')).toBeInTheDocument();
-    expect(screen.getByText('Public Link')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('Bulk Upload'));
+    expect(screen.getByText('BulkAddMerchant')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('Public Link'));
+    expect(screen.getByText('PublicLinksTab')).toBeInTheDocument();
   });
   test('should hide Public Links tab with international flag', () => {
     // Enable all options

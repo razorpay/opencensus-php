@@ -8,32 +8,14 @@ import {
   useCreateBatchSuccessHandler,
   useCreateBatchErrorHandler,
   useValidateBatchSuccessHandler,
-} from './mocks/once-handlers';
+} from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/once-handlers';
+import { MockBatchValidateSimple } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/fixtures';
+
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
   __esModule: true,
-  default: ({ validateBatch, onValidation, clickToUploadAnalytics, sampleUrl }) => {
-    return (
-      <div>
-        <input
-          type="file"
-          data-testid="upload-input"
-          onChange={() => {
-            validateBatch();
-            onValidation({ file_id: 'files1234', processable_count: 2 }, 'uploadFile');
-            clickToUploadAnalytics();
-          }}
-        />
-        <div>
-          {/* from top link */}
-          <a href={sampleUrl}>
-            <strong>Download sample file</strong>
-          </a>
-        </div>
-      </div>
-    );
-  },
+  default: (props) => <MockBatchValidateSimple {...props} />,
 }));
 
 const isPartner = jest.fn();

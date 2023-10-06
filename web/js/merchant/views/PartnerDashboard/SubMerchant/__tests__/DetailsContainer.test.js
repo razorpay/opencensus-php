@@ -13,7 +13,7 @@ const initialState = {
     user: {
       isPartner: () => true,
       isFeatureEnabled: () => true,
-      isSubMerchantKycResellerEnabled: true,
+      isSubMerchantKycEnabled: true,
     },
   },
 };

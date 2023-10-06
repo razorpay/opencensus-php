@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, userEvent } from 'test-utils';
+
+import { getInitialUserOrgState } from 'common/tests/utils';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
-import { getInitialUserOrgState } from 'common/tests/utils';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { render, screen, userEvent } from 'test-utils';
 const { SELECT_PRODUCT, INVITE_TABS } = INVITE_MERCHANT_STEPS;
 const defaultProps = {
   initialProductType: PRODUCT_TYPE.PG,
@@ -13,6 +14,7 @@ const defaultProps = {
 };
 const defaultUserExtra = {
   findTag: jest.fn(),
+  isPartner: (partner_type) => partner_type === 'reseller',
   isOrgAllowedFunctionality: () => true,
 };
 const defaultOrgExtra = {
