@@ -15,7 +15,7 @@ async function waitAndClickViewSettlements({ page }) {
   let viewSettlementsBtn;
   try {
     viewSettlementsBtn = await page.waitForSelector(ELEMENT_CONFIG.SETTLEMENT_BANNER, {
-      timeout: 5000,
+      timeout: 10000,
     });
   } catch (err) {
     // supress error thrown if element is not found

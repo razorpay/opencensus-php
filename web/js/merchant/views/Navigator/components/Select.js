@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import Input from 'common/new-ui/Input';
 import debounce from 'lodash/debounce';
+
+import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+
 import ClickOutside from './ClickOutside';
 import { SMART_ROUTER, gatewayLogos } from './util';
 
@@ -29,7 +31,20 @@ const Select = (props) => {
     });
   }
   const VALUE = props_selected?.map(({ name }) => name) ?? [];
-  const IDS = ['upi_intent', 'upi_collect', 'BARB_R', 'PUNB_R', 'LAVB_R'];
+  const IDS = [
+    'upi_intent',
+    'upi_collect',
+    'BARB_R',
+    'PUNB_R',
+    'LAVB_R',
+    'ANDB_C',
+    'DLXB_C',
+    'IBKL_C',
+    'LAVB_C',
+    'RATN_C',
+    'SVCB_C',
+    'YESB_C',
+  ];
 
   const onToggle = useCallback(() => {
     setShow((prevState) => !prevState);
