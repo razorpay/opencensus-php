@@ -723,26 +723,53 @@ class Content extends Component {
             />
           </Route>
 
-          <Route
-            path="refunds/*"
-            element={
-              <RouteGuard additionalCondition={(user) => user.isAllowedView('refunds')}>
-                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
-              </RouteGuard>
-            }
-          >
+          <Route path="refunds/*">
             <Route
               path="*"
               element={
-                <RouteGuard
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                >
-                  {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
+                <RouteGuard additionalCondition={(user) => user.isAllowedView('refunds')}>
+                  {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
                 </RouteGuard>
               }
-            />
+            >
+              <Route
+                index
+                element={
+                  <RouteGuard
+                    additionalCondition={(usr) =>
+                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                    }
+                  >
+                    {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="batchuploads/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(usr) =>
+                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                    }
+                  >
+                    <BatchRefundsList />
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path="batchupload/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(usr) =>
+                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                    }
+                  >
+                    <BatchRefundsUpload />
+                  </RouteGuard>
+                }
+              />
+            </Route>
             <Route
               path=":id"
               element={
@@ -752,31 +779,6 @@ class Content extends Component {
                   }
                 >
                   <PaymentsDetailsV2 />
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="batchuploads/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                >
-                  <BatchRefundsList />
-                </RouteGuard>
-              }
-            />
-
-            <Route
-              path="batchupload/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                >
-                  <BatchRefundsUpload />
                 </RouteGuard>
               }
             />

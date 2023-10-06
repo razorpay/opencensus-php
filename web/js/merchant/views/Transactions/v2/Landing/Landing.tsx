@@ -26,7 +26,7 @@ export const LandingContainer = ({ children }) => {
   return (
     <div className="tabbed-container">
       <LandingPageAnalyticsOverview />
-      <StyledTabHeader id="transactions-header" className="scrollable-tab-header">
+      <StyledTabHeader id="transactions-header">
         <StyledTabItem to={PAYMENTS_ROUTE} onClick={trackTransactionsTabClick(PAYMENTS_ROUTE)} end>
           Payments
         </StyledTabItem>

@@ -5,11 +5,14 @@ const {
   PAYMENTS,
   ORDERS,
   FAILED_PAYMENTS,
+  BATCH_PAYMENTS,
   DISPUTES,
   SUCCESS_RATE,
   REFUNDS,
   BATCH_REFUNDS,
   BATCH_REFUNDS_UPLOAD,
+  UPLOAD_INVOICES,
+  INVOICES,
 } = TransactionsEntityRoute;
 
 // default = merchant(i.e product and partner) and linkedAccount dashboard.
@@ -179,11 +182,16 @@ export const splitzConfig: SplitzInitConfig = {
         PAYMENTS,
         ORDERS,
         FAILED_PAYMENTS,
+        BATCH_PAYMENTS,
         DISPUTES,
         SUCCESS_RATE,
         REFUNDS,
         BATCH_REFUNDS,
         BATCH_REFUNDS_UPLOAD,
+        UPLOAD_INVOICES,
+        INVOICES,
+        `${PAYMENTS}/:id`,
+        `${REFUNDS}/:id`,
       ],
       abExperiments: [
         {

@@ -143,7 +143,7 @@ class TransactionsContainer extends Component {
                   },
                 });
               }}
-              exact
+              end
             >
               Payments
             </NavLink>
@@ -200,8 +200,10 @@ class TransactionsContainer extends Component {
             >
               <NavLink
                 to="/refunds/batchuploads"
-                isActive={(match, { pathname: path }) =>
-                  path === '/refunds/batchupload' || path === '/refunds/batchuploads'
+                className={
+                  ['/refunds/batchupload', '/refunds/batchuploads'].includes(pathname)
+                    ? 'active'
+                    : ''
                 }
                 onClick={() => {
                   analyticsTrack({

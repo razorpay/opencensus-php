@@ -79,7 +79,9 @@
 
 
 .filter-no-margin ~ .list-filter-container  {
-  .list-filter-item:first-child {
-    margin-left: 0;
+@media screen and (min-width: 1200px ) {
+    .list-filter-item:first-child {
+      margin-left: 0;
+    }
   }
 }

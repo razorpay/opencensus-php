@@ -16,7 +16,7 @@ const HeaderAction = ({
   org,
   responsive,
   isMobile,
-  target = 'tabbed-container > header',
+  target = 'tabbed-container > header, .tabbed-container > header',
 }) => {
   /*
     we want to check if the components have props responsive true
@@ -29,16 +29,20 @@ const HeaderAction = ({
       <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>
     </div>
   ) : (
-    <TetherComponent
-      target={target}
-      attachment="top right"
-      targetAttachment="top right"
-      offset="-10px 12px"
-      class={org.custom_code}
-    >
-      <div />
-      <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>
-    </TetherComponent>
+    // ErrorBoundary on the potential breaking TetherComponent ensures atleast its children renders on the screen
+    // so that the user is not blocked from his actions and viewing other parts of the section
+    <ErrorBoundary FallbackComponent={() => children}>
+      <TetherComponent
+        target={target}
+        attachment="top right"
+        targetAttachment="top right"
+        offset="-10px 12px"
+        class={org.custom_code}
+      >
+        <div />
+        <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>
+      </TetherComponent>
+    </ErrorBoundary>
   );
 };
 

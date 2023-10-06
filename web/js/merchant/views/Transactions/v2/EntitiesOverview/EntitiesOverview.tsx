@@ -45,7 +45,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
           <Heading size="large">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
         </StyledHeading>
       ) : (
-        <StyledTabHeader id="transactions-header" className="scrollable-tab-header">
+        <StyledTabHeader id="transactions-header">
           <ShowWhen
             additionalCondition={(usr) =>
               usr.isAllowedView('refunds') &&
@@ -77,9 +77,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
               }}
               onClick={trackTransactionsTabClick(BATCH_REFUNDS)}
               replace
-              // isActive={(_, { pathname: path }) =>
-              //   [BATCH_REFUNDS_UPLOAD, BATCH_REFUNDS].includes(path)
-              // }
+              className={[BATCH_REFUNDS_UPLOAD, BATCH_REFUNDS].includes(pathname) ? 'active' : ''}
             >
               Batch Refunds
             </StyledTabItem>
