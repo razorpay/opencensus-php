@@ -436,6 +436,9 @@ class Gateway
         self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY,
         self::WALLET_RAZORPAYWALLET => [
             'default'           => self::WALLET_RAZORPAYWALLET,
+        ],
+        self::WALLET_OPENWALLET     => [
+            'default'           => self::WALLET_OPENWALLET,
         ]
     ];
 
@@ -473,7 +476,8 @@ class Gateway
         self::UMOBILE               => self::UMOBILE,
         self::FPX                   => self::FPX,
         self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY,
-        self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET
+        self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET,
+        self::WALLET_OPENWALLET     => self::WALLET_OPENWALLET
     ];
 
 
