@@ -44,6 +44,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
+    const MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2      = 'merchant_policy_preview';
 
     const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   = 'generate_merchant_identity_verification_url';
     const PROCESS_MERCHANT_IDENTITY_VERIFICATION        = 'process_merchant_identity_verification';
@@ -102,6 +103,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
     ];
 
     const ADMIN_ROUTES = [
@@ -144,6 +146,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CONSENTS_SAVE           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
     ];
 
     // timeout in seconds
@@ -163,6 +166,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   => 10,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION        => 10,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS => 10,
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2 => 10,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -174,6 +178,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CONSENTS_SAVE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
     ];
 
     public function __construct()

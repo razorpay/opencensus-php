@@ -1379,7 +1379,7 @@ class Route
         'merchant_bmc_response_save'               => ['post',     'pg/onboarding/save_merchant_bmc_response',       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-
+        'merchant_website_section_page_load_v2'    => ['get',      'pg/onboarding/merchant_policy_preview',          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
@@ -6397,6 +6397,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_website_section_page_load_v2',
         'user_update_name',
         'merchant_get_l2_dynamic_configs',
         'merchant_bmc_response_fetch',
@@ -8895,6 +8896,7 @@ class Route
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
+        'merchant_website_section_page_load_v2'           => Permission::VIEW_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -9262,7 +9264,7 @@ class Route
         'setl_bank_account_get'                    => Permission::VIEW_ALL_ENTITY,
         'setl_bank_account_delete'                 => Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_DELETE,
         'setl_execution_register'                  => Permission::SETTLEMENT_BULK_UPDATE,
-        'setl_get_creation_status'                 => Permission::SETTLEMENT_BULK_UPDATE, 
+        'setl_get_creation_status'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_update_creation_status'              => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_execution_release'                   => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_set_dcs_object'                      => Permission::SETTLEMENT_BULK_UPDATE,
@@ -11342,6 +11344,7 @@ class Route
 
         'merchant_dashboard' => [
             'merchant_get_l2_dynamic_configs',
+            'merchant_website_section_page_load_v2',
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',
             'merchant_consents_save',
@@ -16503,7 +16506,7 @@ class Route
 
         'pgos' => [
             'merchant_entities_info',
-            'merchant_submit_internal'
+            'merchant_submit_internal',
         ],
 
         'disputes' => [
