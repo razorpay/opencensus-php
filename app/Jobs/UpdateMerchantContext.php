@@ -194,19 +194,76 @@ class UpdateMerchantContext extends Job
                     MVD\Constants::NUMBER
                 );
 
-                $websitePolicyResult = $websitePolicy->getMetadata();
+                $websitePolicyResult = (empty($websitePolicy) === false) ? $websitePolicy->getMetadata() : [];
+
+
+
+                /* example of websitePolicyResult
+                 [
+                    "refund"              => [
+                        "analysis_result" => [
+                            "links_found"       => [
+                                "https://ilovesarees.com/pages/returns"
+                            ],
+                            "confidence_score"  => 0.5465,
+                            "relevant_details"  => [
+                            ],
+                            "validation_result" => true
+                        ]
+                    ]
+                ]
+                */
 
                 $websitePolicyLinks = [];
 
                 foreach ($websitePolicyResult as $policy => $value)
                 {
-                    if (empty($value['analysis_result']['links_found'][0]) === false)
+                    if (empty($value['analysis_result']['links_found'][0]) === false and !in_array($policy, ['about_us', 'pricing']))
                     {
+                        if ($policy === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                        {
+                            $websitePolicyLinks['cancellation']['url'] = $value['analysis_result']['links_found'][0];
+                        }
+
                         $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
                     }
                 }
 
                 $websiteDetail = $app['repo']->merchant_website->getWebsiteDetailsForMerchantId($this->merchantId);
+
+                //if verified policy pages not found , save hosted policy pages in admin_website_details
+                if(empty($websiteDetail) === false)
+                {
+                    $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+                    /* example of policiesData
+                    [
+                        "terms" => [
+                            "section_status" => 3,
+                            "status"         => "submitted",
+                            "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
+                    ]
+                    */
+                    foreach ($policiesData as $policyName => $policyDetails)
+                    {
+                        if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
+                        {
+                            // Filtered policy with status 3 found
+                            if (isset($policyDetails['published_url']) === true and isset($websitePolicyLinks[$policyName]) === false)
+                            {
+                                if ($policyName === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                                {
+                                    $websitePolicyLinks['cancellation'] = [
+                                        'url' => $policyDetails['published_url'],
+                                    ];
+                                }
+                                $websitePolicyLinks[$policyName] = [
+                                    'url' => $policyDetails['published_url'],
+                                ];
+                            }
+                        }
+                    }
+                }
+
 
                 $adminWebsiteDetails = optional($websiteDetail)->getAdminWebsiteDetails() ?? [];
 
@@ -222,7 +279,6 @@ class UpdateMerchantContext extends Job
                         ]
                     ]),
                 ];
-
                 (new Website\Core)->createOrEditWebsiteDetails($merchantDetail, $input);
 
                 // save category & subcategory
