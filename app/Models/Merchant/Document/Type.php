@@ -148,6 +148,8 @@ class Type
     const BAR_COUNCIL_CERTIFICATE           = 'bar_council_certificate';
     const BOARD_RESOLUTION_LETTER           = 'board_resolution_letter';
 
+    const WEBSITE_SCREENSHOTS_ADDITIONAL     = 'website_screenshots_additional';
+
     const NC_ADDITIONAL_DOCUMENTS = [
 
         self::FSSAI_CERTIFICATE,
@@ -208,7 +210,8 @@ class Type
         self::GOVT_AUTHORISATION_LETTER,
         self::CPV_REPORT,
         self::BAR_COUNCIL_CERTIFICATE,
-        self::BOARD_RESOLUTION_LETTER
+        self::BOARD_RESOLUTION_LETTER,
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -270,7 +273,8 @@ class Type
         self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter",
         self::CPV_REPORT                        => "CPV report",
         self::BAR_COUNCIL_CERTIFICATE           => "Bar Council Certificate",
-        self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter"
+        self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter",
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional"
     ];
 
     const PROOF_TYPES = [
@@ -414,7 +418,8 @@ class Type
         self::GOVT_AUTHORISATION_LETTER,
         self::BAR_COUNCIL_CERTIFICATE,
         self::BOARD_RESOLUTION_LETTER,
-        self::CPV_REPORT
+        self::CPV_REPORT,
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL
     ];
 
     const DOCUMENT_TYPE_VALIDATIONS = [
@@ -532,6 +537,8 @@ class Type
 
         self::FIRS_FIRSTDATA_FILE => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_FIRSTDATA_SUM_FILE => self::ADDITIONAL_DOCUMENTS,
+
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL     => self::ADDITIONAL_DOCUMENTS,
 
         self::EMERCHANTPAY_GST_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PROOF_OF_OWNERSHIP => self::ADDITIONAL_DOCUMENTS,

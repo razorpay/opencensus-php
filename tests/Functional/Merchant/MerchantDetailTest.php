@@ -8884,6 +8884,7 @@ Team Razorpay',
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchant = $merchantDetail->merchant;
+        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
 
         // allow admin to access the merchant
         $admin = $this->ba->getAdmin();
@@ -8892,7 +8893,12 @@ Team Razorpay',
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // Use assertEquals to compare the  arrays
+        $this->assertEquals($expectedResponse, $response);
+
+
     }
 
     public function testRequestOriginInHubspotPreSignupDetailsForPrimary()

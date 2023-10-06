@@ -1594,7 +1594,6 @@ return [
     ],
     'response' => [
         'content' => [
-
             "fssai_certificate"                 => "FSSAI certificate",
             "ayush_certificate"                 => "Ayush certificate",
             "sebi_registration_certificate"     => "SEBI Registration Certificate",
@@ -1653,7 +1652,8 @@ return [
             "govt_authorisation_letter"         => "Govt authorisation Letter",
             "cpv_report"                        => "CPV report",
             "bar_council_certificate"           => "Bar Council Certificate",
-            "board_resolution_letter"           => "Board Resolution Letter"
+            "board_resolution_letter"           => "Board Resolution Letter",
+            "website_screenshots_additional"   => "Website Screenshots Additional"
         ]
     ],
 ],
