@@ -15,10 +15,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use SoftDeletes;
 
     const MERCHANT_ID          = 'merchant_id';

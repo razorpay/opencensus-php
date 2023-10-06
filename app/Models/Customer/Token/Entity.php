@@ -24,6 +24,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -44,7 +45,7 @@ use RZP\Constants\Mode;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, NotesTrait;
+    use SoftDeletes, NotesTrait, AsvGetAttribute;
 
     const MERCHANT_ID               = 'merchant_id';
     const CUSTOMER_ID               = 'customer_id';

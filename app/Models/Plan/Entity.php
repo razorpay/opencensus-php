@@ -5,10 +5,12 @@ namespace RZP\Models\Plan;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     const PERIOD            = 'period';
     const INTERVAL          = 'interval';

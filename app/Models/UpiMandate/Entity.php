@@ -6,9 +6,12 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ORDER_ID             = 'order_id';
     const MAX_AMOUNT           = 'max_amount';
     const TOKEN_ID             = 'token_id';

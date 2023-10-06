@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 /**
  * @property PaperMandate\Entity   $paperMandate
@@ -20,7 +21,7 @@ use RZP\Models\Base\Traits\NotesTrait;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     use SoftDeletes;
 

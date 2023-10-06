@@ -20,6 +20,7 @@ use RZP\Models\Schedule\Period;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 /**
  * @property Invoice\Entity     $invoice
@@ -32,7 +33,7 @@ use RZP\Models\Base\Traits\NotesTrait;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, ExternalOwner;
+    use NotesTrait, ExternalOwner, AsvGetAttribute;
 
     const SOURCE                 = 'source';
     const PLAN_ID                = 'plan_id';

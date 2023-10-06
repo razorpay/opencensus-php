@@ -7,9 +7,12 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const PREFIX                            = 'prefix';
     const TERMINAL_ID                       = 'terminal_id';
 

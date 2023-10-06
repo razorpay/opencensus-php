@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\FreshdeskTicket;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const TICKET_ID         = 'ticket_id';
