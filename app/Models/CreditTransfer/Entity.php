@@ -6,7 +6,7 @@ namespace RZP\Models\CreditTransfer;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\HasBalance;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 class Entity extends Base\PublicEntity

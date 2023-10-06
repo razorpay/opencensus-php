@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 class Entity extends Base\PublicEntity

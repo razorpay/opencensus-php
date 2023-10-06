@@ -11,8 +11,8 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail as BusinessDetailSDKWrapper;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
-use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
-use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Modules\Acs\Wrapper\MerchantBusinessDetail as MerchantBusinessDetailWrapper;
 
 class Repository extends Base\Repository

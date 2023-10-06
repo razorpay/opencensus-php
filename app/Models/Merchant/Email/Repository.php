@@ -7,8 +7,8 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
-use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
-use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKWrapper;
 

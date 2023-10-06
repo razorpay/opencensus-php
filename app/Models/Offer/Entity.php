@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 
 class Entity extends Base\PublicEntity

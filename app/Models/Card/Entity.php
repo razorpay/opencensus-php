@@ -23,7 +23,7 @@ use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Base\Traits\ArchivedEntity;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity $merchant

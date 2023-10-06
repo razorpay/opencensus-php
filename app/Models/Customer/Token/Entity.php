@@ -24,7 +24,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;

@@ -8,7 +8,7 @@ use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {

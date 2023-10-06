@@ -26,7 +26,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFind;
 
 class Repository extends Base\Repository
 {

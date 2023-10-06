@@ -11,7 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\CardMandate\MandateHubs;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity    $merchant

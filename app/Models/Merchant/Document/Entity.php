@@ -6,7 +6,7 @@ use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant\BvsValidation;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 class Entity extends Base\PublicEntity

@@ -20,7 +20,7 @@ use RZP\Models\Schedule\Period;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Invoice\Entity     $invoice

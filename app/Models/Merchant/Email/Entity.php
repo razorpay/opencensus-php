@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Email;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\HardDeletes;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 class Entity extends Base\PublicEntity

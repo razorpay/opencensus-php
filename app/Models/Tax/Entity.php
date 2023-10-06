@@ -3,7 +3,7 @@
 namespace RZP\Models\Tax;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 use RZP\Models\Base;

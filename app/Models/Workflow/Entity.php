@@ -8,7 +8,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\PayoutAmountRules;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\Entity
 {

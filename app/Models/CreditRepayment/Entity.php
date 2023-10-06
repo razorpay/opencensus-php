@@ -4,7 +4,7 @@ namespace RZP\Models\CreditRepayment;
 
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 class Entity extends Base\PublicEntity

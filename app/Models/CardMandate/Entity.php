@@ -9,7 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity $merchant

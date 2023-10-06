@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Acs\traits;
+namespace RZP\Models\Merchant\Acs\Traits;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;

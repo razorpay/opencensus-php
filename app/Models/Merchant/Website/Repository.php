@@ -15,7 +15,7 @@ use RZP\Modules\Acs\Wrapper\MerchantWebsite as MerchantWebsiteWrapper;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite as MerchantWebsiteSDKWrapper;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
-use RZP\Models\Merchant\Acs\traits\AsvFetch;
+use RZP\Models\Merchant\Acs\Traits\AsvFetch;
 
 
 class Repository extends Base\Repository

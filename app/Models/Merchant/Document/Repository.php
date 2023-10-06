@@ -4,8 +4,8 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
-use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;

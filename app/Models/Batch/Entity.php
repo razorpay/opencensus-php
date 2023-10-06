@@ -5,7 +5,7 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 /**

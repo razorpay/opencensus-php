@@ -13,7 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property PaperMandate\Entity   $paperMandate

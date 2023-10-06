@@ -6,7 +6,7 @@ use App;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Merchant\Acs\traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 
 class Entity extends Base\PublicEntity
