@@ -647,6 +647,42 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testGetMerchantWebsiteSectionDataRegularMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetMerchantWebsiteSectionDataSubMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetSubMerchantWebsiteHtmlData' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/policy/contact_us',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testAddClarificationReasonsNullFields' => [
         'request' => [

@@ -371,7 +371,7 @@ class Service extends Base\Service
 
     public function getMerchantWebsiteSection()
     {
-        if ($this->isWebsiteSectionsApplicable($this->merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($this->merchant,false, true) === false)
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false
@@ -2133,7 +2133,7 @@ class Service extends Base\Service
     // send html preview of the content for merchant in case of download
     public function getMerchantWebsiteSectionPage(array $input)
     {
-        if ($this->isWebsiteSectionsApplicable($this->merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($this->merchant, false, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
