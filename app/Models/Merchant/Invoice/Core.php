@@ -624,7 +624,7 @@ class Core extends Base\Core
                         'count' => $skip,
                     ]);
             }
-            
+
             // In case a merchant is deactivated in the required month<>year, invoice should still be generated for them
             $skip = 0;
 

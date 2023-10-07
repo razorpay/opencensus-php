@@ -86,6 +86,7 @@ use RZP\lib\ConditionParser\Operator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AvgOrderValue;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -468,8 +469,25 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
 
+        /*
+        Though if the merchant is eligible for fee based gating, the activation status at this point
+         will be null only hence case will not be created.
+        Still not pushing any message to queue. This can be reverted if not needed.
+         */
 
-        $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant);
+        $isEligibleForFeeBasedGating = false;
+
+        $feeBasedGatingResponse = (new DetailCore())->fetchMerchantGatingDetails($merchant);
+
+        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]))
+        {
+            $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE] ?? false;
+        }
+
+        if ($isEligibleForFeeBasedGating === false)
+        {
+            $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant);
+        }
 
         return $mutexTransactionData;
     }
@@ -1323,6 +1341,8 @@ class Core extends Base\Core
 
         $this->repo->assertTransactionActive();
 
+        $submittedAt = $merchant->merchantDetail->getSubmittedAt();
+
         $merchantDetails = $this->getMerchantDetails($merchant);
 
         [$isRiskyMerchant, $action] = $this->dedupeCore->match($merchant);
@@ -1365,7 +1385,19 @@ class Core extends Base\Core
 
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
-        if ($statusToBeUpdated != null)
+        // if the merchant is eligible for fee based gating logic we would not update the activation status of the merchant
+
+        $isFeeBasedGatingEligible = $this->isFeeBasedGatingEligible($merchant, $merchantDetails, $statusToBeUpdated);
+
+        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
+            'merchant_id'              => $merchant->getId(),
+            'isFeeBasedGatingEligible' => $isFeeBasedGatingEligible,
+            'statusToBeUpdated'        => $statusToBeUpdated
+        ]);
+
+        // the activation status above should be always under review if fee based gating is eligible
+
+        if ((empty($statusToBeUpdated) === false) and ($isFeeBasedGatingEligible === false))
         {
             $activationStatusData = [
                 Entity::ACTIVATION_STATUS => $statusToBeUpdated,
@@ -1383,11 +1415,19 @@ class Core extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
         $properties = [
-            'easyOnboarding'    =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
-            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboarding
+            'easyOnboarding'                              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+            Merchant\Constants::PHANTOM_ONBOARDING        => $isPhantomOnboarding,
+            DetailConstants::FEE_BASED_GATING_ELIGIBILITY => $isFeeBasedGatingEligible
         ];
 
-        if (empty($merchantDetails->getSubmittedAt()) === true)
+        $this->trace->info(TraceCode::L2_SUBMISSION_SEGMENT_EVENT, [
+            'merchant_id'        => $merchant->getId(),
+            'segment_properties' => $properties
+        ]);
+
+        // Fetching submitted at before the merchant detail object is set in the current flow which updated the submitted at
+        // to the current timestamp (current time stamp here signifies when the merchant submitted the L2 )
+        if (empty($submittedAt) === true)
         {
             $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
         }
@@ -1460,6 +1500,13 @@ class Core extends Base\Core
         }
 
         $response = $this->updateActivationProgress($merchant);
+
+        if ($isFeeBasedGatingEligible === true)
+        {
+            $response[DetailConstants::FEE_BASED_GATING] = [
+                DetailConstants::IS_ELIGIBLE => true
+            ];
+        }
 
         $response['auto_activated'] = $autoActivated;
 
@@ -3901,6 +3948,10 @@ class Core extends Base\Core
 
                 $stateData[State\Entity::UPDATED_BY] = $workflowMaker;
             }
+
+            $this->trace->info(TraceCode::ACTIVATION_STATUS_CHANGE_AGENT,[
+                'stateData' => $stateData
+            ]);
 
             $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $merchantDetails);
 
@@ -10107,4 +10158,231 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function isFeeBasedGatingEligible(Merchant\Entity $merchant, MerchantDetailEntity $merchantDetails, string $applicableActivationStatus)
+    {
+        // by default keeping value of fee based gating eligibility as false
+        // applicable activation status of the merchant should be under review
+
+        $merchantId = $merchant->getId();
+
+        $isFeeBasedGatingEligible = false;
+
+        // only razorpay org merchants
+        $merchantOrg = $merchant->getOrgId();
+
+        // individual or unregistered business type
+        $merchantBusinessType = $merchantDetails->getBusinessType();
+
+        //any website should not be there
+        $hasBusinessWebsiteOrAppUrls = $this->hasBusinessWebsiteOrAppUrls($merchant);
+
+        // should be a regular PG merchant and not even submerchant
+        $isPgMerchant = (new Merchant\Core())->isRegularMerchant($merchant);
+
+        $splitzResult = $this->getSplitzResponse($merchant->getId(), 'fee_based_gating_exp_id');
+
+        $activationFlow = $merchantDetails->getActivationFlow();
+
+        $isDedupeMatch = $this->dedupeCore->isMerchantImpersonated($merchant);
+
+        $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
+
+        $isRiskyMerchant = ($isDedupeMatch and !$isDedupeBlocked);
+
+        // Disabling fee based gating for old Dashboard signup merchants
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+
+        $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+
+        // Malaysian Merchants should not be eligible for fee based gating
+        $isMalaySianMerchant = $this->isMalaysianMerchant($merchant);
+
+        // Has this to be done for phantom onboarding ?
+
+        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY_INPUTS, [
+            'org'                        => $merchantOrg,
+            'businessType'               => $merchantBusinessType,
+            'isWebsitePresent'           => $hasBusinessWebsiteOrAppUrls,
+            'applicableActivationStatus' => $applicableActivationStatus,
+            'isRegularPgMerchant'        => $isPgMerchant,
+            'splitzResult'               => $splitzResult,
+            'signupCampaign'             => $signupCampaign,
+            'malaySianMerchant'          => $isMalaySianMerchant
+        ]);
+
+        if (($merchantOrg === Org\Entity::RAZORPAY_ORG_ID) and
+            ($merchantBusinessType === BusinessType::NOT_YET_REGISTERED or $merchantBusinessType === BusinessType::INDIVIDUAL) and
+            ($hasBusinessWebsiteOrAppUrls === false) and
+            ($applicableActivationStatus === Status::UNDER_REVIEW) and
+            ($activationFlow !== ActivationFlow::BLACKLIST) and
+            ($isPgMerchant === true) and
+            ($isRiskyMerchant === false) and
+            ($isMalaySianMerchant === false) and
+            ($splitzResult === Constants::SPLITZ_TRUE))
+        {
+            if (empty($signupCampaign) === false && $signupCampaign === DDConstants::EASY_ONBOARDING)
+            {
+                $isFeeBasedGatingEligible = true;
+            }
+        }
+
+        // will route request to pgos to save eligibility logic only in case of flag being true
+
+        if ($isFeeBasedGatingEligible === true)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+                'gating_request_route_to_pgos' => true,
+            ]);
+
+            $response = $this->routeRequestToPgos($merchant, true);
+
+            if (isset($response[Constant::SUCCESS]) and $response[Constant::SUCCESS] === true)
+            {
+                return true;
+            }
+
+            throw new IntegrationException("KYC submission request failed", ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED);
+        }
+
+        return $isFeeBasedGatingEligible;
+    }
+
+    protected function routeRequestToPgos(Merchant\Entity $merchant, bool $isFeeBasedGatingEligible = false)
+    {
+        $merchantId = $merchant->getId();
+
+        $app = App::getFacadeRoot();
+
+        $pgosMock = $app['config']['pgos.proxy.request.mock'];
+
+        if ($pgosMock === true)
+        {
+            $mockResponse[Constant::SUCCESS] = true;
+
+            return $mockResponse;
+        }
+
+        try
+        {
+            $payload =
+                [
+                    DetailConstants::IS_ELIGIBLE => $isFeeBasedGatingEligible,
+                ];
+
+            // response will be a boolean value - success -> true or false
+
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_gating_logic_save',
+                                                                            $payload, $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_SAVE_GATING_LOGIC_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_SAVE_GATING_LOGIC_FAILURE, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function fetchMerchantGatingDetails(Merchant\Entity $merchant)
+    {
+
+        $app = App::getFacadeRoot();
+
+        $pgosMock = $app['config']['pgos.proxy.request.mock'];
+
+        if ($pgosMock === true)
+        {
+            $feeBasedGatingResponse = [
+                "fee_based_gating" => [
+                    "is_eligible"    => DetailConstants::DEFAULT_ELIGIBILITY_CRITERIA,
+                    "order_id"       => DetailConstants::DEFAULT_ORDER_ID,
+                    "payment_status" => DetailConstants::DEFAULT_PAYMENT_STATUS,
+                    "invoice_sent"   => false
+                ]
+            ];
+
+            return $feeBasedGatingResponse;
+        }
+        // We will fetch the data here regardless of the experiment is enabled for the merchant or not
+
+        $merchantId = $merchant->getId();
+
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'merchant_id'                   => $merchantId,
+            'fetch_merchant_gating_details' => true
+        ]);
+
+        try
+        {
+            $payload =
+                [
+                    "merchantId" => $merchantId,
+                ];
+
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_gating_logic',
+                                                                            $payload, $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_SAVE_GATING_LOGIC_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
+
+            return $response;
+        }
+
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_FETCH_GATING_LOGIC_FAILURE, [
+                'route'         => 'fetch_gating_logic',
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function preProcessGatingRequest(array &$body)
+    {
+        $orderId       = $body['payload']['payment']['entity']['order_id'];
+
+        $paymentStatus = $body['payload']['payment']['entity']['status'];
+
+        $amount        = $body['payload']['payment']['entity']['amount'];
+
+        $paymentId     = $body['payload']['payment']['entity']['id'];
+
+        $body = [
+            'order_id'       => $orderId,
+            'payment_status' => $paymentStatus,
+            'amount'         => $amount,
+            'payment_id'     => $paymentId
+        ];
+
+        $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
+            'route'        => 'FEE_BASED_GATING_WEBHOOK_PROCESSING',
+            'request_body' => $body
+        ]);
+    }
+
+    public function preProcessCreateOrderRequest(array &$body)
+    {
+        $createOrder   = $body['createOrder'];
+
+        unset($body['createOrder']);
+
+        $body['create_order'] = $createOrder;
+
+        $this->trace->info(TraceCode::ONBOARDING_PAYMENT_ORDER_CREATE_REQUEST, [
+            'createOrder'        => $createOrder,
+        ]);
+    }
 }
+

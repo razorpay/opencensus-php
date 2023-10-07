@@ -211,6 +211,18 @@ class Constants
     const UPI_INSTRUMENT           = 'pg.upi.onboarding.online.upi';
     const EVENT_TYPE_ONBOARDING    = 'onboarding';
 
+    // Fee Based Gating Constants
+    const FEE_BASED_GATING             = 'fee_based_gating';
+    const IS_ELIGIBLE                  = 'is_eligible';
+    const FEE_BASED_GATING_ELIGIBILITY = 'feeBasedGatingEligibility';
+    const PAYMENT_STATUS               = 'payment_status';
+    const INVOICE_SENT                 = 'invoice_sent';
+    // Default payment constants
+    const DEFAULT_ELIGIBILITY_CRITERIA   = true;
+    const DEFAULT_ORDER_ID               = "order_MblejZXmYhvaqK" ;
+    const DEFAULT_PAYMENT_STATUS         = "authorized" ;
+    const ACTION                         = "action";
+
     const BLOCKED_GSTIN_LIST = [
         '29AAGCR4375J1ZU'
     ];

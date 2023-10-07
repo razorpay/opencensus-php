@@ -31,4 +31,8 @@ final class Constants
     const SHOW_SKIPPED_MIDS_LIST = 'show';
 
     const FEE = 'fee';
+
+    const FEE_BASED_GATING_BASE_AMOUNT = 8390;
+
+    const FEE_BASED_GATING_TAX_AMOUNT  = 1510;
 }

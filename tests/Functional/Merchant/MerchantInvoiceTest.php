@@ -257,6 +257,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -293,7 +294,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because other merchants are inactive during this $oldDateTime
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(8, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -316,6 +317,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         Carbon::setTestNow();
     }
@@ -351,7 +353,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(8, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -374,6 +376,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -517,7 +520,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(8, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -540,6 +543,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         Carbon::setTestNow();
     }
@@ -626,7 +630,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(8, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -649,6 +653,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         Carbon::setTestNow();
     }
@@ -690,7 +695,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(14, $entities['count']);
+        $this->assertEquals(16, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -883,7 +888,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(8, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -904,6 +909,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -1093,7 +1099,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(8, $entities['count']);
+        $this->assertEquals(10, $entities['count']);
 
         $entities = $entities['items'];
 

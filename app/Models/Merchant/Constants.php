@@ -168,9 +168,11 @@ final class Constants
 
     const RAZORX_EXPERIMENT_ON                    = 'on';
 
+    // Splitz Constants
     const SPLITZ_LIVE                             = 'live';
     const SPLITZ_PILOT                            = 'pilot';
     const SPLITZ_KQU                              = 'kqu';
+    const SPLITZ_TRUE                             = 'true';
 
     const MERCHANT_MUTEX_LOCK_TIMEOUT                 = '60';
     const MERCHANT_MUTEX_RETRY_COUNT                  = '2';

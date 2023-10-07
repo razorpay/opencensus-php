@@ -8,15 +8,22 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Status;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transfer\Service as TransferService;
 use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Models\FundAccount\Validation\Entity as FAVEntity;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Invoice\Constants as InvoiceConstant;
 
 class Processor extends Base\Core
 {
@@ -59,6 +66,8 @@ class Processor extends Base\Core
 
     public $cacheKeyArr = [];
 
+    protected $pgosProxyController;
+
     const CACHE_TTL = 86400; // 24 hours
 
     public function __construct(string $merchantId, int $month, int $year, string $cacheTag = '')
@@ -74,6 +83,8 @@ class Processor extends Base\Core
         $this->cacheTag = $cacheTag;
 
         $this->initializeVars();
+
+        $this->pgosProxyController = (new MerchantOnboardingProxyController());
     }
 
     public function createInvoiceEntities()
@@ -105,9 +116,13 @@ class Processor extends Base\Core
 
                     continue;
                 }
+                /*
+                 Merchants applicable for fee based gating initially when the payment will be done will not have entry in balance table.
+                 Eventually once they get activated and start doing transactions they will have entry in this table. Hence they will be
+                 picked up in the invoice cron during that time.
+                 */
 
                 // sum over fees & tax for different commission types
-
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
 
@@ -595,6 +610,8 @@ class Processor extends Base\Core
 
         $platformFeeAmount = [];
 
+        $feeBasedGatingAmount = [];
+
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
             $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'payment');
@@ -811,6 +828,95 @@ class Processor extends Base\Core
                 $balanceId);
         }
 
+        if ($type === Type::FEE_BASED_GATING)
+        {
+            $merchantId = $this->merchantId;
+
+            $this->trace->info(TraceCode::FEE_BASED_GATING_INVOICE_GENERATION, [
+                'merchant_id' => $this->merchantId,
+                'fee_type'    => $type
+            ]);
+
+            $isEligibleForInvoicing = false;
+
+            // need to check where the cache key is getting set
+
+            $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'transaction');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            // data will be stored in cache for 24 hours
+
+            if ($cacheResult != null)
+            {
+                $feeBasedGatingAmount = $cacheResult;
+            }
+            else
+            {
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $feeBasedGatingResponse = (new Merchant\Detail\Core())->fetchMerchantGatingDetails($merchant);
+
+                if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
+                {
+                    // The keys in the fee based gating will be always there but just empty if it is not filled
+
+                    $feeBasedGatingEligibility = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE];
+
+                    $paymentStatus = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::PAYMENT_STATUS];
+
+                    $invoiceStatus = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::INVOICE_SENT] ?? false;
+
+                    // need to put check here if invoice is already sent should not be sent to same merchant id twice
+
+                    if ($feeBasedGatingEligibility === true and $paymentStatus === Status::CAPTURED and $invoiceStatus === false)
+                    {
+                        $isEligibleForInvoicing = true;
+                    }
+
+                    $this->trace->info(TraceCode::FEE_BASED_GATING_INVOICE_GENERATION, [
+                        'merchant_id'            => $merchantId,
+                        'isEligibleForInvoicing' => $isEligibleForInvoicing,
+                    ]);
+                }
+                /*
+                 If the cron attempts fail what will happen to the downstream services call ?
+                 */
+
+                if ($isEligibleForInvoicing === true)
+                {
+                    $saveInvoiceLogicResponse = $this->saveMerchantInvoiceDataInPGOS($merchant, true);
+
+                    if ($saveInvoiceLogicResponse !== true)
+                    {
+                        throw new IntegrationException("Invoice Save Logic Failed", ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED);
+                    }
+                }
+
+                $feeBasedGatingAmount = [
+                    Entity::AMOUNT => $isEligibleForInvoicing ? InvoiceConstant::FEE_BASED_GATING_BASE_AMOUNT  : 0,
+                    Entity::TAX    => $isEligibleForInvoicing ? InvoiceConstant::FEE_BASED_GATING_TAX_AMOUNT : 0,
+                ];
+
+                $this->storeResultsInCache($cacheKey, $feeBasedGatingAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
+
+            $this->trace->info(TraceCode::FEE_BASED_GATING_INVOICE_GENERATION, [
+                'merchant_id'             => $this->merchantId,
+                'fee_based_gating_amount' => $feeBasedGatingAmount,
+            ]);
+
+            $this->logMerchantInvoiceResult(
+                $type,
+                'pg_invoice_' . $type,
+                'fee_based_gating_amount',
+                $feeBasedGatingAmount,
+                $balanceId);
+        }
+
         if ($type === Type::PLATFORM_FEE)
         {
             $platformFeeDetails = $this->getPlatformFeeDetails();
@@ -828,7 +934,7 @@ class Processor extends Base\Core
         }
 
         $amount  = $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT]
-                    + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT] + $pricingBundleFeeAmount[Entity::AMOUNT]
+                    + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT] + $pricingBundleFeeAmount[Entity::AMOUNT] + $feeBasedGatingAmount[Entity::AMOUNT]
                     - $refundReversalFeeAmounts[Entity::AMOUNT] + $platformFeeAmount[Entity::AMOUNT];
 
         // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
@@ -1040,6 +1146,7 @@ class Processor extends Base\Core
                 //    'others'                  => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'validation'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'pricing_bundle'          => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+                //    'fee_based_gating'        => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'platform_fee'            => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 // ]
 
@@ -1205,5 +1312,48 @@ class Processor extends Base\Core
     public function getCacheKeyArray()
     {
         return $this->cacheKeyArr;
+    }
+    protected function saveMerchantInvoiceDataInPGOS(Merchant\Entity $merchant, bool $isInvoiceSent)
+    {
+
+        // This route will just called from here and will be only called when we have to save the invoice logic, this should
+        // not fail
+
+        $merchantId = $merchant->getId();
+
+        try
+        {
+            $payload =
+                [
+                    DetailConstants::MERCHANT_ID  => $merchantId,
+                    DetailConstants::INVOICE_SENT => $isInvoiceSent
+                ];
+
+            // response will be a boolean value - success -> true or false
+
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_invoice_logic_save',
+                                                                            $payload, $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_INVOICE_LOGIC_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
+
+            if (isset($response[Constant::SUCCESS]) and $response[Constant::SUCCESS] === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_INVOICE_LOGIC_SAVE_FAILURE, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+
+            return false;
+        }
     }
 }

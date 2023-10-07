@@ -44,7 +44,12 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
-        ]
+        ],
+        'fee_based_gating' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testMerchantInvoiceWithLateAuth' => [
@@ -82,7 +87,12 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
-        ]
+        ],
+        'fee_based_gating' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testInvoiceEntityCreateForGivenMonthYear' => [
@@ -120,7 +130,12 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
-        ]
+        ],
+        'fee_based_gating' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testFeeAdjustment' => [
@@ -181,7 +196,12 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
-        ]
+        ],
+        'fee_based_gating' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testEditGstinFailure' => [
@@ -280,7 +300,12 @@ return [
            'amount'    => 0,
            'tax'       => 0,
            'gstin'     => '29kjsngjk213922',
-       ]
+       ],
+        'fee_based_gating' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testMerchantInvoiceSkippedListEdit' => [

@@ -249,6 +249,34 @@ class Service extends Base\Service
         if (empty($merchantStateDetails) === false)
         {
             $response['status_change_agent'] = $merchantStateDetails[0][StateChangeEntity::UPDATED_BY] ?? null;
+
+            $this->trace->info(TraceCode::ACTIVATION_STATUS_CHANGE_AGENT,[
+                'merchantId'          => $merchantDetails->getId(),
+                'status_change_agent' => $response['status_change_agent']
+            ]);
+        }
+
+        // here the fee based gating data is saved on the pgos and is not dual written on api monolith hence we will make call to pgos everytime do get call
+        // for merchant details
+        $feeBasedGatingResponse = (new Core())->fetchMerchantGatingDetails($merchantDetails->merchant);
+
+        /*
+           feeBasedGating :
+           {
+                     isEligible       =>  true
+                     paymentStatus    => 'authorized',
+                     orderId          => 'order_9A33XWu170gUtm'
+           }
+       */
+
+        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
+            'merchantId'                 => $merchantDetails->getId(),
+            'fee_based_gating_db_values' => $feeBasedGatingResponse
+        ]);
+
+        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
+        {
+            $response[DetailConstants::FEE_BASED_GATING] = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING];
         }
     }
 
@@ -4553,6 +4581,10 @@ class Service extends Base\Service
      */
     public function submitMerchantInternal($merchantId, $input)
     {
+        $this->trace->info(TraceCode::SUBMIT_MERCHANT_INTERNAL,[
+            'request_submit_internal' => $input
+        ]);
+
         $postAction = $input['action'] ?? 'SUBMIT';
 
         switch ($postAction)
@@ -4565,12 +4597,17 @@ class Service extends Base\Service
                 return $this->core->updateActivationMilestonePGOSInternal($merchantId, $input);
             case 'UPDATE_LEGAL_ENTITY':
                 return $this->core->updateLegalEntityPGOSInternal($merchantId, $input);
+            case 'UPDATE_ACTIVATION_STATUS':
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+                unset($input[DetailConstants::ACTION]);
+                unset($input[DetailConstants::MERCHANT_ID]);
+                return $this->core->updateActivationStatus($merchant, $input, $merchant);
             case 'UPDATE_MERCHANT_ENTITY':
                 $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [
                     'merchant'  => $merchantId,
                     'input'     => $input
                 ]);
-                unset($input['action']);
+                unset($input[DetailConstants::ACTION]);
                 $merchantService = new MerchantService();
                 return $merchantService->edit($merchantId, $input);
             default:

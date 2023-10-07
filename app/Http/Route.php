@@ -1377,7 +1377,11 @@ class Route
         'merchant_bmc_response_fetch'              => ['get',      'pg/onboarding/get_merchant_bmc_response',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_fetch_admin'        => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_save'               => ['post',     'pg/onboarding/save_merchant_bmc_response',       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_order_create'                  => ['post',     'pg/onboarding/payment_order_create',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_order_verify'                  => ['post',     'pg/onboarding/payment_order_verify',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_payment_webhook'               => ['post',     'pg/onboarding/payment_order_webhook',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
+        // pending status code and success true return from pgos to api
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_website_section_page_load_v2'    => ['get',      'pg/onboarding/merchant_policy_preview',          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
@@ -6402,6 +6406,8 @@ class Route
         'merchant_get_l2_dynamic_configs',
         'merchant_bmc_response_fetch',
         'merchant_bmc_response_save',
+        'onboarding_order_create',
+        'onboarding_order_verify',
         'merchant_consents_save',
         'payment_links_custom_field_config_get',
         'payment_links_custom_field_config_upsert',
@@ -8894,6 +8900,8 @@ class Route
         'merchant_bmc_response_fetch'                     => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
+        'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
+        'onboarding_order_verify'                         => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         'merchant_website_section_page_load_v2'           => Permission::VIEW_MERCHANT,
@@ -10917,6 +10925,7 @@ class Route
     ];
 
     public static $direct = [
+        'onboarding_payment_webhook',
         'payment_page_fetch_records',
         'payment_page_fetch_records_option',
         'notifications_for_b2b',
@@ -11347,6 +11356,8 @@ class Route
             'merchant_website_section_page_load_v2',
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',
+            'onboarding_order_create',
+            'onboarding_order_verify',
             'merchant_consents_save',
             'payment_links_custom_field_config_get',
             'payment_links_custom_field_config_upsert',

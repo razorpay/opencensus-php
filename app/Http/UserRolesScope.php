@@ -38,6 +38,8 @@ class UserRolesScope
 
             'merchant_bmc_response_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_bmc_response_fetch_admin'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'onboarding_order_create'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'onboarding_order_verify'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_get_l2_dynamic_configs'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_bmc_response_save'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_website_section_page_load_v2'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

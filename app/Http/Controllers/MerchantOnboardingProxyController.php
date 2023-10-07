@@ -5,17 +5,14 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use RZP\Exception;
-use GuzzleHttp\Client;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use GuzzleHttp\Psr7\Response;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
-use GuzzleHttp\Exception\GuzzleException;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
@@ -32,6 +29,14 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
     const MERCHANT_UPDATE_BY_ADMIN       = 'merchant_update_by_admin';
     const MERCHANT_CONSENTS_SAVE         = 'merchant_consents_save';
+
+    // fee based gating routes
+    const MERCHANT_GATING_LOGIC_SAVE     = 'merchant_gating_logic_save';
+    const PAYMENT_ORDER_CREATE           = 'payment_order_create';
+    const PAYMENT_ORDER_VERIFY           = 'payment_order_verify';
+    const PAYMENT_ORDER_WEBHOOK          = 'payment_order_webhook';
+    const MERCHANT_FETCH_GATING_LOGIC    = 'merchant_fetch_gating_logic';
+    const MERCHANT_INVOICE_LOGIC_SAVE    = 'merchant_invoice_logic_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
@@ -102,6 +107,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_SIGN_UP,
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
+        self::MERCHANT_GATING_LOGIC_SAVE,
+        self::PAYMENT_ORDER_CREATE,
+        self::PAYMENT_ORDER_VERIFY,
+        self::MERCHANT_FETCH_GATING_LOGIC,
+        self::PAYMENT_ORDER_WEBHOOK,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
     ];
@@ -137,12 +147,15 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
-        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
-
+        self::MERCHANT_GATING_LOGIC_SAVE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantGatingLogic',
+        self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
+        self::PAYMENT_ORDER_VERIFY             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderVerify',
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
-
+        self::MERCHANT_FETCH_GATING_LOGIC      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantGatingLogic',
+        self::PAYMENT_ORDER_WEBHOOK            => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderWebhook',
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
-
+        self::MERCHANT_INVOICE_LOGIC_SAVE      =>  '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
+        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_CONSENTS_SAVE           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
@@ -161,6 +174,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_UPDATE_BY_ADMIN      => 10,
         self::MERCHANT_DETAILS_PATCH        => 10,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
+        self::MERCHANT_GATING_LOGIC_SAVE   => 10,
+        self::PAYMENT_ORDER_CREATE         => 10,
+        self::PAYMENT_ORDER_VERIFY         => 10,
+        self::MERCHANT_FETCH_GATING_LOGIC  => 10,
+        self::PAYMENT_ORDER_WEBHOOK        => 10,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => 10,
         self::MERCHANT_CONSENTS_SAVE        => 10,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   => 10,
@@ -174,6 +192,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
+        self::MERCHANT_GATING_LOGIC_SAVE,
+        self::PAYMENT_ORDER_CREATE,
+        self::PAYMENT_ORDER_VERIFY,
+        self::MERCHANT_FETCH_GATING_LOGIC,
+        self::PAYMENT_ORDER_WEBHOOK,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION,
         self::MERCHANT_CONSENTS_SAVE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
@@ -280,6 +303,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         try
         {
+            $this->routeSpecificPreProcessor($routeKey, $body);
+
             $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
 
             $this->routeSpecificPostProcessor($routeKey, $body);
@@ -288,6 +313,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         }
         catch (\Throwable $e)
         {
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'pgos_proxy_request'     => true,
+                'error_message'          => $e->getMessage()
+            ]);
+
             $this->trace->traceException($e);
 
             throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
@@ -381,6 +411,18 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 (new WebsiteService())->updateCommonWebsiteQuestions($body, true);
         }
 
+    }
+
+    private function routeSpecificPreProcessor(string $routeKey, array &$body)
+    {
+        switch ($routeKey)
+        {
+            case self::PAYMENT_ORDER_WEBHOOK:
+                (new Merchant\Detail\Core())->preProcessGatingRequest($body);
+
+            case self::PAYMENT_ORDER_CREATE:
+                (new Merchant\Detail\Core())->preProcessCreateOrderRequest($body);
+        }
     }
 
     public function canUpdateMerchantViaPGOS(Merchant\Entity $merchant): bool

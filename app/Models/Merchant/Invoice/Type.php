@@ -25,6 +25,9 @@ class Type
     // Commission on Pricing Bundle fee charged
     const PRICING_BUNDLE        = 'pricing_bundle';
 
+    // Commission on Fee Based Gating fee charged
+    const FEE_BASED_GATING      = 'fee_based_gating';
+
     // Platform fee charged to marketplace merchants
     const PLATFORM_FEE          = 'platform_fee';
 
@@ -55,6 +58,7 @@ class Type
         self::ADJUSTMENT            => 997158,
         self::VALIDATION            => 997158,
         self::PRICING_BUNDLE        => 997158,
+        self::FEE_BASED_GATING      => 997158,
         self::PLATFORM_FEE          => 997158,
         self::RX_TRANSACTIONS       => 997158,
         self::RX_ADJUSTMENTS        => 997158,
@@ -78,6 +82,7 @@ class Type
     const RX_ADJUSTMENTS_DESCRIPTION        = 'RazorpayX Adjustments';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const PRICING_BUNDLE_DESCRIPTION        = 'Fee for pricing bundle subscription';
+    const FEE_BASED_GATING_DESCRIPTION      = 'Fee for KYC verification request';
     const PLATFORM_FEE_DESCRIPTION          = 'Platform Fee';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
@@ -90,6 +95,7 @@ class Type
         self::OTHERS                 => self::OTHERS_DESCRIPTION,
         self::VALIDATION             => self::VALIDATION_DESCRIPTION,
         self::PRICING_BUNDLE         => self::PRICING_BUNDLE_DESCRIPTION,
+        self::FEE_BASED_GATING       => self::FEE_BASED_GATING_DESCRIPTION,
         self::PLATFORM_FEE           => self::PLATFORM_FEE_DESCRIPTION,
         self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
         self::RX_ADJUSTMENTS         => self::RX_ADJUSTMENTS_DESCRIPTION,
@@ -112,7 +118,8 @@ class Type
         self::OTHERS,
         self::VALIDATION,
         self::PRICING_BUNDLE,
-        self::PLATFORM_FEE
+        self::PLATFORM_FEE,
+        self::FEE_BASED_GATING
     ];
 
     public static function getAllPrimaryBalanceTypes(): array
@@ -124,7 +131,8 @@ class Type
             self::OTHERS,
             self::VALIDATION,
             self::PRICING_BUNDLE,
-            self::PLATFORM_FEE
+            self::PLATFORM_FEE,
+            self::FEE_BASED_GATING
         ];
     }
 

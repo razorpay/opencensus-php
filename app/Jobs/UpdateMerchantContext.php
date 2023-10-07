@@ -126,6 +126,9 @@ class UpdateMerchantContext extends Job
 
         $triggerWorkflow = true;
 
+        // by default setting false of fee based gating eligibility logic
+        $isEligibleForFeeBasedGating = false;
+
         $app = App::getFacadeRoot();
 
         $startTime = microtime(true);
@@ -166,6 +169,18 @@ class UpdateMerchantContext extends Job
             }
 
             $businessDetailMetadata = optional($app['repo']->merchant_business_detail->getBusinessDetailsForMerchantId($this->merchantId))->getMetadata();
+
+            $feeBasedGatingResponse = (new DetailCore())->fetchMerchantGatingDetails($merchant);
+
+            if (isset($feeBasedGatingResponse[DetailConstant::FEE_BASED_GATING]) === true)
+            {
+                $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstant::FEE_BASED_GATING][DetailConstant::IS_ELIGIBLE] ?? false;
+            }
+
+            $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
+                'isEligibleForFeeBasedGating' => $isEligibleForFeeBasedGating,
+                'activationStatus'            => $newActivationStatus
+            ]);
 
             if ((empty($businessDetailMetadata['activation_status']) === true) and
                 (in_array($splitzResult, [Constants::SPLITZ_PILOT, Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true))
@@ -395,13 +410,16 @@ class UpdateMerchantContext extends Job
                 }
                 else
                 {
-                    $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant, $triggerWorkflow);
+                    if ($isEligibleForFeeBasedGating === false)
+                    {
+                        $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant, $triggerWorkflow);
 
-                    $this->trace->info(TraceCode::UPDATE_ACTIVATION_STATUS_DURATION, [
-                        'merchant_id'       => $merchant->getId(),
-                        'bvs_validation_id' => $this->validationId,
-                        'duration'          => (microtime(true) - $startTime) * 1000,
-                    ]);
+                        $this->trace->info(TraceCode::UPDATE_ACTIVATION_STATUS_DURATION, [
+                            'merchant_id'       => $merchant->getId(),
+                            'bvs_validation_id' => $this->validationId,
+                            'duration'          => (microtime(true) - $startTime) * 1000,
+                        ]);
+                    }
                 }
 
                 if ($newActivationStatus === Status::NEEDS_CLARIFICATION)
