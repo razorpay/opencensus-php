@@ -14,6 +14,11 @@ import { render, screen, server, delay, waitFor } from 'test-utils';
 import { newAndOldRouteMap } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/constants/constants';
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
+jest.mock('merchant/views/Account/WebsiteAppDetails/utils', () => ({
+  ...jest.requireActual('merchant/views/Account/WebsiteAppDetails/utils'),
+  isPolicyWizardV2Enabled: jest.fn().mockReturnValue(false),
+}));
+
 jest.mock('react-router-dom', () => ({
   __esModule: true,
   ...jest.requireActual('react-router-dom'),

@@ -41,7 +41,10 @@ import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
-import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+import {
+  shouldShowWebsiteComplianceModal,
+  isPolicyWizardV2Enabled,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
@@ -51,6 +54,7 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import DateRangeTooltip from './DateRangeTooltip';
+import { withSplitzService } from 'common/splitz';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -169,11 +173,12 @@ class AnalyticsMobile extends Component {
   };
 
   renderWebsiteCompliancePrompt = () => {
-    // prettier-ignore
     const {
       activationData,
       websiteSectionDetailsData,
       websiteComplianceModalVisibility,
+      splitz,
+      user,
     } = this.props;
 
     if (
@@ -181,11 +186,13 @@ class AnalyticsMobile extends Component {
       websiteSectionDetailsData.data &&
       websiteComplianceModalVisibility.data
     ) {
-      const shouldShowModal = shouldShowWebsiteComplianceModal(
-        activationData,
-        websiteSectionDetailsData,
-        websiteComplianceModalVisibility,
-      );
+      const shouldShowModal =
+        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        shouldShowWebsiteComplianceModal(
+          activationData,
+          websiteSectionDetailsData,
+          websiteComplianceModalVisibility,
+        );
 
       if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
         this.setState({
@@ -498,4 +505,4 @@ class AnalyticsMobile extends Component {
   }
 }
 
-export default AnalyticsMobile;
+export default withSplitzService(AnalyticsMobile);

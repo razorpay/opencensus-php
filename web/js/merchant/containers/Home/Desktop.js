@@ -84,7 +84,10 @@ import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
-import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+import {
+  shouldShowWebsiteComplianceModal,
+  isPolicyWizardV2Enabled,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
@@ -96,6 +99,7 @@ import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import lazy from 'merchant/routes/LazyLoader';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import DateRangeTooltip from './DateRangeTooltip';
+import { withSplitzService } from 'common/splitz';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -227,19 +231,26 @@ class AnalyticsDesktop extends Component {
 
   renderWebsiteCompliancePrompt = () => {
     if (this.state.isWebsiteComplianceModalShown) return;
-    const { activationData, websiteSectionDetailsData, websiteComplianceModalVisibility } =
-      this.props;
+    const {
+      activationData,
+      websiteSectionDetailsData,
+      websiteComplianceModalVisibility,
+      splitz,
+      user,
+    } = this.props;
 
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
       websiteComplianceModalVisibility.data
     ) {
-      const shouldShowModal = shouldShowWebsiteComplianceModal(
-        activationData,
-        websiteSectionDetailsData,
-        websiteComplianceModalVisibility,
-      );
+      const shouldShowModal =
+        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        shouldShowWebsiteComplianceModal(
+          activationData,
+          websiteSectionDetailsData,
+          websiteComplianceModalVisibility,
+        );
 
       if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
         this.setState({
@@ -1087,5 +1098,5 @@ export default withRouter(
     fetchCarouselBanner: fetchCarouselBannerProp,
     showProductsModal,
     ...EventActions,
-  })(AnalyticsDesktop),
+  })(withSplitzService(AnalyticsDesktop)),
 );

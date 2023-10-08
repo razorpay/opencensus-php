@@ -14,11 +14,15 @@ import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
-import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+import {
+  shouldShowWebsiteComplianceModal,
+  isPolicyWizardV2Enabled,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { withSplitzService } from 'common/splitz';
 
 class KeysListContainer extends ListContainer {
   fetchEntityList() {
@@ -107,6 +111,8 @@ class KeysListContainer extends ListContainer {
     const { websiteComplianceModalVisibility } = this.props;
     const { user } = this.props;
 
+    const { splitz } = this.props;
+
     const isMobileResolution = isMobileDevice();
 
     if (
@@ -114,11 +120,13 @@ class KeysListContainer extends ListContainer {
       websiteSectionDetailsData.data &&
       websiteComplianceModalVisibility.data
     ) {
-      const shouldShowModal = shouldShowWebsiteComplianceModal(
-        activationData,
-        websiteSectionDetailsData,
-        websiteComplianceModalVisibility,
-      );
+      const shouldShowModal =
+        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        shouldShowWebsiteComplianceModal(
+          activationData,
+          websiteSectionDetailsData,
+          websiteComplianceModalVisibility,
+        );
 
       if (shouldShowModal && user.isWebsiteComplianceFlowEnabled && isMobileResolution) {
         this.props.openModal({
@@ -181,4 +189,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('KeysListContainer')),
-)(withRouter(KeysListContainer));
+)(withRouter(withSplitzService(KeysListContainer)));

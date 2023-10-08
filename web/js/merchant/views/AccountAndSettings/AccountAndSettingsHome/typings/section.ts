@@ -22,6 +22,7 @@ export enum PaymentMethodsFields {
 
 export enum WebsiteAppSettingsFields {
   WEBSITE_APP_DETAIL = 'website_app_detail',
+  BUSINESS_POLICY_DETAILS = 'business_policy_details',
   API_KEYS = 'api_keys',
   WEBHOOKS = 'webhooks',
   BUSINESS_WEBSITE_DETAILS = 'business_website_details',
@@ -89,6 +90,7 @@ export const WebsiteAppSettingsTitles: Record<WebsiteAppSettingsFields, string> 
   [WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS]: 'Business website detail',
   [WebsiteAppSettingsFields.WEBHOOKS]: 'Webhooks',
   [WebsiteAppSettingsFields.WEBSITE_APP_DETAIL]: 'Website/App detail',
+  [WebsiteAppSettingsFields.BUSINESS_POLICY_DETAILS]: 'Business policy details',
 };
 
 export const BusinessSettingsTitles: Record<BusinessSettingsFields, string> = {

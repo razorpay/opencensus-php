@@ -14,6 +14,7 @@ import {
   getLatestNeedsClarificationComment,
   getStatusClass,
   isUrlFieldEmpty,
+  isPolicyWizardV2Enabled,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import ViewComments from 'merchant/views/Account/WebsiteAppDetails/ViewComments';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -21,6 +22,7 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { useSplitzService } from 'common/splitz';
 
 function WebsiteAppDetails({
   activationData,
@@ -30,11 +32,20 @@ function WebsiteAppDetails({
   closeModal,
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
+  user,
 }) {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
   });
   const from = params.from; // modal, banner, email, sms, whatsapp, nc & merchant dashboard
+
+  const splitz = useSplitzService();
+
+  const isExpEnabled = isPolicyWizardV2Enabled({
+    splitz,
+    user,
+    activationData: activationData.data,
+  });
 
   useEffect(() => {
     // send analytics on wizard entry load
@@ -49,14 +60,14 @@ function WebsiteAppDetails({
       if (typeof data === 'object' && !Array.isArray(data)) status = formatStatus(data.status);
 
       analyticsTrack({
-        objectName: 'Website compliance visit',
+        objectName: isExpEnabled ? 'Business Policy Section' : 'Website compliance visit',
         actionName: 'Loaded',
         screen: 'Website/App details',
         properties: {
           websiteCompliance: true,
           pageTitle: 'Website/App details',
           previousPageUrl: document.referrer,
-          websiteComplianceStatus: status,
+          [isExpEnabled ? 'status' : 'websiteComplianceStatus']: status,
           from: from ? from : 'Merchant dashboard',
           websiteUrl: activationData.data.business_website || '--',
           appStoreUrl: activationData.data.appstore_url || '--',
@@ -100,9 +111,15 @@ function WebsiteAppDetails({
 
   if (activationData.error) return null;
 
-  const businessWebsiteUrl = activationData.data.business_website || '--';
-  const appStoreUrl = activationData.data.appstore_url || '--';
-  const playStoreUrl = activationData.data.playstore_url || '--';
+  const { business_website, appstore_url, playstore_url } = activationData.data;
+
+  const businessWebsiteUrl = business_website || '--';
+  const appStoreUrl = appstore_url || '--';
+  const playStoreUrl = playstore_url || '--';
+
+  const isWebsiteMerchant = !isUrlFieldEmpty(activationData.data);
+
+  const shouldEnableForNoCode = isExpEnabled && !isWebsiteMerchant;
 
   const getCTAText = () => {
     const { data, error } = websiteSectionDetailsData;
@@ -117,6 +134,7 @@ function WebsiteAppDetails({
         case 'under review':
         case 'rejected':
         case 'approved':
+        case 'verified':
           return 'View/update details';
         case 'details required':
           return 'Update or create page';
@@ -138,7 +156,7 @@ function WebsiteAppDetails({
 
   const onButtonClick = () => {
     analyticsTrack({
-      objectName: 'Website compliance visit',
+      objectName: isExpEnabled ? 'Wizard Visit' : 'Website compliance visit',
       actionName: 'Clicked',
       screen: 'Website/App details',
       properties: {
@@ -154,13 +172,18 @@ function WebsiteAppDetails({
       },
     });
 
-    if (isUrlFieldEmpty(activationData.data)) {
+    if (!shouldEnableForNoCode && isUrlFieldEmpty(activationData.data)) {
       openModal({
         size: 'small',
         component: <EditWebsiteDetailsModal onClose={closeModal} onWebsiteAdd={onWebsiteAdd} />,
       });
     } else {
-      window.open(`${window.EASY_ONBOARDING_URL}/website-compliance`, '_self');
+      window.open(
+        isExpEnabled
+          ? `${window.EASY_ONBOARDING_URL}/onboarding/policy`
+          : `${window.EASY_ONBOARDING_URL}/website-compliance`,
+        '_self',
+      );
     }
   };
 
@@ -214,7 +237,7 @@ function WebsiteAppDetails({
   const formattedStatus = formatStatus(data.status);
   const title = websiteComplianceEntryPointsData[formattedStatus].title;
 
-  if (isUrlFieldEmpty(activationData.data) && !activationData.loading) {
+  if (!shouldEnableForNoCode && isUrlFieldEmpty(activationData.data) && !activationData.loading) {
     return (
       <div className="website-app-details-container">
         <div className="section-content">
@@ -251,20 +274,22 @@ function WebsiteAppDetails({
             </div>
           ) : null}
         </div>
-        <div className="section-body">
-          <div>
-            <span>Website</span>
-            <p>{activationData.loading ? <LoaderDots /> : businessWebsiteUrl}</p>
+        {isWebsiteMerchant ? (
+          <div className="section-body">
+            <div>
+              <span>Website</span>
+              <p>{activationData.loading ? <LoaderDots /> : businessWebsiteUrl}</p>
+            </div>
+            <div>
+              <span>Android app</span>
+              <p>{activationData.loading ? <LoaderDots /> : playStoreUrl}</p>
+            </div>
+            <div>
+              <span>iOS app</span>
+              <p>{activationData.loading ? <LoaderDots /> : appStoreUrl}</p>
+            </div>
           </div>
-          <div>
-            <span>Android app</span>
-            <p>{activationData.loading ? <LoaderDots /> : playStoreUrl}</p>
-          </div>
-          <div>
-            <span>iOS app</span>
-            <p>{activationData.loading ? <LoaderDots /> : appStoreUrl}</p>
-          </div>
-        </div>
+        ) : null}
         <div className="section-footer">
           {ctaText ? (
             <button onClick={onButtonClick} disabled={websiteSectionDetailsData.loading}>

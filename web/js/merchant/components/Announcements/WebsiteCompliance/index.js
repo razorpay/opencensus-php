@@ -4,17 +4,22 @@ import { Link } from 'react-router-dom';
 import {
   isNudgeHardForWebsiteCompliance,
   isNudgeSoftForWebsiteCompliance,
+  isPolicyWizardV2Enabled,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import { connect } from 'react-redux';
 import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { useSplitzService } from 'common/splitz';
 
 /* Renders only on dWeb */
 function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, user, screen }) {
+  const splitz = useSplitzService();
+
   const shouldShowBanner =
-    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
-    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
+    !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+    (isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
+      isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data));
 
   const nudgeType = isNudgeSoftForWebsiteCompliance(
     activationData.data,

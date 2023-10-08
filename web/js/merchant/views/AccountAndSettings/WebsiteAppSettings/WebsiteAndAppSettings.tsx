@@ -35,6 +35,13 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { Modules } from 'common/constant/enums';
 
+import {
+  WebsiteAppSettingsFields,
+  WebsiteAppSettingsTitles,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import { isPolicyWizardV2Enabled } from 'merchant/views/Account/WebsiteAppDetails/utils';
+import { useSplitzService } from 'common/splitz';
+
 const APIKeys = lazy(() => import(/* webpackChunkName: "APIKeysTab" */ './Tabs/ApiKeys'));
 
 const WebsiteAppDetails = lazy(
@@ -65,8 +72,10 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
     fetchOauthConnectedApplications,
     location: { pathname },
     applications,
+    activationData,
   } = props;
   const { hasConnectedApplications, connectedAppsloading: isConnectedAppsloading } = applications;
+  const splitz = useSplitzService();
 
   React.useEffect(() => {
     if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
@@ -115,7 +124,11 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
               isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
             }
           >
-            <NavLink to={ROUTES_INFO.WEBSITE_APP_SETTINGS}>Website/App Detail</NavLink>
+            <NavLink to={ROUTES_INFO.WEBSITE_APP_SETTINGS}>
+              {isPolicyWizardV2Enabled({ user, splitz, activationData: activationData.data })
+                ? WebsiteAppSettingsTitles[WebsiteAppSettingsFields.BUSINESS_POLICY_DETAILS]
+                : WebsiteAppSettingsTitles[WebsiteAppSettingsFields.WEBSITE_APP_DETAIL]}
+            </NavLink>
           </ShowWhen>
           <NavLink to={ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS}>Business website details</NavLink>
           <ShowWhen additionalCondition={(user) => isApiKeyEnabled(user)}>
@@ -214,6 +227,7 @@ export default connect(
     user: state.session.user,
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     applications: state.applications,
+    activationData: state.websiteCompliance.activationData,
   }),
   { fetchMerchantWebsiteDetails, fetchConnectedApplications, fetchOauthConnectedApplications },
 )(WebsiteAndAppSettings);

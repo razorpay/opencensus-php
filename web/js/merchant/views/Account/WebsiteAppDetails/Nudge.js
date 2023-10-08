@@ -7,6 +7,7 @@ import {
   getStatusClass,
   isNudgeHardForWebsiteCompliance,
   isNudgeSoftForWebsiteCompliance,
+  isPolicyWizardV2Enabled,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
@@ -14,6 +15,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useSplitzService } from 'common/splitz';
 
 /* renders only on mobile devices/resolutions */
 function WebsiteAppDetailsNudge({
@@ -26,9 +28,11 @@ function WebsiteAppDetailsNudge({
   history,
 }) {
   const isMobileResolution = isMobileDevice();
+  const splitz = useSplitzService();
   const shouldShowNudge =
-    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
-    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
+    !isPolicyWizardV2Enabled({ user, activationData: activationData.data, splitz }) &&
+    (isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
+      isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data));
 
   const nudgeType = isNudgeSoftForWebsiteCompliance(
     activationData.data,

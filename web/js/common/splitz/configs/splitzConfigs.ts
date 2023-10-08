@@ -292,5 +292,43 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: ['/dashboard', '/account-settings', '/website-app-settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'noCodePolicyWizard',
+          experimentId: {
+            beta: 'MYG6HUs91NZPOr',
+            production: 'MYG8V2uC114MO5',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'policyWizardV2',
+          experimentId: {
+            beta: 'MbRbhEPnxYkzqx',
+            production: 'MbRfPfUNiETQ7V',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

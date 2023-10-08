@@ -39,6 +39,13 @@ export interface WebsiteAndAppSettingsProps extends RouteComponentProps {
     hasConnectedApplications: boolean;
     connectedAppsloading: boolean;
   };
+  activationData: {
+    data: {
+      business_website?: string;
+      appstore_url?: string;
+      playstore_url?: string;
+    };
+  };
 }
 
 export interface APIKeysProps extends RouteComponentProps {
