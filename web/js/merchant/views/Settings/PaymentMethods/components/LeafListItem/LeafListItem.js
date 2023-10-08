@@ -501,7 +501,7 @@ class LeafListItem extends React.Component {
               <div className="flex-end">
                 <Button
                   testID="pm-link-account-cta"
-                  isDisabled={isInstrumentDisabled}
+                  isDisabled={this.state.loading}
                   onClick={() => this.handlePaytmWalletIntegration(1, instrument.status)}
                 >
                   {this.state.loading ? 'Loading..' : 'Link Account'}

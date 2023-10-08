@@ -44,7 +44,6 @@ export const TRUSTLY = 'Trustly';
 export const POLI = 'POLI';
 export const GIROPAY = 'Giropay';
 export const SOFORT = 'Sofort';
-export const SODEXO = 'Sodexo';
 export const STATE_BANK_OF_MYSORE = 'State Bank of Mysore';
 
 export const DISABLED_INSTRUMENT = [
@@ -77,7 +76,6 @@ export const DISABLED_INSTRUMENT = [
   POLI,
   GIROPAY,
   SOFORT,
-  SODEXO,
   ESAF_SMALL_FINANCE_BANK,
   KALUPUR_COMMERCIAL_CO_OPERATIVE_BANK,
 ];
