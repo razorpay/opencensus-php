@@ -1900,16 +1900,20 @@ trait Refund
 
         $isRefundForAuthorizedPayment= boolval($refundInput[RefundConstants::REFUND_AUTHORIZED_PAYMENT] ?? '0');
 
+        $scroogeAmountRefunded = (isset($refundInput[RefundConstants::SCROOGE_AMOUNT_REFUNDED]) === true) ? $refundInput[RefundConstants::SCROOGE_AMOUNT_REFUNDED] : null;
+
+        $scroogeBaseAmountRefunded = (isset($refundInput[RefundConstants::SCROOGE_BASE_AMOUNT_REFUNDED]) === true) ? $refundInput[RefundConstants::SCROOGE_BASE_AMOUNT_REFUNDED] : null;
+
         // Updates payment attributes. Throws exception on failure
-        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount, $isRefundForAuthorizedPayment);
+        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount, $isRefundForAuthorizedPayment, $scroogeAmountRefunded, $scroogeBaseAmountRefunded);
     }
 
-    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount, $isRefundForAuthorizedPayment = false)
+    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount, $isRefundForAuthorizedPayment = false, $scroogeAmountRefunded = null, $scroogeBaseAmountRefunded = null)
     {
         // setting strict attribute to true on mutex acquire so that updates dont happen on redis exceptions
         $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $refundId, $refundAmount, $refundBaseAmount, $isRefundForAuthorizedPayment)
+            function() use ($payment, $refundId, $refundAmount, $refundBaseAmount, $isRefundForAuthorizedPayment, $scroogeAmountRefunded, $scroogeBaseAmountRefunded)
             {
                 if ($payment->isExternal() == false)
                 {
@@ -1929,9 +1933,35 @@ trait Refund
                         'payment_refund_status'        => $payment->getRefundStatus(),
                         'payment_amount_refunded'      => $payment->getAmountRefunded(),
                         'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                        'scrooge_amount_refunded'      => $scroogeAmountRefunded,
+                        'scrooge_base_amount_refunded' => $scroogeBaseAmountRefunded,
                     ]);
 
-                if ($refundBaseAmount >= 0)
+                // custom update from Scrooge for timeout cases
+                if (empty($scroogeAmountRefunded) == false or empty($scroogeBaseAmountRefunded) == false)
+                {
+                    $disputes = $this->repo->dispute->getDisputesByPaymentId($payment->getId());
+
+                    $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_DISPUTE_INFO, [
+                        'payment_id' => $payment->getId(),
+                        'payment_amount_refunded' => $payment->getAmountRefunded(),
+                        'disputes'   => $disputes,
+                    ]);
+
+                    // payment has more amount refunded than what Scrooge says
+                    if ($payment->getAmountRefunded() > $scroogeAmountRefunded and (count($disputes) == 0))
+                    {
+                        $payment->setAmountRefunded($scroogeAmountRefunded);
+                        $payment->setBaseAmountRefunded($scroogeBaseAmountRefunded);
+
+                        $this->resetPaymentStatusAndRefundStatus($payment);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                elseif ($refundBaseAmount >= 0)
                 {
                     if ($payment->isFullyRefunded() === true)
                     {

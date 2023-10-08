@@ -245,8 +245,10 @@ class Constants
 
 
     // to revert payment attributes on transaction create failure
-    const COMPENSATE_PAYMENT = 'compensate_payment';
-    const TRANSACTION_ID     = 'transaction_id';
+    const COMPENSATE_PAYMENT            = 'compensate_payment';
+    const TRANSACTION_ID                = 'transaction_id';
+    const SCROOGE_AMOUNT_REFUNDED       = 'scrooge_amount_refunded';
+    const SCROOGE_BASE_AMOUNT_REFUNDED  = 'scrooge_base_amount_refunded';
 
     const CREATED_AT = 'created_at';
 

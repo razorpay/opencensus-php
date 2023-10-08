@@ -2401,25 +2401,6 @@ class Service extends Base\Service
 
         $refundId = $input['refund_id'];
 
-        $merchantId = $input['merchant_id'];
-
-        $merchant = $this->repo->merchant->find($merchantId);
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-        {
-            $this->trace->info(TraceCode::REVERSAL_CREATION_FOR_VIRTUAL_REFUND_NOT_APPLICABLE, [
-                RefundConstants::REFUND_ID      => $refundId,
-            ]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE,
-                null,
-                [
-                    RefundConstants::REFUND_ID      => $refundId,
-                    ReversalConstants::REASON       => "Merchant not onboarded on pg_ledger_reverse_shadow"
-                ]);
-        }
-
         $reversal = $this->repo->reversal->findReversalByRefundId($refundId);
 
         // We will create a new reversal only if there are no existing reversals for the given refund Id

@@ -170,12 +170,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundsPaymentUpdateRules = [
-        'refunds'               => 'required|array|max:1000',
-        'refunds.*.id'          => 'required|unsigned_id',
-        'refunds.*.payment_id'  => 'required|unsigned_id',
-        'refunds.*.amount'      => 'required|integer',
-        'refunds.*.base_amount' => 'required|integer',
-        'refunds.*.refund_authorized_payment' => 'sometimes|bool',
+        'refunds'                                => 'required|array|max:1000',
+        'refunds.*.id'                           => 'required|unsigned_id',
+        'refunds.*.payment_id'                   => 'required|unsigned_id',
+        'refunds.*.amount'                       => 'required|integer',
+        'refunds.*.base_amount'                  => 'required|integer',
+        'refunds.*.refund_authorized_payment'    => 'sometimes|bool',
+        'refunds.*.scrooge_amount_refunded'      => 'sometimes|integer',
+        'refunds.*.scrooge_base_amount_refunded' => 'sometimes|integer',
     ];
 
     protected static $refundsTransactionCreateRules = [
