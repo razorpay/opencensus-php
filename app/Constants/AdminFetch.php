@@ -2171,6 +2171,7 @@ class AdminFetch
                         'payout',
                         'sub_merchant',
                         'direct_debit',
+                        'nach'
                     ],
                 ],
                 'sub_type' => [
@@ -2193,7 +2194,13 @@ class AdminFetch
                                         array_keys(RequestProcessor\Base::GATEWAY_SENDER_MAPPING),
                                         [
                                             'enach_rbl',
-                                            'hdfc'
+                                            'hdfc',
+                                            'nach_citi',
+                                            'nach_icici',
+                                            'enach_npci_netbanking',
+                                            'hdfc',
+                                            'sbi',
+                                            'axis'
                                         ]),
                 ],
             ],
@@ -2723,6 +2730,10 @@ class AdminFetch
                         'combined',
                         'emandate_debit',
                         'emandate_register',
+                        'emandate_cancel',
+                        'nach_debit',
+                        'nach_register',
+                        'nach_cancel'
                     ],
                 ],
                 'status' => [
@@ -2746,6 +2757,18 @@ class AdminFetch
                         'icici',
                         'kotak',
                         'federal',
+                        'yesb',
+                        'enach_rbl',
+                        'sbi',
+                        'enach_npci_netbanking_early_debit',
+                        'combined_nach_citi',
+                        'enach_npci_netbanking',
+                        'paper_nach_icici',
+                        'paper_nach_citi',
+                        'combined_nach_icici',
+                        'paper_nach_citi_v2',
+                        'combined_nach_citi_early_debit_v2',
+                        'enach_npci_netbanking_early_debit'
                     ],
                 ],
             ],
