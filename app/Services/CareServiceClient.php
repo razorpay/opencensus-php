@@ -314,8 +314,12 @@ class CareServiceClient
 
     protected function addAdminDetails($input)
     {
+        $admin = $this->app['basicauth']->getAdmin();
+
         $input['admin'] = [
-            'id' => $this->app['basicauth']->getAdmin()->getId(),
+            'id' => $admin->getId(),
+            'email' => $admin->getEmail(),
+            'name' => $admin->getName(),
         ];
 
         return $input;

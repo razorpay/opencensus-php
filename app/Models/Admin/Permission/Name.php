@@ -935,6 +935,9 @@ class Name
     const GET_IRCTC_SETTLEMENT_FILE                    = 'get_irctc_settlement_file';
     const CREATE_TRANSACTION_FEE_BREAKUP               = 'create_transaction_fee_breakup';
     const MANAGE_CARE_SERVICE_CALLBACK                 = 'manager_care_service_callback';
+    const CONFIGURE_SAV_ALERT                          = 'configure_sav_alert';
+    const VIEW_SAV_ALERT                               = 'view_sav_alert';
+    const VIEW_SAV_AGENT_ALERT                         = 'view_sav_agent_alert';
     const CARE_SERVICE_DARK_PROXY                      = 'care_service_dark_proxy';
     const MANAGE_FRESHCHAT                             = 'manage_freshchat';
     const BULK_UPDATE_CHARGEBACK_POC                   = 'bulk_update_chargeback_poc';

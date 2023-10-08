@@ -143,6 +143,16 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_FD_KB_ARTICLE = 'twirp/rzp.care.sav.v1.SavService/FetchFdKbArticle';
 
+    const SAV_CREATE_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/CreateAlert';
+
+    const SAV_UPDATE_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/UpdateAlert';
+
+    const SAV_LIST_ALERTS = 'twirp/rzp.care.sav.v1.AlertManagementService/ListAlerts';
+
+    const SAV_FETCH_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/FetchAlert';
+
+    const SAV_FETCH_AGENT_ALERTS = 'twirp/rzp.care.sav.v1.AlertManagementService/FetchAgentAlerts';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -191,6 +201,11 @@ class CareProxyController extends Controller
         self::ADMIN_CREATE_ENTITY                     => Name::MANAGE_CARE_SERVICE_CALLBACK,
         self::SAV_FETCH_RESPONSE_SUGGESTION           => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_FD_KB_ARTICLE                 => Name::VIEW_ALL_ENTITY,
+        self::SAV_CREATE_ALERT                        => Name::CONFIGURE_SAV_ALERT,
+        self::SAV_UPDATE_ALERT                        => Name::CONFIGURE_SAV_ALERT,
+        self::SAV_LIST_ALERTS                         => Name::VIEW_SAV_ALERT,
+        self::SAV_FETCH_ALERT                         => Name::VIEW_SAV_ALERT,
+        self::SAV_FETCH_AGENT_ALERTS                  => Name::VIEW_SAV_AGENT_ALERT,
     ];
 
     /**
@@ -292,6 +307,11 @@ class CareProxyController extends Controller
         self::SAV_FETCH_RESPONSE_SUGGESTION,
         self::SAV_FETCH_FD_TICKETS,
         self::SAV_FETCH_FD_KB_ARTICLE,
+        self::SAV_CREATE_ALERT,
+        self::SAV_UPDATE_ALERT,
+        self::SAV_LIST_ALERTS,
+        self::SAV_FETCH_ALERT,
+        self::SAV_FETCH_AGENT_ALERTS,
     ];
 
     const CHAT_ROUTES = [
