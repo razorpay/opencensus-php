@@ -7,7 +7,7 @@ import {
   COD,
   ETD,
   Slab,
-  SubscribeRate,
+  //SubscribeRate,
 } from 'merchant/views/MagicCheckout/ShippingSettings/common/cellItem';
 import { ShippingMethod } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
@@ -63,7 +63,15 @@ const ShippingMethodsTable = ({
             ) : null}
           </Box>
 
-          <MagicDataTable data={[method]} columns={[COD, Slab, SubscribeRate, ETD]} />
+          <MagicDataTable
+            data={[method]}
+            columns={[
+              COD,
+              Slab,
+              // SubscribeRate,
+              ETD,
+            ]}
+          />
         </ShippingMethodTableWrapper>
       ))}
     </div>

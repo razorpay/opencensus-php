@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  Text,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -124,6 +131,20 @@ const Zones = ({
           <Text as="span" color="feedback.text.negative.lowContrast">
             *
           </Text>
+          <Tooltip
+            content="Define specific geographic zones to customize serviceability and set tailored shipping rates. Ensure precise control over where and how you deliver, optimizing costs and customer satisfaction."
+            placement="bottom"
+          >
+            <TooltipInteractiveWrapper>
+              <InfoIcon
+                color="surface.text.muted.lowContrast"
+                marginLeft="spacing.2"
+                position="relative"
+                top="spacing.1"
+                size="medium"
+              />
+            </TooltipInteractiveWrapper>
+          </Tooltip>
         </Heading>
       </Box>
       <SettingsWrapper>

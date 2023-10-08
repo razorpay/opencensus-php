@@ -9,7 +9,13 @@ const DeliveryIn = (): JSX.Element => {
 
   return (
     <>
-      <Label required={false} value="Delivery in" error={values.etd.error} />
+      <Label
+        required={false}
+        value="Delivery in"
+        error={values.etd.error}
+        showTooltip={true}
+        tooltipContent="Indicate the typical number of days it takes for a customer to receive the product once shipped using this delivery method. This will be shown on Magic to help the customer choose the shipping method."
+      />
       <Box width="40%">
         <Input
           placeholder="Enter estimated timeline"

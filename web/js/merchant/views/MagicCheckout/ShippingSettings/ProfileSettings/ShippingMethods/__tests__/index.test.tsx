@@ -69,9 +69,13 @@ describe('Shipping methods', () => {
     expect(addMore).toBeInTheDocument();
     await userEvent.click(addMore);
     const addMoreText = screen.queryByText(`Shipping Methods - ${DB_ZONE.name}`);
-    const methodTag = screen.queryByText(/loyal_customers/i);
     expect(addMoreText).toBeInTheDocument();
-    expect(methodTag).toBeInTheDocument();
+
+    //commenting as we are not supporting tags
+
+    // const methodTag = screen.queryByText(/loyal_customers/i);
+    // expect(methodTag).toBeInTheDocument();
+
     const confirmButton = screen.getByTestId('confirm-button');
     await userEvent.click(confirmButton);
 

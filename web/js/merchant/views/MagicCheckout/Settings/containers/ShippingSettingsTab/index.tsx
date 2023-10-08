@@ -15,6 +15,7 @@ import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants'
 import {
   SWITCH_TEXTS,
   SHIPPING_SETTINGS_INFO,
+  MAGIC_SHIPPING_DESCRIPTION,
 } from 'merchant/views/MagicCheckout/Settings/constants';
 import { MODAL_TEXTS } from 'merchant/views/MagicCheckout/ShippingSettings/constants';
 import ConfirmationModal, {
@@ -121,16 +122,18 @@ const ShippingSettingsTab = ({
   return (
     <ShippingSettingsWrapper>
       <Heading size="large">Shipping Settings </Heading>
-
+      <Text type="subdued" size="medium" marginTop="spacing.4">
+        {SHIPPING_SETTINGS_INFO}
+      </Text>
       <ShippingToggle>
         <SettingsToggle
           setting={{ label: 'Magic Shipping ', value: shippingSettings }}
           onToggle={handleToggleClick}
         />
       </ShippingToggle>
-      <Box marginTop="spacing.4">
+      <Box marginTop="spacing.2">
         <Text type="subdued" size="small">
-          {SHIPPING_SETTINGS_INFO}
+          {MAGIC_SHIPPING_DESCRIPTION}
         </Text>
       </Box>
       <Box marginY="spacing.6">

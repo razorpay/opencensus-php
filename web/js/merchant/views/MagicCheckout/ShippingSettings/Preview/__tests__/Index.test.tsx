@@ -30,7 +30,7 @@ describe('Preview View', () => {
   test('Should render view', () => {
     renderPreviewView();
     const defaultProfiles = screen.queryByText(/Default Shipping Profile/i);
-    const generalProfiles = screen.queryByText(/General Shipping Profile/i);
+    const generalProfiles = screen.queryByText(/Custom Shipping Profile/i);
     waitFor(() => {
       expect(defaultProfiles).toBeInTheDocument();
       expect(generalProfiles).toBeInTheDocument();

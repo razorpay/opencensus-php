@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  Text,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon,
+} from '@razorpay/blade/components';
 
 import { SettingsWrapper } from 'merchant/views/MagicCheckout/ShippingSettings/styles';
 import ConfigItem from './ConfigItem';
@@ -43,6 +50,20 @@ const ShippingMethods = ({ shippingEngine }): JSX.Element => {
           <Text as="span" color="feedback.text.negative.lowContrast">
             *
           </Text>
+          <Tooltip
+            content="Define your shipping methods (e.g., Standard, Express) and associate specific rates with them. Tailor rules based on factors like weight and cart value."
+            placement="bottom"
+          >
+            <TooltipInteractiveWrapper>
+              <InfoIcon
+                color="surface.text.muted.lowContrast"
+                marginLeft="spacing.2"
+                position="relative"
+                top="spacing.1"
+                size="medium"
+              />
+            </TooltipInteractiveWrapper>
+          </Tooltip>
         </Heading>
       </Box>
       <SettingsWrapper>

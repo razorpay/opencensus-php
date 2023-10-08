@@ -4,13 +4,13 @@ import DeliveryName from './Inputs/DeliveryName';
 import DeliveryType from './Inputs/DeliveryType';
 import Rate from './Inputs/Rate';
 import ShippingSlab from './Inputs/ShippingSlab';
-import SubscribedRate from './Inputs/SubscribedRate';
+// import SubscribedRate from './Inputs/SubscribedRate';
 import { ShippingFeeRule } from './types';
 
 export const StandardDeliveryInputs = [
   [DeliveryType, DeliveryName, DeliveryDescription],
   [Rate, ShippingSlab],
-  [SubscribedRate],
+  // [SubscribedRate],
   [DeliveryIn],
 ];
 

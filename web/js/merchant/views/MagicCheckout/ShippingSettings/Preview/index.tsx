@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Heading, PlusCircleIcon } from '@razorpay/blade/components';
+import { Box, Button, Heading, PlusCircleIcon, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -24,14 +24,42 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
     <>
       <Heading size="medium">Shipping Profiles</Heading>
       <Box display="flex" alignItems="center" justifyContent="space-between" marginY="spacing.7">
-        <Heading>General Shipping Profile</Heading>
+        <Box
+          display="flex"
+          alignItems="left"
+          justifyContent="space-between"
+          marginY="spacing.7"
+          flexDirection="column"
+          width="80%"
+        >
+          <Heading>Custom Shipping Profile</Heading>
+          <Text type="subdued" size="small">
+            Create distinct shipping profiles for specific products or categories, ensuring optimal
+            rates, faster deliveries, and delighted customer experience.
+          </Text>
+        </Box>
         <Button onClick={handleAddProfile} icon={PlusCircleIcon}>
           Add profile
         </Button>
       </Box>
       <ProfileTable type="general" />
       <Box display="flex" alignItems="center" justifyContent="space-between" marginY="spacing.7">
-        <Heading>Default Shipping Profile</Heading>
+        <Box
+          display="flex"
+          alignItems="left"
+          justifyContent="space-between"
+          marginY="spacing.7"
+          flexDirection="column"
+          width="75%"
+        >
+          <Heading>Default Shipping Profile (Mandatory)</Heading>
+          <Text type="subdued" size="small">
+            This profile acts as your safety net, ensuring there's always a shipping rate available
+            for your products. Whenever configurations for products added to cart aren't found,
+            we'll rely on these generic rates to provide a seamless checkout experience for your
+            customers.
+          </Text>
+        </Box>
         <Button onClick={handleClick} icon={PlusCircleIcon}>
           Set Default profile
         </Button>

@@ -5,7 +5,7 @@ import { useFormContext } from 'merchant/views/MagicCheckout/ShippingSettings/Pr
 
 export const OPTIONS = [
   {
-    label: 'Standard Delivery',
+    label: 'Delivery',
     name: 'standard_delivery',
   },
 ];

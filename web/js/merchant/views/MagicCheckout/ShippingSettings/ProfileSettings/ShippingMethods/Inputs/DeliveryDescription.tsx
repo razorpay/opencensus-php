@@ -8,7 +8,12 @@ const DeliveryDescription = (): JSX.Element => {
   const { values, setValue } = useFormContext();
   return (
     <>
-      <Label value="Description" error={values.description.error} />
+      <Label
+        value="Description"
+        error={values.description.error}
+        showTooltip={true}
+        tooltipContent="Provide details about this shipping method to help customers understand its features and benefits."
+      />
       <Box width="40%">
         <Input
           placeholder="Enter description"

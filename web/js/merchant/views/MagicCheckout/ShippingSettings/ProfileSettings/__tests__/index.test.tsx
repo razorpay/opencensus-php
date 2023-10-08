@@ -62,7 +62,7 @@ describe('Profile Settings View', () => {
   test('general profile view', () => {
     renderProfileSettings({}, DB_CATEGORY.name);
     const defaultProfiles = screen.queryByText(/Default shipping profiles/i);
-    const generalProfiles = screen.queryByText(/General shipping profiles*/i);
+    const generalProfiles = screen.queryByText(/Custom shipping profiles*/i);
     const goBack = screen.getByRole('button', { name: 'Go back' });
     waitFor(() => {
       expect(defaultProfiles).not.toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('Profile Settings View', () => {
   test('add profile view', () => {
     renderProfileSettings({}, ADD_PROFILE);
     const defaultProfiles = screen.queryByText(/Default shipping profiles/i);
-    const generalProfiles = screen.queryByText(/General shipping profiles*/i);
+    const generalProfiles = screen.queryByText(/Custom shipping profiles*/i);
     const addButton = screen.getByRole('button', { name: '+ Add category' });
     const goBack = screen.getByRole('button', { name: 'Go back' });
     waitFor(() => {

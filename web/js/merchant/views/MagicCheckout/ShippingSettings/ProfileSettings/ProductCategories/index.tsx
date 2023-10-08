@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  Text,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -132,6 +139,20 @@ const ProductCategory = ({
           <Text as="span" color="feedback.text.negative.lowContrast">
             *
           </Text>
+          <Tooltip
+            content="Combine similar products into categories to assign unified shipping rates and rules."
+            placement="bottom"
+          >
+            <TooltipInteractiveWrapper>
+              <InfoIcon
+                color="surface.text.muted.lowContrast"
+                marginLeft="spacing.2"
+                position="relative"
+                top="spacing.1"
+                size="medium"
+              />
+            </TooltipInteractiveWrapper>
+          </Tooltip>
         </Heading>
       </Box>
       <SettingsWrapper>

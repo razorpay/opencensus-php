@@ -195,7 +195,7 @@ export const SWITCH_TEXTS = {
     },
     shippingSettings: {
       header: 'Enable Magic shipping?',
-      desc: 'Enabling Magic Shipping will surpass all shipping settings from any plugins or your E-commerce platform and prioritise our shipping configuration above all.  Are you sure want to enable magic shipping?',
+      desc: 'Enabling Magic Shipping will bypass all shipping settings from any plugins on your E-commerce platform and prioritise these shipping configuration above all.  Are you sure want to enable Magic Shipping?',
       secondaryCtaLabel: 'No, don’t!',
       primaryCtaLabel: 'Yes, enable',
     },
@@ -221,7 +221,7 @@ export const SWITCH_TEXTS = {
     },
     shippingSettings: {
       header: 'Disable Magic shipping?',
-      desc: 'Disabling Magic Shipping will revert back to the shipping settings from plugins or your E-commerce platform. You will no longer benefit from our exclusive feature. Are you sure you want to disable magic shipping?',
+      desc: 'Disabling Magic Shipping will revert back to the shipping settings from plugins on your E-commerce platform. Magic Shipping will no loger be applicable. Are you sure you want to disable Magic Shipping?',
       secondaryCtaLabel: 'No, don’t!',
       primaryCtaLabel: 'Yes, disable',
     },
@@ -238,6 +238,8 @@ showing COD to customers based on location, products, etc. as well as for settin
 COD fees. Please note that this will override any COD settings on your
 Shopify/WooC store.`;
 
-export const SHIPPING_SETTINGS_INFO = `Enabling Magic Shipping will surpass all shipping configurations from any plugins or your E-commerce platform and prioritise our configurations.`;
+export const MAGIC_SHIPPING_DESCRIPTION = `Enabling Magic Shipping will bypass all shipping configurations from any plugins on your E-commerce platform and follow configurations added below.`;
+export const SHIPPING_SETTINGS_INFO = `Choose where you ship and how much you charge for shipping at checkout.`;
+
 export const UPDATE_WOOC_PLUGIN_MSG =
   'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';
