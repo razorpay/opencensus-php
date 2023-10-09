@@ -413,6 +413,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MESSAGE);
     }
 
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------

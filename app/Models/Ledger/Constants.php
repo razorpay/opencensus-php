@@ -196,4 +196,9 @@ class Constants
     const RESERVE_BALANCE_GMV = "reserve_balance_gmv";
     const AMOUNT_CREDIT_GMV   = "amount_credit_gmv";
     const GMV_ACCOUNTING      = "gmv_accounting";
+
+    //Transfers
+    const TRANSFER_ID           = 'transfer_id';
+    const DEBIT_TRANSACTION_ID  = 'debit_transaction_id';
+    const CREDIT_TRANSACTION_ID = 'credit_transaction_id';
 }

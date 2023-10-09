@@ -774,4 +774,26 @@ return [
             'content' => [],
         ],
     ],
+
+    'testCronProcessPendingOrderTransfersInReverseShadowAsync' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/order_transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testCronProcessPendingOrderTransfersInReverseShadowSync' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/order_transfers/process_pending?sync=true',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
 ];

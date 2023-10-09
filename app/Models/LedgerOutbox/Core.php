@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Exception;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as E;
 use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Models\Adjustment\Status;
@@ -16,9 +17,13 @@ use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Transfer\OrderTransfer;
+use RZP\Models\Transfer\PaymentTransfer;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Models\Transfer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Transaction;
@@ -26,6 +31,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Capture as CaptureTrait;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Trace\Tracer;
 
 class Core extends Base\Core
 {
@@ -103,6 +109,8 @@ class Core extends Base\Core
             else
             {
                 $payload[Constants::RESPONSE] = $journalData;
+
+                $response =  $payload[Constants::RESPONSE];
             }
         }
 
@@ -315,6 +323,9 @@ class Core extends Base\Core
                 return $res;
             case "adj":
                 $res[Constants::TYPE] = Constants::RESERVE_BALANCE_LOADING;
+                return $res;
+            case "trf":
+                $res[Constants::TYPE] = Constants::TRANSFER;
                 return $res;
             default:
                 $res[Constants::TYPE] = "";
@@ -775,6 +786,124 @@ class Core extends Base\Core
 
             return $txn;
         }
+        else if($transactionType === Constants::TRANSFER)
+        {
+            [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_balance" );
+
+            if((empty($creditJournalId)) or
+                (empty($debitJournalId)))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_EXPECTED_FUND_ACCOUNT_TYPE_NOT_PRESENT,
+                    null,
+                    [
+                        LedgerConstants::TRANSFER_ID      => $transactorPublicId,
+                    ]);
+            }
+
+            $this->trace->info(TraceCode::PG_LEDGER_TRANSFER_PROCESSED_EVENT, [
+                LedgerConstants::JOURNALS   => $journal,
+                LedgerConstants::SOURCE     => $source
+            ]);
+
+            try
+            {
+                $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
+
+                if ($transfer->getSourceType() === E::PAYMENT)
+                {
+                    $sourcePayment = $transfer->source;
+
+                    $transferProcessor = new PaymentTransfer($sourcePayment);
+
+                }
+                else if ($transfer->getSourceType() === E::ORDER)
+                {
+                    $sourceOrderId = $transfer->getSourceId();
+
+                    $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+
+                    // fetching payment again to get from sources configured for archived entity
+                    // As of now, archived payment fetch with findOrFail happens on fallback replica
+                    // This will also prevent columns like _record_source from warm storage to be present in entity attributes
+                    $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+
+                    $transferProcessor = new OrderTransfer($sourcePayment);
+                }
+            }
+            catch (\Exception $e)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID,
+                    null,
+                    [
+                        LedgerConstants::TRANSFER_ID      => $transactorPublicId,
+                    ]);
+            }
+
+            $transferCore = new Transfer\Core();
+
+            $transferMetric =  new Transfer\Metric();
+
+            try {
+                $transferProcessStartTime = microtime(true);
+
+                $txn = $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
+                {
+                    if($transfer->getStatus() !== Transfer\Status::PROCESSED)
+                    {
+                        // set transfer as processed
+                        $transfer->setProcessed();
+
+                        $transfer->setErrorCode(null);
+
+                        $transferProcessor->setSettlementStatus($transfer);
+
+                        $totalTransferAmount = $transfer->getAmount();
+
+                        $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+
+                        $this->repo->saveOrFail($transfer);
+
+                        $transferMetric->pushTransferProcessSuccessMetrics();
+
+                        $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
+
+                        // in txn creation - check if transfer has txn created, duplicate txn check
+                    }
+
+                    $input = [
+                        LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
+                        LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
+                        LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+                        LedgerConstants::SOURCE                => $source,
+                    ];
+
+                    // dispatch to queue again for txn creation
+                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 900, true, $input);
+
+                    // transfer transactions created via queue in async
+                    return null;
+                });
+            }
+            catch (\Exception $ex)
+            {
+                $transferMetric->pushTransferProcessFailedMetrics($ex);
+
+                throw  $ex;
+            }
+            finally
+            {
+                //Note: for reverse shadow merchants, this would done from ack worker
+                $transferProcessEndTime = microtime(true);
+
+                $transferMetric->pushTransferProcessingTimeInWorkerMetrics(
+                    $transfer->getSourceType(),
+                    ($transferProcessEndTime - $transferProcessStartTime)
+                );
+
+                $transferCore->trackTransferProcessingTime($transfer, $sourcePayment);
+            }
+
+        }
 
         //Note: Transaction is not created for credit loading event.
 
@@ -1160,11 +1289,11 @@ class Core extends Base\Core
     private function determineJournalIdForAPITransaction($journal, $debitJournalFundAccountType, $creditJournalFuncAccountType)
     {
         $debitJournals = array_filter($journal, function($item) use ($debitJournalFundAccountType) {
-            return $this->filterByFundAccountType($item, $debitJournalFundAccountType);
+            return $this->filterByFundAccountTypeAndEntryType($item, $debitJournalFundAccountType, Constants::DEBIT);
         });
 
         $creditJournals = array_filter($journal, function($item) use ($creditJournalFuncAccountType) {
-            return $this->filterByFundAccountType($item, $creditJournalFuncAccountType);
+            return $this->filterByFundAccountTypeAndEntryType($item, $creditJournalFuncAccountType, Constants::CREDIT);
         });
 
         $creditJournalId = '';
@@ -1181,7 +1310,7 @@ class Core extends Base\Core
         return [$creditJournalId, $debitJournalId];
     }
 
-    private function filterByFundAccountType($item, $fundAccountType)
+    private function filterByFundAccountTypeAndEntryType($item, $fundAccountType, $entryType)
     {
         $searchResults = [];
 
@@ -1189,8 +1318,9 @@ class Core extends Base\Core
         {
             foreach ($item['ledger_entry'] as $ledgerEntry)
             {
-                if (isset($ledgerEntry['account_entities']['fund_account_type']) and
-                    in_array($fundAccountType, $ledgerEntry['account_entities']['fund_account_type']))
+                if (($ledgerEntry['type'] === $entryType) and
+                    (isset($ledgerEntry['account_entities']['fund_account_type'])) and
+                    (in_array($fundAccountType, $ledgerEntry['account_entities']['fund_account_type'])))
                 {
                     $searchResults[] = $item;
                     break;

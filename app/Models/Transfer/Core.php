@@ -28,14 +28,19 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Bucket;
 use RZP\Jobs\TransferProcessSlice;
 use RZP\Jobs\TransferProcessBatch;
+use RZP\Constants\Metric as Metrics;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Exception\SettlementStatusUpdateException;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Merchant\MerchantApplications as MerchantApp;
+use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransfersCore;
+
 use Throwable;
 
 class Core extends Base\Core
@@ -547,11 +552,15 @@ class Core extends Base\Core
 
         $txnCore = new Transaction\Core;
 
-        $txn = $txnCore->updateOnHoldToggle($payment);
+        //Note : payment txn could be null if there is a delay in txn creation in reverse shadow mode
+        if ($payment->transaction !== null)
+        {
+            $txn = $txnCore->updateOnHoldToggle($payment);
+
+            $this->repo->saveOrFail($txn);
+        }
 
         $this->repo->saveOrFail($payment);
-
-        $this->repo->saveOrFail($txn);
 
         return $payment;
     }
@@ -565,7 +574,7 @@ class Core extends Base\Core
      *
      * @throws Exception\LogicException
      */
-    protected function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
+    public function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -890,12 +899,12 @@ class Core extends Base\Core
                     ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $orderId, $this->merchant, $status);
     }
 
-    public function createTransactionForTransfer($transfer)
+    public function createTransactionForTransfer($transfer, $txnId = null)
     {
         $txnCore = new Transaction\Core;
 
         // Create a transaction for the transfer; debits the source merchant
-        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
+        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer, $txnId);
 
         $transfer->setFees($txn->getFee());
 
@@ -933,7 +942,7 @@ class Core extends Base\Core
 
         $input[Transfer\Entity::NOTES] = $laNotes;
 
-        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
+        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment, $transfer);
 
         $transfer->setProcessed();
 
@@ -1341,7 +1350,7 @@ class Core extends Base\Core
         }
     }
 
-    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment, int $delaySecs = 0)
+    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment, int $delaySecs = 0, bool $isReverseShadow = false, array $transferInput = [])
     {
         $merchant = $payment->merchant;
 
@@ -1354,14 +1363,14 @@ class Core extends Base\Core
 
         if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
         {
-            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
             return;
         }
         else if (($merchant->isCapitalFloatRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            // TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+            // TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
             // return;
 
@@ -1370,13 +1379,13 @@ class Core extends Base\Core
         else if (($merchant->isSliceRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
             return;
         }
         else if ($merchant->isRouteKeyMerchant() === true)
         {
-            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
             return;
         }
@@ -1392,14 +1401,14 @@ class Core extends Base\Core
             {
                 case 1:
                 {
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
                     return;
                 }
 
                 case 2:
                 {
-                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
                     return;
                 }
@@ -1413,14 +1422,92 @@ class Core extends Base\Core
                         ]
                     );
 
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
 
                     return;
                 }
             }
         }
 
-        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
+        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+    }
+
+    public function  createTransferTransactionsInReverseShadow(Payment\Entity $sourcePayment, array $transferInput)
+    {
+        $this->repo->transaction(function() use ($sourcePayment, $transferInput)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_CREATE_TRANSACTION_REQUEST_REVERSE_SHADOW,
+                [
+                    'transfer_input' => $transferInput,
+                ]
+            );
+
+            $transfer = $this->repo->transfer->findByPublicId($transferInput[LedgerConstants::TRANSFER_ID]);
+
+            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+            $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+
+            $oldTransfer = clone $transfer;
+
+            // check if transfer debit txn exists
+            if ($oldTransfer->hasTransaction() !== true)
+            {
+                // create debit  transaction with source as transfer
+                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $transferInput) {
+                    return $this->createTransactionForTransfer($oldTransfer, $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID]);
+                });
+            }
+
+            // return if transferPayment credit txn exists
+            if ($transferPayment->hasTransaction() === true)
+            {
+                return;
+            }
+
+            //create credit txn with source as transfer payment
+            $txnCore = new Transaction\Core;
+
+            list($creditTxn, $feesSplit) = $txnCore->createFromPaymentTransferred($transferPayment, $transferInput[LedgerConstants::CREDIT_TRANSACTION_ID]);
+
+            $this->repo->saveOrFail($creditTxn);
+
+            $transferPayment->setTax($creditTxn->getTax());
+
+            if ($transferPayment->merchant->isFeeBearerCustomer() === false) // which merchant
+            {
+                //set and fee values from txn
+                $transferPayment->setFee($creditTxn->getFee());
+            }
+
+            $txnCore->saveFeeDetails($creditTxn, $feesSplit);
+
+            $this->repo->saveOrFail($transferPayment);
+
+            // Metric to calculate latency to track delay in transaction creation.
+            $currentTimeInSec = (int)(microtime(true));
+
+            $latency = $currentTimeInSec - $transfer->getProcessedAt();
+
+            (new Metric())->pushTransferTransactionCreationDelayMetrics($latency, $transfer->merchant->getCategory(),  $transfer->getSourceType());
+
+
+            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                [
+                    LedgerConstants::DEBIT_TRANSACTION_ID => $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID],
+                    LedgerConstants::CREDIT_TRANSACTION_ID => $creditTxn->getId(),
+                    LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
+                    LedgerConstants::TRANSACTOR_ID => $transfer->getId(),
+                    LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
+                ]
+            );
+
+            $this->trace->count(Metrics::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
+                LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
+            ]);
+        });
     }
 
     protected function traceTransferIdsFetchedForSettlementStatusUpdate(string $settlementId, array $transferIds)
@@ -1502,14 +1589,14 @@ class Core extends Base\Core
             return;
         }
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        if (($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false) or ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             return;
         }
 
         $paymentMerchant = $payment->merchant;
 
-        if ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        if (($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false) or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             return;
         }
@@ -1542,6 +1629,34 @@ class Core extends Base\Core
                     'payment_id'            => $payment->getId()
                 ]);
         }
+    }
+
+    public function createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment)
+    {
+        if (isset($transferPayment) === false)
+        {
+            return;
+        }
+
+        $transferMerchant = $transfer->merchant;
+        $paymentMerchant = $transferPayment->merchant;
+
+        if ( ($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+        {
+            return;
+        }
+
+        [$fee, $tax] = (new ReverseShadowTransfersCore())->saveOrderAndPaymentTransferReverseShadowLedgerEntriesToOutbox($transfer, $transferPayment);
+
+        $this->trace->info(TraceCode::TRANSFER_LEDGER_ENTRIES_OUTBOX_PUSH_SUCCESS, [
+            LedgerConstants::TRANSFER_ID => $transfer->getId(),
+            LedgerConstants::PAYMENT_ID => $transferPayment->getId(),
+            LedgerConstants::MERCHANT_ID => $transfer->getMerchantId(),
+        ]);
+
+        return $transfer;
+
     }
 
     private function setPartnerContextIfApplicable(?string $publicKey, ?Base\Entity $entity)

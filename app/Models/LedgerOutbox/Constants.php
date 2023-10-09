@@ -34,6 +34,9 @@ class Constants
 
     const CREDIT_LOADING                                = "credit_loading";
     const RESERVE_BALANCE_LOADING                       = "reserve_balance_loading";
+    const TRANSFER                                      = "transfer";
+    const DEBIT                                         = "debit";
+    const CREDIT                                        = "credit";
 
     // Async journal create error codes
     const BAD_REQUEST_RECORD_ALREADY_EXIST                     = "validation_failure: record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXIST";

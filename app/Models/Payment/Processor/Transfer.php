@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature;
 
 trait Transfer
 {
@@ -19,7 +20,7 @@ trait Transfer
      *
      * @return Payment\Entity
      */
-    public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
+    public function processTransfer(array $input, Payment\Entity $originPayment = null, $transfer = null) : Payment\Entity
     {
         $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
@@ -38,21 +39,35 @@ trait Transfer
 
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
 
-        $txnCore = new Transaction\Core;
+        $isDirectTransfer = $transfer['source_type'] === 'merchant';
 
-        list($txn, $feesSplit) = $txnCore->createFromPaymentTransferred($payment);
+        $processViaReverseShadowAsync = false;
 
-        $this->repo->saveOrFail($txn);
-
-        $payment->setTax($txn->getTax());
-
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true ) and
+            ($isDirectTransfer === false))
         {
-            //set and fee values from txn
-            $payment->setFee($txn->getFee());
+            $processViaReverseShadowAsync = true;
         }
 
-        $txnCore->saveFeeDetails($txn, $feesSplit);
+        if ($processViaReverseShadowAsync === false)
+        {
+            $txnCore = new Transaction\Core;
+
+            list($txn, $feesSplit) = $txnCore->createFromPaymentTransferred($payment);
+
+            $this->repo->saveOrFail($txn);
+
+            $payment->setTax($txn->getTax());
+
+            if ($this->merchant->isFeeBearerCustomer() === false)
+            {
+                //set and fee values from txn
+                $payment->setFee($txn->getFee());
+            }
+
+            $txnCore->saveFeeDetails($txn, $feesSplit);
+        }
 
         return $payment;
     }

@@ -30,19 +30,27 @@ class TransferProcess extends Job
 
     protected $transferMode;
 
+    protected $isReverseShadow;
+
+    protected $transferInput;
+
     public $timeout = 900;
 
     protected $queueConfigKey = 'transfer_process';
 
     protected int $attemptLimit = 0;
 
-    public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER)
+    public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER, $isReverseShadow = false, $transferInput = [])
     {
         parent::__construct($mode);
 
         $this->payment = $payment;
 
         $this->transferMode = $transfermode;
+
+        $this->isReverseShadow = $isReverseShadow;
+
+        $this->transferInput = $transferInput;
 
         $totalRetryAttempts = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS]);
 
@@ -63,6 +71,19 @@ class TransferProcess extends Job
             // if the balance is not update we would further delay the transfer processing
             // this happens for merchants who are on async balance update flow
             $delay = $this->checkProcessingDelay($this->payment);
+
+            if ($this->isReverseShadow ===  true)
+            {
+                // In pg ledger reverse Shadow phase,we create journals in CLS followed by transaction creation in async.
+                // For transfers use case, we push payload to outbox table to create journals in CLS.
+                // Upon receiving successful acknowledgement of journal creation, we mark transfers as processed and
+                // push them to queues again to create credit and debit txns for transfer and transfer payment in API ledger as well.
+                (new Transfer\Core)->createTransferTransactionsInReverseShadow($this->payment, $this->transferInput);
+
+                $this->delete();
+
+                return;
+            }
 
             if ($delay === true)
             {

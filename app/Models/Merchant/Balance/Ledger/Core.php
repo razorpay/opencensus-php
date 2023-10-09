@@ -196,7 +196,7 @@ class Core extends Base\Core
                     self::FUND_ACCOUNT_TYPE => [self::MERCHANT_BALANCE]
                 ],
                 self::BALANCE => strval($balanceAmount),
-                self::MIN_BALANCE => strval($reserveBalanceAmount),
+                self::MIN_BALANCE => strval(-$reserveBalanceAmount),
             ];
 
             $requestHeaders = [

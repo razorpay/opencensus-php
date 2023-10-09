@@ -40,6 +40,7 @@ class Metric extends Base\Core
     const OTHER_ERROR                                   = 'other_error';
     const IS_SYNC_PROCESSING_ENABLED                    = 'is_sync_processing_enabled';
     const PAYMENT_TRANSFERS_CREATE_LATENCY              = 'payment_transfers_create_latency';
+    const PG_LEDGER_TRANSFER_TRANSACTION_CREATION_DELAY = 'pg_ledger_transfer_transaction_creation_delay';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -205,4 +206,20 @@ class Metric extends Base\Core
 
         return $routeName;
     }
+
+    public function pushTransferTransactionCreationDelayMetrics($latency, $category, $sourceType)
+    {
+        $dimensions = [
+            self::TRANSFER_ROUTE        => $this->getRouteName(),
+            self::TRANSFER_SOURCE       => $sourceType,
+            self::MERCHANT_CATEGORY     => $category,
+        ];
+
+        $this->trace->histogram(
+            self::PG_LEDGER_TRANSFER_TRANSACTION_CREATION_DELAY,
+            $latency,
+            $dimensions
+        );
+    }
+
 }

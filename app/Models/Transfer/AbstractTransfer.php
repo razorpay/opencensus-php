@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\App;
 use RZP\Exception\BadRequestException;
 use RZP\Base\Database\DetectsLostConnections;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\Feature;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 abstract class AbstractTransfer
 {
@@ -56,6 +59,8 @@ abstract class AbstractTransfer
     protected $partner;
 
     use DetectsLostConnections;
+
+    use ReverseShadowTrait;
 
     /**
      * AbstractTransfer constructor.
@@ -150,14 +155,20 @@ abstract class AbstractTransfer
                 }
                 finally
                 {
-                    $transferProcessEndTime = microtime(true);
+                    if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) or
+                        ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false ) )
+                    {
+                        //Note: for reverse shadow merchants, this would done from ack worker
+                        $transferProcessEndTime = microtime(true);
 
-                    (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
-                        $transfer->getSourceType(),
-                        ($transferProcessEndTime - $transferProcessStartTime)
-                    );
+                        (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
+                            $transfer->getSourceType(),
+                            ($transferProcessEndTime - $transferProcessStartTime)
+                        );
 
-                    (new Core())->trackTransferProcessingTime($transfer, $payment);
+                        (new Core())->trackTransferProcessingTime($transfer, $payment);
+                    }
+
                 }
             }
 
@@ -256,50 +267,80 @@ abstract class AbstractTransfer
         {
             $transfer = $this->repo->transaction(function () use ($payment, $transfer)
             {
+                $core = new Core();
+
                 $transfer = $this->updateTransferAmount($transfer, $payment);
 
                 $oldTransfer = clone $transfer;
 
-                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function() use ($oldTransfer)
+                $processViaReverseShadow = false;
+
+                if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+                    ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true ))
                 {
-                    return (new Core())->createTransactionForTransfer($oldTransfer);
-                });
+                    $processViaReverseShadow = true;
+                }
+
+                if ($processViaReverseShadow === false )
+                {
+                    $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function() use ($oldTransfer, $core)
+                    {
+                        return $core->createTransactionForTransfer($oldTransfer);
+                    });
+                }
 
                 $transferPayment = $this->createTransferredEntity($transfer, $payment);
 
-                $transfer->setProcessed();
+                if ($processViaReverseShadow === true)
+                {
+                    $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
 
-                $transfer->setErrorCode(null);
+                    $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
 
-                $this->setSettlementStatus($transfer);
+                    if (count($outboxEntries) === 0)
+                    {
+                        $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment);
+                    }
+                }
 
-                $transfer->incrementAttempts();
+                if ($processViaReverseShadow === false)
+                {
+                    $transfer->setProcessed();
 
-                $totalTransferAmount = $transfer->getAmount();
+                    $transfer->setErrorCode(null);
 
-                $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+                    $this->setSettlementStatus($transfer);
+
+                    $totalTransferAmount = $transfer->getAmount();
+
+                    $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+
+                    $totalTds = $core->calculateTds($transferPayment, $transfer, $payment);
+
+                    if($totalTds > 0)
+                    {
+                        $core->createPaymentTransferTds($transferPayment, $totalTds);
+                    }
+
+                    $core->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
+
+                    $transfer->incrementAttempts();
+                }
+
 
                 $this->repo->saveOrFail($transfer);
-
-                $core = new Core();
-
-                $core->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
-
-                $totalTds = $core->calculateTds($transferPayment, $transfer, $payment);
-
-                if($totalTds > 0)
-                {
-                    $core->createPaymentTransferTds($transferPayment, $totalTds);
-                }
 
                 return $transfer;
             }, $deadlockRetryAttempts);
 
-            $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
+            if ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false )
+            {
+                (new Metric())->pushTransferProcessSuccessMetrics();
 
-            (new Metric())->pushTransferProcessSuccessMetrics();
+                $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
 
-            $this->fireTransferProcessedWebhookIfApplicable($transfer);
+                $this->fireTransferProcessedWebhookIfApplicable($transfer);
+            }
         }
         catch (\Exception $ex)
         {
@@ -378,7 +419,7 @@ abstract class AbstractTransfer
 
         $input = $this->getTransferData($transfer);
 
-        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
+        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment, $transfer);
 
         $transferPayment->transfer()->associate($transfer);
 
@@ -498,7 +539,7 @@ abstract class AbstractTransfer
         $transfer->setErrorCode(ErrorCode::BAD_REQUEST_ERROR);
     }
 
-    protected function setSettlementStatus(Entity $transfer)
+    public function setSettlementStatus(Entity $transfer)
     {
         $transfer->setSettlementStatus(SettlementStatus::PENDING);
 
@@ -508,7 +549,7 @@ abstract class AbstractTransfer
         }
     }
 
-    protected function fireTransferProcessedWebhookIfApplicable(Entity $transfer)
+    public function fireTransferProcessedWebhookIfApplicable(Entity $transfer)
     {
         if ($transfer->isProcessed() === true)
         {

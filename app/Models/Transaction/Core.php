@@ -421,11 +421,11 @@ class Core extends Base\Core
      * @param  Payment\Entity $payment
      * @return array
      */
-    public function createFromPaymentTransferred(Payment\Entity $payment) : array
+    public function createFromPaymentTransferred(Payment\Entity $payment, $txnId = null) : array
     {
-        list($txn, $feesSplit) = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_transaction'], function() use ($payment)
+        list($txn, $feesSplit) = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_transaction'], function() use ($payment, $txnId)
         {
-            return $this->txnCreationFromPaymentOperation($payment);
+            return $this->txnCreationFromPaymentOperation($payment,true, $txnId);
         });
 
         $this->trace->info(
@@ -531,7 +531,7 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation(Payment\Entity $payment, bool $updateFees = true)
+    protected function txnCreationFromPaymentOperation(Payment\Entity $payment, bool $updateFees = true, $txnId = null)
     {
         $txn = new Transaction\Entity;
 
@@ -543,7 +543,7 @@ class Core extends Base\Core
         }
         else
         {
-            $txn->generateId();
+            $txnId != null ? $txn->setId($txnId) : $txn->generateId();
 
             $txn->sourceAssociate($payment);
 
@@ -892,13 +892,13 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function createFromTransfer(Transfer\Entity $transfer)
+    public function createFromTransfer(Transfer\Entity $transfer, $txnId = null)
     {
         $txn = new Transaction\Entity;
 
         $merchant = $transfer->merchant;
 
-        $txn->generateId();
+        $txnId != null ? $txn->setId($txnId) : $txn->generateId();
 
         $txn->sourceAssociate($transfer);
 

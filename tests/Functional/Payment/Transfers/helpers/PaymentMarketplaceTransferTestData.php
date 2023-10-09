@@ -762,6 +762,67 @@ return [
         ],
     ],
 
+    'testPaymentTransferReverseShadowOutboxPushFailureAmountGreaterThanCapturedFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED
+        ],
+    ],
+
+    'testReverseShadowCronRetrySuccessForPaymentTransferProcessedEvent' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 1,
+                'failed entries count' =>  0,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testReverseShadowCronRetryRetryableFailureForPaymentTransferProcessedEvent' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testReverseShadowCronRetryNonRetryableFailureForPaymentTransferProcessedEvent' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testTransferProcessedWebhookEventWithTransactionIsolation' => [
         'entity'   => 'event',
         'event'    => 'transfer.processed',
