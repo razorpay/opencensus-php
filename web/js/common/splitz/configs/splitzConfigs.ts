@@ -294,7 +294,7 @@ export const splitzConfig: SplitzInitConfig = {
     },
     {
       matchByDashboard: ['product'],
-      routesToMatch: ['/dashboard', '/account-settings', '/website-app-settings'],
+      routesToMatch: ['/dashboard', '/account-settings', /website-app-settings.*/i],
       abExperiments: [
         {
           uniqueHashKey: 'noCodePolicyWizard',
