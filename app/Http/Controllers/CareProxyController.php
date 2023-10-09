@@ -38,6 +38,7 @@ class CareProxyController extends Controller
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
     const HANDLE_CHANGE_VISIBLE_SLOT_SIZE  = 'twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize';
     const MERCHANT_POPULAR_PRODUCTS = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts';
+    const PAYMENT_SUMMARY_PUSH_NOTIFICATION = 'twirp/rzp.care.notification.v1.NotificationService/SendPaymentSummaryPushNotification';
 
     //MyOperator
     const IN_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
@@ -252,6 +253,7 @@ class CareProxyController extends Controller
         self::HANDLE_CHANGE_VISIBLE_SLOT_SIZE,
         self::MERCHANT_POPULAR_PRODUCTS,
         self::NOTIFY_MERCHANT_CSM_CHANGED,
+        self::PAYMENT_SUMMARY_PUSH_NOTIFICATION,
     ];
 
     const MYOPERATOR_ROUTES = [
