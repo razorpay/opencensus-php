@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d731c7d3e0de5769925c68fea25ef9d",
+    "content-hash": "57eaaee8d4f10f971e458911313602c3",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10971,16 +10971,16 @@
         },
         {
             "name": "razorpay/account-service-php-sdk",
-            "version": "dev-trace_upgrae",
+            "version": "v1.0.8",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/account-service-php-sdk.git",
-                "reference": "841c36a6058bc69a2402bfcc45ba2a6b99f11951"
+                "reference": "ed8b6f8723443af9ec46e4c0377f63ace3c3545e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/account-service-php-sdk/zipball/841c36a6058bc69a2402bfcc45ba2a6b99f11951",
-                "reference": "841c36a6058bc69a2402bfcc45ba2a6b99f11951",
+                "url": "https://api.github.com/repos/razorpay/account-service-php-sdk/zipball/ed8b6f8723443af9ec46e4c0377f63ace3c3545e",
+                "reference": "ed8b6f8723443af9ec46e4c0377f63ace3c3545e",
                 "shasum": ""
             },
             "require": {
@@ -10994,8 +10994,7 @@
                 "php": "^8.1",
                 "phpunit/phpunit": "^9.0",
                 "psr/log": "^1.0",
-                "razorpay/metrics-php": "dev-metrics_dimension_validation",
-                "razorpay/trace": "dev-metric_php_upgrade"
+                "razorpay/trace": "4.0.3"
             },
             "type": "library",
             "autoload": {
@@ -11011,7 +11010,7 @@
                 "asv",
                 "razorpay"
             ],
-            "time": "2023-10-06T09:20:13+00:00"
+            "time": "2023-09-06T09:05:48+00:00"
         },
         {
             "name": "razorpay/config-proto",
@@ -11344,16 +11343,16 @@
         },
         {
             "name": "razorpay/metrics-php",
-            "version": "dev-metrics_dimension_validation",
+            "version": "3.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/metrics-php.git",
-                "reference": "396a15462a2a5b6262e80109308f0461b4135e0a"
+                "reference": "588d874a24922dc32b4ffe81d98d21323c3e05e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/396a15462a2a5b6262e80109308f0461b4135e0a",
-                "reference": "396a15462a2a5b6262e80109308f0461b4135e0a",
+                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/588d874a24922dc32b4ffe81d98d21323c3e05e4",
+                "reference": "588d874a24922dc32b4ffe81d98d21323c3e05e4",
                 "shasum": ""
             },
             "require": {
@@ -11374,20 +11373,20 @@
                 }
             },
             "description": "Agent or backend agnostic php interface for collecting application metrics",
-            "time": "2023-10-05T10:19:51+00:00"
+            "time": "2022-09-26T12:27:58+00:00"
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-oauth_dualwrite_trace_upgrade",
+            "version": "dev-oauth_dualwrite",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "1fdb30e6065fe47bbe4af762db65792e12184d51"
+                "reference": "6335c60f0443368b2049599a3314c240a7efdddc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/1fdb30e6065fe47bbe4af762db65792e12184d51",
-                "reference": "1fdb30e6065fe47bbe4af762db65792e12184d51",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/6335c60f0443368b2049599a3314c240a7efdddc",
+                "reference": "6335c60f0443368b2049599a3314c240a7efdddc",
                 "shasum": ""
             },
             "require": {
@@ -11398,10 +11397,8 @@
                 "monolog/monolog": "^2.0",
                 "opencensus/opencensus": "~0.7",
                 "php": "^8.1",
-                "razorpay/metrics-php": "dev-metrics_dimension_validation",
-                "razorpay/outbox-php": "dev-trace_metrics_upgrade",
-                "razorpay/spine": "^2.0.0",
-                "razorpay/trace": "dev-metric_php_upgrade"
+                "razorpay/outbox-php": "^2.0.0",
+                "razorpay/spine": "^2.0.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.5.0",
@@ -11429,26 +11426,26 @@
                 "razorpay",
                 "service"
             ],
-            "time": "2023-10-05T10:20:52+00:00"
+            "time": "2023-02-03T08:40:58+00:00"
         },
         {
             "name": "razorpay/outbox-php",
-            "version": "dev-trace_metrics_upgrade",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/outbox-php.git",
-                "reference": "d047cd97de061cf1256143971265f531b94deb0c"
+                "reference": "0ac491590056d68f5ac817b94a92133972974485"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/d047cd97de061cf1256143971265f531b94deb0c",
-                "reference": "d047cd97de061cf1256143971265f531b94deb0c",
+                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/0ac491590056d68f5ac817b94a92133972974485",
+                "reference": "0ac491590056d68f5ac817b94a92133972974485",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": "^9.24",
                 "php": ">=8.1",
-                "razorpay/trace": "dev-metric_php_upgrade"
+                "razorpay/trace": "4.0.3"
             },
             "require-dev": {
                 "mockery/mockery": "^1.5.0",
@@ -11468,7 +11465,7 @@
                 }
             ],
             "description": "PHP SDK for sending outbox jobs.",
-            "time": "2023-10-04T12:57:54+00:00"
+            "time": "2023-03-17T05:40:10+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -11689,16 +11686,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "dev-metric_php_upgrade",
+            "version": "4.0.3",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "35b657e506c39c3d7889bb70348253584e721eed"
+                "reference": "d7167a983741b8f66e063d1bc39eda2f9f646724"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/35b657e506c39c3d7889bb70348253584e721eed",
-                "reference": "35b657e506c39c3d7889bb70348253584e721eed",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/d7167a983741b8f66e063d1bc39eda2f9f646724",
+                "reference": "d7167a983741b8f66e063d1bc39eda2f9f646724",
                 "shasum": ""
             },
             "require": {
@@ -11708,7 +11705,7 @@
                 "monolog/monolog": "^2.0",
                 "nyholm/psr7": "^1.5.1",
                 "razorpay/ec2-metadata": "^3.0.0",
-                "razorpay/metrics-php": "dev-metrics_dimension_validation",
+                "razorpay/metrics-php": "^3.0.0",
                 "symfony/psr-http-message-bridge": "^2.1"
             },
             "require-dev": {
@@ -11759,7 +11756,7 @@
                 "monolog",
                 "trace"
             ],
-            "time": "2023-10-04T12:56:54+00:00"
+            "time": "2023-03-17T05:19:48+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -19304,14 +19301,10 @@
         "razorpay/upi-clients": 20,
         "razorpay/hodor": 20,
         "razorpay/oauth": 20,
-        "razorpay/trace": 20,
-        "razorpay/outbox-php": 20,
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
         "razorpay/dcs-php-sdk": 20,
-        "razorpay/account-service-php-sdk": 20,
         "razorpay/config-proto": 20,
-        "razorpay/metrics-php": 20,
         "laracasts/testdummy": 20,
         "roave/no-leaks": 20
     },
@@ -19330,5 +19323,5 @@
         "ext-pdo": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
