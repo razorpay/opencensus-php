@@ -173,7 +173,7 @@ app/Models/Merchant/Store                          @razorpay/pg-onboarding-servi
 app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/Service.php             @razorpay/tech-banking
 app/Models/Merchant/Consent                        @razorpay/tech-banking
-app/Models/Merchant/Service.php                    @razorpay/tech-banking    
+app/Models/Merchant/Service.php                    @razorpay/tech-banking
 
 
 
@@ -249,3 +249,36 @@ app/Models/QrPaymentRequest                         @razorpay/qr-code-devs
 # Any update on these files, will require explicit approval from platform identity team.
 app/Models/User/                                    @razorpay/identity-core
 app/Http/Controllers/UserController.php             @razorpay/identity-core
+
+
+#
+# Partner Entities
+# Blocking PR merge on certain entities as they are being moved to partnership service.
+# Any update on this entities, will require explicit approval from partnership experience or partnership growth team.
+app/Http/Controllers/AccountController.php                 @razorpay/partnership-be
+app/Http/Controllers/AccountControllerV2.php               @razorpay/partnership-be
+app/Http/Controllers/DocumentControllerV2.php              @razorpay/partnership-be
+app/Http/Controllers/EntityOriginController.php            @razorpay/partnership-be
+app/Http/Controllers/OAuthApplicationController.php        @razorpay/partnership-be
+app/Http/Controllers/OnboardingWebhookController.php       @razorpay/partnership-be
+app/Http/Controllers/PartnerConfigController.php           @razorpay/partnership-be
+app/Http/Controllers/PartnerController.php                 @razorpay/partnership-be
+app/Http/Controllers/StakeholderController.php             @razorpay/partnership-be
+app/Models/Partner                                         @razorpay/partnership-be
+app/Models/EntityOrigin                                    @razorpay/partnership-be
+app/Models/Merchant/Account                                @razorpay/partnership-be
+app/Models/Merchant/AccountV2                              @razorpay/partnership-be
+app/Models/Merchant/AccessMap                              @razorpay/partnership-be
+app/Models/Merchant/MerchantApplications                   @razorpay/partnership-be
+app/Models/Merchant/Product                                @razorpay/partnership-be
+app/Models/Merchant/Stakeholder/Core.php                   @razorpay/partnership-be
+app/Models/Merchant/Stakeholder/Service.php                @razorpay/partnership-be
+app/Models/Merchant/Stakeholder/Response.php               @razorpay/partnership-be
+app/Models/Merchant/CapitalSubmerchantUtility.php          @razorpay/partnership-be
+app/Models/Merchant/PhantomUtility.php                     @razorpay/partnership-be
+app/Jobs/Kafka/PartnerWebhookEventHandlerJob.php           @razorpay/partnership-be
+app/Jobs/BackFillMerchantApplications                      @razorpay/partnership-be
+app/Jobs/BackFillReferredApplications                      @razorpay/partnership-be
+app/Jobs/CallBackFillMerchantApps                          @razorpay/partnership-be
+app/Jobs/CallBackFillReferredApps                          @razorpay/partnership-be
+app/Jobs/ProductConfig                                     @razorpay/partnership-be
