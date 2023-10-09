@@ -1546,4 +1546,20 @@ class Repository extends \Razorpay\Spine\Repository
 
         return new PublicCollection($combinedItems);
     }
+
+    public function newQueryAndResetEntityConnection(callable $callback)
+    {
+        $entity = $this->getEntityObject();
+
+        $originalConnectionName = $entity->getConnectionName();
+
+        $entity = $callback($this);
+
+        if ($originalConnectionName !== null)
+        {
+            $entity->setConnection($originalConnectionName);
+        }
+        
+        return $entity;
+    }
 }

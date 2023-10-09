@@ -2,6 +2,7 @@
 
 namespace RZP\Models\EntityOrigin;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
@@ -20,18 +21,45 @@ class Repository extends BaseRepository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)
     {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_TYPE, $entityType)
-                    ->where(Entity::ENTITY_ID, $entityId)
-                    ->first();
+        $entityOrigin =  $this->newQuery()
+                            ->where(Entity::ENTITY_TYPE, $entityType)
+                            ->where(Entity::ENTITY_ID, $entityId)
+                            ->first();
+
+        if (is_null($entityOrigin) === true)
+        {
+            $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
+                             ->where(Entity::ENTITY_TYPE, $entityType)
+                             ->where(Entity::ENTITY_ID, $entityId)
+                             ->first();
+            });
+        }
+
+        return $entityOrigin;
     }
 
     public function fetchByEntityTypeAndEntityIdOnReadReplica(string $entityType, string $entityId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $entityOrigin =  $this->newQueryWithConnection($this->getSlaveConnection())
+                              ->where(Entity::ENTITY_TYPE, $entityType)
+                              ->where(Entity::ENTITY_ID, $entityId)
+                              ->first();
+
+
+        if (is_null($entityOrigin) === true)
+        {
+            $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->first();
+            });
+        }
+
+        return $entityOrigin;
     }
 
     public function fetchOriginApplicationsForPartner(string $partnerId, int $limit = 100)

@@ -19,7 +19,7 @@ trait ArchivedCore
     use ArchivedEntity;
 
     // This is used to reset entity connection post replica fetch to make writes seamless if any, post this operation
-    private function newQueryAndResetEntityConnection(callable $callback)
+    public function newQueryAndResetEntityConnection(callable $callback)
     {
         $entity = $this->getEntityObject();
 
