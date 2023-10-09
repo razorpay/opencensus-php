@@ -80,6 +80,7 @@ class Repository extends Base\Repository
                 {
                     throw $e;
                 }
+                $dimension["error_type"] = get_class($e);
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
@@ -111,6 +112,7 @@ class Repository extends Base\Repository
             }
             catch(\Throwable $e)
             {
+                $dimension["error_type"] = get_class($e);
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
@@ -141,6 +143,7 @@ class Repository extends Base\Repository
             }
             catch(\Throwable $e)
             {
+                $dimension["error_type"] = get_class($e);
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
@@ -221,6 +224,7 @@ class Repository extends Base\Repository
         }
         catch(\Throwable $e)
         {
+            $dimension["error_type"] = get_class($e);
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
@@ -262,6 +266,7 @@ class Repository extends Base\Repository
         }
         catch(\Throwable $e)
         {
+            $dimension["error_type"] = get_class($e);
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
@@ -379,6 +384,7 @@ class Repository extends Base\Repository
             }
             catch(\Throwable $e)
             {
+                $dimension["error_type"] = get_class($e);
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }

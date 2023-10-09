@@ -237,8 +237,9 @@ class Service extends Base
 
             return $this->handleAggregateFetchProxyResponse($proxyResp, $entity_type);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
+            $dimension["error_type"] = get_class($ex);
             $this->trace->count(Metric::DCS_FEATURE_PROXY_FETCH_BY_ENTITY_TYPE_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_TYPE_FAILURE);
         }
@@ -267,6 +268,7 @@ class Service extends Base
         }
         catch (\Exception $e)
         {
+            $dimension["error_type"] = get_class($e);
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
@@ -507,6 +509,7 @@ class Service extends Base
         }
         catch (\Exception $ex)
         {
+            $dimension["error_type"] = get_class($ex);
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_READ_BY_ENTITY_IDS_NAME_FAILURE);
             $this->trace->count(Metric::DCS_FEATURE_PROXY_FETCH_BY_ENTITY_IDS_NAME_FAILURE_TOTAL, $dimension);
         }
