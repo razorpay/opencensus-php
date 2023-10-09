@@ -249,6 +249,24 @@ abstract class Base extends BaseModel\Core
         $this->traceAllRules($this->pricingRules);
     }
 
+    /**
+     * Filter Pricing rule for only Addon
+     *
+     * @param Pricing\Plan  $pricing
+     *
+     * @throws Exception\LogicException
+     */
+    protected function getRelevantPricingRuleOnlyAddon(Pricing\Plan $pricing)
+    {
+        $entityName = $this->entity->getEntity();
+
+        $features = $this->entity->getPricingFeatures();
+
+        $this->getAddOnPricingRule($pricing, $features, $entityName);
+
+        $this->traceAllRules($this->pricingRules);
+    }
+
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
         return;

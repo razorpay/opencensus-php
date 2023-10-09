@@ -890,8 +890,11 @@ class Payment extends Base
 
                 $merchant = $this->entity->merchant;
 
+                $existingPaymentPricingRule = (!empty($this->pricingRules) && ($this->pricingRules[0]?->getFeature() == Pricing\Feature::PAYMENT));
+
                 if ($merchant?->org->getId() === Org\Entity::RAZORPAY_ORG_ID && $pricing->isTypePricing() && $isExpEnabled === true){
 
+                    // Log Payment And Card Details on Missing Rule Error
                     $this->logPricingFailureDetails($pricing);
 
                     if ($pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
@@ -900,7 +903,12 @@ class Payment extends Base
                         $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
 
                         try {
-                            parent::getRelevantPricingRule($pricing);
+                            if($existingPaymentPricingRule){
+                                parent::getRelevantPricingRuleOnlyAddon($pricing);
+                            }else{
+                                parent::getRelevantPricingRule($pricing);
+                            }
+
                         }catch (Exception\LogicException $e) {
                             if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
                                 $this->logPricingFailureDetails($pricing);
