@@ -5795,6 +5795,32 @@ trait Authorize
         return $type;
     }
 
+    protected function getEmandateTokenExpiry(array $input, $subscriptionRegEntityExpiry)
+    {
+        $validationTime = Carbon::now()->addYears(30)->timestamp; // Max expiry can be 30 years for emandate tokens
+        try
+        {
+            if ((empty($subscriptionRegEntityExpiry) === false) and ($subscriptionRegEntityExpiry < $validationTime))
+            {
+                return $subscriptionRegEntityExpiry;
+            }
+            else if((empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY]) === false) and
+                ($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] < $validationTime))
+            {
+                return $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_GET_TOKEN_EXPIRY_ERROR
+            );
+        }
+        return $validationTime;
+    }
+
     protected function setRecurringType(Payment\Entity $payment, array $input, & $gatewayInput)
     {
         $type = null;
@@ -6828,8 +6854,7 @@ trait Authorize
             $saveMethodInput[Token\Entity::AADHAAR_VID] =
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
-            $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
+            $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->getEmandateTokenExpiry($input, $tokenExpireBy);
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -7764,7 +7789,7 @@ trait Authorize
                 "payment_id"  => $payment->getId()
             ]);
         }
-        
+
         return [];
     }
 

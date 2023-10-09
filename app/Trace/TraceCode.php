@@ -1416,6 +1416,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_TOKEN_BLOCKED                                = 'EMANDATE_TOKEN_BLOCKED';
     const EMANDATE_TOKEN_CONFIG                                 = 'EMANDATE_TOKEN_CONFIG';
     const EMANDATE_TOKEN_CONFIG_RESET                           = 'EMANDATE_TOKEN_CONFIG_RESET';
+    const EMANDATE_GET_TOKEN_EXPIRY_ERROR                       = 'EMANDATE_GET_TOKEN_EXPIRY_ERROR';
     const CURRENT_MONTH_FETCH_ERROR                             = 'CURRENT_MONTH_FETCH_ERROR';
 
     const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
