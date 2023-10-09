@@ -26,6 +26,7 @@ class Constants
     const CustomUDFFlagConfig = "CustomUDFFlagConfig";
 
     const UpiInAppDisplayControls = "upi_in_app_display_controls";
+    const NcOptOutConfiguration     = 'nc_opt_out_configuration';
 
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
@@ -39,6 +40,7 @@ class Constants
         self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
         self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig",
         self::UpiInAppDisplayControls        => "rzp/pg/merchant/upi/in_app/DisplayControls",
+        self::NcOptOutConfiguration          =>"rzp/platform/partner/optout/NeedsClarification",
     ];
 
 }

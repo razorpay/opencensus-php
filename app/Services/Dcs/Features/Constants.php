@@ -72,8 +72,6 @@ class Constants
     const AggregatorOAuthClientDisabled = 'aggregator_oauth_client_enabled';
     Const AllowS2SApps = 'allow_s2s_apps';
 
-    const NcEmailOptOut     = 'nc_email_opt_out';
-    const NcWhatsappOptOut  = 'nc_whatsapp_opt_out';
     const OAuthCommunicationDisabled = 'oauth_communication_disabled';
     const SubMerchantQRImageContentEnabled = 'submerchant_qr_image_content_enabled';
     const SubMerchantOnBoardingV2Enabled  = 'submerchant_onboarding_v2_enabled';
@@ -328,8 +326,6 @@ class Constants
         self::RazorpayCommunicationToSubMerchantDisabled => "rzp/platform/partner/communication/Features",
         self::AggregatorOAuthClientDisabled => "rzp/platform/partner/auth/Features",
         self::AllowS2SApps =>"rzp/platform/partner/auth/Features",
-        self::NcEmailOptOut =>"rzp/platform/partner/optout/NeedsClarification",
-        self::NcWhatsappOptOut =>"rzp/platform/partner/optout/NeedsClarification",
         self::OAuthCommunicationDisabled => "rzp/platform/partner/communication/Features",
         self::SubMerchantQRImageContentEnabled => "rzp/platform/partner/onboarding/Features",
         self::SubMerchantOnBoardingV2Enabled  => "rzp/platform/partner/onboarding/Features",
@@ -553,8 +549,6 @@ class Constants
         APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS                     => self::RazorpayCommunicationToSubMerchantDisabled,
         APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT                       => self::AggregatorOAuthClientDisabled,
         APIFeaturesConstants::ALLOW_S2S_APPS                                => self::AllowS2SApps,
-        APIFeaturesConstants::NC_EMAIL_OPT_OUT                              => self::NcEmailOptOut,
-        APIFeaturesConstants::NC_WHATSAPP_OPT_OUT                           => self::NcWhatsappOptOut,
         APIFeaturesConstants::SKIP_OAUTH_NOTIFICATION                       => self::OAuthCommunicationDisabled,
         APIFeaturesConstants::SUBM_QR_IMAGE_CONTENT                         => self::SubMerchantQRImageContentEnabled,
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2                     => self::SubMerchantOnBoardingV2Enabled,

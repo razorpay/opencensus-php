@@ -316,10 +316,6 @@ class DcsServiceConstantsTest extends TestCase
                 $allEligibleFields[$fieldname] = $getter;
                 $actualName = Utility::extractActualDcsName($featureName);
                 $value = true;
-                if ($dcsKey === "rzp/platform/partner/optout/NeedsClarification")
-                {
-                    $value = ['10000000000' => true];
-                }
                 $output = DataFormatter::marshal([$actualName => $value], $class);
                 $this->assertNotEquals("", $output);
             }

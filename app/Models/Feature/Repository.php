@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Exception;
 use Illuminate\Support\Collection;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Dcs\Features\Constants as DcsFeaturesConstants;
 use RZP\Services\Dcs\Features\Service;
 use RZP\Models\Base\EsRepository;
@@ -399,18 +400,6 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function assignOrEditValueOnDCS(Entity $feature, string $mode, array $featureMap)
-    {
-        try
-        {
-            $this->assignOnDCS($feature, $mode, false, $featureMap);
-        }
-        catch (\Throwable $e)
-        {
-            throw $e;
-        }
-    }
-
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)
@@ -640,7 +629,7 @@ class Repository extends Base\Repository
         return [true, $featureList->toArray()];
     }
 
-    private function assignOnDCS(Entity $entity, $mode, $sync = false, $featureMap = null)
+    private function assignOnDCS(Entity $entity, $mode, $sync = false)
     {
         $dcs = $this->app['dcs'];
         if ($sync === true)
@@ -654,7 +643,7 @@ class Repository extends Base\Repository
 
         if ($variant !== 'control')
         {
-            $dcs->editFeature($entity, $variant, true, $mode, $featureMap);
+            $dcs->editFeature($entity, $variant, true, $mode);
         }
     }
 

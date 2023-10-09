@@ -51,7 +51,7 @@ class Service extends Base
      * @throws Exception\ServerErrorException
      * @throws \Exception|\Throwable
      */
-    public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST, array $featureMap = null)
+    public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST)
     {
         try {
             $dimension = [
@@ -100,8 +100,7 @@ class Service extends Base
                 $key = DCSConstants::$featureToDCSKeyMapping[$dcsFeatureName];
                 $data = DataFormatter::toKeyMapWithOutId($key);
 
-                $featureValue = (empty($featureMap) === true)?$isAssignment : $featureMap;
-                $request = [ $actualDcsFeatureName => $featureValue];
+                $request = [ $actualDcsFeatureName => $isAssignment];
                 $this->trace->info(TraceCode::DCS_SERVICE_REQUEST, [
                     'action' => 'assign',
                     'featureDetails' => $request,

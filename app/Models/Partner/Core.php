@@ -55,6 +55,8 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
 use Throwable;
 
@@ -1682,10 +1684,10 @@ class Core extends Detail\Core
 
         try
         {
-            $dcs = $this->app['dcs'];
-            $response =  $dcs->fetchFeatureValueByEntityIdAndName( $partnerId, $featureName, Mode::LIVE);
+            $dcsConfigService = new DcsConfigService();
+            $response =  $dcsConfigService->fetchConfiguration(DcsConfigConst::NcOptOutConfiguration ,$partnerId, [$featureName] , Mode::LIVE);
 
-            if (empty($response) === false and $response[$subMerchantId] === true)
+            if (empty($response[$featureName]) === false and $response[$featureName][$subMerchantId] === true)
             {
                 return;
             }
@@ -1694,24 +1696,19 @@ class Core extends Detail\Core
                 $subMerchantId => true
             ];
 
-            foreach ($response as $key => $value)
+            foreach ($response[$featureName] as $key => $value)
             {
                 $featureMap[$key] = $value;
             }
 
-            $data = [
-                'name'         => $featureName,
-                'entity_id'    => $partnerId,
-                'entity_type'  => 'merchant',
-            ];
+            $map[$featureName] = $featureMap;
 
             $this->trace->info(TraceCode::NC_OPT_OUT_EDIT_DCS_REQUEST,
                 [
-                    'feature_map' => $featureMap,
-                    'data'        => $data,
+                    'feature_map' => $map,
                 ]);
 
-            (new FeatureCore())->createFeatureWithFeatureMap($data, Mode::LIVE, $featureMap);
+            $dcsConfigService->createConfiguration(DcsConfigConst::NcOptOutConfiguration, $partnerId, $map, Mode::LIVE);
         }
         catch (\Throwable $e)
         {
@@ -1734,10 +1731,11 @@ class Core extends Detail\Core
 
         try
         {
-            $dcs = $this->app['dcs'];
-            $response =  $dcs->fetchFeatureValueByEntityIdAndName( $partnerId, $featureName, Mode::LIVE);
+            $dcsConfigService = new DcsConfigService();
+            $response =  $dcsConfigService->fetchConfiguration(DcsConfigConst::NcOptOutConfiguration, $partnerId, [$featureName] , Mode::LIVE);
 
-            if (empty($response) === false and $response[$subMerchantId] === true)
+
+            if (empty($response[$featureName]) === false and $response[$featureName][$subMerchantId] === true)
             {
                 return true;
             }
