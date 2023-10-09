@@ -3,7 +3,10 @@
 namespace RZP\Models\Merchant\OneClickCheckout\ShippingProvider;
 
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Metric;
+use RZP\Trace\TraceCode;
 
 class Service
 {
@@ -109,7 +112,18 @@ class Service
 
         $response =  $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
 
-        $this->handleShopifyAssignment($merchantId);
+        try
+        {
+            $this->handleShopifyAssignment($merchantId);
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED);
+
+            $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED_COUNT, [
+                    'type'  =>  'webhook_switch'
+            ]);
+        }
 
         return $response;
 
@@ -139,7 +153,8 @@ class Service
         foreach ($listResponse['items'] as $providers)
         {
             if ($providers['provider_type'] == 'shiprocket'
-                || $providers['provider_type'] == 'delhivery')
+                || $providers['provider_type'] == 'delhivery'
+                || $providers['provider_type'] === 'ithink_logistics')
             {
                 $assignShopify = false;
                 break;

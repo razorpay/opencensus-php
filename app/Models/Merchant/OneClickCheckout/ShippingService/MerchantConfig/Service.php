@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Trace\TraceCode;
 use GuzzleHttp\Client;
@@ -19,6 +20,7 @@ class Service
     const CREATE_MERCHANT_CONFIG                = 'create_merchant_config';
     const REMOVE_SHIPPING_PROVIDERS             = 'remove_shipping_providers';
     const UPDATE_BY_TYPE                        = 'update_by_type';
+    const LIST_MERCHANT_CONFIG                  = 'list_merchant_config';
     const PATH                                  = 'path';
 
     // update merchant config attributes singleton class
@@ -34,7 +36,13 @@ class Service
         self::UPDATE_BY_TYPE => [
             self::PATH   => 'twirp/rzp.shipping.merchant_config.v1.MerchantConfigAPI/UpdateByType',
         ],
+        self::LIST_MERCHANT_CONFIG  =>   [
+            self::PATH   => 'twirp/rzp.shipping.merchant_config.v1.MerchantConfigAPI/List',
+        ]
     ];
+
+    const OrderSyncConfig           =   "order_sync_config";
+	const FulfillmentEventConfig    =   "fulfillment_event_config";
 
     public function __construct($app = null)
     {
@@ -52,6 +60,14 @@ class Service
     {
 
         $params = self::PARAMS[self::CREATE_MERCHANT_CONFIG];
+
+        return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function list($input)
+    {
+
+        $params = self::PARAMS[self::LIST_MERCHANT_CONFIG];
 
         return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }
@@ -103,8 +119,11 @@ class Service
                 }
                 catch (\Exception $e)
                 {
-                    $this->app['trace']->traceException($e, Trace::ERROR,
-                        TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_ASSIGNMENT_FAILED);
+                    $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED);
+
+                    $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED_COUNT, [
+                            'type'  =>  'remove_shipping_provider'
+                    ]);
 
                     $response[$merchant_id] = $e->getMessage();
                     continue;
@@ -121,6 +140,34 @@ class Service
                     continue;
                 }
 
+                $listMerchantConfigRequest = [
+                    'merchant_id'  =>  $merchant_id,
+                ];
+                $orderSyncConfig = null;
+                $fulfillmentEventConfig = null;
+
+                $listMerchantConfigResponse = $this->list($listMerchantConfigRequest);
+
+                foreach ($listMerchantConfigResponse['merchant_configs'] as $merchantConfig) {
+                    if($merchantConfig['type'] === self::OrderSyncConfig)
+                    {
+                        $orderSyncConfig = $merchantConfig;
+                    }
+                    if($merchantConfig['type'] === self::FulfillmentEventConfig)
+                    {
+                        $fulfillmentEventConfig = $merchantConfig;
+                    }
+                }
+
+                if ($input['type'] !== 'switch' && isset($orderSyncConfig) &&
+                    isset($orderSyncConfig['enabled_shipping_providers']) &&
+                    count($orderSyncConfig['enabled_shipping_providers']) > 0)
+                {
+
+                    $response[$merchant_id] = 'MERCHANT CONNECTED LOGISTICS PARTNER';
+                    continue;
+                }
+
                 $this->sendWebhookCreateRequest($configs['shop_id'], $configs['oauth_token']);
 
                 $merchantConfigCreateRequest = array(
@@ -130,15 +177,24 @@ class Service
                         'enabled_platform' => 'shopify'
                     )
                 );
-
-                $this->create($merchantConfigCreateRequest);
+                if (isset($fulfillmentEventConfig))
+                {
+                    $this->updateByType($merchantConfigCreateRequest);
+                }
+                else
+                {
+                    $this->create($merchantConfigCreateRequest);
+                }
 
                 $response[$merchant_id] = 'SUCCESS';
             }
             catch (\Exception $e)
             {
-                $this->app['trace']->traceException($e, Trace::ERROR,
-                    TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_ASSIGNMENT_FAILED);
+                $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED);
+
+                $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED_COUNT, [
+                        'type'  =>  'webhook_creation'
+                ]);
 
                 $response[$merchant_id] = $e->getMessage();
             }
@@ -157,11 +213,13 @@ class Service
         $authConfig = new AuthConfig\Core();
 
         $response = [];
+
         foreach ($input['merchant_ids'] as $merchant_id)
         {
             try
             {
                 $configs = $authConfig->getShopify1ccConfig($merchant_id);
+
                 if ($configs == null || !isset($configs['shop_id']) || !isset($configs['oauth_token']))
                 {
                     $response[$merchant_id] = 'SHOPIFY_CONFIGS_NOT_FOUND';
@@ -171,15 +229,34 @@ class Service
 
                 $this->sendWebhookDisableRequest($configs['shop_id'], $configs['oauth_token']);
 
-                $merchantConfigCreateRequest = array(
-                    'merchant_id' => $merchant_id,
-                    'type' => 'fulfillment_event_config',
-                    'fulfillment_event_config' => array(
-                        'enabled_platform' => ''
-                    )
-                );
+                $listMerchantConfigRequest = [
+                    'merchant_id'  =>  $merchant_id,
+                ];
 
-                $this->updateByType($merchantConfigCreateRequest);
+                $fulfillmentEventConfig = null;
+
+                $listMerchantConfigResponse = $this->list($listMerchantConfigRequest);
+
+                foreach ($listMerchantConfigResponse['merchant_configs'] as $merchantConfig)
+                {
+                    if($merchantConfig['type'] === self::FulfillmentEventConfig)
+                    {
+                        $fulfillmentEventConfig = $merchantConfig;
+                    }
+                }
+                if(isset($fulfillmentEventConfig))
+                {
+
+                    $merchantConfigCreateRequest = array(
+                        'merchant_id' => $merchant_id,
+                        'type' => 'fulfillment_event_config',
+                        'fulfillment_event_config' => array(
+                            'enabled_platform' => ''
+                        )
+                    );
+
+                    $this->updateByType($merchantConfigCreateRequest);
+                }
 
                 $this->app['shipping_provider_service']->connect(['merchant_id' => $merchant_id]);
 
@@ -187,15 +264,19 @@ class Service
             }
             catch (\Exception $e)
             {
-                $this->app['trace']->traceException($e, Trace::ERROR,
-                    TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_DISABLE_FAILED);
+                $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_DISABLE_FAILED);
 
-                $response[$merchant_id] = $e->getMessage();
-            } catch (GuzzleException $e) {
-                $this->app['trace']->traceException($e, Trace::ERROR,
-                    TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_DISABLE_FAILED);
+                $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_DISABLE_FAILED_COUNT);
 
-                $response[$merchant_id] = $e->getMessage();
+                $response[$merchant_id] = 'FAILED';
+            }
+            catch (GuzzleException $e)
+            {
+                $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_DISABLE_FAILED);
+
+                $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_DISABLE_FAILED_COUNT);
+
+                $response[$merchant_id] = 'FAILED';
             }
         }
 
@@ -269,7 +350,13 @@ class Service
         }
         if ($webhookId === '')
         {
-            throw new \Exception("NO FULFILLMENT UPDATE WEBHOOK PRESENT",400);
+            $this->app['trace']->info(TraceCode::FULFILLMENT_UPDATE_WEBHOOK_NOT_CONFIGURED,
+                [
+                    'store_id'  =>  $storeId,
+                    'webhook'   =>  'fulfillments/update',
+                ]
+            );
+            return ;
         }
 
         $response = $client->request('DELETE',

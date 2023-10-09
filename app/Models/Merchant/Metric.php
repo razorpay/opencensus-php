@@ -121,6 +121,8 @@ final class Metric
     const MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT = 'merchant_shipping_info_check_call_count';
     const MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT = 'shipping_info_call_invalid_request_count';
     const MERCHANT_SHIPPING_INFO_RESPONSE_COUNT = 'merchant_shipping_info_response_count';
+    const SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED_COUNT = 'shopify_fulfillment_update_webhook_assignment_failed_count';
+    const SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_DISABLE_FAILED_COUNT    = 'shopify_fulfillment_update_webhook_disable_failed_count';
 
     const ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT          = 'zip_code_without_address_found_count';
 
