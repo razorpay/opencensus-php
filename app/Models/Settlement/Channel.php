@@ -18,6 +18,7 @@ class Channel
     const YESBANK   = 'yesbank';
     const HDFC      = 'hdfc';
     const RBL       = 'rbl';
+    const IDFC      = 'idfc';
     const AXIS2     = 'axis2';
     const AXIS3     = 'axis3';
     const ICICI2    = 'icici2';
@@ -92,6 +93,7 @@ class Channel
             self::RZPX,
             self::MCS,
             self::RHB,
+            self::IDFC,
         ];
     }
 
