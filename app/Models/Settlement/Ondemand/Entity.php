@@ -11,10 +11,11 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
     use NotesTrait;
 
     protected $generateIdOnCreate = true;

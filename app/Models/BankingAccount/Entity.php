@@ -18,6 +18,7 @@ use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Eloquent\Model;
 use RZP\Constants\Product;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetails;
 
@@ -27,6 +28,8 @@ use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetails;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                                = 'id';
     const CHANNEL                           = 'channel';
     const ACCOUNT_NUMBER                    = 'account_number';

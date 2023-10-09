@@ -7,9 +7,12 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     protected $entity = EntityConstants::WORKFLOW_STATE_MAP;
     protected $table  = Table::WORKFLOW_STATE_MAP;
 

@@ -5,6 +5,7 @@ namespace RZP\Models\TrustedBadge;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property string $merchant_id     The Primary Key of the Merchant (Also Primary Key of this Entity Table)
@@ -16,6 +17,8 @@ use RZP\Models\Merchant\Entity as Merchant;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MERCHANT_ID       = 'merchant_id';
     const STATUS            = 'status';
     const MERCHANT_STATUS   = 'merchant_status';

@@ -3,9 +3,12 @@
 namespace RZP\Models\Report;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID            = 'id';
     const TYPE          = 'type';
     const DAY           = 'day';

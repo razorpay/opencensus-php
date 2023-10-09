@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
@@ -23,7 +24,7 @@ use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
  */
 class Entity extends Base\PublicEntity
 {
-    use LinkedAccountNotesTrait;
+    use LinkedAccountNotesTrait, AsvGetAttribute;
     use NotesTrait;
 
     const ID                        = 'id';

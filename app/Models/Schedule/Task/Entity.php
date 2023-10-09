@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -19,7 +20,7 @@ use RZP\Models\Plan\Subscription;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';

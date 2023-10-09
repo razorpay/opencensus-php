@@ -9,10 +9,11 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
 
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';

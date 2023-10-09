@@ -6,10 +6,11 @@ use RZP\Models\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
+    use RevisionableTrait, AsvGetAttribute;
 
     const PAYMENT_ID    = 'payment_id';
     const MERCHANT_ID   = 'merchant_id';
