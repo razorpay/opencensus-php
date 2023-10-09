@@ -1509,6 +1509,9 @@ class Service extends Base\Service
             'save_card_v7',
             'access_address_v8',
             'access_card_v8',
+            'access_address_v9',
+            'save_address_v9',
+            'save_card_v9',
         ];
 
         return in_array($otpReason, $validReasons, true);

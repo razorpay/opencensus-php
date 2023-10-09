@@ -224,6 +224,15 @@ class Raven extends Base\Core
             CASE 'access_card_v8':
                 return 'sms.checkout.access_card_otp_v8';
 
+            CASE 'access_address_v9':
+                return 'sms.checkout.access_address_otp_v9';
+
+            CASE 'save_address_v9':
+                return 'sms.checkout.save_address_otp_v9';
+
+            CASE 'save_card_v9':
+                return 'sms.checkout.save_card_otp_v9';
+
             default:
                 return 'sms.otp';
         }
@@ -258,6 +267,9 @@ class Raven extends Base\Core
             'save_card_v7',
             'access_address_v8',
             'access_card_v8',
+            'access_address_v9',
+            'save_address_v9',
+            'save_card_v9',
         ]);
     }
 }
