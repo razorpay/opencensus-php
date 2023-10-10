@@ -684,10 +684,6 @@ class Processor
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
 
-            if ($merchant->getId() === 'CNoxEwowM0nMIT') {
-                return true;
-            }
-
             if (Environment::isTestingEnvironment($this->app['env']) === false)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_PAYMENTS_FLOW, $this->mode);
