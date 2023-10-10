@@ -74,4 +74,13 @@ class Repository extends Base\Repository
             ->latest()
             ->first();
     }
+
+    public function deleteShopifyMagicCheckoutKeys($merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::PLATFORM, Constants::SHOPIFY)
+            ->whereIn(Entity::CONFIG, Constants::SHOPIFY_AUTH)
+            ->delete();
+    }
 }
