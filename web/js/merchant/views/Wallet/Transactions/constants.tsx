@@ -1,4 +1,5 @@
 import React from 'react';
+import Amount from 'common/ui/Amount';
 import * as items from 'common/ui/item';
 import { idItem } from 'common/ui/item/id';
 import { Box } from '@razorpay/blade/components';
@@ -35,11 +36,9 @@ const CREATED_AT = {
 
 const AMOUNT = {
   title: 'Amount',
-  value: (item) => (
-    <div>
-      {item.currency} {item.credit ? item.credit : item.debit}
-    </div>
-  ),
+  value: (item): JSX.Element => {
+    return <Amount currency={item.currency} value={item.credit ? item.credit : item.debit} />;
+  },
 };
 
 const CONTACT = {

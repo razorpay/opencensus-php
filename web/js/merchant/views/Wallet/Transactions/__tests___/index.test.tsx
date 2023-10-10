@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render, waitForLoadingToFinish, screen } from 'common/services/test/test-utils';
 
 import Transactions from 'merchant/views/Wallet/Transactions';
@@ -28,6 +29,6 @@ describe('Wallet > Transactions > List Table', () => {
     expect(screen.getByText('Debit')).toBeInTheDocument();
     expect(screen.getByText('Created At')).toBeInTheDocument();
     expect(screen.getByText('Amount')).toBeInTheDocument();
-    expect(screen.getByText('INR 100')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 });
