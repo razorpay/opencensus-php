@@ -740,6 +740,8 @@ return array(
 
     'transaction_isolation_for_refund_experiment_id' => env('TRANSACTION_ISOLATION_FOR_REFUND_EXP_ID'),
 
+    'transaction_isolation_for_subscription_experiment_id' => env('TRANSACTION_ISOLATION_FOR_SUBSCRIPTION_EXP_ID'),
+
     'transaction_isolation_for_virtual_account_experiment_id' => env('TRANSACTION_ISOLATION_FOR_VIRTUAL_ACCOUNT_EXP_ID'),
 
     'transaction_isolation_for_qr_code_experiment_id' => env('TRANSACTION_ISOLATION_FOR_QR_CODE_EXP_ID'),

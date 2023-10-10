@@ -120,8 +120,14 @@ class Constants
         ]
     ];
 
+    const transactionIsolationEntityTypeKey = "entity_type";
+    const transactionIsolationEntityIdKey   = "id";
+    const transactionIsolationEventTypeKey  = "event_type";
+    const transactionIsolationPartnerEvent  = "partnership";
+
     const TRANSACTION_ISOLATION_ORDER_EXPERIMENT = "app.transaction_isolation_for_order_experiment_id";
     const TRANSACTION_ISOLATION_REFUND_EXPERIMENT = "app.transaction_isolation_for_refund_experiment_id";
+    const TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID = "app.transaction_isolation_for_subscription_experiment_id";
     const TRANSACTION_ISOLATION_VIRTUAL_ACCOUNT_EXPERIMENT_ID = "app.transaction_isolation_for_virtual_account_experiment_id";
     const TRANSACTION_ISOLATION_QR_CODE_EXPERIMENT_ID = "app.transaction_isolation_for_qr_code_experiment_id";
     const TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT = "app.transaction_isolation_for_payment_experiment_id";
@@ -134,6 +140,16 @@ class Constants
         Event::REFUND_CREATED        => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
         Event::REFUND_FAILED         => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
         Event::REFUND_SPEED_CHANGED  => self::TRANSACTION_ISOLATION_REFUND_EXPERIMENT,
+        Event::SUBSCRIPTION_AUTHENTICATED => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_ACTIVATED => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_COMPLETED => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_UPDATED   => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_PENDING   => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_HALTED    => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_CHARGED   => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_CANCELLED => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_PAUSED    => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
+        Event::SUBSCRIPTION_RESUMED   => self::TRANSACTION_ISOLATION_SUBSCRIPTION_EXPERIMENT_ID,
         Event::PAYMENT_AUTHORIZED    => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_CAPTURED      => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,
         Event::PAYMENT_FAILED        => self::TRANSACTION_ISOLATION_PAYMENT_EXPERIMENT,

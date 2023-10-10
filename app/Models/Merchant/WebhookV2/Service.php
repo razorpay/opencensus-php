@@ -5,12 +5,14 @@ namespace RZP\Models\Merchant\WebhookV2;
 use Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use RZP\Models\Partner\Constants;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -18,6 +20,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Modules\Migrate\Migrate;
+use RZP\Models\Partner\Core;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -864,6 +867,14 @@ class Service extends Base\Service
                 EventEntity::CONTAINS   => array_keys($payload),
                 EventEntity::CREATED_AT => Carbon::now()->getTimestamp(),
             ];
+
+            $context = $this->getContextForEvent($merchant->getId(), $event, $payload);
+
+            if (!empty($context))
+            {
+                $eventAttrs[EventEntity::CONTEXT] = $context;
+            }
+
             $eventEntity = new EventEntity($eventAttrs);
             $eventEntity->generateId();
             $eventEntity->setPayload($payload);
@@ -1073,5 +1084,25 @@ class Service extends Base\Service
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
         );
+    }
+
+    private function getContextForEvent(string $merchantId, string $webhookEvent, array $payload) : array
+    {
+        if ((new Core())->isTransactionIsolationExpEnabledForSubmerchant($merchantId, $webhookEvent) === true &&
+            array_key_exists(Entity::SUBSCRIPTION, $payload))
+        {
+            $subscriptionPublicId = $payload[Entity::SUBSCRIPTION]['entity']['id'] ?? null;
+
+            if (empty($subscriptionPublicId) === false)
+            {
+                return [
+                    Constants::transactionIsolationEntityIdKey => explode("_", $subscriptionPublicId)[1],
+                    Constants::transactionIsolationEntityTypeKey => Entity::SUBSCRIPTION,
+                    Constants::transactionIsolationEventTypeKey => Constants::transactionIsolationPartnerEvent,
+                ];
+            }
+        }
+
+        return [];
     }
 }

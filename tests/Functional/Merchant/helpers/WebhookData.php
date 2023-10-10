@@ -1168,6 +1168,48 @@ return [
         ],
     ],
 
+    'testWebhookEventFireForSubscriptions' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'payload' => [
+                    'subscription' => [
+                        'entity' => [
+                            "id" => "sub_F5aa7VaVXtXh80",
+                            "quantity" => 1,
+                            "notes"    => [],
+                            "entity"   => "subscription",
+                            "has_scheduled_changes" => false,
+                            "change_scheduled_at" => null,
+                            "source" => "api",
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ],
+        'event' => [
+            'entity' => 'event',
+            'event' => 'subscription.authenticated',
+            'contains' => ['subscription'],
+            'payload' => [
+                'subscription' => [
+                    'entity' => [
+                        "id"       => "sub_F5aa7VaVXtXh80",
+                        "quantity" => 1,
+                        "notes"    => [],
+                        "entity"   => "subscription",
+                        "has_scheduled_changes" => false,
+                        "change_scheduled_at" => null,
+                        "source" => "api",
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testRefundProcessedEventDataForMerchantsLinkedToPartner' =>  [
         'mode' => 'test',
         'event' => [
@@ -1218,5 +1260,4 @@ return [
             ],
         ],
     ],
-
 ];

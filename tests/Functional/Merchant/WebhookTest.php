@@ -1551,6 +1551,54 @@ class WebhookTest extends TestCase
         $this->refundPayment($payment['id']);
     }
 
+    public function testWebhookEventFireForSubscriptionAuthenticatedWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $testData = $this->testData['testWebhookEventFireForSubscriptions'];
+        $this->expectWebhookEventWithContext('subscription.authenticated',
+                                             [
+                                                 "id"          => "F5aa7VaVXtXh80",
+                                                 'entity_type' => 'subscription',
+                                                 'event_type'  => 'partnership'
+                                             ],
+            function (array $event) use ($testData)
+            {
+                $this->assertArraySelectiveEquals($testData['event'], $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+        $testData['request']['url'] = '/webhook/subscription.authenticated/fire';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testWebhookEventFireForSubscriptionPausedWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $testData = $this->testData['testWebhookEventFireForSubscriptions'];
+        $testData['event']['event'] = 'subscription.paused';
+        $this->expectWebhookEventWithContext('subscription.paused',
+                                             [
+                                                 "id"          => "F5aa7VaVXtXh80",
+                                                 'entity_type' => 'subscription',
+                                                 'event_type'  => 'partnership'
+                                             ],
+            function(array $event) use ($testData) {
+                $this->assertArraySelectiveEquals($testData['event'], $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+        $testData['request']['url'] = '/webhook/subscription.paused/fire';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testPaymentAuthorizedWebhookWithTransactionIsolation()
     {
         $this->createPartnerAndSubmerchantMapping();
@@ -1589,8 +1637,6 @@ class WebhookTest extends TestCase
                 "name" => "enable",
             ],
         ];
-
-        $this->createPartnerAndSubmerchantMapping();
 
         $this->mockSplitzTreatmentBulkRequest($output);
 
