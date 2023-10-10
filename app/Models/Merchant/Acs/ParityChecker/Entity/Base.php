@@ -175,7 +175,6 @@ class Base
                 ],
             ];
         }
-
         return $this->compareEntity($unsavedEntity, $this->getEntityId($apiEntity), $this->getEntityId($asvEntity));
     }
 

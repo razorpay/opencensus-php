@@ -10,9 +10,13 @@ class BusinessDetail implements EntityToProtoConvertorInterface
 {
     protected BusinessDetailEntity $entity;
 
-    function __construct(BusinessDetailEntity $entity)
+    protected array $dirtyFieldKeys;
+
+    function __construct(BusinessDetailEntity $entity, array $dirtyFieldKeys)
     {
         $this->entity = $entity;
+
+        $this->dirtyFieldKeys = $dirtyFieldKeys;
     }
 
     /**
@@ -21,6 +25,8 @@ class BusinessDetail implements EntityToProtoConvertorInterface
     public function toSaveProtoRequest(): MerchantV1\SaveRequest
     {
         $saveRequest = new MerchantV1\SaveRequest();
+
+        $businessDetailSaveRequest = new MerchantV1\MerchantBusinessDetailSaveRequest();
 
         $businessDetail = new MerchantV1\BusinessDetail();
 
@@ -42,7 +48,10 @@ class BusinessDetail implements EntityToProtoConvertorInterface
         $businessDetail->setMiqSharingDate(Helper::convertToInt32Value($rawAttributes, BusinessDetailEntity::MIQ_SHARING_DATE));
         $businessDetail->setTestingCredentialsDate(Helper::convertToInt32Value($rawAttributes, BusinessDetailEntity::TESTING_CREDENTIALS_DATE));
 
-        $saveRequest->setMerchantBusinessDetail($businessDetail);
+        $businessDetailSaveRequest->setMerchantBusinessDetail($businessDetail);
+        $businessDetailSaveRequest->setFields($this->dirtyFieldKeys);
+
+        $saveRequest->setMerchantBusinessDetailSaveRequest($businessDetailSaveRequest);
         return $saveRequest;
     }
 }

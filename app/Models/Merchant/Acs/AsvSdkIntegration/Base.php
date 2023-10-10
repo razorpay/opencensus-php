@@ -150,8 +150,19 @@ class Base
     function save(BaseModel\PublicEntity $entity, ?RequestMetadata $requestMetadata = null): void
     {
         try {
+
+            $dirtyFieldKeys = array_keys($entity->getDirty());
+
+            // if no changed field then we don't have anything to save
+            // so don't do any operation
+            if (empty($dirtyFieldKeys) === true) {
+                $this->trace->error(TraceCode::ASV_WRITE_CALLED_WITHOUT_DIRTY_FIELDS, [
+                    'entity' => $entity->getEntityName(),
+                ]);
+                return;
+            }
             $requestProto = (Factory::
-            getEntityToProtoConvertor($entity))->toSaveProtoRequest();
+            getEntityToProtoConvertor($entity, $dirtyFieldKeys))->toSaveProtoRequest();
 
             [$response, $err] = $this->getAsvSdkClient()->getWriteService()->save(
               $requestProto,

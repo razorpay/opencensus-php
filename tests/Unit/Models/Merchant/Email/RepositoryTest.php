@@ -6,8 +6,10 @@ use Config;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\Email;
 use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
+use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\MerchantEmailResponse;
 use Rzp\Accounts\Merchant\V1\MerchantEmailResponseByMerchantId;
+use Rzp\Accounts\Merchant\V1\MerchantEmailSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
@@ -424,8 +426,8 @@ class RepositoryTest extends TestCase
          * Comment this testcase when writes are to be enabled.
          */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = false;
-        $repo->saveOrFail($emailEntity1);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+        $repo->saveOrFail($emailEntity1);
 
         /*
         * Test  2: The save or fail ASV should not be reached if Splitz is off.
@@ -434,35 +436,35 @@ class RepositoryTest extends TestCase
         // false, false
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["false", "false"], 1);
-        $repo->saveOrFail($emailEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+        $repo->saveOrFail($emailEntity2);
 
         // true, false
         $this->setSplitzWithOutputForBulk(["true", "false"], 1);
-        $repo->saveOrFail($emailEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+        $repo->saveOrFail($emailEntity2);
 
         // false, true
         $this->setSplitzWithOutputForBulk(["false", "true"], 1);
-        $repo->saveOrFail($emailEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+        $repo->saveOrFail($emailEntity2);
 
         /*
         * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
         */
         $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
-        $repo->saveOrFail($emailEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
+        $repo->saveOrFail($emailEntity2);
 
         /*
         * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
         */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantEmails(
-            [
-                $merchantEmailProto1
-            ]
-        );
+        $emailEntity1 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson1);
+        $merchantEmailSaveRequest1 = new MerchantEmailSaveRequest();
+        $merchantEmailSaveRequest1->setMerchantEmail($merchantEmailProto1);
+        $merchantEmailSaveRequest1->setFields(array_keys($emailEntity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantEmailSaveRequests([$merchantEmailSaveRequest1]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -475,11 +477,11 @@ class RepositoryTest extends TestCase
          * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantEmails(
-            [
-                $merchantEmailProto2
-            ]
-        );
+        $emailEntity2 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson2);
+        $merchantEmailSaveRequest2 = new MerchantEmailSaveRequest();
+        $merchantEmailSaveRequest2->setMerchantEmail($merchantEmailProto2);
+        $merchantEmailSaveRequest2->setFields(array_keys($emailEntity2->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantEmailSaveRequests([$merchantEmailSaveRequest2]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -492,11 +494,11 @@ class RepositoryTest extends TestCase
          * Test  4-3: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantEmails(
-            [
-            $merchantEmailProto3
-            ]
-        );
+        $emailEntity3 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson3);
+        $merchantEmailSaveRequest3 = new MerchantEmailSaveRequest();
+        $merchantEmailSaveRequest3->setMerchantEmail($merchantEmailProto3);
+        $merchantEmailSaveRequest3->setFields(array_keys($emailEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantEmailSaveRequests([$merchantEmailSaveRequest3]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -508,8 +510,13 @@ class RepositoryTest extends TestCase
         /*
         * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
         */
-        $saveResponse->getMerchantEmails()[0]->setCreatedAt(15);
-        $saveResponse->getMerchantEmails()[0]->setUpdatedAt(15);
+        $emailEntity3 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson3);
+        $emailEntity3['created_at'] = 100000;
+        $emailEntity3['updated_at'] = 100000;
+        $merchantEmailSaveRequest3 = new MerchantEmailSaveRequest();
+        $merchantEmailSaveRequest3->setMerchantEmail($merchantEmailProto3);
+        $merchantEmailSaveRequest3->setFields(array_keys($emailEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantEmailSaveRequests([$merchantEmailSaveRequest3]);
 
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
@@ -529,8 +536,8 @@ class RepositoryTest extends TestCase
             self::assertEquals("", $e->getSql());
 
             //created_at, updated_at not changed
-            self::assertEquals(10, $emailEntity3['created_at']);
-            self::assertEquals(10, $emailEntity3['updated_at']);
+            self::assertEquals(100000, $emailEntity3['created_at']);
+            self::assertEquals(100000, $emailEntity3['updated_at']);
         }
     }
 

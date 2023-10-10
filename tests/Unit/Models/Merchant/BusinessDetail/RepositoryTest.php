@@ -4,6 +4,8 @@ namespace Unit\Models\Merchant\BusinessDetail;
 
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
+use Rzp\Accounts\Merchant\V1\MerchantBusinessDetailSaveRequest;
+use Rzp\Accounts\Merchant\V1\MerchantWebsiteSaveRequest;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail;
@@ -395,9 +397,10 @@ class RepositoryTest extends RepositoryTestHelper
         */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $businessDetailEntity1->audit_id = "testtesttest";
-        $saveRequest = (new SaveRequest())->setMerchantBusinessDetail(
-            $BusinessDetailProto1
-        );
+        $businessDetailSaveRequest1 = new MerchantBusinessDetailSaveRequest();
+        $businessDetailSaveRequest1->setMerchantBusinessDetail($BusinessDetailProto1);
+        $businessDetailSaveRequest1->setFields(array_keys($businessDetailEntity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantBusinessDetailSaveRequest($businessDetailSaveRequest1);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -411,11 +414,12 @@ class RepositoryTest extends RepositoryTestHelper
         /*
          * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
-        $businessDetailEntity2->audit_id = "testtesttest";
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantBusinessDetail(
-            $BusinessDetailProto2
-        );
+        $businessDetailEntity2->audit_id = "testtesttest";
+        $businessDetailSaveRequest2 = new MerchantBusinessDetailSaveRequest();
+        $businessDetailSaveRequest2->setMerchantBusinessDetail($BusinessDetailProto2);
+        $businessDetailSaveRequest2->setFields(array_keys($businessDetailEntity2->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantBusinessDetailSaveRequest($businessDetailSaveRequest2);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -430,10 +434,11 @@ class RepositoryTest extends RepositoryTestHelper
          * Test  4-3: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
         $businessDetailEntity3->audit_id = "testtesttest";
+        $businessDetailSaveRequest3 = new MerchantBusinessDetailSaveRequest();
+        $businessDetailSaveRequest3->setMerchantBusinessDetail($BusinessDetailProto3);
+        $businessDetailSaveRequest3->setFields(array_keys($businessDetailEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantBusinessDetailSaveRequest($businessDetailSaveRequest2);
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantBusinessDetail(
-            $BusinessDetailProto3
-        );
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -446,10 +451,8 @@ class RepositoryTest extends RepositoryTestHelper
         /*
         * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
         */
-        $saveResponse->getMerchantBusinessDetail()->setCreatedAt(15);
-        $saveResponse->getMerchantBusinessDetail()->setUpdatedAt(15);
-        $businessDetailEntity3->audit_id = "testtesttest";
 
+        $businessDetailEntity3 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson3);
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();

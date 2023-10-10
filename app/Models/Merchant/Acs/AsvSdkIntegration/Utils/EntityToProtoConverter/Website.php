@@ -11,9 +11,13 @@ class Website implements EntityToProtoConvertorInterface
 {
     protected MerchantWebsite $entity;
 
-    function __construct(MerchantWebsite $entity)
+    protected array $dirtyFieldKeys;
+
+    function __construct(MerchantWebsite $entity,array $dirtyFieldKeys)
     {
         $this->entity = $entity;
+
+        $this->dirtyFieldKeys =  $dirtyFieldKeys;
     }
 
     /**
@@ -24,6 +28,8 @@ class Website implements EntityToProtoConvertorInterface
         $saveRequest = new MerchantV1\SaveRequest();
 
         $website = new MerchantV1\MerchantWebsite();
+
+        $merchantWebsiteSaveRequest = new MerchantV1\MerchantWebsiteSaveRequest();
 
         $rawAttributes = $this->entity->getAttributes();
 
@@ -42,7 +48,10 @@ class Website implements EntityToProtoConvertorInterface
         $website->setSendCommunication(Helper::convertToInt32ValueFromBool($rawAttributes, Entity::SEND_COMMUNICATION));
         $website->setAuditId($rawAttributes[Entity::AUDIT_ID] ?? "");
 
-        $saveRequest->setMerchantWebsite($website);
+        $merchantWebsiteSaveRequest->setMerchantWebsite($website);
+        $merchantWebsiteSaveRequest->setFields($this->dirtyFieldKeys);
+
+        $saveRequest->setMerchantWebsiteSaveRequest($merchantWebsiteSaveRequest);
         return $saveRequest;
     }
 }

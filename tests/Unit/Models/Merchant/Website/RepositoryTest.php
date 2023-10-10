@@ -4,6 +4,8 @@ namespace Unit\Models\Merchant\Website;
 
 use Config;
 use Razorpay\Asv\Error\GrpcError;
+use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
+use Rzp\Accounts\Merchant\V1\MerchantWebsiteSaveRequest;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -367,9 +369,10 @@ class RepositoryTest extends RepositoryTestHelper
         */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $websiteEntity1->audit_id = "testtesttest";
-        $saveRequest = (new SaveRequest())->setMerchantWebsite(
-            $merchantWebsiteProto1
-        );
+        $merchantWebsiteSaveRequest1 = new MerchantWebsiteSaveRequest();
+        $merchantWebsiteSaveRequest1->setMerchantWebsite($merchantWebsiteProto1);
+        $merchantWebsiteSaveRequest1->setFields(array_keys($websiteEntity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantWebsiteSaveRequest($merchantWebsiteSaveRequest1);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -384,9 +387,10 @@ class RepositoryTest extends RepositoryTestHelper
          */
         $websiteEntity2->audit_id = "testtesttest";
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantWebsite(
-            $merchantWebsiteProto2
-        );
+        $merchantWebsiteSaveRequest2 = new MerchantWebsiteSaveRequest();
+        $merchantWebsiteSaveRequest2->setMerchantWebsite($merchantWebsiteProto2);
+        $merchantWebsiteSaveRequest2->setFields(array_keys($websiteEntity2->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantWebsiteSaveRequest($merchantWebsiteSaveRequest2);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -400,11 +404,12 @@ class RepositoryTest extends RepositoryTestHelper
         /*
          * Test  4-3: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
-        $websiteEntity3->audit_id = "testtesttest";
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantWebsite(
-            $merchantWebsiteProto3
-        );
+        $websiteEntity3->audit_id = "testtesttest";
+        $merchantWebsiteSaveRequest3 = new MerchantWebsiteSaveRequest();
+        $merchantWebsiteSaveRequest3->setMerchantWebsite($merchantWebsiteProto3);
+        $merchantWebsiteSaveRequest3->setFields(array_keys($websiteEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantWebsiteSaveRequest($merchantWebsiteSaveRequest3);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -417,10 +422,9 @@ class RepositoryTest extends RepositoryTestHelper
         /*
         * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
         */
-        $saveResponse->getMerchantWebsite()->setCreatedAt(15);
-        $saveResponse->getMerchantWebsite()->setUpdatedAt(15);
-        $websiteEntity3->audit_id = "testtesttest";
 
+
+        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
@@ -441,8 +445,8 @@ class RepositoryTest extends RepositoryTestHelper
             self::assertEquals("", $e->getSql());
 
             //created_at, updated_at not changed
-            self::assertEquals(10, $websiteEntity3['created_at']);
-            self::assertEquals(10, $websiteEntity3['updated_at']);
+            self::assertEquals(12346, $websiteEntity3['created_at']);
+            self::assertEquals(1234, $websiteEntity3['updated_at']);
             // update should not happen since save failed.
             self::assertEquals("testtesttest", $websiteEntity3['audit_id']);
         }

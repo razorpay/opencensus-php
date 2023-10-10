@@ -8,6 +8,7 @@ use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDocument as MerchantDocumentProto;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentResponseByMerchantId;
+use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
 use RZP\Exception\LogicException;
@@ -385,11 +386,10 @@ class RepositoryTest extends RepositoryTestHelper
         * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
         */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantDocuments(
-            [
-                $merchantDocumentProto3
-            ]
-        );
+        $merchantDocumentSaveRequest3 = new MerchantDocumentSaveRequest();
+        $merchantDocumentSaveRequest3->setMerchantDocument($merchantDocumentProto3);
+        $merchantDocumentSaveRequest3->setFields(array_keys($documentEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest3]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -403,12 +403,11 @@ class RepositoryTest extends RepositoryTestHelper
          * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantDocuments(
-            [
-                $merchantDocumentProto2
-            ]
-        );
-        $documentEntity2["audit_id"] = "testtesttestid";
+        $documentEntity2['audit_id'] = 'testtesttestid';
+        $merchantDocumentSaveRequest2 = new MerchantDocumentSaveRequest();
+        $merchantDocumentSaveRequest2->setMerchantDocument($merchantDocumentProto2);
+        $merchantDocumentSaveRequest2->setFields(array_keys($documentEntity2->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest2]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -422,12 +421,11 @@ class RepositoryTest extends RepositoryTestHelper
          * Test  4-3: Save Or should work fine if splitz is on, created updated_at should be updated.
          */
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
-        $saveRequest = (new SaveRequest())->setMerchantDocuments(
-            [
-                $merchantDocumentProto3
-            ]
-        );
-        $documentEntity3["audit_id"] = "testtesttestid";
+        $documentEntity3['audit_id'] = 'testtesttestid';
+        $merchantDocumentSaveRequest3 = new MerchantDocumentSaveRequest();
+        $merchantDocumentSaveRequest3->setMerchantDocument($merchantDocumentProto3);
+        $merchantDocumentSaveRequest3->setFields(array_keys($documentEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest3]);
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
@@ -435,15 +433,34 @@ class RepositoryTest extends RepositoryTestHelper
         $repo->saveOrFail($documentEntity3);
         self::assertEquals(10, $documentEntity3['created_at']);
         self::assertEquals(10, $documentEntity3['updated_at']);
+        self::assertEquals("newtesttesttestid", $documentEntity3['audit_id']);
+
+        /*
+         * Test  4-4: Save operation should not happen if no dirty field present
+         */
+        $documentEntity2->setRawAttributes($documentEntity2->getAttributes(), true);
+        $merchantDocumentSaveRequest2 = new MerchantDocumentSaveRequest();
+        $merchantDocumentSaveRequest2->setMerchantDocument($merchantDocumentProto2);
+        $merchantDocumentSaveRequest2->setFields(array_keys($documentEntity2->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest2]);
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->never())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $document->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($documentEntity2);
+        self::assertEquals(10, $documentEntity2['created_at']);
+        self::assertEquals(10, $documentEntity2['updated_at']);
         self::assertEquals("newtesttesttestid", $documentEntity2['audit_id']);
+
 
         /*
         * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
         */
-        $saveResponse->getMerchantDocuments()[0]->setCreatedAt(15);
-        $saveResponse->getMerchantDocuments()[0]->setUpdatedAt(15);
-        $documentEntity3["audit_id"] = "testtesttestid";
-
+        $documentEntity3['audit_id'] = 'testtesttestid';
+        $merchantDocumentSaveRequest2 = new MerchantDocumentSaveRequest();
+        $merchantDocumentSaveRequest2->setMerchantDocument($merchantDocumentProto3);
+        $merchantDocumentSaveRequest2->setFields(array_keys($documentEntity3->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest3]);
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();

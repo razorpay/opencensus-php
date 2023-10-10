@@ -209,11 +209,11 @@
             <directory>./tests/Functional/Refund/</directory>
         </testsuite>
         <testsuite name="Features-4-2 Test Suite">
+            <directory>./tests/Unit/Models/Merchant/BusinessDetail/</directory>
             <directory>./tests/Unit/</directory>
             <file>./tests/Unit/Jobs/PartnerWebhookCallbackEventTest.php</file>
             <directory>./tests/Unit/Models/Merchant/Activation/</directory>
             <directory>./tests/Unit/Models/Merchant/AutoKyc/</directory>
-            <directory>./tests/Unit/Models/Merchant/BusinessDetail/</directory>
             <directory>./tests/Unit/Models/Merchant/Bvs/</directory>
             <exclude>./tests/Unit/AdminFetch</exclude>
             <exclude>./tests/Unit/Models/BankingAccount/</exclude>

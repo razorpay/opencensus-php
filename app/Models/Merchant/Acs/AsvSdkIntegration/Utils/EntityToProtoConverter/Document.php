@@ -12,9 +12,13 @@ class Document implements EntityToProtoConvertorInterface
 {
     protected Entity $entity;
 
-    function __construct(Entity $entity)
+    protected array $dirtyFieldKeys;
+
+    function __construct(Entity $entity, array $dirtyFieldKeys)
     {
         $this->entity = $entity;
+
+        $this->dirtyFieldKeys = $dirtyFieldKeys;
     }
 
     /**
@@ -23,6 +27,8 @@ class Document implements EntityToProtoConvertorInterface
     public function toSaveProtoRequest(): MerchantV1\SaveRequest
     {
         $saveRequest = new MerchantV1\SaveRequest();
+
+        $merchantDocumentSaveRequest = new MerchantV1\MerchantDocumentSaveRequest();
 
         $document = new MerchantV1\MerchantDocument();
 
@@ -42,7 +48,10 @@ class Document implements EntityToProtoConvertorInterface
         $document->setDocumentDate(Helper::convertToUInt32Value($rawAttributes, Entity::DOCUMENT_DATE));
         $document->setAuditId(Helper::converToStringValue($rawAttributes, Entity::AUDIT_ID));
 
-        $saveRequest->setMerchantDocuments([$document]);
+
+        $merchantDocumentSaveRequest->setMerchantDocument($document);
+        $merchantDocumentSaveRequest->setFields($this->dirtyFieldKeys);
+        $saveRequest->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest]);
         return $saveRequest;
     }
 }

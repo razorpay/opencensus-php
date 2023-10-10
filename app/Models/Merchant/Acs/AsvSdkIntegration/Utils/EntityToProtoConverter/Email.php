@@ -9,9 +9,12 @@ class Email implements EntityToProtoConvertorInterface
 {
     protected MerchantEmail $entity;
 
-    function __construct(MerchantEmail $entity)
+    protected array $dirtyFieldKeys;
+
+    function __construct(MerchantEmail $entity, array $dirtyFieldKeys)
     {
-        $this->entity = $entity;
+        $this->entity         = $entity;
+        $this->dirtyFieldKeys = $dirtyFieldKeys;
     }
 
     /**
@@ -20,6 +23,8 @@ class Email implements EntityToProtoConvertorInterface
     public function toSaveProtoRequest(): MerchantV1\SaveRequest
     {
         $saveRequest = new MerchantV1\SaveRequest();
+
+        $merchantEmailSaveRequest = new MerchantV1\MerchantEmailSaveRequest();
 
         $email = new MerchantV1\Email();
 
@@ -33,7 +38,9 @@ class Email implements EntityToProtoConvertorInterface
         $email->setPhone(Helper::converToStringValue($rawAttributes,MerchantEmail::PHONE));
         $email->setPolicy(Helper::converToStringValue($rawAttributes, MerchantEmail::POLICY));
         $email->setUrl(Helper::converToStringValue($rawAttributes, MerchantEmail::URL));
-        $saveRequest->setMerchantEmails([$email]);
+        $merchantEmailSaveRequest->setMerchantEmail($email);
+        $merchantEmailSaveRequest->setFields($this->dirtyFieldKeys);
+        $saveRequest->setMerchantEmailSaveRequests([$merchantEmailSaveRequest]);
         return $saveRequest;
     }
 }
