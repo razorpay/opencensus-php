@@ -1316,7 +1316,7 @@ class Validator extends Base\Validator
         }
 
         // card and cvv optional for amex and visa tokenized payments
-        if (($this->entity->card->isAmex() ||  $this->entity->card->isVisa() || $this->entity->card->isMasterCard())
+        if (($this->entity->card->isAmex() ||  $this->entity->card->isVisa())
             && $this->entity->card->getTrivia() === '1')
         {
             if(empty($input['card']))

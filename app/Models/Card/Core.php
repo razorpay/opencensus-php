@@ -1091,8 +1091,6 @@ class Core extends Base\Core
 
     public function getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber = null)
     {
-        $issCvvPresent = $input['card']['cvv'];
-
         $input = [
             Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
             Card\Entity::NAME                   => $card->getName(),
@@ -1109,21 +1107,6 @@ class Core extends Base\Core
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
-
-        // make cvv field empty for mastercard
-        if (Card\Network::getFullName(Network::MC) === $card->getNetwork()
-            && boolval($input[Card\Entity::TOKENISED]) === true
-            && empty($issCvvPresent) === true) {
-
-            $input[Card\Entity::CVV ] = "";
-
-            $this->trace->info(
-                TraceCode::CVV_OPTIONAL,
-                [
-                    'message'       => 'Setting cvv to empty for mastercard',
-                ]
-            );
-        }
 
         // override empty cvv with dummy cvv for cvvless
         if (Card\Network::getFullName(Network::VISA) === $card->getNetwork()

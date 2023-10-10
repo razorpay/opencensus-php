@@ -602,33 +602,6 @@ trait Authorize
         $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $payment->getId()]);
         $gatewayInput['notificationUrl'] = $redirectUrl;
     }
-
-    private function checkIfCardTokenisedPayment($payment): bool
-    {
-        return ($payment->isMethodCardOrEmi() === true && $payment->isRecurring() === false && $payment->isInternational() === false &&  isset($payment->card) && $payment->card->getTrivia() == '1');
-    }
-
-    private function checkIfCvvlessApplicable($payment, $input, $gatewayInput): bool {
-
-        if(empty($gatewayInput['card']) === false && empty($gatewayInput['card']['cvv']) === false) {
-            return true;
-        }
-
-        $gateway = $payment->terminal->getGateway();
-        $gatewayAcquirer = $payment->terminal->getGatewayAcquirer();
-
-        $this->trace->info(TraceCode::CVVLESS_GATEWAY_LOG, [
-            'gateway '=> $gateway,
-            'gatewayacquirer '=>$gatewayAcquirer
-        ]);
-
-        if($gateway === 'mpgs' && $gatewayAcquirer === 'hdfc') {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array & $gatewayInput)
     {
         $totalTerminals = count($this->selectedTerminals);
@@ -729,14 +702,6 @@ trait Authorize
             }
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
-
-            if($this->checkIfCardTokenisedPayment($payment) && $payment->card->isMasterCard() === true)
-            {
-                if($this->checkIfCvvlessApplicable($payment, $input, $gatewayInput) === false) {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED);
-                }
-            }
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
