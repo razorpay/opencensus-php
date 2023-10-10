@@ -433,7 +433,7 @@ class Service extends Base\Service
 
         try {
             // check if merchant has onboarded via PGOS and route request accordingly.
-            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
             if ($shouldMerchantOnboardViaPGOS === true) {
                 $body = [
@@ -543,7 +543,7 @@ class Service extends Base\Service
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::validatePhantomOnBoarding($partnerId);
 
         // check if merchant is to be onboarded via PGOS
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
         if ($shouldMerchantOnboardViaPGOS === true and $activationFormMilestone != DEConstants::L2_SUBMISSION)
         {
@@ -1448,7 +1448,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         // if merchant is PGOS onboarded and editing fields which are owned by PGOS throw an exception
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id);
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id, $merchant->getCountry());
 
         $inputKeys = array_keys($input);
 
@@ -2178,7 +2178,7 @@ class Service extends Base\Service
         // contact name is being sent via this field
         try
         {
-            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
             if ($shouldMerchantOnboardViaPGOS === true)
             {
                 $body = [

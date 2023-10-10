@@ -208,6 +208,7 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
+        $this->merchantEntityMock->shouldReceive('getCountry')->andReturn('IN');
         $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
@@ -334,6 +335,8 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBusinessSubcategory')->andReturn(0);
 
         $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);
+
+        $this->merchantEntityMock->shouldReceive('getCountry')->andReturn('IN');
 
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
 

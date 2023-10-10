@@ -264,7 +264,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $ignoreRoutingConditions = true;
         }
 
-        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId))
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
         {
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];
@@ -381,11 +381,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $variant === $mode;
     }
 
-    public function shouldMerchantOnboardViaPGOS($merchantId): bool
+    public function shouldMerchantOnboardViaPGOS($merchantId, $merchantCountryCode = 'IN'): bool
     {
         // Doing this check again to fall back
         if ($this->isPGOSExperimentEnabledForMerchant($merchantId, self::PGOS_LIVE_MODE_EXPERIMENT_ID,
-                self::ENABLE) === true)
+                self::ENABLE) === true or $merchantCountryCode === 'MY')
         {
             $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                 'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
@@ -449,7 +449,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return false;
         }
 
-        if ($this->shouldMerchantOnboardViaPGOS($merchantId) === false)
+        if ($this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()) === false)
         {
             return false;
         }

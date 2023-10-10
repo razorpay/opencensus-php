@@ -784,6 +784,11 @@ class Service extends Base\Service
             }
         }
 
+        if ($signupCampaign === DeviceDetail\Constants::I18N_MY_SIGNUP)
+        {
+            $shouldOnboardViaPGOS = true;
+        }
+
         if ($shouldOnboardViaPGOS === false)
         {
             return;

@@ -2504,7 +2504,7 @@ class Core extends Base\Core
     public function patchMerchantDetails(Merchant\Entity $merchant, array $input): Entity
     {
         // check if merchant has onboarded via PGOS
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getMerchantId());
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getMerchantId(), $merchant->getCountry());
 
         if ($shouldMerchantOnboardViaPGOS === true)
         {
