@@ -48,6 +48,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_GET_L2_DYNAMIC_CONFIGS       = 'merchant_get_l2_dynamic_configs';
     const MERCHANT_GET_POLICY_COMPLIANCE_DETAILS     = 'merchant_get_policy_compliance_details';
 
+    const MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS    = 'merchant_save_policy_compliance_details';
 
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
@@ -116,6 +117,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PAYMENT_ORDER_WEBHOOK,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS,
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
     ];
 
@@ -153,6 +155,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
 
         self::MERCHANT_GATING_LOGIC_SAVE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantGatingLogic',
         self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
@@ -193,6 +196,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   => 10,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION        => 10,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS => 10,
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS => 10,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2 => 10,
     ];
 
@@ -204,6 +208,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS,
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS,
 
         self::MERCHANT_GATING_LOGIC_SAVE,
         self::PAYMENT_ORDER_CREATE,

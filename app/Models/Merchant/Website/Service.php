@@ -447,6 +447,59 @@ class Service extends Base\Service
             "merchant_id" => $this->merchant->getId()
         ]);
 
+        $pgosInput = $input;
+
+        $sections = [Constants::SHIPPING, Constants::REFUND, Constants::TERMS,Constants::CONTACT_US, Constants::PRIVACY];
+        if (isset($pgosInput["merchant_website_details"]) === true )
+        {
+            $merchantWebsiteDetails = $pgosInput["merchant_website_details"];
+
+            foreach ($sections as $section)
+            {
+                if(isset($merchantWebsiteDetails[$section]) === true)
+                {
+                    if ( isset($merchantWebsiteDetails[$section]["website"])===true && $merchantWebsiteDetails[$section]["website"] == [])
+                    {
+                        $pgosInput["merchant_website_details"][$section]["website"] = null;
+
+                    }
+                }
+            }
+        }
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_save_policy_compliance_details', $pgosInput, $this->merchant, true);
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'route' => 'merchant_save_policy_compliance_details',
+            'merchant_id' => $this->merchant->getId(),
+            'response' => $response
+        ]);
+
+        // return PGOS response if data is present
+        if(isset($response['msg']) === false && isset($response['data']) === true)
+        {
+            return $response['data'];
+        }
+
+        if(isset($response['msg']) === true && str_contains($response['msg'], "Merchant not eligible for policy wizard v2")===false)
+        {
+            throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'something went wrong'
+            ]);
+        }
+
+        // if merchant is not eligible for policy wizard v2, then direct to monolith flow
+        // this is sent directly in save compliance details api instead of separate call again to eligibility api, since pgos internally checks eligiblity
+        // so this avoids extra api call to pgos
+        // in the future, entire flow will be v2, so flow of code would never come here
+        // {
+        //    "code": "invalid_argument",
+        //    "msg": "bad_request: Merchant not eligible for policy wizard v2",
+        //    "meta": {
+        //        "description": "something bad happened",
+        //        "field": ""
+        //    }
+        //}
+
         if ($this->isWebsiteSectionsApplicable($this->merchant) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
