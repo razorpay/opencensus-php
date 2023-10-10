@@ -11590,7 +11590,7 @@ We look forward to transacting with you!
 
         $this->assertNull($businessDetail);
     }
-    
+
     private function mockSplitzExperiment($output)
     {
         $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
@@ -11877,6 +11877,8 @@ We look forward to transacting with you!
 
     public function testGetMerchantWebsiteSectionDataRegularMerchant()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->ba->proxyAuth();
 
         $merchantId = '10000000000000';
@@ -11930,6 +11932,8 @@ We look forward to transacting with you!
 
     public function testGetMerchantWebsiteSectionDataSubMerchant()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->ba->proxyAuth();
 
         $merchantId = '10000000000000';
