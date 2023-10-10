@@ -1923,6 +1923,9 @@ class Constants
      */
     const DEBIT_CARD_VALIDATION = 'debit_card_validation';
 
+    /* Merchant feature flag to show custom convenience fee message on checkout*/
+    const CustomMessageForCFB = 'custom_message_for_cfb';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1987,6 +1990,7 @@ class Constants
         DcsConstants::ShowSingleDCCCurrency,
         DcsConstants::LRSEducationFlow,
         DcsConstants::LRSImportFeeBreakup,
+        self::CustomMessageForCFB,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2667,6 +2671,7 @@ class Constants
         self::REMOVE_RAZORPAY_BRANDING         => true,
         self::BULK_PAYOUT_WORKFLOW            => true,
         DcsConstants::ShowSingleDCCCurrency   => true,
+        self::CustomMessageForCFB             => true,
     ];
 
     // Entity type constants
