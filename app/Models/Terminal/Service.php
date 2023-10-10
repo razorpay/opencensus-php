@@ -114,6 +114,10 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
+        if ($terminals == null) {
+            return $terminals;
+        }
+
         $data = $terminals->toArrayAdmin($subMerchantFlag);
 
         // proxy code
