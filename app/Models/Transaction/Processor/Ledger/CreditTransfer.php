@@ -46,7 +46,7 @@ class CreditTransfer extends Base
             ];
 
             $identifiers = [
-                self::BANKING_ACCOUNT_ID => $creditTransfer->balance->bankingAccount->getPublicId(),
+                self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($creditTransfer->balance->getId())
             ];
 
             $additional_params = [];
@@ -110,7 +110,7 @@ class CreditTransfer extends Base
         ];
 
         $identifiers = [
-            self::BANKING_ACCOUNT_ID => $creditTransfer->balance->bankingAccount->getPublicId(),
+            self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($creditTransfer->balance->getId())
         ];
 
         $payload = [

@@ -35,10 +35,21 @@ class Pdf extends Generator
 
     protected function getPdfContent(string $html): string
     {
-        $bankingAccount = $this->repo->banking_account
-                                     ->findByAccountNumberAndChannelPublic($this->accountNumber, $this->channel);
+        try
+        {
+            $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannelPublic($this->accountNumber, $this->channel);
+        }
+        catch(\Exception $e)
+        {
+            $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByAccountNumberChannel($this->accountNumber, $this->channel);
 
-       $lastUpdatedAt = $this->getLastUpdatedAt($bankingAccount);
+            if (empty($bankingAccount))
+            {
+                throw $e;
+            }
+        }
+
+        $lastUpdatedAt = $this->getLastUpdatedAt($bankingAccount);
 
         $options = [
             'print-media-type',

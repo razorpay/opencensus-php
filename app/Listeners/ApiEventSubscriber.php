@@ -1388,6 +1388,9 @@ class ApiEventSubscriber extends Base\Core
     {
         $merchantId = $merchant->getId();
 
+        /**
+         * TODO: __multi_ca__ Handle for notification
+         */
         $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
 
         $va = current(array_filter($bankingAccounts, function($account) {

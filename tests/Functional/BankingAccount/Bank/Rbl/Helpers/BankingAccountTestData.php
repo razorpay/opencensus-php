@@ -5982,9 +5982,9 @@ return [
             'method' => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
-                    'Header' => [
-                        'TranID' => '220128134659',
-                        'Corp_ID' => 'RZPAY'
+                    'Header' => [ 
+                        'TranID' => '220128134659', 
+                        'Corp_ID' => 'RZPAY' 
                     ],
                     'Body' => [
                         'Account No.' => '4099834512998',
@@ -6047,6 +6047,38 @@ return [
                 'count' => 1,
                 'items' => [
                 ],
+            ],
+        ]
+    ],
+
+    'testFetchMigratedRblApplicationFromApiAndBasById' => [
+        'request' => [
+            'url'    => '/admin_lms/banking_accounts/bacc_JuLWj2OnFAcg72',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'bacc_JuLWj2OnFAcg72',
+                'status'        => 'picked',
+                'merchant_id'   => '10000000000000',
+                'merchant'      => [
+                    'id' => '10000000000000'
+                ]
+            ]
+        ]
+    ],
+
+    'testFetchMultipleMigratedRblApplicationFromApiAndBas' => [
+        'request' => [
+            'url'    => '/admin_lms/banking_accounts',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'id'        => 'bacc_JuLWj2OnFAcg72',
+                    'status'    => 'picked'
+                ]
             ],
         ]
     ],

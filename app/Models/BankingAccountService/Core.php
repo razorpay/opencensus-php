@@ -240,7 +240,7 @@ class Core extends Base\Core
         $channel = strtolower($basBankingAccount['partner_bank']);
 
         switch($channel)
-        { 
+        {
             case Channel::RBL:
 
                 $input = [
@@ -265,17 +265,17 @@ class Core extends Base\Core
                     BankingAccountEntity::FTS_FUND_ACCOUNT_ID               => $basBankingAccount['fts_fund_account_id'],
                     BankingAccountEntity::PINCODE                           => $basBankingAccount['pincode'],
                     BankingAccountEntity::SUB_STATUS                        => $basBankingAccount['sub_status'],
-                    
+
                     BankingAccountEntity::USERNAME                          => $basBankingAccount['auth_username'],
                     BankingAccountEntity::PASSWORD                          => $basBankingAccount['auth_password'],
                     BankingAccountEntity::REFERENCE1                        => $basBankingAccount['corp_id']
                 ];
 
-                if(isset($basBankingAccount['metadata']['account_open_date']))
+                if(isset($basBankingAccount['metadata']['bank_account_open_date']))
                 {
-                    $input[BankingAccountEntity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['account_open_date'];
+                    $input[BankingAccountEntity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['bank_account_open_date'];
                 }
-                
+
                 break;
             default:
 
@@ -296,6 +296,10 @@ class Core extends Base\Core
         {
             $status = 'activated';
         }
+        else if($channel === Channel::RBL)
+        {
+            $status = $basBankingAccount['application_status'];
+        }
 
         $ba->setId($basBankingAccount['id']);
 
@@ -312,36 +316,6 @@ class Core extends Base\Core
         $ba->balance()->associate($balance);
 
         return $ba;
-    }
-
-    /**
-     * In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL Migration) balance exists but not banking_account entity.
-     * We make a call to banking account service to fetch the banking account id.
-     *
-     * @param string $balanceId
-     *
-     */
-    public function fetchBankingAccountId(string $balanceId)
-    {
-        $bankingAccountId = null;
-
-        /* @var BalanceEntity $balance */
-        $balance = $this->repo->balance->findOrFailById($balanceId);
-
-        //banking account does not exist for BAS CAs only.
-        if ((empty($balance->bankingAccount) === true) and
-            (in_array($balance->getChannel(), Channel::getDirectTypeChannels())) and
-            ($balance->getAccountType() === Merchant\Balance\AccountType::DIRECT))
-        {
-            //call to bas to fetch the banking_account_id.
-            $bankingAccountId = app('banking_account_service')->fetchBankingAccountId($balanceId);
-        }
-        else
-        {
-            $bankingAccountId = optional($balance->bankingAccount)->getPublicId();
-        }
-
-        return $bankingAccountId;
     }
 
     public function removeRequestParamsFromInput($requestParams, $input)

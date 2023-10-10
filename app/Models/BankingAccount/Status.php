@@ -23,6 +23,7 @@ class Status
     const REJECTED              = 'rejected';           // Bank Rejected
     const ARCHIVED              = 'archived';
     const TERMINATED            = 'terminated';       // Application Terminated
+    const MIGRATED              = 'migrated';         // Application is migrated to Banking-Account service
 
 
     // External Statuses as interpreted by Product
@@ -43,6 +44,7 @@ class Status
     const BANK_REJECTED                  = 'BankRejected';
     const ARCHIVED_EXTERNAL              = 'Archived';
     const TERMINATED_EXTERNAL            = 'Terminated';
+    const MIGRATED_EXTERNAL              = 'Migrated';
 
     // Substatuses
     const DOCS_WALK_THROUGH_PENDING      = 'docs_walkthrough_pending';
@@ -304,6 +306,10 @@ class Status
         // for another application. An application in this state
         // is not expected to be revived without tech intervention
         self::TERMINATED,
+        // When application is migrated to banking-account service, 
+        // we will retain the copy on API. This status instructs code
+        // to ignore the API counterpart and look at banking-account service
+        self::MIGRATED,
     ];
 
     /**
@@ -431,7 +437,8 @@ class Status
         ],
         self::ACTIVATED => [
             self::ARCHIVED,
-            self::TERMINATED
+            self::TERMINATED,
+            self::MIGRATED
         ],
         self::CANCELLED => [
             // Sometimes Sales team is able to revive leads who
@@ -456,7 +463,12 @@ class Status
             self::ACCOUNT_OPENING,
             self::API_ONBOARDING,
             self::TERMINATED
-        ]
+        ],
+        self::MIGRATED  => [
+            // In event of migration related issues, allow moving application back to activated state for quick recovery
+            // NOTE: Only activated<>migrated transitions should be allowed
+            self::ACTIVATED
+        ],
     ];
 
     # TODO: Finalize after checking with Product
@@ -801,7 +813,8 @@ class Status
             self::TEST_ACCOUNT,
             self::OTHER,
         ],
-        self::TERMINATED => []
+        self::TERMINATED => [],
+        self::MIGRATED   => [],
     ];
 
 
@@ -907,7 +920,8 @@ class Status
         self::CANCELLED,
         self::ARCHIVED,
         self::ACTIVATED,
-        self::TERMINATED
+        self::TERMINATED,
+        self::MIGRATED,
     ];
 
     /**
@@ -939,7 +953,8 @@ class Status
         self::ACCOUNT_OPENING_EXTERNAL      => self::ACCOUNT_OPENING,
         self::API_ONBOARDING_EXTERNAL       => self::API_ONBOARDING,
         self::ACCOUNT_ACTIVATION_EXTERNAL   => self::ACCOUNT_ACTIVATION,
-        self::CA_ACTIVATED                  => self::ACTIVATED
+        self::CA_ACTIVATED                  => self::ACTIVATED,
+        self::MIGRATED_EXTERNAL             => self::MIGRATED
     ];
 
     public static $allowedExternalStatuses = [
@@ -957,7 +972,8 @@ class Status
         self::TEMP_UNSERVICEABLE,
         self::BANK_REJECTED,
         self::ARCHIVED_EXTERNAL,
-        self::TERMINATED_EXTERNAL
+        self::TERMINATED_EXTERNAL,
+        self::MIGRATED_EXTERNAL
     ];
 
     public static $externalToInternalSubStatusMap = [

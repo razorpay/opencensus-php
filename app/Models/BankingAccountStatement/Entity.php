@@ -165,11 +165,6 @@ class Entity extends Base\PublicEntity
         return $this->morphTo(self::SOURCE, self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
-    public function bankingAccount()
-    {
-        return $this->belongsTo(BankingAccount\Entity::class);
-    }
-
     // ---------------------------- Setters ----------------------------------- //
 
     public function setTransactionId(string $transactionId)

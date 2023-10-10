@@ -224,16 +224,38 @@ class Core extends Base\Core
                 'banking_account_statement_' . $accountNumber,
                 function () use ($channel, $accountNumber, $input)
                 {
-                    $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+                    $migratedRblAccount = false;
+
+                    try
+                    {
+                        $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($accountNumber, $channel);
+
+                        $balance = $bankingAccount->balance;
+                    }
+                    catch(\Exception $ex)
+                    {
+                        $balance = $this->repo->balance->getBalanceEntityByAccountNumber($accountNumber, $this->app['rzp.mode']);
+
+                        if (empty($balance))
+                        {
+                            throw $ex;
+                        }
+
+                        $migratedRblAccount = true;
+                    }
 
                     $currentTime = Carbon::now()->getTimestamp();
 
                     // updating LastStatementAttemptAt irrespective of success or fail so that new accounts are always fetched
                     // using LastStatementAttemptAt and failed accounts can be manually tried by sre also We are handling failure
                     // retry in job instead.
-                    $bankingAccount->setLastStatementAttemptAt($currentTime);
+                    if (!$migratedRblAccount)
+                    {
+                        // for migrated RBL CAs, last_statement_attempt_at is irrelevant
+                        $bankingAccount->setLastStatementAttemptAt($currentTime);
 
-                    $this->repo->saveOrFail($bankingAccount);
+                        $this->repo->saveOrFail($bankingAccount);
+                    }
 
                     $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
 
@@ -249,7 +271,7 @@ class Core extends Base\Core
 
                     $this->processAccountStatement($accountStatementDetails, $processor, $basDetailEntity);
 
-                    $bankingAccount->balance->updateLastFetchedAt();
+                    $balance->updateLastFetchedAt();
                 },
                 1800,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS

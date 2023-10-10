@@ -555,9 +555,9 @@ class Core extends Base\Core
         $upiEnabledInSettings = (key_exists(Entity::UPI, $settingsAttributeArray) and
                                 boolval($settingsAttributeArray[Entity::UPI]));
 
-        $bankingAccount = $payoutLink->balance->bankingAccount;
+        $balance = $payoutLink->balance;
 
-        if ($bankingAccount->getChannel() === Channel::RBL)
+        if ($balance->getChannel() === Channel::RBL)
         {
             $channelSupportsUpi = false;
         }

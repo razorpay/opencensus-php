@@ -110,13 +110,13 @@ class Service extends Base\Service
             //pull businessId and validate before forwarding request to banking account service
 
             /**
-             * NOTE: __multi_ca__ Removing this validation from here 
+             * NOTE: __multi_ca__ Removing this validation from here
              * as there will be multiple business for an MID
              * and checking business id in the URL belongs to merchant id should be on BAS
-             * 
-             * This would increase latency for calls where this should fail 
+             *
+             * This would increase latency for calls where this should fail
              * but almost no call fails because of this validation
-             * */ 
+             * */
             // $this->core()->isvalidBusinessId($path);
 
             $path = Constants::BUSINESS_PATH . '/' . $path;
@@ -481,7 +481,7 @@ class Service extends Base\Service
             {
                 $bankingAccountsFromBas = $this->core()->attachBankingAccountWithBalance($merchantId, $basBankingAccounts);
 
-                foreach ($bankingAccountsFromBas as $basBankingAccount) 
+                foreach ($bankingAccountsFromBas as $basBankingAccount)
                 {
                     $bankingAccounts[] = $basBankingAccount;
                 }
@@ -911,27 +911,27 @@ class Service extends Base\Service
                 else
                 {
                     (new Validator)->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
-    
+
                     $bankingAccount = $input[Constants::BANKING_ACCOUNT];
-    
+
                     $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
-    
+
                     switch ($notificationType)
                     {
                         case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
                             $validatorOp = $input[Constants::VALIDATOR_OP];
-    
+
                             $bankingAccountCore->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
                             break;
-    
+
                         case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
                             $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
                             $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
-    
+
                             // called when a banking_account's status or sub status is updated
                             $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
                             break;
-    
+
                         default:
                             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
                     }
@@ -999,7 +999,7 @@ class Service extends Base\Service
                     'banking_account_id' => array_get($input, 'banking_account.id', ''),
                     'error'              => $e->getMessage()
                 ]);
-            
+
             array_push($res, [
                 'message' => $e->getMessage(),
                 'success' => false,
@@ -1184,7 +1184,22 @@ class Service extends Base\Service
         return null;
     }
 
-    public function fetchMerchantBaPanStatusForIcici(string $merchantId)
+    public function fetchMerchantBaApplicationStatusForRbl(string $merchantId)
+    {
+        $response = $this->sendBusinessRequestAndProcessResponse($merchantId, Constants::APPLICATION_PATH, 'GET', false);
+
+        foreach ($response['data'] as $basApplication)
+        {
+            if ($basApplication['application_type'] === Constants::RBL_ONBOARDING_APPLICATION)
+            {
+                return $basApplication['application_status'];
+            }
+        }
+
+        return null;
+    }
+
+    public function fetchMerchantBaPanStatus(string $merchantId)
     {
         $response = $this->sendBusinessRequestAndProcessResponse($merchantId, Constants::EXPAND_DOCUMENTS, 'GET', false);
 
@@ -1413,7 +1428,6 @@ class Service extends Base\Service
         // convert to API structure and return
         return $this->basDtoAdapter->toApiSearchLeadsResponseBulk($applications);
     }
-
 
     /**
      * @throws \Throwable
@@ -1686,6 +1700,172 @@ class Service extends Base\Service
         return $businessId;
     }
 
+    /**
+     * In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL Migration) balance exists but not banking_account entity.
+     * We make a call to banking account service to fetch the banking account id.
+     *
+     * @param string $balanceId
+     *
+     * @return string
+     */
+    public function fetchBankingAccountIdByBalanceId(string $balanceId) : string
+    {
+        $bankingAccountId = null;
+
+        /* @var BalanceEntity $balance */
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        //banking account does not exist for BAS CAs only.
+        if ((empty($balance->bankingAccount) === true) and
+            (in_array($balance->getChannel(), Channel::getDirectTypeChannels())) and
+            ($balance->getAccountType() === Merchant\Balance\AccountType::DIRECT))
+        {
+            //call to bas to fetch the banking_account_id.
+            $bankingAccountId = $this->bankingAccountService->fetchBankingAccountId($balanceId);
+        }
+        else
+        {
+            $bankingAccountId = optional($balance->bankingAccount)->getPublicId();
+        }
+
+        return $bankingAccountId;
+    }
+
+    /**
+     * Fetches account details for a specific merchant's account based on account number and channel.
+     *
+     * @param string $merchantId
+     * @param string $accountNumber
+     * @param string $channel
+     *
+     * @return \RZP\Models\BankingAccount\Entity|null
+     *
+     */
+    public function fetchAccountByMerchantIdAccountNumberChannel(string $merchantId, string $accountNumber, string $channel) : \RZP\Models\BankingAccount\Entity|null
+    {
+        $balance = $this->repo->balance->getBalanceEntityByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+
+        if (empty($balance))
+        {
+            return null;
+        }
+
+        // This will be empty only for bankingAccounts stored on BAS
+        if (empty($balance->bankingAccount) && 
+            in_array($balance->getChannel(), Channel::getDirectTypeChannels()) && 
+            $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+        {
+            $basBankingAccount = $this->bankingAccountService->fetchAccountDetailsByBalance($balance);
+
+            if(empty($basBankingAccount))
+            {
+                return null;
+            }
+
+            return $this->core()->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+        }
+
+        return $balance->bankingAccount;
+    }
+
+    /**
+     * Fetches activated account details for a specific merchant's account based on account number and channel.
+     *
+     * @param string $merchantId
+     * @param string $accountNumber
+     * @param string $channel
+     *
+     * @return \RZP\Models\BankingAccount\Entity|null
+     *
+     */
+    public function fetchActivatedAccountByMerchantIdAccountNumberChannel(string $merchantId, string $accountNumber, string $channel) : \RZP\Models\BankingAccount\Entity|null
+    {
+        $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+
+        if (!empty($bankingAccount) && $bankingAccount->getStatus() !== \RZP\Models\BankingAccount\Status::ACTIVATED)
+        {
+            return null;
+        }
+
+        return $bankingAccount;
+    }
+
+    /**
+     * Returns banking sensitive credentials like key, secret required to communicate to mozart
+     * for fetching latest balances, payouts by checking both API & BAS DBs
+     *
+     * @param string $merchantId
+     * @param string $channel
+     * @param string $accountNumber
+     *
+     * @return array|null
+     */
+    public function fetchCredentialsFromApiAndBas(string $merchantId, string $channel, string $accountNumber) : array|null
+    {
+        $balance = $this->repo->balance->getBalanceEntityByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+
+        // safety check
+        if (empty($balance))
+        {
+            return null;
+        }
+
+        // This will be empty only for bankingAccounts stored on BAS
+        if (empty($balance->bankingAccount) && 
+            in_array($channel, Channel::getDirectTypeChannels()) && 
+            $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+        {
+            return $this->bankingAccountService->fetchBankingCredentials($merchantId, $channel, $accountNumber);
+        }
+
+        $bankingAccount = $balance->bankingAccount;
+
+        return [
+            Constants::ID               => $bankingAccount->getId(),
+            Constants::CORP_ID_CRED     => '',
+            Constants::URN_CRED         => '',
+            Constants::ACCOUNT_NUMBER   => $accountNumber,
+            Constants::CREDENTIALS      => [
+                Constants::AUTH_USERNAME    => $bankingAccount->getUsername(),
+                Constants::AUTH_PASSWORD    => $bankingAccount->getPassword(),
+                Constants::CLIENT_ID        => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_ID),
+                Constants::CLIENT_SECRET    => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_SECRET),
+                Constants::CORP_ID          => $bankingAccount->getReference1(),
+                Constants::BANK_REFERENCE_NUMBER    => $bankingAccount->getBankReferenceNumber()
+            ]
+        ];
+    }
+
+    /**
+     * Fetches ca source fund_account_id that's registered at FTS
+     *
+     * @param string $merchantId
+     * @param string $channel
+     * @param string $accountNumber
+     *
+     * @return string|null
+     */
+    public function fetchFtsFundAccountIdFromApiAndBas(string $merchantId, string $channel, string $accountNumber) : string|null
+    {
+        $balance = $this->repo->balance->getBalanceEntityByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+
+        // safety check
+        if (empty($balance))
+        {
+            return null;
+        }
+
+        // This will be empty only for CAs stored on BAS
+        if (empty($balance->bankingAccount) && 
+            in_array($channel, Channel::getDirectTypeChannels()) && 
+            $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+        {
+            return $this->bankingAccountService->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
+        }
+
+        return $balance->bankingAccount->getFtsFundAccountId();
+    }
+
     public function rblMigrationBas(array $input) : array
     {
         $result = [];
@@ -1736,7 +1916,9 @@ class Service extends Base\Service
 
                 $basInput = $this->basDtoAdapter->fromApiInputToBasInput($apiInput);
 
-                $credentials = $basInput['credentials'];
+                $credentials = array_merge($basInput['credentials'], [
+                    'bank_reference_number' => $bankingAccount->getAttribute('bank_reference_number')
+                ]);
 
                 unset($basInput['credentials']);
 
@@ -1971,7 +2153,7 @@ class Service extends Base\Service
 
                 $merchantId = $bankingAccount->getMerchantId();
 
-                $this->repo->transaction(function() use ($basRequest, $merchantId)
+                $this->repo->transaction(function() use ($basRequest, $merchantId, $bankingAccount)
                 {
                     $response = $this->bankingAccountService->rblMigrationBas($basRequest);
 
@@ -1984,6 +2166,12 @@ class Service extends Base\Service
 
                         $this->repo->merchant_detail->saveOrFail($merchantDetail);
                     }
+
+                    $bankingAccount->edit([
+                        'status'  => \RZP\Models\BankingAccount\Status::MIGRATED
+                    ]);
+
+                    $this->repo->banking_account->saveOrFail($bankingAccount);
 
                 });
                 

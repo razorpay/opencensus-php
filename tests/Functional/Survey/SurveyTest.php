@@ -12,6 +12,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants\Timezone;
+use RZP\Services\Mock\BankingAccountService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Survey\Response\Service;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -794,6 +795,35 @@ class SurveyTest extends TestCase
         $this->ba->cronAuth('live');
 
         $this->startTest();
+    }
+
+
+    public function testSurveyOnCAOnboardingNoBankingAccount()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'description' => 'RazorpayX survey',
+            'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+            'survey_ttl' => 30,
+            'type'  => 'nps_csat',
+            'channel' => 3,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testSurveyOnCAOnboarding'];
+
+        $dataToReplace = [
+            'response' => [
+                'content' => [
+                    'dispatched_cohort_count' => 0,
+                ],
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
     }
 
     public function testSurveyOnCAOnboardedBeneficiaryEmail()

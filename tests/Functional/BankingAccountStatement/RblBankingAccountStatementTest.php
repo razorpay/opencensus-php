@@ -587,6 +587,126 @@ class RblBankingAccountStatementTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Case where the response from RBL CA is migrated to BAS
+     * TODO: Uncomment UT once Payouts is done with changes
+     */
+    // public function testRblAccountStatementCase7()
+    // {
+    //     $mockedResponse = $this->getRblDataResponse();
+
+    //     $this->setMozartMockResponse($mockedResponse);
+
+    //     $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+    //     // detach API RBL CA
+    //     $this->fixtures->edit('banking_account', $baBeforeTest['id'], [
+    //         'merchant_id'       => '10000000000001',
+    //         'account_number'    => null,
+    //         'balance_id'        => null,
+    //         'channel'           => 'yesbank'
+    //     ]);
+
+    //     $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+    //     $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+    //     $this->app['config']->set('applications.banking_account_service.mock', true);
+
+    //     $basMock = Mockery::mock(\RZP\Services\Mock\BankingAccountService::class, [$this->app])->makePartial();
+
+    //     $basMock->shouldReceive('fetchAccountDetailsByBalance')->atLeast()->once()->andReturns([
+    //         'partner_bank'              => 'RBL',
+    //         'ifsc'                      => 'RATN0000156',
+    //         'account_number'            => '2224440041626905',
+    //         'account_currency'          => 'INR',
+    //         'application_tracking_id'   => '',
+    //         'pincode'                   =>  '1',
+    //         'id'                        => 'xba00000000001',
+    //         'status'                    => 'ACTIVE'
+    //     ]);
+
+    //     $this->app->instance('banking_account_service', $basMock);
+
+    //     $this->ba->cronAuth();
+
+    //     $this->setupForRblAccountStatement();
+
+    //     $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementCase1'];
+
+    //     $this->startTest();
+
+    //     $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+    //     $txn = last($transactions);
+
+    //     $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+    //     $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+    //     $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+    //     $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+    //     $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+    //     $txnActual = $this->txnEntity->toArray();
+
+    //     $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+    //     $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+    //     $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+    //     $basExpected = [
+    //         BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+    //         BasEntity::BANK_TRANSACTION_ID   => trim($txn['txnId']),
+    //         BasEntity::TYPE                  => 'debit',
+    //         BasEntity::AMOUNT                => 10095,
+    //         BasEntity::BALANCE               => 11355,
+    //         BasEntity::POSTED_DATE           => 1451937993,
+    //         BasEntity::TRANSACTION_DATE      => 1451932200,
+    //         BasEntity::DESCRIPTION           => trim($txn['transactionSummary']['txnDesc']),
+    //         BasEntity::CHANNEL               => 'rbl',
+    //         BasEntity::ENTITY_ID             => $externalId,
+    //         BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+    //         BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+    //     ];
+
+    //     $this->assertArraySubset($basExpected, $basActual, true);
+
+    //     $externalExpected = [
+    //         BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+    //         ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+    //         ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+    //         ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+    //         ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+    //         ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+    //         ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+    //     ];
+
+    //     $this->assertArraySubset($externalExpected, $externalActual, true);
+
+    //     $txnExpected = [
+    //         TransactionEntity::ID               => $externalTxnId,
+    //         TransactionEntity::ENTITY_ID        => $externalId,
+    //         TransactionEntity::TYPE             => 'external',
+    //         TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+    //         TransactionEntity::CREDIT           => 0,
+    //         TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+    //         TransactionEntity::FEE              => 0,
+    //         TransactionEntity::TAX              => 0,
+    //         TransactionEntity::PRICING_RULE_ID  => null,
+    //         TransactionEntity::ON_HOLD          => false,
+    //         TransactionEntity::SETTLED          => false,
+    //         TransactionEntity::SETTLED_AT       => null,
+    //         TransactionEntity::SETTLEMENT_ID    => null,
+    //     ];
+
+    //     $this->assertArraySubset($txnExpected, $txnActual, true);
+    // }
+
+
     public function testRblAccountStatementCorrectionInClosingBalance()
     {
         $mockedResponse = $this->getRblDataResponse();

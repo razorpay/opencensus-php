@@ -2020,7 +2020,10 @@ class Entity extends Base\PublicEntity
     public function bankingAccounts()
     {
         return $this->hasMany(BankingAccount\Entity::class)
-            ->whereNot(BankingAccount\Entity::STATUS, BankingAccount\Status::TERMINATED);
+            ->whereNotIn(BankingAccount\Entity::STATUS, [
+                BankingAccount\Status::TERMINATED, 
+                BankingAccount\Status::MIGRATED,
+            ]);
     }
 
     public function hasBankingAccounts()

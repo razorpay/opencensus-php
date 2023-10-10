@@ -573,6 +573,21 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getBalanceEntityByMerchantIdAccountNumberChannel(
+        string $merchantId, 
+        string $accountNumber,
+        string $channel
+    )
+    {
+
+        // Index exists on account_number field
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->first();
+    }
+
     public function getBalanceByMerchantIdChannelsAndAccountType(string $merchantId,
                                                                  array $channels,
                                                                  string $accountType)
@@ -669,6 +684,20 @@ class Repository extends Base\Repository
             ->select($channelColumn, $accountTypeColumn)
             ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
             ->where(Entity::TYPE, Type::BANKING)
+            ->first();
+    }
+
+    public function getBalanceEntityByAccountNumber(string $accountNumber, string $mode): Entity
+    {
+        /*
+         SELECT balance.*
+            from balance
+            where balance.account_number = $accountNumber;
+        */
+
+        // Index exists on the account_number column
+        return $this->newQueryWithConnection($this->getSlaveConnection($mode))
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
             ->first();
     }
 }

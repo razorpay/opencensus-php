@@ -127,6 +127,11 @@ class Constants
     const CLIENT_ID                     = 'client_id';
     const CLIENT_SECRET                 = 'client_secret';
     const DEV_PORTAL_PASSWORD           = 'dev_portal_password';
+    const AUTH_USERNAME                 = 'auth_username';
+    const AUTH_PASSWORD                 = 'auth_password';
+    const USER_ID                       = 'user_id';
+    const URN_CRED                      = 'urn';
+    const BANK_REFERENCE_NUMBER         = 'bank_reference_number';
 
     const ACCOUNT_MANAGER_NAME          = 'account_manager_name';
 

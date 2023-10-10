@@ -506,6 +506,7 @@ class BankingAccountService
         return $result;
     }
 
+    // TODO: Change to return multiple activated banking accounts from BAS
     public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();
@@ -596,6 +597,7 @@ class BankingAccountService
             'bank_status'               => 'ACCOUNT_OPENED',
             'application_number'        => '11001',
             'application_tracking_id'   => '11001',
+            'application_status'        => 'activated',
             'beneficiary_email'         => 'abc@example.com',
             'beneficiary_mobile'        => '9898989898',
             'beneficiary_city'          => 'Delhi',

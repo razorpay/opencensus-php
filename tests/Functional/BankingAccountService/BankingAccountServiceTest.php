@@ -2017,13 +2017,13 @@ class BankingAccountServiceTest extends TestCase
             'channel'           => 'rbl',
         ]);
 
-        $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), [
+        $input = [
             'partner_bank'      => Channel::RBL,
             'ifsc'              => 'dummy-ifsc1',
             'account_number'    => '2224440041626905',
             'account_currency'  => 'INR',
             'metadata'        => [
-                'account_open_date' => 1690000123
+                'bank_account_open_date' => 1690000123
             ],
             'bank_status'                   => 'dummy-bank-status',
             'application_number'            => 'dummy-application-number',
@@ -2038,7 +2038,7 @@ class BankingAccountServiceTest extends TestCase
             'beneficiary_address3'          => 'address-3',
             'beneficiary_name'              => 'rzp',
             'beneficiary_pin'               => (int)'560038',
-            'fts_fund_account_id'           => 'dummy-fund1234',
+            'fts_fund_account_id'           => 'dummy-fund',
             'pincode'                       => '560038',
             'sub_status'                    => 'test_account',
 
@@ -2048,13 +2048,9 @@ class BankingAccountServiceTest extends TestCase
 
             'status'                        => 'ACTIVE',
             'id'                            => 'randomBaAccId8'
-        ]);
+        ];
 
-        $this->assertNotEmpty($ba->balance);
-        
-        $this->assertNotEmpty($ba->merchant);
-
-        $this->assertArraySelectiveEquals([
+        $expected = [
             Entity::CHANNEL                     => 'rbl',
             Entity::ACCOUNT_TYPE                => 'current',
             Entity::ACCOUNT_IFSC                => 'dummy-ifsc1',
@@ -2073,7 +2069,7 @@ class BankingAccountServiceTest extends TestCase
             Entity::BENEFICIARY_ADDRESS3        => 'address-3',
             Entity::BENEFICIARY_NAME            => 'rzp',
             Entity::BENEFICIARY_PIN             => 560038,
-            Entity::FTS_FUND_ACCOUNT_ID         => 'dummy-fund1234',
+            Entity::FTS_FUND_ACCOUNT_ID         => 'dummy-fund',
             Entity::PINCODE                     => '560038',
             Entity::SUB_STATUS                  => 'test_account',
             Entity::USERNAME                    => 'username',
@@ -2083,8 +2079,30 @@ class BankingAccountServiceTest extends TestCase
             Entity::STATUS                      => 'activated',
             Entity::MERCHANT_ID                 => $merchant->getId(),
             Entity::BALANCE_ID                  => $balance->getId()
-        ], $ba->toArray());
+        ];
+
+        $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), $input);
+
+        $this->assertNotEmpty($ba->balance);
         
+        $this->assertNotEmpty($ba->merchant);
+
+        $this->assertArraySelectiveEquals($expected, $ba->toArray());
+        
+        // case where banking_account.status is not ACTIVE at BAS
+        $input['application_status'] = 'account_activation';
+
+        $input['status'] = 'IN_PROGRESS';
+
+        $expected['status'] = 'account_activation';
+
+        $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), $input);
+
+        $this->assertNotEmpty($ba->balance);
+        
+        $this->assertNotEmpty($ba->merchant);
+
+        $this->assertArraySelectiveEquals($expected, $ba->toArray());
     }
 
     private function assertNotificationsForStatusChange(array $bankingAccount, string $status)

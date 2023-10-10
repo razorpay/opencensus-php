@@ -72,6 +72,9 @@ class Processor extends BankingAccount\Gateway\Processor
             $channel = $input[Entity::CHANNEL];
 
             /** @var Entity $bankingAccount */
+            /**
+             * TODO: __multi_ca__ To be handled by Payouts
+             */
             $this->bankingAccount = $this->repo->banking_account->getActiveBankingAccountByMerchantIdAndChannel($merchantId, $channel);
         }
     }

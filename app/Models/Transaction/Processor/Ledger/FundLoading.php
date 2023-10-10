@@ -57,7 +57,7 @@ class FundLoading extends Base
             $identifiers = [
                 self::TERMINAL_ID           => $terminalId,
                 self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
-                self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
+                self::BANKING_ACCOUNT_ID    => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($bankTransfer->balance->getId())
             ];
 
             $payload = [
@@ -161,7 +161,7 @@ class FundLoading extends Base
         $identifiers = [
             self::TERMINAL_ID           => $terminalId,
             self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
-            self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
+            self::BANKING_ACCOUNT_ID    => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($bankTransfer->balance->getId())
         ];
 
         $payload = [

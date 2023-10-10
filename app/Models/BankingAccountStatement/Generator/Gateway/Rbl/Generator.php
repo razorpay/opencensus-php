@@ -45,9 +45,21 @@ abstract class Generator extends Base
 
     protected function accountStatementData()
     {
-        $bankingAccount = $this->repo
-                               ->banking_account
-                               ->findByAccountNumberAndChannelPublic($this->accountNumber, $this->channel);
+        try
+        {
+            $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannelPublic($this->accountNumber, $this->channel);
+        }
+        catch(\Exception $e)
+        {
+            $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByAccountNumberChannel($this->accountNumber, $this->channel);
+
+            if (empty($bankingAccount))
+            {
+                throw $e;
+            }
+        }
+
+        $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByAccountNumberChannel($this->accountNumber, $this->channel);
 
         $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 

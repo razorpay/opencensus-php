@@ -13229,6 +13229,7 @@ class PayoutTest extends OAuthTestCase
             'id'                  => '10000000000001',
             'account_type'        => $balanceAttributes["balanceType"],
             'fts_fund_account_id' => '12345678',
+            'status'              => 'activated'
         ]);
 
         $virtualAccount    = $this->fixtures->create('virtual_account');
@@ -35028,6 +35029,7 @@ class PayoutTest extends OAuthTestCase
             'id'                  => '10000000000001',
             'account_type'        => 'shared',
             'fts_fund_account_id' => '12345678',
+            'status'              => 'activated'
         ]);
 
         $subVirtualAccount = $this->fixtures->on($mode)->create('sub_virtual_account', [

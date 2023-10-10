@@ -336,24 +336,7 @@ class Service extends Base\Service
      */
     public function checkAndGetBankingAccountId(string $id)
     {
-        try
-        {
-            /** @var Entity $bankingAccount */
-            $bankingAccount = $this->repo->banking_account->findByPublicId($id);
-
-            return [true, $bankingAccount];
-        }
-        catch (\RZP\Exception\BadRequestException $ex)
-        {
-            if ($ex->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
-            {
-                return [false, null];
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            throw $ex;
-        }
+        return $this->core->checkAndGetBankingAccountId($id);
     }
 
     public function updateApplicationOnBasByReferenceNumber(string $referenceNumber, array $input)
@@ -1710,13 +1693,19 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            if ($ex instanceof DbQueryException)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
-            }
+            // check for migrated RBL CAs in BAS
+            $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, Channel::RBL);
 
-            throw $ex;
+            if (empty($bankingAccount))
+            {
+                if ($ex instanceof DbQueryException)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
+                }
+                
+                throw $ex;
+            }
         }
 
         $this->trace->info(
@@ -1767,13 +1756,21 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                if ($ex instanceof DbQueryException)
+                $balance = $this->repo->balance->find($balanceId);
+
+                if (empty($balance))
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
                 }
 
-                throw $ex;
+                $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($balance->getMerchantId(), $balance->getAccountNumber(), Channel::RBL);
+
+                // throw error only $bankingAccount still cannot be resolved
+                if (empty($bankingAccount))
+                {
+                    throw $ex;
+                }
             }
 
             $response = [
@@ -1828,6 +1825,18 @@ class Service extends Base\Service
             ]);
 
         $bankingAccount = $this->repo->banking_account->getBankingAccountViaAccountNumberAndIfsc($accountNumber, $ifsc);
+
+        // check for migrated RBL CAs on BAS
+        if (empty($bankingAccount))
+        {
+            // intentionally not including IFSC since accountNumber is unique in balance
+            $balance = $this->repo->balance->getBalanceEntityByAccountNumber($accountNumber, $this->app['rzp.mode']);
+
+            if (!empty($balance) && $balance->getChannel() === Channel::RBL)
+            {
+                $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($balance->getMerchantId(), $accountNumber, Channel::RBL);
+            }
+        }
 
         if (is_null($bankingAccount) === true) {
 
@@ -2186,6 +2195,23 @@ class Service extends Base\Service
         $input[Constants::SKIP]  = 0;
         $input[Constants::COUNT] = $rowsToFetch;
 
+        // Ignore migrated accounts in fetchMultipleEntities
+        if (isset($input[Entity::EXCLUDE_STATUS]))
+        {
+            if (is_array($input[Entity::EXCLUDE_STATUS]))
+            {
+                array_push($input[Entity::EXCLUDE_STATUS], Status::MIGRATED);
+            }
+            else
+            {
+                $input[Entity::EXCLUDE_STATUS] = [$input[Entity::EXCLUDE_STATUS], Status::MIGRATED];
+            }
+        }
+        else
+        {
+            $input[Entity::EXCLUDE_STATUS] = [Status::MIGRATED];
+        }
+
         $bankingAccountsFromDb = (new AdminService())->fetchMultipleEntities('banking_account', $input);
         $bankingAccountsFromDb = $bankingAccountsFromDb['items'];
 
@@ -2278,7 +2304,18 @@ class Service extends Base\Service
     {
         try
         {
-            return (new AdminService())->fetchEntityById(Entities::BANKING_ACCOUNT, $bankingAccountId, $input);
+            $bankingAccount = (new AdminService())->fetchEntityById(Entities::BANKING_ACCOUNT, $bankingAccountId, $input);
+
+            // addQueryParam... functions do not work for fetch-by-id
+            if ($bankingAccount[Entity::STATUS] === Status::MIGRATED)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID, null, [
+                        'banking_account_id' => $bankingAccount['id']
+                    ]);
+            }
+
+            return $bankingAccount;
         }
         catch (\Exception $e)
         {
@@ -2296,6 +2333,99 @@ class Service extends Base\Service
             }
             throw $e;
         }
+    }
+
+    /**
+     * Returns banking_account_id using balance_id
+     *
+     * @param string $balanceId
+     *
+     * @return string
+     *
+     */
+    public function fetchBankingAccountIdByBalanceId(string $balanceId) : string
+    {
+        return $this->bankingAccountService->fetchBankingAccountIdByBalanceId($balanceId);
+    }
+
+    /**
+     * Fetches CAs by account_number & channel
+     *
+     * @param string $merchantId
+     * @param string $accountNumber
+     * @param string $channel
+     *
+     * @return Entity|null
+     *
+     */
+    public function fetchAccountByAccountNumberChannel(string $accountNumber, string $channel) : Entity|null
+    {
+        $balance = $this->repo->balance->getBalanceEntityByAccountNumber($accountNumber, $this->app['rzp.mode']);
+
+        if (empty($balance))
+        {
+            return null;
+        }
+
+        return $this->bankingAccountService->fetchAccountByMerchantIdAccountNumberChannel($balance->getMerchantId(), $accountNumber, $channel);
+    }
+
+    /**
+     * Fetches CAs by merchant_id, account_number & channel
+     *
+     * @param string $merchantId
+     * @param string $accountNumber
+     * @param string $channel
+     *
+     * @return Entity|null
+     *
+     */
+    public function fetchAccountByMerchantIdAccountNumberChannel(string $merchantId, string $accountNumber, string $channel) : Entity|null
+    {
+        return $this->bankingAccountService->fetchAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+    }
+
+    /**
+     * Fetches activated CAs by merchant_id, account_number & channel
+     *
+     * @param string $merchantId
+     * @param string $accountNumber
+     * @param string $channel
+     *
+     * @return Entity|null
+     *
+     */
+    public function fetchActivatedAccountByMerchantIdAccountNumberChannel(string $merchantId, string $accountNumber, string $channel) : Entity|null
+    {
+        return $this->bankingAccountService->fetchActivatedAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+    }
+
+    /**
+     * Fetches credentials by merchant_id, channel & account_number
+     *
+     * @param string $merchantId
+     * @param string $channel
+     * @param string $accountNumber
+     *
+     * @return array|null
+     */
+    public function fetchCredentialsFromApiAndBas(string $merchantId, string $channel, string $accountNumber) : array|null
+    {
+        return $this->bankingAccountService->fetchCredentialsFromApiAndBas($merchantId, $channel, $accountNumber);
+    }
+
+    /**
+     * Fetches CA source fund_account_id that's registered at FTS
+     *
+     * @param string $merchantId
+     * @param string $channel
+     * @param string $accountNumber
+     *
+     * @return string|null
+     */
+    public function fetchFtsFundAccountIdFromApiAndBas(string $merchantId, string $channel, string $accountNumber) : string|null
+    {
+        return $this->bankingAccountService->fetchFtsFundAccountIdFromApiAndBas($merchantId, $channel, $accountNumber);
     }
 
     protected function mergeBankingAccountArrays(array  $bankingAccountsFromDb,

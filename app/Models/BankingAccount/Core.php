@@ -741,6 +741,9 @@ class Core extends Base\Core
 
     public function checkIfAccountNumberWithChannelAlreadyExists(string $bankAccountNumber, string $channel)
     {
+        /**
+         * If RBL application is on BAS, flow would not have reached here. No need to handle for switch mechanism
+         */
         $bankingAccount =  $this->repo->banking_account->fetchByAccountNumberAndChannel($bankAccountNumber, $channel);
 
         if($bankingAccount != null)
@@ -755,26 +758,6 @@ class Core extends Base\Core
                 'Account Number for the channel: ' . $bankingAccount->getChannel() . ' sent in the payload is already present in our system.'
             );
         }
-    }
-
-    public function fetchByBankReferenceAndChannel(string $channel, string $bankReference)
-    {
-        $bankingAccount = $this->getBankingAccountByBankReferenceAndChannel($channel, $bankReference);
-
-        if ($bankingAccount === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_INCORRECT_RZP_REF_NO,
-                null,
-                [
-                    'rzp_ref_no' => $bankReference,
-                    'channel'    => $channel,
-                ],
-                'No records found for Channel:' . $channel . ', with RZP Ref No: '. $bankReference
-            );
-        }
-
-        return $bankingAccount;
     }
 
     public function getBankingAccountByBankReferenceAndChannel(string $channel, string $bankReference)
@@ -1358,11 +1341,6 @@ class Core extends Base\Core
         $bankingAccount->setFtsFundAccountId($ftsFundAccountId);
 
         $this->repo->saveOrFail($bankingAccount);
-    }
-
-    public function getBankingAccountEntity(string $id)
-    {
-        return $this->repo->banking_account->find($id);
     }
 
     public function addServiceablePincodes(array $pincodes, string $channel)
@@ -2760,7 +2738,13 @@ class Core extends Base\Core
             case Channel::RBL:
                 $bankingAccount = $this->repo->banking_account->connection($mode)->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
                     $merchant->getId(), Channel::RBL, AccountType::CURRENT);
-                return $bankingAccount->getStatus();
+
+                if (!empty($bankingAccount))
+                {
+                    return $bankingAccount->getStatus();
+                }
+
+                return (new BasService())->fetchMerchantBaApplicationStatusForRbl($merchant->getId());
 
             case Channel::ICICI:
                 return (new BasService())->fetchMerchantBaApplicationStatusForIcici($merchant->getId());
@@ -2786,10 +2770,19 @@ class Core extends Base\Core
             case Channel::RBL:
                 $bankingAccount = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
                     $merchant->getId(), Channel::RBL, AccountType::CURRENT);
-                return $bankingAccount->bankingAccountActivationDetails[Entity::BUSINESS_PAN_VALIDATION];
+
+                if (!empty($bankingAccount))
+                {
+                    return $bankingAccount->bankingAccountActivationDetails[Entity::BUSINESS_PAN_VALIDATION];
+                }
+
+                /**
+                 * TODO: __multi_ca__ Handle multiple businesses for merchant
+                 */
+                return (new BasService())->fetchMerchantBaPanStatus($merchant->getId());
 
             case Channel::ICICI:
-                return (new BasService())->fetchMerchantBaPanStatusForIcici($merchant->getId());
+                return (new BasService())->fetchMerchantBaPanStatus($merchant->getId());
 
             default:
                 return null;
@@ -3359,6 +3352,33 @@ class Core extends Base\Core
         ]);
 
         Mail::queue($mailable);
+    }
+
+    public function checkAndGetBankingAccountId(string $id)
+    {
+        try
+        {
+            /** @var Entity $bankingAccount */
+            $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+            if ($bankingAccount->getStatus() === Status::MIGRATED)
+            {
+                return [false, null];
+            }
+
+            return [true, $bankingAccount];
+        }
+        catch (\RZP\Exception\BadRequestException $ex)
+        {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                return [false, null];
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            throw $ex;
+        }
     }
 
     private function generateAndGetCredentials(Entity $bankingAccount)

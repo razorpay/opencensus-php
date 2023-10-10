@@ -102,6 +102,9 @@ class Repository extends Base\Repository
 
     public function fetchActiveCurrentAccountForMerchantIds(array $merchantId, string $channel, string $accountType): array
     {
+        /**
+         * TODO: __multi_ca__ To be handled by Payouts
+         */
         return $this->repo->banking_account->fetchActiveCurrentAccountForMerchantIds($merchantId, $channel, $accountType);
     }
 
@@ -112,6 +115,9 @@ class Repository extends Base\Repository
 
     public function fetchActiveRblAccountForMerchantIds(array $merchantIds)
     {
+        /**
+         * TODO: __multi_ca__ To be handled by Payouts
+         */
         return $this->repo->banking_account->fetchActiveCurrentAccountForMerchantIds($merchantIds, strtolower(Constants::RBL), Constants::CURRENT);
     }
 

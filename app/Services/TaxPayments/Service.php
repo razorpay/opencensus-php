@@ -255,6 +255,16 @@ class Service
                 $bankingAccount = $this->repo
                     ->banking_account
                     ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
+
+                if (empty($bankingAccount))
+                {
+                    // check for RBL CAs on BAS
+                    $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByMerchantIdAccountNumberChannel(
+                        $merchant->getId(), 
+                        $accountNumber,
+                        \RZP\Models\BankingAccountService\Channel::RBL);
+                }
+
                 if ($bankingAccount !== null)
                 {
                     $bankingAccountInfo = [

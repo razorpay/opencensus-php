@@ -562,12 +562,12 @@ class Core extends Base\Core
 
         do{
             $merchantIdsWithCaRblActivated = $this->repo
-                ->banking_account
-                ->fetchMerchantsWithCaRblAccount(
+                ->banking_account_statement_details
+                ->getMerchantsByChannelAndAccountType(
                     $batch,
                     $skip,
                     \RZP\Models\BankingAccount\Channel::RBL,
-                    AccountType::CURRENT,
+                    AccountType::DIRECT,
                     $merchantIds,
                     $merchantIdsExcluded);
 

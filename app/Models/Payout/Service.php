@@ -3342,7 +3342,7 @@ class Service extends Base\Service
 
         foreach ($queuedPayouts as $payout)
         {
-            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
+            $bankingAccountId = (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($payout['balance_id']);
 
             $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
 
@@ -3420,7 +3420,7 @@ class Service extends Base\Service
 
         foreach ($groupedScheduledPayouts as $balanceId => $scheduledPayouts)
         {
-            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
+            $bankingAccountId = (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($balanceId);
 
             foreach ($allTimePeriods as $timePeriod)
             {
@@ -3628,7 +3628,7 @@ class Service extends Base\Service
 
         foreach ($groupedPendingPayouts as $balanceId => $payouts)
         {
-            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
+            $bankingAccountId = (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($balanceId);
 
             $amount = 0;
 

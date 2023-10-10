@@ -113,7 +113,7 @@ class FundAccountValidation extends Base
             ];
 
             $identifiers = [
-                self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
+                self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($fundAccountValidation->balance->getId())
             ];
 
             $additional_params = [];
@@ -206,7 +206,7 @@ class FundAccountValidation extends Base
         ];
 
         $identifiers = [
-            self::BANKING_ACCOUNT_ID => $validation->balance->bankingAccount->getPublicId(),
+            self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($validation->balance->getId())
         ];
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);

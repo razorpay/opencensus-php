@@ -204,7 +204,7 @@ class CreateAccount extends Base
                 break;
 
             case Constants::BANKING_ACCOUNT:
-                $this->account = $this->bankingAccountCore->getBankingAccountEntity($id);
+                $this->account = (new \RZP\Models\BankingAccount\Service())->fetchRblApplicationFromApiAndBasForFts($id);
 
                 $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
 
@@ -459,7 +459,7 @@ class CreateAccount extends Base
                 break;
 
             case Constants::BANKING_ACCOUNT:
-                $this->account = $this->bankingAccountCore->getBankingAccountEntity($this->accountId);
+                $this->account = (new \RZP\Models\BankingAccount\Service())->fetchRblApplicationFromApiAndBasForFts($this->accountId);
 
                 break;
 

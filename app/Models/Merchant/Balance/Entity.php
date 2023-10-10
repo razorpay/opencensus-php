@@ -349,7 +349,8 @@ class Entity extends Base\PublicEntity
 
     public function bankingAccount()
     {
-        return $this->hasOne(BankingAccount\Entity::class);
+        return $this->hasOne(BankingAccount\Entity::class)
+            ->whereNot(BankingAccount\Entity::STATUS, BankingAccount\Status::MIGRATED);
     }
 
     public function bankingAccountStatementDetails()

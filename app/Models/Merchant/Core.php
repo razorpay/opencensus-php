@@ -8088,6 +8088,7 @@ class Core extends Base\Core
         try
         {
             // fetch the CA channel from 'banking_accounts' table first and if there is no data then check 'merchant_attributes'
+            // for migrated RBL CAs, ca_proceeded_bank is present & $caStatus calculation is handled. 
             $bankingAccounts = $this->repo->banking_account->connection($mode)->fetchMerchantBankingAccounts($merchant->getId());
 
             $currentAccount = current(array_filter($bankingAccounts, function ($account) {

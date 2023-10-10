@@ -311,6 +311,15 @@ class MerchantBankingInvoiceTest extends TestCase
                 'status'         => 'activated',
             ]);
 
+        $this->fixtures->create('banking_account_statement_details',[
+            'id'             => 'xbas0000000002',
+            'merchant_id'    => '10000000000000',
+            'balance_id'     => $x->getId(),
+            'account_number' => '2224440041626905',
+            'channel'        => Details\Channel::RBL,
+            'status'         => Details\Status::ACTIVE,
+        ]);
+
         $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
 
         $y = $this->fixtures->create(

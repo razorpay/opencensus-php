@@ -49,7 +49,7 @@ class Adjustment extends Base
             ];
 
             $identifiers = [
-                self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
+                self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($adjustment->balance->getId())
             ];
 
             $additional_params = [];
@@ -149,7 +149,7 @@ class Adjustment extends Base
         ];
 
         $identifiers = [
-            self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
+            self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($adjustment->balance->getId())
         ];
 
         return [

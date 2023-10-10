@@ -111,6 +111,9 @@ class Core extends Base\Core
     {
         $merchantId = $input[Entity::MID];
 
+        /**
+         * TODO: __multi_ca__ Handle for switch mechanism
+         */
         $emails = $this->repo->banking_account->getMerchantPocAndBeneficiaryEmail($merchantId);
         $merchantPocEmail = $emails[ActivationDetail\Entity::MERCHANT_POC_EMAIL];
         $beneficiaryEmail = $emails[BankingAccount\Entity::BENEFICIARY_EMAIL];

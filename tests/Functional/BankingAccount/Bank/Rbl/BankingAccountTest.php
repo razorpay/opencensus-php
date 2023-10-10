@@ -3758,6 +3758,14 @@ class BankingAccountTest extends TestCase
         );
     }
 
+    public function testUpdateBankingAccountStatusActivatedToMigrated()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::ACTIVATED,
+            Status::MIGRATED
+        );
+    }
+
     public function testUpdateBankingAccountStatusCreatedToArchivedWithClevertapMigrationExpEnabled()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
@@ -7169,11 +7177,13 @@ class BankingAccountTest extends TestCase
         $bankingAccount1 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId1',
             'account_type'  => 'current',
+            'status'        => 'created'
         ]);
 
         $bankingAccount2 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId2',
             'account_type'  => 'current',
+            'status'        => 'created'
         ]);
 
         $randomAdmin = $this->fixtures->create('admin', [
@@ -7200,11 +7210,13 @@ class BankingAccountTest extends TestCase
         $bankingAccount1 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId1',
             'account_type'  => 'current',
+            'status'        => 'created'
         ]);
 
         $bankingAccount2 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId2',
             'account_type'  => 'current',
+            'status'        => 'created'
         ]);
 
         $this->ba->adminAuth();
@@ -7237,6 +7249,7 @@ class BankingAccountTest extends TestCase
         $bankingAccount1 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId1',
             'account_type'  => 'current',
+            'status'        => 'created'
         ]);
 
         $randomAdmin = $this->fixtures->create('admin', [
@@ -14042,6 +14055,7 @@ class BankingAccountTest extends TestCase
             'balance_id'            => $balance->getId(),
             'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
             'credentials'           => [
+                'bank_reference_number' => $bankingAccount->getAttribute('bank_reference_number'),
                 'auth_username' => 'ldap_id',
                 'auth_password' => 'ldap_password',
                 'corp_id'       => 'corp_id',
@@ -14175,6 +14189,10 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(Status::MIGRATED, $bankingAccount->getStatus());
     }
 
     public function mockBankingAccountProcessRblAccountOpeningWebhook($status = 'Success')
@@ -14222,6 +14240,174 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testMigratedBankingAccountRelationships()
+    {
+        // 1. prepare activated account
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'account_number' => '300400500600'
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance->getId()
+        ]);
+
+        // 2. test no discrepancy with relation when account is activated
+        $merchant = (new Merchant\Repository())->find($bankingAccount->getMerchantId());
+
+        $this->assertEquals($bankingAccount->getId(), $balance->bankingAccount->getId());
+
+        $this->assertEquals($bankingAccount->getId(), $merchant->bankingAccounts->first()->getId());
+
+        // 3. test no discrepancy with relation when account is migrated
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            Entity::STATUS => Status::MIGRATED,
+        ]);
+
+        // re-fetch from DB to reset relation loads
+        $balance = $this->getDbLastEntity('balance');
+
+        $merchant = (new Merchant\Repository())->find($bankingAccount->getMerchantId());
+
+        $this->assertEmpty($balance->bankingAccount);
+
+        $this->assertEmpty($merchant->bankingAccounts);
+    }
+
+    public function testFetchMigratedRblApplicationFromApiAndBasById()
+    {
+        // 1. prepare activated account
+        $bankingAccountId = 'JuLWj2OnFAcg72';
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'account_number' => '2224440041626905'
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'migrated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance->getId(),
+            'id'                    => $bankingAccountId
+        ]);
+
+        $bankingAccountStatementDetails = $this->fixtures->create('banking_account_statement_details', [
+            'id'                        => 'xbas0000000002',
+            'merchant_id'               => '10000000000000',
+            'balance_id'                => $balance->getId(),
+            'account_number'            => '2224440041626905',
+            'channel'                   => 'rbl',
+            'status'                    => 'active',
+            'gateway_balance'           => 100000,
+            'balance_last_fetched_at'   => 1659873429
+        ]);
+
+        // 2. setup mocks
+        $this->mockBankingAccountService();
+
+        // 3. make request & assert
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultipleMigratedRblApplicationFromApiAndBas()
+    {
+        // 1. prepare activated account
+        $bankingAccountId = 'JuLWj2OnFAcg72';
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'account_number' => '2224440041626905'
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'migrated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance->getId(),
+            'id'                    => $bankingAccountId
+        ]);
+
+        $bankingAccountStatementDetails = $this->fixtures->create('banking_account_statement_details', [
+            'id'                        => 'xbas0000000002',
+            'merchant_id'               => '10000000000000',
+            'balance_id'                => $balance->getId(),
+            'account_number'            => '2224440041626905',
+            'channel'                   => 'rbl',
+            'status'                    => 'active',
+            'gateway_balance'           => 100000,
+            'balance_last_fetched_at'   => 1659873429
+        ]);
+
+        // 2. setup mocks
+        $this->mockBankingAccountService();
+
+        // 3. make request & assert
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCheckAndGetBankingAccountIdMigratedAccount()
+    {
+        // 1. prepare activated account
+        $bankingAccountId = 'JuLWj2OnFAcg72';
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'account_number' => '2224440041626905'
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'migrated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156'
+        ]);
+
+        // 2. call function && assert
+        [$existsInApi, $bankingAccount] = (new BankingAccount\Core)->checkAndGetBankingAccountId($bankingAccount->getId());
+
+        $this->assertEquals(false, $existsInApi);
+
+        $this->assertNull($bankingAccount);
+    }
     public function testMultiCaFetchBankingAccountsProxyAuth()
     {
         $this->ba->proxyAuth();

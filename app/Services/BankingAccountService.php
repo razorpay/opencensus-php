@@ -47,7 +47,7 @@ class BankingAccountService
     const BULK_ASSIGN_ACCOUNT_MANAGER               = 'admin/banking_accounts/bulk_assign_account_manager';
     const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
 
-    // The below routes support merchant id (dummy value '_' if not present in context), 
+    // The below routes support merchant id (dummy value '_' if not present in context),
     // in place of business/:business_id
     // The check for this is done at the resource verification layer
     const COMPOSITE_APPLICATION                     = 'business/%s/composite-applications/%s';
@@ -119,10 +119,10 @@ class BankingAccountService
         foreach ($balances as $balance)
         {
             // $balance->bankingAccount would be empty for CAs stored in BAS
-            if (empty($balance->bankingAccount) === true) 
+            if (empty($balance->bankingAccount) === true)
             {
                 $filteredBalances[] = $balance;
-            } 
+            }
         }
 
         if (count($filteredBalances) === 0)
@@ -142,6 +142,23 @@ class BankingAccountService
         }
 
         return $accounts;
+    }
+
+
+    /**
+     * Fetches account details from banking-account-service by balance
+     *
+     * @param BalanceEntity $balance
+     *
+     * @return array
+     */
+    public function fetchAccountDetailsByBalance(BalanceEntity $balance) : array
+    {
+        $merchantId = $balance->getMerchantId();
+
+        $this->isBusinessExists($merchantId);
+
+        return $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $balance->getAccountNumber(), $balance->getChannel());
     }
 
     /**
@@ -222,7 +239,7 @@ class BankingAccountService
 
     /**
      * To be used internally
-     * 
+     *
      * Used by payouts service to read fts_fund_account_id
      * and to get banking account id using balance id by fetchBankingAccountId which is used from payouts module heavily
      */
@@ -232,8 +249,8 @@ class BankingAccountService
     }
 
     /**
-     * defining a separate function to avoid breakage of existing expectations 
-     * This function returns business and banking account application as well 
+     * defining a separate function to avoid breakage of existing expectations
+     * This function returns business and banking account application as well
      * to create banking account entity equivalent
      */
     protected function fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $accountNumber, $channel)
@@ -246,7 +263,7 @@ class BankingAccountService
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
-        return $response['data']; 
+        return $response['data'];
     }
 
     public function rblMigrationBas($request)
@@ -290,7 +307,7 @@ class BankingAccountService
 
     /**
      * Consumed in payouts module heavily
-     * 
+     *
      * NOTE: __multi_ca__ there should be only a single function in banking account module
      * to resolve banking account id for all direct account using balance id
      * Which considers all complexities like:
@@ -298,7 +315,7 @@ class BankingAccountService
      * - Other CAs on BAS
      * - RBL CAs on BAS
      * - RBL CAs migrated to BAS
-     * 
+     *
      * @param string $balanceId
      *
      * @return mixed
@@ -616,7 +633,7 @@ class BankingAccountService
 
     /**
      * Returns all banking account details
-     * 
+     *
      * Internal to BAS Service
      */
     protected function getBankingAccountDetailsByMerchantIdAndAccountNumber(string $merchantId, string $accountNumber, string $channel)
@@ -740,10 +757,10 @@ class BankingAccountService
 
     /**
      * fetchActivatedDirectAccountsFromBas returns in-memory generated banking accounts residing in banking account service
-     * 
+     *
      * Currently used only in Merchant/Entity.php for the lack of a better functions
      * Other functions directly call `fetchMultipleActivatedAccountDetails` and handle generating the banking account entity and merging into other banking accounts
-     * 
+     *
      * TODO: Clean this bit in all caller functions of `fetchActivatedDirectAccountsFromBas` and `fetchMultipleActivatedAccountDetails`
      */
     public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)

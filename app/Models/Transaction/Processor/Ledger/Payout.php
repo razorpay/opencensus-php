@@ -426,7 +426,7 @@ class Payout extends Base
         ];
 
         $identifiers = [
-            self::BANKING_ACCOUNT_ID => $payout->balance->bankingAccount->getPublicId(),
+            self::BANKING_ACCOUNT_ID => (new \RZP\Models\BankingAccount\Service())->fetchBankingAccountIdByBalanceId($payout->balance->getId()),
         ];
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);

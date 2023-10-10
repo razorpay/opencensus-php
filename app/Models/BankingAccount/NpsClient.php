@@ -16,6 +16,9 @@ class NpsClient extends Base\Service
      */
     public function getCohorts($surveyTTL) //survey_ttl is in hours
     {
+        /**
+         * TODO: __multi_ca__ Handle for switch mechanism
+         */
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $startTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
