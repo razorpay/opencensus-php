@@ -1,5 +1,6 @@
 import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
 import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
+import IThinkLogisticsIcon from 'assets/ithink-logistics-logo.png';
 import lazy from 'merchant/routes/LazyLoader';
 
 const ShipRocketModal = lazy(() =>
@@ -11,6 +12,12 @@ const ShipRocketModal = lazy(() =>
 const DelhiveryModal = lazy(() =>
   import(
     /* webpackChunkName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/DelhiveryAccountModal'
+  ),
+);
+
+const IThinkModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/IThinkAccountModal'
   ),
 );
 
@@ -133,6 +140,11 @@ export const SHIPPING_PARTNERS = {
     image: DelhiveryIcon,
     component: <DelhiveryModal />,
   },
+  ithink_logistics: {
+    provider_type: 'iThink Logistics',
+    image: IThinkLogisticsIcon,
+    component: <IThinkModal />,
+  },
 };
 
 export const DISCONNECT_TEXTS = {
@@ -157,4 +169,29 @@ export const DISCONNECT_TEXTS = {
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },
+  ithink_logistics: {
+    header: 'Disconnect iThink Logistics',
+    subText: 'Are you sure you want to disconnect ?',
+    desc: 'Razorpay will stop receiving delivery status updates from your iThink Logistics account. Orders shipped via iThink Logistics will no longer be eligible for RTO insurance.',
+    secondaryCtaLabel: 'No, don’t disconnect',
+    primaryCtaLabel: 'Yes, disconnect',
+  },
 };
+
+export const ITHINK_LOGISTICS_STEP_TEXT = [
+  {
+    instructions: {
+      heading: 'Follow the below steps',
+      points: [
+        'Go to the settings section',
+        'Go to API Key section',
+        'Copy API Key and Secret Key and paste in the section ahead',
+      ],
+    },
+    cta: {
+      primary: 'Enter credentials',
+      secondary: 'Skip instructions',
+      secondaryStep: 1,
+    },
+  },
+];

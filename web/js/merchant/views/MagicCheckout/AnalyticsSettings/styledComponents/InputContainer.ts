@@ -71,10 +71,12 @@ export const ConfigLabel = styled.p`
   color: #5a6870;
   font-weight: 500;
   font-size: 13px;
+  word-wrap: break-word;
 `;
 export const ConfigValue = styled.p`
   color: #000;
   font-weight: 600;
+  word-wrap: break-word;
 `;
 export const IntegrationFieldWrapper = styled.div`
   display: flex;
