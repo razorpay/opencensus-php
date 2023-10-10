@@ -8474,6 +8474,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PG_LEDGER_ROUTE_ENTRY_FAILED                              = "PG_LEDGER_ROUTE_ENTRY_FAILED";
     const PG_LEDGER_CHARGEBACK_ENTRY_FAILED                         = "PG_LEDGER_CHARGEBACK_ENTRY_FAILED";
     const PAYMENT_GATEWAY_CAPTURED                                  = "PAYMENT_GATEWAY_CAPTURED";
+    const CVVLESS_GATEWAY_LOG                                       = "CVVLESS_GATEWAY_LOG";
     const GATEWAY_CAPTURED_EVENT_TRIGGERED                          = "GATEWAY_CAPTURED_EVENT_TRIGGERED";
     const PAYMENT_MERCHANT_CAPTURED                                 = "PAYMENT_MERCHANT_CAPTURED";
     const PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW                  = "PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW";
