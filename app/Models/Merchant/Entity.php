@@ -3957,6 +3957,19 @@ class Entity extends Base\PublicEntity
        return ($this->isFeatureEnabled(Feature\Constants::MANDATORY_AVS_CHECK) === true);
     }
 
+    public function isSignupCampaignAnyOf(array $signupCampaigns): bool
+    {
+        $app = App::getFacadeRoot();
+
+        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($this->getId());
+        if (in_array(optional($deviceDetail)->getSignupCampaign(), $signupCampaigns, true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isSignupCampaign($signupCampaign): bool
     {
         $app = App::getFacadeRoot();

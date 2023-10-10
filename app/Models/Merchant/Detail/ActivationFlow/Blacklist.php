@@ -46,7 +46,7 @@ class Blacklist extends Base implements ActivationFlowInterface
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        if ($merchant->isSignupCampaignAnyOf(Detail\Constants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS))
         {
             $merchantDetails->setLocked(true);
 

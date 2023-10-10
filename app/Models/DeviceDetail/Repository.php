@@ -56,6 +56,7 @@ class Repository extends Base\Repository
 
     public function filterSignupCampaignAndSourceFromMerchantIdList(array $merchantIdList, string $signupCampaign, array $signupSources, $role = Role::OWNER)
     {
+        // TODO Phantom Onboarding add for phantom_onboarding signup campaign as well
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
@@ -73,6 +74,7 @@ class Repository extends Base\Repository
 
     public function removeSignupCampaignIdsFromMerchantIdList(array $merchantIdList, string $signupCampaign, $role = Role::OWNER)
     {
+        // TODO Phantom Onboarding add for phantom_onboarding signup campaign as well
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);

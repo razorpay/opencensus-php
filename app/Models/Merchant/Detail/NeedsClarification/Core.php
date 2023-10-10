@@ -47,7 +47,7 @@ class Core extends Base\Core
      */
     public function shouldTriggerNeedsClarification(Base\PublicEntity $entity): bool
     {
-        if ($entity->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        if ($entity->merchant->isSignupCampaignAnyOf(DetailConstant::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS))
         {
             return false;
         }

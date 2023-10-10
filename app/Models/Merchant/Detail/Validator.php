@@ -820,7 +820,7 @@ class Validator extends Base\Validator
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST and
-            $this->entity->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+            $this->entity->merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
         }
@@ -1126,7 +1126,10 @@ class Validator extends Base\Validator
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
-        if (empty($this->entity) === false and optional($this->entity->merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        if (
+            (empty($this->entity) === false) and
+            optional($this->entity->merchant)->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
+        )
         {
             return;
         }
@@ -1434,7 +1437,7 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity->merchant;
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === true)
         {
             return;
         }

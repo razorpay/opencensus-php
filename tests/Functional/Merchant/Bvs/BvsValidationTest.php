@@ -22,6 +22,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Repository;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class BvsValidationTest extends TestCase
 {
@@ -737,7 +738,20 @@ class BvsValidationTest extends TestCase
 
     public function testCreateBvsValidationPoaAadhaarSyncEnabled()
     {
-        $this->checkSyncEnabledPOA('aadhar_front', 'aadhaar');
+        $this->checkSyncEnabledPOA(
+            'aadhar_front',
+            'aadhaar',
+            DDConstants::EASY_ONBOARDING
+        );
+    }
+
+    public function testCreateBvsValidationPoaAadhaarSyncEnabledPhantomOnboarding()
+    {
+        $this->checkSyncEnabledPOA(
+            'aadhar_front',
+            'aadhaar',
+            DDConstants::PHANTOM_ONBOARDING
+        );
     }
 
     public function testCreateBvsValidationAadhaarBackSyncEnabled()
@@ -785,15 +799,41 @@ class BvsValidationTest extends TestCase
 
     public function testCreateBvsValidationPoaVoterIdSyncEnabled()
     {
-        $this->checkSyncEnabledPOA('voter_id_front', 'voters_id');
+        $this->checkSyncEnabledPOA(
+            'voter_id_front',
+            'voters_id',
+            DDConstants::EASY_ONBOARDING
+        );
+    }
+
+    public function testCreateBvsValidationPoaVoterIdSyncEnabledPhantomOnboarding()
+    {
+        $this->checkSyncEnabledPOA(
+            'voter_id_front',
+            'voters_id',
+            DDConstants::PHANTOM_ONBOARDING
+        );
     }
 
     public function testCreateBvsValidationPoaPassportSyncEnabled()
     {
-        $this->checkSyncEnabledPOA('passport_front', 'passport');
+        $this->checkSyncEnabledPOA(
+            'passport_front',
+            'passport',
+            DDConstants::EASY_ONBOARDING
+        );
     }
 
-    public function checkSyncEnabledPOA($documentType,$artefactType)
+    public function testCreateBvsValidationPoaPassportSyncEnabledPhantomOnboarding()
+    {
+        $this->checkSyncEnabledPOA(
+            'passport_front',
+            'passport',
+            DDConstants::PHANTOM_ONBOARDING
+        );
+    }
+
+    public function checkSyncEnabledPOA($documentType, $artefactType, $signupCampaign)
     {
         $mid = '10000000000000';
 
@@ -811,7 +851,7 @@ class BvsValidationTest extends TestCase
         $this->fixtures->create('user_device_detail', [
             'merchant_id' => $mid,
             'user_id' => $merchantUser->getId(),
-            'signup_campaign' => 'easy_onboarding'
+            'signup_campaign' => $signupCampaign
         ]);
 
         $this->updateUploadDocumentData($test);

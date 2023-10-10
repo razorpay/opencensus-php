@@ -877,8 +877,10 @@ class Core extends Base\Core
 
         try
         {
-            $isEasyOnboarding = (empty($merchant) === false) and
-                                ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true);
+            $isEasyOnboarding = (
+                (empty($merchant) === false) and
+                $merchant->isSignupCampaignAnyOf(Detail\Constants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
+            );
 
             $emptyParentCategory = empty($input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]);
 
@@ -1757,7 +1759,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetails ?: $this->getMerchantDetails($merchant);
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        if (!$merchant->isSignupCampaignAnyOf(Detail\Constants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS))
         {
             if ($this->mcore->isUnRegisteredOnBoardingEnabled($merchant,
                     $merchantDetails->isUnregisteredBusiness()) === true)
@@ -1845,8 +1847,10 @@ class Core extends Base\Core
         $businessCategory    = $merchantDetails->getBusinessCategory();
         $businessSubcategory = $merchantDetails->getBusinessSubcategory();
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true and
-            empty($businessSubcategory) === true)
+        if (
+            $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) and
+            empty($businessSubcategory) === true
+        )
         {
             return;
         }
@@ -2350,9 +2354,11 @@ class Core extends Base\Core
             return;
         }
 
-        if (empty($input[Entity::PROMOTER_PAN]) === false and
+        if (
+            empty($input[Entity::PROMOTER_PAN]) === false and
             empty($input[Entity::PROMOTER_PAN_NAME]) === true and
-            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+            $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === true
+        )
         {
             if ((new BvsAutofill\PersonalPan($merchant, $merchantDetails))->autofillIfApplicable() === true)
             {
@@ -2414,7 +2420,7 @@ class Core extends Base\Core
 
         if (empty($input[Entity::COMPANY_PAN]) === false and
             empty($input[Entity::BUSINESS_NAME]) === true and
-            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+            $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === true)
         {
             if ((new BvsAutofill\CompanyPan($merchant, $merchantDetails))->autofillIfApplicable() === true)
             {
@@ -3870,8 +3876,10 @@ class Core extends Base\Core
 
                     $merchantDetails->setLocked(false);
 
-                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
-                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
+                    if (
+                        ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false) or
+                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false
+                    )
                     {
                         $this->sendNeedsClarificationEmail($merchant);
                     }
@@ -5164,7 +5172,7 @@ class Core extends Base\Core
         }
 
         if ($merchant->isSignupSourceIn(DDConstants::MOBILE_APP_SOURCES) === false and
-            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+            $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
         {
             return false;
         }
@@ -5869,7 +5877,10 @@ class Core extends Base\Core
 
         $businessType = $merchantDetails->getBusinessType();
 
-        if (empty($merchant) === false and $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        if (
+            (empty($merchant) === false) and
+            $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false
+        )
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -6977,7 +6988,7 @@ class Core extends Base\Core
             }
         }
 
-        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
         {
             if ($activationFlow === ActivationFlow::BLACKLIST)
             {
@@ -10294,14 +10305,24 @@ class Core extends Base\Core
 
     public function fetchMerchantGatingDetails(Merchant\Entity $merchant)
     {
-
         $app = App::getFacadeRoot();
 
         $pgosMock = $app['config']['pgos.proxy.request.mock'];
 
         if ($pgosMock === true)
         {
-            $feeBasedGatingResponse = [
+            $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
+
+            if ($phantomOnboarding === true)
+            {
+                return [
+                    "fee_based_gating" => [
+                        "is_eligible"    => false,
+                    ]
+                ];
+            }
+
+            return [
                 "fee_based_gating" => [
                     "is_eligible"    => DetailConstants::DEFAULT_ELIGIBILITY_CRITERIA,
                     "order_id"       => DetailConstants::DEFAULT_ORDER_ID,
@@ -10309,8 +10330,6 @@ class Core extends Base\Core
                     "invoice_sent"   => false
                 ]
             ];
-
-            return $feeBasedGatingResponse;
         }
         // We will fetch the data here regardless of the experiment is enabled for the merchant or not
 

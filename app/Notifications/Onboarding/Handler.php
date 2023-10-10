@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AccessMap\Repository as AccessMapRepo;
 use RZP\Models\ClarificationDetail\Core as ClarificationDetailsCore;
 
@@ -252,7 +253,7 @@ class Handler extends BaseHandler
             case Status::ACTIVATED:
                 if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
                 {
-                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                    if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
                     {
                         array_push($events, Events::UNREGISTERED_SETTLEMENTS_ENABLED);
                         array_push($events, Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED);
@@ -260,7 +261,7 @@ class Handler extends BaseHandler
                 }
                 else
                 {
-                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                    if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
                     {
                         array_push($events, Events::REGISTERED_SETTLEMENTS_ENABLED);
                         array_push($events, Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED);
@@ -268,7 +269,7 @@ class Handler extends BaseHandler
                 }
                 break;
             case Status::INSTANTLY_ACTIVATED:
-                if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
                 {
                     array_push($events, Events::PAYMENTS_ENABLED);
                     array_push($events, Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED);

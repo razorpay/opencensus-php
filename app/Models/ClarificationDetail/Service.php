@@ -153,12 +153,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $eligibleSignupCampaign = (
-            ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true) ||
-            ($merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true)
-        );
-
-        if (!$eligibleSignupCampaign)
+        if ($merchant->isSignupCampaignAnyOf(Detail\Constants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
         {
             return false;
         }

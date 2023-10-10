@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
+use \RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -256,6 +257,11 @@ class Constants
         Entity::COMPANY_PAN,
         Entity::PROMOTER_PAN_NAME,
         Entity::COMPANY_PAN_NAME
+    ];
+
+    const EASY_ELIGIBLE_SIGNUP_CAMPAIGNS = [
+        DDConstants::EASY_ONBOARDING,
+        DDConstants::PHANTOM_ONBOARDING,
     ];
 
     const DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION = [

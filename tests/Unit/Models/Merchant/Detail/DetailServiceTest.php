@@ -146,7 +146,7 @@ class DetailServiceTest extends TestCase
 
         $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
 
-        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+        $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
 
         $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
 
@@ -199,7 +199,7 @@ class DetailServiceTest extends TestCase
 
         $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
 
-        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+        $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
 
         $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
 
@@ -340,7 +340,7 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
 
-        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+        $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 
@@ -517,7 +517,7 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1232');
 
-        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+        $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 

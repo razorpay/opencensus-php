@@ -419,7 +419,7 @@ class Service extends Base\Service
 
     }
 
-    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null, $isPhantomOnboardingFlow = false)
+    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null)
     {
         if (empty($m2mReferralInput))
         {
@@ -441,7 +441,7 @@ class Service extends Base\Service
             'is_m2m_referral'                      => $isM2MReferral,
             'phone'                                => $user[Entity::CONTACT_MOBILE] ?? "",
             'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
-            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboardingFlow,
+            Merchant\Constants::PHANTOM_ONBOARDING => optional($merchant)->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true,
             Merchant\Constants::I18N_MY_ONBOARDING    => optional($merchant)->isSignupCampaign(DDConstants::I18N_MY_SIGNUP) === true,
         ];
 
@@ -736,7 +736,7 @@ class Service extends Base\Service
                 }
 
                 $signupMethod = Constants::OTP;
-                $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
+                $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput);
                 $this->processReferralCode($merchantData['id'], $partnerReferralCode);
                 $this->linkSubMerchantToPlatformPartner($merchantData['id'], $sourceAppId, $isOauthReferral);
                 $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
@@ -771,6 +771,7 @@ class Service extends Base\Service
         $shouldOnboardViaPGOS = false;
 
         //Determine whether onboarding should be done via PGOS or not
+        // TODO Phantom Onboarding should also be redirected to PGOS once required changes are done in PGOS
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING)
         {
             $isPGOSLiveModeExperimentEnabledForMerchant =

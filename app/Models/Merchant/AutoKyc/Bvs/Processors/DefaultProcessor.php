@@ -18,6 +18,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
+use \RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponseV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
@@ -302,7 +303,7 @@ class DefaultProcessor implements Processor
             (empty($this->experimentMap[$this->configName]) === true) or
             ((new Core)->isRegularMerchant($this->merchant) === false) or
             ((in_array($this->configName, Constant::EXCLUDED_CONFIGS, true) === false) and
-            ($this->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false))
+            ($this->merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)) === false)
         )
         {
             return Constant::ASYNC;
