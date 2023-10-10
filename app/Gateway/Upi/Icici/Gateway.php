@@ -873,7 +873,15 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['decryptedResponse' => $response]);
 
-        return $response['refId'];
+        if ($response['success'] === "true" and empty($response['refId']) === false)
+        {
+            return $response['refId'];
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+            null,
+            $response);
     }
 
     protected function getTerminalId(array $input): string
