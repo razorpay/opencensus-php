@@ -562,7 +562,9 @@ class Processor
     protected static $upiRearchRoutes = [
         'payment_create_upi',
         'payment_create_ajax',
-        'payment_create_checkout'
+        'payment_create_checkout',
+        'payment_create_private_json',
+        'payment_create_private_old'
     ];
 
     public function __construct(Merchant\Entity $merchant)
