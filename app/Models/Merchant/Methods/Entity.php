@@ -19,11 +19,11 @@ use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Emi\CreditEmiProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
-
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use Cacheable;
+    use Cacheable, AsvGetAttribute;
 
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';

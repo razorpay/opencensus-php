@@ -9,9 +9,12 @@ use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MPAN          = 'mpan';
     const NETWORK       = 'network';
     const ASSIGNED      = 'assigned';

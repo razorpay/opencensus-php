@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\Promotion;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MERCHANT_ID          = 'merchant_id';
     const PROMOTION_ID         = 'promotion_id';
     const START_TIME           = 'start_time';

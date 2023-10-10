@@ -5,10 +5,11 @@ namespace RZP\Models\NodalBeneficiary;
 use RZP\Models\Base;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const CHANNEL             = 'channel';
     const CARD_ID             = 'card_id';

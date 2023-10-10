@@ -7,11 +7,12 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
     // Trait
-    use HardDeletes;
+    use HardDeletes, AsvGetAttribute;
 
     // properties
     protected        $entity             = EntityConstants::MERCHANT_NOTIFICATION_CONFIG;

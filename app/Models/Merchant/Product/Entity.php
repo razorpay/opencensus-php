@@ -4,9 +4,12 @@ namespace RZP\Models\Merchant\Product;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const PRODUCT_NAME          = 'product_name';

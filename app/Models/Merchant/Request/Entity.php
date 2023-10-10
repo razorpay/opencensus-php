@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\Request;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const NAME                             = 'name';
     const TYPE                             = 'type';
     const STATES                           = 'states';

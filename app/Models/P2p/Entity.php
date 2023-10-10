@@ -8,10 +8,11 @@ use RZP\Models\Vpa;
 use RZP\Models\BankAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     const ID                  = 'id';
     const TXN_ID              = 'txn_id';
