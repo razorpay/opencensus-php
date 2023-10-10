@@ -16732,6 +16732,7 @@ class Route
             'third_party_authenticate'
         ],
         'razorassist' => [
+            'merchant_fetch_internal',
             'merchant_ids_fetch_for_user_contact',
             'payment_fetch_multiple',
             'payment_fetch_by_id',
