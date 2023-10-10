@@ -33,6 +33,22 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ID           => 'sometimes|string',
     ];
 
+    protected static $editRules = [
+        Entity::GATEWAY_AMOUNT             => 'sometimes|integer|min:0',
+        Entity::GATEWAY_CURRENCY           => 'sometimes|string|size:3|custom',
+        Entity::FOREX_RATE                 => 'sometimes|numeric',
+        Entity::DCC_OFFERED                => 'sometimes|boolean',
+        Entity::DCC_MARK_UP_PERCENT        => 'sometimes|numeric',
+        Entity::PAYMENT_ID                 => 'required|string',
+        Entity::ACTION                     => 'sometimes|string',
+        Entity::REFERENCE_ID               => 'sometimes|string',
+        Entity::MISMATCH_AMOUNT            => 'sometimes|integer',
+        Entity::MISMATCH_AMOUNT_REASON     => 'required_with:' . Entity::MISMATCH_AMOUNT . '|string|in:credit_surplus,credit_deficit',
+        Entity::MCC_APPLIED                => 'sometimes|boolean',
+        Entity::MCC_MARK_DOWN_PERCENT      => 'sometimes|numeric',
+        Entity::MCC_FOREX_RATE             => 'sometimes|numeric',
+    ];
+
     protected function validateGatewayCurrency($input)
     {
         if (isset($input[Entity::GATEWAY_CURRENCY]) === false)
