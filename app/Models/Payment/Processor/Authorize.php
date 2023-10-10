@@ -1008,6 +1008,15 @@ trait Authorize
 
         $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput);
 
+        $iin = $payment->card->iinRelation;
+
+        if($iin !== null && $iin->isTokenisationBlacklisted() === true){
+            $this->trace->error(TraceCode::BLACKLISTED_IIN_FOR_ALT_AND_TOKEN,
+                [
+                    'card_iin'        => $iin
+                ]);
+            return null;
+        }
         // saving data in card entity for future use
         if(isset($altIdData['token']) && isset($altIdData['alt_id'])){
             $payment->card->setVaultToken($altIdData['token']);

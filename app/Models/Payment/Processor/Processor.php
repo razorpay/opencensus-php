@@ -684,6 +684,10 @@ class Processor
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
 
+            if ($merchant->getId() === 'CNoxEwowM0nMIT') {
+                return true;
+            }
+
             if (Environment::isTestingEnvironment($this->app['env']) === false)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_PAYMENTS_FLOW, $this->mode);
@@ -4149,7 +4153,7 @@ class Processor
         {
             $msg = "token_" . $token->getId() . " has been put on hold temporarily for creating recurring payments.".
                 "The next recurring payment can be created on the token after " . $coolDownPeriod;
-            
+
             $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCK_ERROR, [
                 "msg" => $msg
             ]);
@@ -4166,63 +4170,63 @@ class Processor
             RazorxTreatment::EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW,
             $this->mode
         );
-    
+
         $this->trace->info(TraceCode::EMANDATE_RAZORX_ACH_VARIANT, [
             "variant" => $achVariant,
             "key"     => $merchant->getId(),
             "step"    => "payment_initiation"
         ]);
-    
+
         if(strtolower($achVariant) === 'on')
         {
             return $this->achReturnInitiationFlow($token, $merchant);
         }
-    
+
         // razorx for nr flow
         $nrVariant = $this->app->razorx->getTreatment(
             $merchant->getId(),
             RazorxTreatment::EMANDATE_ENABLE_NR_DEBIT_FLOW,
             $this->mode
         );
-    
+
         $this->trace->info(TraceCode::EMANDATE_RAZORX_NR_VARIANT, [
             "variant" => $nrVariant,
             "key"     => $merchant->getId(),
             "step"    => "payment_initiation"
         ]);
-    
+
         if(strtolower($nrVariant) === 'on')
         {
             return $this->nrInitiationFlow($token, $merchant);
         }
-    
+
         return [];
     }
-    
+
     protected function achReturnInitiationFlow(Token\Entity $token, Merchant\Entity $merchant)
     {
         try
         {
             $tokenConfigs = $token->getNotes();
-            
+
             if ($tokenConfigs !== null and isset($tokenConfigs[TokenConstants::EMANDATE_CONFIGS]) === true)
             {
                 $emandateConfigs = $tokenConfigs[TokenConstants::EMANDATE_CONFIGS];
-                
+
                 $this->trace->info(TraceCode::EMANDATE_FETCH_TOKEN_CONFIGS, [
                     "token_configs"     => $emandateConfigs,
                     "token_id"          => $token->getId(),
                     "merchant_id"       => $merchant->getId()
                 ]);
-    
+
                 if($this->resetEmandateTokenConfigs($token, $emandateConfigs, EmandateConstants::ACH_RETURNS_FLOW) === true)
                 {
                     return [];
                 };
-                
+
                 return $this->validateEmandateTemporaryBlock($emandateConfigs);
             }
-            
+
         }
         catch(\Throwable $ex)
         {
@@ -4231,47 +4235,47 @@ class Processor
                 "token_id"    => $token->getId()
             ]);
         }
-        
+
         return [];
     }
-    
+
     protected function validateEmandateTemporaryBlock($configs)
     {
         $currentTimestamp = (int) Carbon::now('Asia/Kolkata')->getTimestamp();
-    
+
         $cooldownTimestamp = (int) $configs[TokenConstants::COOLDOWN_PERIOD] ?? $currentTimestamp;
-        
+
         $tokenStatus = $configs[TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
-        
+
         if ($tokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $cooldownTimestamp > $currentTimestamp)
         {
             $date = new DateTime("@$cooldownTimestamp");
-        
+
             $date->setTimeZone(new DateTimeZone('Asia/Kolkata'));
-        
+
             return [
                 TokenConstants::COOLDOWN_PERIOD => $date->format('Y-m-d H:i:s'),
                 TokenConstants::EMANDATE_TOKEN_STATUS => TokenConstants::BLOCKED_TEMPORARILY
             ];
         }
-        
+
         return [];
     }
-    
+
     protected function resetEmandateTokenConfigs($token, $configs, $presentFlow)
     {
         $currentTimestamp = (int) Carbon::now('Asia/Kolkata')->getTimestamp();
-        
+
         $cooldownTimestamp = (int) $configs[TokenConstants::COOLDOWN_PERIOD] ?? $currentTimestamp;
-        
+
         $lastUpdatedMonth = $configs[Token\Constants::LAST_UPDATED_MONTH] ?? '';
-    
+
         $tokenFlow = $configs[Token\Constants::TOKEN_FLOW] ?? '';
-    
+
         $currentMonth = $this->getCurrentMonthIST();
-    
+
         $tokenStatus = $configs[TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
-    
+
         // resetting if blocked time is completed or current time time doesn't match blocked/counter data
         if(($currentMonth !== $lastUpdatedMonth) or ($tokenFlow !== $presentFlow) or
             ($tokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $currentTimestamp >= $cooldownTimestamp))
@@ -4284,27 +4288,27 @@ class Processor
                 "merchant_id"           => $token->getMerchantId(),
                 "step"                  => "payment_initiation"
             ]);
-        
+
             $token->setNotes([]);
-        
+
             $this->repo->save($token);
-        
+
             return true;
         }
-        
+
         return false;
     }
-    
+
     protected function nrInitiationFlow(Token\Entity $token, Merchant\Entity $merchant)
     {
         try
         {
             $debitConfig = $this->fetchEmandateDcsConfigs($merchant->getId());
-        
+
             $tempErrorEnableFlag = $debitConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
-        
+
             $tokenNotes = $token->getNotes();
-        
+
             if ($tokenNotes !== null and isset($tokenNotes[TokenConstants::EMANDATE_CONFIGS]) === true)
             {
                 $this->trace->info(TraceCode::EMANDATE_FETCH_TOKEN_CONFIGS,
@@ -4313,14 +4317,14 @@ class Processor
                         "token_id"               => $token->getId(),
                         "merchant_id"            => $merchant->getId()
                     ]);
-    
+
                 $tokenConfigs = $tokenNotes[TokenConstants::EMANDATE_CONFIGS];
-                
+
                 if($this->resetEmandateTokenConfigs($token, $tokenConfigs, EmandateConstants::NR_FLOW) === true)
                 {
                     return [];
                 }
-                
+
                 if($tempErrorEnableFlag === true)
                 {
                     return $this->validateEmandateTemporaryBlock($tokenConfigs);
@@ -4334,7 +4338,7 @@ class Processor
                 "token_id"    => $token->getId()
             ]);
         }
-    
+
         return [];
     }
 

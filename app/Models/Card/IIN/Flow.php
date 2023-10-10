@@ -14,6 +14,7 @@ class Flow
     const HEADLESS_OTP      = 'headless_otp';
     const IVR               = 'ivr';
     const DCC_BLACKLISTED   = 'dcc_blacklisted';
+    const TOKENISATION_BLACKLISTED = 'tokenisation_blacklisted';
 
     // in case of any changes in flows, please contact cards team
     // as the same need to be updated in CPS for Rearch flow as well
@@ -26,6 +27,7 @@ class Flow
         self::HEADLESS_OTP      => 32,
         self::IVR               => 64,
         self::DCC_BLACKLISTED   => 128,
+        self::TOKENISATION_BLACKLISTED => 256,
     ];
 
     public static $featureToFlowMappings = [

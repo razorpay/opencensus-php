@@ -2967,6 +2967,18 @@ class Core extends Base\Core
 
         $card = $token->card;
 
+        $iin = $card->iinRelation;
+
+        if ($iin !== null && $iin->isTokenisationBlacklisted() === true){
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'blacklisted iin'   => $iin,
+                'token'             => $token
+            ]);
+
+            return false;
+        }
+
+
         // If card is already tokenised or card is international card, then it is not applicable for tokenisation
         if (($card->isRzpTokenisedCard() === false) or
             ($card->isInternational() === true))

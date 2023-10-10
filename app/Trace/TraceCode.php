@@ -951,6 +951,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RRN_PAYMENT_DATA                                      = 'RRN_PAYMENT_DATA';
     const CURRENT_PAYMENT_UPDATION_STATUS                       = 'CURRENT_PAYMENT_UPDATION_STATUS';
     const LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION                 = 'LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION';
+    const BLACKLISTED_IIN_FOR_ALT_AND_TOKEN                     = 'BLACKLISTED_IIN_FOR_ALT_AND_TOKEN';
 
     //circuit breaker
     const CIRCUIT_BREAKER_CLOSED    = "CIRCUIT_BREAKER_CLOSED";
