@@ -479,7 +479,7 @@ class Core extends Base\Core
 
         $feeBasedGatingResponse = (new DetailCore())->fetchMerchantGatingDetails($merchant);
 
-        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]))
+        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
         {
             $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE] ?? false;
         }
@@ -10321,6 +10321,13 @@ class Core extends Base\Core
             'fetch_merchant_gating_details' => true
         ]);
 
+        $splitzResponseForGating = (new Core())->getSplitzResponse($merchantId, 'fee_based_gating_exp_id');
+
+        if ($splitzResponseForGating !== Constants::SPLITZ_TRUE)
+        {
+            return null;
+        }
+
         try
         {
             $payload =
@@ -10341,7 +10348,7 @@ class Core extends Base\Core
 
         catch (\Throwable $exception)
         {
-            $this->trace->error(TraceCode::PGOS_FETCH_GATING_LOGIC_FAILURE, [
+            $this->trace->info(TraceCode::PGOS_FETCH_GATING_LOGIC_FAILURE, [
                 'route'         => 'fetch_gating_logic',
                 'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
